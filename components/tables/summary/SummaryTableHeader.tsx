@@ -2,6 +2,7 @@ import React from 'react';
 import { Icon } from '../../common/Icon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
+import { onActivateKey } from '../../shared/ui';
 
 interface SummaryTableHeaderProps {
     displayTitle: string;
@@ -156,7 +157,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                     if (isPivotMode && PIVOT_EXCLUDED_COLS.includes(col.key)) return false;
                                                     return true;
                                                 }).map((col: any) => (
-                                                    <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                                    <div key={col.key} role="button" tabIndex={0} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} onKeyDown={onActivateKey(() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key]))} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2 select-none">
                                                             <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg ${col.colorClass}`}>
                                                                 <Icon name={col.icon || 'columns'} size={3} className="sm:hidden" />

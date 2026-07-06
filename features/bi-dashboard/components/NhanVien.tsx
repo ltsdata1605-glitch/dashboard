@@ -1,6 +1,6 @@
 import { useWorker } from "../hooks/useWorker";import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, ChevronDownIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
-import { Tab, Employee, Criterion, Version } from '../types/nhanVienTypes';
+import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
 import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
@@ -15,10 +15,11 @@ import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { parseCompetitionData } from '../utils/nhanVienHelpers';
+import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Button } from '../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../components/shared/ui';
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
     <Button
         variant="ghost"
@@ -128,7 +129,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     }, [allEmployees]);
 
     const { runWorkerTask } = useWorker();
-    const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: any[], employees: any[] }>>({} as any);
+    const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>>({} as Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>);
 
     useEffect(() => {
         if (!aggregatedData.thiDua || !isActive) return;
@@ -326,12 +327,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         {isSmFilterOpen && (
                             <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="space-y-0.5">
-                                    <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <div role="button" tabIndex={0} onClick={() => toggleSupermarket('all')} onKeyDown={onActivateKey(() => toggleSupermarket('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
                                         <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
                                         <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
                                     </div>
                                     {Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => (
-                                        <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <div key={sm} role="button" tabIndex={0} onClick={() => toggleSupermarket(sm)} onKeyDown={onActivateKey(() => toggleSupermarket(sm))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
                                             <Switch checked={activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm))} onChange={() => {}} />
                                         </div>
@@ -356,12 +357,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         {isDeptFilterOpen && (
                             <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="space-y-0.5">
-                                    <div onClick={() => toggleDepartment('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <div role="button" tabIndex={0} onClick={() => toggleDepartment('all')} onKeyDown={onActivateKey(() => toggleDepartment('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
                                         <span className="text-xs font-black text-sky-600 dark:text-sky-400">Tất cả bộ phận</span>
                                         <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
                                     </div>
                                     {departmentOptions.map(dept => (
-                                        <div key={dept} onClick={() => toggleDepartment(dept)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <div key={dept} role="button" tabIndex={0} onClick={() => toggleDepartment(dept)} onKeyDown={onActivateKey(() => toggleDepartment(dept))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
                                             <Switch checked={activeDepartments.includes(dept) || activeDepartments.includes('all')} onChange={() => {}} />
                                         </div>

@@ -191,7 +191,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
                         </span>
                     </div>
-                ) as any}
+                )}
                 icon="users"
 
             >
@@ -220,7 +220,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                                                 <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-lg text-slate-500">
                                                     <Icon name={tab.icon} size={3.5}/>
                                                 </div>
-                                                {tab.label || (tab as any).name}
+                                                {tab.label}
                                             </span>
                                             <div className="relative inline-flex items-center">
                                                 <input

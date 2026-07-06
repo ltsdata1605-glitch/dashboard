@@ -6,6 +6,7 @@ import { Icon } from '../common/Icon';
 import { saveTopSellerAnalysis } from '../../services/dbService';
 import { RankBadge } from './performance/PerformanceTableUtils';
 import { Button } from '../shared/ui/Button';
+import { onActivateKey } from '../shared/ui';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
@@ -139,7 +140,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                         const traChamClass = getTraChamPercentClass(Number(seller.traChamPercent || 0));
 
                                         return (
-                                            <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg transition-shadow hover:shadow-md cursor-pointer">
+                                            <div key={seller.name} role="button" tabIndex={0} onClick={() => onEmployeeClick(seller.name)} onKeyDown={onActivateKey(() => onEmployeeClick(seller.name))} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg transition-shadow hover:shadow-md cursor-pointer">
                                                     <div className="flex items-center gap-1 sm:gap-1.5">
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">

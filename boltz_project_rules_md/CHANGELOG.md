@@ -510,3 +510,192 @@ ra. Đã cập nhật baseline phản ánh đúng giá trị thật hiện tại
 - Tổng số lần dùng `any` trong dự án: 608 → 575 (giảm 33; còn lại thuộc 3 nhóm khác chưa xử
   lý: `as any` ~113, `: any[]` ~99, `(param: any)` ~192 — quy mô lớn hơn nhiều, cần nhiều đợt
   tiếp theo, mỗi chỗ cần xem ngữ cảnh cụ thể để gán đúng type thay vì tìm-thay hàng loạt).
+
+## 2026-07-06 — Giảm `any`: xử lý xong nhóm `as any` (113 → 6)
+
+### Added
+
+- Helper `getErrorCode(error: unknown): string | undefined` trong `utils/dataUtils.ts` (đọc
+  field `.code` kiểu FirebaseError an toàn, bổ sung cho `getErrorMessage`/`isAbortError` đã
+  thêm ở đợt trước).
+
+### Fixed
+
+107/113 chỗ `as any` (94.7%) được sửa theo 3 hướng, tuỳ từng trường hợp thật:
+
+1. **Cast thừa — xoá hẳn không cần thay gì khác** (phần lớn các trường hợp): type đích đã đủ
+   chính xác từ trước, `as any` chỉ là thói quen phòng thủ không cần thiết. Ví dụ:
+   `useWarehouseLogic.ts` (7 chỗ đọc `row[targetCol.metric]` — `WarehouseColumnConfig.metric`
+   đã là `WarehouseCoreMetric` khớp đúng field của `WarehouseSummaryRow`), tương tự
+   `WarehouseSummary.tsx`, `DashboardView.tsx` (`<DashboardContext.Provider value={logic}>` —
+   `useDashboardLogic()` khớp đúng `DashboardContextType`), `Icon name={tab.icon}` (2 file),
+   `MobileBottomNav.tsx` (`tab.externalUrl` sau `'externalUrl' in tab` đã tự narrow đúng).
+2. **Phát hiện type khai báo bị thiếu field/rộng hơn thực tế → sửa type gốc thay vì cast**:
+   - `SortConfig['key']` (`IndustryTableUtils.tsx`) thiếu hẳn key động của custom tab
+     (`val_default_tab_*`) → thêm `| (string & {})` để vừa giữ autocomplete vừa nhận string
+     động (xoá 8 chỗ `as any` ăn theo ở `useIndustryAnalysisLogic.ts`).
+   - `CalculatedColumnForm.availableOperands: ColumnConfig[]` quá chặt so với dữ liệu thật
+     (`HeadToHeadConfigModal` chỉ có `{id, columnName}`) → đổi sang shape hẹp đúng những gì
+     component thật sự dùng.
+   - `SectionHeader.title: string` → `React.ReactNode` (3 file `TrendChart.tsx`,
+     `IndustryGrid.tsx`, `EmployeeAnalysis.tsx` đều truyền JSX vào `title`).
+   - `EmployeeAnalysisTabs.tsx`: `Tab` interface thiếu `color?: string`.
+   - `PerformanceSingleTable.tableRef: React.RefObject<HTMLDivElement>` → `React.Ref<...>`
+     (không nhận được callback-ref từ `forwardRef`).
+   - **Bug thật phát hiện**: `SummaryTableComparisonBar` khai `selectedWeeks: string[]`/
+     `handleWeekPillClick: (id: string) => void` nhưng dữ liệu thật từ
+     `useSummaryComparison.ts` là `number[]`/`(id: number) => void` — sửa lại type component
+     con cho khớp thực tế thay vì tiếp tục che bằng `any`.
+3. **Cast thật sự cần thiết — thay `any` bằng type hẹp nhất có thể** (dynamic key access,
+   Firestore `.data()`, `select onChange`, window/browser API mở rộng): dùng
+   `Record<string, unknown>` + narrow tại chỗ dùng (vd `CrossSellingTab.tsx`, `BonusTab.tsx`,
+   `KpiCards.tsx`, `useSummaryTableLogic.ts`), cast literal union chính xác cho mọi
+   `select onChange={...as any}` (KpiCardConfigModal, ColumnConfigModal, UserManagementView,
+   AiSuggestPatternModal — dựa đúng theo type `useState` khai báo), `LucideIcon` cho
+   `Icon.tsx`, `FirebaseError`/interface hẹp cho các chỗ đọc `doc.data()`.
+
+### Còn lại (6 chỗ, chấp nhận là ngoại lệ hợp lý)
+
+- `StickerPrinterView.tsx` (3): `XLSX.utils.sheet_to_json(...) as any[][]` — thuộc ngoại lệ
+  "Excel raw data parse" đã duyệt từ trước.
+- `features/sticker-event/firebase.ts`: config load qua `import.meta.glob` — kiểu dữ liệu
+  thật sự động, không đáng công sức ép type chi tiết.
+- `NhanVien.tsx`: `(window as any).debugEmployeeCompetitionTargets` — biến debug console,
+  không ảnh hưởng logic thật.
+- `useCompetitionData.ts`: gắn liền với param hook đang khai `: any` (thuộc nhóm
+  `(param: any)` chưa xử lý, sẽ sửa cùng lúc ở đợt sau).
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint .`: sạch (0 lỗi, chỉ còn 5 warning tiền tồn tại).
+- `npm run build`: thành công.
+- Playwright: load 5 tab chính (`analysis`, `employees`, `tools-phanca`,
+  `tools-print-sticker`, `settings`) — 0 console error.
+- Tổng any (mọi pattern: `: any`, `as any`, `any[]`, `<any>`): 575 → 468.
+
+## 2026-07-06 — Giảm `any`: nhóm `: any[]` (99 → 52, 47 chỗ đã sửa)
+
+### Fixed
+
+Áp dụng đúng type có sẵn của dự án thay vì `any[]` chung chung, theo từng cụm liên quan:
+
+- **`RevenueRow`/`InstallmentRow`/`CrossSellingRow`** (đã có sẵn trong `nhanVienTypes.ts`) —
+  áp dụng cho props `revenueRows?`/`installmentRows?`/`banKemRows?` ở
+  `IndividualCompetitionView.tsx`, `CompetitionCompareView.tsx`, `CompetitionTab.tsx` (14 chỗ).
+- **`CustomExploitationTabConfig[]`/`CustomContestTab[]`/`DataRow[]`/`Employee[]`** —
+  `EmployeeAnalysisContent.tsx` (11 chỗ, phát sinh thêm: object fallback thiếu field `order`
+  bắt buộc của `CustomExploitationTabConfig` → đã bổ sung), `IndustryAnalysisTab.tsx`,
+  `useIndustryAnalysisLogic.ts` (dùng `Record<string, unknown>[]` cho các hàm ranking đọc
+  field động).
+- **`Tab` type** (từ `EmployeeAnalysisTabs.tsx`, nay export ra ngoài): áp dụng cho
+  `useEmployeeAnalysisLogic.ts`, `useEmployeeAnalysisTabs.ts`. Phát hiện 1 chỗ gán nhầm loại
+  (`renderedCustomTabs` thực ra là `CustomContestTab[]` — có field `.name`, không phải
+  `Tab[]` có field `.label` — đã sửa đúng type thay vì gộp chung).
+  `EmployeeAnalysisContent.tsx` cũng đổi sang `import type { Tab }` dùng chung, bỏ khai báo
+  trùng lặp.
+- **`CompetitionEmployeeRow`** (interface mới, export từ `nhanVienHelpers.ts`): mô tả đúng
+  shape `{name, originalName, department, values: (number|null)[]}` mà
+  `parseCompetitionData()` trả về — áp dụng cho cả `nhanVienHelpers.ts` (3 chỗ) và
+  `NhanVien.tsx` (2 chỗ, bao gồm cả `CompetitionHeader` cho field `headers`).
+- **`DataRow[]`** cho `baseFilteredData` (dữ liệu Excel đã lọc) ở `TrendChart.tsx`,
+  `IndustryGrid.tsx`, `SavedCalendarCard.tsx`, `useEmployeeAnalysisData.ts`.
+
+### Còn lại (52 chỗ)
+
+- **Chấp nhận là ngoại lệ** (~14): Excel raw parse (`dataService.ts`, `worker.ts`,
+  `fileParser.ts`, `sheet_to_json` trong `PhanCaView.tsx`), `useStableCallback.ts` (pattern
+  generic chuẩn `(...args: any[]) => any` cho higher-order function — không nên sửa).
+- **Chưa làm** (~38): chủ yếu là biến cục bộ trong các hàm xử lý bảng
+  (`finalOutput`/`rows`/`result`/`out` ở `BonusTab.tsx`/`CrossSellingTab.tsx`/
+  `InstallmentTab.tsx`/`CompetitionCompareView.tsx`/`useRevenueData.ts`/
+  `useHeadToHeadLogic.ts`), ít ảnh hưởng ra ngoài module nên độ ưu tiên thấp hơn props/hàm
+  export — để lại cho đợt sau nếu cần.
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint .`: sạch (0 lỗi).
+- `npm run build`: thành công.
+- Playwright: load 4 tab chính (`analysis`, `employees`, `tools-phanca`,
+  `tools-print-sticker`) — 0 console error.
+- Tổng any (mọi pattern): 468 → 418.
+
+## 2026-07-06 — Giảm `any`: nhóm `(param: any)` (chỗ đã sửa, 418 → 342 tổng any)
+
+### Fixed
+
+- **`querySelectorAll<HTMLElement>(...)`** thay vì `.forEach((el: any) => ...)` — áp dụng đồng
+  loạt cho cả 4 bản `uiService.ts` (gốc + 3 zone-local), 12 chỗ mỗi file (48 chỗ tổng) trong
+  các hàm export ảnh (`exportElementAsImage`, `fixOklchColors` liên quan). Đây là cách dùng
+  đúng của DOM API — generic type argument của `querySelectorAll` — thay vì ép kiểu từng
+  callback.
+- **Sửa tận gốc param của hook thay vì từng chỗ dùng derived** — hiệu quả cao nhất trong đợt
+  này:
+  - `useIndustryViewLogic(realtimeData, luykeData, isRealtime)`: 2 param đầu đổi từ `any` sang
+    `ReturnType<typeof parseIndustryRealtimeData>`/`ReturnType<typeof parseIndustryLuyKeData>`
+    (tái dùng type suy ra từ chính hàm parser thật, không cần định nghĩa interface tay) → tự
+    động kéo theo 11 chỗ `(row: any)`/`(node: any)`/... bên trong hết cần ép kiểu.
+  - `useCompetitionData({...}: any)`: thêm interface `UseCompetitionDataProps` tái dùng
+    `CompetitionEmployeeRow` (đã thêm ở đợt trước) → kéo theo 10 chỗ derived hết cần `any`.
+- Sửa lẻ theo ngữ cảnh: `StickerPrinterView.tsx` (`parsePrice`/`formatPriceInThousands`/
+  `formatFullPrice` nhận `unknown` thay vì `any` — các hàm này tự `String()`/`== null` nên an
+  toàn với input bất kỳ; `handleDbChange(event: Event)` + cast `CustomEvent<{key?: string}>`
+  đúng chuẩn thay vì `any`).
+
+### Còn lại
+
+Còn nhiều chỗ `(param: any)` khác (đặc biệt các hàm xử lý bảng ở `CrossSellingTab.tsx`,
+`EmployeeAnalysisContent.tsx`, `IndividualCompetitionView.tsx`, `CompetitionView.tsx`,
+`useSummaryComparison.ts`, `NotificationDropdown.tsx`...) — để lại cho đợt sau, cùng phần còn
+lại của nhóm `: any[]` và 42 chỗ `div/span onClick`.
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint .`: sạch (0 lỗi).
+- `npm run build`: thành công.
+- Playwright: load 4 tab chính — 0 console error.
+- Tổng any (mọi pattern): 418 → 342.
+
+## 2026-07-06 — Accessibility: chuyển 17/42 chỗ `div`/`span` onClick sang có thể dùng bàn phím
+
+### Added
+
+- Helper `onActivateKey(handler)` mới trong `components/shared/ui/utils.ts` (export qua
+  `index.ts`): trả về `onKeyDown` kích hoạt `handler` khi nhấn Enter/Space, giống hành vi
+  `<button>` thật — dùng cho các phần tử clickable không tiện đổi hẳn sang `<button>`/`<Button>`
+  vì lý do layout (nằm trong `<span>` inline, list row phức tạp có `Switch` lồng bên trong...).
+
+### Fixed
+
+17/42 chỗ `<div>`/`<span onClick>` — thêm `role="button" tabIndex={0}` + `onKeyDown={onActivateKey(...)}`,
+giữ nguyên `onClick` và toàn bộ style/layout hiện có (không đổi hành vi click, chỉ thêm lối vào
+bằng bàn phím): danh sách toggle siêu thị/bộ phận (`NhanVien.tsx` ×4), toggle chương trình thi
+đua (`CompetitionView.tsx`, `IndividualCompetitionView.tsx`, `CompetitionTab.tsx` ×3), dòng nhân
+viên có thể click (`BonusTab.tsx`, `BonusMobileCard.tsx`, `RevenueDesktopRow.tsx`,
+`TopSellerList.tsx`), toggle cột hiển thị (`SummaryTableHeader.tsx`), sort header
+(`EmployeeManagerModal.tsx`), nút import file (`InstallmentTab.tsx`), và **trigger dropdown
+dùng chung** `components/shared/ui/Dropdown.tsx` (ảnh hưởng mọi nơi dùng `Dropdown` — điểm sửa
+có blast-radius cao nhất trong đợt này).
+
+### Còn lại (25 chỗ) — chủ động không sửa, có lý do cụ thể
+
+Đã kiểm tra kỹ từng trường hợp, không phải "bỏ sót" mà là 3 nhóm **không cần** role="button":
+
+1. **Modal backdrop click-to-close** (8 chỗ: `BonusTab.tsx`, `ManualInputModal.tsx`,
+   `SavedListsModal.tsx`, `PdfPreviewModal.tsx`, `LayoutSelectionModal.tsx`,
+   `PrintSettingsModal.tsx`, `TrendChart.tsx`, `DashboardView.tsx`) — đây là lớp phủ nền
+   (backdrop), KHÔNG nên nằm trong tab order (nếu thêm `tabIndex` sẽ tạo 1 stop bàn phím vô
+   nghĩa ngay sau khi mở modal). Đã xác minh mẫu tại `ManualInputModal.tsx`: modal luôn có
+   nút đóng thật (`<Button>` + `aria-label="Đóng"`) dùng được bằng bàn phím — backdrop-click
+   chỉ là tiện ích thêm, không phải cách duy nhất để đóng.
+2. **`contentEditable` div** (11 chỗ, `StickerPrintPreview.tsx`) — các div này đã có thuộc
+   tính `contentEditable`, tự động nhận focus và thao tác được bằng bàn phím theo chuẩn HTML,
+   không cần `role="button"` (bản chất là vùng nhập liệu, không phải nút bấm).
+3. **Wrapper chỉ để `stopPropagation()`** (6 chỗ: `CrossSellingTab.tsx`, `KpiCards.tsx`,
+   `EmployeeManagerModal.tsx` dòng filter dropdown, `FilterPopover.tsx` ×2) — không phải nội
+   dung có thể "kích hoạt", chỉ chặn sự kiện nổi bọt lên phần tử cha.
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint .`: sạch (0 lỗi, chỉ còn 5 warning tiền tồn tại).
+- `npm run build`: thành công.
+- Playwright: load tab `employees` — 0 console error.

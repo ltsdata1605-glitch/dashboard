@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
-import { parseNumber, IndustryTreeNode } from '../utils/dashboardHelpers';
+import { parseNumber, IndustryTreeNode, parseIndustryRealtimeData, parseIndustryLuyKeData } from '../utils/dashboardHelpers';
 
 export interface FlatDisplayRow {
     values: string[];
@@ -35,7 +35,7 @@ export const flattenTree = (
     return result;
 };
 
-export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealtime: boolean) {
+export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndustryRealtimeData>, luykeData: ReturnType<typeof parseIndustryLuyKeData>, isRealtime: boolean) {
     const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>('global-hidden-cols-industry', []);
     const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>('global-hidden-industries', []);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -46,7 +46,7 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
     const allIndustries = useMemo(() => {
         const sourceRows = isRealtime ? realtimeData.rows : luykeData.table.rows;
         return (sourceRows || [])
-            .map((row: any) => row[0])
+            .map((row) => row[0])
             .filter((name: string) => name && name !== 'Tổng' && name !== 'Không tính doanh thu');
     }, [realtimeData.rows, luykeData.table.rows, isRealtime]);
 
@@ -55,17 +55,17 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
             return { headers: [], rows: [] };
         }
         
-        let totalRow = rows.find((r: any) => r[0] === 'Tổng');
-        let otherRows = rows.filter((r: any) => r[0] !== 'Tổng');
+        let totalRow = rows.find((r) => r[0] === 'Tổng');
+        let otherRows = rows.filter((r) => r[0] !== 'Tổng');
 
         const hiddenIndustriesSet = new Set(hiddenIndustries);
-        otherRows = otherRows.filter((row: any) => 
+        otherRows = otherRows.filter((row) => 
             row[0] && !hiddenIndustriesSet.has(row[0])
         );
 
         const htTargetIndex = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
         if (htTargetIndex !== -1) {
-            otherRows.sort((a: any, b: any) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
+            otherRows.sort((a, b) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
         }
         
         const finalRows = totalRow ? [...otherRows, totalRow] : otherRows;
@@ -79,9 +79,9 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         const activeTree = isRealtime ? realtimeData?.tree : luykeData?.tree;
         if (!activeTree) return [];
         const subs = new Set<string>();
-        activeTree.forEach((node: any) => {
+        activeTree.forEach((node) => {
             if (node.name !== 'Không tính doanh thu') {
-                node.children.forEach((c: any) => {
+                node.children.forEach((c) => {
                     if (c.name !== 'Không tính doanh thu') {
                         subs.add(c.name);
                     }
@@ -101,10 +101,10 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         const hiddenSubSet = new Set(hiddenSubIndustries);
         
         let filteredTree = activeTree
-            .filter((node: any) => !hiddenSet.has(node.name))
-            .map((node: any) => ({
+            .filter((node) => !hiddenSet.has(node.name))
+            .map((node) => ({
                 ...node,
-                children: node.children.filter((child: any) => !hiddenSubSet.has(child.name))
+                children: node.children.filter((child) => !hiddenSubSet.has(child.name))
             }));
 
         const htTargetIdx = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
@@ -116,7 +116,7 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
 
         const flat = flattenTree(filteredTree, expandedRows);
 
-        const sourceTotalRow = isRealtime ? (realtimeData?.totalRow || realtimeData?.rows?.find((r: any) => r[0] === 'Tổng')) : luykeData.totalRow;
+        const sourceTotalRow = isRealtime ? (realtimeData?.totalRow || realtimeData?.rows?.find((r) => r[0] === 'Tổng')) : luykeData.totalRow;
 
         if (sourceTotalRow) {
             flat.push({

@@ -14,7 +14,7 @@ interface RenderSingleTableProps {
     handleTabChange: (tab: GroupType) => void;
     sortConfig: { key: string; direction: SortDirection };
     onSort: (key: string) => void;
-    tableRef: React.RefObject<HTMLDivElement>;
+    tableRef: React.Ref<HTMLDivElement>;
     onSingleExport: () => void;
     isExporting?: boolean;
     groupedData: { [key: string]: Employee[] };

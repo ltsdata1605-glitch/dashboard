@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
 import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
+import type { DataRow } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { exportElementAsImage } from '../../services/uiService';
@@ -41,7 +42,7 @@ interface IndustryGridInnerProps {
     productConfig: any;
     filters: any;
     onFilterChange: (update: any) => void;
-    baseFilteredData: any[];
+    baseFilteredData: DataRow[];
 }
 
 const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
@@ -259,7 +260,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             {filters.dateRange !== 'all' ? `TỪ ${filters.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filters.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
                         </span>
                     </div>
-                ) as any}
+                )}
                 icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">

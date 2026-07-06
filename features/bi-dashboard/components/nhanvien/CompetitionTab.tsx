@@ -4,7 +4,7 @@ import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
-import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig } from '../../types/nhanVienTypes';
+import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
 import CompetitionCompareView from './CompetitionCompareView';
@@ -15,6 +15,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../../components/shared/ui';
 import TimeProgressBar from './shared/TimeProgressBar';
 
 const PALETTE = [
@@ -53,9 +54,9 @@ interface CompetitionTabProps {
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
     activeDepartments: string[];
-    revenueRows?: any[];
-    installmentRows?: any[];
-    banKemRows?: any[];
+    revenueRows?: RevenueRow[];
+    installmentRows?: InstallmentRow[];
+    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, any>;
     isActive?: boolean;
 }
@@ -452,11 +453,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-2 items-center">
                     {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
-                        <Button variant="ghost" key={key} onClick={() => { setActiveCompetitionTab(key as any); setActiveVersionName(null); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</Button>
+                        <Button variant="ghost" key={key} onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</Button>
                     ))}
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
-                        <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
+                        <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={onActivateKey(() => onVersionTabClick(version))} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
                             <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></Button>
                         </div>
@@ -528,7 +529,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                                         const displayCompName = shortenName(comp.originalTitle, nameOverrides);
                                                                         return (
                                                                             <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
-                                                                                <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
+                                                                                <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.title)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.title))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
                                                                                 <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
                                                                             </div>
                                                                         );
@@ -557,7 +558,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                         const isSelected = highlightedEmployees.has(emp.originalName);
                                                         return (
                                                             <div key={emp.originalName} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-default">
-                                                                <div className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })}>
+                                                                <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} onKeyDown={onActivateKey(() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; }))}>
                                                                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getEmployeeDotColor(emp.originalName)}`}></span>
                                                                     <span className={`text-sm truncate ${isSelected ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{emp.name}</span>
                                                                 </div>

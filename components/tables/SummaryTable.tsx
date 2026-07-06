@@ -158,8 +158,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         selectedMonth={selectedMonth}
                         setSelectedMonth={setSelectedMonth}
                         weeksInSelectedMonth={weeksInSelectedMonth}
-                        selectedWeeks={selectedWeeks as any}
-                        handleWeekPillClick={handleWeekPillClick as any}
+                        selectedWeeks={selectedWeeks}
+                        handleWeekPillClick={handleWeekPillClick}
                         trendData={trendData}
                         trendSelectedMonths={trendSelectedMonths}
                         setTrendSelectedMonths={setTrendSelectedMonths}

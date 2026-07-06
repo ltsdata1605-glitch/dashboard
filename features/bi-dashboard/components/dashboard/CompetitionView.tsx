@@ -10,6 +10,7 @@ import { exportElementAsImage } from '../../services/uiService';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../../components/shared/ui';
 
 interface CompetitionViewProps {
     data: Record<string, SupermarketCompetitionData>;
@@ -201,7 +202,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                                     {allProgramNames.filter(name => !programFilterSearch || name.toLowerCase().includes(programFilterSearch.toLowerCase())).map(name => (
                                         <div key={name} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })}>
+                                            <span role="button" tabIndex={0} className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })} onKeyDown={onActivateKey(() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); }))}>
                                                 {shortenName(name)}
                                             </span>
                                             <Switch 

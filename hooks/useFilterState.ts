@@ -60,7 +60,8 @@ export const useFilterState = () => {
                         ...initialFilterState,
                         ...fullSavedFilters,
                         selectedMonths: loadedSelectedMonths,
-                        kho: Array.isArray(fullSavedFilters.kho) ? fullSavedFilters.kho : (fullSavedFilters.kho ? [fullSavedFilters.kho as any] : []),
+                        // Dữ liệu cũ lưu trước khi migrate sang mảng có thể là string đơn (dù type khai báo string[])
+                        kho: Array.isArray(fullSavedFilters.kho) ? fullSavedFilters.kho : (fullSavedFilters.kho ? [fullSavedFilters.kho as unknown as string] : []),
                         trangThai: fullSavedFilters.trangThai || [],
                         nguoiTao: fullSavedFilters.nguoiTao || [],
                         department: fullSavedFilters.department || [],

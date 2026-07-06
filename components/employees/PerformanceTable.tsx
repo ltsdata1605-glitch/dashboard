@@ -101,7 +101,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
             const percentHT = targetPerEmployee > 0 ? (emp.doanhThuQD / targetPerEmployee) * 100 : 0;
             const dtVuot = Math.max(0, emp.doanhThuQD - targetPerEmployee);
             return { ...emp, target: targetPerEmployee, percentHT, dtVuot };
-        }).filter(Boolean) as any[];
+        }).filter((emp): emp is NonNullable<typeof emp> => emp !== null);
 
         if (['target', 'percentHT', 'dtVuot'].includes(sortConfig.key)) {
             fullOutstanding.sort((a, b) => safeSort(a, b, sortConfig.key, sortConfig.direction));
@@ -183,7 +183,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
                 handleTabChange={handleTabChange}
                 sortConfig={sortConfig}
                 onSort={handleSort}
-                tableRef={ref as any}
+                tableRef={ref}
                 onSingleExport={onExport || (() => {})}
                 isExporting={isExporting}
                 groupedData={groupedData}

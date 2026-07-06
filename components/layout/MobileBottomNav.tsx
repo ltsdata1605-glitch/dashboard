@@ -103,7 +103,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                         'externalUrl' in tab ? (
                                             <a
                                                 key={tab.id}
-                                                href={(tab as any).externalUrl}
+                                                href={tab.externalUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -140,7 +140,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                             return (
                                                 <a
                                                     key={tab.id}
-                                                    href={(tab as any).externalUrl}
+                                                    href={tab.externalUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"

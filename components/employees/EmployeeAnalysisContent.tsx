@@ -6,21 +6,24 @@ import IndustryAnalysisTab from './IndustryAnalysisTab';
 import HeadToHeadTab from './HeadToHeadTab';
 import ContestTable from './ContestTable';
 import { Icon } from '../common/Icon';
-import type { ExploitationData } from '../../types';
+import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee } from '../../types';
 import { Button } from '../shared/ui/Button';
+import type { Tab } from './EmployeeAnalysisTabs';
+
+type ColorTheme = { header: string; activeTab: string; row: string; border: string };
 
 interface EmployeeAnalysisContentProps {
     activeTab: string;
     filteredEmployeeAnalysisData: any;
     isInitialTabsLoaded: boolean;
-    industryAnalysisTables: any[];
-    customTabs: any[];
-    customExploitationTabs: any[];
-    setCustomExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
-    efficiencyExploitationTabs: any[];
-    setEfficiencyExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
-    baseFilteredData: any[];
-    allDatesBaseFilteredData: any[];
+    industryAnalysisTables: CustomContestTab[];
+    customTabs: CustomContestTab[];
+    customExploitationTabs: CustomExploitationTabConfig[];
+    setCustomExploitationTabs: React.Dispatch<React.SetStateAction<CustomExploitationTabConfig[]>>;
+    efficiencyExploitationTabs: CustomExploitationTabConfig[];
+    setEfficiencyExploitationTabs: React.Dispatch<React.SetStateAction<CustomExploitationTabConfig[]>>;
+    baseFilteredData: DataRow[];
+    allDatesBaseFilteredData: DataRow[];
     productConfig: any;
     isExporting: boolean;
     handleMainExport: () => Promise<void>;
@@ -30,16 +33,16 @@ interface EmployeeAnalysisContentProps {
     setModalState: (state: any) => void;
     exportRef: React.RefObject<HTMLDivElement | null>;
     industryAnalysisTabRef: React.RefObject<HTMLDivElement | null>;
-    colorThemes: any[];
-    defaultTabs: any[];
+    colorThemes: ColorTheme[];
+    defaultTabs: Tab[];
     handleDeleteColumnDirect: (tabId: string, tableId: string, columnId: string) => void;
 }
 
 interface ContestTableItemProps {
     tableConfig: any;
     customTabId: string;
-    allEmployees: any[];
-    baseFilteredData: any[];
+    allEmployees: Employee[];
+    baseFilteredData: DataRow[];
     productConfig: any;
     tableColorTheme: any;
     setModalState: (state: any) => void;
@@ -157,9 +160,9 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
         const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
         let tab = activeTabs.find(t => t.id === tabId);
         if (!tab && tabId === 'doanhThu') {
-            tab = { id: 'doanhThu', name: 'D.Thu', columns: [ { id: 'doanhThuThuc', name: 'DT Thực', type: 'revenue', filters: {} as any }, { id: 'doanhThuQD', name: 'DTQĐ', type: 'revenue', filters: {} as any }, { id: 'hieuQuaQD', name: 'HQQĐ', type: 'percentage', filters: {} as any } ] };
+            tab = { id: 'doanhThu', name: 'D.Thu', order: 0, columns: [ { id: 'doanhThuThuc', name: 'DT Thực', type: 'revenue', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }, { id: 'doanhThuQD', name: 'DTQĐ', type: 'revenue', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }, { id: 'hieuQuaQD', name: 'HQQĐ', type: 'percentage', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } } ] };
         } else if (!tab && tabId === 'spChinh') {
-            tab = { id: 'spChinh', name: 'SP Chính', columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: {} as any }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: {} as any }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: {} as any }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: {} as any } ] };
+            tab = { id: 'spChinh', name: 'SP Chính', order: 0, columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } } ] };
         }
         if (tab) {
             setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon, targetMode: mode } });
@@ -174,7 +177,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
         }
     }, [customExploitationTabs, efficiencyExploitationTabs, setModalState]);
 
-    const handleBatchExportCallback = React.useCallback((exploitationData: any[]) => {
+    const handleBatchExportCallback = React.useCallback((exploitationData: ExploitationData[]) => {
         const names = new Set(exploitationData.map(d => d.name));
         if (filteredEmployeeAnalysisData?.fullSellerArray) {
             const employeesToExport = filteredEmployeeAnalysisData.fullSellerArray.filter(e => names.has(e.name));

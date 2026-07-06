@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { cn } from './utils';
+import { cn, onActivateKey } from './utils';
 import { ChevronDown } from 'lucide-react';
 import { Button } from './Button';
 
@@ -68,7 +68,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   return (
     <div ref={containerRef} className={cn('relative inline-flex', className)}>
       {/* Trigger */}
-      <div onClick={toggle} className="cursor-pointer">
+      <div role="button" tabIndex={0} onClick={toggle} onKeyDown={onActivateKey(toggle)} className="cursor-pointer">
         {trigger}
       </div>
 

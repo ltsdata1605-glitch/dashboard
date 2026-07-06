@@ -219,7 +219,7 @@ export async function getProductConfig(): Promise<{ config: ProductConfig, url: 
         if (data.config.groups) {
             const restoredGroups: { [key: string]: Set<string> } = {};
             for (const [key, value] of Object.entries(data.config.groups)) {
-                restoredGroups[key] = new Set(value as any);
+                restoredGroups[key] = new Set(value as unknown as string[]);
             }
             data.config.groups = restoredGroups;
         }

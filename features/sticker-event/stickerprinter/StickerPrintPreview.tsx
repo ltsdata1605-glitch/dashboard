@@ -505,7 +505,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         };
     }, []);
 
-    const applyStyleToSelection = (styleName: string, styleValue: string) => {
+    const applyStyleToSelection = (styleName: 'fontSize' | 'fontFamily', styleValue: string) => {
         let range = savedRangeRef.current;
         const selection = window.getSelection();
         
@@ -571,7 +571,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
 
         const span = document.createElement('span');
-        span.style[styleName as any] = cleanValue;
+        span.style[styleName] = cleanValue;
         
         try {
             span.appendChild(range.extractContents());

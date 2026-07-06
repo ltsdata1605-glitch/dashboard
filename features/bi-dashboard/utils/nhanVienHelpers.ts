@@ -4,6 +4,13 @@ import { roundUp, parseNumber, normalizeText, shortenName } from '../../../utils
 import { calculateHieuQuaQDFraction, calculatePercentage } from '../services/metricService';
 export { roundUp, parseNumber, normalizeText, shortenName };
 
+export interface CompetitionEmployeeRow {
+    name: string;
+    originalName: string;
+    department: string;
+    values: (number | null)[];
+}
+
 export const formatEmployeeName = (fullName: string): string => {
     const nameParts = fullName.split(' - ');
     if (nameParts.length < 2) return fullName;
@@ -366,8 +373,8 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     return rows;
 };
 
-export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: Record<string, string>): Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> => {
-    const emptyResult: Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> = { DTLK: { headers: [], employees: [] }, DTQĐ: { headers: [], employees: [] }, SLLK: { headers: [], employees: [] } };
+export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: Record<string, string>): Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> => {
+    const emptyResult: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = { DTLK: { headers: [], employees: [] }, DTQĐ: { headers: [], employees: [] }, SLLK: { headers: [], employees: [] } };
     if (!thiDuaData) return emptyResult;
     const lines = thiDuaData.split('\n').filter(line => line.trim() !== '');
     const metricsRowIndex = lines.findIndex(l => { const parts = l.split('\t').map(p => p.trim().toUpperCase()); return parts.some(p => ['DTLK', 'DTQĐ', 'SLLK', 'SL REALTIME'].includes(p)); });
@@ -384,7 +391,7 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         if (metricRaw === 'DTLK') metric = 'DTLK'; else if (metricRaw === 'DTQĐ') metric = 'DTQĐ'; else if (metricRaw === 'SLLK' || metricRaw === 'SL REALTIME') metric = 'SLLK';
         if (metric) allHeaders.push({ title: shortenName(titles[i] || `Unnamed ${i}`), originalTitle: titles[i], metric });
     }
-    const result: Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> = {
+    const result: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
         DTLK: { headers: allHeaders.filter(h => h.metric === 'DTLK'), employees: [] },
         DTQĐ: { headers: allHeaders.filter(h => h.metric === 'DTQĐ'), employees: [] },
         SLLK: { headers: allHeaders.filter(h => h.metric === 'SLLK'), employees: [] },

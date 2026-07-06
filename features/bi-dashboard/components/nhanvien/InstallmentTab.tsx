@@ -10,6 +10,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ChevronDownIcon, ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, CheckCircleIcon, DownloadAllIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
@@ -357,7 +358,7 @@ const InstallmentTab: React.FC<{
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
                     <input type="file" ref={importFileRef} onChange={handleFileImport} accept=".json" className="hidden" />
-                    <div role="button" onClick={() => importFileRef.current?.click()} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all cursor-pointer ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}><ClockIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Cùng kỳ</span>{prevMonthRaw && <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800"><XIcon className="h-3 w-3" /></Button>}</div>
+                    <div role="button" tabIndex={0} onClick={() => importFileRef.current?.click()} onKeyDown={onActivateKey(() => importFileRef.current?.click())} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all cursor-pointer ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}><ClockIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Cùng kỳ</span>{prevMonthRaw && <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800"><XIcon className="h-3 w-3" /></Button>}</div>
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <Button variant="ghost" onClick={() => setHidePercent(v => !v)} title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400 hover:text-slate-600'}`}><span className={hidePercent ? 'line-through' : ''}>%</span></Button>

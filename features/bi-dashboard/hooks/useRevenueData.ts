@@ -134,15 +134,15 @@ export const useRevenueData = ({
                              .map(calculateWithComparison);
 
             list.sort((a, b) => {
-                let valA: any, valB: any;
+                let valA: unknown, valB: unknown;
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'target') { valA = a.calculatedTarget; valB = b.calculatedTarget; }
                 else if (sortConfig.key === 'completion') { valA = a.calculatedCompletion; valB = b.calculatedCompletion; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
-                else { valA = (a as any)[sortConfig.key]; valB = (b as any)[sortConfig.key]; }
-                const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : (valA || 0) - (valB || 0);
+                else { valA = (a as Record<string, unknown>)[sortConfig.key]; valB = (b as Record<string, unknown>)[sortConfig.key]; }
+                const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
 
@@ -194,15 +194,15 @@ export const useRevenueData = ({
                                     .map(calculateWithComparison);
 
             deptEmployees.sort((a, b) => {
-                let valA: any, valB: any;
+                let valA: unknown, valB: unknown;
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'target') { valA = a.calculatedTarget; valB = b.calculatedTarget; }
                 else if (sortConfig.key === 'completion') { valA = a.calculatedCompletion; valB = b.calculatedCompletion; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
-                else { valA = (a as any)[sortConfig.key]; valB = (b as any)[sortConfig.key]; }
-                const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : (valA || 0) - (valB || 0);
+                else { valA = (a as Record<string, unknown>)[sortConfig.key]; valB = (b as Record<string, unknown>)[sortConfig.key]; }
+                const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
 

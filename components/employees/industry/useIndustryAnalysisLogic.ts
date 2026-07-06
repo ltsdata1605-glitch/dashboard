@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { ExploitationData, CustomExploitationTabConfig } from '../../../types';
+import type { ExploitationData, CustomExploitationTabConfig, DataRow } from '../../../types';
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
 import { getRowValue, getHeSoQuyDoi, cleanAndNormalize } from '../../../utils/dataUtils';
 
-export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
+export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: DataRow[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
     const activeTabs = viewMode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
     const [visibleGroupsDetail, setVisibleGroupsDetail] = useState<Set<string>>(new Set());
@@ -62,7 +62,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     }, [viewMode]);
 
     const dynamicQuickFilters = useMemo(() => {
-        const baseFilters: any[] = [...detailQuickFilters].map(f => {
+        const baseFilters: { key: string; label: string; isCustom?: boolean }[] = [...detailQuickFilters].map(f => {
             const override = activeTabs?.find(t => t.id === f.key);
             if (override) {
                 let name = override.name;

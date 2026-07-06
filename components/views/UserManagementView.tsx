@@ -24,6 +24,7 @@ interface AccessRequest {
     createdAt: any;
     requestDate: any;
     loginCount?: number;
+    expiresAt?: { toDate: () => Date };
 }
 
 interface UserManagementViewProps {
@@ -176,8 +177,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             const newRoles: Record<string, string> = {};
 
             querySnapshot.forEach((doc) => {
-                const docData = doc.data() as any;
-                data.push({ id: doc.id, ...docData } as AccessRequest);
+                const docData = doc.data() as AccessRequest;
+                data.push({ id: doc.id, ...docData });
                 if (docData.expiresAt) {
                     newExpiry[doc.id] = docData.expiresAt.toDate().toISOString().split('T')[0];
                 }
@@ -350,7 +351,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                            <Select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
+                            <Select value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
                                 <option value="date">Ngày ĐK</option>
                                 <option value="name">Tên</option>
                                 <option value="role">Vai trò</option>

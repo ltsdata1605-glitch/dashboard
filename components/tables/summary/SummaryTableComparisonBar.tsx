@@ -15,8 +15,8 @@ interface SummaryTableComparisonBarProps {
     selectedMonth: string;
     setSelectedMonth: (month: string) => void;
     weeksInSelectedMonth: any[];
-    selectedWeeks: string[];
-    handleWeekPillClick: (id: string) => void;
+    selectedWeeks: number[];
+    handleWeekPillClick: (id: number) => void;
     trendData: any;
     trendSelectedMonths: string[];
     setTrendSelectedMonths: React.Dispatch<React.SetStateAction<string[]>>;

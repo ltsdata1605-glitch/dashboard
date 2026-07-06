@@ -4,7 +4,7 @@
  */
 
 // Core utilities
-export { cn } from './utils';
+export { cn, onActivateKey } from './utils';
 
 // Existing components
 export { Select } from './Select';

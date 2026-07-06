@@ -44,7 +44,7 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                         </Select>
                     </div>
                     <div className="flex-shrink-0 relative w-8 sm:w-10 h-8 sm:h-10 mt-6 flex items-center justify-center">
-                        <select value={operation} onChange={e => setOperation(e.target.value as any)} className="absolute inset-0 z-10 opacity-0 cursor-pointer w-full h-full">
+                        <select value={operation} onChange={e => setOperation(e.target.value as '+' | '-' | '/' | '*')} className="absolute inset-0 z-10 opacity-0 cursor-pointer w-full h-full">
                             <option value="+">+</option>
                             <option value="-">-</option>
                             <option value="*">*</option>

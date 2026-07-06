@@ -7,6 +7,7 @@ import { getSetting } from '../../services/dbService';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { Button } from '../shared/ui/Button';
 import { Input } from '../shared/ui/Input';
+import { onActivateKey } from '../shared/ui';
 
 interface EmployeeManagerModalProps {
     isOpen: boolean;
@@ -237,7 +238,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
                                 <th className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-48 sm:w-64 hover:bg-slate-100 transition-colors">
-                                    <div className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')}>
+                                    <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')} onKeyDown={onActivateKey(() => handleSort('dept'))}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
                                             <select 

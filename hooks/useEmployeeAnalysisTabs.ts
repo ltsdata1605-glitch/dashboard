@@ -1,7 +1,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { Tab } from '../components/employees/EmployeeAnalysisTabs';
 
-export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLoaded: boolean, activeTab: string, setActiveTab: (id: string) => void) => {
+export const useEmployeeAnalysisTabs = (allAvailableTabs: Tab[], isInitialTabsLoaded: boolean, activeTab: string, setActiveTab: (id: string) => void) => {
     const prevAllIdsRef = useRef<Set<string>>(new Set());
     
     const [visibleTabs, setVisibleTabs] = useState<Set<string>>(new Set());

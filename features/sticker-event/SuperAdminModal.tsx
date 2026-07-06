@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
-import { collection, query, where, getDocs, deleteDoc, doc, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc, limit, Query, DocumentData } from 'firebase/firestore';
 import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 import { getErrorMessage } from '../../utils/dataUtils';
@@ -21,7 +21,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     setError(null);
     try {
       const usersRef = collection(db, 'users');
-      let q;
+      let q: Query<DocumentData>;
       
       const trimmed = term.trim();
       if (!trimmed) {
@@ -33,7 +33,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
         const snapStore = await getDocs(qStore);
         
         if (!snapStore.empty) {
-          setUsers(snapStore.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
+          setUsers(snapStore.docs.map(d => ({ id: d.id, ...d.data() })));
           setLoading(false);
           return;
         }
@@ -43,7 +43,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       }
       
       const snapshot = await getDocs(q);
-      setUsers(snapshot.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
+      setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       
       if (snapshot.empty && trimmed) {
         setError('Không tìm thấy người dùng nào khớp với từ khóa.');

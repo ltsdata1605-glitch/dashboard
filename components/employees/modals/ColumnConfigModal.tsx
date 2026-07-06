@@ -112,7 +112,8 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                         value1: String(rule.value1),
                         value2: String(rule.value2 || ''),
                         color: rule.color,
-                        textColor: (rule as any).textColor || '#000000'
+                        // textColor không có trong type conditionalFormatting khai báo — dữ liệu cũ có thể còn field này
+                        textColor: (rule as { textColor?: string }).textColor || '#000000'
                     })));
                 } else {
                     setFormattingRules([]);
@@ -196,7 +197,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         const finalRules = formattingRules
             .filter(rule => rule.condition.includes('avg') || rule.value1.trim() !== '')
             .map(rule => ({
-                condition: rule.condition as any,
+                condition: rule.condition as '>' | '<' | '=' | 'between' | '>avg' | '<avg',
                 value1: parseFloat(rule.value1),
                 value2: rule.condition === 'between' && rule.value2.trim() !== '' ? parseFloat(rule.value2) : undefined,
                 color: rule.color,

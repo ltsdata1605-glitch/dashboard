@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { CustomContestTab, ContestTableConfig, ColumnConfig, CustomExploitationTabConfig } from '../types';
+import type { CustomContestTab, ContestTableConfig, ColumnConfig, CustomExploitationTabConfig, CustomColumnConfig } from '../types';
 import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndustryAnalysisCustomTabs, getSetting, saveSetting } from '../services/dbService';
 import { presetExploitationTabs } from './presetExploitationTabs';
+import type { Tab } from '../components/employees/EmployeeAnalysisTabs';
 
-export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: string) => void, defaultTabs: any[]) => {
+export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: string) => void, defaultTabs: Tab[]) => {
     const [customTabs, setCustomTabs] = useState<CustomContestTab[]>([]);
     const [industryAnalysisTabs, setIndustryAnalysisTabs] = useState<CustomContestTab[]>([]);
     const [customExploitationTabs, setCustomExploitationTabs] = useState<CustomExploitationTabConfig[]>([]);
@@ -47,7 +48,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 finalExploitationTabs = filteredExploitationTabs.map(tab => {
                     if (tab.columns && Array.isArray(tab.columns)) return tab;
                     
-                    const columns: any[] = [];
+                    const columns: CustomColumnConfig[] = [];
                     const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
                     
                     if (displayOpts.showQuantity) {
@@ -158,7 +159,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                     const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
                     const normalizedTabs = filteredExploitationTabs.map(tab => {
                         if (tab.columns && Array.isArray(tab.columns)) return tab;
-                        const columns: any[] = [];
+                        const columns: CustomColumnConfig[] = [];
                         const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
                         if (displayOpts.showQuantity) columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
                         if (displayOpts.showRevenue) columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });

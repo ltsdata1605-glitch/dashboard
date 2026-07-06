@@ -411,7 +411,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             mainHeader: editingColumn.mainHeader,
                             columnName: editingColumn.subHeader,
                             type: editingColumn.type || 'data',
-                            metricType: editingColumn.metricType as any,
+                            metricType: editingColumn.metricType,
                             filters: editingColumn.filters || ((editingColumn.categoryType && editingColumn.categoryName) || editingColumn.productCodes || editingColumn.manufacturerName ? {
                                 selectedIndustries: editingColumn.categoryType === 'industry' && editingColumn.categoryName ? [editingColumn.categoryName] : [],
                                 selectedSubgroups: editingColumn.categoryType === 'group' && editingColumn.categoryName ? [editingColumn.categoryName] : [],

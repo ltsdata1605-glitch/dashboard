@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
-import type { ExploitationData, CustomColumnConfig } from '../../types';
+import type { ExploitationData, CustomColumnConfig, CustomExploitationTabConfig, DataRow } from '../../types';
 import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, SortConfig } from './industry/IndustryTableUtils';
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
@@ -14,10 +14,10 @@ interface IndustryAnalysisTabProps {
     onExport?: () => void;
     isExporting?: boolean;
     onBatchExport: (data: ExploitationData[]) => void;
-    baseFilteredData?: any[];
+    baseFilteredData?: DataRow[];
     productConfig?: any;
-    customExploitationTabs?: any[];
-    efficiencyExploitationTabs?: any[];
+    customExploitationTabs?: CustomExploitationTabConfig[];
+    efficiencyExploitationTabs?: CustomExploitationTabConfig[];
     onManageCustomTabs?: (mode: 'detail' | 'efficiency') => void;
     onEditCustomTab?: (tabId: string, mode: 'detail' | 'efficiency') => void;
     onDeleteCustomTab?: (tabId: string, mode: 'detail' | 'efficiency') => void;
@@ -60,8 +60,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     // Rank/trung bình theo nhóm (bộ phận) trước đây được tính lại cho MỖI dòng nhân viên
     // (map+reduce+sort trên toàn bộ employeesInGroup) — O(N² log N) theo số nhân viên trong nhóm.
     // Cache theo (mảng nhóm, field) để chỉ tính 1 lần/nhóm/field, các dòng còn lại tra cứu tức thời.
-    const groupFieldStatsCache = new WeakMap<any[], Map<string, { average: number; sortedVals: number[] }>>();
-    const getGroupFieldStats = (employeesInGroup: any[], field: string) => {
+    const groupFieldStatsCache = new WeakMap<Record<string, unknown>[], Map<string, { average: number; sortedVals: number[] }>>();
+    const getGroupFieldStats = (employeesInGroup: Record<string, unknown>[], field: string) => {
         let fieldMap = groupFieldStatsCache.get(employeesInGroup);
         if (!fieldMap) {
             fieldMap = new Map();
@@ -69,7 +69,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         }
         let stats = fieldMap.get(field);
         if (!stats) {
-            const validValues = employeesInGroup.map(emp => emp[field] || 0);
+            const validValues = employeesInGroup.map(emp => (emp[field] as number) || 0);
             const average = validValues.length > 0 ? validValues.reduce((sum, v) => sum + v, 0) / validValues.length : 0;
             const sortedVals = [...new Set(validValues)].sort((a, b) => b - a);
             stats = { average, sortedVals };
@@ -77,7 +77,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         }
         return stats;
     };
-    const getRankStyle = (employeesInGroup: any[] | undefined, field: string, val: number): React.CSSProperties => {
+    const getRankStyle = (employeesInGroup: Record<string, unknown>[] | undefined, field: string, val: number): React.CSSProperties => {
         if (!employeesInGroup || employeesInGroup.length === 0) return {};
         const { average, sortedVals } = getGroupFieldStats(employeesInGroup, field);
         const rank = sortedVals.indexOf(val) + 1;
@@ -86,7 +86,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         return {};
     };
 
-    const renderDetailModeCells = (rowData: any, employeesInGroup?: any[]) => (
+    const renderDetailModeCells = (rowData: any, employeesInGroup?: Record<string, unknown>[]) => (
         <>
             {Array.from(visibleGroups).map(key => {
                 if (key === 'doanhThu') {
@@ -425,13 +425,13 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         <td colSpan={100} className={`px-2 sm:px-3 py-1 sm:py-1.5 ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700 sticky left-0 z-10`}>
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {(employees as any[]).length} người</span>
+                                                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {employees.length} người</span>
                                             </div>
                                         </td>
                                     </tr>
                                 )}
                                  {(employees as (ExploitationData & { slSPChinh_Tong: number, belowAverageCount: number })[]).map((employee, index) => {
-                                    const rankIndex = (processedData[dept] as any[]).findIndex(e => e.name === employee.name);
+                                    const rankIndex = processedData[dept].findIndex(e => e.name === employee.name);
                                     const rankDisplay = <RankBadge rank={rankIndex} />;
 
                                     return (
@@ -444,7 +444,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                     <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">{abbreviateName(employee.name)}</span>
                                                 </div>
                                             </td>
-                                            {renderDetailModeCells(employee, employees as any[])}
+                                            {renderDetailModeCells(employee, employees)}
                                         </tr>
                                     )
                                 })}

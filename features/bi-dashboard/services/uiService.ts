@@ -154,7 +154,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     const clone = element.cloneNode(true) as HTMLElement;
 
     elementsToHide.forEach((s: string) => {
-        clone.querySelectorAll(s).forEach((e: any) => {
+        clone.querySelectorAll<HTMLElement>(s).forEach((e) => {
             e.remove(); // Remove hidden elements completely to reduce DOM tree size and boost performance
         });
     });
@@ -165,14 +165,14 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
 
     // Force-show elements marked with 'export-always-show' (e.g. section headers that are hidden on mobile)
-    clone.querySelectorAll('.export-always-show').forEach((e: any) => {
+    clone.querySelectorAll<HTMLElement>('.export-always-show').forEach((e) => {
         e.style.setProperty('display', 'flex', 'important');
     });
 
     // For industry grid/pie exports: show desktop layout, hide mobile duplicates
     // Desktop pie chart uses 'hidden lg:block', mobile uses 'lg:hidden'
-    const allDivs = clone.querySelectorAll('div');
-    allDivs.forEach((el: any) => {
+    const allDivs = clone.querySelectorAll<HTMLElement>('div');
+    allDivs.forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
         // Hide mobile-only chart containers (they have lg:hidden)
@@ -190,7 +190,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // Remove all truly hidden elements (e.g. display: none or class hidden) to avoid processing them
-    clone.querySelectorAll('.hidden').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('.hidden').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
         
@@ -206,7 +206,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // Also remove elements with style containing display: none
-    clone.querySelectorAll('[style*="display: none"]').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('[style*="display: none"]').forEach((el) => {
         el.remove();
     });
 
@@ -215,7 +215,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         return text.includes(' - ') && /\d+/.test(text);
     };
 
-    clone.querySelectorAll('td, span, button, div, th').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('td, span, button, div, th').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const text = el.textContent?.trim() || '';
         
@@ -478,7 +478,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
     
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
-    const scrollableContainers = clone.querySelectorAll('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
+    const scrollableContainers = clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
     const hideScrollbarStyle = document.createElement('style');
     hideScrollbarStyle.textContent = `
         .clone-no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
@@ -493,7 +493,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
     if (captureAsDisplayed) {
         // Only expand VERTICAL overflow — keep horizontal clipped to match viewport width
-        scrollableContainers.forEach((container: any) => {
+        scrollableContainers.forEach((container) => {
             container.style.maxHeight = 'none';
             container.style.overflowY = 'visible';
             if (container instanceof HTMLElement) {
@@ -503,7 +503,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     } else {
         // Full expansion — expand both directions for maximum content capture
-        scrollableContainers.forEach((container: any) => {
+        scrollableContainers.forEach((container) => {
             container.style.maxHeight = 'none';
             container.style.maxWidth = 'none';
             container.style.overflow = 'visible';
@@ -726,7 +726,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         clone.style.minWidth = `${forcedWidth}px`;
         clone.style.overflow = 'hidden';
         // Force all responsive containers to scale down to forced width
-        clone.querySelectorAll('.recharts-responsive-container, .recharts-wrapper').forEach((el: any) => {
+        clone.querySelectorAll<HTMLElement>('.recharts-responsive-container, .recharts-wrapper').forEach((el) => {
             el.style.setProperty('max-width', `${forcedWidth - 48}px`, 'important'); // 48px for padding
         });
     } else if (captureAsDisplayed) {
@@ -768,7 +768,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     clone.style.borderRadius = '0';
 
     // Strip padding from .chart-card elements (they have p-6 = 24px by default)
-    clone.querySelectorAll('.chart-card').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('.chart-card').forEach((el) => {
         if (el instanceof HTMLElement) {
             el.style.setProperty('padding', '4px', 'important');
             el.style.setProperty('border-radius', '0', 'important');
@@ -778,7 +778,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // Strip padding from .surface-card elements 
-    clone.querySelectorAll('.surface-card').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('.surface-card').forEach((el) => {
         if (el instanceof HTMLElement) {
             el.style.setProperty('padding', '4px', 'important');
             el.style.setProperty('border-radius', '0', 'important');
@@ -787,7 +787,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // Strip large padding from content containers (p-6, p-2.5, lg:p-6, etc.)
-    clone.querySelectorAll('div, header, section').forEach((el: any) => {
+    clone.querySelectorAll<HTMLElement>('div, header, section').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
         // Target elements that have explicit padding classes like p-6, p-5, py-5 but NOT table cells
@@ -899,7 +899,8 @@ export function fixOklchColors(root: HTMLElement) {
     }
 
     const els = [root, ...Array.from(root.querySelectorAll('*'))];
-    const colorProps = [
+    type ColorStyleProp = 'color' | 'backgroundColor' | 'borderColor' | 'borderTopColor' | 'borderRightColor' | 'borderBottomColor' | 'borderLeftColor' | 'outlineColor' | 'textDecorationColor' | 'caretColor';
+    const colorProps: [ColorStyleProp, string][] = [
         ['color', 'color'],
         ['backgroundColor', 'background-color'],
         ['borderColor', 'border-color'],
@@ -918,8 +919,8 @@ export function fixOklchColors(root: HTMLElement) {
         try {
             const cs = window.getComputedStyle(el);
             for (let j = 0; j < colorProps.length; j++) {
-                const val = (cs as any)[colorProps[j][0]];
-                if (val && val.indexOf('oklch') !== -1) {
+                const val = cs[colorProps[j][0]];
+                if (val && typeof val === 'string' && val.indexOf('oklch') !== -1) {
                     const rgb = resolveOklch(val);
                     if (rgb) el.style.setProperty(colorProps[j][1], rgb, 'important');
                 }

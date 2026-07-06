@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -16,9 +16,9 @@ interface CompetitionCompareViewProps {
     selectedCompetitions: Set<string>;
     setSelectedCompetitions: (updater: React.SetStateAction<Set<string>>) => void;
     supermarketName?: string;
-    revenueRows?: any[];
-    installmentRows?: any[];
-    banKemRows?: any[];
+    revenueRows?: RevenueRow[];
+    installmentRows?: InstallmentRow[];
+    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, any>;
 }
 
@@ -175,9 +175,9 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const bk = banKemRows?.find(r => r.type === 'employee' && r.originalName === emp.originalName);
         const bns = bonusData?.[emp.originalName];
 
-        const getRank = (rows: any[], key: string) => {
+        const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
             const empRows = (rows || []).filter(r => r.type === 'employee');
-            const sorted = [...empRows].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+            const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
             const idx = sorted.findIndex(r => r.originalName === emp.originalName);
             return idx >= 0 ? idx + 1 : empRows.length;
         };

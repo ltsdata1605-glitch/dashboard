@@ -3,23 +3,25 @@ import React from 'react';
 import { Icon } from '../common/Icon';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { Button } from '../shared/ui/Button';
+import type { CustomContestTab } from '../../types';
 
-interface Tab {
+export interface Tab {
     id: string;
     label: string;
     icon: string;
     name?: string;
+    color?: string;
 }
 
 interface EmployeeAnalysisTabsProps {
     renderedDefaultTabs: Tab[];
-    renderedCustomTabs: any[];
+    renderedCustomTabs: CustomContestTab[];
     activeTab: string;
     setActiveTab: (id: string) => void;
     setModalState: (state: any) => void;
     visibleTabs: Set<string>;
     handleToggleTabVisibility: (id: string) => void;
-    allAvailableTabs: any[];
+    allAvailableTabs: Tab[];
 }
 
 const getTabColorClasses = (color: string, isActive: boolean) => {
@@ -54,7 +56,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                             variant="ghost"
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(tab.color || 'sky', activeTab === tab.id)}`}
                         >
                             <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
                                 <Icon name={tab.icon} size={3.5} className="sm:hidden"/>

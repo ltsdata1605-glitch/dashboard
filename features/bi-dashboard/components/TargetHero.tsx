@@ -412,7 +412,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const weight = effectiveWeights[dept.name] ?? 0;
                             const allocated = adjustedTarget * (weight / 100);
                             const perEmployee = dept.employeeCount > 0 ? allocated / dept.employeeCount : 0;
-                            const isManual = (dept as any).isManual;
+                            const isManual = dept.isManual;
                             
                             // Department Pastel Themes Array
                             const dThemes = [

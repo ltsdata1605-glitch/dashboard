@@ -9,6 +9,7 @@ import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../../components/shared/ui';
 import * as db from '../../utils/db';
 import { exportElementAsImage } from '../../services/uiService';
 import { BonusMobileCard } from './bonus/BonusMobileCard';
@@ -455,7 +456,7 @@ export const BonusView: React.FC<{
                     const weekDates = getWeekDates(mStr);
                     vA = weekDates.reduce((sum, dStr) => sum + (bA?.dailyData?.[dStr] || 0), 0);
                     vB = weekDates.reduce((sum, dStr) => sum + (bB?.dailyData?.[dStr] || 0), 0);
-                } else { vA = (bA as any)?.[sortField] || 0; vB = (bB as any)?.[sortField] || 0; }
+                } else { vA = (bA as unknown as Record<string, unknown>)?.[sortField] as number || 0; vB = (bB as unknown as Record<string, unknown>)?.[sortField] as number || 0; }
                 return sortDir === 'asc' ? vA - vB : vB - vA;
             });
             const result: any[] = list.map((e, idx) => ({ ...e, rank: idx + 1 }));
@@ -513,7 +514,7 @@ export const BonusView: React.FC<{
                     const weekDates = getWeekDates(mStr);
                     vA = weekDates.reduce((sum, dStr) => sum + (bA?.dailyData?.[dStr] || 0), 0);
                     vB = weekDates.reduce((sum, dStr) => sum + (bB?.dailyData?.[dStr] || 0), 0);
-                } else { vA = (bA as any)?.[sortField] || 0; vB = (bB as any)?.[sortField] || 0; }
+                } else { vA = (bA as unknown as Record<string, unknown>)?.[sortField] as number || 0; vB = (bB as unknown as Record<string, unknown>)?.[sortField] as number || 0; }
                 return sortDir === 'asc' ? vA - vB : vB - vA;
             });
 
@@ -978,7 +979,7 @@ export const BonusView: React.FC<{
                                             return (
                                                 <tr key={item.originalName} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all ${isHighlighted ? 'bg-amber-50/70 dark:bg-amber-900/10' : ''}`}>
                                                     <td className="px-2 py-1 border-r border-slate-200 dark:border-slate-700">
-                                                        <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item)}>
+                                                        <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item)} onKeyDown={onActivateKey(() => onEmployeeClick(item))}>
                                                             {item.rank && <MedalBadge rank={item.rank} />}
                                                             <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} />
                                                             <span className={`text-[13px] font-bold truncate ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>{item.name}</span>

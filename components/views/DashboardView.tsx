@@ -318,7 +318,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             )}
 
             <div className="w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
-                <DashboardContext.Provider value={logic as any}>
+                <DashboardContext.Provider value={logic}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
@@ -520,14 +520,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         {/* Mobile: truncated subtitle + inline Chờ Xuất */}
                                                         <span className="md:hidden inline-flex items-center gap-1.5 max-w-full">
                                                             <span className="truncate shrink min-w-0">{processedData.reportSubTitle}</span>
-                                                            {processedData.kpis && (processedData.kpis as any).doanhThuThucChoXuat > 0 && (
+                                                            {processedData.kpis && processedData.kpis.doanhThuThucChoXuat > 0 && (
                                                                 <Button
                                                                     variant="ghost"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
                                                                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none"
                                                                 >
                                                                     <Icon name="archive-restore" size={2.5} />
-                                                                    Chờ xuất: {formatCurrency((processedData.kpis as any).doanhThuThucChoXuat)}
+                                                                    Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}
                                                         </span>

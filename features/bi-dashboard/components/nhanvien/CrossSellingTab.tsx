@@ -254,8 +254,8 @@ const CrossSellingTab: React.FC<{
             const list = rows.filter(r => r.type === 'employee' && (isFiltering ? activeDepartments.includes(r.department!) : true))
                 .map(attachPrevMonth);
             list.sort((a, b) => {
-                let valA: any = (a as any)[sortConfig.key], valB: any = (b as any)[sortConfig.key];
-                const compare = typeof valA === 'string' ? valA.localeCompare(valB) : (valA - valB);
+                let valA: unknown = (a as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as Record<string, unknown>)[sortConfig.key];
+                const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : ((valA as number) - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
             const result = list.map((emp, idx) => ({ ...emp, rank: idx + 1 }));
@@ -288,8 +288,8 @@ const CrossSellingTab: React.FC<{
             const deptEmployees = rows.filter(r => r.type === 'employee' && r.department === deptName)
                 .map(attachPrevMonth);
             deptEmployees.sort((a, b) => {
-                let valA: any = (a as any)[sortConfig.key], valB: any = (b as any)[sortConfig.key];
-                const compare = typeof valA === 'string' ? valA.localeCompare(valB) : (valA - valB);
+                let valA: unknown = (a as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as Record<string, unknown>)[sortConfig.key];
+                const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : ((valA as number) - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
 

@@ -77,7 +77,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
             if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
             if (key === 'avgQuantity') return Math.ceil(node.totalQuantity / daysDivisor);
             if (key === 'avgRevenue') return node.totalRevenue / daysDivisor;
-            return (node as any)[key] || 0;
+            return (node as unknown as Record<string, unknown>)[key] as number || 0;
         };
 
         const currValA = getVal(nodeA, sortConfig.column, daysCountData.current);

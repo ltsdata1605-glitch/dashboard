@@ -549,7 +549,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         <Button
                             variant="ghost"
                             key={t.id}
-                            onClick={() => setActiveTab(t.id as any)}
+                            onClick={() => setActiveTab(t.id as ConfigTab)}
                             className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
                         >
                             {t.label}

@@ -656,8 +656,8 @@ export default function StickerPrinterView() {
 
     // Lắng nghe sự thay đổi của stickerSavedLists từ cloud sync để cập nhật UI thời gian thực
     useEffect(() => {
-        const handleDbChange = (event: any) => {
-            if (event.detail?.key === STICKER_SAVED_LISTS_KEY) {
+        const handleDbChange = (event: Event) => {
+            if ((event as CustomEvent<{ key?: string }>).detail?.key === STICKER_SAVED_LISTS_KEY) {
                 getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(data => {
                     if (data) setSavedLists(data);
                 });
@@ -957,7 +957,7 @@ export default function StickerPrinterView() {
         XLSX.writeFile(wb, filename);
     };
 
-    const parsePrice = (val: any): number => {
+    const parsePrice = (val: unknown): number => {
         if (val == null) return 0;
         const str = String(val).replace(/[^0-9]/g, '');
         return str ? Number(str) : 0;
@@ -1212,7 +1212,7 @@ export default function StickerPrinterView() {
     };
 
 
-    const formatPriceInThousands = (rawVal: any): string => {
+    const formatPriceInThousands = (rawVal: unknown): string => {
         if (rawVal == null || rawVal === '') return '';
         const digits = String(rawVal).replace(/\D/g, '');
         if (!digits) return '';
@@ -1220,7 +1220,7 @@ export default function StickerPrinterView() {
         return Number(Math.floor(val / 1000)).toLocaleString('vi-VN');
     };
 
-    const formatFullPrice = (rawVal: any): string => {
+    const formatFullPrice = (rawVal: unknown): string => {
         if (rawVal == null || rawVal === '') return '';
         const digits = String(rawVal).replace(/\D/g, '');
         if (!digits) return '';

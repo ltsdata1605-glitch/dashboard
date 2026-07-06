@@ -3,10 +3,11 @@ import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeH
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { FilterIcon, ChevronDownIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { PieChart, Pie, Cell } from 'recharts';
 
@@ -39,9 +40,9 @@ interface IndividualCompetitionViewProps {
     selectedCompetitions: Set<string>;
     setSelectedCompetitions: (updater: React.SetStateAction<Set<string>>) => void;
     supermarketName?: string;
-    revenueRows?: any[];
-    installmentRows?: any[];
-    banKemRows?: any[];
+    revenueRows?: RevenueRow[];
+    installmentRows?: InstallmentRow[];
+    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, any>;
 }
 
@@ -140,9 +141,9 @@ const RankBadge: React.FC<{ rank: number; total: number; label: string }> = ({ r
 const EmployeeProfileCard: React.FC<{
     selectedEmployee: { name: string; originalName: string; department: string };
     supermarketName?: string;
-    revenueRows?: any[];
-    installmentRows?: any[];
-    banKemRows?: any[];
+    revenueRows?: RevenueRow[];
+    installmentRows?: InstallmentRow[];
+    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, any>;
     groupedPerformanceData: any;
 }> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
@@ -170,10 +171,10 @@ const EmployeeProfileCard: React.FC<{
 
     // Rankings
     const rankings = useMemo(() => {
-        const getRank = (rows: any[], key: string) => {
-            const empRows = (rows || []).filter((r: any) => r.type === 'employee');
-            const sorted = [...empRows].sort((a, b) => (b[key] || 0) - (a[key] || 0));
-            const idx = sorted.findIndex((r: any) => r.originalName === selectedEmployee.originalName);
+        const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
+            const empRows = (rows || []).filter(r => r.type === 'employee');
+            const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
+            const idx = sorted.findIndex(r => r.originalName === selectedEmployee.originalName);
             return { rank: idx >= 0 ? idx + 1 : empRows.length, total: empRows.length };
         };
         return {
@@ -517,7 +518,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                             const displayCompTitle = shortenName(comp.originalTitle, nameOverrides);
                                                             return (
                                                                 <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
-                                                                    <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompTitle}</span>
+                                                                    <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.title)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.title))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompTitle}</span>
                                                                     <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
                                                                 </div>
                                                             );

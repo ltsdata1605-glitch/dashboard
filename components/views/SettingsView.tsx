@@ -48,7 +48,7 @@ const SettingsView: React.FC = () => {
                                         : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
                             >
-                                <Icon name={tab.icon as any} size={isMobile ? 4.5 : 4} />
+                                <Icon name={tab.icon} size={isMobile ? 4.5 : 4} />
                                 {!isMobile && <span>{tab.label}</span>}
                             </Button>
                         );

@@ -39,7 +39,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   const playSound = useCallback((type: 'success' | 'error') => {
     // Web Audio API to play sounds without needing an <audio> element
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Safari cũ chỉ có webkitAudioContext, không có trong lib.dom chuẩn
+      const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextCtor();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       

@@ -1,5 +1,19 @@
 import { useMemo, useCallback } from 'react';
-import { Criterion, CompetitionHeader } from '../types/nhanVienTypes';
+import { Criterion, CompetitionHeader, Employee } from '../types/nhanVienTypes';
+import type { CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
+
+interface UseCompetitionDataProps {
+    groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }>;
+    allCompetitionsByCriterion: Record<Criterion, { headers: CompetitionHeader[] }>;
+    selectedCompetitions: Set<string>;
+    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh';
+    activeDepartments: string[];
+    employeeCompetitionTargets: Map<string, Map<string, number>>;
+    allEmployees: Employee[];
+    highlightedEmployees: Set<string>;
+    isolatedHighlightEmployee: string | null;
+    isActive?: boolean;
+}
 
 const HIGHLIGHT_COLORS = [
     { dot: 'bg-teal-500', row: 'bg-teal-200 dark:bg-teal-900/60' },
@@ -23,13 +37,13 @@ export const useCompetitionData = ({
     highlightedEmployees,
     isolatedHighlightEmployee,
     isActive
-}: any) => {
+}: UseCompetitionDataProps) => {
     const criteriaOrder: Criterion[] = ['SLLK', 'DTLK', 'DTQĐ'];
 
     const hasAnyData = criteriaOrder.some(c => groupedData[c] && groupedData[c].headers.length > 0);
 
     const relevantCompetitions = useMemo(() => {
-        if (isActive === false) return {} as any;
+        if (isActive === false) return {} as Record<string, { headers: CompetitionHeader[] }>;
         if (activeCompetitionTab === 'nhom' || activeCompetitionTab === 'canhan' || activeCompetitionTab === 'tong') {
              return allCompetitionsByCriterion;
         }
@@ -56,8 +70,8 @@ export const useCompetitionData = ({
         };
 
         return uniqueEmployees
-            .filter((emp: any) => emp && (activeDepartments.includes('all') || activeDepartments.includes(emp.department)))
-            .filter((emp: any) => !isStoreRow(emp.name))
+            .filter((emp) => emp && (activeDepartments.includes('all') || activeDepartments.includes(emp.department)))
+            .filter((emp) => !isStoreRow(emp.name))
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [groupedData, activeDepartments, isActive]);
 
@@ -67,10 +81,10 @@ export const useCompetitionData = ({
         criteriaOrder.forEach(criterion => {
             const data = groupedData[criterion];
             if (!data) return;
-            data.employees.forEach((employee: any) => {
+            data.employees.forEach((employee) => {
                 if (!map.has(employee.name)) map.set(employee.name, { name: employee.name, department: employee.department, values: {} });
                 const employeeRecord = map.get(employee.name)!;
-                data.headers.forEach((header: any, index: number) => {
+                data.headers.forEach((header, index: number) => {
                     employeeRecord.values[header.title] = employee.values[index];
                 });
             });
@@ -83,7 +97,7 @@ export const useCompetitionData = ({
         return criteriaOrder.flatMap(criterion =>
             (allCompetitionsByCriterion[criterion]?.headers || [])
                 .filter((h: CompetitionHeader) => selectedCompetitions.has(h.title))
-                .map((header: any, index: number) => ({ ...header, criterion, originalIndex: index }))
+                .map((header, index: number) => ({ ...header, criterion, originalIndex: index }))
         );
     }, [allCompetitionsByCriterion, selectedCompetitions, isActive]);
 
@@ -93,7 +107,7 @@ export const useCompetitionData = ({
         return [...selectedHeadersForNhom].sort((a, b) => {
             const targetsA = employeeCompetitionTargets.get(a.originalTitle);
             let totalTargetA = 0, totalActualA = 0;
-            filteredEmployees.forEach((emp: any) => {
+            filteredEmployees.forEach((emp) => {
                 totalTargetA += targetsA?.get(emp.originalName) ?? 0;
                 totalActualA += employeeDataMap.get(emp.name)?.values[a.title] ?? 0;
             });
@@ -101,7 +115,7 @@ export const useCompetitionData = ({
     
             const targetsB = employeeCompetitionTargets.get(b.originalTitle);
             let totalTargetB = 0, totalActualB = 0;
-            filteredEmployees.forEach((emp: any) => {
+            filteredEmployees.forEach((emp) => {
                 totalTargetB += targetsB?.get(emp.originalName) ?? 0;
                 totalActualB += employeeDataMap.get(emp.name)?.values[b.title] ?? 0;
             });
@@ -114,20 +128,20 @@ export const useCompetitionData = ({
         if (isActive === false) return {};
         const map: Record<string, string> = {};
         if (isolatedHighlightEmployee) {
-             const employeeIndex = allEmployees.findIndex((e: any) => e.originalName === isolatedHighlightEmployee);
+             const employeeIndex = allEmployees.findIndex((e) => e.originalName === isolatedHighlightEmployee);
              if (employeeIndex !== -1) map[isolatedHighlightEmployee] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
              return map;
         }
         const highlightedArray = Array.from(highlightedEmployees) as string[];
         highlightedArray.forEach((name) => {
-            const employeeIndex = allEmployees.findIndex((e: any) => e.originalName === name);
+            const employeeIndex = allEmployees.findIndex((e) => e.originalName === name);
             if (employeeIndex !== -1) map[name] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
         });
         return map;
     }, [highlightedEmployees, isolatedHighlightEmployee, allEmployees, isActive]);
 
     const getEmployeeDotColor = useCallback((originalName: string) => {
-        const index = allEmployees.findIndex((e: any) => e.originalName === originalName);
+        const index = allEmployees.findIndex((e) => e.originalName === originalName);
         if (index === -1) return 'bg-gray-300';
         return HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length].dot;
     }, [allEmployees]);

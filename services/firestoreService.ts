@@ -14,11 +14,11 @@ export const syncToCloud = async (
     if (safePayload.productConfig && safePayload.productConfig.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
         for (const [key, value] of Object.entries(safePayload.productConfig.groups)) {
-            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as any);
+            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
         }
         safePayload.productConfig = {
             ...safePayload.productConfig,
-            groups: clonedGroups as any // We temporarily cast to any to bypass the Set local type
+            groups: clonedGroups
         };
     }
 
@@ -95,11 +95,11 @@ export const shareCloudConfig = async (
     if (safePayload.productConfig && safePayload.productConfig.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
         for (const [key, value] of Object.entries(safePayload.productConfig.groups)) {
-            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as any);
+            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
         }
         safePayload.productConfig = {
             ...safePayload.productConfig,
-            groups: clonedGroups as any
+            groups: clonedGroups
         };
     }
 
@@ -247,7 +247,7 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: an
     if (key === 'productConfig' && value && value.config && value.config.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
         for (const [gKey, gVal] of Object.entries(value.config.groups)) {
-            clonedGroups[gKey] = gVal instanceof Set ? Array.from(gVal) : (gVal as any);
+            clonedGroups[gKey] = gVal instanceof Set ? Array.from(gVal) : (gVal as string[]);
         }
         safeValue = {
             ...value,

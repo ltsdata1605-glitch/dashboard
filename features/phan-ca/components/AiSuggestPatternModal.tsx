@@ -218,7 +218,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                 <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Giới tính:</label>
                 <select
                     value={specialShifts[role].gender}
-                    onChange={(e) => setSpecialShifts(prev => ({ ...prev, [role]: { ...prev[role], gender: e.target.value as any } }))}
+                    onChange={(e) => setSpecialShifts(prev => ({ ...prev, [role]: { ...prev[role], gender: e.target.value as 'Nam' | 'Nu' | 'All' } }))}
                     className="config-input w-full mt-1 !text-sm !py-1"
                 >
                     <option value="All">Không yêu cầu</option>

@@ -4,6 +4,7 @@ import { getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { saveSetting, getSetting } from '../services/dbService';
 import { isDateMatch } from '../services/filterService';
+import type { DataRow } from '../types';
 
 export const useEmployeeAnalysisData = () => {
     const { 
@@ -122,7 +123,7 @@ export const useEmployeeAnalysisData = () => {
         }
 
         // Filter baseFilteredData using O(1) Map lookup
-        const filteredBaseData: any[] = [];
+        const filteredBaseData: DataRow[] = [];
         for (let i = 0, len = baseFilteredData.length; i < len; i++) {
             const row = baseFilteredData[i];
             // Apply Date Filter!
@@ -144,7 +145,7 @@ export const useEmployeeAnalysisData = () => {
             fullSellerArray: filteredFullSellerArray,
             exploitationData: filteredExploitationData,
             filteredBaseData
-        } as any;
+        };
     }, [employeeAnalysisData, baseFilteredData, hideZeroRevenue, filterState]);
 
     return {

@@ -1,5 +1,6 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface IconProps {
   name: string;
@@ -19,7 +20,7 @@ export const Icon: React.FC<IconProps> = ({ name, className = '', size = 5 }) =>
     .join('');
 
   // Get the icon component from lucide-react
-  const IconComponent = (LucideIcons as any)[pascalName];
+  const IconComponent = (LucideIcons as unknown as Record<string, LucideIcon>)[pascalName];
 
   if (!IconComponent) {
     console.warn(`Icon "${name}" (PascalCase: "${pascalName}") not found in lucide-react.`);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Employee } from '../../../types/nhanVienTypes';
 import { MedalBadge } from '../../shared/Badges';
 import AvatarDisplay from '../shared/AvatarDisplay';
+import { onActivateKey } from '../../../../../components/shared/ui';
 
 interface BonusMobileCardProps {
     item: any;
@@ -29,7 +30,7 @@ export const BonusMobileCard = React.memo(({
     const rev = Boolean(dtqdVal || hqqdVal);
 
     return (
-        <div onClick={() => onEmployeeClick(item as Employee)} className={`px-4 py-3 cursor-pointer transition-colors ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'}`}>
+        <div role="button" tabIndex={0} onClick={() => onEmployeeClick(item as Employee)} onKeyDown={onActivateKey(() => onEmployeeClick(item as Employee))} className={`px-4 py-3 cursor-pointer transition-colors ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'}`}>
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <MedalBadge rank={item.rank} />

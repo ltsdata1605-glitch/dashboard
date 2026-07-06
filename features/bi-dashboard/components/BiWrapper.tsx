@@ -69,7 +69,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     }, []);
 
     const handleTabChange = useCallback((id: string) => {
-        setActiveView(id as any);
+        setActiveView(id as 'dashboard' | 'employee' | 'updater' | 'settings');
         setMountedViews(prev => {
             if (prev.has(id)) return prev;
             const next = new Set(prev);
@@ -160,7 +160,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 }`}
                                 title={tab.label || tab.id}
                             >
-                                <Icon name={tab.icon as any} size={isMobile ? 4.5 : 4} />
+                                <Icon name={tab.icon} size={isMobile ? 4.5 : 4} />
                                 {(!isMobile && tab.label) && <span>{tab.label}</span>}
                             </Button>
                         );

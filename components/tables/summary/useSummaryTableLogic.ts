@@ -195,7 +195,7 @@ export const useSummaryTableLogic = () => {
                 if (!node) return 0;
                 if (key === 'aov') return node.totalQuantity > 0 ? node.totalRevenue / node.totalQuantity : 0;
                 if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
-                return (node as any)[key] || 0;
+                return (node as unknown as Record<string, unknown>)[key] as number || 0;
             };
 
             const currValA = getVal(nodeA, activeSortConfig.column);

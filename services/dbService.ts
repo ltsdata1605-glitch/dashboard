@@ -1303,7 +1303,7 @@ export async function clearDepartmentMap(): Promise<void> {
 // --- Product Config ---
 export async function saveProductConfig(config: ProductConfig, url: string): Promise<void> {
     // Safari/WebKit embedded webviews (like Zalo/FB) might throw DataCloneError for Sets.
-    const safeConfig = { ...config, groups: {} as any };
+    const safeConfig = { ...config, groups: {} as Record<string, string[]> };
     if (config.groups) {
         for (const [key, value] of Object.entries(config.groups)) {
             safeConfig.groups[key] = value instanceof Set ? Array.from(value) : value;
@@ -1318,7 +1318,8 @@ export async function getProductConfig(): Promise<{ config: ProductConfig, url: 
         if (data.config.groups) {
             const restoredGroups: { [key: string]: Set<string> } = {};
             for (const [key, value] of Object.entries(data.config.groups)) {
-                restoredGroups[key] = new Set(value as any);
+                // Lúc rehydrate, value thật sự là string[] (đã serialize), dù type ProductConfig.groups khai báo Set<string>
+                restoredGroups[key] = new Set(value as unknown as string[]);
             }
             data.config.groups = restoredGroups;
         }

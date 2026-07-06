@@ -327,7 +327,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Loại Chỉ Số:</label>
                                                 <Select 
                                                     value={editingCard.dataFilters?.metricType || 'revenue'} 
-                                                    onChange={(e) => updateEditingCard({ dataFilters: { ...editingCard.dataFilters, metricType: e.target.value as any }})}
+                                                    onChange={(e) => updateEditingCard({ dataFilters: { ...editingCard.dataFilters, metricType: e.target.value as 'quantity' | 'revenue' | 'revenueQD' }})}
                                                     className="mb-3 sm:mb-4 text-[10px] sm:text-sm"
                                                 >
                                                     <option value="revenue">Tổng Doanh Thu Thực</option>
@@ -337,7 +337,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Định Dạng Số Liệu:</label>
                                                 <Select
                                                     value={editingCard.format}
-                                                    onChange={(e) => updateEditingCard({ format: e.target.value as any })}
+                                                    onChange={(e) => updateEditingCard({ format: e.target.value as 'currency' | 'percentage' | 'number' })}
                                                     className="text-[10px] sm:text-sm"
                                                 >
                                                     <option value="currency">Tiền Tệ (VNĐ)</option>
@@ -399,7 +399,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             
                                             <Select 
                                                 value={editingCard.operation || '+'}
-                                                onChange={(e) => updateEditingCard({ operation: e.target.value as any })}
+                                                onChange={(e) => updateEditingCard({ operation: e.target.value as '+' | '-' | '*' | '/' })}
                                                 className="w-16 sm:w-20 text-center font-bold text-indigo-600 text-sm sm:text-lg"
                                             >
                                                 <option value="+">+</option>
@@ -425,7 +425,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <label className="text-[10px] sm:text-xs font-semibold text-slate-500">Định dạng hiển thị</label>
                                                 <Select
                                                     value={editingCard.format}
-                                                    onChange={(e) => updateEditingCard({ format: e.target.value as any })}
+                                                    onChange={(e) => updateEditingCard({ format: e.target.value as 'currency' | 'percentage' | 'number' })}
                                                     className="mt-0.5 sm:mt-1 w-32 sm:w-36 text-[10px] sm:text-sm"
                                                 >
                                                     <option value="percentage">Phần Trăm (%)</option>

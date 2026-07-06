@@ -3,6 +3,7 @@ import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
 import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import type { DataRow } from '../../types';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
@@ -16,7 +17,7 @@ interface SavedCalendarCardProps {
         month: string;
         metric: string;
     };
-    baseFilteredData: any[];
+    baseFilteredData: DataRow[];
     productConfig: any;
     onRemove: (id: string) => void;
     badgeLabel?: string;

@@ -319,7 +319,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         // Pass 1: Metric & Data
         (kpiCardsConfig || []).forEach(config => {
             if (!config.type || config.type === 'metric') {
-                let raw = kpis ? (kpis as any)[config.metric as string] || 0 : 0;
+                let raw = kpis ? (kpis as unknown as Record<string, unknown>)[config.metric as string] as number || 0 : 0;
                 if (config.metric === 'crossSellRate' || config.metric === 'hieuQuaQD') {
                     raw = raw * 100;
                 }

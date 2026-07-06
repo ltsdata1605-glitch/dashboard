@@ -636,12 +636,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     let value;
                                     if (col.isCustom) {
                                         value = customTotals.get(col.id) || 0;
-                                    } else if (col.metric && (totals as any)[col.metric] !== undefined) {
-                                        value = (totals as any)[col.metric];
+                                    } else if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
+                                        value = totals[col.metric as keyof typeof totals];
                                     } else if (col.metric === 'target') {
                                         value = totalTarget;
                                     } else if (col.metric === 'percentHT') {
-                                        const totalDTQD = (totals as any).doanhThuQD || 0;
+                                        const totalDTQD = totals.doanhThuQD || 0;
                                         if (isLuyKe) {
                                             const projected = (totalDTQD / daysPassed) * daysInMonth;
                                             value = totalTarget > 0 ? (projected / totalTarget) * 100 : 0;

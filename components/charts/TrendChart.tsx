@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import type { DataRow } from '../../types';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -48,7 +49,7 @@ interface TrendChartInnerProps {
   handleExport: any;
   isExporting: boolean;
   filterState: any;
-  baseFilteredData: any[];
+  baseFilteredData: DataRow[];
   productConfig: any;
 }
 
@@ -428,7 +429,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                     {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
                 </span>
             </div>
-        ) as any}
+        )}
         icon="trending-up"
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">

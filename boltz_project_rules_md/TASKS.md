@@ -283,6 +283,70 @@ Rủi ro: 4 module cố ý cách ly nhau (không được gộp state/filter cro
       **Còn lại (3 nhóm, quy mô lớn hơn nhiều, chưa làm)**: `as any` (~113 chỗ), `: any[]`
       (~99 chỗ), `(param: any)` (~192 chỗ) — mỗi chỗ cần xem ngữ cảnh riêng để gán đúng type,
       không thể tìm-thay hàng loạt an toàn. 42 chỗ `div/span onClick` cũng chưa làm.
+- [x] **Giảm `any` — nhóm 2/4: 107/113 chỗ `as any` (2026-07-06)**: xử lý từng chỗ theo 3
+      hướng — (1) xoá cast thừa khi type đích đã đủ chính xác, (2) sửa type gốc bị thiếu
+      field/quá chặt (phát hiện 1 bug thật: `SummaryTableComparisonBar` khai
+      `selectedWeeks: string[]` nhưng dữ liệu thật là `number[]`), (3) thay `any` bằng
+      `Record<string, unknown>`/type hẹp nhất khi cast thật sự cần (dynamic key, Firestore
+      `.data()`, select onChange, browser API mở rộng). Thêm helper `getErrorCode()` vào
+      `utils/dataUtils.ts`. 6 chỗ còn lại chấp nhận là ngoại lệ (Excel raw data ×3, debug
+      global, `import.meta.glob` config, 1 chỗ gắn với param hook `any` chưa xử lý). Verify:
+      tsc/eslint/build sạch, Playwright 5 tab — 0 console error. Any tổng: 575 → 468. Xem chi
+      tiết `CHANGELOG.md`.
+      **Còn lại**: `: any[]` (~99 chỗ), `(param: any)` (~192 chỗ), 42 chỗ `div/span onClick`.
+- [x] **Giảm `any` — nhóm 3/4: 47/99 chỗ `: any[]` (2026-07-06)**: áp dụng type có sẵn của
+      dự án (`RevenueRow`/`InstallmentRow`/`CrossSellingRow`, `CustomExploitationTabConfig[]`,
+      `CustomContestTab[]`, `DataRow[]`, `Employee[]`) thay vì `any[]`. Thêm 1 interface mới
+      `CompetitionEmployeeRow` (export từ `nhanVienHelpers.ts`), export `Tab` từ
+      `EmployeeAnalysisTabs.tsx` để dùng chung thay vì khai báo trùng lặp ở nhiều nơi. Phát
+      hiện thêm 2 lỗi type thật: object fallback thiếu field `order` bắt buộc của
+      `CustomExploitationTabConfig`, và `renderedCustomTabs` bị gán nhầm type `Tab[]` trong
+      khi thực tế là `CustomContestTab[]` (field `.name` khác `.label`) — cả 2 đã sửa đúng.
+      **Còn lại 52 chỗ**: ~14 chấp nhận ngoại lệ (Excel raw parse, pattern generic chuẩn của
+      `useStableCallback.ts`), ~38 là biến cục bộ trong hàm xử lý bảng ít ảnh hưởng ra ngoài
+      module — độ ưu tiên thấp hơn, để lại cho đợt sau. Verify: tsc/eslint/build sạch,
+      Playwright 4 tab — 0 console error. Any tổng: 468 → 418. Xem chi tiết `CHANGELOG.md`.
+      **Còn lại**: `(param: any)` (~192 chỗ), 42 chỗ `div/span onClick`.
+- [x] **Giảm `any` — nhóm 4/4 (một phần): `(param: any)` (2026-07-06)**: 2 hướng chính —
+      (1) `querySelectorAll<HTMLElement>(...)` thay vì ép `any` từng callback (48 chỗ, cả 4
+      bản `uiService.ts`); (2) sửa tận gốc param của hook thay vì từng chỗ dùng derived —
+      `useIndustryViewLogic` dùng lại `ReturnType<typeof parseIndustryRealtimeData/LuyKeData>`
+      (kéo theo 11 chỗ hết cần `any`), `useCompetitionData` thêm interface
+      `UseCompetitionDataProps` tái dùng `CompetitionEmployeeRow` (kéo theo 10 chỗ). Sửa lẻ
+      thêm ở `StickerPrinterView.tsx`. Verify: tsc/eslint/build sạch, Playwright 4 tab — 0
+      console error. Any tổng: 418 → 342. Xem chi tiết `CHANGELOG.md`.
+      **Còn lại (chưa làm, để đợt sau)**: nhiều chỗ `(param: any)` khác (CrossSellingTab,
+      EmployeeAnalysisContent, IndividualCompetitionView, CompetitionView,
+      useSummaryComparison, NotificationDropdown...), phần còn lại nhóm `: any[]` (52 chỗ),
+      42 chỗ `div/span onClick` chưa chuyển sang thần tố semantic.
+- [x] **Accessibility: 17/42 chỗ div/span onClick → có thể dùng bàn phím (2026-07-06)**:
+      thêm helper `onActivateKey()` vào `components/shared/ui/utils.ts` (export qua shared ui
+      index), áp dụng `role="button" tabIndex={0} onKeyDown={onActivateKey(...)}` cho 17 chỗ
+      thật sự là control tương tác (toggle list, sort header, dropdown trigger dùng chung —
+      ảnh hưởng cao nhất là `components/shared/ui/Dropdown.tsx`). **25 chỗ còn lại chủ động
+      không sửa** (đã kiểm tra từng trường hợp, có lý do rõ ràng, không phải bỏ sót): 8 chỗ
+      backdrop click-to-close modal (không nên vào tab order, đã xác nhận modal luôn có nút
+      đóng thật dùng bàn phím được), 11 chỗ `contentEditable` (tự focus/thao tác được bằng
+      bàn phím theo chuẩn HTML, không phải nút bấm), 6 chỗ chỉ để `stopPropagation()` (không
+      phải nội dung "kích hoạt"). Verify: tsc/eslint/build sạch, Playwright — 0 console error.
+      Xem chi tiết `CHANGELOG.md`.
+
+## Tổng kết đợt refactor giảm `any` + accessibility (2026-07-06)
+
+| Hạng mục | Kết quả |
+|---|---|
+| XSS `StickerPrintPreview.tsx` | ✅ Vá xong hoàn toàn |
+| `catch(x: any)` | ✅ 34/34 (100%) |
+| `as any` | ✅ 107/113 (94.7%), 6 chỗ ngoại lệ |
+| `: any[]` | ⚠️ 47/99 (47%), 52 chỗ để đợt sau |
+| `(param: any)` | ⚠️ ~76 chỗ đã sửa, còn nhiều chỗ để đợt sau |
+| `div/span onClick` | ⚠️ 17/42 (40%), 25 chỗ chủ động giữ nguyên có lý do |
+
+**Any tổng toàn dự án: 608 → 342 (giảm 44%)**. Mỗi đợt đều verify `tsc`/`eslint`/`npm run
+build` sạch + Playwright load các tab chính không phát sinh console error trước khi coi là
+xong. Việc còn lại (nhóm `: any[]`/`(param: any)` chưa xử lý) là các biến cục bộ trong hàm xử
+lý bảng, ít rò rỉ ra ngoài module — ưu tiên thấp hơn, không ảnh hưởng type-safety ở boundary
+giữa các module.
 
 ---
 

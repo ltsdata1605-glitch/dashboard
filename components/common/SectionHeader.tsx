@@ -2,7 +2,7 @@ import React from 'react';
 import { Icon } from './Icon';
 
 interface SectionHeaderProps {
-    title: string;
+    title: React.ReactNode;
     icon: string;
     subtitle?: React.ReactNode;
     children?: React.ReactNode;

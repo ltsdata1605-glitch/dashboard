@@ -3,6 +3,12 @@ import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestor
 import { db } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
+interface PendingUserDoc {
+    requestedRole?: string;
+    role?: string;
+    departmentId?: string;
+}
+
 /**
  * FIX: Pause Firestore listener when tab is hidden to save battery.
  * Uses getDoc on resume instead of keeping WebSocket alive 24/7.
@@ -30,7 +36,7 @@ export function usePendingApprovalCount() {
         const processSnapshot = (snapshot: any) => {
             let pendingCount = 0;
             snapshot.forEach((doc: any) => {
-                const docData = doc.data() as any;
+                const docData = doc.data() as PendingUserDoc;
                 if (userRole === 'admin') {
                     pendingCount++;
                 } else if (userRole === 'manager') {

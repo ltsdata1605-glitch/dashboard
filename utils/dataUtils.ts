@@ -438,7 +438,8 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
                 if (rawDate instanceof Date) {
                     dateObj = isNaN(rawDate.getTime()) ? null : rawDate;
                 } else if (typeof rawDate === 'object' && ('seconds' in rawDate || '_seconds' in rawDate)) {
-                    const seconds = (rawDate as any).seconds ?? (rawDate as any)._seconds;
+                    // rawDate ở đây là any (kế thừa từ DataRow — ngoại lệ Excel raw data đã duyệt)
+                    const seconds = rawDate.seconds ?? rawDate._seconds;
                     if (typeof seconds === 'number') {
                         dateObj = new Date(seconds * 1000);
                     }
@@ -460,11 +461,18 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
         .filter((row): row is (DataRow & { parsedDate: Date }) => row !== null);
 }
 
+// Marker interface cho Proxy trả về từ wrapMap() bên dưới — dùng để narrow thay vì `any`
+// khi đọc 2 "magic prop" __isProxy/__target không thuộc kiểu Record<string, string> thật.
+interface ProductConfigMapProxyMarker {
+    __isProxy?: true;
+    __target?: Record<string, string>;
+}
+
 export function wrapProductConfigWithProxies(config: ProductConfig): ProductConfig {
     if (!config) return config;
 
     // Check if already proxied to avoid double nesting
-    if ((config.childToParentMap as any)?.__isProxy) return config;
+    if ((config.childToParentMap as ProductConfigMapProxyMarker)?.__isProxy) return config;
 
     const wrapMap = (targetMap: Record<string, string>, isParentMap: boolean) => {
         if (!targetMap) return targetMap;
@@ -534,12 +542,12 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
 
 export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig {
     if (!config) return config;
-    if (!(config.childToParentMap as any)?.__isProxy) return config;
+    if (!(config.childToParentMap as ProductConfigMapProxyMarker)?.__isProxy) return config;
 
     return {
         ...config,
-        childToParentMap: (config.childToParentMap as any).__target || config.childToParentMap,
-        childToSubgroupMap: (config.childToSubgroupMap as any).__target || config.childToSubgroupMap
+        childToParentMap: (config.childToParentMap as ProductConfigMapProxyMarker).__target || config.childToParentMap,
+        childToSubgroupMap: (config.childToSubgroupMap as ProductConfigMapProxyMarker).__target || config.childToSubgroupMap
     };
 }
 
