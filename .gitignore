@@ -34,3 +34,6 @@ archive/
 *.tar.gz
 build_output.log
 backup_dashboard.zip
+
+# Claude Code local settings (per-machine, không chia sẻ qua git)
+.claude/settings.local.json
