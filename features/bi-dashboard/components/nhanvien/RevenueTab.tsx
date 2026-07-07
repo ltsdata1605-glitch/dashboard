@@ -318,7 +318,7 @@ const RevenueView: React.FC<{
                                                 Doanh thu
                                             </th>
                                             {isShowRemaining && (
-                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/50 border-b border-r border-orange-100 dark:border-orange-800/50">
+                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/50 border-b border-r border-amber-100 dark:border-amber-800/50">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
@@ -333,8 +333,8 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
                                             {isShowRemaining && (
                                                 <>
-                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-orange-50 dark:bg-orange-900/40 border-b border-r border-orange-100 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/60 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
-                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-orange-50 dark:bg-orange-900/40 border-b border-r border-orange-100 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/60 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
+                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-amber-50 dark:bg-amber-900/40 border-b border-r border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
+                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-amber-50 dark:bg-amber-900/40 border-b border-r border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
                                                 </>
                                             )}
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
@@ -366,10 +366,10 @@ const RevenueView: React.FC<{
                                                     </td>
                                                     {isShowRemaining && (
                                                         <>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
+                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                                                             </td>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400 font-bold`}>
+                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-amber-700 dark:text-amber-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
                                                             </td>
                                                         </>

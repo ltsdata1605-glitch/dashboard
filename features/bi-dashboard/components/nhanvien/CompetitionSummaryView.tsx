@@ -351,7 +351,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
-                    <Button type="button" variant="ghost" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-green-600">
+                    <Button type="button" variant="ghost" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-emerald-600">
                         <CheckCircleIcon className="h-6 w-6" />
                     </Button>
                     <Button type="button" variant="ghost" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-slate-400">
@@ -496,20 +496,20 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         })()}
                                         <th 
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 min-w-[55px] leading-tight align-middle cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 min-w-[55px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
-                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
+                                                <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
                                         <th 
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-red-200 dark:hover:bg-red-900/60 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-200 dark:hover:bg-rose-900/60 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
-                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('noSale')}</span>
+                                                <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 ml-0.5">{getSortIndicator('noSale')}</span>
                                             </div>
                                         </th>
                                     </tr>
@@ -520,7 +520,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         const zebraClass = isEven ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/70 dark:bg-slate-800/30';
                                         const tongBot = getEmployeeTongBot(emp.name, emp.originalName);
                                         return (
-                                            <tr key={emp.originalName} className={`${zebraClass} hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700`}>
+                                            <tr key={emp.originalName} className={`${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
                                                 <td 
                                                     className={`sticky left-0 z-10 ${zebraClass} px-2 py-1 font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
                                                     style={{ color: 'var(--color-sky-600)' }}

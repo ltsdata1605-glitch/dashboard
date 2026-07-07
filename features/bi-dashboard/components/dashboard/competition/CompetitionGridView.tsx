@@ -17,11 +17,11 @@ const CRITERIA_CARD_THEMES = {
     progress: 'bg-sky-500', 
     text: 'text-sky-700 dark:text-sky-400' 
   },
-  'DTQĐ': { 
-    border: 'border-teal-100 dark:border-teal-900', 
-    header: 'bg-teal-600', 
-    progress: 'bg-teal-500', 
-    text: 'text-teal-700 dark:text-teal-400' 
+  'DTQĐ': {
+    border: 'border-amber-100 dark:border-amber-900',
+    header: 'bg-amber-600',
+    progress: 'bg-amber-500',
+    text: 'text-amber-700 dark:text-amber-400'
   },
   'SLLK': { 
     border: 'border-rose-100 dark:border-rose-900', 
@@ -69,12 +69,12 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
                                 const percent = percentIndex !== -1 ? parseNumber(program.data[percentIndex]) : 0;
 
                                 let progressColorClass = theme.progress;
-                                if (percent >= 100) progressColorClass = 'bg-green-500';
-                                else if (percent < 85) progressColorClass = 'bg-yellow-500';
-                                if (percent < 50) progressColorClass = 'bg-red-500';
+                                if (percent >= 100) progressColorClass = 'bg-emerald-500';
+                                else if (percent < 85) progressColorClass = 'bg-amber-500';
+                                if (percent < 50) progressColorClass = 'bg-rose-500';
 
-                                const remainingColor = conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-                                const percentColor = percent >= 100 ? 'text-green-600 dark:text-green-400' : (percent < 85 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400');
+                                const remainingColor = conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                                const percentColor = percent >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (percent < 85 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400');
 
                                 return (
                                 <div key={program.name} className="bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden group">
