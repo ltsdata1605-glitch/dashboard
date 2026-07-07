@@ -126,9 +126,9 @@ const CreateDeptModal: React.FC<{
                             </label>
                             <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-xl bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
                                 {Array.from(selectedEmps).map(empName => (
-                                    <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
-                                        <Button variant="ghost" onClick={() => toggleEmp(empName)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" title="Bỏ chọn">
+                                        <Button variant="ghost" onClick={() => toggleEmp(empName)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
                                             <XIcon className="h-3 w-3" />
                                         </Button>
                                     </span>
@@ -172,7 +172,7 @@ const CreateDeptModal: React.FC<{
                                     <Button
                                         variant="ghost"
                                         onClick={() => removeEmp(emp.originalName)}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-colors shrink-0"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
                                         title="Xoá khỏi danh sách"
                                     >
                                         <TrashIcon className="h-3.5 w-3.5" />
@@ -385,11 +385,11 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         <div className="flex justify-between items-center mb-2 z-10 relative">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tổng Ngân Sách Phân Bổ</span>
                             <div className="flex items-center gap-2">
-                                <span className={`text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-red-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
+                                <span className={`text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-rose-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
                                     {totalAllocatedWeight.toFixed(1)}<span className="text-[10px]">%</span>
                                 </span>
                                 {totalAllocatedWeight !== 100 && (
-                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                                         {totalAllocatedWeight > 100.01 ? `VƯỢT ${(totalAllocatedWeight - 100).toFixed(1)}%` : `DƯ ${(100 - totalAllocatedWeight).toFixed(1)}%`}
                                     </span>
                                 )}
@@ -404,7 +404,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             })}
                         </div>
                         {totalAllocatedWeight === 100 && <div className="absolute inset-0 bg-emerald-50 dark:bg-emerald-900/10 pointer-events-none mix-blend-multiply opacity-50 z-0"></div>}
-                        {totalAllocatedWeight > 100.01 && <div className="absolute inset-0 bg-red-50 dark:bg-red-900/10 pointer-events-none mix-blend-multiply opacity-50 z-0"></div>}
+                        {totalAllocatedWeight > 100.01 && <div className="absolute inset-0 bg-rose-50 dark:bg-rose-900/10 pointer-events-none mix-blend-multiply opacity-50 z-0"></div>}
                     </div>
 
                     <div className="space-y-3">
@@ -449,7 +449,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                                 closeConfirm();
                                                             }
                                                         });
-                                                    }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></Button>
+                                                    }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></Button>
                                                 </div>
                                             )}
                                         </div>

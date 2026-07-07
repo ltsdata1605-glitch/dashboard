@@ -23,7 +23,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
     let totalVuotTroi = 0;
     let htTargetVuotTroi = 0;
-    let htVuotTroiColorClass = 'text-red-600 dark:text-red-400';
+    let htVuotTroiColorClass = 'text-rose-600 dark:text-rose-400';
 
     if (isRealtime) {
         totalVuotTroi = supermarketDailyTargets[activeSupermarket];
@@ -32,7 +32,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         }
         htTargetVuotTroi = totalVuotTroi > 0 ? (dtqd / totalVuotTroi) * 100 : 0;
 
-        if (htTargetVuotTroi >= 120) htVuotTroiColorClass = 'text-green-600 dark:text-green-400';
+        if (htTargetVuotTroi >= 120) htVuotTroiColorClass = 'text-emerald-600 dark:text-emerald-400';
         else if (htTargetVuotTroi >= 100) htVuotTroiColorClass = 'text-primary-600 dark:text-primary-400';
     }
 
@@ -141,12 +141,12 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {renderCard({
                     title: 'DTQĐ',
                     icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">~</span>,
-                    iconBg: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                    iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${roundUp(dtqd).toLocaleString('vi-VN')} Tr`,
-                    valueColor: 'text-blue-600 dark:text-blue-400',
+                    valueColor: 'text-amber-600 dark:text-amber-400',
                     progressPct: Math.ceil(secondaryPct),
-                    progressColor: 'bg-blue-400',
+                    progressColor: 'bg-amber-400',
                     targetLabel: secondaryLabel,
                     targetStr: isRealtime 
                         ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined)
@@ -157,12 +157,12 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {renderCard({
                     title: 'HQQĐ',
                     icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">⚡</span>,
-                    iconBg: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+                    iconBg: 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${Math.ceil(hqqd)}%`,
                     valueColor: 'text-amber-500 dark:text-amber-400',
                     progressPct: hqqd > 0 ? Math.ceil((hqqd / targets.quyDoi) * 100) : 0,
-                    progressColor: 'bg-purple-400',
+                    progressColor: 'bg-sky-400',
                     targetLabel: 'MỤC TIÊU',
                     targetStr: `${targets.quyDoi}%`
                 })}
@@ -185,24 +185,24 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
             {/* ROW 2: EXTRA METRICS — mỗi thẻ 1 màu pastel riêng */}
             <div className="grid grid-cols-4 gap-1 sm:gap-4">
-                {/* Extra 1: Lượt Khách — Blue Pastel */}
+                {/* Extra 1: Lượt Khách — Sky Pastel */}
                 {renderCard({
                     title: 'L.KHÁCH',
                     icon: <UsersIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                    titleColor: 'text-blue-600 dark:text-blue-400',
+                    iconBg: 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400',
+                    titleColor: 'text-sky-600 dark:text-sky-400',
                     value: roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN'),
-                    valueColor: 'text-blue-700 dark:text-blue-300',
+                    valueColor: 'text-sky-700 dark:text-sky-300',
                     rightEl: renderGrowth(kpiData.luotKhachChange)
                 })}
-                {/* Extra 2: TLPV — Violet Pastel */}
+                {/* Extra 2: TLPV — Amber Pastel */}
                 {renderCard({
                     title: 'TLPVTC',
                     icon: <DocumentReportIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
-                    titleColor: 'text-violet-600 dark:text-violet-400',
+                    iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+                    titleColor: 'text-amber-600 dark:text-amber-400',
                     value: `${Math.ceil(parseNumber(kpiData.tlpv))}%`,
-                    valueColor: 'text-violet-700 dark:text-violet-300',
+                    valueColor: 'text-amber-700 dark:text-amber-300',
                     rightEl: renderGrowth(kpiData.tlpvChange)
                 })}
                 {/* Extra 3: Bill Bán Hàng — Emerald Pastel */}
