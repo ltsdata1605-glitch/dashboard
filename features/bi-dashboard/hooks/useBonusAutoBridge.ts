@@ -2,16 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Employee, BonusMetrics } from '../types/nhanVienTypes';
 import { parseBonusBlock } from '../utils/bonusParser';
 import { formatEmployeeName } from '../utils/nhanVienHelpers';
-import {
-    detectUserscript,
-    sendStartJob,
-    onProgress,
-    onJobDone,
-    onJobError,
-    BridgeJobResultItem,
-} from '../utils/bonusBridge';
+import { detectUserscript } from '../utils/bonusBridge';
+import { runSingleBonusJob } from '../utils/bonusJobRunner';
+import { getCurrentRangeDefault } from '../utils/bonusDateRange';
 
-const MWG_URL = 'https://newinsite.thegioididong.com/office/thuong-nhan-vien';
 const STALL_WARNING_MS = 90_000;
 
 export type BonusAutoStatus = 'idle' | 'detecting' | 'not-installed' | 'running' | 'done' | 'error';
@@ -33,32 +27,29 @@ export interface BonusAutoSummary {
     items: BonusAutoResultItem[];
 }
 
+/** Khoảng ngày dd/mm/yyyy tuỳ chọn — do AutoBonusRangePickerModal tính sẵn (Hiện tại/Tháng/Khoảng thời gian). */
+export interface BonusDateRangeInput {
+    fromDate: string;
+    toDate: string;
+}
+
 export interface UseBonusAutoBridgeResult {
     status: BonusAutoStatus;
     progress: { done: number; total: number; currentEmployeeId?: string } | null;
     stalled: boolean;
     summary: BonusAutoSummary | null;
     errorMessage: string | null;
-    startAuto: () => void;
+    /** range bỏ trống -> dùng lại range gần nhất đã yêu cầu, hoặc mặc định "Hiện tại". */
+    startAuto: (range?: BonusDateRangeInput) => void;
     dismiss: () => void;
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const toDDMMYYYY = (d: Date) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
-
-function computeDefaultRange(): { fromDate: string; toDate: string } {
-    const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth(), 1);
-    let to = new Date(now);
-    to.setDate(to.getDate() - 1);
-    if (to < from) to = from; // ngày 1 đầu tháng: "hôm qua" thuộc tháng trước -> dùng luôn ngày 1
-    return { fromDate: toDDMMYYYY(from), toDate: toDDMMYYYY(to) };
-}
-
 /**
- * Điều phối chế độ "Tự động": dò userscript, gửi job, nhận tiến độ/kết quả qua
- * bonusBridge, parse từng khối TSV bằng parseBonusBlock, rồi ghi hàng loạt qua
+ * Điều phối chế độ "Tự động" cho 1 job đơn (1 khoảng ngày). Dò userscript, gửi job qua
+ * bonusJobRunner, parse từng khối TSV bằng parseBonusBlock, rồi ghi hàng loạt qua
  * handleSaveBonusBatch. Không đụng tới luồng Thủ công (BonusDataModal) hiện có.
+ * Chạy nhiều tháng liên tiếp (lựa chọn Năm) dùng useMultiMonthBonusRun.ts riêng, lặp
+ * gọi runSingleBonusJob trực tiếp thay vì hook này.
  */
 export function useBonusAutoBridge(
     allEmployees: Employee[],
@@ -70,9 +61,11 @@ export function useBonusAutoBridge(
     const [summary, setSummary] = useState<BonusAutoSummary | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const activeJobIdRef = useRef<string | null>(null);
-    const unsubscribeRef = useRef<(() => void)[]>([]);
     const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Giữ lại range vừa yêu cầu — để nút "Kiểm tra lại" trong AutoBonusInstallGuideModal
+    // (gọi startAuto() không tham số khi retry sau khi cài xong userscript) chạy đúng
+    // range người dùng đã chọn trong popup, thay vì rơi về mặc định "Hiện tại".
+    const lastRangeRef = useRef<BonusDateRangeInput | null>(null);
 
     const clearStallTimer = () => {
         if (stallTimerRef.current) {
@@ -86,18 +79,12 @@ export function useBonusAutoBridge(
         stallTimerRef.current = setTimeout(() => setStalled(true), STALL_WARNING_MS);
     }, []);
 
-    const cleanupSubscriptions = () => {
-        unsubscribeRef.current.forEach(unsub => unsub());
-        unsubscribeRef.current = [];
-        clearStallTimer();
-    };
+    useEffect(() => () => clearStallTimer(), []);
 
-    useEffect(() => () => cleanupSubscriptions(), []);
-
-    const startAuto = useCallback(() => {
+    const startAuto = useCallback((range?: BonusDateRangeInput) => {
         if (status === 'detecting' || status === 'running') return; // chống bấm đúp khi job đang chạy
+        if (range) lastRangeRef.current = range;
 
-        cleanupSubscriptions();
         setStalled(false);
         setSummary(null);
         setErrorMessage(null);
@@ -122,18 +109,26 @@ export function useBonusAutoBridge(
                 return;
             }
 
-            const jobId = (crypto as { randomUUID?: () => string }).randomUUID
-                ? crypto.randomUUID()
-                : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            const createdAt = Date.now();
-            const { fromDate, toDate } = computeDefaultRange();
+            const { fromDate, toDate } = lastRangeRef.current || getCurrentRangeDefault();
 
-            activeJobIdRef.current = jobId;
             setProgress({ done: 0, total: jobEmployees.length });
             setStatus('running');
             armStallTimer();
 
-            const finishWithResults = async (results: BridgeJobResultItem[], stoppedEarly: boolean) => {
+            const { promise } = runSingleBonusJob(
+                jobEmployees.map(({ employeeId, originalName, displayName }) => ({ employeeId, originalName, displayName })),
+                fromDate,
+                toDate,
+                (done, total, currentEmployeeId) => {
+                    setStalled(false);
+                    armStallTimer();
+                    setProgress({ done, total, currentEmployeeId });
+                },
+            );
+
+            promise.then(async ({ results, stoppedEarly }) => {
+                clearStallTimer();
+
                 const toSave: { originalName: string; metrics: BonusMetrics }[] = [];
                 const items: BonusAutoResultItem[] = [];
 
@@ -153,43 +148,13 @@ export function useBonusAutoBridge(
 
                 if (toSave.length > 0) await handleSaveBonusBatch(toSave);
 
-                cleanupSubscriptions();
                 setStatus('done');
                 setSummary({ total: results.length, successCount: toSave.length, stoppedEarly, items });
-            };
-
-            const unsubProgress = onProgress(detail => {
-                if (detail.jobId !== activeJobIdRef.current) return;
-                setStalled(false);
-                armStallTimer();
-                setProgress({ done: detail.done, total: detail.total, currentEmployeeId: detail.currentEmployeeId });
-            });
-
-            const unsubDone = onJobDone(detail => {
-                if (detail.jobId !== activeJobIdRef.current) return;
-                // Null ngay (đồng bộ) trước khi xử lý async — chống trường hợp
-                // GM_addValueChangeListener + poll dự phòng cùng bắn sự kiện job-done
-                // trùng nhau, có thể khiến handleSaveBonusBatch chạy 2 lần.
-                activeJobIdRef.current = null;
-                void finishWithResults(detail.results, !!detail.stoppedEarly);
-            });
-
-            const unsubError = onJobError(detail => {
-                if (detail.jobId !== activeJobIdRef.current) return;
-                cleanupSubscriptions();
-                activeJobIdRef.current = null;
+            }).catch((err: Error) => {
+                clearStallTimer();
                 setStatus('error');
-                setErrorMessage(detail.message);
+                setErrorMessage(err.message || 'Lỗi không rõ từ userscript');
             });
-
-            unsubscribeRef.current = [unsubProgress, unsubDone, unsubError];
-
-            sendStartJob(jobId, createdAt, {
-                employees: jobEmployees.map(({ employeeId, originalName, displayName }) => ({ employeeId, originalName, displayName })),
-                fromDate,
-                toDate,
-            });
-            window.open(MWG_URL, '_blank');
         });
     }, [status, allEmployees, handleSaveBonusBatch, armStallTimer]);
 

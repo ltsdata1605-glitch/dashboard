@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
-import { UseBonusAutoBridgeResult } from '../../../hooks/useBonusAutoBridge';
 
 const TAMPERMONKEY_STORE_URL = 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo';
 const SCRIPT_PATH = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
@@ -25,37 +24,43 @@ const StepRow: React.FC<{ index: number; title: string; description?: React.Reac
 
 /**
  * Thay cho thông báo "chưa cài" đơn giản trước đây — hướng dẫn 3 bước cài userscript
- * lần đầu, mỗi bước có nút hành động riêng. Bước 3 gọi lại chính startAuto(); nếu dò
- * thấy script, autoBridge.status rời khỏi 'not-installed' nên modal tự đóng và tiếp
- * tục chạy chế độ Tự động luôn, không cần người dùng bấm lại "Tự động" lần nữa.
+ * lần đầu, mỗi bước có nút hành động riêng. Bước 3 gọi onRetry (do parent nối vào đúng
+ * flow đang chờ — chạy 1 job đơn hoặc chạy nhiều tháng); nếu dò thấy script, isNotInstalled
+ * tắt nên modal tự đóng và tiếp tục chạy luôn, không cần bấm lại "Tự động"/"Chạy N tháng".
+ * Nhận isNotInstalled/isChecking dạng boolean thuần (không phải 1 hook cụ thể) để dùng
+ * chung được cho cả useBonusAutoBridge (job đơn) lẫn useMultiMonthBonusRun (chạy Năm).
  */
-export const AutoBonusInstallGuideModal: React.FC<{ autoBridge: UseBonusAutoBridgeResult; onUseManual: () => void }> = ({ autoBridge, onUseManual }) => {
-    const { status, startAuto, dismiss } = autoBridge;
-
-    // Chỉ hiện modal khi status='detecting' NẾU đó là lượt "Kiểm tra lại" bấm từ trong
-    // chính modal này (tức trước đó đã từng ở 'not-installed') — không phải lượt dò đầu
-    // tiên lúc bấm nút "Tự động" ở ngoài (lượt đó chỉ hiện chữ nhỏ cạnh nút, không mở modal).
+export const AutoBonusInstallGuideModal: React.FC<{
+    isNotInstalled: boolean;
+    isDetecting: boolean;
+    onRetry: () => void;
+    onDismiss: () => void;
+    onUseManual: () => void;
+}> = ({ isNotInstalled, isDetecting, onRetry, onDismiss, onUseManual }) => {
+    // Chỉ hiện modal khi đang detecting NẾU đó là lượt "Kiểm tra lại" bấm từ trong chính
+    // modal này (tức trước đó đã từng not-installed) — không phải lượt dò đầu tiên lúc
+    // bấm nút "Tự động"/"Chạy N tháng" ở ngoài (lượt đó chỉ hiện chữ nhỏ, không mở modal).
     const wasNotInstalledRef = useRef(false);
     useEffect(() => {
-        if (status === 'not-installed') wasNotInstalledRef.current = true;
-        else if (status !== 'detecting') wasNotInstalledRef.current = false;
-    }, [status]);
+        if (isNotInstalled) wasNotInstalledRef.current = true;
+        else if (!isDetecting) wasNotInstalledRef.current = false;
+    }, [isNotInstalled, isDetecting]);
 
-    const isChecking = status === 'detecting' && wasNotInstalledRef.current;
-    const isOpen = status === 'not-installed' || isChecking;
+    const isChecking = isDetecting && wasNotInstalledRef.current;
+    const isOpen = isNotInstalled || isChecking;
 
     if (!isOpen) return null;
 
     return (
         <Modal
             isOpen
-            onClose={dismiss}
+            onClose={onDismiss}
             title="Cài đặt lần đầu — Chế độ Tự động"
             maxWidth="md"
             footer={
                 <div className="flex gap-3">
-                    <Button variant="ghost" onClick={dismiss} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>
-                    <Button variant="ghost" onClick={() => { dismiss(); onUseManual(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-rose-600 dark:bg-rose-700 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-rose-700 dark:hover:bg-rose-800 active:scale-95 transition-all">Dùng Thủ công trong lúc chờ</Button>
+                    <Button variant="ghost" onClick={onDismiss} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>
+                    <Button variant="ghost" onClick={() => { onDismiss(); onUseManual(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-rose-600 dark:bg-rose-700 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-rose-700 dark:hover:bg-rose-800 active:scale-95 transition-all">Dùng Thủ công trong lúc chờ</Button>
                 </div>
             }
         >
@@ -87,12 +92,12 @@ export const AutoBonusInstallGuideModal: React.FC<{ autoBridge: UseBonusAutoBrid
                 <StepRow
                     index={3}
                     title="Kiểm tra"
-                    description={isChecking ? 'Đang kiểm tra...' : (status === 'not-installed' ? 'Chưa phát hiện được — cài xong bước 1-2 rồi bấm lại nút này.' : undefined)}
+                    description={isChecking ? 'Đang kiểm tra...' : (isNotInstalled ? 'Chưa phát hiện được — cài xong bước 1-2 rồi bấm lại nút này.' : undefined)}
                     action={
                         <Button
                             variant="ghost"
                             disabled={isChecking}
-                            onClick={() => startAuto()}
+                            onClick={onRetry}
                             className="bg-sky-600 dark:bg-sky-700 hover:bg-sky-700 dark:hover:bg-sky-800 disabled:opacity-60 border-0 rounded-lg h-auto w-auto px-3 py-1.5 text-white text-[11px] font-bold whitespace-nowrap"
                         >
                             {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra lại'}

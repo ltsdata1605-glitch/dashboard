@@ -320,6 +320,29 @@ export function useNhanVienData(isActive?: boolean) {
         }));
     }, [activeSupermarkets]);
 
+    // Ghi kho lưu trữ theo THÁNG (phục vụ "Xem theo tháng") — 1 key/(siêu thị, tháng),
+    // ghi đè toàn bộ mỗi lần chạy lại cùng tháng (dữ liệu mới nhất thắng, không cộng dồn).
+    // Chỉ khi yyyymm là THÁNG HIỆN TẠI mới đồng thời mirror sang bonus-data-*/bonus-history-*
+    // (giữ tab "hôm nay" luôn khớp); tháng quá khứ không đụng tới dữ liệu hiện tại.
+    const handleSaveBonusMonthly = useCallback(async (
+        entries: { originalName: string; metrics: BonusMetrics }[],
+        yyyymm: string,
+    ) => {
+        if (entries.length === 0) return;
+        const safeName = shortenSupermarketName(activeSupermarkets[0]);
+
+        const monthlyKey = `bonus-monthly-${safeName}-${yyyymm}` as const;
+        const monthlyData: Record<string, BonusMetrics> = {};
+        entries.forEach(({ originalName, metrics }) => { monthlyData[originalName] = metrics; });
+        await db.set(monthlyKey, monthlyData);
+
+        const now = new Date();
+        const currentYYYYMM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        if (yyyymm === currentYYYYMM) {
+            await handleSaveBonusBatch(entries);
+        }
+    }, [activeSupermarkets, handleSaveBonusBatch]);
+
     const effectiveAggregatedWeights = useMemo(() => {
         if (isActive === false) return {};
         if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
@@ -359,6 +382,7 @@ export function useNhanVienData(isActive?: boolean) {
         toggleDepartment,
         handleSaveBonus,
         handleSaveBonusBatch,
+        handleSaveBonusMonthly,
         setAggregatedData,
         dataVersion
     };

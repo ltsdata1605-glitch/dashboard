@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { BonusAutoSummary } from '../../../hooks/useBonusAutoBridge';
+import { MultiMonthSummary } from '../../../hooks/useMultiMonthBonusRun';
 
 const SUCCESS_DURATION_MS = 5000;
 const TOAST_ID = 'ycx-auto-bonus-result';
+const MULTI_MONTH_TOAST_ID = 'ycx-multi-month-bonus-result';
 // duration lớn để react-hot-toast không tự âm thầm dismiss theo timer riêng của nó —
 // việc dismiss thật sự do chính component bên dưới điều khiển (để hover-pause chuẩn xác).
 const LONG_DURATION_MS = 24 * 60 * 60 * 1000;
 
-const SuccessToastBody: React.FC<{ id: string; total: number; onExpire: () => void }> = ({ id, total, onExpire }) => {
+const SuccessToastBody: React.FC<{ id: string; headline: string; onExpire: () => void }> = ({ id, headline, onExpire }) => {
     const [remaining, setRemaining] = useState(SUCCESS_DURATION_MS);
     const [paused, setPaused] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -43,7 +45,7 @@ const SuccessToastBody: React.FC<{ id: string; total: number; onExpire: () => vo
             onMouseLeave={handleLeave}
             className="w-80 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 px-4 py-3 overflow-hidden"
         >
-            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">✅ {total}/{total} nhân viên cập nhật thành công</p>
+            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{headline}</p>
             <div className="h-1 bg-emerald-100 dark:bg-emerald-900/40 rounded-full mt-2 overflow-hidden">
                 <div
                     className="h-full bg-emerald-500 dark:bg-emerald-400"
@@ -60,22 +62,12 @@ const SuccessToastBody: React.FC<{ id: string; total: number; onExpire: () => vo
 
 const IssueToastBody: React.FC<{
     id: string;
-    successCount: number;
-    total: number;
-    stoppedEarly: boolean;
+    headline: string;
     onViewDetail: () => void;
     onDismiss: () => void;
-}> = ({ id, successCount, total, stoppedEarly, onViewDetail, onDismiss }) => {
-    const errorCount = total - successCount;
-    const headline = stoppedEarly
-        ? `⏹ Đã dừng: xong ${total} nhân viên (${successCount} thành công${errorCount > 0 ? `, ${errorCount} lỗi` : ''})`
-        : `⚠️ ${successCount}/${total} thành công, ${errorCount} lỗi`;
-    const colorClass = stoppedEarly
-        ? 'border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
-        : 'border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400';
-
+}> = ({ id, headline, onViewDetail, onDismiss }) => {
     return (
-        <div className={`w-80 rounded-xl shadow-lg bg-white dark:bg-slate-800 border px-4 py-3 ${colorClass}`}>
+        <div className="w-80 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 px-4 py-3">
             <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-bold flex-1">{headline}</p>
                 <button
@@ -104,22 +96,18 @@ export function showAutoBonusResultToast(
     const allOk = !summary.stoppedEarly && summary.successCount === summary.total && summary.total > 0;
 
     if (allOk) {
+        const headline = `✅ ${summary.total}/${summary.total} nhân viên cập nhật thành công`;
         toast.custom(
-            (t) => <SuccessToastBody id={t.id} total={summary.total} onExpire={handlers.onDismissed} />,
+            (t) => <SuccessToastBody id={t.id} headline={headline} onExpire={handlers.onDismissed} />,
             { id: TOAST_ID, duration: LONG_DURATION_MS },
         );
     } else {
+        const errorCount = summary.total - summary.successCount;
+        const headline = summary.stoppedEarly
+            ? `⏹ Đã dừng: xong ${summary.total} nhân viên (${summary.successCount} thành công${errorCount > 0 ? `, ${errorCount} lỗi` : ''})`
+            : `⚠️ ${summary.successCount}/${summary.total} thành công, ${errorCount} lỗi`;
         toast.custom(
-            (t) => (
-                <IssueToastBody
-                    id={t.id}
-                    successCount={summary.successCount}
-                    total={summary.total}
-                    stoppedEarly={summary.stoppedEarly}
-                    onViewDetail={handlers.onViewDetail}
-                    onDismiss={handlers.onDismissed}
-                />
-            ),
+            (t) => <IssueToastBody id={t.id} headline={headline} onViewDetail={handlers.onViewDetail} onDismiss={handlers.onDismissed} />,
             { id: TOAST_ID, duration: LONG_DURATION_MS },
         );
     }
@@ -129,4 +117,30 @@ export function showAutoBonusResultToast(
 export function showAutoBonusErrorToast(message: string, onDismissed: () => void): void {
     toast.error(message, { id: TOAST_ID, duration: 6000 });
     setTimeout(onDismissed, 6000);
+}
+
+/** Toast kết quả cho lượt "Chạy N tháng" (lựa chọn Năm) — cùng UX 2 biến thể như trên,
+ * chỉ khác đơn vị đếm là THÁNG thay vì nhân viên. */
+export function showMultiMonthResultToast(
+    summary: MultiMonthSummary,
+    handlers: { onViewDetail: () => void; onDismissed: () => void },
+): void {
+    const errorMonths = summary.monthResults.filter(m => !!m.error).length;
+    const allOk = !summary.stoppedEarly && errorMonths === 0 && summary.monthsDone === summary.monthsTotal && summary.monthsTotal > 0;
+
+    if (allOk) {
+        const headline = `✅ Xong ${summary.monthsTotal}/${summary.monthsTotal} tháng`;
+        toast.custom(
+            (t) => <SuccessToastBody id={t.id} headline={headline} onExpire={handlers.onDismissed} />,
+            { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },
+        );
+    } else {
+        const headline = summary.stoppedEarly
+            ? `⏹ Đã dừng: xong ${summary.monthsDone}/${summary.monthsTotal} tháng${errorMonths > 0 ? ` · ${errorMonths} tháng lỗi` : ''}`
+            : `⚠️ Xong ${summary.monthsDone}/${summary.monthsTotal} tháng · ${errorMonths} tháng lỗi`;
+        toast.custom(
+            (t) => <IssueToastBody id={t.id} headline={headline} onViewDetail={handlers.onViewDetail} onDismiss={handlers.onDismissed} />,
+            { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },
+        );
+    }
 }

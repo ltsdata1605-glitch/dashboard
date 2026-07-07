@@ -4,6 +4,9 @@ import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { XIcon, UsersIcon, UploadIcon, ClockIcon, ViewListIcon, ViewGridIcon, CalendarIcon } from '../Icons';
+import { CalendarRange } from 'lucide-react';
+import { useMonthlyBonusArchive } from '../../hooks/useMonthlyBonusArchive';
+import { MonthlyBonusTable } from './bonus/MonthlyBonusTable';
 import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
 import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { parseBonusBlock } from '../../utils/bonusParser';
@@ -19,6 +22,7 @@ import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 import { AutoBonusPanel } from './bonus/AutoBonusPanel';
 import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
+import { UseMultiMonthBonusRunResult } from '../../hooks/useMultiMonthBonusRun';
 import toast from 'react-hot-toast';
 
 let hrmWindowRef: Window | null = null;
@@ -213,14 +217,16 @@ export const BonusView: React.FC<{
     bonusData: Record<string, BonusMetrics | null>;
     revenueRows: any;
     supermarketName: string;
+    activeSupermarkets: string[];
     onEmployeeClick: (emp: Employee) => void;
     onBatchUpdate: () => void;
     autoBridge: UseBonusAutoBridgeResult;
+    multiMonthRun: UseMultiMonthBonusRunResult;
     highlightedEmployees: Set<string>;
     activeDepartments: string[];
     isActive?: boolean;
 }> = React.memo(({
-    employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate, autoBridge,
+    employees, bonusData, revenueRows, supermarketName, activeSupermarkets, onEmployeeClick, onBatchUpdate, autoBridge, multiMonthRun,
     highlightedEmployees, activeDepartments, isActive
 }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -230,7 +236,14 @@ export const BonusView: React.FC<{
 
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bonus-view-mode-multi-v2', 'group');
     const [isDaily, setIsDaily] = useIndexedDBState<boolean>('bonus-view-mode-daily-v2', false);
+    const [isMonthly, setIsMonthly] = useIndexedDBState<boolean>('bonus-view-mode-monthly-v2', false);
     const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
+
+    const monthlyArchive = useMonthlyBonusArchive(activeSupermarkets, isMonthly);
+    const monthlyEmployees = useMemo(
+        () => employees.filter(e => activeDepartments.includes(e.department)),
+        [employees, activeDepartments],
+    );
     
     const getWeekTotalForEmployee = (employeeName: string, weekDates: string[]) => {
         const bonus = bonusData[employeeName];
@@ -627,13 +640,14 @@ export const BonusView: React.FC<{
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Cập nhật thưởng</span>
                     </Button>
-                    <AutoBonusPanel autoBridge={autoBridge} onUseManual={onBatchUpdate} />
+                    <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} />
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
                     <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" onClick={() => setIsDaily(prev => !prev)} title="Xem theo ngày" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isDaily ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isDaily ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => { setIsMonthly(prev => !prev); setIsDaily(false); }} title="Luỹ kế tháng" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isMonthly ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarRange className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
@@ -704,6 +718,13 @@ export const BonusView: React.FC<{
                                     );
                                 })}
                             </div>
+                        ) : isMonthly ? (
+                            <MonthlyBonusTable
+                                employees={monthlyEmployees}
+                                months={monthlyArchive.months}
+                                dataByMonth={monthlyArchive.dataByMonth}
+                                loading={monthlyArchive.loading}
+                            />
                         ) : isDaily ? (
                             allDates.length === 0 ? (
                                 <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">

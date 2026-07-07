@@ -14,6 +14,7 @@ import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
 import { useBonusAutoBridge } from '../hooks/useBonusAutoBridge';
+import { useMultiMonthBonusRun } from '../hooks/useMultiMonthBonusRun';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
@@ -93,6 +94,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         toggleDepartment,
         handleSaveBonus,
         handleSaveBonusBatch,
+        handleSaveBonusMonthly,
         dataVersion
     } = data;
 
@@ -131,6 +133,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     }, [allEmployees]);
 
     const bonusAutoBridge = useBonusAutoBridge(allEmployees, handleSaveBonusBatch);
+    const bonusMultiMonthRun = useMultiMonthBonusRun(allEmployees, handleSaveBonusMonthly);
 
     const { runWorkerTask } = useWorker();
     const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>>({} as Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>);
@@ -419,16 +422,18 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         )}
                         {visitedTabs.has('bonus') && (
                             <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
-                                <BonusView 
-                                    employees={allEmployees} 
-                                    bonusData={aggregatedData.bonusData} 
-                                    revenueRows={revenueRows} 
-                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
+                                <BonusView
+                                    employees={allEmployees}
+                                    bonusData={aggregatedData.bonusData}
+                                    revenueRows={revenueRows}
+                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'}
+                                    activeSupermarkets={activeSupermarkets}
                                     onEmployeeClick={setEditingBonusEmployee}
                                     onBatchUpdate={startBatchBonusUpdate}
                                     autoBridge={bonusAutoBridge}
+                                    multiMonthRun={bonusMultiMonthRun}
                                     highlightedEmployees={highlightedEmployees}
-                                    activeDepartments={effectiveActiveDepartments} 
+                                    activeDepartments={effectiveActiveDepartments}
                                     isActive={isActive && activeTab === 'bonus'}
                                 />
                             </div>

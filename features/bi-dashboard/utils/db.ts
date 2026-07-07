@@ -75,6 +75,7 @@ export type BIKey =
   | `comptarget-${string}-targets`
   | `bonus-data-${string}`
   | `bonus-history-${string}`
+  | `bonus-monthly-${string}`
   | `hidden-cols-industry-${string}`
   | `hidden-industries-${string}`
   | `hidden-cols-summary-${string}`
