@@ -142,7 +142,7 @@ export const useCompetitionData = ({
 
     const getEmployeeDotColor = useCallback((originalName: string) => {
         const index = allEmployees.findIndex((e) => e.originalName === originalName);
-        if (index === -1) return 'bg-gray-300';
+        if (index === -1) return 'bg-slate-300';
         return HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length].dot;
     }, [allEmployees]);
 

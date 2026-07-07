@@ -34,8 +34,8 @@ export const GaugeChart: React.FC<{ value: number; label: string; target: number
     const offset = circumference - (displayValue / 100) * circumference;
 
     const isAchieved = value >= target;
-    let colorClass = 'text-red-500';
-    if (isAchieved) colorClass = 'text-green-500';
+    let colorClass = 'text-rose-500';
+    if (isAchieved) colorClass = 'text-emerald-500';
     else if (value >= target * 0.9) colorClass = 'text-amber-500';
 
     const targetAngle = (target / 100) * 360 - 90;
@@ -98,8 +98,8 @@ export const GaugeChart: React.FC<{ value: number; label: string; target: number
                 <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-tight">{label}</p>
                 <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-tighter inline-block mt-1 ${
                     isAchieved 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                    : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                    : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                 }`}>
                     {isAchieved ? '✓ Đạt' : '⚠ Cố lên'}
                 </span>
@@ -151,9 +151,9 @@ export const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const displayPercentage = Math.min(percentage, 100);
 
     let colorClass = 'bg-indigo-500';
-    if (value >= 100) colorClass = 'bg-green-500';
-    else if (value < 85) colorClass = 'bg-yellow-500';
-    if (value < 50) colorClass = 'bg-red-500';
+    if (value >= 100) colorClass = 'bg-emerald-500';
+    else if (value < 85) colorClass = 'bg-amber-500';
+    if (value < 50) colorClass = 'bg-rose-500';
 
     return (
         <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 my-1 relative overflow-hidden">
@@ -163,7 +163,7 @@ export const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
             ></div>
              {percentage > 100 && (
                 <div 
-                    className="absolute top-0 left-0 h-full bg-green-300 rounded-full"
+                    className="absolute top-0 left-0 h-full bg-emerald-300 rounded-full"
                     style={{ width: `${Math.min(percentage - 100, 100)}%` }}
                 ></div>
              )}
