@@ -143,7 +143,7 @@ export default function CouponConverterView() {
         <main className="h-full w-full flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-y-auto">
             <div className="w-full max-w-[960px] mx-auto relative z-10 flex flex-col h-full min-h-[600px]">
                 <header className="text-center mb-10 shrink-0">
-                    <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
+                    <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-sky-600 to-rose-600 dark:from-sky-400 dark:to-rose-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
                         Rút gọn Coupon GVGS, EVENT
                     </h1>
                     <div className="text-sm text-slate-500 dark:text-slate-400 max-w-3xl mx-auto font-medium space-y-1">
@@ -173,9 +173,9 @@ export default function CouponConverterView() {
                 </header>
 
                 {errorMessage && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-lg">
+                    <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-lg">
                         <div className="flex items-center gap-3">
-                            <Icon name="alert-triangle" size={6} className="text-red-500" />
+                            <Icon name="alert-triangle" size={6} className="text-rose-500" />
                             <div>
                                 <p className="font-semibold text-sm">Lỗi xử lý</p>
                                 <p className="text-sm mt-0.5 opacity-90">{errorMessage}</p>
@@ -184,7 +184,7 @@ export default function CouponConverterView() {
                         <Button
                             variant="ghost"
                             onClick={() => setErrorMessage('')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors p-1 hover:bg-red-100 dark:hover:bg-red-900/40"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 transition-colors p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40"
                         >
                             <Icon name="x" size={5} />
                         </Button>
@@ -222,7 +222,7 @@ export default function CouponConverterView() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={handleClearAll}
-                                      className="h-8 px-2.5 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 rounded-lg"
+                                      className="h-8 px-2.5 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
                                       title="Xóa toàn bộ"
                                   >
                                       <Icon name="trash-2" size={4} />

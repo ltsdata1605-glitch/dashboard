@@ -282,7 +282,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <h4 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
                                         Dữ liệu đám mây mới
                                     </h4>
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-sky-50 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300 shrink-0">
                                         📊 {pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
                                     </span>
                                 </div>

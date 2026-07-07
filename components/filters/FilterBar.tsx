@@ -294,7 +294,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-mobile-history"
                                 title="Quản lý tệp đã lưu"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="database" size={4} />
                             </Button>
@@ -514,7 +514,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-desktop-history"
                                 title="Quản lý tệp đã lưu"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/10 dark:hover:bg-red-950/20 text-red-600 dark:text-red-500 rounded-full transition-all active:scale-95 group"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/10 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="database" size={4.5} />
                             </Button>
@@ -532,7 +532,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             variant="ghost"
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
                         >
                             <Icon name="settings" size={4.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </Button>

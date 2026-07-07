@@ -19,7 +19,7 @@ export default function AboutView() {
     return (
         <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-32 animate-in fade-in duration-500 max-w-7xl mx-auto">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-5 sm:p-8 text-white shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-sky-800 p-5 sm:p-8 text-white shadow-xl">
                 <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-10 pointer-events-none">
                     <Cpu size={200} className="w-32 h-32 sm:w-48 sm:h-48" />
                 </div>
@@ -108,7 +108,7 @@ export default function AboutView() {
                 {/* 2. Quản Lý & Tự Động Hoá */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="bg-slate-50 dark:bg-slate-800/80 p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2.5 sm:gap-3">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center">
                             <Users className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-white">Quản Lý & Tự Động Hoá</h3>
@@ -124,7 +124,7 @@ export default function AboutView() {
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300"><strong className="text-slate-800 dark:text-slate-200">An toàn Dữ liệu:</strong> Cơ chế Backup / Restore cấu hình hệ thống an toàn qua IndexedDB, bảo mật tuyệt đối (Client-side) không truyền tải dữ liệu nhạy cảm.</span>
                             </li>
                             <li className="flex gap-2.5 sm:gap-3">
-                                <Users className="text-teal-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <Users className="text-sky-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300"><strong className="text-slate-800 dark:text-slate-200">Phân quyền RBAC:</strong> Quản trị truy cập chặt chẽ từ Admin đến Member với hệ thống phân tầng tài chính tuyệt mật.</span>
                             </li>
                         </ul>

@@ -19,9 +19,9 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
             };
         }
         switch (colorStr) {
-            case 'violet': return {
-                bg: 'bg-violet-50 dark:bg-violet-900/20', iconBg: 'bg-violet-100 dark:bg-violet-900/40',
-                iconColor: 'text-violet-600 dark:text-violet-400', textColor: 'text-violet-700 dark:text-violet-300', switchBg: 'bg-violet-600'
+            case 'sky': return {
+                bg: 'bg-sky-50 dark:bg-sky-900/20', iconBg: 'bg-sky-100 dark:bg-sky-900/40',
+                iconColor: 'text-sky-600 dark:text-sky-400', textColor: 'text-sky-700 dark:text-sky-300', switchBg: 'bg-sky-600'
             };
             case 'emerald': return {
                 bg: 'bg-emerald-50 dark:bg-emerald-900/20', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
@@ -149,7 +149,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
     const [isGtdhModalOpen, setGtdhModalOpen] = useState(false);
 
     const visibilityOptions = [
-        { key: 'trendChart', label: 'Xu hướng doanh thu', icon: 'area-chart', color: 'violet' },
+        { key: 'trendChart', label: 'Xu hướng doanh thu', icon: 'area-chart', color: 'sky' },
         { key: 'industryGrid', label: 'Tỷ trọng ngành hàng', icon: 'layout-grid', color: 'emerald' },
         { key: 'employeeAnalysis', label: 'Phân tích nhân viên', icon: 'users-round', color: 'rose' },
         { key: 'summaryTable', label: 'Chi tiết ngành hàng', icon: 'table', color: 'amber' },
