@@ -293,6 +293,33 @@ export function useNhanVienData(isActive?: boolean) {
         await db.set(`bonus-data-${safeName}`, { ...currentDbData, [originalName]: metrics });
     }, [activeSupermarkets]);
 
+    // Ghi hàng loạt cho chế độ Tự động — 1 lần đọc/ghi db thay vì gọi handleSaveBonus lặp
+    // N lần (read-modify-write không khóa, gọi lặp nhanh có nguy cơ ghi đè lẫn nhau).
+    const handleSaveBonusBatch = useCallback(async (entries: { originalName: string; metrics: BonusMetrics }[]) => {
+        if (entries.length === 0) return;
+        const safeName = shortenSupermarketName(activeSupermarkets[0]);
+
+        setAggregatedData(prev => {
+            const nextBonusData = { ...prev.bonusData };
+            entries.forEach(({ originalName, metrics }) => { nextBonusData[originalName] = metrics; });
+            return { ...prev, bonusData: nextBonusData };
+        });
+
+        const currentDbData = await db.get(`bonus-data-${safeName}`) || {};
+        const mergedDbData = { ...currentDbData };
+        entries.forEach(({ originalName, metrics }) => { mergedDbData[originalName] = metrics; });
+        await db.set(`bonus-data-${safeName}`, mergedDbData);
+
+        // Ghi lịch sử từng nhân viên, đúng key scheme BonusDataModal đang dùng (bonus-history-*),
+        // để chế độ Tự động không tạo khoảng trống dữ liệu so với dán tay.
+        const historySupermarket = activeSupermarkets[0];
+        await Promise.all(entries.map(async ({ originalName, metrics }) => {
+            const historyKey = `bonus-history-${historySupermarket}-${originalName}` as const;
+            const currentHistory = await db.get(historyKey) || [];
+            await db.set(historyKey, [...currentHistory, metrics].slice(-30));
+        }));
+    }, [activeSupermarkets]);
+
     const effectiveAggregatedWeights = useMemo(() => {
         if (isActive === false) return {};
         if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
@@ -331,6 +358,7 @@ export function useNhanVienData(isActive?: boolean) {
         toggleSupermarket,
         toggleDepartment,
         handleSaveBonus,
+        handleSaveBonusBatch,
         setAggregatedData,
         dataVersion
     };

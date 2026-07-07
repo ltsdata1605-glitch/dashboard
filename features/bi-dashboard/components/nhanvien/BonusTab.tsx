@@ -5,7 +5,8 @@ import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { XIcon, UsersIcon, UploadIcon, ClockIcon, ViewListIcon, ViewGridIcon, CalendarIcon } from '../Icons';
 import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
-import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers';
+import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
+import { parseBonusBlock } from '../../utils/bonusParser';
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -16,6 +17,8 @@ import { BonusMobileCard } from './bonus/BonusMobileCard';
 import { BonusDesktopRow } from './bonus/BonusDesktopRow';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
+import { AutoBonusPanel } from './bonus/AutoBonusPanel';
+import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
 import toast from 'react-hot-toast';
 
 let hrmWindowRef: Window | null = null;
@@ -56,32 +59,9 @@ export const BonusDataModal: React.FC<{
     }, [employee.originalName]);
 
     const processAndSave = async (data: string) => {
-        const lines = data.split('\n').filter(l => l.trim());
-        const totalLine = lines.find(l => l.startsWith('Tổng cộng'));
-        if (!totalLine) { setError('Không tìm thấy dòng Tổng cộng. Hãy đảm bảo bạn copy đủ bảng từ HRM.'); return false; }
-        const parts = totalLine.split('\t');
-        const erp = parseNumber(parts[2]) - parseNumber(parts[3]), tNong = parseNumber(parts[4]), tong = parseNumber(parts[8]);
-        const dateRows = lines.filter(l => /^\d{2}\/\d{2}\/\d{4}/.test(l));
-        if (dateRows.length === 0) { setError('Không xác định được số ngày dữ liệu.'); return false; }
-        const dParts = dateRows[dateRows.length - 1].split('\t')[0].split('/');
-        const daysInMonth = new Date(Number(dParts[2]), Number(dParts[1]), 0).getDate();
-        
-        const daily: Record<string, number> = {};
-        dateRows.forEach(row => {
-            const rowParts = row.split('\t');
-            if (rowParts.length > 8) {
-                const dateStr = rowParts[0].trim();
-                daily[dateStr] = parseNumber(rowParts[8]);
-            }
-        });
-        
-        const metrics: BonusMetrics = { 
-            erp, tNong, tong, 
-            dKien: (tong / dateRows.length) * daysInMonth, 
-            pNong: tong > 0 ? (tNong / tong) * 100 : 0, 
-            updatedAt: new Date().toLocaleString('vi-VN'),
-            dailyData: daily
-        };
+        const result = parseBonusBlock(data);
+        if ('error' in result) { setError(result.error); return false; }
+        const { metrics } = result;
 
         const historyKey = `bonus-history-${supermarketName}-${employee.originalName}`;
         const currentHistory = await db.get(historyKey) || [];
@@ -228,18 +208,19 @@ function getWeekdayAbbr(dateStr: string): string {
     return `T${day + 1}`;
 }
 
-export const BonusView: React.FC<{ 
-    employees: Employee[]; 
-    bonusData: Record<string, BonusMetrics | null>; 
-    revenueRows: any; 
-    supermarketName: string; 
-    onEmployeeClick: (emp: Employee) => void; 
+export const BonusView: React.FC<{
+    employees: Employee[];
+    bonusData: Record<string, BonusMetrics | null>;
+    revenueRows: any;
+    supermarketName: string;
+    onEmployeeClick: (emp: Employee) => void;
     onBatchUpdate: () => void;
-    highlightedEmployees: Set<string>; 
+    autoBridge: UseBonusAutoBridgeResult;
+    highlightedEmployees: Set<string>;
     activeDepartments: string[];
     isActive?: boolean;
-}> = React.memo(({ 
-    employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate,
+}> = React.memo(({
+    employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate, autoBridge,
     highlightedEmployees, activeDepartments, isActive
 }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -646,6 +627,7 @@ export const BonusView: React.FC<{
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Cập nhật thưởng</span>
                     </Button>
+                    <AutoBonusPanel autoBridge={autoBridge} onUseManual={onBatchUpdate} />
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>

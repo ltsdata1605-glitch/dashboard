@@ -13,6 +13,7 @@ import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
+import { useBonusAutoBridge } from '../hooks/useBonusAutoBridge';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
@@ -91,6 +92,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         toggleSupermarket,
         toggleDepartment,
         handleSaveBonus,
+        handleSaveBonusBatch,
         dataVersion
     } = data;
 
@@ -127,6 +129,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             setEditingBonusEmployee(allEmployees[0]);
         }
     }, [allEmployees]);
+
+    const bonusAutoBridge = useBonusAutoBridge(allEmployees, handleSaveBonusBatch);
 
     const { runWorkerTask } = useWorker();
     const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>>({} as Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>);
@@ -420,9 +424,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                                     bonusData={aggregatedData.bonusData} 
                                     revenueRows={revenueRows} 
                                     supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
-                                    onEmployeeClick={setEditingBonusEmployee} 
+                                    onEmployeeClick={setEditingBonusEmployee}
                                     onBatchUpdate={startBatchBonusUpdate}
-                                    highlightedEmployees={highlightedEmployees} 
+                                    autoBridge={bonusAutoBridge}
+                                    highlightedEmployees={highlightedEmployees}
                                     activeDepartments={effectiveActiveDepartments} 
                                     isActive={isActive && activeTab === 'bonus'}
                                 />
