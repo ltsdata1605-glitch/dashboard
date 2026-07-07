@@ -102,7 +102,7 @@ const BulkRenameModal: React.FC<{
                         </div>}
                 </div>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50 shrink-0">
-                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
+                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
                     <Button variant="ghost" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
                 </div>
             </div>
@@ -236,13 +236,13 @@ const StatusTile: React.FC<{
                         e.stopPropagation();
                         onClear(title);
                     }}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 hover:border-red-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
                     title="Xoá"
                 >
                     <TrashIcon className="h-3.5 w-3.5" />
                 </Button>
             )}
-            {error && <p className="mt-1 text-[10px] text-red-500 dark:text-red-400 animate-in fade-in duration-200 px-1">{error}</p>}
+            {error && <p className="mt-1 text-[10px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200 px-1">{error}</p>}
         </div>
     );
 };
@@ -300,7 +300,7 @@ const CompetitionTarget: React.FC<{
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-center mb-2 px-1">
                 <div className="flex items-center gap-2">
-                    <div className="w-1 h-3 bg-orange-600 rounded-full"></div>
+                    <div className="w-1 h-3 bg-amber-600 rounded-full"></div>
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
@@ -550,7 +550,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             variant="ghost"
                             key={t.id}
                             onClick={() => setActiveTab(t.id as ConfigTab)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-sky-600 text-sky-600 dark:border-sky-500 dark:text-sky-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
                         >
                             {t.label}
                         </Button>
@@ -559,7 +559,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                 <div className="shrink-0 pb-1 flex items-center pr-2">
                     <a
                         ref={bookmarkletRef}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded-full border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded-full border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
                         title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) của trình duyệt"
                         onClick={(e) => {
                             e.preventDefault();
@@ -607,7 +607,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         {/* NHÓM 2: BC D.THU THEO NHÂN VIÊN */}
                         <div>
                             <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm"></div>
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
                                 BC D.Thu theo NV
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">

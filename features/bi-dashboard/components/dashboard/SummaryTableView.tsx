@@ -15,13 +15,13 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
 
     // DT THỰC (doanh thu thực tế)
-    'DTLK': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
-    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
-    
+    'DTLK': { label: 'DT THỰC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
+    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
+
     // DOANH THU QĐ (quy đổi)
-    'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
     
     // HIỆU QUẢ
     'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
@@ -34,20 +34,20 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
     
     // TRAFFIC
-    'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
-    'Lượt Bill Bán Hàng': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
-    'Lượt bill': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
-    'TLPVTC LK': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
-    'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Lượt Bill Bán Hàng': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Lượt bill': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'TLPVTC LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
     
     // TRẢ CHẬM
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
     
     // KHÁC
     'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', text: 'text-fuchsia-800 dark:text-fuchsia-300' },
@@ -265,7 +265,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Tên miền');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -392,7 +392,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const getHtColor = (pct: number) => {
         if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
         if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
-        return { bg: 'bg-red-500', text: 'text-white', badge: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' };
+        return { bg: 'bg-rose-500', text: 'text-white', badge: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' };
     };
 
     // Find the portal target in the DashboardHeader action bar
@@ -536,8 +536,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const smKey = row[nameIdx];
     
                                                 let colorCls = '';
-                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
-                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-orange-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
+                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
+                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
                                                 if (h === 'DTQĐ') colorCls = ' text-indigo-700 dark:text-indigo-400 font-semibold';
     
                                                 return (
@@ -555,7 +555,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             <div className="flex flex-col items-center leading-tight justify-center">
                                                                 <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
                                                                 <span className={`text-[8px] font-black ${
-                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
                                                                 }`}>
                                                                     {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                                 </span>

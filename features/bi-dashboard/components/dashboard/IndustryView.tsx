@@ -37,14 +37,14 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-700 dark:text-violet-400' },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT TRẢ CHẬM': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'DT TRẢ CHẬM': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'Đơn giá': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
     'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
 };
@@ -96,7 +96,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Nhóm ngành hàng');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -364,7 +364,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const getHtColor = (pct: number) => {
         if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
         if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
-        return { bg: 'bg-red-500', text: 'text-white', badge: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' };
+        return { bg: 'bg-rose-500', text: 'text-white', badge: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' };
     };
 
     // --- Shared cell rendering logic ---
@@ -460,7 +460,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         {(isReportMode && headerName === '% HT Target Ngày (QĐ)' && parseNumber(reportTargets[isTotalRow ? 'TỔNG CỘNG' : String(fullRow[0]).replace('NNH ', '').trim()] || '') <= 0) ? (
                             <span className="text-slate-400">-</span>
                         ) : (
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
                                 {roundUp(computedValue)}%
                             </span>
                         )}
@@ -490,7 +490,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
                 else if (numericValue >= 85) cellClasses += ' !text-amber-500 dark:!text-amber-500';
-                else if (numericValue > 0) cellClasses += ' !text-red-500 dark:!text-red-500';
+                else if (numericValue > 0) cellClasses += ' !text-rose-500 dark:!text-rose-500';
             }
         } else {
             cellClasses += originalCellIndex === 0 ? ' font-bold text-slate-700 dark:text-slate-300' : ' font-bold';
@@ -498,11 +498,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
                 else if (numericValue >= 85) cellClasses += ' text-amber-600 dark:text-amber-400 font-bold';
-                else if (numericValue > 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
+                else if (numericValue > 0) cellClasses += ' text-rose-600 dark:text-rose-400 font-bold';
                 else cellClasses += ' text-slate-700 dark:text-slate-300';
             } else if (isQdCkCol && !isNaN(numericValue)) {
                 if (numericValue > 20) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
-                else if (numericValue < 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
+                else if (numericValue < 0) cellClasses += ' text-rose-600 dark:text-rose-400 font-bold';
                 else cellClasses += ' text-slate-700 dark:text-slate-300';
             } else if (!isDtqdCol) {
                 cellClasses += ' text-slate-700 dark:text-slate-300';
@@ -754,9 +754,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                                 transition-colors duration-100 group
                                                                 ${isTotalRow 
                                                                     ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
-                                                                    : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
-                                                                    : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-gray-50 dark:hover:bg-slate-800/40 border-b border-gray-100 dark:border-slate-700'
-                                                                    : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/10 border-b border-gray-100 dark:border-slate-700'
+                                                                    : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
+                                                                    : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700'
+                                                                    : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-800/10 border-b border-slate-100 dark:border-slate-700'
                                                                 }
                                                             `}
                                                         >
@@ -781,7 +781,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             transition-colors duration-100 group
                                                             ${isTotalRow 
                                                                 ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
-                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
+                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
                                                             }
                                                         `}
                                                     >
