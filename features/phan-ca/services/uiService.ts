@@ -806,8 +806,6 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        console.log(`Bắt đầu chụp ảnh bằng html-to-image: ${filename}...`);
-
         // Use getBoundingClientRect for better accuracy on scaled/cloned elements
         const rect = clone.getBoundingClientRect();
         const exportPadding = 8; // px on each side — must match the padding in htmlToImage style below
@@ -844,8 +842,6 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (!blob) {
             throw new Error("Không thể tạo ảnh từ DOM (kết quả trả về trống).");
         }
-
-        console.log(`Đã tạo ảnh gốc. Mode: ${mode}`);
 
         // Handle based on export mode
         if (mode === 'blob-only') {

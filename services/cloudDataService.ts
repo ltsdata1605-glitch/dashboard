@@ -105,14 +105,14 @@ export async function uploadProcessedData(
 ): Promise<void> {
     if (!user || data.length === 0) return;
 
-    console.log(`[CloudData] Starting upload: ${data.length} rows, file: ${filename}`);
+    console.warn(`[CloudData] Starting upload: ${data.length} rows, file: ${filename}`);
     const startTime = Date.now();
 
     // 1. Clean and chunk data
     const cleanedData = data.map(cleanRow);
     const chunks = chunkData(cleanedData);
 
-    console.log(`[CloudData] Split into ${chunks.length} chunks`);
+    console.warn(`[CloudData] Split into ${chunks.length} chunks`);
 
     // 2. Upload all chunks in parallel using batched writes
     const salesDataRef = collection(db, 'users', user.uid, 'salesData');
@@ -157,14 +157,14 @@ export async function uploadProcessedData(
         });
         if (deletePromises.length > 0) {
             await Promise.all(deletePromises);
-            console.log(`[CloudData] Cleaned up ${deletePromises.length} stale chunks`);
+            console.warn(`[CloudData] Cleaned up ${deletePromises.length} stale chunks`);
         }
     } catch (e) {
         console.warn('[CloudData] Failed to cleanup old chunks:', e);
     }
 
     const elapsed = Date.now() - startTime;
-    console.log(`[CloudData] Upload complete in ${elapsed}ms (${chunks.length} chunks, ${data.length} rows)`);
+    console.warn(`[CloudData] Upload complete in ${elapsed}ms (${chunks.length} chunks, ${data.length} rows)`);
 }
 
 /**
@@ -183,7 +183,7 @@ export async function downloadProcessedData(
     if (!metaSnap.exists()) return null;
 
     const meta = metaSnap.data() as SalesDataMeta;
-    console.log(`[CloudData] Found cloud data: ${meta.totalRows} rows in ${meta.chunkCount} chunks`);
+    console.warn(`[CloudData] Found cloud data: ${meta.totalRows} rows in ${meta.chunkCount} chunks`);
 
     // 2. Download all chunks in parallel
     const chunkPromises: Promise<DataRow[]>[] = [];
@@ -210,7 +210,7 @@ export async function downloadProcessedData(
         }
     }
 
-    console.log(`[CloudData] Downloaded ${allRows.length} rows from cloud`);
+    console.warn(`[CloudData] Downloaded ${allRows.length} rows from cloud`);
     return { data: allRows, meta };
 }
 
@@ -239,5 +239,5 @@ export async function deleteCloudSalesData(user: User): Promise<void> {
         batch.delete(docSnap.ref);
     });
     await batch.commit();
-    console.log(`[CloudData] Deleted all cloud sales data`);
+    console.warn(`[CloudData] Deleted all cloud sales data`);
 }

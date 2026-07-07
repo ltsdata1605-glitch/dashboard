@@ -27,7 +27,7 @@ const SuccessToastBody: React.FC<{ id: string; headline: string; onExpire: () =>
         startRef.current = Date.now();
         const timer = setTimeout(() => { toast.dismiss(id); onExpire(); }, remaining);
         return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [paused]);
 
     const handleEnter = () => {

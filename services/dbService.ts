@@ -1109,7 +1109,7 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
         if (registry.length === 0) {
             const legacySales = await getSalesData();
             if (legacySales && legacySales.data.length > 0) {
-                console.log('[IDB Migration] Chuyển đổi dữ liệu cũ sang cấu trúc đa tệp lịch sử...');
+                console.warn('[IDB Migration] Chuyển đổi dữ liệu cũ sang cấu trúc đa tệp lịch sử...');
                 const legacyId = 'legacy_file_' + Date.now();
                 const legacyItem: UploadedFileRegistryItem = {
                     id: legacyId,
@@ -1625,7 +1625,7 @@ export async function cleanupGarbageKeys(): Promise<void> {
             };
             tx.oncomplete = () => {
                 if (count > 0) {
-                    console.log(`[IDB Cleanup] Cleaned up ${count} recursive lastModified garbage keys.`);
+                    console.warn(`[IDB Cleanup] Cleaned up ${count} recursive lastModified garbage keys.`);
                 }
                 resolve();
             };

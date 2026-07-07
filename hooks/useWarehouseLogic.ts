@@ -162,7 +162,7 @@ export const useWarehouseLogic = ({
         }, 16); // One frame delay to let table render first
 
         return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     }, [originalData, productConfig, dataColumnsHash]);
 
     const customProductColumnValues = useMemo(() => {

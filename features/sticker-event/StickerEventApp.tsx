@@ -270,7 +270,7 @@ export default function App(): React.JSX.Element {
         const cloudLastMod = userState?.updatedAt || 0;
 
         if (userState && cloudLastMod > localLastMod) {
-          console.log(`[Cloud Sync Sticker] Cloud is newer (${cloudLastMod} > ${localLastMod}). Loading cloud state...`);
+          console.warn(`[Cloud Sync Sticker] Cloud is newer (${cloudLastMod} > ${localLastMod}). Loading cloud state...`);
           setDisplayedProducts(userState.displayedProducts);
           setInventoryFilters(userState.inventoryFilters);
           await saveDisplayedProducts(userState.displayedProducts, cloudLastMod);
@@ -281,7 +281,7 @@ export default function App(): React.JSX.Element {
           }
           
           if (userState && localLastMod > cloudLastMod && savedData.displayedProducts?.length) {
-            console.log(`[Cloud Sync Sticker] Local is newer (${localLastMod} > ${cloudLastMod}). Syncing up...`);
+            console.warn(`[Cloud Sync Sticker] Local is newer (${localLastMod} > ${cloudLastMod}). Syncing up...`);
             saveUserState(user.uid, {
               displayedProducts: savedData.displayedProducts,
               inventoryFilters: userState.inventoryFilters || { maSieuThi: [], nganhHang: [], nhomHang: [], keyword: '' }

@@ -103,7 +103,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
             setDrilldownPath([]);
             setTimeout(() => { isSyncing.current = false; }, 80);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     }, [globalParentFilters]);
 
     // ── Sync: drilldownPath[0] → globalParentFilters ─────────────────────────
@@ -124,7 +124,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                 setTimeout(() => { isSyncing.current = false; }, 80);
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     }, [drilldownPath[0]]);
 
     useEffect(() => {

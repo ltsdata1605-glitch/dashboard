@@ -13,7 +13,7 @@ export const pullSettingsFromFirebase = async () => {
             const data = snap.data();
             if (data.settings) {
                 await mergeSettings(data.settings);
-                console.log("[Sync] Đã tải cài đặt cấu hình từ Firebase xuống IndexedDB");
+                console.warn("[Sync] Đã tải cài đặt cấu hình từ Firebase xuống IndexedDB");
             }
         }
     } catch (e) {
@@ -81,7 +81,7 @@ export const pushSettingsToFirebase = async () => {
         // Lọc bỏ các giá trị undefined đệ quy thành null trước khi lưu lên Firestore
         const cleanSettings = JSON.parse(JSON.stringify(settingsToSync, (k, v) => v === undefined ? null : v));
         await setDoc(userRef, { settings: cleanSettings }, { merge: true });
-        console.log(`[Sync] Đã đồng bộ ngầm cài đặt lên Firebase (${(jsonStr.length / 1024).toFixed(0)}KB)`);
+        console.warn(`[Sync] Đã đồng bộ ngầm cài đặt lên Firebase (${(jsonStr.length / 1024).toFixed(0)}KB)`);
     } catch (e) {
         console.error("[Sync] Lỗi push settings lên Firebase:", e);
     }

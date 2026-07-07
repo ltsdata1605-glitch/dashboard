@@ -275,7 +275,6 @@ export function useStickerEventState({
               displayedProducts,
               inventoryFilters
             });
-            console.log("[Cloud Sync Sticker] Auto-saved state to cloud.");
           } catch (e) {
             console.error("[Cloud Sync Sticker] Error auto-saving to cloud:", e);
           }

@@ -173,16 +173,16 @@ const App: React.FC = () => {
               const cloudTime = cloudResult.updatedAt || 0;
               const cloudData = cloudResult.data as T;
               if (cloudTime > localTime || localData === undefined) {
-                  console.log(`[Cloud Sync PhanCa] Cloud is newer for ${key} (${cloudTime} > ${localTime}). Loading cloud...`);
+                  console.warn(`[Cloud Sync PhanCa] Cloud is newer for ${key} (${cloudTime} > ${localTime}). Loading cloud...`);
                   await idb.saveData(key, cloudData, cloudTime);
                   return cloudData;
               } else if (localTime > cloudTime && localData !== undefined) {
-                  console.log(`[Cloud Sync PhanCa] Local is newer for ${key} (${localTime} > ${cloudTime}). Syncing to cloud...`);
+                  console.warn(`[Cloud Sync PhanCa] Local is newer for ${key} (${localTime} > ${cloudTime}). Syncing to cloud...`);
                   await syncScheduleToCloud(user, key, localData);
                   lastSyncedRef.current[key] = JSON.stringify(localData);
               }
           } else if (localData !== undefined) {
-              console.log(`[Cloud Sync PhanCa] Cloud is empty for ${key}. Syncing local to cloud...`);
+              console.warn(`[Cloud Sync PhanCa] Cloud is empty for ${key}. Syncing local to cloud...`);
               await syncScheduleToCloud(user, key, localData);
               lastSyncedRef.current[key] = JSON.stringify(localData);
           }

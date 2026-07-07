@@ -28,7 +28,6 @@ export const CheckThuongView: React.FC = () => {
         };
 
         const handleCloudSync = () => {
-            console.log('[CheckThuongView] Cloud sync event received, notifying iframe...');
             iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
         };
 

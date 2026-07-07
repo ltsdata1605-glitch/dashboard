@@ -197,7 +197,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                                     }
                                 }
                             }
-                            console.log(`[Config] Đã tải ${count} hệ số từ sheet '${sheetName}'.`);
+                            console.warn(`[Config] Đã tải ${count} hệ số từ sheet '${sheetName}'.`);
                         }
                     }
                 } catch (sheetError) {
@@ -248,7 +248,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                                     }
                                 }
                             }
-                            console.log(`[Config] Đã tải ${count} hình thức xuất từ sheet '${htxSheetName}'.`);
+                            console.warn(`[Config] Đã tải ${count} hình thức xuất từ sheet '${htxSheetName}'.`);
                         }
                     }
                 } catch (sheetError) {
@@ -298,7 +298,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                                     }
                                 }
                             }
-                            console.log(`[Config] Đã tải ${count} phân cấp Ngành hàng BI từ sheet '${biSheetName}'.`);
+                            console.warn(`[Config] Đã tải ${count} phân cấp Ngành hàng BI từ sheet '${biSheetName}'.`);
                         }
                     }
                 } catch (sheetError) {

@@ -93,7 +93,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         onRequirementsUpdate(reqsForSelectedDept);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedDept, departmentRequirements]);
 
 

@@ -172,7 +172,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                 const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
 
                                 if (cloudLastMod < localLastMod) {
-                                    console.log('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
+                                    console.warn('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
                                     forcePushLight = true;
                                 } else if (cloudData.settingsStoreBackup) {
                                     const backup = cloudData.settingsStoreBackup;
@@ -205,7 +205,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                 const cloudTime = cloudItem?.updatedAt || 0;
 
                                 if (cloudItem && (localValue === null || cloudTime > localTime)) {
-                                    console.log(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
+                                    console.warn(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
                                     if (cloudItem && cloudItem.value !== undefined) await dbService.saveSettingFromCloud(key, cloudItem.value, cloudTime || Date.now());
                                     
                                     // Ghi đè vào IndexedDB của iframe check-thuong nếu là checkthuong_data
@@ -229,7 +229,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                     
                                     window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
                                 } else if (localTime > cloudTime) {
-                                    console.log(`[Cloud Sync] Local mới hơn Cloud cho khóa nặng "${key}" (${localTime} > ${cloudTime}). Đang đồng bộ lên...`);
+                                    console.warn(`[Cloud Sync] Local mới hơn Cloud cho khóa nặng "${key}" (${localTime} > ${cloudTime}). Đang đồng bộ lên...`);
                                     const localValue = await dbService.getSetting(key);
                                     if (localValue !== null) {
                                         await syncHeavySettingToCloud(user, key, localValue);
@@ -261,17 +261,17 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
 
                             // Skip if same file
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
-                                console.log('[CloudData] Cloud data is same file as local. Skipping.');
+                                console.warn('[CloudData] Cloud data is same file as local. Skipping.');
                                 return;
                             }
 
                             // Only prompt if cloud is newer
                             if (cloudMeta.savedAt > localSavedAt + 15000) {
-                                console.log(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
+                                console.warn(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
                                 const cloudResult = await downloadProcessedData(user);
                                 if (cloudResult && cloudResult.data.length > 0) {
                                     if (localSavedAt === 0) {
-                                        console.log('[CloudSync] Tự động nạp dữ liệu đám mây vì local trống');
+                                        console.warn('[CloudSync] Tự động nạp dữ liệu đám mây vì local trống');
                                         setAppState('loading');
                                         setStatus({ message: `📊 Tự động nạp dữ liệu đám mây (${cloudResult.meta.totalRows.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                                         
@@ -319,21 +319,21 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                     // If cloud timestamp is older or equal to our fetch time (minus a 60s margin to be safe), we don't need to download
                                     if (cloudTimestamp < localTimestamp + 60000) {
                                         shouldDownload = false;
-                                        console.log("[Background Check] Cấu hình ProductConfig trên Sheet chưa có bản mới. (Bỏ qua tải xuống toàn bộ)");
+                                        console.warn("[Background Check] Cấu hình ProductConfig trên Sheet chưa có bản mới. (Bỏ qua tải xuống toàn bộ)");
                                     }
                                 }
                             }
 
                             if (shouldDownload) {
-                                console.log("[Background Check] Có thể có cấu hình mới, bắt đầu tải toàn bộ...");
+                                console.warn("[Background Check] Có thể có cấu hình mới, bắt đầu tải toàn bộ...");
                                 const latestConfig = await loadConfigFromSheet(configUrl, () => {});
                                 const serializeConfig = (c: any) => JSON.stringify(c, (key, value) => (value instanceof Set ? Array.from(value).sort() : value));
                                 if (serializeConfig(config) !== serializeConfig(latestConfig)) {
-                                    console.log("Phát hiện cấu hình ProductConfig mới từ Google Sheet, tự động nạp ngầm & lưu lên mây...");
+                                    console.warn("Phát hiện cấu hình ProductConfig mới từ Google Sheet, tự động nạp ngầm & lưu lên mây...");
                                     dbService.saveProductConfig(latestConfig, configUrl).catch(console.error);
                                     setProductConfig(latestConfig);
                                 } else {
-                                    console.log("[Background Check] Cấu hình ProductConfig trên Sheet không thay đổi so với hiện tại.");
+                                    console.warn("[Background Check] Cấu hình ProductConfig trên Sheet không thay đổi so với hiện tại.");
                                 }
                             }
                         } catch (updateError) {

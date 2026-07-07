@@ -25,7 +25,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
         });
 
         if (alreadyDone) {
-            console.log('[BI Migration] Đã migrate trước đó, bỏ qua.');
+            console.warn('[BI Migration] Đã migrate trước đó, bỏ qua.');
             newDb.close();
             return;
         }
@@ -44,7 +44,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
         });
 
         if (!oldDb.objectStoreNames.contains(OLD_STORE_NAME)) {
-            console.log('[BI Migration] Database cũ không có store, bỏ qua.');
+            console.warn('[BI Migration] Database cũ không có store, bỏ qua.');
             oldDb.close();
             return;
         }
@@ -60,14 +60,14 @@ export async function migrateClusterDataToMain(): Promise<void> {
 
         oldDb.close();
     } catch (e) {
-        console.log('[BI Migration] Database cũ không tồn tại hoặc rỗng, bỏ qua.', e);
+        console.warn('[BI Migration] Database cũ không tồn tại hoặc rỗng, bỏ qua.', e);
         // Vẫn đánh cờ để không thử lại
         await setMigrationFlag();
         return;
     }
 
     if (oldData.length === 0) {
-        console.log('[BI Migration] Không có dữ liệu cũ để migrate.');
+        console.warn('[BI Migration] Không có dữ liệu cũ để migrate.');
         await setMigrationFlag();
         return;
     }
@@ -113,12 +113,12 @@ export async function migrateClusterDataToMain(): Promise<void> {
                 writeTx.onerror = () => reject(writeTx.error);
             });
 
-            console.log(`[BI Migration] ✅ Đã migrate thành công ${writesToMake.length}/${oldData.length} mục từ ClusterDataDB sang BI_HUB_DATABASE_V2.`);
+            console.warn(`[BI Migration] ✅ Đã migrate thành công ${writesToMake.length}/${oldData.length} mục từ ClusterDataDB sang BI_HUB_DATABASE_V2.`);
             
             // Thông báo cho Cloud Sync biết có dữ liệu mới cần push
             window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_migration_complete' } }));
         } else {
-            console.log('[BI Migration] Tất cả dữ liệu cũ đã được migrate trước đó.');
+            console.warn('[BI Migration] Tất cả dữ liệu cũ đã được migrate trước đó.');
             await setMigrationFlag();
         }
 
@@ -208,7 +208,7 @@ export async function migrateOldAvatars(): Promise<void> {
         }
 
         if (writesToMake.length > 0) {
-            console.log(`[BI Avatar Migration] Phát hiện ${writesToMake.length} ảnh đại diện cũ cần di chuyển.`);
+            console.warn(`[BI Avatar Migration] Phát hiện ${writesToMake.length} ảnh đại diện cũ cần di chuyển.`);
             const writeTx = db.transaction([NEW_STORE_NAME], 'readwrite');
             const writeStore = writeTx.objectStore(NEW_STORE_NAME);
             
@@ -216,7 +216,6 @@ export async function migrateOldAvatars(): Promise<void> {
             for (const write of writesToMake) {
                 writeStore.put(write.value, write.key);
                 writeStore.put(now, `lastModified_${write.key}`);
-                console.log(`[BI Avatar Migration] Đang ghi key mới: ${write.key}`);
             }
             writeStore.put(now, 'localSettingsLastModified');
             
@@ -224,10 +223,10 @@ export async function migrateOldAvatars(): Promise<void> {
                 writeTx.oncomplete = () => resolve();
                 writeTx.onerror = () => reject(writeTx.error);
             });
-            console.log(`[BI Avatar Migration] ✅ Di chuyển thành công ${writesToMake.length} ảnh đại diện cũ.`);
+            console.warn(`[BI Avatar Migration] ✅ Di chuyển thành công ${writesToMake.length} ảnh đại diện cũ.`);
             window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_avatar_migration_complete' } }));
         } else {
-            console.log('[BI Avatar Migration] Không có ảnh đại diện cũ nào cần di chuyển.');
+            console.warn('[BI Avatar Migration] Không có ảnh đại diện cũ nào cần di chuyển.');
         }
         db.close();
     } catch (e) {

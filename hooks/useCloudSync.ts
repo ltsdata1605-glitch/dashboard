@@ -122,7 +122,7 @@ export const useCloudSync = () => {
             
             // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
             if (hasUnsavedChanges.current) {
-                console.log('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
+                console.warn('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
                 return;
             }
             
@@ -135,7 +135,7 @@ export const useCloudSync = () => {
             const localLastMod = await getSetting<number>('localSettingsLastModified') || 0;
 
             if (cloudLastMod > localLastMod) {
-                console.log(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
+                console.warn(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
                 const backup = data.settingsStoreBackup;
                 if (backup) {
                     for (const [k, v] of Object.entries(backup)) {
@@ -160,7 +160,7 @@ export const useCloudSync = () => {
                     
                     // Skip updating if a local write for this heavy key is debounced/pending
                     if (heavyTimeoutsRef.current[key]) {
-                        console.log(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
+                        console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
                         continue;
                     }
                     
@@ -175,7 +175,7 @@ export const useCloudSync = () => {
                     const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
                     
                     if (localValue === null || cloudTime > localTime) {
-                        console.log(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
+                        console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
                         
                         let val = data.value;
                         if (key === 'productConfig' && val && val.config && val.config.groups) {
@@ -218,7 +218,7 @@ export const useCloudSync = () => {
                         const value = await getSetting(key);
                         if (value !== null) {
                             await syncHeavySettingToCloud(user, key, value);
-                            console.log(`[Cloud Sync] Tự động đồng bộ khóa nặng "${key}" lên Firestore.`);
+                            console.warn(`[Cloud Sync] Tự động đồng bộ khóa nặng "${key}" lên Firestore.`);
                         }
                     } catch (err) {
                         console.error(`[Cloud Sync] Đồng bộ khóa nặng "${key}" thất bại:`, err);
@@ -278,7 +278,7 @@ export const useCloudSync = () => {
                         const value = await getSetting(key);
                         if (value !== null) {
                             await syncHeavySettingToCloud(user, key, value);
-                            console.log(`[Cloud Sync] Đồng bộ khẩn cấp khóa nặng "${key}" trước khi đóng trang.`);
+                            console.warn(`[Cloud Sync] Đồng bộ khẩn cấp khóa nặng "${key}" trước khi đóng trang.`);
                         }
                     } catch (err) {
                         console.error(`[Cloud Sync] Đồng bộ khẩn cấp khóa nặng "${key}" thất bại:`, err);

@@ -85,7 +85,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
             maps[m.yyyymm] = computeRankMap(entries);
         });
         return maps;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [employees, dataByMonth, orderedMonths]);
 
     // Chỉ xếp hạng những NV có ít nhất 1 tháng dữ liệu — NV chưa có dữ liệu nào không nên
@@ -94,14 +94,14 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
         employees.filter(e => getMonthsWithData(e.originalName).length > 0)
             .map(e => ({ originalName: e.originalName, value: getAverage(e.originalName) })),
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [employees, dataByMonth, orderedMonths]);
 
     const totalRankMap = useMemo(() => computeRankMap(
         employees.filter(e => getMonthsWithData(e.originalName).length > 0)
             .map(e => ({ originalName: e.originalName, value: getTotal(e.originalName) })),
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [employees, dataByMonth, orderedMonths]);
 
     const handleSort = (field: string) => {
@@ -119,7 +119,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
             return sortDir === 'asc' ? vA - vB : vB - vA;
         });
         return arr;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [employees, sortField, sortDir, dataByMonth, orderedMonths]);
 
     if (loading) {
