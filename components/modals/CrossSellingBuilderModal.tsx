@@ -258,10 +258,10 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 <Button variant="ghost" onClick={() => addColumn('target')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
                                     <Icon name="target" size={3} className="sm:hidden" /><Icon name="target" size={3.5} className="hidden sm:block" /> Mục Tiêu
                                 </Button>
-                                <Button variant="ghost" onClick={() => addColumn('data')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800">
+                                <Button variant="ghost" onClick={() => addColumn('data')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                     <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Dữ Liệu
                                 </Button>
-                                <Button variant="ghost" onClick={() => addColumn('ratio')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-fuchsia-50 dark:bg-fuchsia-900/30 text-fuchsia-600 dark:text-fuchsia-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/50 transition border border-fuchsia-200 dark:border-fuchsia-800">
+                                <Button variant="ghost" onClick={() => addColumn('ratio')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
                                     <Icon name="percent" size={3} className="sm:hidden" /><Icon name="percent" size={3.5} className="hidden sm:block" /> Tỉ Lệ
                                 </Button>
                             </div>
@@ -270,7 +270,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                         <div className="p-2.5 sm:p-4 space-y-2.5 sm:space-y-3">
                             {config.columns.map((col, cIdx) => (
                                 <div key={col.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                    <div className={`w-12 flex items-center justify-center rounded font-black text-sm ${col.type === 'target' ? 'bg-amber-100 text-amber-600' : col.type === 'ratio' ? 'bg-fuchsia-100 text-fuchsia-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    <div className={`w-12 flex items-center justify-center rounded font-black text-sm ${col.type === 'target' ? 'bg-amber-100 text-amber-600' : col.type === 'ratio' ? 'bg-rose-100 text-rose-600' : 'bg-sky-100 text-sky-600'}`}>
                                         Cột {cIdx + 1}
                                     </div>
                                     <div className="flex-1 space-y-2">
@@ -312,7 +312,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             )}
                                             {col.type === 'ratio' && (
                                                 <div className="flex-1 flex flex-col gap-1.5">
-                                                    <div className="flex items-center gap-2 bg-fuchsia-50 dark:bg-fuchsia-900/10 p-1 rounded-md border border-fuchsia-100 dark:border-fuchsia-900/50">
+                                                    <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-900/10 p-1 rounded-md border border-rose-100 dark:border-rose-900/50">
                                                         <Select 
                                                             value={col.numeratorColId || ''} 
                                                             onChange={e => updateColumn(col.id, 'numeratorColId', e.target.value)}
@@ -323,7 +323,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                                 <option key={c.id} value={c.id}>Cột: {c.name}</option>
                                                             ))}
                                                         </Select>
-                                                        <span className="font-black text-fuchsia-500">/</span>
+                                                        <span className="font-black text-rose-500">/</span>
                                                         <Select 
                                                             value={col.denominatorColId || ''} 
                                                             onChange={e => updateColumn(col.id, 'denominatorColId', e.target.value)}
@@ -340,7 +340,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                             type="checkbox" 
                                                             checked={col.compareWithTarget || false}
                                                             onChange={e => updateColumn(col.id, 'compareWithTarget', e.target.checked)}
-                                                            className="rounded text-fuchsia-500 focus:ring-fuchsia-500 outline-none"
+                                                            className="rounded text-rose-500 focus:ring-rose-500 outline-none"
                                                         />
                                                         So sánh bôi xanh/đỏ với Target của Dòng?
                                                     </label>

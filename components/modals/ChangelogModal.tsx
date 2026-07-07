@@ -36,7 +36,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                         <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
                     </div>
                 </div>
-                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
+                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
                     <Icon name="x" size={4} className="sm:hidden" />
                     <Icon name="x" size={5} className="hidden sm:block" />
                 </Button>
@@ -59,7 +59,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                             <span><strong>Hệ thống Nạp Cấu Hình Mẫu:</strong> Nút One-Click thần thánh dựng lại khung báo cáo chuẩn ngành hàng (ICT, CE, Tử Lạnh, Bảo Hiểm...) với đầy đủ bộ lọc nhóm con 100% ngay lập tức mà không cần tốn 10 phút click tay.</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="gallery-horizontal-end" size={4} className="text-pink-500 shrink-0 mt-0.5" />
+                            <Icon name="gallery-horizontal-end" size={4} className="text-rose-500 shrink-0 mt-0.5" />
                             <span><strong>Trải nghiệm Load siêu thực (Skeleton Blur):</strong> Kỹ thuật làm mờ UI nền thay thế cho màn hình trắng truyền thống. Tận hưởng cảm giác màn hình Dashboard chuyển động mượt mà trong lúc dữ liệu tải lại.</span>
                         </li>
                         <li className="flex gap-2">
@@ -80,11 +80,11 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                             <span><strong>Tối ưu hóa hiệu năng cực hạn (Web Worker):</strong> Xử lý dữ liệu Excel khổng lồ (100MB+) dưới nền. Giao diện hoàn toàn không bị đơ hay treo trong suốt quá trình xử lý.</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="database" size={4} className="text-blue-500 shrink-0 mt-0.5" />
+                            <Icon name="database" size={4} className="text-sky-500 shrink-0 mt-0.5" />
                             <span><strong>Lưu trữ trạng thái toàn diện (IndexedDB):</strong> Mọi thao tác lọc (phòng ban, kho, thời gian, nhà sản xuất,...), sắp xếp và cấu hình hiển thị đều được tự động lưu lại. Không bao giờ mất dữ liệu khi tải lại trang!</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="scan-line" size={4} className="text-green-500 shrink-0 mt-0.5" />
+                            <Icon name="scan-line" size={4} className="text-emerald-500 shrink-0 mt-0.5" />
                             <span><strong>Loại bỏ code thừa & Tái cấu trúc:</strong> Xóa bỏ triệt để các tính năng/thành phần không còn sử dụng. Cơ sở mã nguồn được tối ưu và chia tách thành các module siêu nhỏ nhắn, tăng tốc độ tải trang cực nhanh.</span>
                         </li>
                         <li className="flex gap-2">

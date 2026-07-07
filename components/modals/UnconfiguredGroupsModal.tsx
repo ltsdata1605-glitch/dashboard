@@ -78,7 +78,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </p>
                     </div>
                 </div>
-                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                     <Icon name="x" size={4} />
                 </Button>
             </div>

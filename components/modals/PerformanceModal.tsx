@@ -27,8 +27,8 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
         <div className={`flex-1 p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow border-l-[3px] sm:border-l-4 border-${color}-500 flex flex-col justify-center gap-0.5 sm:gap-1`}>
             {/* Color mapping for JIT compiler */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
-            {/* border-green-500 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 */}
-            {/* border-red-500 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 */}
+            {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 */}
+            {/* border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 */}
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
             {/* border-purple-500 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 */}
             {/* border-cyan-500 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400 */}
@@ -272,7 +272,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         <span className="font-bold text-slate-700 dark:text-slate-200">{formatCurrency(employeeData.doanhThuThuc)}</span>
                     </div>
                 </KpiCard>
-                <KpiCard icon="trending-up" label="Hiệu Quả QĐ" value={`${employeeData.hieuQuaValue.toFixed(0)}%`} color={employeeData.hieuQuaValue >= 40 ? 'green' : 'red'} />
+                <KpiCard icon="trending-up" label="Hiệu Quả QĐ" value={`${employeeData.hieuQuaValue.toFixed(0)}%`} color={employeeData.hieuQuaValue >= 40 ? 'emerald' : 'rose'} />
                 <KpiCard icon="clock" label="% T.Chậm" value={`${employeeData.traChamPercent.toFixed(0)}%`} color="amber">
                     <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
                         <span>%TG CE+ICT: <span className="font-black text-amber-700 dark:text-amber-400">{employeeData.traChamPercent_CE_ICT.toFixed(0)}%</span></span>
@@ -281,7 +281,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </KpiCard>
                 <KpiCard icon="shopping-bag" label="ĐH B.Kèm" value={formatQuantity(attachOrdersMetrics.count)} color="cyan">
                     <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
-                        <span>%BK: <span className="font-black text-blue-700 dark:text-blue-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></span>
+                        <span>%BK: <span className="font-black text-sky-700 dark:text-sky-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></span>
                         <span>Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} đơn</span></span>
                     </div>
                 </KpiCard>
@@ -311,7 +311,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
-                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-teal-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-teal-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
+                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-sky-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-sky-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
                     <div className={(isBatchExporting || isExporting) ? "flex-1" : "flex-1 overflow-y-auto"}>
                     {(() => {
                         const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
@@ -394,13 +394,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
-                             <summary className="py-1 sm:py-1.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
-                                <p className="font-bold text-xs sm:text-sm text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
+                             <summary className="py-1 sm:py-1.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
+                                <p className="font-bold text-xs sm:text-sm text-sky-950 dark:text-sky-100 pl-1">{customer.name.toUpperCase()}</p>
                                 <div className="flex items-center gap-x-2 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[9px] sm:text-[11px] font-semibold">
                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
-                                    <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(customer.totalRevenue)}</span></span>
-                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
-                                    <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-red-500' : 'text-green-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
+                                    <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-600 dark:text-rose-400">{formatCurrency(customer.totalRevenue)}</span></span>
+                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
+                                    <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                         <Icon name="chevron-down" />
                                     </div>
@@ -447,7 +447,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     <div className="flex flex-col items-start justify-center gap-0.5">
                                                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 break-all">{orderId}</span>
                                                                         {group.isAttached && (
-                                                                            <span className="inline-flex w-fit items-center px-1.5 py-1 rounded text-[9px] font-black uppercase bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-100 shadow-sm leading-none ring-1 ring-green-300/30">
+                                                                            <span className="inline-flex w-fit items-center px-1.5 py-1 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
                                                                                 Bán kèm
                                                                             </span>
                                                                         )}
@@ -469,13 +469,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                             {lineIndex === 0 && (
                                                                 <td rowSpan={group.lines.length} className="py-1 px-1.5 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700">
                                                                     {isUnshipped ? (
-                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                                                                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
+                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                                                                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5 animate-pulse"></span>
                                                                             Chưa xuất
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                                                                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
+                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                                                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
                                                                             Đã xuất
                                                                         </span>
                                                                     )}

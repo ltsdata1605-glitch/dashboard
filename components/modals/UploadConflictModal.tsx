@@ -104,7 +104,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                         </span>
                                         <span className={`px-1 rounded text-[8px] font-extrabold uppercase shrink-0 ${
                                             conflict.targetType === 'realtime' 
-                                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' 
+                                            ? 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-400'
                                             : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                                         }`}>
                                             {conflict.targetType === 'realtime' ? 'Bảng ĐK Hiện Tại' : 'Lịch Sử'}

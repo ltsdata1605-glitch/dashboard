@@ -56,7 +56,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Tải lên, gộp và đối chiếu các tệp Excel doanh số lũy kế cũ (ví dụ: tháng trước, năm trước)</p>
                     </div>
                 </div>
-                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
+                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <Icon name="x" size={4} />
                 </Button>
             </div>

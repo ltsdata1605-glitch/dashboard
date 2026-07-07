@@ -485,10 +485,10 @@ Link: ${url}`;
             <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
                  <Icon name="camera" size={4} />
             </Button>
-            <Button onClick={handleExportExcel} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportExcel} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Excel
             </Button>
-            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="ghost" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="ghost" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Sheet
             </Button>
         </div>
@@ -500,7 +500,7 @@ Link: ${url}`;
             onClose={onClose}
             title={`DTQĐ Chờ Xuất: ${formatCurrency(totalUnshippedRevenueQD)}`}
             subTitle="Chi Tiết Đơn Hàng"
-            titleColorClass="text-red-600 dark:text-red-400"
+            titleColorClass="text-rose-600 dark:text-rose-400"
             controls={controls}
             maxWidth="xl"
             noRounded
@@ -509,7 +509,7 @@ Link: ${url}`;
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
-                            <h4 className="font-black text-base sm:text-2xl text-blue-800 dark:text-blue-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
+                            <h4 className="font-black text-base sm:text-2xl text-sky-800 dark:text-sky-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUnshippedRevenue > 0 ? (item.revenue / totalUnshippedRevenue * 100) : 0;
@@ -539,12 +539,12 @@ Link: ${url}`;
                         <div className="mt-4">
                             {creatorData.map(creator => (
                                 <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-900 overflow-hidden" open>
-                                <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
-                                        <p className="font-bold text-sm sm:text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{creator.name}</p>
+                                <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
+                                        <p className="font-bold text-sm sm:text-[17px] text-sky-950 dark:text-sky-100 pl-1">{creator.name}</p>
                                         <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[10px] sm:text-sm font-semibold">
-                                            <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(creator.totalRevenue)}</span></span>
-                                            <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
-                                            <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${creator.hieuQuaQD < 40 ? 'text-red-500' : 'text-green-500'}`}>{creator.hieuQuaQD.toFixed(0)}%</span></span>
+                                            <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-600 dark:text-rose-400">{formatCurrency(creator.totalRevenue)}</span></span>
+                                            <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
+                                            <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${creator.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{creator.hieuQuaQD.toFixed(0)}%</span></span>
                                             <Button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hide-on-export ml-2">
                                                 <Icon name="camera" size={4} />
                                             </Button>
@@ -559,8 +559,8 @@ Link: ${url}`;
                                                 <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
                                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
                                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
-                                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
-                                                    <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-red-500' : 'text-green-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
+                                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
+                                                    <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
                                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                                         <Icon name="chevron-down" />
                                                     </div>
@@ -611,7 +611,7 @@ Link: ${url}`;
                                                                     <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</td>
                                                                     <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(price)}</td>
-                                                                    <td className="py-2.5 px-2 text-right font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
+                                                                    <td className="py-2.5 px-2 text-right font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
                                                                 </tr>
                                                             );
                                                         })}
