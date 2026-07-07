@@ -23,7 +23,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                 {/* Subtle top glare/gradient accent */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-60"></div>
                 <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-[40px] pointer-events-none"></div>
-                <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+                <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-sky-500/20 rounded-full blur-[40px] pointer-events-none"></div>
 
                 {/* Modern Loader Icon */}
                 <div className="relative w-14 h-14 sm:w-20 sm:h-20 mb-4 sm:mb-6 flex items-center justify-center">
@@ -32,7 +32,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     <div className="absolute inset-0 rounded-full border-[2px] sm:border-[3px] border-indigo-600 dark:border-indigo-400 border-t-transparent border-r-transparent animate-spin" style={{ animationDuration: '1.2s' }}></div>
                     
                     {/* Inner glowing icon block */}
-                    <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl shadow-lg shadow-indigo-500/40 flex items-center justify-center text-white transform rotate-3">
+                    <div className="relative bg-gradient-to-br from-indigo-500 to-sky-600 w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl shadow-lg shadow-indigo-500/40 flex items-center justify-center text-white transform rotate-3">
                         <Icon name="cpu" size={4} className="animate-pulse sm:hidden" />
                         <Icon name="cpu" size={5.5} className="animate-pulse hidden sm:block" />
                     </div>
@@ -75,7 +75,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     {/* Minimalist Premium Progress Bar */}
                     <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shadow-inner relative">
                         <div 
-                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 transition-all duration-300 ease-out rounded-full"
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 transition-all duration-300 ease-out rounded-full"
                             style={{ 
                                 width: `${status.progress > 0 ? status.progress : 5}%`,
                                 backgroundSize: '200% 100%',

@@ -7,7 +7,7 @@ interface FilterChipProps {
     label: string;
     value: string | string[];
     onRemove: () => void;
-    color?: 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet';
+    color?: 'indigo' | 'emerald' | 'amber' | 'rose' | 'slate';
 }
 
 const FilterChip: React.FC<FilterChipProps> = ({ 
@@ -21,7 +21,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
             case 'emerald': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30';
             case 'amber': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800/40 hover:bg-amber-100 dark:hover:bg-amber-900/30';
             case 'rose': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/40 hover:bg-rose-100 dark:hover:bg-rose-900/30';
-            case 'violet': return 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-800/40 hover:bg-violet-100 dark:hover:bg-violet-900/30';
+            case 'slate': return 'bg-slate-100 dark:bg-slate-700/40 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700/60';
             default: return 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/30';
         }
     };

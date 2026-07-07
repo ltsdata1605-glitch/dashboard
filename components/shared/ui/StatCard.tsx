@@ -22,7 +22,7 @@ export interface StatCardProps {
   /** Icon displayed in top-right corner */
   icon?: React.ReactNode;
   /** Color accent for icon background */
-  accent?: 'sky' | 'emerald' | 'amber' | 'rose' | 'violet' | 'slate';
+  accent?: 'sky' | 'emerald' | 'amber' | 'rose' | 'slate';
   /** Click handler */
   onClick?: () => void;
   /** Additional className */
@@ -34,7 +34,6 @@ const accentClasses: Record<string, { bg: string; icon: string }> = {
   emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', icon: 'text-emerald-600 dark:text-emerald-400' },
   amber:   { bg: 'bg-amber-50 dark:bg-amber-500/10', icon: 'text-amber-600 dark:text-amber-400' },
   rose:    { bg: 'bg-rose-50 dark:bg-rose-500/10', icon: 'text-rose-600 dark:text-rose-400' },
-  violet:  { bg: 'bg-violet-50 dark:bg-violet-500/10', icon: 'text-violet-600 dark:text-violet-400' },
   slate:   { bg: 'bg-slate-100 dark:bg-slate-800', icon: 'text-slate-600 dark:text-slate-400' },
 };
 

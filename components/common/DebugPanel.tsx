@@ -29,7 +29,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                     <Button
                         variant="ghost"
                         onClick={onToggleInspector}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-rose-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
                     >
                         {isInspectorActive ? 'TẮT Inspector' : 'BẬT Inspector'}
                     </Button>

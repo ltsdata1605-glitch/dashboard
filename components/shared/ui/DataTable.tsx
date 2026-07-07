@@ -18,7 +18,7 @@ export interface DataTableColumn<T = any> {
   /** Header group label */
   group?: string;
   /** Header group color */
-  groupColor?: 'sky' | 'emerald' | 'violet' | 'orange' | 'rose' | 'slate';
+  groupColor?: 'sky' | 'emerald' | 'amber' | 'rose' | 'slate';
   /** Column width */
   width?: string;
   /** Min width */
@@ -74,8 +74,7 @@ export interface DataTableProps<T = any> {
 const groupColorClasses: Record<string, string> = {
   sky:     'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300',
   emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300',
-  violet:  'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300',
-  orange:  'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300',
+  amber:   'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
   rose:    'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300',
   slate:   'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
 };
