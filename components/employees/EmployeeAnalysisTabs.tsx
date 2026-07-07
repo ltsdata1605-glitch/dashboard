@@ -30,9 +30,8 @@ const getTabColorClasses = (color: string, isActive: boolean) => {
         case 'emerald': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
         case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
         case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
-        case 'purple': return 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+        case 'slate': return 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300';
         case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
-        case 'cyan': return 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400';
         default: return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
     }
 };
@@ -71,7 +70,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                     )}
                     
                     {renderedCustomTabs.map(tab => {
-                        const colors = ['cyan', 'purple', 'rose', 'amber', 'emerald'];
+                        const colors = ['sky', 'slate', 'rose', 'amber', 'emerald'];
                         const customColor = colors[tab.id.length % colors.length];
                         return (
                             <Button

@@ -218,7 +218,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                                 </td>
                                                 <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-rose-50/20">
                                                     {row.daysWithNoSales > 0 ? (
-                                                        <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[11px] sm:text-[13px] font-black shadow-sm border ${row.daysWithNoSales >= 4 ? 'bg-red-100/80 text-red-600 border-red-200' : 'bg-white text-slate-500 border-slate-200'}`}>
+                                                        <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[11px] sm:text-[13px] font-black shadow-sm border ${row.daysWithNoSales >= 4 ? 'bg-rose-100/80 text-rose-600 border-rose-200' : 'bg-white text-slate-500 border-slate-200'}`}>
                                                             {row.daysWithNoSales}
                                                         </span>
                                                     ) : <span className="text-slate-300">-</span>}
@@ -249,7 +249,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                     </tbody>
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                         <tr>
-                            <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
+                            <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
                             {processedData.dateHeaders.map(date => (
                                 <td key={date.toISOString()} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatValue(processedData.totals.daily.get(toLocalISOString(date)) || 0)}</td>
                             ))}

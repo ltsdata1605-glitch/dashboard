@@ -554,7 +554,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         </tbody>
                         <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                             <tr>
-                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
+                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);

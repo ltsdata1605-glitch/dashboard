@@ -257,7 +257,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             <div className="mb-3 sm:mb-4">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
                             <Icon name={activeTable?.icon || "calendar-days"} size={3.5} className="sm:hidden" />
                             <Icon name={activeTable?.icon || "calendar-days"} size={5} className="hidden sm:block" />
                         </div>
@@ -270,15 +270,15 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <Button variant="ghost" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
+                        <Button variant="ghost" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
                             <Icon name="plus" size={3.5} className="sm:hidden"/><Icon name="plus" size={5} className="hidden sm:block"/>
                         </Button>
                         {activeTable && (
                             <>
-                                <Button variant="ghost" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                <Button variant="ghost" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                     <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={5} className="hidden sm:block"/>
                                 </Button>
-                                <Button variant="ghost" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                <Button variant="ghost" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
                                     <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={5} className="hidden sm:block"/>
                                 </Button>
                             </>
@@ -389,12 +389,12 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     onClose={() => setModalState({ type: null })}
                     title="Xác nhận Xóa Bảng"
                     subTitle={`Bạn có chắc muốn xóa bảng "${modalState.data?.tableName}" không?`}
-                    titleColorClass="text-red-600 dark:text-red-400"
+                    titleColorClass="text-rose-600 dark:text-rose-400"
                     maxWidth="md"
                     footer={
                         <div className="flex justify-end gap-2 sm:gap-3">
                             <Button type="button" variant="ghost" onClick={() => setModalState({ type: null })} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
-                            <Button type="button" variant="ghost" onClick={handleDelete} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xóa</Button>
+                            <Button type="button" variant="ghost" onClick={handleDelete} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors">Xóa</Button>
                         </div>
                     }
                 >

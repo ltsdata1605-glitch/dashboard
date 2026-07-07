@@ -18,9 +18,9 @@ interface TopSellerListProps {
 
 const getTraChamPercentClass = (percentage: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= 45) return 'text-green-500 font-bold';
+    if (percentage >= 45) return 'text-emerald-500 font-bold';
     if (percentage >= 35) return 'text-amber-500 font-bold';
-    return 'text-red-500 font-bold';
+    return 'text-rose-500 font-bold';
 };
 
 
@@ -136,7 +136,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                         const rankIndex = sellerRanks.get(seller.name) ?? -1;
                                         let rankDisplay = <div className="w-5 sm:w-8 text-center"><RankBadge rank={rankIndex} /></div>;
 
-                                        const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-red-500 font-bold' : 'text-green-500 font-bold';
+                                        const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-rose-500 font-bold' : 'text-emerald-500 font-bold';
                                         const traChamClass = getTraChamPercentClass(Number(seller.traChamPercent || 0));
 
                                         return (

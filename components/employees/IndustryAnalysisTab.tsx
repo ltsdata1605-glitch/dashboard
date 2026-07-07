@@ -52,7 +52,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         });
         return formatAs === 'percentage' ? `${formattedVal}%` : formattedVal;
     };
-    const boldBlueText = 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-lg';
+    const boldBlueText = 'font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2 py-0.5 rounded-lg';
     const warningText = 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
     
     // ----------------------------
@@ -289,7 +289,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
+                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400`}>
                         <Icon name="gantt-chart-square" size={3.5} className="sm:hidden" />
                         <Icon name="gantt-chart-square" size={5} className="hidden sm:block" />
                     </div>
@@ -313,7 +313,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                             </Button>
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1 shrink-0"></div>
-                         <Button variant="ghost" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                         <Button variant="ghost" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all shrink-0">
                             <Icon name="images" size={3.5} className="sm:hidden" />
                             <Icon name="images" size={5} className="hidden sm:block" />
                         </Button>
@@ -459,7 +459,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     </tbody>
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                          <tr>
-                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
+                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
                             {renderDetailModeCells(grandTotal)}
                         </tr>
                     </tfoot>

@@ -87,7 +87,7 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
                                     </div>
                                 </div>
                             )}
-                            <Button variant="ghost" onClick={() => removeFormattingRule(rule.id)} className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 text-red-400 hover:text-red-600 hover:bg-red-50 p-0">
+                            <Button variant="ghost" onClick={() => removeFormattingRule(rule.id)} className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-0">
                                 <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
                             </Button>
                         </div>

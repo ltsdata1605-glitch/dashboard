@@ -5,15 +5,15 @@ export type SortDirection = 'asc' | 'desc';
 export type GroupType = 'doanhThu' | 'khaiThac' | 'vuotTroi';
 
 export const getProgressBarColor = (pct: number) => {
-    if (pct >= 100) return 'from-emerald-400 to-teal-500';
-    if (pct >= 80) return 'from-blue-400 to-indigo-500';
-    if (pct >= 50) return 'from-amber-400 to-orange-400';
-    return 'from-rose-400 to-red-500';
+    if (pct >= 100) return 'from-emerald-400 to-emerald-600';
+    if (pct >= 80) return 'from-sky-400 to-sky-600';
+    if (pct >= 50) return 'from-amber-400 to-amber-600';
+    return 'from-rose-400 to-rose-600';
 };
 
 export const getPercentBadge = (pct: number) => {
     if (pct >= 100) return DATA_STATUS_COLORS.positive.tailwind;
-    if (pct >= 80) return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
+    if (pct >= 80) return 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300';
     if (pct >= 50) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300';
     return DATA_STATUS_COLORS.negative.tailwind;
 };
@@ -63,8 +63,8 @@ export const safeSort = (a: any, b: any, key: string, dir: SortDirection) => {
 
 export const TAB_THEMES = {
     doanhThu: {
-        gradient: 'from-emerald-500 to-teal-600',
-        headerBg: 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20',
+        gradient: 'from-emerald-500 to-emerald-700',
+        headerBg: 'bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/30',
         iconBlockBg: 'bg-emerald-100 dark:bg-emerald-900/30',
         iconBlockText: 'text-emerald-600 dark:text-emerald-400',
         icon: 'wallet',
@@ -73,24 +73,24 @@ export const TAB_THEMES = {
         accent: 'emerald',
     },
     khaiThac: {
-        gradient: 'from-blue-500 to-indigo-600',
-        headerBg: 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20',
-        iconBlockBg: 'bg-blue-100 dark:bg-blue-900/30',
-        iconBlockText: 'text-blue-600 dark:text-blue-400',
+        gradient: 'from-sky-500 to-sky-700',
+        headerBg: 'bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-900/30',
+        iconBlockBg: 'bg-sky-100 dark:bg-sky-900/30',
+        iconBlockText: 'text-sky-600 dark:text-sky-400',
         icon: 'layers',
         title: 'Hiệu Quả Trả Chậm',
         subtitle: 'Tiếp cận khách hàng & Bán kèm',
-        accent: 'blue',
+        accent: 'sky',
     },
     vuotTroi: {
-        gradient: 'from-violet-500 to-purple-600',
-        headerBg: 'bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20',
-        iconBlockBg: 'bg-violet-100 dark:bg-violet-900/30',
-        iconBlockText: 'text-violet-600 dark:text-violet-400',
+        gradient: 'from-amber-500 to-amber-700',
+        headerBg: 'bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/30',
+        iconBlockBg: 'bg-amber-100 dark:bg-amber-900/30',
+        iconBlockText: 'text-amber-600 dark:text-amber-400',
         icon: 'trophy',
         title: 'Mục Tiêu Vượt Trội',
         subtitle: `Cập nhật ngày ${new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`,
-        accent: 'violet',
+        accent: 'amber',
     },
 } as const;
 

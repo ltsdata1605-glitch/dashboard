@@ -79,8 +79,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
         ] : [
             { label: 'Thực', key: 'doanhThuThuc', colorClass: 'bg-emerald-50 dark:bg-emerald-900/20', textColor: 'text-emerald-700 dark:text-emerald-400', align: 'center', groupName: 'DOANH THU', groupColorClass: 'bg-emerald-50 dark:bg-emerald-900/20', groupTextColor: 'text-emerald-700 dark:text-emerald-300' },
             { label: 'DTQĐ', key: 'doanhThuQD', colorClass: 'bg-emerald-50 dark:bg-emerald-900/20', textColor: 'text-emerald-700 dark:text-emerald-400', align: 'center', groupName: 'DOANH THU', groupColorClass: 'bg-emerald-50 dark:bg-emerald-900/20', groupTextColor: 'text-emerald-700 dark:text-emerald-300' },
-            { label: 'Target', key: 'target', colorClass: 'bg-violet-50 dark:bg-violet-900/20', textColor: 'text-violet-700 dark:text-violet-400', align: 'center', groupName: 'MỤC TIÊU', groupColorClass: 'bg-violet-50 dark:bg-violet-900/20', groupTextColor: 'text-violet-700 dark:text-violet-300' },
-            { label: '%HT', key: 'percentHT', colorClass: 'bg-violet-50 dark:bg-violet-900/20', textColor: 'text-violet-700 dark:text-violet-400', align: 'center', groupName: 'MỤC TIÊU', groupColorClass: 'bg-violet-50 dark:bg-violet-900/20', groupTextColor: 'text-violet-700 dark:text-violet-300' },
+            { label: 'Target', key: 'target', colorClass: 'bg-sky-50 dark:bg-sky-900/20', textColor: 'text-sky-700 dark:text-sky-400', align: 'center', groupName: 'MỤC TIÊU', groupColorClass: 'bg-sky-50 dark:bg-sky-900/20', groupTextColor: 'text-sky-700 dark:text-sky-300' },
+            { label: '%HT', key: 'percentHT', colorClass: 'bg-sky-50 dark:bg-sky-900/20', textColor: 'text-sky-700 dark:text-sky-400', align: 'center', groupName: 'MỤC TIÊU', groupColorClass: 'bg-sky-50 dark:bg-sky-900/20', groupTextColor: 'text-sky-700 dark:text-sky-300' },
             { label: 'HQQĐ', key: 'hieuQuaValue', colorClass: 'bg-amber-50 dark:bg-amber-900/20', textColor: 'text-amber-700 dark:text-amber-400', align: 'center', groupName: 'HIỆU QUẢ', groupColorClass: 'bg-amber-50 dark:bg-amber-900/20', groupTextColor: 'text-amber-700 dark:text-amber-300' },
             { label: 'Vượt', key: 'dtVuot', colorClass: 'bg-amber-50 dark:bg-amber-900/20', textColor: 'text-amber-700 dark:text-amber-400', align: 'center', groupName: 'HIỆU QUẢ', groupColorClass: 'bg-amber-50 dark:bg-amber-900/20', groupTextColor: 'text-amber-700 dark:text-amber-300' },
         ];
@@ -301,7 +301,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         if (e.key === 'Escape') setIsEditingTarget(false);
                                                     }}
                                                 />
-                                                <span className="text-[9px] font-bold text-violet-500 dark:text-violet-400 whitespace-nowrap">Tr</span>
+                                                <span className="text-[9px] font-bold text-sky-500 dark:text-sky-400 whitespace-nowrap">Tr</span>
                                             </div>
                                         ) : (
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
@@ -457,7 +457,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* ── Footer ── */}
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
                         <tr>
-                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[10px] sm:text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 border-r border-slate-200 dark:border-slate-700">
+                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[10px] sm:text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-slate-200 dark:border-slate-700">
                                 ∑ Tổng
                             </td>
                             {headers.map(h => (
@@ -476,8 +476,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                         {h.key === 'percentHT' && (
                                             <div className="flex flex-col items-center gap-0.5">
                                                 <span className="text-[10px] font-bold">{Number(grandTotal?.percentHT ?? 0).toFixed(0)}%</span>
-                                                <div className="w-12 h-1 bg-teal-200/50 dark:bg-teal-800/50 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-teal-500 transition-all duration-500" style={{ width: `${Math.min(Number(grandTotal?.percentHT ?? 0), 100)}%` }} />
+                                                <div className="w-12 h-1 bg-sky-200/50 dark:bg-sky-800/50 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-sky-500 transition-all duration-500" style={{ width: `${Math.min(Number(grandTotal?.percentHT ?? 0), 100)}%` }} />
                                                 </div>
                                             </div>
                                         )}
