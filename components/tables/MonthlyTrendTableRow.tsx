@@ -22,9 +22,9 @@ interface MonthlyTrendTableRowProps {
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= target) return 'text-green-600 dark:text-green-500 font-bold';
+    if (percentage >= target) return 'text-emerald-600 dark:text-emerald-500 font-bold';
     if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
-    return 'text-red-600 dark:text-red-500 font-bold';
+    return 'text-rose-600 dark:text-rose-500 font-bold';
 };
 
 const ROW_TEXT_COLORS: Record<string, string> = {

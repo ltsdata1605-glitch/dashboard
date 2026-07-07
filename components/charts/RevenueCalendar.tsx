@@ -186,7 +186,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                     {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, idx) => {
                         const isWeekend = idx >= 5;
                         return (
-                            <div key={day} className={`${compact ? 'py-0.5 text-[8px] md:text-[9px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-orange-600 bg-orange-100/50 dark:bg-orange-900/20 dark:text-orange-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
+                            <div key={day} className={`${compact ? 'py-0.5 text-[8px] md:text-[9px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-600 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
                                 {compact ? day : (idx === 0 ? 'THỨ HAI' : idx === 1 ? 'THỨ BA' : idx === 2 ? 'THỨ TƯ' : idx === 3 ? 'THỨ NĂM' : idx === 4 ? 'THỨ SÁU' : idx === 5 ? 'THỨ BẢY' : 'CHỦ NHẬT')}
                             </div>
                         );
@@ -216,16 +216,16 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         let barColor = 'bg-indigo-500';
                         
                         if (isWeekend) {
-                            bgClass = 'bg-orange-50/40 dark:bg-[#2c1d11]';
-                            borderClass = 'border-orange-100 dark:border-orange-900/40';
-                            textClass = 'text-orange-700 dark:text-orange-400';
-                            dayNumClass = 'text-orange-600 dark:text-orange-500';
-                            barColor = 'bg-orange-500';
+                            bgClass = 'bg-amber-50/40 dark:bg-[#2c1d11]';
+                            borderClass = 'border-amber-100 dark:border-amber-900/40';
+                            textClass = 'text-amber-700 dark:text-amber-400';
+                            dayNumClass = 'text-amber-600 dark:text-amber-500';
+                            barColor = 'bg-amber-500';
                         }
-                        
+
                         if (isToday) {
                             borderClass = 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-500/20 dark:ring-indigo-500/30';
-                            bgClass = isWeekend ? 'bg-orange-100/60 dark:bg-[#3d2411]' : 'bg-indigo-50/40 dark:bg-indigo-900/10';
+                            bgClass = isWeekend ? 'bg-amber-100/60 dark:bg-[#3d2411]' : 'bg-indigo-50/40 dark:bg-indigo-900/10';
                         }
                         
                         // Holiday override

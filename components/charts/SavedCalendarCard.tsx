@@ -155,7 +155,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                             <Button
                                 variant="ghost"
                                 onClick={() => onRemove(filter.id)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700/50 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-700/50 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors shadow-sm"
                                 title="Xóa bảng lịch"
                             >
                                 <Icon name="trash-2" size={3.5} />

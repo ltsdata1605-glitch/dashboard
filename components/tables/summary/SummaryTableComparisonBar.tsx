@@ -62,7 +62,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     
                     {(compMode.startsWith('day') || compMode === 'ytd_same_period_year') && (
                         <div className="flex items-center gap-1">
-                            {compMode === 'ytd_same_period_year' && <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">Đến ngày:</span>}
+                            {compMode === 'ytd_same_period_year' && <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400">Đến ngày:</span>}
                             <Input 
                                 type="date" 
                                 value={selectedDate} 
@@ -121,7 +121,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                         onClick={() => handleWeekPillClick(w.id)}
                                         className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
                                             isSelected
-                                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                                            ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                             : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
                                         }`}
                                         title={w.label}
@@ -140,7 +140,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 id="compareUpToCurrentDay" 
                                 checked={compareUpToCurrentDay}
                                 onChange={(e) => setCompareUpToCurrentDay(e.target.checked)}
-                                className="w-3.5 h-3.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                                className="w-3.5 h-3.5 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer"
                             />
                             <label htmlFor="compareUpToCurrentDay" className="text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer hover:text-slate-800 transition-colors">
                                 Chỉ so sánh ngang tiến độ (đến ngày báo cáo mới nhất)
@@ -174,7 +174,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     {compMode === 'custom_range' && (
                         <div className="flex flex-col sm:flex-row gap-2">
                             <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">Kỳ A:</span>
+                                <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400">Kỳ A:</span>
                                 <Input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
                                 <span className="text-slate-400 text-xs">-</span>
                                 <Input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
@@ -206,7 +206,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
             </div>
 
             {compTree && (
-                <div className="hidden md:flex flex-col md:flex-row items-center gap-3 sm:gap-6 relative z-10 w-full xl:w-auto mt-2 sm:mt-4 xl:mt-0 pt-2 sm:pt-4 xl:pt-0 border-t xl:border-t-0 border-teal-200/50 dark:border-teal-700/50">
+                <div className="hidden md:flex flex-col md:flex-row items-center gap-3 sm:gap-6 relative z-10 w-full xl:w-auto mt-2 sm:mt-4 xl:mt-0 pt-2 sm:pt-4 xl:pt-0 border-t xl:border-t-0 border-sky-200/50 dark:border-sky-700/50">
                     <div className="flex gap-6 w-full md:w-auto">
                         {(() => {
                             const currentQty = grandTotal?.totalQuantity || 0;
@@ -222,13 +222,13 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 <div className="flex flex-col justify-end gap-1 w-[130px]">
                                     <div className="flex justify-between items-end mb-1">
                                         <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">SỐ LƯỢNG</span>
-                                        <span className={`text-[10px] font-bold ${isUpQty ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                        <span className={`text-[10px] font-bold ${isUpQty ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                             {isUpQty ? '+' : ''}{formatQuantity(deltaQty)} ({isUpQty ? '+' : ''}{growthQty.toFixed(1)}%)
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 tooltip-trigger" title={`Hiện tại: ${formatQuantity(currentQty)}`}>
                                         <div className="flex-1 h-1.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-r-full overflow-hidden">
-                                            <div className="h-full bg-teal-500 rounded-r-full transition-all duration-700" style={{ width: `${curPct}%` }}></div>
+                                            <div className="h-full bg-sky-500 rounded-r-full transition-all duration-700" style={{ width: `${curPct}%` }}></div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 tooltip-trigger" title={`So sánh: ${formatQuantity(prevQty)}`}>
@@ -254,13 +254,13 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 <div className="flex flex-col justify-end gap-1 w-[140px]">
                                     <div className="flex justify-between items-end mb-1">
                                         <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">DOANH THU</span>
-                                        <span className={`text-[10px] font-bold pl-2 ${isUpRev ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                        <span className={`text-[10px] font-bold pl-2 ${isUpRev ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                             {isUpRev ? '+' : ''}{formatCurrency(deltaRev, 0)} ({isUpRev ? '+' : ''}{growthRev.toFixed(1)}%)
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 tooltip-trigger" title={`Hiện tại: ${formatCurrency(currentRev)}`}>
                                         <div className="flex-1 h-1.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-r-full overflow-hidden">
-                                            <div className="h-full bg-teal-500 rounded-r-full transition-all duration-700" style={{ width: `${curPct}%` }}></div>
+                                            <div className="h-full bg-sky-500 rounded-r-full transition-all duration-700" style={{ width: `${curPct}%` }}></div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 tooltip-trigger" title={`So sánh: ${formatCurrency(prevRev)}`}>
@@ -276,9 +276,9 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     <div className="hidden md:block w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2.5">
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded border border-teal-200/50 dark:border-teal-700/50 shadow-sm">
-                            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-                            <span className="text-[11px] font-bold text-teal-800 dark:text-teal-200 whitespace-nowrap">HT: {dateDisplay?.current || ''}</span>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded border border-sky-200/50 dark:border-sky-700/50 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+                            <span className="text-[11px] font-bold text-sky-800 dark:text-sky-200 whitespace-nowrap">HT: {dateDisplay?.current || ''}</span>
                         </div>
                         <Icon name="arrow-right" size={3.5} className="text-slate-400" />
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded border border-slate-200/70 dark:border-slate-700/50 shadow-sm">

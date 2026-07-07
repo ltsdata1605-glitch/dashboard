@@ -98,9 +98,9 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                     </tr>
                 )}
             </tbody>
-            <tfoot className="bg-teal-100 dark:bg-teal-900/40 font-bold text-sm border-t-2 border-teal-200 dark:border-teal-800">
+            <tfoot className="bg-sky-100 dark:bg-sky-900/40 font-bold text-sm border-t-2 border-sky-200 dark:border-sky-800">
                 <tr>
-                    <td className="px-4 py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 border-r border-teal-200 dark:border-teal-800">TỔNG CỘNG</td>
+                    <td className="px-4 py-2 text-center sticky left-0 z-40 bg-sky-100 dark:bg-sky-900/60 font-extrabold text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-sky-200 dark:border-sky-800">TỔNG CỘNG</td>
                     {HEADER_CONFIG.filter(h => pivotColumns.includes(h.key)).map(h => (
                         trendData.months.map(m => {
                             const totalForMonth = trendData.trees[m.id]?.grandTotal || { totalQuantity: 0, totalRevenue: 0, totalRevenueQD: 0, totalTraGop: 0, aov: 0, traGopPercent: 0 };
@@ -118,7 +118,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                                 valueToDisplay = val > 0 ? `${Math.ceil(val)}%` : '-';
                             }
                             return (
-                                <td key={`tf-${h.key}-${m.id}`} className="px-2 py-2 text-right border-r border-teal-200 dark:border-teal-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
+                                <td key={`tf-${h.key}-${m.id}`} className="px-2 py-2 text-right border-r border-sky-200 dark:border-sky-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
                                     {valueToDisplay}
                                 </td>
                             );

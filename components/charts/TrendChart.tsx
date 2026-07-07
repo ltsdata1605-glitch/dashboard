@@ -23,7 +23,7 @@ const CustomTooltip = ({ active, payload, metricName }: any) => {
     
     let changeHtml = null;
     if (changePercent !== undefined && !isNaN(changePercent)) {
-        const changeClass = isDecrease ? 'text-red-500' : 'text-green-500';
+        const changeClass = isDecrease ? 'text-rose-500' : 'text-emerald-500';
         const changeIcon = isDecrease ? '▼' : '▲';
         changeHtml = (
             <div className="mt-1">

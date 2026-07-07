@@ -69,12 +69,12 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                             <Button
                                 variant="ghost"
                                 onClick={handleExpandAll}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-teal-100 text-teal-700 hover:bg-teal-200 flex items-center justify-center transition-colors dark:bg-teal-900/40 dark:text-teal-400 dark:hover:bg-teal-800/60"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 flex items-center justify-center transition-colors dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-800/60"
                                 title="Mở rộng 1 cấp độ"
                             >
                                 <Icon name="maximize-2" size={3} className="lg:hidden" />
                                 <Icon name="maximize-2" size={4} className="hidden lg:block" />
-                                {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-teal-500 text-white text-[7px] lg:text-[8px] font-bold rounded-full">{expandLevel}</span>}
+                                {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-sky-500 text-white text-[7px] lg:text-[8px] font-bold rounded-full">{expandLevel}</span>}
                             </Button>
                             <div className="hidden lg:block w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                             <Button
@@ -104,7 +104,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={handleResetAllFilters}
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 lg:p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ml-0.5 lg:ml-1"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 lg:p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ml-0.5 lg:ml-1"
                                     title="Làm mới tất cả bộ lọc"
                                 >
                                     <Icon name="rotate-ccw" size={3} className="lg:hidden" />

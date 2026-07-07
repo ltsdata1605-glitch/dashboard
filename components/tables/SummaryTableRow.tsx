@@ -25,9 +25,9 @@ interface RecursiveRowProps {
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= target) return 'text-green-600 dark:text-green-500 font-bold';
+    if (percentage >= target) return 'text-emerald-600 dark:text-emerald-500 font-bold';
     if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
-    return 'text-red-600 dark:text-red-500 font-bold';
+    return 'text-rose-600 dark:text-rose-500 font-bold';
 };
 
 // Colors matching PILL_COLORS in SummaryTable.tsx but tuned for text visibility
@@ -156,7 +156,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         if (val === 0 && (type !== 'percent' || Math.abs(val) < 0.1)) return <span className="text-slate-300 text-[10px]">-</span>;
         
         const isPositive = val > 0;
-        const colorClass = isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+        const colorClass = isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
         
         let formattedVal = '';
         if (type === 'currency') formattedVal = formatCurrency(Math.abs(val));
@@ -280,7 +280,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                             })()}
                         </td>
                     ) : (
-                        <td className={`${cellClass} font-bold text-orange-600 dark:text-orange-400 ${separatorClass}`}>
+                        <td className={`${cellClass} font-bold text-amber-600 dark:text-amber-400 ${separatorClass}`}>
                             {dtThucPercent > 0 ? `${Math.ceil(dtThucPercent)}%` : '-'}
                         </td>
                     )
@@ -323,11 +323,11 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                                 const isWarning = target > 0 && revenueQD < target;
                                 return (
                                     <div className="flex items-center justify-center gap-1.5 font-black">
-                                        <span className={isWarning ? 'text-red-500 dark:text-red-400' : 'text-primary-600 dark:text-primary-400'}>
+                                        <span className={isWarning ? 'text-rose-500 dark:text-rose-400' : 'text-primary-600 dark:text-primary-400'}>
                                             {formatCurrency(revenueQD)}
                                         </span>
                                         {isWarning && (
-                                            <div className="group relative shrink-0 text-red-500 flex items-center" title={`Mục tiêu: ${formatCurrency(target)}\nCòn thiếu: ${formatCurrency(target - revenueQD)}`}>
+                                            <div className="group relative shrink-0 text-rose-500 flex items-center" title={`Mục tiêu: ${formatCurrency(target)}\nCòn thiếu: ${formatCurrency(target - revenueQD)}`}>
                                                 <Icon name="alert-triangle" size={3.5} />
                                             </div>
                                         )}
@@ -346,12 +346,12 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* AOV */}
                 {visibleColumns.includes('aov') && (
                     <>
-                        <td className={`${cellClass} font-bold ${(activeTarget !== undefined && aov < activeTarget) ? 'text-red-500 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'} ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-bold ${(activeTarget !== undefined && aov < activeTarget) ? 'text-rose-500 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} ${!isComparisonMode ? separatorClass : ''}`}>
                             {aov === 0 ? '-' : (aov / 1000000).toFixed(1)}
                         </td>
                         {isComparisonMode && (
                             <td className={`${deltaCellClass} ${separatorClass}`}>
-                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                     {deltaAOV === 0 ? '-' : (deltaAOV > 0 ? '+' : '') + (deltaAOV / 1000000).toFixed(1)}
                                 </span>
                             </td>
