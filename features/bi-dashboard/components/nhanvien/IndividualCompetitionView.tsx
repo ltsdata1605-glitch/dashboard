@@ -15,13 +15,13 @@ const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
     const displayPercentage = Math.min(percentage, 100);
     let colorClass = 'bg-indigo-500';
-    if (value >= 100) colorClass = 'bg-green-500';
-    else if (value < 85) colorClass = 'bg-yellow-500';
-    if (value < 50) colorClass = 'bg-red-500';
+    if (value >= 100) colorClass = 'bg-emerald-500';
+    else if (value < 85) colorClass = 'bg-amber-500';
+    if (value < 50) colorClass = 'bg-rose-500';
     return (
         <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 my-1 relative overflow-hidden">
             <div className={`${colorClass} h-full rounded-full transition-all duration-500 ease-out`} style={{ width: `${displayPercentage}%` }}></div>
-             {percentage > 100 && <div className="absolute top-0 left-0 h-full bg-green-300 rounded-full" style={{ width: `${Math.min(percentage - 100, 100)}%` }}></div>}
+             {percentage > 100 && <div className="absolute top-0 left-0 h-full bg-emerald-300 rounded-full" style={{ width: `${Math.min(percentage - 100, 100)}%` }}></div>}
         </div>
     );
 };
@@ -87,7 +87,7 @@ const MiniDonut: React.FC<{ segments: { value: number; color: string }[]; center
 };
 
 // ─── DKHT Donut (Recharts) ───
-const DONUT_COLORS = ['#34d399', '#fbbf24', '#94a3b8', '#f87171'];
+const DONUT_COLORS = ['#34d399', '#fbbf24', '#94a3b8', '#fb7185'];
 const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtChuaDat: number; noSale: number; total: number } }> = ({ stats }) => {
     const data = [
         { name: '≥100%', value: stats.dkhtDat },
@@ -117,7 +117,7 @@ const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtCh
 // ─── Micro Progress Bar ───
 const MicroBar: React.FC<{ value: number; max?: number }> = ({ value, max = 100 }) => {
     const pctVal = Math.min(Math.max((value / max) * 100, 0), 100);
-    const color = value >= 60 ? 'bg-emerald-500' : value >= 30 ? 'bg-amber-500' : 'bg-red-500';
+    const color = value >= 60 ? 'bg-emerald-500' : value >= 30 ? 'bg-amber-500' : 'bg-rose-500';
     return (<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-[3px] mt-1 overflow-hidden"><div className={`${color} h-full rounded-full transition-all duration-500`} style={{ width: `${pctVal}%` }} /></div>);
 };
 
@@ -219,7 +219,7 @@ const EmployeeProfileCard: React.FC<{
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
             {/* Header gradient */}
-            <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-teal-600/30 dark:border-slate-700">
+            <div className="bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-sky-600/30 dark:border-slate-700">
                 <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
                     <div className="w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 shadow-lg">
@@ -236,9 +236,9 @@ const EmployeeProfileCard: React.FC<{
                         <p className="text-[11px] text-white/70 font-medium mt-0.5">{selectedEmployee.department}</p>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                             <StatPill count={compStats.dkhtDat} label="≥100%" color="bg-emerald-400 text-white border border-white/50" />
-                            <StatPill count={compStats.dkhtGanDat} label="Gần đạt" color="bg-yellow-400 text-white border border-white/50" />
+                            <StatPill count={compStats.dkhtGanDat} label="Gần đạt" color="bg-amber-400 text-white border border-white/50" />
                             <StatPill count={compStats.dkhtChuaDat} label="<80%" color="bg-slate-400 text-white border border-white/50" />
-                            {compStats.noSale > 0 && <StatPill count={compStats.noSale} label="No Sale" color="bg-red-400 text-white border border-white/50" />}
+                            {compStats.noSale > 0 && <StatPill count={compStats.noSale} label="No Sale" color="bg-rose-400 text-white border border-white/50" />}
                         </div>
                     </div>
                     {/* Recharts Donut — tỷ lệ nhóm đạt DKHT */}
@@ -284,15 +284,15 @@ const EmployeeProfileCard: React.FC<{
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
                     <MicroBar value={empBanKem?.pctBillBk || 0} />
                     <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
-                        <span>SP: <strong className="text-violet-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
+                        <span>SP: <strong className="text-sky-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
                     <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1.5">
-                        <span>ERP: <strong className="text-blue-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
-                        <span>T.Nóng: <strong className="text-orange-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
+                        <span>ERP: <strong className="text-sky-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
+                        <span>T.Nóng: <strong className="text-emerald-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
                     </div>
                     {empBonus?.pNong != null && <div className="js-kpi-sub text-[9px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
                 </div>
@@ -591,7 +591,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                             </div>
                                             <div className="divide-y divide-slate-50 dark:divide-slate-700/50">
                                                 {items.map((item, index) => {
-                                                    const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30';
+                                                    const remainingColor = item.remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30';
                                                     return (
                                                         <div key={`${criterion}-${item.originalTitle}`} className="px-4 py-3 bg-white dark:bg-slate-900">
                                                             <div className="flex justify-between items-start mb-2 gap-2">
@@ -616,7 +616,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                                 </div>
                                                                 <div className="flex items-center justify-between gap-3 mt-1">
                                                                     <div className="flex-1"><ProgressBar value={item.completion} /></div>
-                                                                    <span className={`text-[13px] font-black w-14 text-right tabular-nums ${item.completion >= 100 ? 'text-green-600 dark:text-green-400' : 'text-slate-700 dark:text-slate-300'}`}>{roundUp(item.completion).toFixed(0)}%</span>
+                                                                    <span className={`text-[13px] font-black w-14 text-right tabular-nums ${item.completion >= 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>{roundUp(item.completion).toFixed(0)}%</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -639,7 +639,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">M.TIÊU</th>
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">T.HIỆN</th>
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">%HT</th>
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-violet-400 align-middle whitespace-nowrap bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-300">%DKHT</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-rose-400 align-middle whitespace-nowrap bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300">%DKHT</th>
                                     <th className="text-center px-2 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">C.LẠI</th>
                                 </tr>
                             </thead>
@@ -660,11 +660,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                    </td>
                                                </tr>
                                                {items.map((item, index) => {
-                                                   const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
+                                                   const remainingColor = item.remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
                                                    const dkht = (daysPassed > 0 && item.target > 0) ? ((item.actual / daysPassed) * daysInMonth / item.target) * 100 : 0;
                                                    const dkhtColor = dkht >= 100 ? 'text-emerald-600 dark:text-emerald-400' : dkht >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
                                                    return (
-                                                       <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
+                                                       <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
                                                            <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
                                                            <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50">
                                                                {item.name}
