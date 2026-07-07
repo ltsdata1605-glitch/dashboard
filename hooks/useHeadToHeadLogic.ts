@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../types';
-import { getRowValue, toLocalISOString, getHeSoQuyDoi, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize } from '../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 
 interface UseHeadToHeadLogicProps {
@@ -211,20 +211,11 @@ export const useHeadToHeadLogic = ({
                         salesByEmpDate[emp][dateKey] = eDate;
                     }
                     
-                    const price = Number(getRowValue(row, COL.PRICE)) || 0;
-                    const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-                    const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-                    const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const productName = getRowValue(row, COL.PRODUCT);
-                    
-                    const productCodeVal = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCodeVal);
-                    const isVieon = productConfig.childToSubgroupMap[maNhomHang] === 'Vieon' || productConfig.childToParentMap[maNhomHang] === 'Vieon' || String(productName || '').includes('VieON');
-                    const wQty = isVieon ? quantity * heso : quantity;
-                    
-                    eDate.rev += price;
-                    eDate.revQD += price * heso;
-                    eDate.qty += wQty;
+                    const { revenue, revenueQD, weightedQuantity } = calculateRowMetrics(row, productConfig);
+
+                    eDate.rev += revenue;
+                    eDate.revQD += revenueQD;
+                    eDate.qty += weightedQuantity;
                 }
                 
                 const empLen = employeeData.length;

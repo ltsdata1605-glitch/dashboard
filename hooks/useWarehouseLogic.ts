@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getParentGroup, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getParentGroup, cleanAndNormalize } from '../utils/dataUtils';
 
 interface UseWarehouseLogicProps {
     data: WarehouseSummaryRow[];
@@ -81,16 +81,13 @@ export const useWarehouseLogic = ({
                 if (!isRevenue) continue;
 
 
-                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                 const productName = getRowValue(row, COL.PRODUCT);
                 const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
                 const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER);
                 const productNameStr = String(productName || '');
 
-                let heso: number | null = null;
-                let price: number | null = null;
-                let quantity: number | null = null;
+                let metrics: { revenue: number, revenueQD: number, weightedQuantity: number } | null = null;
 
                 for (let ci = 0; ci < colCount; ci++) {
                     const { col, industrySet, subgroupSet, manufacturerSet, productSet, hasAnyFilter } = colFilterCache[ci];
@@ -127,25 +124,20 @@ export const useWarehouseLogic = ({
                         }
                     }
 
-                    if (heso === null) {
-                        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-                        heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName, productCode);
-                        price = Number(getRowValue(row, COL.PRICE)) || 0;
-                        quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+                    if (metrics === null) {
+                        metrics = calculateRowMetrics(row, productConfig);
                     }
 
-                    const isVieon = group === 'Vieon' || rootIndustry === 'Vieon' || productNameStr.includes('VieON');
-                    const weightedQuantity = isVieon ? (quantity! * heso) : quantity!;
-                    const rowRevenue = price!;
+                    const { revenue, revenueQD, weightedQuantity } = metrics;
                     const metricType = col.metricType || 'quantity';
 
                     let value = 0;
                     if (metricType === 'quantity') {
                         value = weightedQuantity;
                     } else if (metricType === 'revenue') {
-                        value = rowRevenue / 1000000;
+                        value = revenue / 1000000;
                     } else if (metricType === 'revenueQD') {
-                        value = (rowRevenue * heso) / 1000000;
+                        value = revenueQD / 1000000;
                     }
 
                     const khoMap = results.get(col.id)!;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -364,7 +364,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     if (filters.metricType === 'quantity') {
                         val += Number(row['Số Lượng'] || row['Số lượng'] || 0);
                     } else if (filters.metricType === 'revenueQD') {
-                        val += Number(row['Doanh Thu QĐ'] || row['Doanh Thu QD'] || row['Doanh thu QĐ'] || 0);
+                        val += calculateRowMetrics(row, productConfig).revenueQD;
                     } else { // revenue
                         val += Number(row['Doanh Thu Thực'] || row['Doanh Thu Thuc'] || row['Doanh thu thực'] || 0);
                     }

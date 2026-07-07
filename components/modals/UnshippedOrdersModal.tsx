@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getErrorMessage } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -143,14 +143,8 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         );
         
         const exportData = finalUnshippedOrders.map(order => {
-            const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
-            const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
-            const productName = getRowValue(order, COL.PRODUCT);
-            const productCode = String(getRowValue(order, COL.PRODUCT_CODE) || '').trim();
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig || undefined, productName, productCode);
-            const price = Number(getRowValue(order, COL.PRICE)) || 0;
-            const revenueQD = price * heso;
-            
+            const { revenue: price, revenueQD } = calculateRowMetrics(order, productConfig);
+
             let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
             let formattedDate = 'N/A';
             if (scheduledDateRaw) {
@@ -198,15 +192,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         let totalUnshippedRevenue = 0;
         let totalUnshippedRevenueQD = 0;
         finalUnshippedOrders.forEach(order => {
-            const price = Number(getRowValue(order, COL.PRICE)) || 0;
-            const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
-            const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
-            const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
-            const productName = getRowValue(order, COL.PRODUCT);
-            const productCode = String(getRowValue(order, COL.PRODUCT_CODE) || '').trim();
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-            totalUnshippedRevenue += rowRevenue;
-            totalUnshippedRevenueQD += rowRevenue * heso;
+            const { revenue, revenueQD } = calculateRowMetrics(order, productConfig);
+            totalUnshippedRevenue += revenue;
+            totalUnshippedRevenueQD += revenueQD;
         });
 
         const industrySummary = finalUnshippedOrders.reduce((acc, order) => {
@@ -236,15 +224,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             let totalCreatorRevenue = 0;
             let totalCreatorRevenueQD = 0;
             creatorOrders.forEach(o => {
-                const price = Number(getRowValue(o, COL.PRICE)) || 0;
-                const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
-                const maNganhHang = getRowValue(o, COL.MA_NGANH_HANG);
-                const maNhomHang = getRowValue(o, COL.MA_NHOM_HANG);
-                const productName = getRowValue(o, COL.PRODUCT);
-                const productCode = String(getRowValue(o, COL.PRODUCT_CODE) || '').trim();
-                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-                totalCreatorRevenue += rowRevenue;
-                totalCreatorRevenueQD += rowRevenue * heso;
+                const { revenue, revenueQD } = calculateRowMetrics(o, productConfig);
+                totalCreatorRevenue += revenue;
+                totalCreatorRevenueQD += revenueQD;
             });
 
             const hieuQuaQD = totalCreatorRevenue !== 0 ? ((totalCreatorRevenueQD - totalCreatorRevenue) / Math.abs(totalCreatorRevenue)) * 100 : 0;
@@ -260,15 +242,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 let totalCustomerRevenue = 0;
                 let totalCustomerRevenueQD = 0;
                 customerOrders.forEach(o => {
-                    const price = Number(getRowValue(o, COL.PRICE)) || 0;
-                    const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
-                    const maNganhHang = getRowValue(o, COL.MA_NGANH_HANG);
-                    const maNhomHang = getRowValue(o, COL.MA_NHOM_HANG);
-                    const productName = getRowValue(o, COL.PRODUCT);
-                    const productCode = String(getRowValue(o, COL.PRODUCT_CODE) || '').trim();
-                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-                    totalCustomerRevenue += rowRevenue;
-                    totalCustomerRevenueQD += rowRevenue * heso;
+                    const { revenue, revenueQD } = calculateRowMetrics(o, productConfig);
+                    totalCustomerRevenue += revenue;
+                    totalCustomerRevenueQD += revenueQD;
                 });
 
                 const customerHieuQuaQD = totalCustomerRevenue !== 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / Math.abs(totalCustomerRevenue)) * 100 : 0;
@@ -605,12 +581,7 @@ Link: ${url}`;
                                                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                                         {customer.orders.map((order, index) => {
                                                             const price = Number(getRowValue(order, COL.PRICE)) || 0;
-                                                            const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
-                                                            const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
-                                                            const productName = getRowValue(order, COL.PRODUCT);
-                                                            const productCode = String(getRowValue(order, COL.PRODUCT_CODE) || '').trim();
-                                                            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-                                                            const priceQD = price * heso;
+                                                            const priceQD = calculateRowMetrics(order, productConfig).revenueQD;
                                                             const orderId = getRowValue(order, COL.ID) as string;
 
                                                             return (

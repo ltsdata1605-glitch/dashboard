@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
 import type { DataRow } from '../../types';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
@@ -216,13 +216,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           if (!isRevenue) return;
 
           const price = Number(getRowValue(row, COL.PRICE)) || 0;
-          const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-          const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
-          const productName = getRowValue(row, COL.PRODUCT) || '';
 
-          const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-          const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-          
           let valueToAdd = 0;
           let totalRevenue = 0;
           let traGopRevenue = 0;
@@ -235,11 +229,9 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               }
               valueToAdd = calendarFilters.metric === 'revenue' ? totalRevenue : 0;
           } else if (calendarFilters.metric === 'revenueQD') {
-              valueToAdd = price * heso;
+              valueToAdd = calculateRowMetrics(row, productConfig).revenueQD;
           } else if (calendarFilters.metric === 'quantity') {
-              const isVieon = childGroup === 'Vieon' || parentGroup === 'Vieon' || (productName || '').toString().includes('VieON');
-              const qtyMultiplier = productConfig?.quantityMultiplierMap?.[productCode];
-              valueToAdd = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+              valueToAdd = calculateRowMetrics(row, productConfig).weightedQuantity;
           }
 
           if (valueToAdd > 0 || totalRevenue > 0) {

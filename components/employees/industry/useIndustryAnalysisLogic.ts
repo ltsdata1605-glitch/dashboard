@@ -3,7 +3,7 @@ import type { ExploitationData, CustomExploitationTabConfig, DataRow } from '../
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
-import { getRowValue, getHeSoQuyDoi, cleanAndNormalize } from '../../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, cleanAndNormalize } from '../../../utils/dataUtils';
 
 export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: DataRow[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
@@ -226,7 +226,6 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 if (!rawCreator) return;
                 
                 const employeeId = rawCreator.split(' - ')[0].trim();
-                const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
                 const price = Number(getRowValue(row, COL.PRICE)) || 0;
                 
                 const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
@@ -234,13 +233,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const subgroup = productConfig.childToSubgroupMap[rawGroup] || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
-                const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-                const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
 
-                const heso = getHeSoQuyDoi(maNganhHang, rawGroup, productConfig, productCodeStr, productCode);
-                const isVieon = subgroup === 'Vieon' || productCodeStr.includes('VieON');
-                const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
-                const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+                const weightedQuantity = calculateRowMetrics(row, productConfig).weightedQuantity;
 
                 allTabs.forEach(tab => {
                     const cols = tab.columns || [];

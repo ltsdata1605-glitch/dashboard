@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, getHeSoQuyDoi, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
@@ -172,20 +172,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     employeeColumnValues.set(employee, new Map<string, number>());
                 }
                 const employeeValues = employeeColumnValues.get(employee)!;
-                const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-                const price = Number(getRowValue(row, COL.PRICE)) || 0;
-                const revenue = price; // Doanh thu là giá trị của cột Giá bán_1
-
-                const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-                const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-                const productName = String(getRowValue(row, COL.PRODUCT) || '').trim();
-                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-
-                const subgroup = productConfig?.childToSubgroupMap?.[maNhomHang] || '';
-                const isVieon = subgroup === 'Vieon' || productName.includes('VieON');
-                const qtyMultiplier = productConfig?.quantityMultiplierMap?.[productCode];
-                const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+                const { revenue, revenueQD, weightedQuantity } = calculateRowMetrics(row, productConfig);
 
                 let value = 0;
                 if (col.metricType === 'quantity') {
@@ -193,7 +180,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 } else if (col.metricType === 'revenue') {
                     value = revenue / 1000000;
                 } else if (col.metricType === 'revenueQD') {
-                    value = (revenue * heso) / 1000000;
+                    value = revenueQD / 1000000;
                 }
 
                 employeeValues.set(col.id, (employeeValues.get(col.id) || 0) + value);

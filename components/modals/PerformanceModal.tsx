@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import type { Employee, DataRow, ProductConfig } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -145,14 +145,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
         const customerBreakdown = Object.entries(groupedByCustomer).map(([customerName, orders]: [string, DataRow[]]) => {
             const { totalRevenue, totalRevenueQD } = orders.reduce((acc, o) => {
-                const price = Number(getRowValue(o, COL.PRICE)) || 0;
-                const maNganhHang = getRowValue(o, COL.MA_NGANH_HANG);
-                const maNhomHang = getRowValue(o, COL.MA_NHOM_HANG);
-                const productName = getRowValue(o, COL.PRODUCT);
-                const productCode = String(getRowValue(o, COL.PRODUCT_CODE) || '').trim();
-                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-                acc.totalRevenue += price;
-                acc.totalRevenueQD += price * heso;
+                const { revenue, revenueQD } = calculateRowMetrics(o, productConfig);
+                acc.totalRevenue += revenue;
+                acc.totalRevenueQD += revenueQD;
                 return acc;
             }, { totalRevenue: 0, totalRevenueQD: 0 });
 

@@ -1,6 +1,6 @@
 import type { DataRow, IndustryData, ProductConfig, FilterState } from '../types';
 import { COL } from '../constants';
-import { getRowValue, getDisplayParentGroup, getHeSoQuyDoi } from '../utils/dataUtils';
+import { getRowValue, getDisplayParentGroup } from '../utils/dataUtils';
 
 export function processIndustryData(
     salesData: DataRow[],
@@ -10,16 +10,12 @@ export function processIndustryData(
     const industryRevenue: { [key: string]: { revenue: number, quantity: number } } = {};
 
     salesData.forEach(row => {
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, quantity: 0, isTraCham: false };
-        const { revenue, quantity } = metrics;
-        const heso = metrics.revenueQD > 0 && revenue > 0 ? metrics.revenueQD / revenue : 1;
+        const metrics = row._metrics || { revenue: 0, revenueQD: 0, quantity: 0, weightedQuantity: 0, isTraCham: false };
+        const { revenue, weightedQuantity } = metrics;
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-        const productName = getRowValue(row, COL.PRODUCT);
-        
+
         const childGroup = productConfig.childToSubgroupMap[maNhomHang];
         const displayParentGroup = row._parentGroup || getDisplayParentGroup(maNhomHang, productConfig);
-        const isVieon = childGroup === 'Vieon' || displayParentGroup === 'Vieon' || (productName || '').includes('VieON');
-        const weightedQuantity = isVieon ? (quantity * heso) : quantity;
 
         const isSubgroupSelected = filters.industryGrid.selectedSubgroups.length === 0 || (childGroup && filters.industryGrid.selectedSubgroups.includes(childGroup));
         if (isSubgroupSelected) {

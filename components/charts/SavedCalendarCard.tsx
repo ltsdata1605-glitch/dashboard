@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
-import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
 import type { DataRow } from '../../types';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
@@ -70,13 +70,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             if (!isRevenue) return;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
-            const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-            const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
-            const productName = getRowValue(row, COL.PRODUCT) || '';
 
-            const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-            
             let valueToAdd = 0;
             let totalRevenue = 0;
             let traGopRevenue = 0;
@@ -89,11 +83,9 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                 }
                 valueToAdd = filter.metric === 'revenue' ? totalRevenue : 0;
             } else if (filter.metric === 'revenueQD') {
-                valueToAdd = price * heso;
+                valueToAdd = calculateRowMetrics(row, productConfig).revenueQD;
             } else if (filter.metric === 'quantity') {
-                const isVieon = childGroup === 'Vieon' || parentGroup === 'Vieon' || (productName || '').toString().includes('VieON');
-                const qtyMultiplier = productConfig?.quantityMultiplierMap?.[productCode];
-                valueToAdd = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+                valueToAdd = calculateRowMetrics(row, productConfig).weightedQuantity;
             }
 
             if (valueToAdd > 0 || totalRevenue > 0) {

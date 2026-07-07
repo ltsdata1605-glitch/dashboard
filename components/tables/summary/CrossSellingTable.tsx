@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
-import { formatQuantity, formatCurrency, getHeSoQuyDoi } from '../../../utils/dataUtils';
+import { formatQuantity, formatCurrency, calculateRowMetrics } from '../../../utils/dataUtils';
 import { CrossSellingConfig } from '../../../types';
 import { SAMPLE_CONFIG } from '../../modals/CrossSellingBuilderModal';
 
@@ -41,13 +41,10 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
                 const HangSX = row['Hãng'] || row['Hãng SX'] || '';
                 const MaSP = String(row['Mã sản phẩm'] || row['Mã SP'] || '');
 
-                // Tính toán nền tảng doanh thu
+                // Tính toán nền tảng doanh thu (dùng chung calculateRowMetrics để khớp chuẩn DTQĐ toàn app)
                 let doanhThuQD = 0;
                 if (qty > 0) {
-                    const price = Number(row['Giá bán_1']) || Number(row['Giá bán']) || 0; 
-                    const rowRevenue = price * qty;
-                    const heso = productConfig ? getHeSoQuyDoi(NganhHang, NhomHang, productConfig, SanPham, MaSP) : 1;
-                    doanhThuQD = rowRevenue * heso;
+                    doanhThuQD = calculateRowMetrics(row, productConfig).revenueQD;
                 }
 
                 // 1. Phân tích Cột Fixed Data (Mẫu số)
