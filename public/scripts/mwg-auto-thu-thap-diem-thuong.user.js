@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      0.7
+// @version      0.8
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -44,6 +44,11 @@
  *   tự copy clipboard + có nút "Copy lại" dự phòng (đề phòng lần copy tự động bị chặn
  *   âm thầm do "user gesture" đã hết hạn — xem ghi chú bản cũ) + link "Xem dữ liệu thô".
  *
+ * BẢN 0.8 — BỎ NÚT NỔI TRÊN TRANG MWG:
+ * - Chế độ Tự động bên Dashboard YCX (popup Hiện tại/Tháng/Năm/Khoảng thời gian) đã đủ
+ *   dùng, không còn kịch bản người dùng tự bấm nút trên trang MWG nữa — bỏ hẳn nút nổi
+ *   "⚡ Thu thập điểm thưởng" để đỡ rối trang. checkForAutoJob() vẫn chạy như cũ.
+ *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
  *   bắn tin xuyên tab; window.close() tự động trên tab do window.open() mở.
@@ -82,7 +87,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '0.7';
+  const SCRIPT_VERSION = '0.8';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -731,22 +736,10 @@
     }
   }
 
-  // ====== TRANG MWG: nút kích hoạt bấm tay + tự dò job đang chờ từ Dashboard ======
+  // ====== TRANG MWG: tự dò job đang chờ từ Dashboard ======
+  // Đã bỏ nút nổi "⚡ Thu thập điểm thưởng" — chế độ Tự động bên Dashboard YCX đã đủ
+  // dùng (Hiện tại/Tháng/Năm/Khoảng thời gian), không cần kích hoạt tay từ trang MWG nữa.
   function initMwgPage() {
-    const btn = document.createElement('button');
-    btn.textContent = '⚡ Thu thập điểm thưởng';
-    Object.assign(btn.style, {
-      position: 'fixed', bottom: '20px', right: '20px', zIndex: 99999,
-      padding: '10px 16px', background: COLOR_PRIMARY, color: '#fff',
-      border: 'none', borderRadius: '999px', cursor: 'pointer',
-      boxShadow: '0 4px 14px rgba(2,132,199,.35)', fontSize: '14px', fontWeight: '700',
-    });
-    btn.onclick = () => {
-      if (document.getElementById('mwg-thuthap-overlay')) return;
-      buildModal(false);
-    };
-    document.body.appendChild(btn);
-
     checkForAutoJob();
   }
 

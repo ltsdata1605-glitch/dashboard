@@ -222,12 +222,14 @@ export const BonusView: React.FC<{
     onBatchUpdate: () => void;
     autoBridge: UseBonusAutoBridgeResult;
     multiMonthRun: UseMultiMonthBonusRunResult;
+    bonusPeriodLabel: string | null;
+    onSetBonusPeriodLabel: (label: string) => void;
     highlightedEmployees: Set<string>;
     activeDepartments: string[];
     isActive?: boolean;
 }> = React.memo(({
     employees, bonusData, revenueRows, supermarketName, activeSupermarkets, onEmployeeClick, onBatchUpdate, autoBridge, multiMonthRun,
-    highlightedEmployees, activeDepartments, isActive
+    bonusPeriodLabel, onSetBonusPeriodLabel, highlightedEmployees, activeDepartments, isActive
 }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
     const cardRef = useRef<HTMLDivElement>(null);
@@ -614,9 +616,12 @@ export const BonusView: React.FC<{
         }
     };
 
+    // Nhãn kỳ hiện tại — thay đổi theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian của
+    // chế độ Tự động; chưa từng chạy Tự động (hoặc chỉ dùng Thủ công) -> fallback mặc định.
+    const reportTitleSuffix = bonusPeriodLabel || `ĐẾN NGÀY ${getYesterdayDateString()}`;
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC {reportTitleSuffix}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -638,9 +643,9 @@ export const BonusView: React.FC<{
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
-                        <span>Cập nhật thưởng</span>
+                        <span>Thủ công</span>
                     </Button>
-                    <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} />
+                    <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} />
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
@@ -724,11 +729,12 @@ export const BonusView: React.FC<{
                                 months={monthlyArchive.months}
                                 dataByMonth={monthlyArchive.dataByMonth}
                                 loading={monthlyArchive.loading}
+                                supermarketName={supermarketName}
                             />
                         ) : isDaily ? (
                             allDates.length === 0 ? (
                                 <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                                    Không có dữ liệu theo ngày. Hãy nhấn "Cập nhật thưởng" để tải lên bảng HRM chứa dữ liệu theo ngày.
+                                    Không có dữ liệu theo ngày. Hãy nhấn "Thủ công" để tải lên bảng HRM chứa dữ liệu theo ngày.
                                 </div>
                             ) : (
                                 <table className="w-full border-collapse compact-export-table">

@@ -95,6 +95,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        setBonusPeriodLabel,
         dataVersion
     } = data;
 
@@ -432,6 +433,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                                     onBatchUpdate={startBatchBonusUpdate}
                                     autoBridge={bonusAutoBridge}
                                     multiMonthRun={bonusMultiMonthRun}
+                                    bonusPeriodLabel={aggregatedData.bonusPeriodLabel}
+                                    onSetBonusPeriodLabel={setBonusPeriodLabel}
                                     highlightedEmployees={highlightedEmployees}
                                     activeDepartments={effectiveActiveDepartments}
                                     isActive={isActive && activeTab === 'bonus'}

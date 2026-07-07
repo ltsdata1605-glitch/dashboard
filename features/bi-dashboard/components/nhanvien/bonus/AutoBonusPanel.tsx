@@ -8,20 +8,22 @@ import { MultiMonthResultDetailModal } from './MultiMonthResultDetailModal';
 import { AutoBonusRangePickerModal } from './AutoBonusRangePickerModal';
 import { showAutoBonusResultToast, showAutoBonusErrorToast, showMultiMonthResultToast } from './AutoBonusToasts';
 
-type PendingRetry = { type: 'single' } | { type: 'year'; year: number } | null;
+type PendingRetry = { type: 'single'; label: string } | { type: 'year'; year: number; label: string } | null;
 
 /**
  * Nút "Tự động" + trạng thái ngắn gọn cạnh nút "Cập nhật thưởng" (Thủ công). Sở hữu
  * toàn bộ UI phụ trợ: popup "Chọn thời gian đổ thưởng" (Hiện tại/Tháng/Năm/Khoảng thời
  * gian), modal hướng dẫn cài đặt lần đầu (dùng chung cho cả job đơn lẫn chạy Năm), toast
- * kết quả của từng luồng, và modal chi tiết tương ứng.
+ * kết quả của từng luồng, và modal chi tiết tương ứng. Khi chạy xong có ít nhất 1 kết quả
+ * thành công, báo `onPeriodLabelChange` để BonusTab đổi tiêu đề báo cáo đúng theo kỳ vừa chọn.
  */
 export const AutoBonusPanel: React.FC<{
     autoBridge: UseBonusAutoBridgeResult;
     multiMonthRun: UseMultiMonthBonusRunResult;
     employeeCount: number;
     onUseManual: () => void;
-}> = ({ autoBridge, multiMonthRun, employeeCount, onUseManual }) => {
+    onPeriodLabelChange: (label: string) => void;
+}> = ({ autoBridge, multiMonthRun, employeeCount, onUseManual, onPeriodLabelChange }) => {
     const { status, progress, stalled, startAuto, summary, errorMessage, dismiss } = autoBridge;
     const {
         status: monthStatus, progress: monthProgress, stalled: monthStalled, startYear,
@@ -44,6 +46,9 @@ export const AutoBonusPanel: React.FC<{
         if (status === 'done' && firedRef.current !== 'done') {
             firedRef.current = 'done';
             if (summary) {
+                if (summary.successCount > 0 && pendingRetryRef.current?.type === 'single') {
+                    onPeriodLabelChange(pendingRetryRef.current.label);
+                }
                 showAutoBonusResultToast(summary, {
                     onViewDetail: () => setShowDetail(true),
                     onDismissed: () => dismiss(),
@@ -55,13 +60,22 @@ export const AutoBonusPanel: React.FC<{
         } else if (status !== 'done' && status !== 'error') {
             firedRef.current = null;
         }
-    }, [status, summary, errorMessage, dismiss]);
+    }, [status, summary, errorMessage, dismiss, onPeriodLabelChange]);
 
     const monthFiredRef = useRef<'done' | 'error' | null>(null);
     useEffect(() => {
         if (monthStatus === 'done' && monthFiredRef.current !== 'done') {
             monthFiredRef.current = 'done';
             if (monthSummary) {
+                // Chỉ đổi tiêu đề nếu THÁNG HIỆN TẠI trong lượt Năm này thực sự thành công —
+                // đây là tháng duy nhất handleSaveBonusMonthly có mirror sang bonus-data-*,
+                // nên tiêu đề "NĂM ... LUỸ KẾ" chỉ đúng khi dữ liệu "hôm nay" cũng đã cập nhật.
+                const now = new Date();
+                const currentYYYYMM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                const currentMonthResult = monthSummary.monthResults.find(m => m.yyyymm === currentYYYYMM);
+                if (currentMonthResult && currentMonthResult.successCount > 0 && pendingRetryRef.current?.type === 'year') {
+                    onPeriodLabelChange(pendingRetryRef.current.label);
+                }
                 showMultiMonthResultToast(monthSummary, {
                     onViewDetail: () => setShowMonthDetail(true),
                     onDismissed: () => monthDismiss(),
@@ -73,14 +87,14 @@ export const AutoBonusPanel: React.FC<{
         } else if (monthStatus !== 'done' && monthStatus !== 'error') {
             monthFiredRef.current = null;
         }
-    }, [monthStatus, monthSummary, monthErrorMessage, monthDismiss]);
+    }, [monthStatus, monthSummary, monthErrorMessage, monthDismiss, onPeriodLabelChange]);
 
-    const handleRunSingle = (range: { fromDate: string; toDate: string }) => {
-        pendingRetryRef.current = { type: 'single' };
+    const handleRunSingle = (range: { fromDate: string; toDate: string; label: string }) => {
+        pendingRetryRef.current = { type: 'single', label: range.label };
         startAuto(range);
     };
-    const handleRunYear = (year: number) => {
-        pendingRetryRef.current = { type: 'year', year };
+    const handleRunYear = (year: number, label: string) => {
+        pendingRetryRef.current = { type: 'year', year, label };
         startYear(year);
     };
     const handleRetry = () => {

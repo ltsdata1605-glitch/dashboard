@@ -19,10 +19,17 @@ export interface AutoBonusRangePickerModalProps {
     isOpen: boolean;
     onClose: () => void;
     employeeCount: number;
-    /** Chạy 1 job đơn (tab Hiện tại/Tháng/Khoảng thời gian). */
-    onRunSingle: (range: { fromDate: string; toDate: string }) => void;
+    /** Chạy 1 job đơn (tab Hiện tại/Tháng/Khoảng thời gian). `label` dùng để cập nhật
+     * tiêu đề báo cáo (VD "THÁNG 6/2026") — xem AutoBonusPanel. */
+    onRunSingle: (range: { fromDate: string; toDate: string; label: string }) => void;
     /** Chạy trọn 1 năm — lặp tuần tự nhiều job (tab Năm). */
-    onRunYear: (year: number) => void;
+    onRunYear: (year: number, label: string) => void;
+}
+
+/** "06/07/2026" -> "6/7" — khớp định dạng getYesterdayDateString() đang dùng làm tiêu đề mặc định. */
+function toShortDDMM(ddmmyyyy: string): string {
+    const d = parseDDMMYYYY(ddmmyyyy);
+    return d ? `${d.getDate()}/${d.getMonth() + 1}` : ddmmyyyy;
 }
 
 const TABS: { id: PickerTab; label: string }[] = [
@@ -105,13 +112,13 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
 
     const handleRunClick = () => {
         if (activeTab === 'current') {
-            onRunSingle(currentRange);
+            onRunSingle({ ...currentRange, label: `ĐẾN NGÀY ${toShortDDMM(currentRange.toDate)}` });
             onClose();
         } else if (activeTab === 'month' && monthRange) {
-            onRunSingle(monthRange);
+            onRunSingle({ ...monthRange, label: `THÁNG ${selectedMonth ? recentMonths.find(m => m.yyyymm === selectedMonth)?.label : ''}` });
             onClose();
         } else if (activeTab === 'range' && rangeValidation.valid) {
-            onRunSingle({ fromDate: customFrom, toDate: customTo });
+            onRunSingle({ fromDate: customFrom, toDate: customTo, label: `${customFrom} → ${customTo}` });
             onClose();
         } else if (activeTab === 'year' && selectedYear) {
             setShowYearConfirm(true);
@@ -121,7 +128,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     const confirmYearRun = () => {
         if (selectedYear == null) return;
         setShowYearConfirm(false);
-        onRunYear(selectedYear);
+        onRunYear(selectedYear, `NĂM ${selectedYear} (LUỸ KẾ)`);
         onClose();
     };
 

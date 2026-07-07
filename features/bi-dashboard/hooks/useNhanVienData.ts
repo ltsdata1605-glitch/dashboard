@@ -22,7 +22,10 @@ export function useNhanVienData(isActive?: boolean) {
         traGop: '',
         banKem: '',
         manualMapping: {} as ManualDeptMapping,
-        bonusData: {} as Record<string, BonusMetrics | null>
+        bonusData: {} as Record<string, BonusMetrics | null>,
+        // Nhãn kỳ hiện tại của bonusData — do lựa chọn Tự động (Hiện tại/Tháng/Năm/Khoảng
+        // thời gian) ghi vào lúc chạy xong; null -> BonusTab tự fallback về "ĐẾN NGÀY hôm qua".
+        bonusPeriodLabel: null as string | null
     });
 
     const [dataVersion, setDataVersion] = useState(0);
@@ -45,13 +48,14 @@ export function useNhanVienData(isActive?: boolean) {
                     traGop: '',
                     banKem: '',
                     manualMapping: {},
-                    bonusData: {}
+                    bonusData: {},
+                    bonusPeriodLabel: null
                 });
                 return;
             }
-            
+
             const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
-            
+
             const results = await Promise.all(uniqueSafeNames.map(safeName => {
                 return Promise.all([
                     db.get(`config-${safeName}-danhsach`),
@@ -61,7 +65,8 @@ export function useNhanVienData(isActive?: boolean) {
                     db.get(`manual-dept-mapping-${safeName}`),
                     db.get(`bonus-data-${safeName}`),
                     db.get(`targethero-${safeName}-departmentweights`),
-                    db.get(`hidden-employees-${safeName}`)
+                    db.get(`hidden-employees-${safeName}`),
+                    db.get(`bonus-current-period-label-${safeName}`)
                 ]);
             }));
 
@@ -70,10 +75,11 @@ export function useNhanVienData(isActive?: boolean) {
             let combinedDS = '', combinedTD = '', combinedTG = '', combinedBK = '';
             let combinedMM: ManualDeptMapping = {};
             let combinedBonus: Record<string, BonusMetrics | null> = {};
+            let combinedPeriodLabel: string | null = null;
             const allWeights: Record<string, number[]> = {};
 
             const combinedHidden: string[] = [];
-            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden]) => {
+            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden, periodLabel]) => {
                 if (ds) combinedDS += (combinedDS ? '\n' : '') + ds;
                 if (td) combinedTD += (combinedTD ? '\n' : '') + td;
                 if (tg) combinedTG += (combinedTG ? '\n' : '') + tg;
@@ -81,6 +87,7 @@ export function useNhanVienData(isActive?: boolean) {
                 if (mm) Object.assign(combinedMM, mm);
                 if (bonus) Object.assign(combinedBonus, bonus);
                 if (Array.isArray(hidden)) combinedHidden.push(...hidden);
+                if (!combinedPeriodLabel && periodLabel) combinedPeriodLabel = periodLabel as string;
                 if (weights) {
                     Object.entries(weights as Record<string, number>).forEach(([dept, w]) => {
                         if (!allWeights[dept]) allWeights[dept] = [];
@@ -102,7 +109,8 @@ export function useNhanVienData(isActive?: boolean) {
                 traGop: combinedTG,
                 banKem: combinedBK,
                 manualMapping: combinedMM,
-                bonusData: combinedBonus
+                bonusData: combinedBonus,
+                bonusPeriodLabel: combinedPeriodLabel
             });
         };
         fetchAllData();
@@ -112,7 +120,7 @@ export function useNhanVienData(isActive?: boolean) {
     useEffect(() => {
         const handleDbChange = (event: CustomEvent) => {
             const key = event.detail.key;
-            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key.startsWith('hidden-employees-') || key === 'summary-luy-ke') {
+            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('bonus-current-period-label-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key.startsWith('hidden-employees-') || key === 'summary-luy-ke') {
                 setDataVersion(v => v + 1);
             }
         };
@@ -343,6 +351,15 @@ export function useNhanVienData(isActive?: boolean) {
         }
     }, [activeSupermarkets, handleSaveBonusBatch]);
 
+    // Nhãn kỳ hiện tại của bonusData (VD "THÁNG 6/2026", "NĂM 2026 (LUỸ KẾ)") — do
+    // AutoBonusPanel gọi sau khi 1 lượt Tự động chạy xong, để BonusTab đổi tiêu đề báo cáo
+    // đúng theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian thay vì luôn cố định "hôm qua".
+    const setBonusPeriodLabel = useCallback(async (label: string) => {
+        const safeName = shortenSupermarketName(activeSupermarkets[0]);
+        setAggregatedData(prev => ({ ...prev, bonusPeriodLabel: label }));
+        await db.set(`bonus-current-period-label-${safeName}`, label);
+    }, [activeSupermarkets]);
+
     const effectiveAggregatedWeights = useMemo(() => {
         if (isActive === false) return {};
         if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
@@ -383,6 +400,7 @@ export function useNhanVienData(isActive?: boolean) {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        setBonusPeriodLabel,
         setAggregatedData,
         dataVersion
     };
