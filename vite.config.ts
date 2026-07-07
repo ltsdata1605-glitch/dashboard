@@ -18,13 +18,14 @@ export default defineConfig(({ mode }) => {
         tailwindcss(),
       ],
       build: {
-        chunkSizeWarningLimit: 1500,
+        chunkSizeWarningLimit: 700,
         rollupOptions: {
             output: {
                 manualChunks: {
                     'vendor-excel': ['xlsx', 'papaparse'],
                     'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-                    'vendor-ui': ['motion', 'lucide-react'],
+                    'vendor-motion': ['motion'],
+                    'vendor-icons': ['lucide-react'],
                     'vendor-charts': ['recharts']
                 }
             }

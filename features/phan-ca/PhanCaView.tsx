@@ -27,6 +27,7 @@ import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { syncScheduleToCloud, fetchScheduleFromCloud } from './services/firestoreSync';
+import { loginWithGoogleForceConsent } from './services/firebase';
 import { 
   StaffMember, 
   ScheduleInfo, 
@@ -705,7 +706,6 @@ const App: React.FC = () => {
     const attemptExport = async (retryCount = 0): Promise<void> => {
         toastEl.textContent = '🔑 Đang xác thực Google...';
         sessionStorage.removeItem('googleOAuthToken');
-        const { loginWithGoogleForceConsent } = await import('./services/firebase');
         await loginWithGoogleForceConsent();
         let token = sessionStorage.getItem('googleOAuthToken');
         if (!token) throw new Error('Không thể lấy token xác thực.');

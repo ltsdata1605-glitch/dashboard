@@ -13,10 +13,6 @@ import { db } from '../../services/firebase';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import LandingPageView from './LandingPageView';
-import FileHistoryModal from '../modals/FileHistoryModal';
-import FileNamingModal from '../modals/FileNamingModal';
-import UploadConflictModal from '../modals/UploadConflictModal';
-import UploadTypeSelectionModal from '../modals/UploadTypeSelectionModal';
 import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
 import FilterBar from '../filters/FilterBar';
@@ -26,23 +22,31 @@ import IndustryGrid from '../charts/IndustryGrid';
 import EmployeeAnalysis from '../employees/EmployeeAnalysis';
 import SummaryTable from '../tables/SummaryTable';
 import WarehouseSummary from '../summary/WarehouseSummary';
-import UnshippedOrdersModal from '../modals/UnshippedOrdersModal';
-import UncollectedOrdersModal from '../modals/UncollectedOrdersModal';
-import UnconfiguredGroupsModal from '../modals/UnconfiguredGroupsModal';
 
+// Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
+// (đo thực tế: chunk DashboardView ~300kB gzip, phần lớn do các modal này luôn bị
+// static-import dù đa số người dùng không bao giờ mở tới).
+const UnshippedOrdersModal = React.lazy(() => import('../modals/UnshippedOrdersModal'));
+const UncollectedOrdersModal = React.lazy(() => import('../modals/UncollectedOrdersModal'));
+const UnconfiguredGroupsModal = React.lazy(() => import('../modals/UnconfiguredGroupsModal'));
 const PerformanceModal = React.lazy(() => import('../modals/PerformanceModal'));
+const ChangelogModal = React.lazy(() => import('../modals/ChangelogModal'));
+const FileHistoryModal = React.lazy(() => import('../modals/FileHistoryModal'));
+const FileNamingModal = React.lazy(() => import('../modals/FileNamingModal'));
+const UploadConflictModal = React.lazy(() => import('../modals/UploadConflictModal'));
+const UploadTypeSelectionModal = React.lazy(() => import('../modals/UploadTypeSelectionModal'));
+const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfigModal'));
+const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal'));
+
 import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
-import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
-import KpiCardConfigModal from '../kpis/modals/KpiCardConfigModal';
-import ExportOptionsModal from '../common/ExportOptionsModal';
 import { canShareFiles } from '../../services/uiService';
 
 const defaultVisibilityState: VisibilityState = {
@@ -337,12 +341,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {status.message && status.type === 'error' && <StatusDisplay status={status} />}
 
                     {logic.kpiCardsConfig && (
-                        <KpiCardConfigModal
-                            isOpen={isKpiConfigModalOpen}
-                            onClose={() => setIsKpiConfigModalOpen(false)}
-                            configs={logic.kpiCardsConfig}
-                            onSave={logic.updateKpiCardsConfig}
-                        />
+                        <React.Suspense fallback={null}>
+                            <KpiCardConfigModal
+                                isOpen={isKpiConfigModalOpen}
+                                onClose={() => setIsKpiConfigModalOpen(false)}
+                                configs={logic.kpiCardsConfig}
+                                onSave={logic.updateKpiCardsConfig}
+                            />
+                        </React.Suspense>
                     )}
 
                     {showLanding && (
@@ -606,77 +612,79 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport} />
                         </React.Suspense>
                     )}
-                    {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
-                    {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
-                    {activeModal === 'uncollected' && processedData && <UncollectedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onExportSheet={handleExportUncollectedSheet} />}
-                    <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
-                    <UnconfiguredGroupsModal
-                        isOpen={isUnconfiguredModalOpen}
-                        onClose={() => setIsUnconfiguredModalOpen(false)}
-                        unconfiguredGroups={unconfiguredGroups}
-                        ignoredUnconfiguredGroups={ignoredUnconfiguredGroups}
-                        onIgnoreGroup={handleIgnoreGroup}
-                        onRestoreGroup={handleRestoreGroup}
-                    />
-                    <FileHistoryModal
-                        isOpen={isFileHistoryModalOpen}
-                        onClose={() => setIsFileHistoryModalOpen(false)}
-                        registry={logic.fileRegistry}
-                        onToggleActive={logic.handleToggleFileActive}
-                        onDelete={logic.handleDeleteFile}
-                        onProcessFile={(files, isCloudSync, isHistorical) => {
-                            setIsFileHistoryModalOpen(false);
-                            handleFileProcessing(files, isCloudSync, isHistorical);
-                        }}
-                        onViewReport={logic.handleViewReport}
-                    />
-                    <FileNamingModal
-                        isOpen={!!pendingNaming}
-                        onConfirm={(name) => {
-                            if (pendingNaming) {
-                                pendingNaming.resolve(name);
-                                setPendingNaming(null);
-                            }
-                        }}
-                    />
-                    <UploadConflictModal
-                        isOpen={!!pendingConflict}
-                        conflicts={pendingConflict?.conflicts || []}
-                        newFilename={pendingConflict?.newFilename || ''}
-                        newDateRangeStr={pendingConflict?.newDateRangeStr || ''}
-                        onResolve={(action) => {
-                            if (pendingConflict) {
-                                pendingConflict.resolve(action);
-                                setPendingConflict(null);
-                            }
-                        }}
-                    />
-                    <UploadTypeSelectionModal
-                        isOpen={!!pendingUploadFiles}
-                        onClose={() => setPendingUploadFiles(null)}
-                        onSelect={(isHistorical) => {
-                            if (pendingUploadFiles) {
-                                handleFileProcessing(pendingUploadFiles, false, isHistorical);
-                                setPendingUploadFiles(null);
-                            }
-                        }}
-                        fileCount={pendingUploadFiles?.length || 0}
-                    />
+                    <React.Suspense fallback={null}>
+                        {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
+                        {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
+                        {activeModal === 'uncollected' && processedData && <UncollectedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onExportSheet={handleExportUncollectedSheet} />}
+                        <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
+                        <UnconfiguredGroupsModal
+                            isOpen={isUnconfiguredModalOpen}
+                            onClose={() => setIsUnconfiguredModalOpen(false)}
+                            unconfiguredGroups={unconfiguredGroups}
+                            ignoredUnconfiguredGroups={ignoredUnconfiguredGroups}
+                            onIgnoreGroup={handleIgnoreGroup}
+                            onRestoreGroup={handleRestoreGroup}
+                        />
+                        <FileHistoryModal
+                            isOpen={isFileHistoryModalOpen}
+                            onClose={() => setIsFileHistoryModalOpen(false)}
+                            registry={logic.fileRegistry}
+                            onToggleActive={logic.handleToggleFileActive}
+                            onDelete={logic.handleDeleteFile}
+                            onProcessFile={(files, isCloudSync, isHistorical) => {
+                                setIsFileHistoryModalOpen(false);
+                                handleFileProcessing(files, isCloudSync, isHistorical);
+                            }}
+                            onViewReport={logic.handleViewReport}
+                        />
+                        <FileNamingModal
+                            isOpen={!!pendingNaming}
+                            onConfirm={(name) => {
+                                if (pendingNaming) {
+                                    pendingNaming.resolve(name);
+                                    setPendingNaming(null);
+                                }
+                            }}
+                        />
+                        <UploadConflictModal
+                            isOpen={!!pendingConflict}
+                            conflicts={pendingConflict?.conflicts || []}
+                            newFilename={pendingConflict?.newFilename || ''}
+                            newDateRangeStr={pendingConflict?.newDateRangeStr || ''}
+                            onResolve={(action) => {
+                                if (pendingConflict) {
+                                    pendingConflict.resolve(action);
+                                    setPendingConflict(null);
+                                }
+                            }}
+                        />
+                        <UploadTypeSelectionModal
+                            isOpen={!!pendingUploadFiles}
+                            onClose={() => setPendingUploadFiles(null)}
+                            onSelect={(isHistorical) => {
+                                if (pendingUploadFiles) {
+                                    handleFileProcessing(pendingUploadFiles, false, isHistorical);
+                                    setPendingUploadFiles(null);
+                                }
+                            }}
+                            fileCount={pendingUploadFiles?.length || 0}
+                        />
+                        {/* Export Options Modal - Download or Share */}
+                        <ExportOptionsModal
+                            isOpen={!!logic.pendingExport}
+                            onClose={logic.handlePendingClose}
+                            onDownload={logic.handlePendingDownload}
+                            onShare={logic.handlePendingShare}
+                            canShare={canShareFiles()}
+                            filename={logic.pendingExport?.filename || ''}
+                        />
+                    </React.Suspense>
                     <DebugPanel
                         isVisible={isDebugPanelVisible}
                         isInspectorActive={isInspectorActive}
                         info={debugInfo}
                         onClose={() => setIsDebugPanelVisible(false)}
                         onToggleInspector={() => setIsInspectorActive(p => !p)}
-                    />
-                    {/* Export Options Modal - Download or Share */}
-                    <ExportOptionsModal
-                        isOpen={!!logic.pendingExport}
-                        onClose={logic.handlePendingClose}
-                        onDownload={logic.handlePendingDownload}
-                        onShare={logic.handlePendingShare}
-                        canShare={canShareFiles()}
-                        filename={logic.pendingExport?.filename || ''}
                     />
                 </DashboardContext.Provider>
             </div>
