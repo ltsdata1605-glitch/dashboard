@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      0.6
+// @version      0.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -34,12 +34,24 @@
  *   đúng cột `parseBonusBlock` bên Dashboard đang dùng làm "tong") và gửi kèm về
  *   Dashboard để hiện trong "Xem chi tiết" của toast kết quả.
  *
+ * BẢN 0.7 — FEED TIẾN ĐỘ + POPUP HOÀN TẤT GỌN:
+ * - Khu vực "Vừa xong" giờ là 1 feed trượt cao cố định (~5 dòng, dùng CSS transform
+ *   translateY theo index + transition, không phình hộp thoại). Dòng lỗi KHÔNG vào
+ *   feed trượt (tránh bài toán "lỗi bị đẩy mất" khi feed chỉ có 5 chỗ) — dồn vào 1 khu
+ *   vực riêng luôn hiện "✗ N lỗi", bấm vào xem đủ danh sách, và tự mở ra khi chạy xong.
+ * - Chạy xong KHÔNG hiện textarea dữ liệu thô mặc định nữa — thay bằng màn hình gọn
+ *   (headline + phụ đề). Tự động: tự quay về Dashboard (đóng tab) như cũ. Chạy tay:
+ *   tự copy clipboard + có nút "Copy lại" dự phòng (đề phòng lần copy tự động bị chặn
+ *   âm thầm do "user gesture" đã hết hạn — xem ghi chú bản cũ) + link "Xem dữ liệu thô".
+ *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
  *   bắn tin xuyên tab; window.close() tự động trên tab do window.open() mở.
  * - @updateURL/@downloadURL thực sự khiến Tampermonkey tự cập nhật (chỉ có tác dụng
  *   với các lượt cài MỚI từ bản 0.6 trở đi — bản đã cài trước đó phải cập nhật tay 1
  *   lần cuối để có 2 dòng này).
+ * - Copy tự động ngay khi chạy tay vừa xong (bản 0.7) có thực sự ăn trên trình duyệt
+ *   thật hay không — nút "Copy lại" là lối thoát dự phòng nếu không.
  */
 
 (function () {
@@ -70,7 +82,11 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '0.6';
+  const SCRIPT_VERSION = '0.7';
+
+  // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
+  const FEED_ROW_HEIGHT = 21;
+  const FEED_MAX_ROWS = 5;
 
   // ====== TIỆN ÍCH CHUNG ======
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -255,6 +271,53 @@
     }
   }
 
+  // ====== FEED "VỪA XONG" (trượt, cao cố định) + KHU VỰC LỖI (ghim riêng) ======
+  // Mỗi dòng đặt position:absolute, dời vị trí bằng translateY(index*rowHeight) — đổi
+  // index của dòng cũ sẽ tự animate nhờ transition đã khai báo sẵn trên style, không
+  // cần đo getBoundingClientRect. Dòng thứ FEED_MAX_ROWS trở đi mờ dần rồi bị gỡ khỏi DOM.
+  function pushFeedRow(feedEl, html) {
+    const existing = Array.from(feedEl.children);
+
+    const row = document.createElement('div');
+    row.innerHTML = html;
+    Object.assign(row.style, {
+      position: 'absolute', left: '0', right: '0', top: '0',
+      height: `${FEED_ROW_HEIGHT}px`, lineHeight: `${FEED_ROW_HEIGHT}px`,
+      overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+      fontSize: '12.5px', fontWeight: '600',
+      transform: 'translateY(-8px)', opacity: '0',
+      transition: 'transform .28s ease, opacity .28s ease',
+    });
+    row.dataset.feedIndex = '0';
+    feedEl.appendChild(row);
+    void row.offsetHeight; // ép reflow để "chốt" trạng thái ban đầu trước khi đổi sang đích, nếu không transition sẽ nhảy thẳng không animate
+    row.style.transform = 'translateY(0)';
+    row.style.opacity = '1';
+
+    existing.forEach((el) => {
+      const newIdx = parseInt(el.dataset.feedIndex || '0', 10) + 1;
+      el.dataset.feedIndex = String(newIdx);
+      el.style.transform = `translateY(${newIdx * FEED_ROW_HEIGHT}px)`;
+      if (newIdx >= FEED_MAX_ROWS) {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }
+    });
+  }
+
+  // Dòng lỗi KHÔNG vào feed trượt (feed chỉ có FEED_MAX_ROWS chỗ, dễ bị đẩy mất) — dồn
+  // vào 1 khu vực riêng luôn hiện số lượng, bấm vào xem đủ danh sách, và được lệnh gọi
+  // ở cuối phiên chạy tự mở ra để người dùng thấy ngay không cần bấm.
+  function pushErrorRow(els, errorLog, who, reason) {
+    errorLog.push({ who, reason });
+    els.errorArea.style.display = 'block';
+    els.errorBadge.textContent = `✗ ${errorLog.length} lỗi`;
+    const row = document.createElement('div');
+    row.style.cssText = `padding:2px 0;color:${COLOR_DANGER};`;
+    row.textContent = `✗ ${who} — ${reason}`;
+    els.errorList.insertBefore(row, els.errorList.firstChild);
+  }
+
   // ====== COPY VÀO CLIPBOARD (ưu tiên GM_setClipboard, dự phòng Clipboard API) ======
   function copyToClipboard(text) {
     try {
@@ -359,24 +422,37 @@
           <span id="mwg-progress-counter" style="font-size:22px;font-weight:800;color:${COLOR_PRIMARY};letter-spacing:-.02em;"></span>
           <span id="mwg-current-emp" style="font-size:13px;font-weight:700;color:#334155;text-align:right;"></span>
         </div>
-        <p id="mwg-last-done" style="min-height:18px;margin:10px 0 0;font-size:12.5px;font-weight:600;"></p>
+
+        <div id="mwg-feed" style="position:relative;height:${FEED_ROW_HEIGHT * FEED_MAX_ROWS}px;overflow:hidden;margin-top:8px;"></div>
 
         <div style="text-align:right;margin-top:10px;">
           <button id="mwg-btn-stop" type="button" style="padding:7px 16px;border-radius:999px;border:1px solid #fecdd3;background:#fff1f2;color:${COLOR_DANGER};font-weight:700;font-size:12px;cursor:pointer;">Dừng lại</button>
         </div>
       </div>
 
-      <p id="mwg-status-text" style="min-height:20px;margin:14px 0;font-size:13px;color:#475569;white-space:pre-wrap;"></p>
-
-      <div id="mwg-result-wrap" style="display:none;margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <label style="font-weight:600;font-size:13px;">Kết quả (đã tự bôi đen sẵn — Ctrl+C nếu nút Copy không ăn)</label>
-          <button id="mwg-btn-copy" type="button" style="padding:4px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px;">📋 Copy vào clipboard</button>
+      <div id="mwg-error-area" style="display:none;margin-top:10px;">
+        <div style="display:flex;justify-content:flex-end;">
+          <span id="mwg-error-badge" style="cursor:pointer;font-size:11px;font-weight:800;color:${COLOR_DANGER};background:#fff1f2;border:1px solid #fecdd3;border-radius:999px;padding:2px 10px;">✗ 0 lỗi</span>
         </div>
-        <textarea id="mwg-result" rows="6" readonly style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;padding:8px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;"></textarea>
+        <div id="mwg-error-list" style="display:none;margin-top:6px;max-height:120px;overflow-y:auto;border:1px solid #fecdd3;border-radius:10px;padding:6px 10px;background:#fff1f2;font-size:12px;"></div>
       </div>
 
-      <div id="mwg-footer" style="display:flex;justify-content:flex-end;gap:8px;">
+      <p id="mwg-status-text" style="min-height:0;margin:0;font-size:13px;color:#475569;white-space:pre-wrap;"></p>
+
+      <div id="mwg-done-section" style="display:none;margin-top:14px;">
+        <p id="mwg-done-headline" style="margin:0 0 4px;font-size:14px;font-weight:800;color:#1e293b;"></p>
+        <p id="mwg-done-sub" style="margin:0;font-size:12.5px;color:#64748b;"></p>
+
+        <div id="mwg-done-manual-actions" style="display:none;margin-top:10px;">
+          <a id="mwg-toggle-raw" href="#" style="font-size:11px;color:#94a3b8;text-decoration:underline;">Xem dữ liệu thô</a>
+          <div id="mwg-raw-wrap" style="display:none;margin-top:8px;">
+            <textarea id="mwg-result" rows="6" readonly style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;padding:8px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="mwg-footer" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button id="mwg-btn-copy-again" type="button" style="display:none;padding:9px 16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-weight:600;">📋 Copy lại</button>
         <button id="mwg-btn-close" style="padding:9px 16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-weight:600;">Đóng</button>
         <button id="mwg-btn-start" style="padding:9px 18px;border-radius:12px;border:none;background:${COLOR_PRIMARY};color:#fff;font-weight:700;cursor:pointer;">Bắt đầu</button>
       </div>
@@ -398,12 +474,20 @@
       progressFill: box.querySelector('#mwg-progress-fill'),
       progressCounter: box.querySelector('#mwg-progress-counter'),
       currentEmp: box.querySelector('#mwg-current-emp'),
-      lastDone: box.querySelector('#mwg-last-done'),
+      feed: box.querySelector('#mwg-feed'),
       btnStop: box.querySelector('#mwg-btn-stop'),
+      errorArea: box.querySelector('#mwg-error-area'),
+      errorBadge: box.querySelector('#mwg-error-badge'),
+      errorList: box.querySelector('#mwg-error-list'),
       statusText: box.querySelector('#mwg-status-text'),
-      resultWrap: box.querySelector('#mwg-result-wrap'),
+      doneSection: box.querySelector('#mwg-done-section'),
+      doneHeadline: box.querySelector('#mwg-done-headline'),
+      doneSub: box.querySelector('#mwg-done-sub'),
+      doneManualActions: box.querySelector('#mwg-done-manual-actions'),
+      toggleRawLink: box.querySelector('#mwg-toggle-raw'),
+      rawWrap: box.querySelector('#mwg-raw-wrap'),
       resultTextarea: box.querySelector('#mwg-result'),
-      btnCopy: box.querySelector('#mwg-btn-copy'),
+      btnCopyAgain: box.querySelector('#mwg-btn-copy-again'),
       footer: box.querySelector('#mwg-footer'),
       btnStart: box.querySelector('#mwg-btn-start'),
       btnClose: box.querySelector('#mwg-btn-close'),
@@ -429,15 +513,26 @@
       if (e.target === overlay) overlay.remove();
     });
 
+    els.errorBadge.addEventListener('click', () => {
+      const willShow = els.errorList.style.display === 'none';
+      els.errorList.style.display = willShow ? 'block' : 'none';
+    });
+
+    els.toggleRawLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const willShow = els.rawWrap.style.display === 'none';
+      els.rawWrap.style.display = willShow ? 'block' : 'none';
+      els.toggleRawLink.textContent = willShow ? 'Ẩn dữ liệu thô' : 'Xem dữ liệu thô';
+    });
+
     // Nút copy độc lập, bấm trực tiếp -> luôn là 1 cú click "tươi" nên chắc chắn được phép,
-    // khác với gọi copy tự động ngay sau vòng lặp fetch dài (dễ bị chặn âm thầm).
-    els.btnCopy.addEventListener('click', () => {
+    // khác với gọi copy tự động ngay khi vừa chạy xong (dễ bị chặn âm thầm nếu "user gesture"
+    // gốc đã hết hạn) — đây là lối thoát dự phòng cho đúng tình huống đó.
+    els.btnCopyAgain.addEventListener('click', () => {
       copyToClipboard(els.resultTextarea.value);
-      els.resultTextarea.focus();
-      els.resultTextarea.select();
-      const original = els.btnCopy.textContent;
-      els.btnCopy.textContent = '✅ Đã copy!';
-      setTimeout(() => { els.btnCopy.textContent = original; }, 1500);
+      const original = els.btnCopyAgain.textContent;
+      els.btnCopyAgain.textContent = '✅ Đã copy!';
+      setTimeout(() => { els.btnCopyAgain.textContent = original; }, 1500);
     });
 
     els.btnStart.addEventListener('click', async () => {
@@ -472,11 +567,16 @@
   // (jobId có giá trị — báo tiến độ/kết quả về GM storage cho Dashboard).
   async function runFromModal(els, employees, fromDateApi, toDateApi, { jobId, rangeFrom, rangeTo } = {}) {
     const stopFlag = { requested: false };
+    const errorLog = [];
+    const runStartedAt = Date.now();
 
     els.setupSection.style.display = 'none';
     els.footer.style.display = 'none';
     els.statusText.textContent = '';
-    els.resultWrap.style.display = 'none';
+    els.doneSection.style.display = 'none';
+    els.doneManualActions.style.display = 'none';
+    els.rawWrap.style.display = 'none';
+    els.toggleRawLink.textContent = 'Xem dữ liệu thô';
     els.runningSection.style.display = 'block';
 
     els.rangeText.textContent = `${rangeFrom || ''} → ${rangeTo || ''}`;
@@ -486,7 +586,11 @@
     els.progressFill.style.width = '0%';
     els.progressCounter.textContent = `0/${employees.length}`;
     els.currentEmp.textContent = '';
-    els.lastDone.textContent = '';
+    els.feed.innerHTML = '';
+    els.errorArea.style.display = 'none';
+    els.errorBadge.textContent = '✗ 0 lỗi';
+    els.errorList.innerHTML = '';
+    els.errorList.style.display = 'none';
     els.btnStop.disabled = false;
     els.btnStop.textContent = 'Dừng lại';
 
@@ -512,9 +616,12 @@
           const label = (outcome.diemThucLanh === null || outcome.diemThucLanh === undefined)
             ? 'Không có dữ liệu kỳ này'
             : `Điểm thực lãnh: ${formatViNumber(outcome.diemThucLanh)}`;
-          els.lastDone.innerHTML = `<span style="color:${COLOR_SUCCESS};">✓ Vừa xong: ${who} — ${label}</span>`;
+          const color = (outcome.diemThucLanh === null || outcome.diemThucLanh === undefined) ? '#94a3b8' : COLOR_SUCCESS;
+          pushFeedRow(els.feed, `<span style="color:${color};">✓ ${who} — ${label}</span>`);
         } else {
-          els.lastDone.innerHTML = `<span style="color:${COLOR_DANGER};">✗ ${who} — ${outcome.error}</span>`;
+          // Lỗi KHÔNG vào feed trượt (chỉ có ${FEED_MAX_ROWS} chỗ, dễ bị đẩy mất) — dồn
+          // vào khu vực riêng luôn hiện số lượng + xem được đủ danh sách.
+          pushErrorRow(els, errorLog, who, outcome.error);
         }
       },
     });
@@ -524,15 +631,54 @@
 
     const output = blocks.join('\n\n');
     els.resultTextarea.value = output;
-    els.resultWrap.style.display = 'block';
+
+    // Chạy xong mà có lỗi -> tự mở khu vực lỗi ra luôn, không bắt bấm mới thấy.
+    if (errors.length > 0) {
+      els.errorList.style.display = 'block';
+    }
+
+    const total = employees.length;
+    const attempted = results.length;
+    const attemptedSuccess = attempted - errors.length;
+    const elapsedSec = Math.max(1, Math.round((Date.now() - runStartedAt) / 1000));
+
+    els.doneSection.style.display = 'block';
+
+    if (jobId) {
+      // TỰ ĐỘNG: màn hình gọn, không có dữ liệu thô (Dashboard đã có sẵn qua bridge) —
+      // tab sẽ tự đóng theo setTimeout ở checkForAutoJob bất kể có lỗi hay không.
+      els.doneManualActions.style.display = 'none';
+      if (stoppedEarly) {
+        els.doneHeadline.textContent = `⏹ Đã dừng: xong ${attempted}/${total} nhân viên${errors.length ? ` · ${errors.length} lỗi` : ''}`;
+      } else if (errors.length === 0) {
+        els.doneHeadline.textContent = `✅ Hoàn tất ${total}/${total} nhân viên · ${elapsedSec}s`;
+      } else {
+        els.doneHeadline.textContent = `⚠️ Xong ${attemptedSuccess}/${total} · ${errors.length} lỗi`;
+      }
+      els.doneSub.textContent = 'Đang quay về Dashboard...';
+    } else {
+      // CHẠY TAY: tự copy ngay khi vừa xong (best-effort — nút "Copy lại" bên dưới là
+      // lối thoát dự phòng nếu cú copy này bị chặn âm thầm), không hiện dữ liệu thô mặc định.
+      copyToClipboard(output);
+      els.doneManualActions.style.display = 'block';
+      if (stoppedEarly) {
+        els.doneHeadline.textContent = `⏹ Đã dừng: xong ${attempted}/${total} nhân viên${errors.length ? ` (${errors.length} lỗi)` : ''}.`;
+        els.doneSub.textContent = 'Dữ liệu đã lấy được vẫn được copy vào clipboard — qua Dashboard YCX dán vào.';
+      } else if (errors.length === 0) {
+        els.doneHeadline.textContent = `✅ Đã lấy xong ${total} nhân viên.`;
+        els.doneSub.textContent = 'Dữ liệu đã được copy vào clipboard — qua Dashboard YCX dán vào.';
+      } else {
+        els.doneHeadline.textContent = `⚠️ Xong ${attemptedSuccess}/${total} · ${errors.length} lỗi.`;
+        els.doneSub.textContent = 'Dữ liệu đã copy vào clipboard (gồm cả dòng lỗi) — qua Dashboard YCX dán vào.';
+      }
+    }
 
     els.footer.style.display = 'flex';
     if (jobId) {
       // Tự động: tab sẽ tự đóng ngay sau, không cần hiện lại khu nhập liệu / nút Bắt đầu.
       els.btnStart.style.display = 'none';
+      els.btnCopyAgain.style.display = 'none';
     } else {
-      els.resultTextarea.focus();
-      els.resultTextarea.select();
       els.setupSection.style.display = 'block';
       els.btnStart.style.display = 'inline-block';
       els.btnStart.disabled = false;
@@ -540,24 +686,7 @@
       els.textarea.disabled = false;
       els.dateFrom.disabled = false;
       els.dateTo.disabled = false;
-    }
-
-    const successCount = employees.length - errors.length - (employees.length - results.length);
-    // successCount ở trên tính theo employees.length để khớp UI cũ khi KHÔNG dừng sớm;
-    // khi dừng sớm dùng results.length (số đã xử lý) làm mẫu số cho đúng thực tế.
-    const attempted = results.length;
-    const attemptedSuccess = attempted - errors.length;
-
-    if (stoppedEarly) {
-      els.statusText.textContent =
-        `Đã dừng: xong ${attempted}/${employees.length} nhân viên (${attemptedSuccess} thành công${errors.length ? `, ${errors.length} lỗi` : ''}). ` +
-        `Bấm "Copy vào clipboard" bên dưới rồi dán — dữ liệu đã lấy được vẫn giữ nguyên.`;
-    } else if (errors.length === 0) {
-      els.statusText.textContent = `Xong! Lấy được dữ liệu của ${employees.length} nhân viên. Bấm "Copy vào clipboard" bên dưới rồi qua Dashboard YCX dán.`;
-    } else {
-      els.statusText.textContent =
-        `Xong (có lỗi)! Thành công ${successCount}/${employees.length}. Bấm "Copy vào clipboard" bên dưới (đã gồm cả dòng lỗi) rồi dán.\n` +
-        `Chi tiết lỗi:\n` + errors.map((e) => '- ' + e).join('\n');
+      els.btnCopyAgain.style.display = 'inline-block';
     }
 
     if (jobId) {
