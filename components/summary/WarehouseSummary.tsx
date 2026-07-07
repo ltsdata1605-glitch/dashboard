@@ -110,8 +110,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     });
 
     const getHqqdClass = (hqqdValue: number | undefined): string => {
-        if (hqqdValue === undefined || isNaN(hqqdValue)) return 'text-gray-300';
-        return 'text-orange-400 font-bold';
+        if (hqqdValue === undefined || isNaN(hqqdValue)) return 'text-slate-300';
+        return 'text-amber-400 font-bold';
     };
 
     const formatRevenueForKho = (value: number | undefined): string => {
@@ -585,13 +585,13 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             content = <span className={customColor ? "font-semibold" : "font-semibold text-indigo-700"} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                         } else if (isPercentHT) {
                                             let extraIcon = null;
-                                            let classNameStr = customColor ? "font-bold" : "font-bold text-orange-500";
+                                            let classNameStr = customColor ? "font-bold" : "font-bold text-amber-500";
                                             if (value !== undefined && value >= 120) {
                                                 extraIcon = <span title="Tuyệt đỉnh" className="ml-1 text-[13px]">🔥</span>;
                                                 if (!customColor) classNameStr = "font-black text-rose-600 drop-shadow-sm";
                                             } else if (value !== undefined && value >= 100) {
                                                 extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 text-[13px]">🏆</span>;
-                                                if (!customColor) classNameStr = "font-extrabold text-yellow-600";
+                                                if (!customColor) classNameStr = "font-extrabold text-emerald-600";
                                             }
                                             content = (
                                                 <div className="flex items-center justify-center">
@@ -600,7 +600,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 </div>
                                             );
                                         } else if (col.metric === 'traChamPercent') {
-                                            content = <span className={customColor ? "font-medium" : "font-medium text-gray-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
+                                            content = <span className={customColor ? "font-medium" : "font-medium text-slate-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                         } else if (col.type === 'calculated') {
                                             const decimals = col.decimalPlaces ?? 0;
                                             if (col.displayAs === 'percentage') {
@@ -661,9 +661,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     if (isHqqd) {
                                         content = <span className={getHqqdClass(value)}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—'}</span>;
                                     } else if (isDTQD) {
-                                        content = <span className="text-indigo-700">{formatRevenueForKho(value)}</span>;
+                                        content = <span className="text-amber-700">{formatRevenueForKho(value)}</span>;
                                     } else if (isPercentHT) {
-                                        content = <span className="text-orange-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
+                                        content = <span className="text-amber-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                     } else if (col.metric === 'traChamPercent') {
                                         content = <span>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                     } else if (col.type === 'calculated') {
@@ -767,7 +767,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </div>
                         {/* DT QĐ */}
                         <div>
-                            <label className="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 uppercase tracking-wider">
+                            <label className="block text-xs font-bold text-amber-600 dark:text-amber-400 mb-1.5 uppercase tracking-wider">
                                 Doanh Thu Q.Đổi (Tr)
                             </label>
                             <input
@@ -776,7 +776,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-amber-200 dark:border-amber-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base sm:text-lg font-bold text-amber-700 dark:text-amber-300 transition-all"
                                 placeholder="VD: 2,000"
                             />
                         </div>
@@ -806,9 +806,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             </div>
                                         )}
                                         {valDTQD > 0 && (
-                                            <div className="flex items-center justify-between text-sm bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+                                            <div className="flex items-center justify-between text-sm bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT QĐ/ngày</span>
-                                                <span className="font-bold text-blue-600 dark:text-blue-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
+                                                <span className="font-bold text-amber-600 dark:text-amber-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
                                             </div>
                                         )}
                                     </div>

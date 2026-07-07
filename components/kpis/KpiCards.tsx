@@ -210,7 +210,7 @@ const KpiTargetEditor: React.FC<{
                     if (e.key === 'Escape') onCancel();
                     e.stopPropagation();
                 }}
-                className="w-16 px-1.5 py-0.5 text-center text-xs font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-16 px-1.5 py-0.5 text-center text-xs font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 rounded-md focus:ring-2 focus:ring-sky-500 outline-none"
             />
             {suffix && <span className="text-[10px] font-bold text-slate-500">{suffix}</span>}
         </div>
@@ -435,18 +435,18 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         isGood = pctHT >= 100;
                         progressPercent = pctHT;
                         finalTrendValue = revenueTarget > 0
-                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
+                            ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
                                 <span>{formatCurrency(activeTarget)} / {pctHT.toFixed(0)}%</span>
                                 <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
                             </span>
-                            : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
+                            : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
                     } else if (config.targetRef === 'hieuQua') {
                         finalTrendLabel = "Mục tiêu";
                         editableField = 'hieuQua';
                         if (editingState.field === 'hieuQua') {
                             finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
                         } else {
-                            finalTrendValue = <span className="cursor-pointer hover:text-blue-500 transition-colors">{hieuQuaTarget}%</span>;
+                            finalTrendValue = <span className="cursor-pointer hover:text-sky-500 transition-colors">{hieuQuaTarget}%</span>;
                         }
                         isGood = rawValue >= hieuQuaTarget;
                         progressPercent = hieuQuaTarget > 0 ? (rawValue / hieuQuaTarget) * 100 : 0;
@@ -456,7 +456,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         if (editingState.field === 'traGop') {
                             finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
                         } else {
-                            finalTrendValue = <span className="cursor-pointer hover:text-blue-500 transition-colors">{traGopTarget}%</span>;
+                            finalTrendValue = <span className="cursor-pointer hover:text-sky-500 transition-colors">{traGopTarget}%</span>;
                         }
                         isGood = rawValue >= traGopTarget;
                         progressPercent = traGopTarget > 0 ? (rawValue / traGopTarget) * 100 : 0;
@@ -509,11 +509,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     progressPercent = pct;
 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
+                        ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
                             <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
                         </span>
-                        : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
+                        : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
                 }
 
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
@@ -585,8 +585,8 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         if (warehouseEl) {
                             warehouseEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             // Flash highlight
-                            warehouseEl.classList.add('ring-2', 'ring-blue-500/50');
-                            setTimeout(() => warehouseEl.classList.remove('ring-2', 'ring-blue-500/50'), 2000);
+                            warehouseEl.classList.add('ring-2', 'ring-sky-500/50');
+                            setTimeout(() => warehouseEl.classList.remove('ring-2', 'ring-sky-500/50'), 2000);
                         }
                     } else if (editableField) {
                         startEditing(e, editableField);

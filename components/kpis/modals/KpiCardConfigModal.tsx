@@ -384,7 +384,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                                 {/* Calculated rendering */}
                                 {editingCard.type === 'calculated' && (
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                                    <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800/30 rounded-lg sm:rounded-xl p-2 sm:p-4">
                                         <div className="flex items-center gap-1.5 sm:gap-4">
                                             <Select 
                                                 value={editingCard.operand1_cardId || ''}
