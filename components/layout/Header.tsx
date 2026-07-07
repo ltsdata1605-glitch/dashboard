@@ -76,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({
         <>
             {syncState === 'error' && (
                 <div 
-                    className="w-full bg-red-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
+                    className="w-full bg-rose-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
                 >
                     <div className="flex-1 overflow-hidden whitespace-nowrap">
                         <div className="inline-block animate-marquee pl-[100%]">
@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onLoadShiftFile}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-8 h-8 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95"
                         title="Tải DS Nhân viên"
                     >
                         <Icon name="users-round" size={4.5} />
@@ -124,7 +124,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onLoadShiftFile}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors"
                         title="Tải lên báo cáo Phân ca"
                     >
                         <Icon name="users-round" size={4} />
@@ -136,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({
                             <Button
                                 variant="ghost"
                                 onClick={() => setShowEmployeeModal(true)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                                 title="Quản lý danh sách nhân viên"
                             >
                                 <Icon name="settings" size={4} />
@@ -148,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({
                         <a 
                             href="#" 
                             onClick={handleExternalLinkClick}
-                            className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                            className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                             title="Mở trang quản lý phân ca"
                         >
                             <Icon name="link" size={4} />
@@ -217,14 +217,14 @@ const Header: React.FC<HeaderProps> = ({
                 onClose={() => setShowInstructionModal(false)}
                 title="Hướng Dẫn Nhập DS Nhân Viên"
                 subTitle="Thao tác trên Hệ thống BCNB"
-                titleColorClass="text-blue-600 dark:text-blue-400"
+                titleColorClass="text-sky-600 dark:text-sky-400"
                 maxWidth="md"
                 footer={
                     <div className="flex justify-end gap-2 sm:gap-3">
                         <Button variant="ghost" onClick={() => setShowInstructionModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-semibold">
                             Hủy
                         </Button>
-                        <Button variant="ghost" onClick={proceedToExternalLink} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm transition-colors font-semibold">
+                        <Button variant="ghost" onClick={proceedToExternalLink} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm transition-colors font-semibold">
                             Đã Hiểu & Tiếp Tục
                         </Button>
                     </div>

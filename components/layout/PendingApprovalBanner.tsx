@@ -18,7 +18,7 @@ const PendingApprovalBanner: React.FC = () => {
                 setActiveTab('approval');
                 window.dispatchEvent(new Event('refresh-user-management'));
             }}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white overflow-hidden flex items-center cursor-pointer shadow-md z-[100] relative py-2 px-4 group"
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-700 text-white overflow-hidden flex items-center cursor-pointer shadow-md z-[100] relative py-2 px-4 group"
         >
             <div className="flex-shrink-0 mr-3 bg-white/20 p-1.5 rounded-full">
                 <Icon name="alert-circle" size={5} />
@@ -30,7 +30,7 @@ const PendingApprovalBanner: React.FC = () => {
                 </span>
             </div>
 
-            <div className="flex-shrink-0 ml-3 bg-white/20 px-3 py-1 rounded-full text-xs font-bold font-mono group-hover:bg-white text-white group-hover:text-orange-600 transition-colors">
+            <div className="flex-shrink-0 ml-3 bg-white/20 px-3 py-1 rounded-full text-xs font-bold font-mono group-hover:bg-white text-white group-hover:text-amber-600 transition-colors">
                 XEM NGAY
             </div>
         </div>

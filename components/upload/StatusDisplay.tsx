@@ -13,25 +13,25 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status }) => {
 
     const typeClasses = {
         info: {
-            bg: 'bg-blue-100 dark:bg-blue-900/50',
-            border: 'border-blue-500',
-            text: 'text-blue-800 dark:text-blue-200',
+            bg: 'bg-sky-100 dark:bg-sky-900/50',
+            border: 'border-sky-500',
+            text: 'text-sky-800 dark:text-sky-200',
             icon: 'file-scan',
-            iconColor: 'text-blue-500',
+            iconColor: 'text-sky-500',
         },
         success: {
-            bg: 'bg-green-100 dark:bg-green-900/50',
-            border: 'border-green-500',
-            text: 'text-green-800 dark:text-green-200',
+            bg: 'bg-emerald-100 dark:bg-emerald-900/50',
+            border: 'border-emerald-500',
+            text: 'text-emerald-800 dark:text-emerald-200',
             icon: 'check-circle',
-            iconColor: 'text-green-500',
+            iconColor: 'text-emerald-500',
         },
         error: {
-            bg: 'bg-red-100 dark:bg-red-900/50',
-            border: 'border-red-500',
-            text: 'text-red-800 dark:text-red-200',
+            bg: 'bg-rose-100 dark:bg-rose-900/50',
+            border: 'border-rose-500',
+            text: 'text-rose-800 dark:text-rose-200',
             icon: 'alert-triangle',
-            iconColor: 'text-red-500',
+            iconColor: 'text-rose-500',
         },
     };
 
@@ -50,7 +50,7 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status }) => {
             {status.progress > 0 && status.progress < 100 && (
                 <div className={`mt-3 w-full rounded-full h-2.5 progress-bar-container ${isProcessing ? 'scanner' : ''}`}>
                     <div
-                        className="bg-blue-500 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                        className="bg-sky-500 h-2.5 rounded-full transition-all duration-300 ease-in-out"
                         style={{ width: `${status.progress}%` }}
                     ></div>
                 </div>

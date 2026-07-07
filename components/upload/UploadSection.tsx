@@ -53,7 +53,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             id="config-url"
                             value={configUrl}
                             onChange={(e) => onConfigUrlChange(e.target.value)}
-                            className="w-full p-2.5 text-[13px] font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            className="w-full p-2.5 text-[13px] font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                             placeholder="https://docs.google.com/..."
                         />
                     </div>
@@ -73,12 +73,12 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                                     checked={isDeduplicationEnabled}
                                     onChange={(e) => onDeduplicationChange(e.target.checked)}
                                 />
-                                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
                             </label>
                         </div>
                     )}
                     <div className="text-right">
-                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[12px] font-bold text-blue-600 dark:text-blue-400 hover:underline">Hoàn tất</Button>
+                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[12px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Hoàn tất</Button>
                     </div>
                 </div>
             ) : (
@@ -112,7 +112,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     </div>
 
                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                        <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/50 dark:border-blue-500/20">
+                        <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
                             <Icon name="database" size={4.5} />
                         </div>
                         <div className="text-left flex-1">
@@ -139,8 +139,8 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         htmlFor="file-upload"
                         className={`relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 overflow-hidden
                             ${isDragging 
-                                ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-500 scale-[1.01] shadow-inner' 
-                                : 'bg-slate-50/50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:border-blue-400/50 hover:bg-blue-50/30 dark:hover:bg-blue-900/10'
+                                ? 'bg-sky-50/50 dark:bg-sky-900/20 border-sky-500 scale-[1.01] shadow-inner' 
+                                : 'bg-slate-50/50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:border-sky-400/50 hover:bg-sky-50/30 dark:hover:bg-sky-900/10'
                             }`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -148,11 +148,11 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     >
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 dark:to-slate-800/50 pointer-events-none"></div>
                         <div className="flex flex-col items-center justify-center p-4 relative z-10">
-                            <div className={`w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-blue-100 dark:group-hover/dropzone:shadow-none group-hover/dropzone:border-blue-200 dark:group-hover/dropzone:border-blue-500/30 text-slate-400 dark:text-slate-500 group-hover/dropzone:text-blue-500 dark:group-hover/dropzone:text-blue-400`}>
+                            <div className={`w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 dark:group-hover/dropzone:shadow-none group-hover/dropzone:border-sky-200 dark:group-hover/dropzone:border-sky-500/30 text-slate-400 dark:text-slate-500 group-hover/dropzone:text-sky-500 dark:group-hover/dropzone:text-sky-400`}>
                                 <Icon name="upload" size={5} />
                             </div>
                             <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 text-center">
-                                <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                <span className="text-sky-600 dark:text-sky-400 font-semibold">
                                     {uploadType === 'realtime' ? 'Chọn file Realtime' : 'Chọn file Lũy kế'}
                                 </span> hoặc thả các file Excel vào đây
                             </p>

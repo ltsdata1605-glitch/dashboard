@@ -67,7 +67,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                             key={file.id} 
                             className={`flex items-center justify-between p-3 transition-colors ${
                                 file.isActive 
-                                    ? 'bg-blue-50/20 dark:bg-blue-950/15' 
+                                    ? 'bg-sky-50/20 dark:bg-sky-950/15'
                                     : 'hover:bg-slate-100/30 dark:hover:bg-slate-800/20'
                             }`}
                         >
