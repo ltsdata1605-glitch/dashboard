@@ -505,12 +505,12 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/BiWrapper.tsx": {
-    "nonSemanticColor": 9,
+    "nonSemanticColor": 5,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 1
   },
   "features/bi-dashboard/components/Dashboard.tsx": {
-    "nonSemanticColor": 23,
+    "nonSemanticColor": 13,
     "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
@@ -520,12 +520,12 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionGridView.tsx": {
-    "nonSemanticColor": 19,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
-    "nonSemanticColor": 12,
+    "nonSemanticColor": 2,
     "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
@@ -540,32 +540,32 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/DashboardWidgets.tsx": {
-    "nonSemanticColor": 23,
+    "nonSemanticColor": 9,
     "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/IndustryView.tsx": {
-    "nonSemanticColor": 92,
+    "nonSemanticColor": 33,
     "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
-    "nonSemanticColor": 32,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/ReportView.tsx": {
-    "nonSemanticColor": 21,
+    "nonSemanticColor": 7,
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
-    "nonSemanticColor": 142,
+    "nonSemanticColor": 58,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/DataUpdater.tsx": {
-    "nonSemanticColor": 40,
+    "nonSemanticColor": 12,
     "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
@@ -585,17 +585,17 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
-    "nonSemanticColor": 30,
+    "nonSemanticColor": 27,
     "missingDarkVariant": 26,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx": {
-    "nonSemanticColor": 24,
+    "nonSemanticColor": 17,
     "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
-    "nonSemanticColor": 45,
+    "nonSemanticColor": 26,
     "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
@@ -610,12 +610,12 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/DetailTab.tsx": {
-    "nonSemanticColor": 4,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 11,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
-    "nonSemanticColor": 47,
+    "nonSemanticColor": 19,
     "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
@@ -634,18 +634,13 @@
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/nhanvien/revenue/RevenueDesktopRow.tsx": {
-    "nonSemanticColor": 6,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/nhanvien/revenue/RevenueMobileCard.tsx": {
     "nonSemanticColor": 0,
     "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/RevenueTab.tsx": {
-    "nonSemanticColor": 28,
+    "nonSemanticColor": 4,
     "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
@@ -675,17 +670,17 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
-    "nonSemanticColor": 73,
+    "nonSemanticColor": 52,
     "missingDarkVariant": 23,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/TargetHero.tsx": {
-    "nonSemanticColor": 52,
+    "nonSemanticColor": 32,
     "missingDarkVariant": 11,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/hooks/useCompetitionData.ts": {
-    "nonSemanticColor": 16,
+    "nonSemanticColor": 15,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
