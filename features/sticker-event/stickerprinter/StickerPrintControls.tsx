@@ -281,7 +281,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         Nhập file in giá từ ERP
                                     </p>
                                     <div className="grid grid-cols-1 gap-2">
-                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
                                             <Upload size={10} />
                                             Máy Lọc Nước (Mẫu in 99)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
@@ -304,7 +304,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             <div className="flex gap-2">
                                                 <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-indigo-600 hover:text-indigo-700 font-bold uppercase">Chọn hết</Button>
                                                 <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
-                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-red-500 hover:text-red-600 font-bold uppercase">Xóa</Button>
+                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-rose-500 hover:text-rose-600 font-bold uppercase">Xóa</Button>
                                             </div>
                                         </div>
                                         <Input 
@@ -326,9 +326,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-bold text-xs text-slate-800 dark:text-white truncate" title={item.name}>{item.name}</p>
                                                         <div className="flex gap-3 mt-1.5 text-[11px]">
-                                                            <span className="font-bold text-red-600">{item.newPrice}</span>
+                                                            <span className="font-bold text-rose-600">{item.newPrice}</span>
                                                             <span className="line-through text-slate-400">{item.oldPrice}</span>
-                                                            <span className="text-green-600 font-bold">{item.percent}</span>
+                                                            <span className="text-emerald-600 font-bold">{item.percent}</span>
                                                         </div>
                                                     </div>
                                                 </label>
@@ -447,7 +447,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={() => deleteHistory(entry.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 size={13} />

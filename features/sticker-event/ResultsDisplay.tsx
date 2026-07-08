@@ -58,9 +58,9 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
           {/* Giá + %giảm */}
           <div className="text-left sm:text-right">
             <div className="flex items-center gap-1.5 sm:justify-end">
-              <p className="text-sm font-bold text-red-600 leading-none">{result.giaGiam}</p>
+              <p className="text-sm font-bold text-rose-600 leading-none">{result.giaGiam}</p>
               {discountPercent > 0 && (
-                <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded leading-none">
+                <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded leading-none">
                   -{discountPercent}%
                 </span>
               )}
@@ -69,11 +69,11 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
           </div>
           {/* Thưởng — ưu tiên to hơn */}
           <div className="text-right">
-            <p className="text-sm font-bold text-violet-600 leading-none">{formatCurrency(result.tongThuong)}</p>
+            <p className="text-sm font-bold text-sky-600 leading-none">{formatCurrency(result.tongThuong)}</p>
             <p className="text-[10px] text-slate-400">
-              <span className="text-green-600">ERP: {formatCurrency(result.thuongERP)}</span>
+              <span className="text-emerald-600">ERP: {formatCurrency(result.thuongERP)}</span>
               <span className="mx-0.5">|</span>
-              <span className="text-red-500">Nóng: {formatCurrency(result.thuongNong)}</span>
+              <span className="text-rose-500">Nóng: {formatCurrency(result.thuongNong)}</span>
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
       {/* Promotion */}
       {result.khuyenMai && result.khuyenMai.trim() && (
         <div className="flex items-center gap-1 mt-0.5">
-          <span className="shrink-0 text-[9px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">KM</span>
+          <span className="shrink-0 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">KM</span>
           <p className="text-[11px] font-medium text-slate-700 line-clamp-1" title={result.khuyenMai}>
             {result.khuyenMai}
           </p>
@@ -146,7 +146,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 variant="ghost"
                 onClick={() => onDelete(result.msp)}
                 title="Xóa sản phẩm"
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
             >
                 <Trash2Icon className="h-5 w-5" />
             </Button>
@@ -220,7 +220,7 @@ const InstructionsPanel = () => (
                         <div className="flex-grow flex flex-col justify-around text-center relative">
                             {/* Top right info */}
                             <div className="absolute top-0 right-0 text-center z-10">
-                                <div className="w-10 h-10 bg-gray-200 p-0.5 border border-gray-400"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=123456789&bgcolor=ffffff" alt="QR Code"/></div>
+                                <div className="w-10 h-10 bg-slate-200 p-0.5 border border-slate-400"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=123456789&bgcolor=ffffff" alt="QR Code"/></div>
                                 <p className="text-[7px] font-sans mt-0.5">21707 - 1.200</p>
                             </div>
                             {/* Main content */}
@@ -232,7 +232,7 @@ const InstructionsPanel = () => (
                             <p className="text-xs">• PMH 500K</p>
                         </div>
                         <div className="w-4 flex justify-center items-end pb-1">
-                            <p className="text-[7px] [writing-mode:vertical-rl] text-gray-500 whitespace-nowrap">Ngày in: 14/08</p>
+                            <p className="text-[7px] [writing-mode:vertical-rl] text-slate-500 whitespace-nowrap">Ngày in: 14/08</p>
                         </div>
                     </div>
                 </div>
@@ -248,7 +248,7 @@ const InstructionsPanel = () => (
                     <p className="text-xs font-bold leading-tight">NỒI CƠM ĐIỆN TỬ SHARP</p>
                     <div>
                         <p className="text-2xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>1.490</p>
-                        <p className="text-violet-600 text-[9px] font-bold">Thưởng: 500</p>
+                        <p className="text-sky-600 text-[9px] font-bold">Thưởng: 500</p>
                     </div>
                      <p className="text-[8px]">• Giảm ngay 100K</p>
                 </div>

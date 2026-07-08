@@ -66,13 +66,13 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                 <div>
                     <div className="flex items-center justify-between mb-1.5">
                         <label htmlFor="employee-name-input" className="text-sm font-medium text-slate-700">
-                            Thông tin người in <span className="text-red-500">*</span>
+                            Thông tin người in <span className="text-rose-500">*</span>
                         </label>
                         {isAdmin && (
                             <Button
                                 variant="ghost"
                                 onClick={props.onClearAll}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded-md transition-colors"
                                 title="Xóa toàn bộ dữ liệu tồn kho và giá trên hệ thống"
                             >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -90,11 +90,11 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 onChange={props.onEmployeeNameChange}
                                 onBlur={props.onSaveEmployeeName}
                                 onKeyDown={props.onEmployeeNameKeyDown}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ${isEmployeeNameEmpty ? 'border-red-300 bg-red-50/50 placeholder-red-300' : 'border-slate-300'}`}
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ${isEmployeeNameEmpty ? 'border-rose-300 bg-rose-50/50 placeholder-rose-300' : 'border-slate-300'}`}
                                 autoFocus={!props.employeeName}
                             />
                             {isEmployeeNameEmpty && (
-                                <p className="text-[11px] text-red-500 mt-1">* Bắt buộc nhập trước khi tìm kiếm</p>
+                                <p className="text-[11px] text-rose-500 mt-1">* Bắt buộc nhập trước khi tìm kiếm</p>
                             )}
                         </div>
                     ) : (
@@ -121,7 +121,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     href="https://report.mwgroup.vn/home/dashboard/17" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="text-xs font-bold text-red-600 underline hover:text-red-800 px-1"
+                                    className="text-xs font-bold text-rose-600 underline hover:text-rose-800 px-1"
                                 >
                                     Lấy File Tồn Kho
                                 </a>
@@ -186,7 +186,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             Hướng dẫn Quản lý
                         </h3>
                         <div className="space-y-2.5 text-[11px] leading-relaxed text-indigo-800">
-                            <p><strong>B1:</strong> Click <span className="text-red-600 font-bold">"Lấy file tồn kho"</span> &gt; Chọn nhóm cần in: ĐGD, DCNB, Phụ Kiện &gt; Chọn siêu thị &gt; Trạng thái MỚI &gt; Xem báo cáo &gt; Tải file.</p>
+                            <p><strong>B1:</strong> Click <span className="text-rose-600 font-bold">"Lấy file tồn kho"</span> &gt; Chọn nhóm cần in: ĐGD, DCNB, Phụ Kiện &gt; Chọn siêu thị &gt; Trạng thái MỚI &gt; Xem báo cáo &gt; Tải file.</p>
                             <p><strong>B2:</strong> Upload file vào <strong>"Tải File tồn kho"</strong>.</p>
                             <p><strong>B3:</strong> Chờ xử lý =&gt; <span className="text-emerald-600 font-bold">File mẫu tự động tải xuống.</span></p>
                             <p><strong>B4:</strong> Vào ERP &gt; In giá &gt; Từng ngành hàng &gt; Nhóm hàng: Tất cả &gt; Thêm SP &gt; Nhập Excel &gt; File mẫu B3 &gt; Mẫu in 81 &gt; In &gt; Xuất "Data-only(*.xlsx)". Sau đó tải vào <strong>"Tải File bảng giá"</strong>.</p>
@@ -212,7 +212,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 <Button
                                     variant="ghost"
                                     onClick={props.onOpenSuperAdminTools}
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center justify-center gap-1.5 py-2 px-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors text-xs font-bold border border-red-100"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center justify-center gap-1.5 py-2 px-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg transition-colors text-xs font-bold border border-rose-100"
                                 >
                                     <ShieldAlert className="h-3.5 w-3.5" />
                                     Super Admin
@@ -245,8 +245,8 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                  <div className={`space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'hidden' : ''}`}>
 
                     <div className="pt-3 border-t border-slate-100">
-                         <Button variant="ghost" onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 h-10 px-3 transition-colors">
-                            <PenSquareIcon className="h-4 w-4 text-blue-600" /> Nhập sản phẩm thủ công
+                         <Button variant="ghost" onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-200 hover:text-sky-700 text-slate-700 h-10 px-3 transition-colors">
+                            <PenSquareIcon className="h-4 w-4 text-sky-600" /> Nhập sản phẩm thủ công
                          </Button>
                     </div>
 
@@ -279,7 +279,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             <Button variant="ghost" onClick={props.onExport} disabled={props.displayedProducts.length === 0} title="Xuất file .json" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
                                 <ExportIcon className="h-4 w-4 text-slate-500" /> Xuất
                             </Button>
-                            <Button variant="ghost" onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 h-9 p-0 disabled:opacity-50 transition-colors">
+                            <Button variant="ghost" onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-200 text-slate-500 hover:text-rose-600 h-9 p-0 disabled:opacity-50 transition-colors">
                                 <TrashIcon className="h-4 w-4" />
                             </Button>
                              <Button variant="ghost" onClick={props.onOpenPrintSettings} title="Cài đặt in" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 p-0 transition-colors">

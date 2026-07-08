@@ -44,7 +44,7 @@ interface InputFieldProps {
 const InputField: React.FC<InputFieldProps> = ({ name, label, placeholder, value, onChange, error, required = false, type = 'text', inputMode }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">
-            {label} {required && <span className="text-red-500">*</span>}
+            {label} {required && <span className="text-rose-500">*</span>}
         </label>
         <input
             type={type}
@@ -54,9 +54,9 @@ const InputField: React.FC<InputFieldProps> = ({ name, label, placeholder, value
             onChange={onChange}
             placeholder={placeholder}
             inputMode={inputMode}
-            className={`w-full px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${error ? 'border-red-500' : 'border-slate-300'}`}
+            className={`w-full px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${error ? 'border-rose-500' : 'border-slate-300'}`}
         />
-        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
     </div>
 );
 
@@ -267,7 +267,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         <div className="flex justify-between items-center pt-1">
                             <div className="text-sm">
                                 <span className="text-slate-600">Tổng thưởng tạm tính: </span>
-                                <span className="font-bold text-violet-600">{formatCurrencyForDisplay(tongThuong)}</span>
+                                <span className="font-bold text-sky-600">{formatCurrencyForDisplay(tongThuong)}</span>
                             </div>
                             {editingId ? (
                                 <div className="flex gap-2">
@@ -279,7 +279,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                     </Button>
                                 </div>
                             ) : (
-                                <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-blue-600 text-blue-50 hover:bg-blue-700 h-10 px-6 py-2 disabled:opacity-50">
+                                <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2 disabled:opacity-50">
                                     {isSaving ? 'Đang lưu...' : 'Thêm sản phẩm'}
                                 </Button>
                             )}
@@ -347,13 +347,13 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate-500 mt-0.5">
                                                     <span>MSP: <b>{p.msp}</b></span>
                                                     {p.giaGoc && <span>Gốc: {p.giaGoc}</span>}
-                                                    <span className="text-green-600 font-semibold">Bán: {p.giaGiam}</span>
+                                                    <span className="text-emerald-600 font-semibold">Bán: {p.giaGiam}</span>
                                                     {(p.thuongERP > 0 || p.thuongNong > 0) && (
-                                                        <span className="text-violet-600">
+                                                        <span className="text-sky-600">
                                                             Thưởng: {formatCurrencyForDisplay(p.tongThuong)}
                                                         </span>
                                                     )}
-                                                    {p.khuyenMai && <span className="text-orange-500">KM: {p.khuyenMai}</span>}
+                                                    {p.khuyenMai && <span className="text-amber-500">KM: {p.khuyenMai}</span>}
                                                 </div>
                                             </div>
 
@@ -361,7 +361,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                             <Button
                                                 variant="ghost"
                                                 onClick={(e) => { e.stopPropagation(); p.firebaseId && onDeleteProduct(p.firebaseId); }}
-                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-red-600 transition-colors flex-shrink-0"
+                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-rose-600 transition-colors flex-shrink-0"
                                                 title="Xóa sản phẩm"
                                             >
                                                 <TrashIcon className="h-4 w-4" />
@@ -395,7 +395,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             variant="ghost"
                             onClick={handlePrintAll}
                             disabled={manualProducts.length === 0}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             In tất cả ({manualProducts.length})
                         </Button>
