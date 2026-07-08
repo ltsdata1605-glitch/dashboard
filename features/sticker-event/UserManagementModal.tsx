@@ -147,7 +147,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                             <p className="text-slate-500">Đang tải danh sách người dùng...</p>
                         </div>
                     ) : error ? (
-                        <div className="bg-red-50 text-red-600 p-4 rounded-lg text-center">
+                        <div className="bg-rose-50 text-rose-600 p-4 rounded-lg text-center">
                             {error}
                         </div>
                     ) : (
@@ -178,7 +178,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                             variant="ghost"
                                             onClick={() => handleDeleteUser(user.uid, user.username)}
                                             disabled={user.uid === currentUserId || user.username === 'admin'}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-slate-400"
                                             title={user.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
                                         >
                                             <Trash2Icon className="h-5 w-5" />
@@ -194,7 +194,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                     <Button
                         variant="ghost"
                         onClick={handleResetAllUsers}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium text-sm"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-sm"
                     >
                         <Trash2Icon className="h-4 w-4" />
                         Xóa tất cả người dùng
@@ -215,9 +215,9 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                     <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
                         <div className="flex items-center gap-3 mb-4">
                             {confirmAction.type === 'error' ? (
-                                <ShieldAlertIcon className="h-6 w-6 text-red-600" />
+                                <ShieldAlertIcon className="h-6 w-6 text-rose-600" />
                             ) : confirmAction.type === 'info' ? (
-                                <ShieldIcon className="h-6 w-6 text-blue-600" />
+                                <ShieldIcon className="h-6 w-6 text-sky-600" />
                             ) : (
                                 <ShieldAlertIcon className="h-6 w-6 text-amber-600" />
                             )}
@@ -248,7 +248,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-4 py-2 text-white rounded-lg transition-colors font-medium ${
                                     confirmAction.type === 'error' || confirmAction.type === 'info'
                                         ? 'bg-indigo-600 hover:bg-indigo-700'
-                                        : 'bg-red-600 hover:bg-red-700'
+                                        : 'bg-rose-600 hover:bg-rose-700'
                                 }`}
                             >
                                 {confirmAction.type === 'error' || confirmAction.type === 'info' ? 'Đóng' : 'Xác nhận'}

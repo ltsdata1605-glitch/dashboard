@@ -294,7 +294,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={clearManualPages} 
                                 size="icon"
                                 variant="secondary"
-                                className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Xóa tất cả"
                             >
                                 <Trash2 size={13} />
@@ -408,9 +408,9 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                                 const { newPrice, percent } = resolvePagePrices(page, priceSource);
                                                 return (
                                                     <>
-                                                        <span className="text-red-600 font-bold">{newPrice}</span>
+                                                        <span className="text-rose-600 font-bold">{newPrice}</span>
                                                         {page.oldPrice && <span className="line-through text-slate-400">{page.oldPrice}</span>}
-                                                        {percent && <span className="text-green-600 font-bold">{percent}</span>}
+                                                        {percent && <span className="text-emerald-600 font-bold">{percent}</span>}
                                                     </>
                                                 );
                                             })()}
@@ -420,7 +420,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }}
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-rose-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                 >
                                     <X size={14} />
                                 </Button>
@@ -471,7 +471,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={() => deleteSavedList(list.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-200 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-lg hover:bg-rose-200 transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 size={13} />

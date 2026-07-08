@@ -497,7 +497,7 @@ export default function App(): React.JSX.Element {
                   setSuggestions([]);
                   await clearData();
                 }}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors uppercase`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors uppercase`}
               >
                 Đăng xuất
               </Button>
@@ -559,22 +559,22 @@ export default function App(): React.JSX.Element {
                   </div>
                 )}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4" role="alert">
+                  <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4" role="alert">
                     <div className="flex items-center gap-3">
-                        <WarningIcon className="h-5 w-5 text-red-500 shrink-0" />
+                        <WarningIcon className="h-5 w-5 text-rose-500 shrink-0" />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
                     <Button
                         variant="ghost"
                         onClick={() => userData?.storeId && loadFirestoreData(userData.storeId, allProducts, inventory, uploadTimestamp, inventoryUploadTimestamp)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-bold"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-bold"
                     >
                         Thử lại
                     </Button>
                   </div>
                 )}
                 {duplicateError && (
-                    <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
+                    <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-4 rounded-md" role="alert">
                         <p className="font-bold">Sản phẩm đã có</p>
                         <p>Sản phẩm này đã có trong danh sách kết quả của bạn.</p>
                     </div>

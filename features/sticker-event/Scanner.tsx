@@ -237,18 +237,18 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
               <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-2xl relative flex flex-col justify-between">
                   {/* Glowing laser line to indicate scanning */}
-                  <div className="absolute left-1 right-1 h-0.5 bg-red-500 shadow-[0_0_8px_#ef4444] animate-laser"></div>
+                  <div className="absolute left-1 right-1 h-0.5 bg-rose-500 shadow-[0_0_8px_#ef4444] animate-laser"></div>
               </div>
           </div>
         )}
         
         {/* Result Overlay - Covers the camera view */}
         {scanResult && (
-          <div className={`absolute inset-0 z-30 flex flex-col items-center justify-center text-white font-bold transition-all duration-300 ${scanResult.type === 'success' ? 'bg-slate-800/95' : 'bg-red-950/95'}`}>
-            <div className={`p-6 rounded-full mb-4 ${scanResult.type === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+          <div className={`absolute inset-0 z-30 flex flex-col items-center justify-center text-white font-bold transition-all duration-300 ${scanResult.type === 'success' ? 'bg-slate-800/95' : 'bg-rose-950/95'}`}>
+            <div className={`p-6 rounded-full mb-4 ${scanResult.type === 'success' ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
               {scanResult.type === 'success' ? 
-                <CheckCircleIcon className="h-24 w-24 text-green-400 animate-bounce" /> : 
-                <XCircleIcon className="h-24 w-24 text-red-400 animate-pulse" />
+                <CheckCircleIcon className="h-24 w-24 text-emerald-400 animate-bounce" /> : 
+                <XCircleIcon className="h-24 w-24 text-rose-400 animate-pulse" />
               }
             </div>
             <h3 className="text-2xl mb-2">{scanResult.type === 'success' ? 'THÀNH CÔNG' : 'LỖI'}</h3>
@@ -263,7 +263,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       </div>
       <div className="text-center text-white mt-4 w-full max-w-md px-4">
         {error ? (
-          <div className="font-semibold text-red-400 bg-red-900 bg-opacity-50 px-4 py-3 rounded-lg space-y-3">
+          <div className="font-semibold text-rose-400 bg-rose-900 bg-opacity-50 px-4 py-3 rounded-lg space-y-3">
               <p>{error}</p>
               {isIframeError && (
                   <Button
