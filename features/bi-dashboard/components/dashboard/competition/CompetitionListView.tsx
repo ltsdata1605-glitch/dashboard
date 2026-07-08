@@ -45,7 +45,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
         if (h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
         if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('%HTDK')) return 'bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-300 border-b-[3px] border-b-violet-400';
+        if (h.includes('%HTDK')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
         if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
         return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
@@ -172,7 +172,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                             const percentHeadersToRound = new Set(['%HT', '%HTDK', '%HT V.Trội', '%HTDK V.Trội']);
 
                                             return (
-                                                <tr key={program.name} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
+                                                <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
                                                     <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
                                                     <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
@@ -233,7 +233,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     })}
                                                     
                                                     { !hiddenColumns.includes('Còn Lại') && (
-                                                        <td className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}`}>
+                                                        <td className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}`}>
                                                             {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
                                                         </td>
                                                     )}

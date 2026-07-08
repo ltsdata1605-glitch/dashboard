@@ -178,7 +178,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
         const remaining = actual - target;
-        const remainingColor = remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+        const remainingColor = remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
         
         const completionVal = roundUp(completion);
         
@@ -204,7 +204,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         if (topActualStyle) {
             actualInlineStyle = topActualStyle;
         } else if (actual > 0 && actual < averageActual) {
-            actualClass = 'text-red-600 font-bold';
+            actualClass = 'text-rose-600 font-bold';
         } else {
             actualClass = 'text-slate-700 dark:text-slate-300 font-bold';
         }
@@ -229,10 +229,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             <tr key={employee.originalName} className={`
                 ${isHighlighted 
                     ? `${highlightClass} font-bold` 
-                    : `hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors`
+                    : `hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`
                 } 
                 ${zebraClass}
-                border-b border-gray-100 dark:border-slate-700`}>
+                border-b border-slate-100 dark:border-slate-700`}>
                 <td className={`px-2 py-1 whitespace-nowrap text-[13px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
                     <span>{employee.name}</span>
                 </td>

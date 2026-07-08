@@ -404,7 +404,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="px-2 sm:px-6 py-6 bg-slate-50 dark:bg-[#151515] border-b border-slate-200 dark:border-slate-800 space-y-2">
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
                         <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} colorA="bg-emerald-500" textA="text-emerald-600 dark:text-emerald-400" colorB="bg-amber-500" textB="text-amber-600 dark:text-amber-400" />
-                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-indigo-500" textA="text-indigo-600 dark:text-indigo-400" colorB="bg-fuchsia-500" textB="text-fuchsia-600 dark:text-fuchsia-400" />
+                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-indigo-500" textA="text-indigo-600 dark:text-indigo-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
                         <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} colorA="bg-cyan-500" textA="text-cyan-600 dark:text-cyan-400" colorB="bg-pink-500" textB="text-pink-600 dark:text-pink-400" />
                     </div>
 

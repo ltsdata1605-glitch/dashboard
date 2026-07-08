@@ -19,7 +19,7 @@ const getTabColorClasses = (color: string, isActive: boolean) => {
         case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
         case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
         case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
-        case 'purple': return 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+        case 'slate': return 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300';
         default: return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
     }
 };

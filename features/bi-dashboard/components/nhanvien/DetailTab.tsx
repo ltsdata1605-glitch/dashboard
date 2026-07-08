@@ -617,7 +617,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                                     <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
                                         HQ QĐ
                                     </th>
-                                    <th className="px-2 py-3 text-right bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
+                                    <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
                                         Đơn giá
                                     </th>
                                 </tr>
