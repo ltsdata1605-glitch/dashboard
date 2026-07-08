@@ -54,7 +54,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Chức năng Nhân viên */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <User className="h-5 w-5 text-blue-500" />
+              <User className="h-5 w-5 text-sky-500" />
               <h3 className="text-base font-bold text-slate-800">2. Chức năng dành cho Nhân viên</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -112,7 +112,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
                   <div className="absolute -left-8 top-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Lấy dữ liệu từ Report</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
-                    Click vào <span className="text-red-600 font-bold">"Lấy file tồn kho"</span>. 
+                    Click vào <span className="text-rose-600 font-bold">"Lấy file tồn kho"</span>. 
                     Chọn các nhóm cần in giá: <span className="font-medium">ĐGD, DCNB, Phụ Kiện</span>. 
                     Chọn siêu thị và trạng thái <span className="font-medium">MỚI</span>. 
                     Xem báo cáo và tải file về máy.

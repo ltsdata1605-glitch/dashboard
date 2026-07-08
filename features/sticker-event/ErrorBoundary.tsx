@@ -37,9 +37,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-          <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-red-100">
-            <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mb-4 mx-auto">
-              <WarningIcon className="h-6 w-6 text-red-600" />
+          <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-rose-100">
+            <div className="flex items-center justify-center w-12 h-12 bg-rose-100 rounded-full mb-4 mx-auto">
+              <WarningIcon className="h-6 w-6 text-rose-600" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 text-center mb-2">Rất tiếc, đã có lỗi xảy ra</h2>
             <p className="text-slate-600 text-center mb-6">{displayMessage}</p>

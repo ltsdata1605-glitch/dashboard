@@ -160,7 +160,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
           <Button
             variant="ghost"
             onClick={() => { onClearFilters(); onSortChange?.('none', 'desc'); setShowFilters(false); }}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] text-red-500 hover:text-red-700 font-medium shrink-0"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] text-rose-500 hover:text-rose-700 font-medium shrink-0"
           >
             Xóa
           </Button>

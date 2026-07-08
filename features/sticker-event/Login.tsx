@@ -256,7 +256,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded text-sm" role="alert">
+          <div className="bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-4 mb-4 rounded text-sm" role="alert">
             <p>{error}</p>
           </div>
         )}

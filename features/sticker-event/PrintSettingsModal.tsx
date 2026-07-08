@@ -49,7 +49,7 @@ const FontUploadSection: React.FC<{
                     <Button
                         variant="ghost"
                         onClick={onRemove}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
                         title="Xóa font này"
                     >
                         <TrashIcon className="h-5 w-5" />

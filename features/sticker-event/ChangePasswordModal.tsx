@@ -73,13 +73,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
 
                 <div className="p-6">
                     {success ? (
-                        <div className="bg-green-50 text-green-700 p-4 rounded-lg text-center font-medium">
+                        <div className="bg-emerald-50 text-emerald-700 p-4 rounded-lg text-center font-medium">
                             Đổi mật khẩu thành công!
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {error && (
-                                <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                                <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">
                                     {error}
                                 </div>
                             )}
