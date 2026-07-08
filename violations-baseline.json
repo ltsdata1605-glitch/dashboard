@@ -690,7 +690,7 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/AiSuggestPatternModal.tsx": {
-    "nonSemanticColor": 2,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
@@ -715,32 +715,27 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/HelpModal.tsx": {
-    "nonSemanticColor": 10,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/Legend.tsx": {
-    "nonSemanticColor": 25,
+    "nonSemanticColor": 15,
     "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/ScheduleTable.tsx": {
-    "nonSemanticColor": 25,
+    "nonSemanticColor": 11,
     "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
-  "features/phan-ca/components/SuggestionModal.tsx": {
-    "nonSemanticColor": 2,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
   "features/phan-ca/components/VerticalIndividualSchedule.tsx": {
-    "nonSemanticColor": 20,
+    "nonSemanticColor": 6,
     "missingDarkVariant": 53,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/PhanCaView.tsx": {
-    "nonSemanticColor": 27,
+    "nonSemanticColor": 13,
     "missingDarkVariant": 30,
     "missingMobileToolbar": 0
   },
@@ -760,22 +755,22 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ChangePasswordModal.tsx": {
-    "nonSemanticColor": 9,
+    "nonSemanticColor": 5,
     "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ConfirmModal.tsx": {
-    "nonSemanticColor": 7,
+    "nonSemanticColor": 4,
     "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ControlPanel.tsx": {
-    "nonSemanticColor": 49,
+    "nonSemanticColor": 28,
     "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ErrorBoundary.tsx": {
-    "nonSemanticColor": 5,
+    "nonSemanticColor": 2,
     "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
@@ -790,7 +785,7 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/InventoryToolbar.tsx": {
-    "nonSemanticColor": 11,
+    "nonSemanticColor": 9,
     "missingDarkVariant": 13,
     "missingMobileToolbar": 0
   },
@@ -800,12 +795,12 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/Login.tsx": {
-    "nonSemanticColor": 18,
+    "nonSemanticColor": 15,
     "missingDarkVariant": 16,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ManualInputModal.tsx": {
-    "nonSemanticColor": 28,
+    "nonSemanticColor": 15,
     "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
@@ -820,17 +815,17 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/PrintSettingsModal.tsx": {
-    "nonSemanticColor": 14,
+    "nonSemanticColor": 12,
     "missingDarkVariant": 22,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ResultsDisplay.tsx": {
-    "nonSemanticColor": 53,
+    "nonSemanticColor": 39,
     "missingDarkVariant": 55,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SavedListsModal.tsx": {
-    "nonSemanticColor": 10,
+    "nonSemanticColor": 6,
     "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
@@ -840,7 +835,7 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/Scanner.tsx": {
-    "nonSemanticColor": 11,
+    "nonSemanticColor": 3,
     "missingDarkVariant": 13,
     "missingMobileToolbar": 0
   },
@@ -860,17 +855,17 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/StickerEventApp.tsx": {
-    "nonSemanticColor": 19,
+    "nonSemanticColor": 7,
     "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerManualQueue.tsx": {
-    "nonSemanticColor": 84,
+    "nonSemanticColor": 73,
     "missingDarkVariant": 17,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
-    "nonSemanticColor": 45,
+    "nonSemanticColor": 33,
     "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
@@ -885,17 +880,17 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SuperAdminModal.tsx": {
-    "nonSemanticColor": 12,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/UserGuideModal.tsx": {
-    "nonSemanticColor": 13,
+    "nonSemanticColor": 11,
     "missingDarkVariant": 43,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/UserManagementModal.tsx": {
-    "nonSemanticColor": 16,
+    "nonSemanticColor": 6,
     "missingDarkVariant": 26,
     "missingMobileToolbar": 0
   },
