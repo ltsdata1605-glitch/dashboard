@@ -63,12 +63,12 @@ const Legend: React.FC<LegendProps> = ({
                         <Button
                             variant="ghost"
                             onClick={() => onEditRule('tn')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-purple-200 bg-purple-50 hover:border-purple-400 hover:bg-purple-100 transition-colors cursor-pointer"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-sky-200 bg-sky-50 hover:border-sky-400 hover:bg-sky-100 transition-colors cursor-pointer"
                         >
-                            <span className="text-purple-700 font-bold text-xs">TN</span>
-                            <span className="font-extrabold text-purple-900 text-base">~{targets.tn}</span>
-                            <span className="text-purple-600 text-xs font-semibold">ngày</span>
-                            <svg className="h-3 w-3 text-slate-300 group-hover:text-purple-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <span className="text-sky-700 font-bold text-xs">TN</span>
+                            <span className="font-extrabold text-sky-900 text-base">~{targets.tn}</span>
+                            <span className="text-sky-600 text-xs font-semibold">ngày</span>
+                            <svg className="h-3 w-3 text-slate-300 group-hover:text-sky-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </Button>
 
                         {/* GH button */}
@@ -148,7 +148,7 @@ const Legend: React.FC<LegendProps> = ({
                 <span className="uppercase tracking-wider text-slate-400 mr-1">Ghi chú</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-amber-50 border border-amber-200"></span> Giao hàng</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-emerald-50 border border-emerald-200"></span> Kho</span>
-                <span className="flex items-center gap-2"><span className="w-4 h-4 bg-purple-50 border border-purple-200"></span> Thu ngân</span>
+                <span className="flex items-center gap-2"><span className="w-4 h-4 bg-sky-50 border border-sky-200"></span> Thu ngân</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-white border border-slate-200"></span> Ca thường</span>
                 
                 <div className="ml-auto flex items-center gap-5">

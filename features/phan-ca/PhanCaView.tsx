@@ -1215,11 +1215,11 @@ const App: React.FC = () => {
           <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
             {/* Data management group */}
             <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
-              <Button variant="ghost" onClick={handleImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-colors">
+              <Button variant="ghost" onClick={handleImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                   <span>Nhập NV</span>
               </Button>
-              <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
+              <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
               </a>
               <Button variant="ghost" onClick={handleDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
@@ -1244,7 +1244,7 @@ const App: React.FC = () => {
               <Button variant="ghost" onClick={handleExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
                   Excel
               </Button>
-              <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border-l border-blue-200 transition-colors" disabled={!hasStaff} title="Xuất ra Google Sheet">
+              <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border-l border-sky-200 transition-colors" disabled={!hasStaff} title="Xuất ra Google Sheet">
                   Sheet
               </Button>
             </div>
@@ -1281,7 +1281,7 @@ const App: React.FC = () => {
           <Button variant="ghost" onClick={handleExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-emerald-600 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
               Excel
           </Button>
-          <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-blue-700 bg-blue-50 rounded-md transition-colors shrink-0" disabled={!hasStaff} title="Xuất ra Google Sheet">
+          <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-sky-700 bg-sky-50 rounded-md transition-colors shrink-0" disabled={!hasStaff} title="Xuất ra Google Sheet">
               Sheet
           </Button>
       </div>

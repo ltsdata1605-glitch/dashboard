@@ -147,7 +147,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         </td>
                         <td className="sticky-col border-r-2 border-slate-400 bg-white z-20 group-hover:bg-slate-50 transition-colors" style={{ left: '40px' }}>
                             <div className="flex justify-between items-center">
-                                <span style={{ color: staff.gender === 'Nu' ? '#db2777' : '#2563eb' }}>
+                                <span style={{ color: staff.gender === 'Nu' ? '#e11d48' : '#0284c7' }}>
                                     {formatDisplayName(staff.name)}
                                 </span>
                                 <Button variant="ghost" onClick={() => onDeleteEmployee(staff.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-600 transition-all export-hidden">
@@ -305,19 +305,19 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 </>
             )}
             <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-fuchsia-50 text-fuchsia-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-orange-50 text-orange-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-emerald-50 text-emerald-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-amber-50 text-amber-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
             {weekHeaders}
           </tr>
           <tr className="text-[15px] font-black uppercase tracking-tighter">
             <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">SBH</th>
             <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">TV</th>
             <th className="px-1 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-400">TỔNG</th>
-            <th className="px-1 border-r border-slate-300 bg-fuchsia-50 text-fuchsia-700 border-b-[3px] !border-b-slate-400">GH</th>
-            <th className="px-1 border-r border-slate-300 bg-fuchsia-50 text-fuchsia-700 border-b-[3px] !border-b-slate-400">KH</th>
-            <th className="px-1 border-r-2 border-slate-400 bg-fuchsia-50 text-fuchsia-800 border-b-[3px] !border-b-slate-400">TN</th>
-            <th className="px-1 border-r border-slate-300 bg-orange-50 text-orange-700 border-b-[3px] !border-b-slate-400">ĐỔI</th>
-            <th className="px-1 border-r-2 border-slate-400 bg-orange-50 text-orange-700 border-b-[3px] !border-b-slate-400">OFF</th>
+            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">GH</th>
+            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">KH</th>
+            <th className="px-1 border-r-2 border-slate-400 bg-emerald-50 text-emerald-800 border-b-[3px] !border-b-slate-400">TN</th>
+            <th className="px-1 border-r border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">ĐỔI</th>
+            <th className="px-1 border-r-2 border-slate-400 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">OFF</th>
             {Array.from({ length: duration }).map((_, i) => {
                 const dayIndex = i + 1;
                 if (weekRange && (dayIndex < weekRange.start || dayIndex > weekRange.end)) return null;

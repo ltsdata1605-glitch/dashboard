@@ -39,7 +39,7 @@ const SuggestionModal: React.FC<SuggestionModalProps> = ({ suggestions, onAccept
           <div key={index} className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
             <div className="flex-grow">
               <p className="font-semibold text-slate-800 dark:text-slate-200">
-                Đổi ca <span className={`font-bold ${suggestion.type === 'kho' ? 'text-emerald-600 dark:text-emerald-400' : 'text-violet-600 dark:text-violet-400'}`}>{getRoleName(suggestion.type)}</span> ngày <span className="text-sky-600 dark:text-sky-400">{suggestion.dateString}</span>
+                Đổi ca <span className={`font-bold ${suggestion.type === 'kho' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{getRoleName(suggestion.type)}</span> ngày <span className="text-sky-600 dark:text-sky-400">{suggestion.dateString}</span>
               </p>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 grid grid-cols-2 gap-x-4">
                 <p>

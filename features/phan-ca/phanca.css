@@ -17,14 +17,14 @@
             --border-light: #e2e8f0;
             --border-default: #cbd5e1;
 
-            /* Shift cell colors — matches Image 1 (Green, Purple, Amber) */
+            /* Shift cell colors — matches Image 1 (Green, Sky, Amber) */
             --cell-kho-bg: #ecfdf5; /* emerald-50 */
             --cell-kho-border: #6ee7b7; /* emerald-300 */
             --cell-kho-text: #059669; /* emerald-600 */
 
-            --cell-tn-bg: #faf5ff; /* purple-50 */
-            --cell-tn-border: #d8b4fe; /* purple-300 */
-            --cell-tn-text: #9333ea; /* purple-600 */
+            --cell-tn-bg: #f0f9ff; /* sky-50 */
+            --cell-tn-border: #7dd3fc; /* sky-300 */
+            --cell-tn-text: #0284c7; /* sky-600 */
 
             --cell-gh-bg: #fffbeb; /* amber-50 */
             --cell-gh-border: #fcd34d; /* amber-300 */
@@ -53,9 +53,9 @@
             --cell-kho-border: rgba(16, 185, 129, 0.4);
             --cell-kho-text: #34d399;
 
-            --cell-tn-bg: rgba(168, 85, 247, 0.12);
-            --cell-tn-border: rgba(168, 85, 247, 0.4);
-            --cell-tn-text: #c084fc;
+            --cell-tn-bg: rgba(14, 165, 233, 0.12);
+            --cell-tn-border: rgba(14, 165, 233, 0.4);
+            --cell-tn-text: #38bdf8;
 
             --cell-gh-bg: rgba(245, 158, 11, 0.12);
             --cell-gh-border: rgba(245, 158, 11, 0.4);
@@ -76,7 +76,15 @@
         }
         .dark .phanca-root .stat-badge-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
         .dark .phanca-root .stat-badge-warn { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
-        .dark .phanca-root .row-export-highlight { background-color: rgba(250, 204, 21, 0.15) !important; }
+        .dark .phanca-root .row-export-highlight { background-color: rgba(251, 191, 36, 0.15) !important; box-shadow: inset 0 0 0 1.5px rgba(251, 191, 36, 0.4); }
+        .dark .phanca-root .stat-warn { color: #fb7185; }
+        .dark .phanca-root .custom-scroll::-webkit-scrollbar-thumb { background: var(--p-slate-600); }
+        .dark .phanca-root .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--p-slate-500); }
+        .dark .phanca-root .cell-direct-edit::after { background-color: #34d399; box-shadow: 0 0 0 1.5px var(--surface-0); }
+        .dark .phanca-root .cell-swap-initiator::after { background-color: #fb7185; box-shadow: 0 0 0 1.5px var(--surface-0); }
+        .dark .phanca-root .cell-swap-partner::after { background-color: #38bdf8; box-shadow: 0 0 0 1.5px var(--surface-0); }
+        .dark .phanca-root .cell-off-request::after { background-color: #fbbf24; box-shadow: 0 0 0 1.5px var(--surface-0); }
+        .dark .phanca-root .glass { background: rgba(15, 23, 42, 0.75); }
 
         * { box-sizing: border-box; }
 
@@ -203,13 +211,13 @@
             box-shadow: 0 0 0 1.5px #fff;
         }
         .cell-direct-edit::after { background-color: #10b981; }
-        .cell-swap-initiator::after { background-color: #ef4444; }
-        .cell-swap-partner::after { background-color: #3b82f6; }
-        .cell-off-request::after { background-color: #8b5cf6; }
+        .cell-swap-initiator::after { background-color: #f43f5e; }
+        .cell-swap-partner::after { background-color: #0ea5e9; }
+        .cell-off-request::after { background-color: #f59e0b; }
 
         @keyframes pulse-soft {
-            0%, 100% { box-shadow: inset 0 0 0 0px rgba(239, 68, 68, 0); }
-            50% { box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.12); }
+            0%, 100% { box-shadow: inset 0 0 0 0px rgba(244, 63, 94, 0); }
+            50% { box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0.12); }
         }
         .cell-needs-intervention { animation: pulse-soft 2.5s infinite; }
 
@@ -247,8 +255,8 @@
            EXPORT UTILITIES
            ═══════════════════════════════════════ */
         .row-export-highlight {
-            background-color: #fefce8 !important;
-            box-shadow: inset 0 0 0 1.5px #fde047;
+            background-color: #fffbeb !important;
+            box-shadow: inset 0 0 0 1.5px #fcd34d;
         }
         .export-hidden { display: none !important; }
 

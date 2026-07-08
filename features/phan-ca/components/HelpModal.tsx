@@ -52,12 +52,12 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
               <ul className="list-disc pl-5 space-y-2 mb-3">
                   <li>
                       <span className="inline-flex rounded-md shadow-sm align-middle mr-2">
-                          <span className="bg-violet-200 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-bold py-1 px-2.5 rounded-l-md flex items-center">
+                          <span className="bg-sky-200 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 font-bold py-1 px-2.5 rounded-l-md flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                               </svg>
                           </span>
-                          <span className="bg-violet-200 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-bold py-1 px-2.5 rounded-r-md border-l border-violet-400 dark:border-violet-700">Nhập DS</span>
+                          <span className="bg-sky-200 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 font-bold py-1 px-2.5 rounded-r-md border-l border-sky-400 dark:border-sky-700">Nhập DS</span>
                       </span>
                       dùng để nhập danh sách nhân viên từ file Excel.
                       <ul className="list-circle pl-5 mt-1 text-slate-600 dark:text-slate-400">

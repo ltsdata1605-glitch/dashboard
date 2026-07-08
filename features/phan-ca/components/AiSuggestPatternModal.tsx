@@ -244,7 +244,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
             isOpen
             onClose={onClose}
             maxWidth="4xl"
-            title={<>Gợi Ý Ca Xoay Bằng AI cho <span className="text-violet-600 dark:text-violet-400">{departmentName}</span></>}
+            title={<>Gợi Ý Ca Xoay Bằng AI cho <span className="text-sky-600 dark:text-sky-400">{departmentName}</span></>}
             footer={
                 <div className="flex justify-end gap-3">
                     <Button variant="secondary" onClick={onClose}>Hủy</Button>
