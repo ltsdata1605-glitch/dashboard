@@ -519,7 +519,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         return parseCompetitions(competitionLuyKeData);
     }, [competitionLuyKeData]);
 
-    const handleUpdate = (key: string, val: string, validator: (s: string) => boolean, tsSetter: any, updateMsg: string, id: string) => {
+    const handleUpdate = (key: string, val: string, validator: (s: string) => boolean, tsSetter: (value: string | null) => void, updateMsg: string, id: string) => {
         if (val === '') {
             setErrors(p => ({...p, [key]: null}));
             tsSetter(null);

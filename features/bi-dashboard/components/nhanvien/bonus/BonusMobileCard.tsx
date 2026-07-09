@@ -3,9 +3,10 @@ import { Employee } from '../../../types/nhanVienTypes';
 import { MedalBadge } from '../../shared/Badges';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import { onActivateKey } from '../../../../../components/shared/ui';
+import type { BonusDisplayRow } from '../BonusTab';
 
 interface BonusMobileCardProps {
-    item: any;
+    item: BonusDisplayRow;
     isHighlighted: boolean;
     isStale: boolean;
     dtqdVal: number;

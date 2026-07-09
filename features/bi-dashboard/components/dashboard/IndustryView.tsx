@@ -121,7 +121,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }, []);
 
     // --- Sort rows helper ---
-    const sortRows = useCallback(<T extends any[]>(rows: T[], getValues: (row: T) => string[]): T[] => {
+    const sortRows = useCallback(<T extends unknown[]>(rows: T[], getValues: (row: T) => string[]): T[] => {
         if (!sortConfig.column || !sortConfig.direction) return rows;
         const colIdx = processedTable.headers.indexOf(sortConfig.column);
         if (colIdx === -1) return rows;
@@ -368,7 +368,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     };
 
     // --- Shared cell rendering logic ---
-    const renderCell = (cell: any, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, fullRow: any[]) => {
+    const renderCell = (cell: string | number, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, fullRow: (string | number)[]) => {
         const numericValue = parseNumber(cell);
         const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
         const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;

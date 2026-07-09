@@ -2,9 +2,10 @@
 import React from 'react';
 import { Criterion, shortenName, parseNumber, roundUp } from '../../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
+import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionGridViewProps {
-    groupedAndSortedPrograms: Partial<Record<Criterion, any[]>>;
+    groupedAndSortedPrograms: Partial<Record<Criterion, ProcessedProgram[]>>;
     headers: string[];
     hiddenColumns: string[];
     isRealtime: boolean;

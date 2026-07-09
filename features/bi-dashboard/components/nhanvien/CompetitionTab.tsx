@@ -4,11 +4,11 @@ import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
-import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
+import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
 import CompetitionCompareView from './CompetitionCompareView';
-import CompetitionSummaryView from './CompetitionSummaryView';
+import CompetitionSummaryView, { CompetitionSummaryViewHandle } from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { getErrorMessage } from '../../../../utils/dataUtils';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -57,7 +57,7 @@ interface CompetitionTabProps {
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
     banKemRows?: CrossSellingRow[];
-    bonusData?: Record<string, any>;
+    bonusData?: Record<string, BonusMetrics | null>;
     isActive?: boolean;
 }
 
@@ -104,7 +104,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [isolatedHighlightEmployee, setIsolatedHighlightEmployee] = useState<string | null>(null);
     const groupViewRef = useRef<HTMLDivElement>(null);
     const individualViewRef = useRef<IndividualCompetitionViewHandle>(null);
-    const summaryViewRefs = useRef<Record<string, any>>({});
+    const summaryViewRefs = useRef<Record<string, CompetitionSummaryViewHandle>>({});
     const filterRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');

@@ -158,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                 if (typeof content !== 'string') throw new Error('Định dạng file không hợp lệ.');
 
                 const parsedContent = JSON.parse(content);
-                let dataToRestore: { key: string; value: any }[] = [];
+                let dataToRestore: { key: string; value: unknown }[] = [];
 
                 if (Array.isArray(parsedContent)) {
                     dataToRestore = parsedContent;

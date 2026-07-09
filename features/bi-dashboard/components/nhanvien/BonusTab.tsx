@@ -213,7 +213,7 @@ function getWeekdayAbbr(dateStr: string): string {
 }
 
 // 1 dòng hiển thị trong bảng thưởng: hoặc là nhân viên (spread Employee + rank), hoặc dòng tổng theo phòng ban/tổng cộng
-interface BonusDisplayRow {
+export interface BonusDisplayRow {
     type?: 'total' | 'department' | 'employee';
     name: string;
     originalName?: string;

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -19,7 +19,7 @@ interface CompetitionCompareViewProps {
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
     banKemRows?: CrossSellingRow[];
-    bonusData?: Record<string, any>;
+    bonusData?: Record<string, BonusMetrics | null>;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
@@ -220,7 +220,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
 
     const compRows = useMemo(() => {
         if (!empA || !empB) return [];
-        const rows: any[] = [];
+        const rows: { criterion: Criterion; originalTitle: string; name: string; pctA: number; pctB: number; actualA: number; actualB: number }[] = [];
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
             const headerMap = new Map(headers.map(h => [h.title, h]));

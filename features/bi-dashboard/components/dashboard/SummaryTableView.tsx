@@ -117,6 +117,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             rows.forEach(row => { if (!seenNames.has(row[nameIndexOrigin])) { seenNames.add(row[nameIndexOrigin]); uniqueRows.push(row); } });
         } else uniqueRows = rows;
 
+        // any: mỗi ô có thể là string thô hoặc object {value, growth, isMerged, type} sau khi merge cột
+        // (xem `cell?.isMerged ? cell.value : cell` ở phần render) — siết kiểu cần viết lại union +
+        // narrow ở ~6 nơi render, vượt phạm vi 1 lần sửa type đơn giản.
         let tempHeaders = [...headers], tempRows: any[][] = JSON.parse(JSON.stringify(uniqueRows));
         const nameIndex = tempHeaders.indexOf('Tên miền');
 

@@ -29,7 +29,7 @@ interface BackupMetadata {
 
 interface BackupFileContent {
     metadata?: BackupMetadata;
-    data: { key: string; value: any }[];
+    data: { key: string; value: unknown }[];
 }
 
 const Settings: React.FC = () => {
@@ -173,7 +173,7 @@ const Settings: React.FC = () => {
                 if (typeof content !== 'string') throw new Error('Không thể đọc nội dung file.');
                 
                 let parsedContent = JSON.parse(content);
-                let dataToRestore: { key: string; value: any }[] = [];
+                let dataToRestore: { key: string; value: unknown }[] = [];
 
                 if (Array.isArray(parsedContent)) {
                     dataToRestore = parsedContent;

@@ -348,7 +348,7 @@ const CrossSellingTab: React.FC<{
         });
 
         if (finalOutput.length > 0 && !exportDeptFilter) {
-            const oldTotal = prevMonthRows.find((pr: any) => pr.type === 'total');
+            const oldTotal = prevMonthRows.find((pr) => pr.type === 'total');
             finalOutput.push({
                 type: 'total',
                 name: 'TỔNG CỘNG',
