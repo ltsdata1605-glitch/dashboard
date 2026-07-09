@@ -28,6 +28,16 @@ export interface CompetitionDataForCriterion {
     employees: { name: string; originalName: string; department: string; values: (number | null)[] }[];
 }
 
+export interface PrevCompData {
+    dtlk: number;
+    dtqd: number;
+    target: number;
+    completion: number;
+    hqqd: number;
+    installment: number;
+    pctBillBk: number;
+}
+
 export interface RevenueRow {
     type: 'total' | 'department' | 'employee';
     name: string;
@@ -39,7 +49,7 @@ export interface RevenueRow {
     soLuong?: number;
     donGia?: number;
     pctBillBk?: number;
-    prevCompData?: any;
+    prevCompData?: PrevCompData | null;
     rank?: number;
     calculatedCompletion?: number;
     calculatedTarget?: number;

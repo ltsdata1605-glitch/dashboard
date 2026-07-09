@@ -297,7 +297,7 @@ export function useNhanVienData(isActive?: boolean) {
             ...prev,
             bonusData: { ...prev.bonusData, [originalName]: metrics }
         }));
-        const currentDbData = await db.get(`bonus-data-${safeName}`) || {};
+        const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
         await db.set(`bonus-data-${safeName}`, { ...currentDbData, [originalName]: metrics });
     }, [activeSupermarkets]);
 
@@ -313,7 +313,7 @@ export function useNhanVienData(isActive?: boolean) {
             return { ...prev, bonusData: nextBonusData };
         });
 
-        const currentDbData = await db.get(`bonus-data-${safeName}`) || {};
+        const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
         const mergedDbData = { ...currentDbData };
         entries.forEach(({ originalName, metrics }) => { mergedDbData[originalName] = metrics; });
         await db.set(`bonus-data-${safeName}`, mergedDbData);
@@ -323,7 +323,7 @@ export function useNhanVienData(isActive?: boolean) {
         const historySupermarket = activeSupermarkets[0];
         await Promise.all(entries.map(async ({ originalName, metrics }) => {
             const historyKey = `bonus-history-${historySupermarket}-${originalName}` as const;
-            const currentHistory = await db.get(historyKey) || [];
+            const currentHistory = await db.get<BonusMetrics[]>(historyKey) || [];
             await db.set(historyKey, [...currentHistory, metrics].slice(-30));
         }));
     }, [activeSupermarkets]);

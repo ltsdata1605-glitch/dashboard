@@ -227,8 +227,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             if (activeSupermarkets.length === 0) return;
             // Song song đọc tất cả: summary + target cho mỗi SM
             const [summaryLuyKeData, ...smTargets] = await Promise.all([
-                db.get('summary-luy-ke'),
-                ...activeSupermarkets.map(sm => db.get(`targethero-${shortenSupermarketName(sm)}-total`))
+                db.get<string>('summary-luy-ke'),
+                ...activeSupermarkets.map(sm => db.get<number>(`targethero-${shortenSupermarketName(sm)}-total`))
             ]);
             let totalT = 0;
             if (summaryLuyKeData) {

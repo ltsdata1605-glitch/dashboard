@@ -39,7 +39,7 @@ export const useRevenueData = ({
         if (isActive === false) return [];
         const isFiltering = !departmentNames.includes('all');
 
-        const assignBonusTiers = (emps: any[]) => {
+        const assignBonusTiers = (emps: RevenueRow[]) => {
             if (emps.length === 0) return;
             const sorted = [...emps].sort((a, b) => (b.bonus_tong || 0) - (a.bonus_tong || 0));
             
@@ -80,7 +80,7 @@ export const useRevenueData = ({
 
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
         
-        const calculateWithComparison = (emp: any) => {
+        const calculateWithComparison = (emp: RevenueRow): RevenueRow => {
             const weight = (departmentWeights[emp.department!] || 0) / 100;
             const empCount = deptEmployeeCounts[emp.department!] || 1;
             const empTarget = supermarketTarget > 0 ? (supermarketTarget * weight) / empCount : 0;
@@ -112,7 +112,7 @@ export const useRevenueData = ({
             const remaining_daily = remaining_total / remainingDays;
             
             const avgDaily = emp.dtqd / daysPassed;
-            const remaining_daily_status = empTarget > 0 ? (avgDaily < remaining_daily ? 'warning' : 'success') : undefined;
+            const remaining_daily_status: 'warning' | 'success' | undefined = empTarget > 0 ? (avgDaily < remaining_daily ? 'warning' : 'success') : undefined;
             
             const bonus_tong = (bonusData && emp.originalName) ? (bonusData[emp.originalName]?.tong || 0) : 0;
 
@@ -141,12 +141,12 @@ export const useRevenueData = ({
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
-                else { valA = (a as Record<string, unknown>)[sortConfig.key]; valB = (b as Record<string, unknown>)[sortConfig.key]; }
+                else { valA = (a as unknown as Record<string, unknown>)[sortConfig.key]; valB = (b as unknown as Record<string, unknown>)[sortConfig.key]; }
                 const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
 
-            const result = list.map((emp, index) => ({ ...emp, rank: index + 1 }));
+            const result: RevenueRow[] = list.map((emp, index) => ({ ...emp, rank: index + 1 }));
             assignBonusTiers(result);
             
             if (result.length > 0) {
@@ -201,7 +201,7 @@ export const useRevenueData = ({
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
-                else { valA = (a as Record<string, unknown>)[sortConfig.key]; valB = (b as Record<string, unknown>)[sortConfig.key]; }
+                else { valA = (a as unknown as Record<string, unknown>)[sortConfig.key]; valB = (b as unknown as Record<string, unknown>)[sortConfig.key]; }
                 const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
@@ -235,7 +235,7 @@ export const useRevenueData = ({
             return sortConfig.direction === 'asc' ? (a.sortValue as number) - (b.sortValue as number) : (b.sortValue as number) - (a.sortValue as number);
         });
 
-        let finalOutput: any[] = [];
+        let finalOutput: RevenueRow[] = [];
         let grandSumDtlk = 0, grandSumDtqd = 0, grandSumTarget = 0, grandTotalEmps = 0, grandSumInstallment = 0, grandSumBk = 0;
         let grandPrevDtlk = 0, grandPrevDtqd = 0, grandPrevTarget = 0;
 

@@ -1,5 +1,5 @@
 type ConfigState = {
-    cache: Record<string, any>;
+    cache: Record<string, unknown>;
     loaded: Record<string, boolean>;
 };
 
@@ -22,7 +22,7 @@ export const configStore = {
         return () => listeners.delete(listener);
     },
     
-    setCache: (key: string, value: any) => {
+    setCache: (key: string, value: unknown) => {
         state = {
             ...state,
             cache: { ...state.cache, [key]: value }

@@ -68,7 +68,7 @@ export const BonusDataModal: React.FC<{
         const { metrics } = result;
 
         const historyKey = `bonus-history-${supermarketName}-${employee.originalName}`;
-        const currentHistory = await db.get(historyKey) || [];
+        const currentHistory = await db.get<BonusMetrics[]>(historyKey) || [];
         await db.set(historyKey, [...currentHistory, metrics].slice(-30));
 
         onSave(employee.originalName, metrics);

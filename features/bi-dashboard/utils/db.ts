@@ -90,7 +90,7 @@ export type BIKey =
 // Thêm prefix để key BI module không xung đột với key của Dashboard chính
 const prefixKey = (key: string): string => `${BI_PREFIX}${key}`;
 
-export const set = async (key: BIKey, value: any, source?: string): Promise<void> => {
+export const set = async (key: BIKey, value: unknown, source?: string): Promise<void> => {
   const db = await getDb();
   const prefixed = prefixKey(key);
   return new Promise((resolve, reject) => {
@@ -117,7 +117,7 @@ export const set = async (key: BIKey, value: any, source?: string): Promise<void
 };
 
 // Hàm ghi nhiều mục trong 1 transaction duy nhất (Hiệu suất cao)
-export const setMany = async (items: { key: BIKey; value: any }[], source?: string): Promise<void> => {
+export const setMany = async (items: { key: BIKey; value: unknown }[], source?: string): Promise<void> => {
   const db = await getDb();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([SETTINGS_STORE], 'readwrite');
@@ -146,7 +146,7 @@ export const setMany = async (items: { key: BIKey; value: any }[], source?: stri
   });
 };
 
-export const get = async (key: BIKey): Promise<any> => {
+export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
   const db = await getDb();
   const prefixed = prefixKey(key);
   return new Promise((resolve, reject) => {
@@ -165,7 +165,7 @@ export const get = async (key: BIKey): Promise<any> => {
   });
 };
 
-export const getAll = async (): Promise<{ key: string; value: any }[]> => {
+export const getAll = async (): Promise<{ key: string; value: unknown }[]> => {
   const db = await getDb();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([SETTINGS_STORE], 'readonly');
@@ -176,7 +176,7 @@ export const getAll = async (): Promise<{ key: string; value: any }[]> => {
     transaction.oncomplete = () => {
       const keys = keysRequest.result;
       const values = request.result;
-      const result: { key: string; value: any }[] = [];
+      const result: { key: string; value: unknown }[] = [];
       for (let i = 0; i < keys.length; i++) {
         const k = String(keys[i]);
         // Chỉ trả về các key thuộc BI module (có prefix bi_)

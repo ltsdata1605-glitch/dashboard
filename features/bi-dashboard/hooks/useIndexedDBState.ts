@@ -17,16 +17,16 @@ export function useIndexedDBState<T>(
     // nên subscribe trực tiếp vào nó khiến toàn bộ ~30+ chỗ dùng useIndexedDBState re-render
     // mỗi khi 1 key bất kỳ đổi. Cache lại snapshot theo key để useSyncExternalStore chỉ báo
     // "đổi" khi đúng cache[key]/loaded[key] của hook này thay đổi.
-    const lastSnapshotRef = useRef<{ cacheVal: any; loadedVal: boolean; result: [any, boolean] } | null>(null);
-    const getSnapshot = useCallback((): [any, boolean] => {
+    const lastSnapshotRef = useRef<{ cacheVal: T | undefined; loadedVal: boolean; result: [T | undefined, boolean] } | null>(null);
+    const getSnapshot = useCallback((): [T | undefined, boolean] => {
         const s = configStore.getState();
-        const cacheVal = key ? s.cache[key] : undefined;
+        const cacheVal = key ? (s.cache[key] as T | undefined) : undefined;
         const loadedVal = key ? !!s.loaded[key] : true;
         const prev = lastSnapshotRef.current;
         if (prev && Object.is(prev.cacheVal, cacheVal) && prev.loadedVal === loadedVal) {
             return prev.result;
         }
-        const result: [any, boolean] = [cacheVal, loadedVal];
+        const result: [T | undefined, boolean] = [cacheVal, loadedVal];
         lastSnapshotRef.current = { cacheVal, loadedVal, result };
         return result;
     }, [key]);
@@ -46,7 +46,7 @@ export function useIndexedDBState<T>(
         debounceMsRef.current = debounceMs;
     }, [debounceMs]);
 
-    const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
+    const writeQueueRef = useRef<(() => Promise<void>)[]>([]);
     const isWritingRef = useRef(false);
     // Increments on every user-initiated write so stale loadValue() calls can detect they're outdated
     const writeVersionRef = useRef(0);
@@ -95,7 +95,7 @@ export function useIndexedDBState<T>(
             // Capture the write version before the async read so we can detect if the
             // user fired setStoredValue() while we were waiting for IDB — if so, discard.
             const capturedVersion = writeVersionRef.current;
-            db.get(key).then(storedValue => {
+            db.get<T>(key).then(storedValue => {
                 if (writeVersionRef.current !== capturedVersion) return;
                 const defValue = defaultValueRef.current;
                 let finalValue = defValue;
@@ -140,7 +140,7 @@ export function useIndexedDBState<T>(
         writeVersionRef.current++;
 
         const currentState = configStore.getState();
-        const prevValue = currentState.cache[key] !== undefined ? currentState.cache[key] : defaultValueRef.current;
+        const prevValue = (currentState.cache[key] !== undefined ? currentState.cache[key] : defaultValueRef.current) as T;
         
         const finalValue = typeof newValue === 'function'
             ? (newValue as (prevState: T) => T)(prevValue)

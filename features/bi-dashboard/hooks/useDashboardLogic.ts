@@ -321,9 +321,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const targetsResults = await Promise.all(allSupermarketsForTargets.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
                 const [quyDoi, traGop, totalTargetPercent] = await Promise.all([
-                    db.get(`targethero-${safeName}-quydoi`),
-                    db.get(`targethero-${safeName}-tragop`),
-                    supermarketName === 'Tổng' ? Promise.resolve(100) : db.get(`targethero-${safeName}-total`)
+                    db.get<number>(`targethero-${safeName}-quydoi`),
+                    db.get<number>(`targethero-${safeName}-tragop`),
+                    supermarketName === 'Tổng' ? Promise.resolve(100) : db.get<number>(`targethero-${safeName}-total`)
                 ]);
                 return {
                     supermarketName,

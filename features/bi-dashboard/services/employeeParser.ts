@@ -1,4 +1,7 @@
 import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
+// Employee ở types/nhanVienTypes.ts có thêm department (nhân viên đã gắn phòng ban) — khác với
+// Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
+import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
 
 export interface Employee {
     originalName: string;
@@ -154,8 +157,8 @@ export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] =
 export const parseEmployeeCompetitionTargets = (
     lines: string[],
     activeSupermarkets: string[],
-    smDataMap: Map<string, { competitionTargets: any; departmentWeights: any }>,
-    allEmployees: any[]
+    smDataMap: Map<string, { competitionTargets: Record<string, number>; departmentWeights: Record<string, number> }>,
+    allEmployees: NhanVienEmployee[]
 ): Map<string, Map<string, number>> => {
     const targets = new Map<string, Map<string, number>>();
     for (const sm of activeSupermarkets) {

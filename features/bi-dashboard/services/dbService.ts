@@ -84,7 +84,7 @@ export function getDb(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-export async function saveSetting(key: string, value: any, source?: string): Promise<void> {
+export async function saveSetting(key: string, value: unknown, source?: string): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
