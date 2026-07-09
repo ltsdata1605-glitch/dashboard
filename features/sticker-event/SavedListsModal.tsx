@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SavedList, Product } from './types';
+import { SavedList, SavedListItem } from './types';
 import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from './services/firebaseService';
 import { XIcon, TrashIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
@@ -11,7 +11,7 @@ interface SavedListsModalProps {
     userId: string;
     isAdmin: boolean;
     onClose: () => void;
-    onLoadList: (items: any[]) => void;
+    onLoadList: (items: SavedListItem[]) => void;
 }
 
 const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAdmin, onClose, onLoadList }) => {

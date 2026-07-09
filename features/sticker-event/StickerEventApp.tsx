@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Product, InventoryItem } from './types';
+import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
 import { fetchUserState, saveUserState, saveListToFirestore } from './services/firebaseService';
@@ -410,14 +410,15 @@ export default function App(): React.JSX.Element {
     setIsSavedListsModalOpen(true);
   };
 
-  const handleLoadSavedList = (savedItems: any[]) => {
+  const handleLoadSavedList = (savedItems: SavedListItem[]) => {
     const reconstructedProducts: Product[] = [];
     for (const item of savedItems) {
       const product = allProducts.find(p => p.msp === item.msp);
       if (product) {
         reconstructedProducts.push({ ...product, quantity: item.quantity || 1, selected: false });
       } else if (item.sanPham) {
-        reconstructedProducts.push({ ...item, selected: false });
+        // Định dạng cũ: item đã có đủ field Product (không chỉ msp+quantity)
+        reconstructedProducts.push({ ...item, selected: false } as Product);
       }
     }
     

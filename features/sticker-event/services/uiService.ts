@@ -2,6 +2,19 @@ import { isAbortError } from '../../../utils/dataUtils';
 
 export type ExportMode = 'download' | 'share' | 'blob-only';
 
+export interface ExportImageOptions {
+    elementsToHide?: string[];
+    forceOpenDetails?: boolean;
+    scale?: number;
+    isCompactTable?: boolean;
+    captureAsDisplayed?: boolean;
+    forcedWidth?: number | null;
+    fitCategoryColumn?: boolean;
+    fitAllColumns?: boolean;
+    mode?: ExportMode;
+    onCloneReady?: ((clone: HTMLElement) => void) | null;
+}
+
 /** Download a blob as a file */
 export function downloadBlob(blob: Blob, filename: string, forceDownload = false) {
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -146,7 +159,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
     return Promise.all(promises);
 };
 
-export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
+export async function exportElementAsImage(element: HTMLElement, filename: string, options: ExportImageOptions = {}): Promise<Blob | null> {
     const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
     const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
@@ -520,7 +533,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // html-to-image has trouble with nested SVGs in foreignObject. Convert them to <img> tags.
     const liveSvgs = element.querySelectorAll('svg');
     const cloneSvgs = clone.querySelectorAll('svg');
-    cloneSvgs.forEach((svg: any, idx: number) => {
+    cloneSvgs.forEach((svg: SVGSVGElement, idx: number) => {
         // Handle Google Charts SVGs
         if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
             const currentWidthStr = svg.getAttribute('width');
@@ -542,7 +555,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // Use the LIVE element's SVGs (which have correct content) as the source
     const liveRechartsSvgs = element.querySelectorAll('svg.recharts-surface');
     const cloneRechartsSvgs = clone.querySelectorAll('svg.recharts-surface');
-    cloneRechartsSvgs.forEach((cloneSvg: any, idx: number) => {
+    cloneRechartsSvgs.forEach((cloneSvg: Element, idx: number) => {
         const liveSvg = idx < liveRechartsSvgs.length ? liveRechartsSvgs[idx] : null;
         const sourceSvg = liveSvg || cloneSvg;
         
@@ -559,7 +572,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
             // Inline computed styles for text elements (fonts, fills) 
             const liveTexts = sourceSvg.querySelectorAll('text, tspan');
-            svgClone.querySelectorAll('text, tspan').forEach((textEl: any, idx: number) => {
+            svgClone.querySelectorAll('text, tspan').forEach((textEl: SVGElement, idx: number) => {
                 const liveText = liveTexts[idx];
                 if (liveText) {
                     const computed = window.getComputedStyle(liveText);

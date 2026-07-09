@@ -1,6 +1,6 @@
 import { db, auth } from '../firebase';
 import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
-import { Product, InventoryItem } from '../types';
+import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem } from '../types';
 
 enum OperationType {
   CREATE = 'create',
@@ -249,7 +249,7 @@ export const clearAllUsers = async (storeId: string) => {
 
 
 
-export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: any[]) => {
+export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: SavedListItem[]) => {
   if (!storeId || !userId) throw new Error("Mã kho và User ID là bắt buộc.");
   
   const listsRef = collection(db, 'stores', storeId, 'savedLists');
@@ -270,7 +270,7 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
   }
 };
 
-export const fetchSavedListsFromFirestore = async (storeId: string, userId?: string): Promise<any[]> => {
+export const fetchSavedListsFromFirestore = async (storeId: string, userId?: string): Promise<SavedList[]> => {
   if (!storeId) return [];
   
   const listsRef = collection(db, 'stores', storeId, 'savedLists');
@@ -281,15 +281,15 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userId?: str
     }
     const snapshot = await getDocs(q);
     
-    const lists = snapshot.docs.map(doc => {
+    const lists: SavedList[] = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
         ...data,
         items: JSON.parse(data.items || '[]')
-      };
+      } as SavedList;
     });
-    
-    return lists.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return lists.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, `stores/${storeId}/savedLists`);
     return [];
@@ -307,7 +307,7 @@ export const deleteSavedListFromFirestore = async (storeId: string, listId: stri
   }
 };
 
-export const saveUserState = async (userId: string, state: { displayedProducts: any[], inventoryFilters: any }) => {
+export const saveUserState = async (userId: string, state: { displayedProducts: Product[], inventoryFilters: InventoryFilters }) => {
   if (!userId) return;
   
   const stateRef = doc(db, 'users', userId, 'state', 'current');
@@ -323,7 +323,7 @@ export const saveUserState = async (userId: string, state: { displayedProducts: 
   }
 };
 
-export const fetchUserState = async (userId: string): Promise<{ displayedProducts: any[], inventoryFilters: any, updatedAt: number } | null> => {
+export const fetchUserState = async (userId: string): Promise<{ displayedProducts: Product[], inventoryFilters: InventoryFilters, updatedAt: number } | null> => {
   if (!userId) return null;
   
   const stateRef = doc(db, 'users', userId, 'state', 'current');

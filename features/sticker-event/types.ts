@@ -12,14 +12,26 @@ export interface Product {
   quantity: number;
 }
 
+// Khi lưu danh sách, chỉ lưu msp+quantity để tiết kiệm dung lượng Firestore (xem
+// onConfirmSaveList trong StickerEventApp.tsx); các field Product khác có thể có
+// mặt với danh sách cũ (định dạng trước đây lưu full Product) nên để optional.
+export type SavedListItem = Partial<Product> & { msp: string };
+
 export interface SavedList {
   id: string;
   name: string;
   userId: string;
   storeId: string;
   createdAt: string;
-  items: any[];
+  items: SavedListItem[];
   totalItems: number;
+}
+
+export interface InventoryFilters {
+  maSieuThi: string[];
+  nganhHang: string[];
+  nhomHang: string[];
+  keyword: string;
 }
 
 export interface InventoryItem {

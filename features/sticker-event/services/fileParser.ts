@@ -41,7 +41,7 @@ export function parseCurrency(value: string | number | undefined | null): number
 import { formatCurrency } from '../utils/format';
 
 // Helper function to check if a value looks like a valid MSP (mostly digits, length > 3)
-const isValidMsp = (value: any): boolean => {
+const isValidMsp = (value: unknown): boolean => {
     if (!value) return false;
     const str = String(value).trim();
     // Must be at least 4 chars and contain at least one digit to be a product code
@@ -59,6 +59,7 @@ export const parseProductFile = (file: File): Promise<{ products: Product[], exp
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
+        // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
         const json: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
         // Try to find export date from the first few rows (usually in column AI/34)
@@ -66,7 +67,7 @@ export const parseProductFile = (file: File): Promise<{ products: Product[], exp
         let exportDate = 'N/A';
         for(let i=0; i<Math.min(json.length, 5); i++) {
             const row = json[i];
-            const dateCellIndex = row.findIndex((cell: any) => String(cell).includes('Ngày in:'));
+            const dateCellIndex = row.findIndex((cell) => String(cell).includes('Ngày in:'));
             if (dateCellIndex !== -1) {
                 exportDate = String(row[dateCellIndex]);
                 break;
@@ -168,6 +169,7 @@ export const parseInventoryFile = (file: File): Promise<InventoryItem[]> => {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
+        // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
         const json: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
         // Skip header row (row 0)
@@ -261,7 +263,17 @@ export const saveEmployeeName = async (name: string): Promise<void> => {
     store.put(name, 'employeeName');
 };
 
-export const loadData = async (): Promise<{ products: Product[]; displayedProducts: Product[]; inventory: InventoryItem[]; fileInfo: FileInfo | null; employeeName: string; inventoryUploadTimestamp: Date | null; displayedProductsLastModified: number | null; } | null> => {
+interface LoadDataResult {
+    products: Product[];
+    displayedProducts: Product[];
+    inventory: InventoryItem[];
+    fileInfo: FileInfo | null;
+    employeeName: string;
+    inventoryUploadTimestamp: Date | null;
+    displayedProductsLastModified: number | null;
+}
+
+export const loadData = async (): Promise<LoadDataResult | null> => {
     try {
         const store = await getStore('readonly');
         const productsReq = store.get('products');
@@ -273,7 +285,7 @@ export const loadData = async (): Promise<{ products: Product[]; displayedProduc
         const displayedProductsLastModifiedReq = store.get('displayedProductsLastModified');
 
         return new Promise((resolve) => {
-            const results: any = { products: [], displayedProducts: [], inventory: [], fileInfo: null, employeeName: '', inventoryUploadTimestamp: null, displayedProductsLastModified: null };
+            const results: LoadDataResult = { products: [], displayedProducts: [], inventory: [], fileInfo: null, employeeName: '', inventoryUploadTimestamp: null, displayedProductsLastModified: null };
             let completed = 0;
             const totalRequests = 7;
 

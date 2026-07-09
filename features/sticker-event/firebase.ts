@@ -16,10 +16,21 @@ const defaultConfig = {
   firestoreDatabaseId: '(default)'
 };
 
+interface FirebaseAppletConfig {
+  apiKey?: string;
+  authDomain?: string;
+  projectId?: string;
+  storageBucket?: string;
+  messagingSenderId?: string;
+  appId?: string;
+  measurementId?: string;
+  firestoreDatabaseId?: string;
+}
+
 // Safe load for AI Studio config file (ignored on GitHub)
 // @ts-ignore
 const configs = import.meta.glob('./firebase-applet-config.json', { eager: true });
-const firebaseConfigJson: any = (configs['./firebase-applet-config.json'] as any)?.default || {};
+const firebaseConfigJson: FirebaseAppletConfig = (configs['./firebase-applet-config.json'] as { default?: FirebaseAppletConfig } | undefined)?.default || {};
 
 // Prioritize JSON config (from user's manual setup or AIS setup) over environment variables
 const firebaseConfig = {
