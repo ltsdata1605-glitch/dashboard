@@ -13,6 +13,23 @@ interface UseHeadToHeadLogicProps {
     includeToday: boolean;
 }
 
+// 1 dòng kết quả tính toán cho 1 nhân viên trong bảng Đối Đầu (mỗi HeadToHeadTableConfig sinh ra 1 mảng dòng này)
+export interface HeadToHeadRow {
+    name: string;
+    department: string;
+    dailyValues: { [dateKey: string]: number };
+    total: number;
+    daysWithNoSales: number;
+    rowAverage: number;
+    isBottom30?: boolean;
+}
+
+interface DepartmentTotalEntry {
+    daily: Map<string, number>;
+    total: number;
+    daysWithNoSales: number;
+}
+
 export const useHeadToHeadLogic = ({
     config,
     allConfigs,
@@ -61,12 +78,12 @@ export const useHeadToHeadLogic = ({
             }
         }
         
-        const computedCache = new Map<string, any[]>();
-        
-        const evaluateConfig = (cfg: HeadToHeadTableConfig): any[] => {
+        const computedCache = new Map<string, HeadToHeadRow[]>();
+
+        const evaluateConfig = (cfg: HeadToHeadTableConfig): HeadToHeadRow[] => {
             if (computedCache.has(cfg.id)) return computedCache.get(cfg.id)!;
-            
-            let resultRows: any[] = [];
+
+            let resultRows: HeadToHeadRow[] = [];
             
             if (cfg.type === 'target') {
                 const targetVal = cfg.targetValue || 0;
@@ -94,8 +111,8 @@ export const useHeadToHeadLogic = ({
                 const r1 = t1 ? evaluateConfig(t1) : null;
                 const r2 = t2 ? evaluateConfig(t2) : null;
                 
-                const row1Map = new Map<string, any>();
-                const row2Map = new Map<string, any>();
+                const row1Map = new Map<string, HeadToHeadRow>();
+                const row2Map = new Map<string, HeadToHeadRow>();
                 if (r1) {
                     for (let i = 0, len = r1.length; i < len; i++) {
                         row1Map.set(r1[i].name, r1[i]);
@@ -310,7 +327,7 @@ export const useHeadToHeadLogic = ({
         }
 
         const top30PercentNoSalesNames = new Set<string>();
-        const rowsWithAct: any[] = [];
+        const rowsWithAct: HeadToHeadRow[] = [];
         for (let i = 0, len = tableRows.length; i < len; i++) {
             if (tableRows[i].daysWithNoSales < 7) {
                 rowsWithAct.push(tableRows[i]);
@@ -409,7 +426,7 @@ export const useHeadToHeadLogic = ({
 
         const sortedDepartments = Object.keys(groupedRows).sort((a,b)=>a.localeCompare(b));
 
-        const departmentTotals = new Map<string, any>();
+        const departmentTotals = new Map<string, DepartmentTotalEntry>();
         for (let i = 0, sdLen = sortedDepartments.length; i < sdLen; i++) {
             const dept = sortedDepartments[i];
             const rdept = groupedRows[dept];

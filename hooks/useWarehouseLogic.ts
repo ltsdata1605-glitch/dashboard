@@ -355,7 +355,7 @@ export const useWarehouseLogic = ({
     }, [data, sortConfig, columns, customProductColumnValues]);
 
     const { totals, customTotals } = useMemo(() => {
-        const initialTotals: Partial<WarehouseSummaryRow> & { metrics: any; doanhThuTraCham: number; } = {
+        const initialTotals: Partial<WarehouseSummaryRow> & { metrics: WarehouseSummaryRow['metrics']; doanhThuTraCham: number; } = {
             metrics: {
                 byIndustry: {},
                 byGroup: {},

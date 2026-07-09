@@ -62,7 +62,7 @@ export const useCloudSync = () => {
                 'stickerPrintHistory',
                 'salesFilesRegistry'
             ]);
-            const settingsToSync: Record<string, any> = {};
+            const settingsToSync: Record<string, unknown> = {};
             for (const key of Object.keys(allSettings)) {
                 if (
                     !excludedKeys.has(key) && 
@@ -171,7 +171,7 @@ export const useCloudSync = () => {
                         ? data.updatedAt.toMillis() 
                         : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
                     
-                    const localValue = await getSetting<any>(key);
+                    const localValue = await getSetting<unknown>(key);
                     const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
                     
                     if (localValue === null || cloudTime > localTime) {
@@ -205,7 +205,7 @@ export const useCloudSync = () => {
         });
 
         // 2. Setup local change handlers
-        const handleSettingChanged = (e: any) => {
+        const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string }>) => {
             const key = e.detail?.key;
 
             // Nếu là khóa nặng, kích hoạt đồng bộ riêng biệt qua subcollection

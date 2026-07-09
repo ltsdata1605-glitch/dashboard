@@ -16,6 +16,12 @@ interface UseTrendChartLogicProps {
     metric: string;
 }
 
+type DailyPoint = { revenue: number; revenueQD: number; date: Date };
+interface AggregatedBucket {
+    date: Date;
+    value: number;
+}
+
 export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLogicProps) => {
     return useMemo(() => {
         if (!trendData) return { totalValue: 0, chartData: [], hasData: false, metricName: metric === 'qd' ? 'DTQĐ' : 'Doanh thu' };
@@ -42,7 +48,7 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 rows.push({ label: formattedDate, value, rawDate: day.date });
             });
         } else if (view === 'weekly') {
-            const weeklyData = Object.values(trendData.daily || {}).reduce((acc: { [key: string]: { date: Date; value: number } }, day: any) => {
+            const weeklyData = Object.values(trendData.daily || {}).reduce((acc: { [key: string]: AggregatedBucket }, day: DailyPoint) => {
                 const date = new Date(day.date);
                 date.setHours(0, 0, 0, 0);
                 const dayOfWeek = date.getDay();
@@ -54,8 +60,8 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 return acc;
             }, {});
 
-            const sortedWeeklyData = Object.values(weeklyData).sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
-            sortedWeeklyData.forEach((week: any, index: number) => {
+            const sortedWeeklyData = Object.values(weeklyData).sort((a: AggregatedBucket, b: AggregatedBucket) => a.date.getTime() - b.date.getTime());
+            sortedWeeklyData.forEach((week: AggregatedBucket, index: number) => {
                 totalValue += week.value;
                 if (week.value > 0) hasData = true;
 
@@ -85,7 +91,7 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 rows.push({ label, value: week.value, changePercent, isDecrease, rawDate: startDate });
             });
         } else if (view === 'monthly') {
-            const monthlyData = Object.values(trendData.daily || {}).reduce((acc: { [key: string]: { date: Date; value: number } }, day: any) => {
+            const monthlyData = Object.values(trendData.daily || {}).reduce((acc: { [key: string]: AggregatedBucket }, day: DailyPoint) => {
                 const date = new Date(day.date);
                 const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
                 const key = firstDayOfMonth.toISOString().split('T')[0];
@@ -94,8 +100,8 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 return acc;
             }, {});
 
-            const sortedMonthlyData = Object.values(monthlyData).sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
-            sortedMonthlyData.forEach((month: any, index: number) => {
+            const sortedMonthlyData = Object.values(monthlyData).sort((a: AggregatedBucket, b: AggregatedBucket) => a.date.getTime() - b.date.getTime());
+            sortedMonthlyData.forEach((month: AggregatedBucket, index: number) => {
                 totalValue += month.value;
                 if (month.value > 0) hasData = true;
                 const label = month.date.toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' });

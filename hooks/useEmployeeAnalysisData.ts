@@ -4,7 +4,7 @@ import { getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { saveSetting, getSetting } from '../services/dbService';
 import { isDateMatch } from '../services/filterService';
-import type { DataRow } from '../types';
+import type { DataRow, Employee } from '../types';
 
 export const useEmployeeAnalysisData = () => {
     const { 
@@ -94,7 +94,8 @@ export const useEmployeeAnalysisData = () => {
     const filteredEmployeeAnalysisData = useMemo(() => {
         if (!employeeAnalysisData) return null;
 
-        const filterEmployee = (emp: any) => {
+        // Dùng chung để filter cả Employee (fullSellerArray) lẫn ExploitationData (exploitationData) — cả 2 đều có department/doanhThuThuc
+        const filterEmployee = (emp: { department: string; doanhThuThuc: number }) => {
             if (emp.department) {
                 const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
                 if (excludedKeywords.some(keyword => emp.department.toLowerCase().includes(keyword))) {
@@ -115,7 +116,7 @@ export const useEmployeeAnalysisData = () => {
         if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
 
         // Pre-build O(1) lookup Map for sellers
-        const sellerMap = new Map<string, any>();
+        const sellerMap = new Map<string, Employee>();
         const sellers = employeeAnalysisData.fullSellerArray;
         for (let i = 0, len = sellers.length; i < len; i++) {
             const emp = sellers[i];

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,9 +33,9 @@ export function usePendingApprovalCount() {
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('status', 'in', ['pending', 'new']));
 
-        const processSnapshot = (snapshot: any) => {
+        const processSnapshot = (snapshot: QuerySnapshot<DocumentData>) => {
             let pendingCount = 0;
-            snapshot.forEach((doc: any) => {
+            snapshot.forEach((doc) => {
                 const docData = doc.data() as PendingUserDoc;
                 if (userRole === 'admin') {
                     pendingCount++;

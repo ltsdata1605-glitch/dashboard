@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Status, AppState } from '../types';
+import type { Status, AppState, CrossSellingConfig } from '../types';
+import type { DepartmentMap } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 
 // Import specialized hooks
@@ -27,7 +28,7 @@ export const useDashboardLogic = () => {
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(false);
     const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'changelog' | null>(null);
-    const [modalData, setModalData] = useState<any>(null);
+    const [modalData, setModalData] = useState<{ employeeName: string } | null>(null);
     const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
 
     // 1. Filter State Management
@@ -193,7 +194,7 @@ export const useDashboardLogic = () => {
         await dbService.saveGtdhTargets(newTargets);
     });
 
-    const updateCrossSellingConfig = useStableCallback(async (config: any) => {
+    const updateCrossSellingConfig = useStableCallback(async (config: CrossSellingConfig) => {
         setCrossSellingConfig(config);
         await dbService.saveCrossSellingConfig(config);
     });
@@ -208,7 +209,7 @@ export const useDashboardLogic = () => {
         await dbService.saveKpiTargets(targets);
     });
 
-    const updateDepartmentMap = useStableCallback(async (map: any) => {
+    const updateDepartmentMap = useStableCallback(async (map: DepartmentMap) => {
         setDepartmentMap(map);
         await dbService.saveDepartmentMap(map);
     });

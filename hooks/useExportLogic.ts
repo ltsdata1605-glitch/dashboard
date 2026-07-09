@@ -7,6 +7,21 @@ import type { ExportMode } from '../services/uiService';
 import { COL } from '../constants';
 import { getRowValue, getErrorMessage } from '../utils/dataUtils';
 
+// Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
+// chỉ gõ kiểu phần gọi ở hook này.
+interface ExportImageOptions {
+    elementsToHide?: string[];
+    forceOpenDetails?: boolean;
+    scale?: number;
+    isCompactTable?: boolean;
+    captureAsDisplayed?: boolean;
+    forcedWidth?: number | null;
+    fitCategoryColumn?: boolean;
+    fitAllColumns?: boolean;
+    mode?: ExportMode;
+    onCloneReady?: ((clone: HTMLElement) => void) | null;
+}
+
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
     processedData: ProcessedData | null;
@@ -27,7 +42,7 @@ export const useExportLogic = ({
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
-    const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: any = {}) => {
+    const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}) => {
         if (element) {
             setIsExporting(true);
             showExportOverlay('Đang xuất ảnh...');
@@ -95,7 +110,7 @@ export const useExportLogic = ({
                             fullSellerArray: processedData.employeeData.fullSellerArray,
                             validSalesData: processedData.filteredValidSalesData,
                             productConfig: productConfig,
-                            onExport: async (el: HTMLElement, fn: string, opts?: any) => { await exportElementAsImage(el, fn, opts); },
+                            onExport: async (el: HTMLElement, fn: string, opts?: ExportImageOptions) => { await exportElementAsImage(el, fn, opts); },
                             isBatchExporting: true
                         })
                     );

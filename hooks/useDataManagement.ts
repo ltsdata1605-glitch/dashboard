@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, startTransition, useCallback, useRef } from 'react';
-import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppState, UploadedFileRegistryItem } from '../types';
+import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppState, UploadedFileRegistryItem, CrossSellingConfig } from '../types';
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
@@ -38,7 +38,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
     const [gtdhTargets, setGtdhTargets] = useState<Record<string, number>>({});
     const [kpiTargets, setKpiTargets] = useState<{ hieuQua: number, traGop: number, gtdh?: number }>({ hieuQua: 40, traGop: 45, gtdh: 1 });
     const [kpiCardsConfig, setKpiCardsConfig] = useState<import('../types').KpiCardConfig[]>([]);
-    const [crossSellingConfig, setCrossSellingConfig] = useState<any>(null);
+    const [crossSellingConfig, setCrossSellingConfig] = useState<CrossSellingConfig | null>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
@@ -199,7 +199,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             for (const key of Array.from(allHeavyKeys)) {
                                 if (!isHeavySyncKey(key)) continue;
 
-                                const localValue = await dbService.getSetting<any>(key);
+                                const localValue = await dbService.getSetting<unknown>(key);
                                 const localTime = await dbService.getSetting<number>(`lastModified_${key}`) || 0;
                                 const cloudItem = heavyCloudData[key];
                                 const cloudTime = cloudItem?.updatedAt || 0;
@@ -327,7 +327,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             if (shouldDownload) {
                                 console.warn("[Background Check] Có thể có cấu hình mới, bắt đầu tải toàn bộ...");
                                 const latestConfig = await loadConfigFromSheet(configUrl, () => {});
-                                const serializeConfig = (c: any) => JSON.stringify(c, (key, value) => (value instanceof Set ? Array.from(value).sort() : value));
+                                const serializeConfig = (c: ProductConfig) => JSON.stringify(c, (key, value) => (value instanceof Set ? Array.from(value).sort() : value));
                                 if (serializeConfig(config) !== serializeConfig(latestConfig)) {
                                     console.warn("Phát hiện cấu hình ProductConfig mới từ Google Sheet, tự động nạp ngầm & lưu lên mây...");
                                     dbService.saveProductConfig(latestConfig, configUrl).catch(console.error);

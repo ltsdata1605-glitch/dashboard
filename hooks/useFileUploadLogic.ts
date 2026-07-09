@@ -1,7 +1,7 @@
 import { useState, useRef, startTransition, useEffect } from 'react';
 // @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
-import type { DataRow, Status, AppState, ProductConfig } from '../types';
+import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterState } from '../types';
 import type { User } from 'firebase/auth';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
@@ -17,11 +17,11 @@ interface FileUploadLogicProps {
     originalData: DataRow[];
     setOriginalData: (data: DataRow[]) => void;
     setDepartmentMap: (map: DepartmentMap | null) => void;
-    setProcessedData: (data: any) => void;
+    setProcessedData: (data: ProcessedData | null) => void;
     setFileInfo: (info: { filename: string; savedAt: string } | null) => void;
     setAppState: (state: AppState) => void;
     setStatus: (status: Status) => void;
-    setFilterState?: (filters: any) => void;
+    setFilterState?: (filters: FilterState) => void;
     user?: User | null;
     onRegistryChange?: () => void;
 }
@@ -158,9 +158,9 @@ export const useFileUploadLogic = ({
                 const file = files[i];
                 
                 // Spin up worker for this specific file
-                const workerResult = await new Promise<any>((resolve, reject) => {
+                const workerResult = await new Promise<string | DataRow[]>((resolve, reject) => {
                     let worker: Worker;
-                    let timeoutId: any;
+                    let timeoutId: ReturnType<typeof setTimeout>;
 
                     const cleanup = () => {
                         if (timeoutId) clearTimeout(timeoutId);

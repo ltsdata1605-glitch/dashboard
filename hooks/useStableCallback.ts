@@ -8,6 +8,7 @@ import { useRef, useCallback, useInsertionEffect } from 'react';
  * của Provider đổi reference mỗi render — tránh re-render cascade toàn bộ consumer
  * mỗi khi có state cục bộ không liên quan thay đổi (RULES.md — hiệu năng Dashboard).
  */
+// any: ràng buộc generic chuẩn của TS để bọc mọi function bất kỳ — dùng unknown sẽ chặn suy luận Parameters<T>/ReturnType<T> cụ thể ở nơi gọi
 export function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
     const ref = useRef(fn);
     useInsertionEffect(() => {

@@ -121,7 +121,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
 
     // Lắng nghe sự thay đổi của IndexedDB (từ đồng bộ đám mây) để cập nhật nóng vào UI, tránh cache cũ
     useEffect(() => {
-        const handleSettingChanged = async (e: any) => {
+        const handleSettingChanged = async (e: CustomEvent<{ key: string; source?: string }>) => {
             const changedKey = e.detail?.key;
             const source = e.detail?.source;
             if (!changedKey) return;
