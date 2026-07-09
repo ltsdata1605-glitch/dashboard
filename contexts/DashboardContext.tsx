@@ -1,7 +1,8 @@
 
 import React from 'react';
-import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, EmployeeData, PendingExport } from '../types';
+import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, EmployeeData, PendingExport, CrossSellingConfig } from '../types';
 import { DepartmentMap } from '../services/dataService';
+import type { ExportImageOptions } from '../hooks/useExportLogic';
 
 
 interface DashboardContextType {
@@ -19,8 +20,8 @@ interface DashboardContextType {
     employeeAnalysisData: EmployeeData | null;
     openPerformanceModal: (employeeName: string) => void;
     handleBatchExport: (employees: Employee[]) => void;
-    handleBatchKhoExport: (element: HTMLElement | null, filenamePrefix: string, options?: any) => Promise<void>;
-    handleExport: (element: HTMLElement | null, filename: string, options?: any) => Promise<void>;
+    handleBatchKhoExport: (element: HTMLElement | null, filenamePrefix: string, options?: ExportImageOptions) => Promise<void>;
+    handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<void>;
     isProcessing: boolean;
     isExporting: boolean;
     pendingExport: PendingExport | null;
@@ -37,8 +38,8 @@ interface DashboardContextType {
     deleteGtdhTarget: (nhomHang: string) => void;
     kpiTargets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number };
     updateKpiTargets: (targets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number }) => void;
-    crossSellingConfig: any;
-    updateCrossSellingConfig: (config: any) => void;
+    crossSellingConfig: CrossSellingConfig | null;
+    updateCrossSellingConfig: (config: CrossSellingConfig) => void;
     kpiCardsConfig: import('../types').KpiCardConfig[];
     updateKpiCardsConfig: (config: import('../types').KpiCardConfig[]) => void;
     isLuyKe: boolean;

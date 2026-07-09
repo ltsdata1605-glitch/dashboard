@@ -33,10 +33,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         cleanupGarbageKeys().catch(console.error);
         Promise.all([
-            getSetting<any>('cached_user_role'),
+            getSetting<'admin' | 'manager' | 'employee' | 'pending'>('cached_user_role'),
             getSetting<string>('cached_dept_id'),
             getSetting<string>('cached_emp_name'),
-            getSetting<any>('cached_user_status')
+            getSetting<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('cached_user_status')
         ]).then(([r, d, e, s]) => {
             if (r) setUserRole(r);
             if (d) setDepartmentId(d);

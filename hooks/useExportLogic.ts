@@ -8,8 +8,8 @@ import { COL } from '../constants';
 import { getRowValue, getErrorMessage } from '../utils/dataUtils';
 
 // Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
-// chỉ gõ kiểu phần gọi ở hook này.
-interface ExportImageOptions {
+// chỉ gõ kiểu phần gọi ở hook này. Export để DashboardContext.tsx dùng lại.
+export interface ExportImageOptions {
     elementsToHide?: string[];
     forceOpenDetails?: boolean;
     scale?: number;
