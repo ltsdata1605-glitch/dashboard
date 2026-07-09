@@ -6,7 +6,7 @@ import { db } from './firebase';
 // đọc/ghi đúng path 'users/{uid}/schedules/{key}' như bản gốc — cùng project Firestore
 // (dashboa-7e20b) nên dữ liệu không đổi, chỉ tách JS module theo RULES.md §2.0.
 
-export const syncScheduleToCloud = async (user: User, key: string, value: any) => {
+export const syncScheduleToCloud = async (user: User, key: string, value: unknown) => {
     if (!user) return;
     const safeKey = key.replace(/::/g, '__');
     const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);

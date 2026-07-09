@@ -10,7 +10,7 @@ import { Button } from '../../../components/shared/ui/Button';
 // cửa hàng — sanitize trước khi render qua dangerouslySetInnerHTML để chặn stored XSS.
 const sanitizeTicketHtml = (html?: string): string =>
     DOMPurify.sanitize(html || '', {
-        ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'span', 'br'],
+        ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'span', 'br', 'div', 'p'],
         ALLOWED_ATTR: ['style'],
     });
 

@@ -197,3 +197,15 @@ export interface ScheduleSuggestion {
   highCountStaff: StaffMember;
   lowCountStaff: StaffMember;
 }
+
+// Trạng thái UI được lưu IndexedDB/Firestore (key 'uiState' trong PhanCaView.tsx) — để
+// optional vì dữ liệu cũ có thể thiếu field mới thêm sau này.
+export interface PhanCaUiState {
+  monthYear?: string;
+  startDay?: number;
+  duration?: number;
+  includeTnInSbh?: boolean;
+  autoAddWeekendShifts?: boolean;
+  autoAddWeekendShift1?: boolean;
+  lastSupermarket?: string;
+}

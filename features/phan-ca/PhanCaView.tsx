@@ -28,6 +28,7 @@ import { Button } from '../../components/shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { syncScheduleToCloud, fetchScheduleFromCloud } from './services/firestoreSync';
 import { loginWithGoogleForceConsent } from './services/firebase';
+import type { GoogleSheetsRequest, RgbColor } from './services/googleSheetsService';
 import { 
   StaffMember, 
   ScheduleInfo, 
@@ -44,7 +45,8 @@ import {
   ShiftDefinitions, 
   BusySchedule,
   MonthlyStats,
-  ScheduleConfig
+  ScheduleConfig,
+  PhanCaUiState
 } from './types';
 import { createFullSchedule } from './services/scheduleService';
 import { abbreviateVietnameseName } from './utils/stringUtils';
@@ -195,7 +197,7 @@ const App: React.FC = () => {
     const initApp = async () => {
       await idb.initDB();
       const savedSupermarkets = await syncAndLoadKey<string[]>('meta_supermarkets', []);
-      const savedUiState = await syncAndLoadKey<any>('uiState', null);
+      const savedUiState = await syncAndLoadKey<PhanCaUiState | null>('uiState', null);
       lastSyncedRef.current['meta_supermarkets'] = JSON.stringify(savedSupermarkets);
       if (savedUiState) {
           lastSyncedRef.current['uiState'] = JSON.stringify(savedUiState);
@@ -332,7 +334,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!user || !isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
     const timer = setTimeout(async () => {
-      const syncIfChanged = async (key: string, data: any) => {
+      const syncIfChanged = async (key: string, data: unknown) => {
         const serialized = JSON.stringify(data);
         if (lastSyncedRef.current[key] === serialized) return;
         try {
@@ -436,6 +438,7 @@ const App: React.FC = () => {
             const XLSX = await import('xlsx');
             const workbook = XLSX.read(data, { type: 'array' });
             const sheetName = workbook.SheetNames[0];
+            // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
             const json: any[][] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
             const imported: ImportedStaff[] = [];
             let currentDepartment = "";
@@ -687,7 +690,7 @@ const App: React.FC = () => {
     const XLSX = await import('xlsx');
     const sortedList = getSortedStaffForExport();
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
-    const data: any[][] = [['LỊCH PHÂN CA'], ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)]];
+    const data: (string | number)[][] = [['LỊCH PHÂN CA'], ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)]];
     sortedList.forEach(staff => {
         const row = [staff.name, Math.ceil(calculateSpecialHours(staff, includeTnInSbh)), Math.ceil(calculateTotalHours(staff))];
         for (let d = 1; d <= duration; d++) row.push(staff.schedule[d]?.role || '');
@@ -714,7 +717,7 @@ const App: React.FC = () => {
         const sortedList = getSortedStaffForExport();
         const [yearVal, monthVal] = monthYear.split('-').map(Number);
         // --- Build Rows ---
-        const rows: any[][] = [];
+        const rows: (string | number)[][] = [];
         // Row 0: Top Headers
         const row0 = ['STT', 'HỌ VÀ TÊN', 'GIỜ CÔNG', '', '', 'SỐ NGÀY SBH', '', '', 'SỐ LẦN', ''];
         for (let w = 0; w < Math.ceil(duration / 7); w++) {
@@ -737,7 +740,7 @@ const App: React.FC = () => {
             const normalHours = calculateNormalHours(staff);
             const totalHours = calculateTotalHours(staff);
             const stats = staff.stats;
-            const rowData: any[] = [
+            const rowData: (string | number)[] = [
                 i + 1,
                 staff.name,
                 Math.round(specialHours),
@@ -769,7 +772,7 @@ const App: React.FC = () => {
         });
         // --- Build Formatting Requests ---
         const formattingRequests = (sheetId: number) => {
-            const reqs: any[] = [];
+            const reqs: GoogleSheetsRequest[] = [];
             // Fix: Freeze 2 rows and 2 cols FIRST, before merging!
             reqs.push({
                 updateSheetProperties: {
@@ -899,7 +902,7 @@ const App: React.FC = () => {
                 });
             });
             // Conditional Formats for Tags
-            const addCondRule = (text: string, bg: any, fg: any) => {
+            const addCondRule = (text: string, bg: { red: number; green: number; blue: number }, fg: { red: number; green: number; blue: number }) => {
                 reqs.push({
                     addConditionalFormatRule: {
                         rule: {

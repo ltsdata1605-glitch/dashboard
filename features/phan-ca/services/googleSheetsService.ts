@@ -3,12 +3,23 @@
  * Creates a new Google Spreadsheet, writes data, shares it publicly, and returns the URL.
  */
 
+// Request object thô của Google Sheets batchUpdate API (mỗi request là 1 trong hàng chục
+// variant khác nhau: repeatCell/mergeCells/updateDimensionProperties/...) — chỉ dùng để
+// build rồi gửi thẳng qua fetch, không đọc lại field nào nên không cần model đầy đủ union type.
+export type GoogleSheetsRequest = Record<string, unknown>;
+
+export interface RgbColor {
+    red: number;
+    green: number;
+    blue: number;
+}
+
 interface SheetExportOptions {
     title: string;
     headers?: string[];
     rows: (string | number)[][];
     sheetName?: string;
-    formattingRequests?: any[] | ((sheetId: number) => any[]);
+    formattingRequests?: GoogleSheetsRequest[] | ((sheetId: number) => GoogleSheetsRequest[]);
 }
 
 /**
@@ -96,7 +107,7 @@ export async function exportToGoogleSheet(
     // 3. Format header row (bold, background color, auto-resize)
     const numCols = allRows[0]?.length || 0;
     
-    let defaultRequests: any[] = [];
+    let defaultRequests: GoogleSheetsRequest[] = [];
     if (headers) {
         defaultRequests = [
             {
