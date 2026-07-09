@@ -10,6 +10,9 @@ export interface Status {
     progress: number;
 }
 
+// any: 1 dòng dữ liệu Excel/báo cáo thô — tên cột và kiểu giá trị mỗi ô (string/number/
+// Date/null) khác nhau tùy loại file, dùng ở hàng nghìn call site khắp cả 4 khu vực nên
+// không thể siết kiểu cụ thể hơn ở đây (xem utils/dataUtils.ts để biết cách đọc an toàn).
 export type DataRow = { [key: string]: any };
 
 export interface ProductConfig {
@@ -169,6 +172,17 @@ export interface ColumnFilterCriteria {
     productCodes: string[];
 }
 
+// Khớp shape FormattingRule cục bộ trong
+// components/employees/modals/column-config/FormattingRulesForm.tsx
+export interface CustomColumnFormattingRule {
+    id: number;
+    condition: string;
+    value1: string;
+    value2: string;
+    color: string;
+    textColor: string;
+}
+
 export interface CustomColumnConfig {
     id: string; // unique UUID cho cột
     name: string; // Tên hiển thị cột (VD: SL MLN)
@@ -191,7 +205,16 @@ export interface CustomColumnConfig {
         decimalPlaces?: number;
         formatAs?: 'percentage' | 'number';
     };
-    [key: string]: any;
+
+    formattingRules?: CustomColumnFormattingRule[];
+}
+
+// Hình dạng percentageConfig cũ ở cấp tab (trước khi tách numerator/denominator filters
+// như CustomColumnConfig hiện tại) — xem cách đọc trong hooks/useEmployeeAnalysisLogic.ts.
+interface LegacyExploitationTabPercentageConfig {
+    numeratorMetric?: 'quantity' | 'revenue';
+    baseMetric?: 'quantity' | 'revenue';
+    filters?: ColumnFilterCriteria;
 }
 
 export interface CustomExploitationTabConfig {
@@ -203,9 +226,9 @@ export interface CustomExploitationTabConfig {
     columns: CustomColumnConfig[];
 
     // Legacy fields for backward compatibility
-    filters?: any;
-    displayOptions?: any;
-    percentageConfig?: any;
+    filters?: ColumnFilterCriteria;
+    displayOptions?: { showQuantity: boolean; showRevenue: boolean; showPercentage: boolean };
+    percentageConfig?: LegacyExploitationTabPercentageConfig;
 }
 
 // Input shape passed từ CustomExploitationTabModal khi lưu (chưa có id/order với tab mới)

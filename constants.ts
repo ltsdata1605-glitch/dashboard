@@ -127,7 +127,10 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'bh_dmx_dt', order: 46, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Bảo hiểm ĐMX', metricType: 'revenue', mainHeader: 'BẢO HIỂM ĐMX', subHeader: 'DT' },
 ];
 
-export const DEFAULT_INDUSTRY_COLUMNS: any[] = [
+// any: hằng số không có nơi nào import/dùng trong repo hiện tại (đã kiểm tra bằng grep) —
+// giữ Record<string, unknown> thay vì any thô, không ép về IndustryColumnConfig vì shape
+// literal bên dưới lồng metricType trong filters khác với field top-level của type đó.
+export const DEFAULT_INDUSTRY_COLUMNS: Record<string, unknown>[] = [
     { id: 'dt_thuc', order: 1, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'Doanh Thu', subHeader: 'DT Thực' },
     { id: 'dt_qd', order: 2, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenueQD' }, mainHeader: 'Doanh Thu', subHeader: 'DTQĐ' },
     // SP Chính
