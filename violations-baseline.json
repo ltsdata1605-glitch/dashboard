@@ -889,13 +889,18 @@
     "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
+  "features/sticker-event/stickerprinter/StickerModeToolbar.tsx": {
+    "nonSemanticColor": 4,
+    "missingDarkVariant": 0,
+    "missingMobileToolbar": 0
+  },
   "features/sticker-event/stickerprinter/StickerPrintPreview.tsx": {
     "nonSemanticColor": 1,
     "missingDarkVariant": 17,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/StickerPrinterView.tsx": {
-    "nonSemanticColor": 5,
+    "nonSemanticColor": 1,
     "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
