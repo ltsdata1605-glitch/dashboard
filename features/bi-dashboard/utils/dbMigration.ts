@@ -35,7 +35,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
     }
 
     // 2. Đọc toàn bộ dữ liệu từ ClusterDataDB
-    let oldData: { key: string; value: any }[] = [];
+    let oldData: { key: string; value: unknown }[] = [];
     try {
         const oldDb = await openDb(OLD_DB_NAME, 1, (db) => {
             if (!db.objectStoreNames.contains(OLD_STORE_NAME)) {
@@ -86,7 +86,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
             keysReq.onerror = () => resolve(new Set());
         });
 
-        const writesToMake: { key: string; value: any }[] = [];
+        const writesToMake: { key: string; value: unknown }[] = [];
         for (const item of oldData) {
             const originalKey = item.key;
             const prefixedKey = `${BI_PREFIX}${originalKey}`;
@@ -176,20 +176,20 @@ export async function migrateOldAvatars(): Promise<void> {
                 keysReq.onsuccess = () => resolve(keysReq.result);
                 keysReq.onerror = () => reject(keysReq.error);
             }),
-            new Promise<any[]>((resolve, reject) => {
+            new Promise<unknown[]>((resolve, reject) => {
                 valuesReq.onsuccess = () => resolve(valuesReq.result);
                 valuesReq.onerror = () => reject(valuesReq.error);
             })
         ]);
         
         // Map các key đến value tương ứng để tra cứu nhanh trong bộ nhớ
-        const dataMap = new Map<string, any>();
+        const dataMap = new Map<string, unknown>();
         for (let i = 0; i < keys.length; i++) {
             dataMap.set(String(keys[i]), values[i]);
         }
 
         const avatarRegex = /^bi_avatar-(.+?)-([^-]+ - \d+)$/;
-        const writesToMake: { key: string; value: any }[] = [];
+        const writesToMake: { key: string; value: unknown }[] = [];
 
         for (const keyStr of dataMap.keys()) {
             const match = keyStr.match(avatarRegex);

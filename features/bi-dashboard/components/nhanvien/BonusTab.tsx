@@ -7,7 +7,7 @@ import { XIcon, UsersIcon, UploadIcon, ClockIcon, ViewListIcon, ViewGridIcon, Ca
 import { CalendarRange } from 'lucide-react';
 import { useMonthlyBonusArchive } from '../../hooks/useMonthlyBonusArchive';
 import { MonthlyBonusTable } from './bonus/MonthlyBonusTable';
-import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
+import { Employee, BonusMetrics, RevenueRow } from '../../types/nhanVienTypes';
 import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { parseBonusBlock } from '../../utils/bonusParser';
 
@@ -212,10 +212,25 @@ function getWeekdayAbbr(dateStr: string): string {
     return `T${day + 1}`;
 }
 
+// 1 dòng hiển thị trong bảng thưởng: hoặc là nhân viên (spread Employee + rank), hoặc dòng tổng theo phòng ban/tổng cộng
+interface BonusDisplayRow {
+    type?: 'total' | 'department' | 'employee';
+    name: string;
+    originalName?: string;
+    department?: string;
+    rank?: number;
+    sumDtqd?: number;
+    sumErp?: number;
+    sumTnong?: number;
+    sumTong?: number;
+    sumDkien?: number;
+    dailySums?: Record<string, number>;
+}
+
 export const BonusView: React.FC<{
     employees: Employee[];
     bonusData: Record<string, BonusMetrics | null>;
-    revenueRows: any;
+    revenueRows: RevenueRow[];
     supermarketName: string;
     activeSupermarkets: string[];
     onEmployeeClick: (emp: Employee) => void;
@@ -410,7 +425,7 @@ export const BonusView: React.FC<{
 
     const revenueMap = useMemo(() => {
         if (isActive === false) return new Map();
-        const m = new Map(); revenueRows.forEach((r: any) => r.type === 'employee' && m.set(r.originalName, r)); return m;
+        const m = new Map<string, RevenueRow>(); revenueRows.forEach((r) => r.type === 'employee' && r.originalName && m.set(r.originalName, r)); return m;
     }, [revenueRows, isActive]);
 
     const displayList = useMemo(() => {
@@ -455,7 +470,7 @@ export const BonusView: React.FC<{
                 } else { vA = (bA as unknown as Record<string, unknown>)?.[sortField] as number || 0; vB = (bB as unknown as Record<string, unknown>)?.[sortField] as number || 0; }
                 return sortDir === 'asc' ? vA - vB : vB - vA;
             });
-            const result: any[] = list.map((e, idx) => ({ ...e, rank: idx + 1 }));
+            const result: BonusDisplayRow[] = list.map((e, idx) => ({ ...e, rank: idx + 1 }));
             if (result.length > 0) {
                 const sumDtqd = result.reduce((s, e) => s + (revenueMap.get(e.originalName)?.dtqd || 0), 0);
                 const sumErp = result.reduce((s, e) => s + (bonusData[e.originalName]?.erp || 0), 0);
@@ -563,7 +578,7 @@ export const BonusView: React.FC<{
             return sortDir === 'asc' ? a.sortValue - b.sortValue : b.sortValue - a.sortValue;
         });
 
-        let out: any[] = [];
+        let out: BonusDisplayRow[] = [];
         let grandSumDtqd = 0, grandSumErp = 0, grandSumTnong = 0, grandSumTong = 0, grandSumDkien = 0;
         const grandDailySums: Record<string, number> = {};
         allDates.forEach(dateStr => {
@@ -988,7 +1003,7 @@ export const BonusView: React.FC<{
                                             return (
                                                 <tr key={item.originalName} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all ${isHighlighted ? 'bg-amber-50/70 dark:bg-amber-900/10' : ''}`}>
                                                     <td className="px-2 py-1 border-r border-slate-200 dark:border-slate-700">
-                                                        <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item)} onKeyDown={onActivateKey(() => onEmployeeClick(item))}>
+                                                        <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item as Employee)} onKeyDown={onActivateKey(() => onEmployeeClick(item as Employee))}>
                                                             {item.rank && <MedalBadge rank={item.rank} />}
                                                             <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} />
                                                             <span className={`text-[13px] font-bold truncate ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>{item.name}</span>

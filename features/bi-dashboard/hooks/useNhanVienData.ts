@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
-import { RevenueRow, BonusMetrics, ManualDeptMapping } from '../types/nhanVienTypes';
+import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
 import { formatEmployeeName } from '../utils/nhanVienHelpers';
 import { useWorker } from './useWorker';
 
@@ -162,25 +162,25 @@ export function useNhanVienData(isActive?: boolean) {
         return map;
     }, [parsedRevenueBase, aggregatedData.manualMapping, hiddenEmployeesSet, isActive]);
 
-    const [installmentRows, setInstallmentRows] = useState<any[]>([]);
+    const [installmentRows, setInstallmentRows] = useState<InstallmentRow[]>([]);
     useEffect(() => {
         if (!aggregatedData.traGop || isActive === false) return;
         let isMounted = true;
         runWorkerTask('PARSE_INSTALLMENT', { text: aggregatedData.traGop, employeeDepartmentMap }).then(rows => {
             if (isMounted && rows) {
-                setInstallmentRows(rows.filter((r: any) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
+                setInstallmentRows(rows.filter((r: InstallmentRow) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
             }
         });
         return () => { isMounted = false; };
     }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
-    const [banKemRows, setBanKemRows] = useState<any[]>([]);
+    const [banKemRows, setBanKemRows] = useState<CrossSellingRow[]>([]);
     useEffect(() => {
         if (!aggregatedData.banKem || isActive === false) return;
         let isMounted = true;
         runWorkerTask('PARSE_CROSS_SELLING', { text: aggregatedData.banKem, employeeDepartmentMap }).then(rows => {
             if (isMounted && rows) {
-                setBanKemRows(rows.filter((r: any) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
+                setBanKemRows(rows.filter((r: CrossSellingRow) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
             }
         });
         return () => { isMounted = false; };

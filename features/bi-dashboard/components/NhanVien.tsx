@@ -41,7 +41,7 @@ const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: T
 
 // Hằng số ổn định — tránh tạo reference mới mỗi render gây re-render child thừa
 const EMPTY_MAP = new Map();
-const EMPTY_ARRAY: any[] = [];
+const EMPTY_ARRAY: never[] = [];
 const NOOP = () => {};
 
 interface NhanVienProps {
@@ -150,7 +150,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 const criterion = key as Criterion;
                 filteredResult[criterion] = {
                     headers: parsed[criterion].headers,
-                    employees: parsed[criterion].employees.filter((emp: any) => !hiddenSet.has(emp.originalName || ''))
+                    employees: parsed[criterion].employees.filter((emp: CompetitionEmployeeRow) => !hiddenSet.has(emp.originalName || ''))
                 };
             });
             setCompetitionData(filteredResult);
@@ -201,19 +201,19 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             const smDataResults = await Promise.all(activeSupermarkets.map(sm => {
                 const safeName = shortenSupermarketName(sm);
                 return Promise.all([
-                    db.get(`comptarget-${safeName}-targets`),
-                    db.get(`targethero-${safeName}-departmentweights`),
+                    db.get<Record<string, number>>(`comptarget-${safeName}-targets`),
+                    db.get<Record<string, number>>(`targethero-${safeName}-departmentweights`),
                     sm // giữ lại tên SM để mapping
                 ]);
             }));
 
-            const smDataMap = new Map<string, { competitionTargets: any; departmentWeights: any }>();
+            const smDataMap = new Map<string, { competitionTargets: Record<string, number>; departmentWeights: Record<string, number> }>();
             smDataResults.forEach(([compTargets, deptWeights, sm]) => {
-                smDataMap.set(sm as string, { competitionTargets: compTargets, departmentWeights: deptWeights });
+                smDataMap.set(sm as string, { competitionTargets: compTargets ?? {}, departmentWeights: deptWeights ?? {} });
             });
-            
+
             const targets = parseEmployeeCompetitionTargets(lines, activeSupermarkets, smDataMap, allEmployees);
-            (window as any).debugEmployeeCompetitionTargets = targets;
+            (window as unknown as { debugEmployeeCompetitionTargets: unknown }).debugEmployeeCompetitionTargets = targets;
             setEmployeeCompetitionTargets(targets);
         };
         fetchTargets();

@@ -43,7 +43,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
     
     const { runWorkerTask } = useWorker();
 
-    const [summaryRealtimeParsed, setSummaryRealtimeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: any[] } }>({ kpis: {}, table: { headers: [], rows: [] } });
+    const [summaryRealtimeParsed, setSummaryRealtimeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: string[][] } }>({ kpis: {}, table: { headers: [], rows: [] } });
     useEffect(() => {
         if (!summaryRealtime || isActive === false) return;
         let isMounted = true;
@@ -83,8 +83,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, [competitionLuyKe, isActive]);
 
-    const [industryRealtimeParsed, setIndustryRealtimeParsed] = useState<any>(null);
-    const [industryLuyKeParsed, setIndustryLuyKeParsed] = useState<any>(null);
+    const [industryRealtimeParsed, setIndustryRealtimeParsed] = useState<ReturnType<typeof parseIndustryRealtimeData> | null>(null);
+    const [industryLuyKeParsed, setIndustryLuyKeParsed] = useState<ReturnType<typeof parseIndustryLuyKeData> | null>(null);
     const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
 
     useEffect(() => {
@@ -181,10 +181,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
             const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
-                const adj = await db.get(`comptarget-${safeName}-targets`);
+                const adj = await db.get<Record<string, number>>(`comptarget-${safeName}-targets`);
                 return { supermarketName, adjustments: adj || {} };
             }));
-            const adjustmentsMap = new Map<string, any>();
+            const adjustmentsMap = new Map<string, Record<string, number>>();
             adjustmentsResults.forEach(res => adjustmentsMap.set(res.supermarketName, res.adjustments));
             
             for (const supermarketName of supermarketNames) {
@@ -250,10 +250,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
             const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
-                const adj = await db.get(`comptarget-${safeName}-targets`);
+                const adj = await db.get<Record<string, number>>(`comptarget-${safeName}-targets`);
                 return { supermarketName, adjustments: adj || {} };
             }));
-            const adjustmentsMap = new Map<string, any>();
+            const adjustmentsMap = new Map<string, Record<string, number>>();
             adjustmentsResults.forEach(res => adjustmentsMap.set(res.supermarketName, res.adjustments));
             
             for (const supermarketName of supermarketNames) {
