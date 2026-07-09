@@ -1390,7 +1390,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                      .draw-ticket-block .input-code-left,
                      .draw-ticket-block .display-code-left,
                      .draw-ticket-block .display-code-right {
-                         font-size: 14pt !important;
+                         font-size: 23pt !important;
                          line-height: 1.1 !important;
                      }
                      .draw-ticket-block .input-footer-left,
