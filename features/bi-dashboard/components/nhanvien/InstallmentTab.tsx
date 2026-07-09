@@ -15,8 +15,12 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/ui
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
+
+// Dòng nhân viên/phòng ban/tổng đã gộp thêm rank (thứ hạng) và oldRow (dữ liệu tháng trước để so sánh)
+type InstallmentDisplayRow = InstallmentRow & { rank?: number; oldRow?: InstallmentRow };
+
 interface InstallmentDesktopRowProps {
-    row: any;
+    row: InstallmentDisplayRow;
     isTotal: boolean;
     isHighlighted: boolean;
     supermarketName: string;
@@ -55,7 +59,7 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
 });
 
 interface InstallmentMobileRowProps {
-    row: any;
+    row: InstallmentDisplayRow;
     isHighlighted: boolean;
     supermarketName: string;
     f: Intl.NumberFormat;
@@ -125,11 +129,11 @@ const InstallmentTab: React.FC<{
     const [hidePercent, setHidePercent] = useState(false);
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-installment-${supermarketName}`, '');
-    const prevMonthRows = useMemo(() => {
+    const prevMonthRows = useMemo((): InstallmentRow[] => {
         try {
             if (isActive === false) return [];
             if (!prevMonthRaw) return [];
-            if (prevMonthRaw.startsWith('[')) return JSON.parse(prevMonthRaw);
+            if (prevMonthRaw.startsWith('[')) return JSON.parse(prevMonthRaw) as InstallmentRow[];
             const map: Record<string, string> = {};
             rows.forEach(r => { if(r.originalName) map[r.originalName] = r.department || ''; });
             return parseInstallmentData(prevMonthRaw, map);
@@ -158,8 +162,8 @@ const InstallmentTab: React.FC<{
         
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
         
-        const calculateRowWithComparison = (row: any) => {
-            const oldRow = prevMonthRows.find((pr:any) => pr.originalName === row.originalName);
+        const calculateRowWithComparison = (row: InstallmentRow): InstallmentDisplayRow => {
+            const oldRow = prevMonthRows.find((pr) => pr.originalName === row.originalName);
             return { ...row, oldRow };
         };
 
@@ -169,7 +173,7 @@ const InstallmentTab: React.FC<{
             const list = rows.filter(r => r.type === 'employee' && (isFiltering ? activeDepartments.includes(r.department!) : true))
                              .map(calculateRowWithComparison);
             list.sort((a, b) => {
-                let valA: any = 0, valB: any = 0;
+                let valA: string | number = 0, valB: string | number = 0;
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'totalDtSieuThi') { valA = a.totalDtSieuThi; valB = b.totalDtSieuThi; }
                 else if (sortConfig.key === 'totalPercent') { valA = a.totalPercent; valB = b.totalPercent; }
@@ -177,7 +181,7 @@ const InstallmentTab: React.FC<{
                     const idx = parseInt(sortConfig.key.replace('p-dt-', ''));
                     valA = a.providers[idx]?.dt || 0; valB = b.providers[idx]?.dt || 0;
                 }
-                const compare = typeof valA === 'string' ? valA.localeCompare(valB) : (valA - valB);
+                const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
             
@@ -193,7 +197,7 @@ const InstallmentTab: React.FC<{
                                       .map(calculateRowWithComparison);
             
             deptEmployees.sort((a, b) => {
-                let valA: any = 0, valB: any = 0;
+                let valA: string | number = 0, valB: string | number = 0;
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'totalDtSieuThi') { valA = a.totalDtSieuThi; valB = b.totalDtSieuThi; }
                 else if (sortConfig.key === 'totalPercent') { valA = a.totalPercent; valB = b.totalPercent; }
@@ -201,7 +205,7 @@ const InstallmentTab: React.FC<{
                     const idx = parseInt(sortConfig.key.replace('p-dt-', ''));
                     valA = a.providers[idx]?.dt || 0; valB = b.providers[idx]?.dt || 0;
                 }
-                const compare = typeof valA === 'string' ? valA.localeCompare(valB) : (valA - valB);
+                const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
 
@@ -235,7 +239,7 @@ const InstallmentTab: React.FC<{
              return sortConfig.direction === 'asc' ? a.sortValue - b.sortValue : b.sortValue - a.sortValue;
         });
 
-        const finalOutput: any[] = [];
+        const finalOutput: InstallmentDisplayRow[] = [];
         deptGroups.forEach(group => {
             if (group.employees.length > 0) {
                 finalOutput.push({ 
@@ -426,7 +430,7 @@ const InstallmentTab: React.FC<{
                                             return (
                                                 <tr key={`dept-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300 border-t border-b border-slate-200 dark:border-slate-700">
                                                     <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 font-extrabold">{row.name}</td>
-                                                    {row.providers.map((p: any, pIdx: number) => (
+                                                    {row.providers.map((p, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
                                                             {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}

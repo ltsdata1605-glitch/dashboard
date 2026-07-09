@@ -69,13 +69,14 @@ export interface CrossSellingRow {
     dtlk: number;
     billBk: number;
     pctBillBk: number;
-    billMngn: number;
-    pctBillMngn: number;
+    // Không có ở dòng tổng phòng ban/tổng cộng (chỉ tính cho từng nhân viên khi parse)
+    billMngn?: number;
+    pctBillMngn?: number;
+    slMngn?: number;
+    pctSpMngn?: number;
     totalBill: number;
     slBk: number;
     pctSpBk: number;
-    slMngn: number;
-    pctSpMngn: number;
     totalSl: number;
 }
 

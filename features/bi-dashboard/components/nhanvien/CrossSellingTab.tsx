@@ -13,6 +13,9 @@ import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 
+// Dòng nhân viên/phòng ban/tổng đã gộp thêm rank (thứ hạng) và oldRow (dữ liệu tháng trước để so sánh)
+type CrossSellingDisplayRow = CrossSellingRow & { rank?: number; oldRow?: CrossSellingRow };
+
 const ImportPrevMonthModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
@@ -102,7 +105,7 @@ const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }
 };
 
 interface CrossSellingDesktopRowProps {
-    row: any;
+    row: CrossSellingDisplayRow;
     isHighlighted: boolean;
     supermarketName: string;
     f: Intl.NumberFormat;
@@ -141,7 +144,7 @@ const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
 });
 
 interface CrossSellingMobileRowProps {
-    row: any;
+    row: CrossSellingDisplayRow;
     isHighlighted: boolean;
     supermarketName: string;
     f: Intl.NumberFormat;
@@ -206,14 +209,14 @@ const CrossSellingTab: React.FC<{
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bankem-view-mode', 'group');
 
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-bankem-${supermarketName}`, '');
-    const prevMonthRows = useMemo(() => {
+    const prevMonthRows = useMemo((): CrossSellingRow[] => {
         try {
             if (isActive === false) return [];
             if (!prevMonthRaw) return [];
             // Kiểm tra xem là chuỗi JSON hay văn bản dán
             if (prevMonthRaw.trim().startsWith('[') || prevMonthRaw.trim().startsWith('{')) {
                 const parsed = JSON.parse(prevMonthRaw);
-                return Array.isArray(parsed) ? parsed : [];
+                return Array.isArray(parsed) ? parsed as CrossSellingRow[] : [];
             }
             // Fallback cho dữ liệu dán văn bản từ HRM
             const map: Record<string, string> = {};
@@ -245,8 +248,8 @@ const CrossSellingTab: React.FC<{
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
 
-        const attachPrevMonth = (row: any) => {
-            const oldRow = prevMonthRows.find((pr: any) => pr.originalName === row.originalName);
+        const attachPrevMonth = (row: CrossSellingRow): CrossSellingDisplayRow => {
+            const oldRow = prevMonthRows.find((pr) => pr.originalName === row.originalName);
             return { ...row, oldRow };
         };
 
@@ -254,11 +257,11 @@ const CrossSellingTab: React.FC<{
             const list = rows.filter(r => r.type === 'employee' && (isFiltering ? activeDepartments.includes(r.department!) : true))
                 .map(attachPrevMonth);
             list.sort((a, b) => {
-                let valA: unknown = (a as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as Record<string, unknown>)[sortConfig.key];
+                let valA: unknown = (a as unknown as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as unknown as Record<string, unknown>)[sortConfig.key];
                 const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : ((valA as number) - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
-            const result = list.map((emp, idx) => ({ ...emp, rank: idx + 1 }));
+            const result: CrossSellingDisplayRow[] = list.map((emp, idx) => ({ ...emp, rank: idx + 1 }));
             if (result.length > 0) {
                 const sDtlk = result.reduce((s, e) => s + e.dtlk, 0);
                 const sTotalBill = result.reduce((s, e) => s + e.totalBill, 0);
@@ -266,7 +269,7 @@ const CrossSellingTab: React.FC<{
                 const sTotalSl = result.reduce((s, e) => s + e.totalSl, 0);
                 const sSlBk = result.reduce((s, e) => s + e.slBk, 0);
 
-                const oldTotal = prevMonthRows.find((pr: any) => pr.type === 'total');
+                const oldTotal = prevMonthRows.find((pr) => pr.type === 'total');
 
                 result.push({
                     type: 'total',
@@ -288,7 +291,7 @@ const CrossSellingTab: React.FC<{
             const deptEmployees = rows.filter(r => r.type === 'employee' && r.department === deptName)
                 .map(attachPrevMonth);
             deptEmployees.sort((a, b) => {
-                let valA: unknown = (a as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as Record<string, unknown>)[sortConfig.key];
+                let valA: unknown = (a as unknown as Record<string, unknown>)[sortConfig.key], valB: unknown = (b as unknown as Record<string, unknown>)[sortConfig.key];
                 const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : ((valA as number) - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
@@ -299,7 +302,7 @@ const CrossSellingTab: React.FC<{
             const sumSlBk = deptEmployees.reduce((s, e) => s + e.slBk, 0);
             const sumTotalSl = deptEmployees.reduce((s, e) => s + e.totalSl, 0);
 
-            const oldDept = prevMonthRows.find((pr: any) => (pr.type === 'department' && pr.originalName === deptName) || (pr.type === 'department' && pr.name === deptName));
+            const oldDept = prevMonthRows.find((pr) => (pr.type === 'department' && pr.originalName === deptName) || (pr.type === 'department' && pr.name === deptName));
 
             return {
                 name: deptName,
@@ -321,7 +324,7 @@ const CrossSellingTab: React.FC<{
             return sortConfig.direction === 'asc' ? a.sortValue - b.sortValue : b.sortValue - a.sortValue;
         });
 
-        const finalOutput: any[] = [];
+        const finalOutput: CrossSellingDisplayRow[] = [];
         let grandDtlk = 0, grandBillBk = 0, grandTotalBill = 0, grandSlBk = 0, grandTotalSl = 0;
 
         deptGroups.forEach(group => {

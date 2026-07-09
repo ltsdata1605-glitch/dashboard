@@ -53,7 +53,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, [summaryRealtime, isActive]);
 
-    const [summaryLuyKeParsed, setSummaryLuyKeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: any[] } }>({ kpis: {}, table: { headers: [], rows: [] } });
+    const [summaryLuyKeParsed, setSummaryLuyKeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: string[][] } }>({ kpis: {}, table: { headers: [], rows: [] } });
     useEffect(() => {
         if (!summaryLuyKe || isActive === false) return;
         let isMounted = true;
