@@ -212,10 +212,46 @@ export default function StickerPrinterView() {
     
     // Ticket draw state
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { id: '1', title: '', code: '1', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '2', title: '', code: '2', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '3', title: '', code: '3', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '4', title: '', code: '4', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { 
+            id: '1', 
+            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
+            code: '1', 
+            footer: '', 
+            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
+            contentTopRight: 'TRÚNG', 
+            contentBottom: '', 
+            contentBottomRight: '1 MÁY GIẶT' 
+        },
+        { 
+            id: '2', 
+            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
+            code: '2', 
+            footer: '', 
+            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
+            contentTopRight: 'TRÚNG', 
+            contentBottom: '', 
+            contentBottomRight: '1 MÁY GIẶT' 
+        },
+        { 
+            id: '3', 
+            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
+            code: '3', 
+            footer: '', 
+            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
+            contentTopRight: 'TRÚNG', 
+            contentBottom: '', 
+            contentBottomRight: '1 MÁY GIẶT' 
+        },
+        { 
+            id: '4', 
+            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
+            code: '4', 
+            footer: '', 
+            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
+            contentTopRight: 'TRÚNG', 
+            contentBottom: '', 
+            contentBottomRight: '1 MÁY GIẶT' 
+        },
     ]);
     const [drawStartNumber, setDrawStartNumber] = useState<number>(1);
     const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4);
