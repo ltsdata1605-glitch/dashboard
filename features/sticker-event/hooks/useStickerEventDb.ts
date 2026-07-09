@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { getErrorMessage } from '../../../utils/dataUtils';
 import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Product, InventoryItem } from '../types';
+import { Product, InventoryItem, StickerEventUserData } from '../types';
 import { ManualProductWithId } from '../ManualInputModal';
 import { 
   saveData, 
@@ -23,7 +23,7 @@ import {
 
 interface UseStickerEventDbProps {
   user: User | null;
-  userData: any;
+  userData: StickerEventUserData | null;
   employeeName: string;
   displayedProducts: Product[];
   setDisplayedProducts: React.Dispatch<React.SetStateAction<Product[]>>;

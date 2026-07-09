@@ -4,6 +4,7 @@ import { XIcon, UserIcon, ShieldIcon, ShieldAlertIcon, Loader2Icon, Trash2Icon }
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
+import { StickerEventUserRecord } from './types';
 
 interface UserManagementModalProps {
     isOpen: boolean;
@@ -13,7 +14,7 @@ interface UserManagementModalProps {
 }
 
 const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClose, storeId, currentUserId }) => {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<StickerEventUserRecord[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{

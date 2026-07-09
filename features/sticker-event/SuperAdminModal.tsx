@@ -4,15 +4,18 @@ import { collection, query, where, getDocs, deleteDoc, doc, limit, Query, Docume
 import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 import { getErrorMessage } from '../../utils/dataUtils';
+import { StickerEventUserRecord } from './types';
 
 interface SuperAdminModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+type SuperAdminUserRow = StickerEventUserRecord & { id: string };
+
 const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) => {
   const [searchStoreId, setSearchStoreId] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<SuperAdminUserRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +36,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
         const snapStore = await getDocs(qStore);
         
         if (!snapStore.empty) {
-          setUsers(snapStore.docs.map(d => ({ id: d.id, ...d.data() })));
+          setUsers(snapStore.docs.map(d => ({ id: d.id, ...d.data() } as SuperAdminUserRow)));
           setLoading(false);
           return;
         }
@@ -43,7 +46,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       }
       
       const snapshot = await getDocs(q);
-      setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as SuperAdminUserRow)));
       
       if (snapshot.empty && trimmed) {
         setError('Không tìm thấy người dùng nào khớp với từ khóa.');

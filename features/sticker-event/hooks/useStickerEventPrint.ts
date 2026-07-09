@@ -60,7 +60,7 @@ export function useStickerEventPrint({
   const [isPrintSettingsLoaded, setIsPrintSettingsLoaded] = useState(false);
 
   useEffect(() => {
-      getSetting<any>('printSettings').then(savedSettings => {
+      getSetting<Partial<PrintSettings>>('printSettings').then(savedSettings => {
           if (savedSettings) {
               setPrintSettings({
                   ...masterDefaults,

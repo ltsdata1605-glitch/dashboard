@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { Product, InventoryItem } from '../types';
+import { Product, InventoryItem, StickerEventUserData } from '../types';
 import { 
   parseProductFile, 
   saveData, 
@@ -17,7 +17,7 @@ import {
 
 interface UseStickerEventFileProps {
   user: User | null;
-  userData: any;
+  userData: StickerEventUserData | null;
   employeeName: string;
   setEmployeeName: (name: string) => void;
   setIsEditingEmployeeName: (val: boolean) => void;

@@ -1,6 +1,6 @@
 import { db, auth } from '../firebase';
 import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
-import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem } from '../types';
+import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord } from '../types';
 
 enum OperationType {
   CREATE = 'create',
@@ -189,13 +189,13 @@ export const clearStoreDataOnFirestore = async (storeId: string, collectionName:
     }
 }
 
-export const fetchAllUsers = async (storeId: string) => {
+export const fetchAllUsers = async (storeId: string): Promise<StickerEventUserRecord[]> => {
     if (!storeId) return [];
     const usersRef = collection(db, 'users');
     try {
         const q = query(usersRef, where('storeId', '==', storeId), limit(100)); // Add limit to prevent massive reads
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => doc.data());
+        return snapshot.docs.map(doc => doc.data() as StickerEventUserRecord);
     } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'users');
         return [];

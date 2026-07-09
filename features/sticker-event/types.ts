@@ -27,6 +27,23 @@ export interface SavedList {
   totalItems: number;
 }
 
+// Dữ liệu doc Firestore users/{uid} (xem setDoc trong Login.tsx) — để optional vì
+// đọc từ cache sessionStorage/Firestore, không chắc luôn đủ field.
+export interface StickerEventUserData {
+  uid?: string;
+  username?: string;
+  email?: string;
+  role?: 'admin' | 'staff';
+  storeId?: string;
+  createdAt?: unknown;
+}
+
+// Dùng cho danh sách user lấy từ Firestore (fetchAllUsers/SuperAdminModal) — uid luôn có
+// vì đọc trực tiếp từ doc đã tồn tại, khác userData (user đang đăng nhập) có thể null.
+export interface StickerEventUserRecord extends StickerEventUserData {
+  uid: string;
+}
+
 export interface InventoryFilters {
   maSieuThi: string[];
   nganhHang: string[];

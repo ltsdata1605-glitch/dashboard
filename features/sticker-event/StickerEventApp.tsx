@@ -232,9 +232,9 @@ export default function App(): React.JSX.Element {
   const productListRef = useRef<HTMLDivElement>(null);
 
   // Bind DB hook functions for manual handlers
-  const handleManualSaveBound = async (product: any) => handleManualSave(product);
+  const handleManualSaveBound = async (product: ManualProductWithId) => handleManualSave(product);
   const handleManualDeleteBound = async (docId: string) => handleManualDelete(docId);
-  const handleManualUpdateBound = async (product: any) => handleManualUpdate(product);
+  const handleManualUpdateBound = async (product: ManualProductWithId) => handleManualUpdate(product);
 
   // Initialize data on login
   useEffect(() => {

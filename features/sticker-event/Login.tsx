@@ -3,9 +3,10 @@ import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { Button } from '../../components/shared/ui/Button';
+import { StickerEventUserData } from './types';
 
 interface LoginProps {
-  onLoginSuccess: (user: User, userData: any) => void;
+  onLoginSuccess: (user: User, userData: StickerEventUserData) => void;
 }
 
 // Firebase Auth ném FirebaseError (code + message), nhưng code trong file này cũng tự throw
