@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
@@ -85,9 +85,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             limit(20)
         );
 
-        const processPersonalSnapshot = (snapshot: any) => {
+        const processPersonalSnapshot = (snapshot: QuerySnapshot<DocumentData>) => {
             personalNotifs = [];
-            snapshot.forEach((docSnap: any) => {
+            snapshot.forEach((docSnap) => {
                 personalNotifs.push({ id: docSnap.id, ...docSnap.data() } as AppNotification);
             });
             updateCombinedNotifications();
@@ -100,9 +100,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             ? query(collection(db, 'users'), where('status', 'in', ['pending', 'new']))
             : null;
 
-        const processAccessSnapshot = (snapshot: any) => {
+        const processAccessSnapshot = (snapshot: QuerySnapshot<DocumentData>) => {
             accessNotifs = [];
-            snapshot.forEach((docSnap: any) => {
+            snapshot.forEach((docSnap) => {
                 const docData = docSnap.data();
                 if (docSnap.id === user.uid) return;
 

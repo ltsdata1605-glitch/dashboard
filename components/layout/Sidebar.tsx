@@ -25,22 +25,39 @@ import {
     Sticker,
     ClipboardCheck,
     ExternalLink,
-    Calendar
+    Calendar,
+    type LucideIcon
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 
-const NavItem = React.memo(({ 
-    item, 
-    isCollapsed, 
-    activeTab, 
-    expandedMenus, 
-    setExpandedMenus, 
-    setActiveTab, 
-    setIsMobileSidebarOpen 
-}: { 
-    item: any, 
+interface NavSubItem {
+    id: string;
+    label: string;
+    icon: LucideIcon;
+    externalUrl?: string;
+}
+
+interface NavMenuItem {
+    id: string;
+    label: string;
+    icon: LucideIcon;
+    path?: string;
+    externalUrl?: string;
+    subItems?: NavSubItem[];
+}
+
+const NavItem = React.memo(({
+    item,
+    isCollapsed,
+    activeTab,
+    expandedMenus,
+    setExpandedMenus,
+    setActiveTab,
+    setIsMobileSidebarOpen
+}: {
+    item: NavMenuItem,
     isCollapsed: boolean,
     activeTab: string,
     expandedMenus: string[],
@@ -48,7 +65,7 @@ const NavItem = React.memo(({
     setActiveTab: (id: string) => void,
     setIsMobileSidebarOpen: (val: boolean) => void
 }) => {
-    const isActive = activeTab === item.id || (item.subItems?.some((sub: any) => activeTab === sub.id));
+    const isActive = activeTab === item.id || (item.subItems?.some((sub) => activeTab === sub.id));
     const isExpanded = expandedMenus.includes(item.id);
     const hasSubItems = item.subItems && item.subItems.length > 0;
     
@@ -147,7 +164,7 @@ const NavItem = React.memo(({
                             className="overflow-hidden"
                         >
                             <div className="ml-5 pl-4 border-l-2 border-slate-200 dark:border-slate-700/50 mt-1 space-y-1">
-                                {item.subItems.map((sub: any) => (
+                                {item.subItems?.map((sub) => (
                                     <Button
                                         variant="ghost"
                                         key={sub.id}
@@ -237,7 +254,7 @@ export default function Sidebar() {
         collapsed: { width: 80 }
     };
 
-    const sidebarTransition: any = { duration: 0.2, ease: 'easeInOut' };
+    const sidebarTransition: React.ComponentProps<typeof motion.div>['transition'] = { duration: 0.2, ease: 'easeInOut' };
     const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered && !isTempExpanded);
 
     return (

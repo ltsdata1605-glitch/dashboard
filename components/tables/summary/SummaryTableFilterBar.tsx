@@ -9,7 +9,7 @@ interface SummaryTableFilterBarProps {
     isPending: boolean;
     sortableListRef: React.RefObject<HTMLDivElement>;
     localDrilldownOrder: string[];
-    getFilterProps: (key: string) => any;
+    getFilterProps: (key: string) => { options: string[]; selected: string[]; onChange: (s: string[]) => void };
     activeFilterKey: string | null;
     setActiveFilterKey: React.Dispatch<React.SetStateAction<string | null>>;
     hasActiveFilters: boolean;

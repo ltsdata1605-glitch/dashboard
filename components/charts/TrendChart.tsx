@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
-import type { DataRow } from '../../types';
+import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
+import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -16,7 +17,7 @@ import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 
-const CustomTooltip = ({ active, payload, metricName }: any) => {
+const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
     if (!active || !payload?.length) return null;
     const data: RechartsTrendData = payload[0].payload;
     const { label, value, changePercent, isDecrease } = data;
@@ -45,12 +46,12 @@ const CustomTooltip = ({ active, payload, metricName }: any) => {
 };
 
 interface TrendChartInnerProps {
-  trendData: any;
-  handleExport: any;
+  trendData: TrendData | undefined;
+  handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<void>;
   isExporting: boolean;
-  filterState: any;
+  filterState: FilterState;
   baseFilteredData: DataRow[];
-  productConfig: any;
+  productConfig: ProductConfig | null;
 }
 
 const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
@@ -74,7 +75,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   });
 
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
-  const [savedCalendars, setSavedCalendars] = useState<any[]>([]);
+  const [savedCalendars, setSavedCalendars] = useState<SavedCalendar[]>([]);
   const [activeCalendarTab, setActiveCalendarTab] = useState<string>('1-thuc');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -163,7 +164,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       const children = new Set<string>();
 
       if (baseFilteredData && productConfig) {
-          baseFilteredData.forEach((row: any) => {
+          baseFilteredData.forEach((row) => {
               const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
               const parentVal = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
               if (parentVal === 'Không tính doanh thu') return;
@@ -196,7 +197,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
       const dailySums: { [key: string]: { value: number, rawDate: Date, totalRev: number, traGopRev: number } } = {};
 
-      baseFilteredData.forEach((row: any) => {
+      baseFilteredData.forEach((row) => {
           const rowDate = row.parsedDate;
           if (!rowDate || isNaN(rowDate.getTime())) return;
           if (rowDate.getFullYear() !== targetYear || rowDate.getMonth() !== targetMonth) return;

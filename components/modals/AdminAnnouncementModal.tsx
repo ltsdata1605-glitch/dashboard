@@ -30,7 +30,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 limit(100)
             );
             const unsub = onSnapshot(q, (snapshot) => {
-                let found: any = null;
+                let found: { content?: string; active?: boolean; isSystemAnnouncement?: boolean } | null = null;
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if (data.isSystemAnnouncement && !found) {

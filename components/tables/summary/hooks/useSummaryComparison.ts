@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { SummaryTableNode, GrandTotal } from '../../../../types';
+import type { SummaryTableNode, GrandTotal, DataRow, ProductConfig, FilterState } from '../../../../types';
 import { getWeeksInMonth, getSafeDateInPrevMonth, toInputDate, toInputMonth, formatCompactDateRange } from '../SummaryTableUtils';
 import { processSummaryTable } from '../../../../services/summaryService';
 import { parseExcelDate, getRowValue } from '../../../../utils/dataUtils';
@@ -7,11 +7,23 @@ import { COL } from '../../../../constants';
 
 export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range' | 'monthly_trend';
 
+export interface CompTreeData {
+    current: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
+    prev: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
+    title: string;
+    description?: string;
+}
+
+export interface SummaryTrendData {
+    months: { id: string, label: string, daysCount: number }[];
+    trees: { [month: string]: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal } };
+}
+
 export const useSummaryComparison = (
     isComparisonMode: boolean,
-    baseFilteredData: any[],
-    productConfig: any,
-    filters: any,
+    baseFilteredData: DataRow[],
+    productConfig: ProductConfig | null,
+    filters: FilterState,
     localParentFilters: string[],
     localChildFilters: string[],
     localManufacturerFilters: string[],
@@ -35,17 +47,9 @@ export const useSummaryComparison = (
         direction: 'desc'
     });
 
-    const [compTree, setCompTree] = useState<{
-        current: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
-        prev: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
-        title: string;
-        description?: string;
-    } | null>(null);
+    const [compTree, setCompTree] = useState<CompTreeData | null>(null);
 
-    const [trendData, setTrendData] = useState<{
-        months: { id: string, label: string, daysCount: number }[];
-        trees: { [month: string]: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal } };
-    } | null>(null);
+    const [trendData, setTrendData] = useState<SummaryTrendData | null>(null);
 
     const [trendSelectedMonths, setTrendSelectedMonths] = useState<string[]>([]);
     const [dateDisplay, setDateDisplay] = useState({ current: '', prev: '' });
@@ -77,15 +81,15 @@ export const useSummaryComparison = (
         }
 
         if (compMode === 'monthly_trend') {
-            const getValidDate = (r: any) => parseExcelDate(getRowValue(r, COL.DATE_CREATED));
+            const getValidDate = (r: DataRow) => parseExcelDate(getRowValue(r, COL.DATE_CREATED));
             
             const monthsList = Array.from(new Set(baseFilteredData.map(r => {
                 const d = getValidDate(r);
                 return d ? toInputMonth(d) : null;
             }).filter(Boolean) as string[])).sort();
 
-            const trees: any = {};
-            const monthsMeta: any[] = [];
+            const trees: { [month: string]: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal } } = {};
+            const monthsMeta: { id: string, label: string, daysCount: number }[] = [];
             
             monthsList.forEach(m => {
                 const monthData = baseFilteredData.filter(r => {
@@ -157,8 +161,8 @@ export const useSummaryComparison = (
             const wCurrId = selectedWeeks[0];
             const wPrevId = wCurrId - 1;
             
-            const wCurr = weeksInSelectedMonth.find((w: any) => w.id === wCurrId);
-            const wPrev = weeksInSelectedMonth.find((w: any) => w.id === wPrevId);
+            const wCurr = weeksInSelectedMonth.find((w) => w.id === wCurrId);
+            const wPrev = weeksInSelectedMonth.find((w) => w.id === wPrevId);
             
             if (!wCurr) return;
 
@@ -179,7 +183,7 @@ export const useSummaryComparison = (
 
         } else if (compMode === 'week_same_period') {
             const selectedWeekId = selectedWeeks[0];
-            const wCurrent = weeksInSelectedMonth.find((w: any) => w.id === selectedWeekId);
+            const wCurrent = weeksInSelectedMonth.find((w) => w.id === selectedWeekId);
             if (!wCurrent) return;
 
             currentStart = wCurrent.start;

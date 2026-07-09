@@ -8,7 +8,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export type SortDirection = 'asc' | 'desc' | null;
 
-export interface DataTableColumn<T = any> {
+export interface DataTableColumn<T = unknown> {
   /** Unique column key */
   id: string;
   /** Header label */
@@ -35,7 +35,7 @@ export interface DataTableColumn<T = any> {
   className?: string;
 }
 
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = unknown> {
   columns: DataTableColumn<T>[];
   data: T[];
   /** Row key extractor */

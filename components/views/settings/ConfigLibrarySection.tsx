@@ -1,11 +1,12 @@
 import React from 'react';
+import type { User } from 'firebase/auth';
 import { Icon } from '../../common/Icon';
 import { type SharedConfig } from '../../../services/firestoreService';
 import { Button } from '../../shared/ui/Button';
 
 interface ConfigLibrarySectionProps {
     sharedConfigs: SharedConfig[];
-    user: any;
+    user: User | null;
     userRole: string | null;
     departmentId: string | null;
     showShareModal: boolean;

@@ -13,11 +13,12 @@ import { MonthlyTrendTableRow } from './MonthlyTrendTableRow';
 import { MonthlyTrendTable } from './MonthlyTrendTable';
 
 import { FilterPopover } from './summary/FilterPopover';
-import { 
+import {
     getTraGopPercentClass, formatCompactDateRange, toInputDate, toInputMonth,
     getWeeksInMonth, getSafeDateInPrevMonth, HEADER_CONFIG, ORDER_LABELS,
     PILL_ICONS, PILL_COLORS
 } from './summary/SummaryTableUtils';
+import type { HeaderConfig } from './summary/SummaryTableUtils';
 import { useSummaryTableLogic } from './summary/useSummaryTableLogic';
 import { CrossSellingTable } from './summary/CrossSellingTable';
 import CrossSellingBuilderModal from '../modals/CrossSellingBuilderModal';
@@ -87,7 +88,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                 ghostClass: 'opacity-0',
                 chosenClass: 'scale-105',
                 dragClass: 'opacity-100',
-                onEnd: (evt: any) => {
+                onEnd: (evt: { oldIndex: number; newIndex: number }) => {
                     const newOrder = [...drilldownOrderRef.current];
                     const [movedItem] = newOrder.splice(evt.oldIndex, 1);
                     newOrder.splice(evt.newIndex, 0, movedItem);
@@ -212,7 +213,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                       <MonthlyTrendTable 
                           trendData={{
                               ...trendData,
-                              months: trendData.months.filter((m: any) => trendSelectedMonths.includes(m.id))
+                              months: trendData.months.filter((m) => trendSelectedMonths.includes(m.id))
                           }}
                           displayKeys={displayKeys}
                           visibleColumns={visibleColumns}
@@ -239,7 +240,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         const visibleHeaders = HEADER_CONFIG.filter(h => h.showInComparison && visibleColumns.includes(h.key));
                                         const elements: React.ReactNode[] = [];
                                         let currentGroup: string | null = null;
-                                        let groupChildren: any[] = [];
+                                        let groupChildren: HeaderConfig[] = [];
                                         
                                         const flushGroup = () => {
                                             if (currentGroup && groupChildren.length > 0) {
@@ -343,7 +344,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key));
                                         const elements: React.ReactNode[] = [];
                                         let currentGroup: string | null = null;
-                                        let groupChildren: any[] = [];
+                                        let groupChildren: HeaderConfig[] = [];
                                         
                                         const flushGroup = () => {
                                             if (currentGroup && groupChildren.length > 0) {

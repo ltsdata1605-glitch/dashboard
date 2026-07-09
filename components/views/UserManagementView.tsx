@@ -11,6 +11,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { notifyUser } from '../../services/notificationService';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
+// Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
+interface TimestampLike {
+    toMillis?: () => number;
+    toDate?: () => Date;
+}
+
 interface AccessRequest {
     id: string;
     displayName: string;
@@ -21,8 +27,8 @@ interface AccessRequest {
     departmentId: string;
     employeeName: string;
     status: 'pending' | 'approved' | 'rejected' | 'new';
-    createdAt: any;
-    requestDate: any;
+    createdAt: TimestampLike;
+    requestDate: TimestampLike;
     loginCount?: number;
     expiresAt?: { toDate: () => Date };
 }
@@ -47,7 +53,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
     // Auto-save a single user's data to Firestore (debounced)
-    const autoSave = useCallback(async (requestId: string, field: string, value: any) => {
+    const autoSave = useCallback(async (requestId: string, field: string, value: string) => {
         // Clear existing timer for this user+field
         const key = `${requestId}_${field}`;
         if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
@@ -63,7 +69,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             try {
                 setSavingIds(prev => new Set(prev).add(requestId));
                 const userRef = doc(db, 'users', requestId);
-                const updateData: any = {};
+                const updateData: Record<string, unknown> = {};
 
                 if (field === 'role') {
                     updateData.role = value;
@@ -269,7 +275,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             
             if (isApproved) {
                 const targetRole = editRoles[requestId];
-                const updateData: any = {
+                const updateData: Record<string, unknown> = {
                     role: targetRole || 'pending',
                     status: targetRole === 'blocked' ? 'blocked' : 'approved',
                     departmentId: editDepartments[requestId] || '',

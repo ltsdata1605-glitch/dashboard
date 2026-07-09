@@ -66,7 +66,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                 if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
                 if (key === 'avgQuantity') return Math.ceil(node.totalQuantity / daysDivisor);
                 if (key === 'avgRevenue') return node.totalRevenue / daysDivisor;
-                return (node as Record<string, any>)[key] || 0;
+                return ((node as unknown as Record<string, unknown>)[key] as number | undefined) || 0;
             };
 
             sumA += getVal(nodeA, sortConfig.column, m.daysCount);

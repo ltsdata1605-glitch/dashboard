@@ -31,8 +31,16 @@ export const toInputMonth = (date: Date) => {
     return `${y}-${m}`;
 };
 
-export const getWeeksInMonth = (year: number, month: number) => { 
-    const weeks: { id: number, label: string, start: Date, end: Date, shortLabel: string }[] = [];
+export interface WeekInfo {
+    id: number;
+    label: string;
+    start: Date;
+    end: Date;
+    shortLabel: string;
+}
+
+export const getWeeksInMonth = (year: number, month: number) => {
+    const weeks: WeekInfo[] = [];
     const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
     
     let currentDay = 1;

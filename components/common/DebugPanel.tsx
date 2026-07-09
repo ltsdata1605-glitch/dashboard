@@ -3,7 +3,7 @@ import React from 'react';
 import { Icon } from './Icon';
 import { Button } from '../shared/ui/Button';
 
-interface DebugInfo {
+export interface DebugInfo {
     name: string;
     description: string;
     design: string;

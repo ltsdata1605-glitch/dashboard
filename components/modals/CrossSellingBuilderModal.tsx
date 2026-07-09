@@ -133,7 +133,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
         }));
     };
 
-    const updateColumn = (colId: string, field: keyof CrossSellingDynamicColumn, value: any) => {
+    const updateColumn = <K extends keyof CrossSellingDynamicColumn>(colId: string, field: K, value: CrossSellingDynamicColumn[K]) => {
         setConfig(prev => ({
             ...prev,
             columns: prev.columns.map(c => c.id === colId ? { ...c, [field]: value } : c)
@@ -187,7 +187,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
         }));
     };
 
-    const updateRow = (secId: string, rowId: string, field: keyof CrossSellingDynamicRow, value: any) => {
+    const updateRow = <K extends keyof CrossSellingDynamicRow>(secId: string, rowId: string, field: K, value: CrossSellingDynamicRow[K]) => {
         setConfig(prev => ({
             ...prev,
             sections: prev.sections.map(s => {
@@ -286,7 +286,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                 <div className="flex-1 flex gap-2 items-center">
                                                     <Select
                                                         value={col.dataType || 'quantity'}
-                                                        onChange={e => updateColumn(col.id, 'dataType', e.target.value)}
+                                                        onChange={e => updateColumn(col.id, 'dataType', e.target.value as 'quantity' | 'revenueQD')}
                                                         className="w-32 text-xs font-bold"
                                                     >
                                                         <option value="quantity">Số Lượng</option>

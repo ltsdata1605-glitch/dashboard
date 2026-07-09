@@ -7,7 +7,7 @@ import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_TH
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
-
+import type { ExportImageOptions } from '../../hooks/useExportLogic';
 
 
 
@@ -15,7 +15,7 @@ interface PerformanceModalProps {
     isOpen: boolean;
     onClose: () => void;
     employeeName: string;
-    onExport: (element: HTMLElement, filename: string, options?: any) => Promise<void>;
+    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<void>;
     isBatchExporting?: boolean;
     fullSellerArray?: Employee[];
     validSalesData?: DataRow[];
@@ -152,6 +152,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             }, { totalRevenue: 0, totalRevenueQD: 0 });
 
             const hieuQuaQD = totalRevenue !== 0 ? ((totalRevenueQD - totalRevenue) / Math.abs(totalRevenue)) * 100 : 0;
+            // any: giá trị ô Excel thô (Date | number serial | string) từ nhiều tên cột khả dĩ
             let scheduledDateRaw: any = undefined;
             for (const order of orders) {
                 const raw = getRowValue(order, ['Thời gian hẹn giao', 'Thoi gian hen giao', 'TG Hẹn Giao', '__EMPTY_24', 'Column25']) || (() => {

@@ -47,6 +47,7 @@ import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
+import type { DebugInfo } from '../common/DebugPanel';
 import { canShareFiles } from '../../services/uiService';
 
 const defaultVisibilityState: VisibilityState = {
@@ -110,14 +111,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             limit(100)
         );
         const unsub = onSnapshot(q, (snapshot) => {
-            let found: any = null;
+            let found: { id?: string; content?: string; active?: boolean; isSystemAnnouncement?: boolean } | null = null;
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
                 if (data.isSystemAnnouncement && !found) {
                     found = { id: docSnap.id, ...data };
                 }
             });
-            setAnnouncement(found);
+            setAnnouncement(found as { content: string; active: boolean } | null);
         }, (error) => {
             console.error("Lỗi khi lắng nghe thông báo hệ thống:", error);
         });
@@ -135,7 +136,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(false);
     const [isInspectorActive, setIsInspectorActive] = useState(false);
     const [isKpiConfigModalOpen, setIsKpiConfigModalOpen] = useState(false);
-    const [debugInfo, setDebugInfo] = useState<any | null>(null);
+    const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
 
     const dashboardContainerRef = useRef<HTMLDivElement>(null);
     const businessOverviewRef = useRef<HTMLDivElement>(null);

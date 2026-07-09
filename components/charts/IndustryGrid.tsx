@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
-import type { DataRow } from '../../types';
+import type { DataRow, IndustryData, ProductConfig, FilterState } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { exportElementAsImage } from '../../services/uiService';
@@ -38,10 +39,10 @@ const levelLabels: Record<number, string> = {
 };
 
 interface IndustryGridInnerProps {
-    industryData: any[];
-    productConfig: any;
-    filters: any;
-    onFilterChange: (update: any) => void;
+    industryData: IndustryData[];
+    productConfig: ProductConfig | null;
+    filters: FilterState;
+    onFilterChange: (update: Partial<FilterState>) => void;
     baseFilteredData: DataRow[];
 }
 
@@ -185,21 +186,21 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     const isDrillable = drilldownPath.length < 2;
 
     // ── Pie label renderer ───────────────────────────────────────────────────
-    const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-        if (percent < 0.05) return null;
+    const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelRenderProps) => {
+        if ((percent ?? 0) < 0.05) return null;
         const RADIAN = Math.PI / 180;
-        const r = innerRadius + (outerRadius - innerRadius) * 0.54;
-        const x = cx + r * Math.cos(-midAngle * RADIAN);
-        const y = cy + r * Math.sin(-midAngle * RADIAN);
+        const r = Number(innerRadius ?? 0) + (Number(outerRadius ?? 0) - Number(innerRadius ?? 0)) * 0.54;
+        const x = Number(cx ?? 0) + r * Math.cos(-(midAngle ?? 0) * RADIAN);
+        const y = Number(cy ?? 0) + r * Math.sin(-(midAngle ?? 0) * RADIAN);
         return (
             <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={800}>
-                {`${(percent * 100).toFixed(0)}%`}
+                {`${((percent ?? 0) * 100).toFixed(0)}%`}
             </text>
         );
     };
 
     // ── Tooltip ──────────────────────────────────────────────────────────────
-    const CustomTooltip = ({ active, payload }: any) => {
+    const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: IndustryData }[] }) => {
         if (!active || !payload?.length) return null;
         const d = payload[0].payload;
         const total = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;

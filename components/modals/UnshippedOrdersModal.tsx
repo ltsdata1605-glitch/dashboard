@@ -7,11 +7,12 @@ import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
+import type { ExportImageOptions } from '../../hooks/useExportLogic';
 
 interface UnshippedOrdersModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onExport: (element: HTMLElement, filename: string, options?: any) => Promise<void>;
+    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<void>;
     onlyOverdue?: boolean;
 }
 
@@ -248,6 +249,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 });
 
                 const customerHieuQuaQD = totalCustomerRevenue !== 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / Math.abs(totalCustomerRevenue)) * 100 : 0;
+                // any: giá trị ô Excel thô (Date | number serial | string) từ nhiều tên cột khả dĩ
                 let scheduledDateRaw: any = undefined;
                 for (const order of customerOrders) {
                     const raw = getRowValue(order, ['Thời gian hẹn giao', 'Thoi gian hen giao', 'TG Hẹn Giao', '__EMPTY_24', 'Column25']) || (() => {

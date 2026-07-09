@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useTransition } from 'react';
 import { saveSummaryTableConfig } from '../../../../services/dbService';
+import type { FilterState } from '../../../../types';
 
-export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSellingMode: boolean) => {
+export const useSummaryFilters = (filters: FilterState, onFilterChange: (newFilters: Partial<FilterState>) => void, isCrossSellingMode: boolean) => {
     const { summaryTable: summaryTableFilters, parent: globalParentFilters } = filters;
     const [isPending, startTransition] = useTransition();
 
@@ -109,7 +110,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         const timer = setTimeout(() => {
             saveSummaryTableConfig(currentConfig).catch(err => console.error("Failed to save config:", err));
             
-            const updates: any = {};
+            const updates: Partial<FilterState> = {};
             if (JSON.stringify(globalParentFilters) !== JSON.stringify(localParentFilters)) {
                 updates.parent = localParentFilters;
             }

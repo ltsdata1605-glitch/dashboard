@@ -4,6 +4,9 @@ import { formatQuantity, formatCurrency } from '../../../utils/dataUtils';
 import { Select } from '../../shared/ui/Select';
 import { Input } from '../../shared/ui/Input';
 import { Button } from '../../shared/ui/Button';
+import type { WeekInfo } from './SummaryTableUtils';
+import type { CompTreeData, SummaryTrendData } from './hooks/useSummaryComparison';
+import type { GrandTotal } from '../../../types';
 
 type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'custom_range' | 'month_same_period_year' | 'monthly_trend' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year';
 
@@ -14,18 +17,18 @@ interface SummaryTableComparisonBarProps {
     setSelectedDate: (date: string) => void;
     selectedMonth: string;
     setSelectedMonth: (month: string) => void;
-    weeksInSelectedMonth: any[];
+    weeksInSelectedMonth: WeekInfo[];
     selectedWeeks: number[];
     handleWeekPillClick: (id: number) => void;
-    trendData: any;
+    trendData: SummaryTrendData | null;
     trendSelectedMonths: string[];
     setTrendSelectedMonths: React.Dispatch<React.SetStateAction<string[]>>;
     customRangeA: { start: string; end: string };
     setCustomRangeA: React.Dispatch<React.SetStateAction<{ start: string; end: string }>>;
     customRangeB: { start: string; end: string };
     setCustomRangeB: React.Dispatch<React.SetStateAction<{ start: string; end: string }>>;
-    compTree: any;
-    grandTotal: any;
+    compTree: CompTreeData | null;
+    grandTotal: GrandTotal;
     dateDisplay: { current: string; prev: string };
     compareUpToCurrentDay: boolean;
     setCompareUpToCurrentDay: (val: boolean) => void;
@@ -150,7 +153,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
 
                     {compMode === 'monthly_trend' && trendData && (
                         <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
-                            {trendData.months.map((m: any) => {
+                            {trendData.months.map((m) => {
                                 const isSelected = trendSelectedMonths.includes(m.id);
                                 return (
                                     <Button

@@ -1,10 +1,14 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, TransitionStartFunction } from 'react';
 import type { SummaryTableNode } from '../../../../types';
 import { getSetting, saveSetting } from '../../../../services/dbService';
+import { processSummaryTable } from '../../../../services/summaryService';
+import type { CompTreeData, SummaryTrendData } from './useSummaryComparison';
 
 const STORAGE_KEY = 'summaryTableExpandedIds';
 
-export const useSummaryExpand = (startTransition: any) => {
+type StandardSummaryData = ReturnType<typeof processSummaryTable> | null;
+
+export const useSummaryExpand = (startTransition: TransitionStartFunction) => {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
     const [expandLevel, setExpandLevel] = useState<number>(0);
     const [isExpanding, setIsExpanding] = useState(false);
@@ -46,12 +50,12 @@ export const useSummaryExpand = (startTransition: any) => {
     }, []);
 
     const setLevelAndExpand = useCallback((
-        level: number, 
-        isComparisonMode: boolean, 
-        compMode: string, 
-        trendData: any, 
-        compTree: any, 
-        standardSummaryData: any
+        level: number,
+        isComparisonMode: boolean,
+        compMode: string,
+        trendData: SummaryTrendData | null,
+        compTree: CompTreeData | null,
+        standardSummaryData: StandardSummaryData
     ) => {
         setIsExpanding(true);
         // Force React to render the loading spinner before crunching the tree map
@@ -62,7 +66,7 @@ export const useSummaryExpand = (startTransition: any) => {
                     setExpandedIds(new Set());
                 } else {
                     const newExpanded = new Set<string>();
-                    let activeData: any = null;
+                    let activeData: { [key: string]: SummaryTableNode } | null | undefined = null;
                     if (isComparisonMode) {
                         if (compMode === 'monthly_trend' && trendData && trendData.months.length > 0) {
                             activeData = trendData.trees[trendData.months[trendData.months.length - 1].id]?.data;
@@ -92,11 +96,11 @@ export const useSummaryExpand = (startTransition: any) => {
         }, 10);
     }, [startTransition]);
 
-    const handleExpandAll = useCallback((isComparisonMode: boolean, compMode: string, trendData: any, compTree: any, standardSummaryData: any) => {
+    const handleExpandAll = useCallback((isComparisonMode: boolean, compMode: string, trendData: SummaryTrendData | null, compTree: CompTreeData | null, standardSummaryData: StandardSummaryData) => {
         setLevelAndExpand(Math.min(expandLevel + 1, 3), isComparisonMode, compMode, trendData, compTree, standardSummaryData);
     }, [expandLevel, setLevelAndExpand]);
 
-    const handleCollapseAll = useCallback((isComparisonMode: boolean, compMode: string, trendData: any, compTree: any, standardSummaryData: any) => {
+    const handleCollapseAll = useCallback((isComparisonMode: boolean, compMode: string, trendData: SummaryTrendData | null, compTree: CompTreeData | null, standardSummaryData: StandardSummaryData) => {
         setLevelAndExpand(Math.max(expandLevel - 1, 0), isComparisonMode, compMode, trendData, compTree, standardSummaryData);
     }, [expandLevel, setLevelAndExpand]);
 

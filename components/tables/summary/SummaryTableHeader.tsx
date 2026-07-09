@@ -3,13 +3,14 @@ import { Icon } from '../../common/Icon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { onActivateKey } from '../../shared/ui';
+import type { FilterState } from '../../../types';
 
 interface SummaryTableHeaderProps {
     displayTitle: string;
     displayDescription: string;
-    filterState: any;
+    filterState: FilterState;
     tableMode: string;
-    setTableMode: (mode: any) => void;
+    setTableMode: (mode: 'standard' | 'comparison' | 'cross_selling') => void;
     isCrossSellingMode: boolean;
     userRole: string;
     setIsBuilderOpen: (open: boolean) => void;
@@ -151,12 +152,12 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                 <Button variant="ghost" onClick={() => setActiveFilterKey(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></Button>
                                             </div>
                                             <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
-                                                {HEADER_CONFIG.filter((col: any) => {
+                                                {HEADER_CONFIG.filter((col) => {
                                                     const isPivotMode = isComparisonMode && compMode === 'monthly_trend';
                                                     const PIVOT_EXCLUDED_COLS = ['slPercent', 'dtThucPercent', 'avgQuantity', 'avgRevenue'];
                                                     if (isPivotMode && PIVOT_EXCLUDED_COLS.includes(col.key)) return false;
                                                     return true;
-                                                }).map((col: any) => (
+                                                }).map((col) => (
                                                     <div key={col.key} role="button" tabIndex={0} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} onKeyDown={onActivateKey(() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key]))} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2 select-none">
                                                             <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg ${col.colorClass}`}>

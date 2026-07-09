@@ -1,4 +1,5 @@
 import React from 'react';
+import type { User } from 'firebase/auth';
 import { Icon } from '../../common/Icon';
 import { Button } from '../../shared/ui/Button';
 
@@ -6,7 +7,7 @@ interface CloudSyncSectionProps {
     syncState: 'idle' | 'syncing' | 'synced' | 'error';
     lastSyncTime: Date | null;
     onForceSync: () => void;
-    user: any;
+    user: User | null;
     isDemoMode: boolean;
 }
 

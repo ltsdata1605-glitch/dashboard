@@ -3,20 +3,10 @@ import React, { useState } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../../types';
 import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString, getExportFilenamePrefix } from '../../../utils/dataUtils';
 import { Icon } from '../../common/Icon';
-import { useHeadToHeadLogic } from '../../../hooks/useHeadToHeadLogic';
+import { useHeadToHeadLogic, HeadToHeadRow as HeadToHeadRowData } from '../../../hooks/useHeadToHeadLogic';
 import { exportElementAsImage } from '../../../services/uiService';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { DEPT_COLORS, RankBadge } from '../performance/PerformanceTableUtils';
-
-// Khớp cấu trúc 1 dòng trong processedData.tableRows (hooks/useHeadToHeadLogic.ts) — hook đó vẫn dùng any[] nội bộ, chỉ gõ kiểu phần tiêu thụ ở đây
-interface HeadToHeadRowData {
-    name: string;
-    department: string;
-    dailyValues: { [dateKey: string]: number };
-    total: number;
-    daysWithNoSales: number;
-    rowAverage: number;
-}
 
 interface HeadToHeadTableProps {
     config: HeadToHeadTableConfig;

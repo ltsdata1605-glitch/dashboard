@@ -29,7 +29,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
         const months = new Set<string>();
         
         if (originalData && originalData.length > 0) {
-            originalData.forEach((row: any) => {
+            originalData.forEach((row) => {
                 const date = row.parsedDate;
                 if (!date || isNaN(date.getTime())) return;
                 
@@ -142,7 +142,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
     // Calculate active chips
     const activeChips = useMemo(() => {
-        const chips: { id: keyof typeof filterState; label: string; value: string | string[]; color: any }[] = [];
+        const chips: { id: keyof typeof filterState; label: string; value: string | string[]; color: 'indigo' | 'emerald' | 'amber' | 'rose' | 'slate' }[] = [];
         
         // Kho is already displayed in its multi-select dropdown, no need for a redundant chip
         // if (filterState.kho.length > 0 && !filterState.kho.includes('all')) {

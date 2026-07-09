@@ -3,7 +3,7 @@ import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
 import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
-import type { DataRow } from '../../types';
+import type { DataRow, ProductConfig } from '../../types';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
@@ -13,12 +13,12 @@ interface SavedCalendarCardProps {
         id: string;
         parentGroup: string[];
         childGroup: string[];
-        kho: string[];
+        kho?: string[];
         month: string;
         metric: string;
     };
     baseFilteredData: DataRow[];
-    productConfig: any;
+    productConfig: ProductConfig | null;
     onRemove: (id: string) => void;
     badgeLabel?: string;
 }
