@@ -610,5 +610,71 @@ export function parseDetailDataV2(
     // Now rebuild and restructure all NNH children lists
     rebuildAllNnhChildren(roots);
 
+    // Optimize hierarchy: roll up child numbers and remove redundant identical brand leaves
+    optimizeTreeHierarchy(roots);
+
     return roots;
+}
+
+function optimizeTreeHierarchy(roots: DetailNode[]) {
+    const walk = (node: DetailNode) => {
+        if (node.children && node.children.length > 0) {
+            // Traverse children first (bottom-up)
+            for (const child of node.children) {
+                walk(child);
+            }
+
+            // Subgroup (Level 4 nhomHang)
+            if (node.level === 'nhomHang') {
+                let totalDtlk = 0;
+                let totalDtqd = 0;
+                let totalSoLuong = 0;
+                for (const hang of node.children) {
+                    totalDtlk += hang.dtlk;
+                    totalDtqd += hang.dtqd;
+                    totalSoLuong += hang.soLuong;
+                }
+                
+                // Roll up if child data is present
+                if (totalSoLuong > 0 || totalDtqd > 0) {
+                    node.dtlk = totalDtlk;
+                    node.dtqd = totalDtqd;
+                    node.soLuong = totalSoLuong;
+                }
+                node.donGia = node.soLuong > 0 ? (node.dtqd / node.soLuong) : 0;
+                node.hieuQuaQD = node.dtlk > 0 ? (node.dtqd - node.dtlk) / node.dtlk : 0;
+
+                // If a subgroup has exactly 1 brand child and its name is identical to the subgroup name, collapse it.
+                if (node.children.length === 1) {
+                    const singleChild = node.children[0];
+                    if (singleChild.name.trim().toLowerCase() === node.name.trim().toLowerCase()) {
+                        node.children = []; // Remove redundant leaf
+                    }
+                }
+            }
+            
+            // Structural parents (total, department, employee, nnh)
+            if (['nnh', 'employee', 'department', 'total'].includes(node.level)) {
+                let totalDtlk = 0;
+                let totalDtqd = 0;
+                let totalSoLuong = 0;
+                for (const child of node.children) {
+                    totalDtlk += child.dtlk;
+                    totalDtqd += child.dtqd;
+                    totalSoLuong += child.soLuong;
+                }
+                if (totalSoLuong > 0 || totalDtqd > 0) {
+                    node.dtlk = totalDtlk;
+                    node.dtqd = totalDtqd;
+                    node.soLuong = totalSoLuong;
+                }
+                node.donGia = node.soLuong > 0 ? (node.dtqd / node.soLuong) : 0;
+                node.hieuQuaQD = node.dtlk > 0 ? (node.dtqd - node.dtlk) / node.dtlk : 0;
+            }
+        }
+    };
+
+    for (const root of roots) {
+        walk(root);
+    }
 }
