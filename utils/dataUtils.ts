@@ -6,6 +6,7 @@ import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA
 const columnCache = new Map<string, string>();
 const normalizeCache = new Map<string, string>();
 
+// any: val là giá trị ô Excel/DataRow thô (string/number/Date/boolean...), dùng ở hàng nghìn call site — không đổi kiểu tham số/trả về
 export const cleanAndNormalize = (val: any): string => {
     if (val === undefined || val === null) return '';
     const raw = val.toString().trim();
@@ -17,6 +18,7 @@ export const cleanAndNormalize = (val: any): string => {
     return cached;
 };
 
+// any: trả về giá trị ô thô của DataRow (string/number/Date/...) — hàm lõi được gọi ở hàng trăm nơi khắp 4 khu vực, đổi kiểu trả về sẽ vỡ diện rộng ngoài phạm vi utils/
 export function getRowValue(row: DataRow, keys: string[]): any {
     if (!row) return undefined;
 
@@ -56,6 +58,7 @@ export function toLocalISOString(date: Date | null): string {
     return `${year}-${month}-${day}`;
 }
 
+// any: dữ liệu ngày tháng thô từ Excel (Date | number serial | string định dạng khác nhau)
 export function parseExcelDate(excelDate: any): Date | null {
     if (excelDate instanceof Date && !isNaN(excelDate.getTime())) return excelDate;
     if (typeof excelDate === 'number') {
@@ -316,7 +319,7 @@ export const roundUp = (num: number): number => {
     return Math.ceil(num);
 };
 
-export const parseNumber = (str: any): number => {
+export const parseNumber = (str: unknown): number => {
     if (str === null || str === undefined || str === '') return 0;
     if (typeof str === 'number') return str;
 
