@@ -14,7 +14,7 @@ interface ScannerProps {
 }
 
 const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
-  const scannerRef = useRef<any>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
   const readerId = "html5-qrcode-reader";
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);

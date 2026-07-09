@@ -515,6 +515,7 @@ export default function StickerPrinterView() {
         let active = true;
         async function loadAllData() {
             try {
+                // any: state UI đã lưu toàn bộ (~35 field), đọc phòng thủ từng field một (if (savedState.x) setX(...))
                 // 1. Load sticker printer settings / states
                 const savedState = await getSetting<any>(STICKER_DB_KEY);
                 
@@ -568,7 +569,7 @@ export default function StickerPrinterView() {
                     if (savedState.searchTerm != null) setSearchTerm(savedState.searchTerm);
                     
                     // Normalize manualPages prices to thousands if >= 100,000
-                    const loadedPages = (savedState.manualPages || []).map((page: any) => {
+                    const loadedPages = (savedState.manualPages || []).map((page: StickerPage) => {
                         if (page.newPrice) {
                             const digits = String(page.newPrice).replace(/\D/g, '');
                             if (digits) {
@@ -583,7 +584,7 @@ export default function StickerPrinterView() {
                     });
                     
                     // Normalize batchItems prices to thousands if >= 100,000
-                    const loadedItems = (savedState.batchItems || []).map((item: any) => {
+                    const loadedItems = (savedState.batchItems || []).map((item: BatchItem) => {
                         if (item.newPrice) {
                             const digits = String(item.newPrice).replace(/\D/g, '');
                             if (digits) {
@@ -828,6 +829,7 @@ export default function StickerPrinterView() {
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
+                // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
                 
                 const items: BatchItem[] = [];
@@ -1015,6 +1017,7 @@ export default function StickerPrinterView() {
                 const XLSX = await import('xlsx');
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const ws = wb.Sheets[wb.SheetNames[0]];
+                // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
                 
                 if (!data || data.length < 2) {
@@ -1239,6 +1242,7 @@ export default function StickerPrinterView() {
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
+                // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
                 
                 if (!data || data.length < 2) {

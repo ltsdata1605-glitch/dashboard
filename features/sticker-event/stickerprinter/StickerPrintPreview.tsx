@@ -35,7 +35,7 @@ interface StickerPrintPreviewProps {
     previewOldPrice: string;
     previewNewPrice: string;
     activeField: string;
-    setActiveField: (field: any) => void;
+    setActiveField: (field: string) => void;
     
     setHeaderTextContent: (val: string) => void;
     setSubHeaderTextContent: (val: string) => void;
@@ -70,7 +70,7 @@ interface DrawTicketBlockProps {
     drawCodeSize?: number;
     drawFooterSize?: number;
     activeField?: string;
-    setActiveField?: (field: any) => void;
+    setActiveField?: (field: string) => void;
     isAutoIncrement?: boolean;
     totalIndex?: number;
 }
@@ -648,7 +648,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     const subHeaderEditable = useContentEditable(subHeaderTextContent, setSubHeaderTextContent);
     const footerEditable = useContentEditable(footerTextContent, setFooterTextContent);
 
-    const handlePriceInput = (e: React.FormEvent<any>) => {
+    const handlePriceInput = (e: React.FormEvent<HTMLElement>) => {
         const el = e.currentTarget;
         const rawText = el.innerText;
         

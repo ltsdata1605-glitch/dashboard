@@ -145,7 +145,7 @@ function rebuildAllNnhChildren(roots: DetailNode[]): DetailNode[] {
 }
 
 function rebuildEmployeeSubtree(
-    rows: { name: string; dtlk: number; dtqd: number; hieuQuaQD: number; soLuong: number; donGia: number }[],
+    rows: { name: string; dtlk: number; dtqd: number; hieuQuaQD: number; soLuong: number; donGia: number; indent: number }[],
     industryBiMap: Record<string, { parent: string; child: string }>
 ): DetailNode[] {
     const parentNames = new Set(Object.values(industryBiMap).map(v => v.parent.toLowerCase()));
@@ -158,6 +158,7 @@ function rebuildEmployeeSubtree(
 
     let activeNhomHangNode: DetailNode | null = null;
     let activeChildKey: string | null = null;
+    let activeNhomHangIndent = -1;
     let currentNnhHeader = '';
 
     for (const row of rows) {
@@ -196,12 +197,15 @@ function rebuildEmployeeSubtree(
             }
             activeNhomHangNode = null;
             activeChildKey = null;
+            activeNhomHangIndent = -1;
             continue;
         }
 
         const compoundKey = `${currentNnhHeader.toLowerCase()}|||${lowerName}`;
         const mapInfo = industryBiMap[compoundKey] || industryBiMap[lowerName];
-        if (mapInfo) {
+        const isActuallyNhomHang = mapInfo && (activeNhomHangNode === null || row.indent <= activeNhomHangIndent);
+
+        if (isActuallyNhomHang) {
             const parentName = mapInfo.parent.trim(); // Level 3 (Ngành hàng)
             const childName = mapInfo.child.trim();   // Level 4 (Nhóm hàng)
             const parentKey = parentName.toLowerCase();
@@ -248,6 +252,7 @@ function rebuildEmployeeSubtree(
 
             activeNhomHangNode = nhomHangNode;
             activeChildKey = childKey;
+            activeNhomHangIndent = row.indent;
             
         } else {
             // 3. Otherwise, it must be a Level 5 Brand (Hãng)!
