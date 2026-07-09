@@ -1,3 +1,33 @@
+import type { SchedulingRules, DailyRequirements } from './types';
+
+export const rotateArray = <T,>(arr: T[], count: number): T[] => {
+    const len = arr.length;
+    if (len === 0) return [];
+    const shift = count % len;
+    if (shift === 0) return [...arr];
+    return [...arr.slice(shift), ...arr.slice(0, shift)];
+};
+
+export const getDefaultMonthYear = () => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    return `${year}-${month}`;
+}
+
+export const DEFAULT_RULES: SchedulingRules = {
+  gh: { '2345': 1 },
+  kho: { '123': 2, '456': 2 },
+  tn: { '123': 1, '456': 1 },
+  ghGender: 'Nam',
+  khoGender: 'All',
+  tnGender: 'All',
+};
+
+export const ZERO_REQUIREMENTS: DailyRequirements = {
+    '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0
+};
 
 // Cập nhật các mẫu ca mặc định theo yêu cầu mới
 export const DEFAULT_PATTERNS_HUNG_VUONG_910_99 = {

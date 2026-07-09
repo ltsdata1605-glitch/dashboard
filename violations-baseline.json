@@ -739,14 +739,24 @@
     "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
+  "features/phan-ca/components/PhanCaToolbar.tsx": {
+    "nonSemanticColor": 8,
+    "missingDarkVariant": 12,
+    "missingMobileToolbar": 0
+  },
   "features/phan-ca/components/VerticalIndividualSchedule.tsx": {
     "nonSemanticColor": 6,
     "missingDarkVariant": 53,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/PhanCaView.tsx": {
-    "nonSemanticColor": 13,
-    "missingDarkVariant": 30,
+    "nonSemanticColor": 5,
+    "missingDarkVariant": 17,
+    "missingMobileToolbar": 0
+  },
+  "features/phan-ca/services/googleSheetsExport.ts": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/services/uiService.ts": {

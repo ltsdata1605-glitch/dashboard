@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
-import { useActiveTab } from '../../contexts/LayoutContext';
-import { getErrorMessage } from '../../utils/dataUtils';
-import { recalculateStatsForStaff, findBestSolution, calculateTotalHours, calculateSpecialHours, calculateNormalHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
+import { recalculateStatsForStaff, findBestSolution, calculateTotalHours, calculateSpecialHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
+import { parseStaffFromExcelBuffer } from './utils/excelImport';
 import * as idb from './db/idb';
 import Controls from './components/Controls';
 import Legend from './components/Legend';
@@ -23,26 +21,26 @@ import HelpModal from './components/HelpModal';
 import ConflictListModal from './components/ConflictListModal';
 import BusyReportModal from './components/BusyReportModal';
 import AiSuggestPatternModal from './components/AiSuggestPatternModal';
+import { PhanCaToolbar } from './components/PhanCaToolbar';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { syncScheduleToCloud, fetchScheduleFromCloud } from './services/firestoreSync';
-import { loginWithGoogleForceConsent } from './services/firebase';
-import type { GoogleSheetsRequest, RgbColor } from './services/googleSheetsService';
-import { 
-  StaffMember, 
-  ScheduleInfo, 
-  SchedulingRules, 
-  DailyRequirements, 
-  ScheduleTargets, 
-  ScheduleHistoryEntry, 
-  StaffInitialData, 
-  BalancingFeedback, 
-  EditShiftModalInfo, 
-  UnresolvedConflict, 
-  ImportedStaff, 
-  StaffWithGender, 
-  ShiftDefinitions, 
+import { exportScheduleToGoogleSheet } from './services/googleSheetsExport';
+import {
+  StaffMember,
+  ScheduleInfo,
+  SchedulingRules,
+  DailyRequirements,
+  ScheduleTargets,
+  ScheduleHistoryEntry,
+  StaffInitialData,
+  BalancingFeedback,
+  EditShiftModalInfo,
+  UnresolvedConflict,
+  ImportedStaff,
+  StaffWithGender,
+  ShiftDefinitions,
   BusySchedule,
   MonthlyStats,
   ScheduleConfig,
@@ -50,38 +48,10 @@ import {
 } from './types';
 import { createFullSchedule } from './services/scheduleService';
 import { abbreviateVietnameseName } from './utils/stringUtils';
-import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, DEFAULT_SHIFT_DEFINITIONS } from './constants';
-const rotateArray = <T,>(arr: T[], count: number): T[] => {
-    const len = arr.length;
-    if (len === 0) return [];
-    const shift = count % len;
-    if (shift === 0) return [...arr];
-    return [...arr.slice(shift), ...arr.slice(0, shift)];
-};
-const getDefaultMonthYear = () => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 1);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    return `${year}-${month}`;
-}
-const DEFAULT_RULES: SchedulingRules = {
-  gh: { '2345': 1 },
-  kho: { '123': 2, '456': 2 },
-  tn: { '123': 1, '456': 1 },
-  ghGender: 'Nam',
-  khoGender: 'All',
-  tnGender: 'All',
-};
-const ZERO_REQUIREMENTS: DailyRequirements = {
-    '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0
-};
+import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, DEFAULT_SHIFT_DEFINITIONS, rotateArray, getDefaultMonthYear, DEFAULT_RULES, ZERO_REQUIREMENTS } from './constants';
 const App: React.FC = () => {
-  const { activeTab } = useActiveTab();
   const { user } = useAuth();
   const lastSyncedRef = useRef<{ [key: string]: string }>({});
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
   const [monthYear, setMonthYear] = useState<string>(getDefaultMonthYear());
   const [startDay, setStartDay] = useState<number>(1);
   const [duration, setDuration] = useState<number>(30);
@@ -435,47 +405,7 @@ const App: React.FC = () => {
     reader.onload = async (e) => {
         try {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
-            const XLSX = await import('xlsx');
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
-            const json: any[][] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-            const imported: ImportedStaff[] = [];
-            let currentDepartment = "";
-            json.slice(2).forEach(row => {
-                let departmentRaw = row[0]?.toString().trim();
-                // Tăng cường nhận diện dòng tiêu đề bộ phận trong Excel (chống lỗi gộp ô sai cột)
-                if (!departmentRaw || departmentRaw === "") {
-                    // Nếu cột A trống, tìm ở các cột khác xem có chữ "BP " hoặc "Bộ phận"
-                    for (let i = 1; i < Math.min(row.length, 5); i++) {
-                        const cellVal = row[i]?.toString().trim();
-                        if (cellVal && (cellVal.includes("BP ") || cellVal.toLowerCase().includes("bộ phận") || cellVal.includes("All In One"))) {
-                            departmentRaw = cellVal;
-                            break;
-                        }
-                    }
-                    // Nếu vẫn không thấy, kiểm tra xem dòng này có phải chỉ có 1 ô duy nhất không (thường là tiêu đề)
-                    if (!departmentRaw) {
-                        const validCells = row.filter(c => c !== undefined && c !== null && c.toString().trim() !== "");
-                        if (validCells.length === 1 && isNaN(Number(validCells[0]))) {
-                            departmentRaw = validCells[0].toString().trim();
-                        }
-                    }
-                }
-                // Chỉ cập nhật currentDepartment nếu nó không phải là 1 số (tránh lấy nhầm mã nhân viên)
-                if (departmentRaw && isNaN(Number(departmentRaw))) {
-                    currentDepartment = departmentRaw;
-                }
-                let department = currentDepartment;
-                const staffCode = row[1]?.toString().trim();
-                const staffName = row[2]?.toString().trim();
-                if (department && staffCode && staffName) {
-                    if (department.includes("BP Kế Toán")) return;
-                    if (department.includes("BP Trưởng Ca") || department.includes("BP Quản Lý Siêu Thị")) department = "BP Quản Lý/Trưởng Ca";
-                    const combinedName = `${staffCode} - ${staffName}`;
-                    imported.push({ id: combinedName, name: combinedName, department: department, importIndex: imported.length });
-                }
-            });
+            const imported = await parseStaffFromExcelBuffer(data);
             if (imported.length > 0) { setImportedStaff(imported); setImportModalOpen(true); }
             else showToast("Không tìm thấy dữ liệu nhân viên hợp lệ.", 'error');
         } catch (error) { showToast("Lỗi khi xử lý file Excel.", 'error'); }
@@ -701,298 +631,10 @@ const App: React.FC = () => {
     XLSX.writeFile(wb, `Lich_${monthVal}_${yearVal}.xlsx`);
   };
   const handleExportGoogleSheet = async () => {
-    if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
-    const toastEl = document.createElement('div');
-    toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-    toastEl.textContent = '📊 Đang tạo Google Sheet...';
-    document.body.appendChild(toastEl);
-    const attemptExport = async (retryCount = 0): Promise<void> => {
-        toastEl.textContent = '🔑 Đang xác thực Google...';
-        sessionStorage.removeItem('googleOAuthToken');
-        await loginWithGoogleForceConsent();
-        let token = sessionStorage.getItem('googleOAuthToken');
-        if (!token) throw new Error('Không thể lấy token xác thực.');
-        toastEl.textContent = '📊 Đang tạo Google Sheet...';
-        const { exportToGoogleSheet } = await import('./services/googleSheetsService');
-        const sortedList = getSortedStaffForExport();
-        const [yearVal, monthVal] = monthYear.split('-').map(Number);
-        // --- Build Rows ---
-        const rows: (string | number)[][] = [];
-        // Row 0: Top Headers
-        const row0 = ['STT', 'HỌ VÀ TÊN', 'GIỜ CÔNG', '', '', 'SỐ NGÀY SBH', '', '', 'SỐ LẦN', ''];
-        for (let w = 0; w < Math.ceil(duration / 7); w++) {
-             row0.push(`TUẦN ${w+1}`);
-             for (let j = 0; j < 6; j++) row0.push('');
-        }
-        row0.length = 10 + duration; // Cut off to exact duration
-        rows.push(row0);
-        // Row 1: Sub Headers
-        const row1 = ['', '', 'SBH', 'TV', 'TỔNG', 'GH', 'KH', 'TN', 'ĐỔI', 'OFF'];
-        for (let d = 1; d <= duration; d++) {
-             const date = new Date(yearVal, monthVal - 1, startDay + d - 1);
-             const dowStr = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()];
-             row1.push(`${date.getDate()}\n${dowStr}`);
-        }
-        rows.push(row1);
-        // Rows: Staff Data
-        sortedList.forEach((staff, i) => {
-            const specialHours = calculateSpecialHours(staff, includeTnInSbh);
-            const normalHours = calculateNormalHours(staff);
-            const totalHours = calculateTotalHours(staff);
-            const stats = staff.stats;
-            const rowData: (string | number)[] = [
-                i + 1,
-                staff.name,
-                Math.round(specialHours),
-                Math.round(normalHours),
-                Math.round(totalHours),
-                stats.gh || '-',
-                stats.kho || '-',
-                stats.tn || '-',
-                stats.swapCount || '-',
-                stats.offDays || '-'
-            ];
-            for (let d = 1; d <= duration; d++) {
-                 const info = staff.schedule[d];
-                 if (!info || info.role === '') {
-                     rowData.push('');
-                     continue;
-                 }
-                 if (info.role === 'OFF') {
-                     rowData.push('OFF');
-                 } else {
-                     let text = info.shift;
-                     if (info.role.includes('(GH)')) text += '\nGH';
-                     else if (info.role.includes('(Kho)')) text += '\nKH';
-                     else if (info.role.includes('(TN)')) text += '\nTN';
-                     rowData.push(text);
-                 }
-            }
-            rows.push(rowData);
-        });
-        // --- Build Formatting Requests ---
-        const formattingRequests = (sheetId: number) => {
-            const reqs: GoogleSheetsRequest[] = [];
-            // Fix: Freeze 2 rows and 2 cols FIRST, before merging!
-            reqs.push({
-                updateSheetProperties: {
-                    properties: { sheetId, gridProperties: { frozenRowCount: 2, frozenColumnCount: 2 } },
-                    fields: 'gridProperties(frozenRowCount,frozenColumnCount)'
-                }
-            });
-            // Merges
-            const merges = [
-                { startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: 1 }, // STT
-                { startRowIndex: 0, endRowIndex: 2, startColumnIndex: 1, endColumnIndex: 2 }, // Ho ten
-                { startRowIndex: 0, endRowIndex: 1, startColumnIndex: 2, endColumnIndex: 5 }, // Gio cong
-                { startRowIndex: 0, endRowIndex: 1, startColumnIndex: 5, endColumnIndex: 8 }, // Ngay sbh
-                { startRowIndex: 0, endRowIndex: 1, startColumnIndex: 8, endColumnIndex: 10 }, // So lan
-            ];
-            for (let w = 0; w < Math.ceil(duration / 7); w++) {
-                const s = 10 + w * 7;
-                const e = Math.min(s + 7, 10 + duration);
-                if (e > s) merges.push({ startRowIndex: 0, endRowIndex: 1, startColumnIndex: s, endColumnIndex: e });
-            }
-            merges.forEach(m => {
-                reqs.push({
-                    mergeCells: { range: { sheetId, ...m }, mergeType: "MERGE_ALL" }
-                });
-            });
-            // Base Header formatting
-            reqs.push({
-                repeatCell: {
-                    range: { sheetId, startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: 10 + duration },
-                    cell: {
-                        userEnteredFormat: {
-                            textFormat: { bold: true, fontSize: 10 },
-                            horizontalAlignment: 'CENTER',
-                            verticalAlignment: 'MIDDLE',
-                            backgroundColorStyle: { rgbColor: { red: 248/255, green: 250/255, blue: 252/255 } } // bg-slate-50
-                        }
-                    },
-                    fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment,backgroundColorStyle)'
-                }
-            });
-            // Header block group colors
-            const headerBlockFormats = [
-                { sCol: 2, eCol: 5, bg: { red: 240/255, green: 249/255, blue: 255/255 }, fg: { red: 7/255, green: 89/255, blue: 133/255 } }, // Gio cong (sky)
-                { sCol: 5, eCol: 8, bg: { red: 253/255, green: 244/255, blue: 255/255 }, fg: { red: 134/255, green: 25/255, blue: 143/255 } }, // Ngay SBH (fuchsia)
-                { sCol: 8, eCol: 10, bg: { red: 255/255, green: 247/255, blue: 237/255 }, fg: { red: 154/255, green: 52/255, blue: 18/255 } }, // So lan (orange)
-                { sCol: 10, eCol: 10 + duration, bg: { red: 240/255, green: 253/255, blue: 250/255 }, fg: { red: 17/255, green: 94/255, blue: 89/255 } }, // Tuan (teal)
-            ];
-            headerBlockFormats.forEach(h => {
-                reqs.push({
-                    repeatCell: {
-                        range: { sheetId, startRowIndex: 0, endRowIndex: 2, startColumnIndex: h.sCol, endColumnIndex: h.eCol },
-                        cell: {
-                            userEnteredFormat: {
-                                backgroundColorStyle: { rgbColor: h.bg },
-                                textFormat: { bold: true, fontSize: 10, foregroundColorStyle: { rgbColor: h.fg } },
-                                horizontalAlignment: 'CENTER',
-                                verticalAlignment: 'MIDDLE'
-                            }
-                        },
-                        fields: 'userEnteredFormat(backgroundColorStyle,textFormat,horizontalAlignment,verticalAlignment)'
-                    }
-                });
-            });
-            // (Frozen properties moved to the top)
-            // Column widths
-            const colWidths = [
-                { startIndex: 0, endIndex: 1, width: 40 }, // STT
-                { startIndex: 1, endIndex: 2, width: 150 }, // Ho ten
-                { startIndex: 2, endIndex: 10, width: 45 }, // Metrics
-                { startIndex: 10, endIndex: 10 + duration, width: 50 }, // Days
-            ];
-            colWidths.forEach(cw => {
-                reqs.push({
-                    updateDimensionProperties: {
-                        range: { sheetId, dimension: "COLUMNS", startIndex: cw.startIndex, endIndex: cw.endIndex },
-                        properties: { pixelSize: cw.width },
-                        fields: 'pixelSize'
-                    }
-                });
-            });
-            // Data Rows Alignment
-            reqs.push({
-                repeatCell: {
-                    range: { sheetId, startRowIndex: 2, endRowIndex: rows.length, startColumnIndex: 0, endColumnIndex: 10 + duration },
-                    cell: {
-                        userEnteredFormat: {
-                            horizontalAlignment: 'CENTER',
-                            verticalAlignment: 'MIDDLE',
-                            textFormat: { bold: true, fontSize: 10 }
-                        }
-                    },
-                    fields: 'userEnteredFormat(horizontalAlignment,verticalAlignment,textFormat)'
-                }
-            });
-            // Base Name column alignment (Left)
-            reqs.push({
-                repeatCell: {
-                    range: { sheetId, startRowIndex: 2, endRowIndex: rows.length, startColumnIndex: 1, endColumnIndex: 2 },
-                    cell: {
-                        userEnteredFormat: {
-                            horizontalAlignment: 'LEFT',
-                            verticalAlignment: 'MIDDLE'
-                        }
-                    },
-                    fields: 'userEnteredFormat(horizontalAlignment,verticalAlignment)'
-                }
-            });
-            // Name column colors based on gender
-            sortedList.forEach((staff, index) => {
-                const isNam = staff.gender === 'Nam';
-                reqs.push({
-                    repeatCell: {
-                        range: { sheetId, startRowIndex: 2 + index, endRowIndex: 3 + index, startColumnIndex: 1, endColumnIndex: 2 },
-                        cell: {
-                            userEnteredFormat: {
-                                textFormat: { 
-                                    bold: true, 
-                                    fontSize: 10, 
-                                    foregroundColorStyle: { 
-                                        rgbColor: isNam ? { red: 2/255, green: 132/255, blue: 199/255 } : { red: 225/255, green: 29/255, blue: 72/255 } 
-                                    } 
-                                }
-                            }
-                        },
-                        fields: 'userEnteredFormat.textFormat'
-                    }
-                });
-            });
-            // Conditional Formats for Tags
-            const addCondRule = (text: string, bg: RgbColor, fg: RgbColor) => {
-                reqs.push({
-                    addConditionalFormatRule: {
-                        rule: {
-                            ranges: [{ sheetId, startRowIndex: 2, endRowIndex: rows.length, startColumnIndex: 10, endColumnIndex: 10 + duration }],
-                            booleanRule: {
-                                condition: { type: "TEXT_CONTAINS", values: [{ userEnteredValue: text }] },
-                                format: { backgroundColorStyle: { rgbColor: bg }, textFormat: { foregroundColorStyle: { rgbColor: fg }, bold: true } }
-                            }
-                        },
-                        index: 0
-                    }
-                });
-            };
-            // GH: amber #fef3c7 (254, 243, 199) -> fg #92400e (146, 64, 14)
-            addCondRule("GH", { red: 254/255, green: 243/255, blue: 199/255 }, { red: 146/255, green: 64/255, blue: 14/255 });
-            // KH: emerald #d1fae5 (209, 250, 229) -> fg #065f46 (6, 95, 70)
-            addCondRule("KH", { red: 209/255, green: 250/255, blue: 229/255 }, { red: 6/255, green: 95/255, blue: 70/255 });
-            // TN: purple #f3e8ff (243, 232, 255) -> fg #6b21a8 (107, 33, 168)
-            addCondRule("TN", { red: 243/255, green: 232/255, blue: 255/255 }, { red: 107/255, green: 33/255, blue: 168/255 });
-            // OFF: rose #ffe4e6 (255, 228, 230) -> fg #9f1239 (159, 18, 57)
-            addCondRule("OFF", { red: 255/255, green: 228/255, blue: 230/255 }, { red: 159/255, green: 18/255, blue: 57/255 });
-            // Sunday header text color
-            for (let d = 1; d <= duration; d++) {
-                 const date = new Date(yearVal, monthVal - 1, startDay + d - 1);
-                 if (date.getDay() === 0) { // Sunday
-                     reqs.push({
-                         repeatCell: {
-                             range: { sheetId, startRowIndex: 1, endRowIndex: 2, startColumnIndex: 9 + d, endColumnIndex: 10 + d },
-                             cell: { userEnteredFormat: { textFormat: { foregroundColorStyle: { rgbColor: { red: 225/255, green: 29/255, blue: 72/255 } }, bold: true } } },
-                             fields: 'userEnteredFormat.textFormat'
-                         }
-                     });
-                 }
-            }
-            return reqs;
-        };
-        toastEl.textContent = `📊 Đang ghi ${sortedList.length} nhân viên...`;
-        try {
-            const url = await exportToGoogleSheet(token, {
-                title: `Lịch Phân Ca - Tháng ${monthVal}/${yearVal}`,
-                rows,
-                sheetName: 'LichPhanCa',
-                formattingRequests
-            });
-            toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
-            toastEl.innerHTML = '';
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = '✅ Đã tạo Google Sheet thành công!';
-            msgDiv.style.fontWeight = '600';
-            toastEl.appendChild(msgDiv);
-            const btnRow = document.createElement('div');
-            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-            const openBtn = document.createElement('a');
-            openBtn.href = url;
-            openBtn.target = '_blank';
-            openBtn.textContent = '📄 Mở Sheet';
-            openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = 'Đóng';
-            closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
-            closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
-            btnRow.appendChild(openBtn);
-            btnRow.appendChild(closeBtn);
-            toastEl.appendChild(btnRow);
-            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
-        } catch (apiErr: unknown) {
-            if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
-                toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
-                return attemptExport(retryCount + 1);
-            }
-            throw apiErr;
-        }
-    };
-    try {
-        await attemptExport();
-    } catch (err: unknown) {
-        console.error('Google Sheets export error:', err);
-        const errMsg = getErrorMessage(err).toLowerCase();
-        if (errMsg.includes('popup') || errMsg.includes('cancel')) {
-            toastEl.textContent = '❌ Đăng nhập bị huỷ.';
-        } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
-            toastEl.textContent = '🌐 Không có kết nối mạng.';
-        } else if (errMsg === 'auth_expired') {
-            toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
-        } else {
-            toastEl.textContent = `⚠️ Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
-        }
-        toastEl.style.background = '#dc2626';
-        setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
-    }
+    await exportScheduleToGoogleSheet({
+        nams, nus, monthYear, duration, startDay, includeTnInSbh,
+        getSortedStaffForExport, showToast,
+    });
   };
   const handleSaveShift = (newShiftData: ScheduleInfo) => {
     if (!editingCellInfo) return;
@@ -1213,81 +855,17 @@ const App: React.FC = () => {
               </div>
           </div>
       )}
-      {/* GLOBAL HEADER ACTIONS PORTAL */}
-      {mounted && activeTab === 'tools-phanca' && document.getElementById('global-header-actions') && createPortal(
-          <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
-            {/* Data management group */}
-            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
-              <Button variant="ghost" onClick={handleImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  <span>Nhập NV</span>
-              </Button>
-              <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-              </a>
-              <Button variant="ghost" onClick={handleDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </Button>
-              <Button variant="ghost" onClick={() => setEditPatternModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400 font-semibold text-sm border-l border-slate-100 dark:border-slate-700 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                  <span>Ca Xoay</span>
-              </Button>
-            </div>
-            {/* Export group */}
-            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
-              <Button variant="ghost" onClick={handleExportAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" disabled={!hasStaff}>
-                  Tất cả
-              </Button>
-              <Button variant="ghost" onClick={handleExportWeekly} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 border-l border-slate-100 dark:border-slate-700 transition-colors" disabled={!hasStaff}>
-                  Tuần
-              </Button>
-              <Button variant="ghost" onClick={handleExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 border-l border-slate-700 transition-colors" disabled={!hasStaff}>
-                  Từng NV
-              </Button>
-              <Button variant="ghost" onClick={handleExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
-                  Excel
-              </Button>
-              <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border-l border-sky-200 transition-colors" disabled={!hasStaff} title="Xuất ra Google Sheet">
-                  Sheet
-              </Button>
-            </div>
-          </div>,
-          document.getElementById('global-header-actions')!
-      )}
-      {/* Mobile action bar — lg:hidden */}
-      <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <Button variant="ghost" onClick={handleImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-              Nhập NV
-          </Button>
-          <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="h-8 px-2.5 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors flex items-center justify-center shrink-0" title="Lấy DS NV">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-          </a>
-          <Button variant="ghost" onClick={handleDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-md transition-colors flex items-center gap-1.5 shrink-0" title="Xóa danh sách">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              Xoá
-          </Button>
-          <Button variant="ghost" onClick={() => setEditPatternModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-3 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-              Ca Xoay
-          </Button>
-          <div className="w-px h-5 bg-slate-200 shrink-0"></div>
-          <Button variant="ghost" onClick={handleExportAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-              Tất cả
-          </Button>
-          <Button variant="ghost" onClick={handleExportWeekly} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-              Tuần
-          </Button>
-          <Button variant="ghost" onClick={handleExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-slate-800 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-              Từng NV
-          </Button>
-          <Button variant="ghost" onClick={handleExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-emerald-600 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-              Excel
-          </Button>
-          <Button variant="ghost" onClick={handleExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-sky-700 bg-sky-50 rounded-md transition-colors shrink-0" disabled={!hasStaff} title="Xuất ra Google Sheet">
-              Sheet
-          </Button>
-      </div>
+      <PhanCaToolbar
+          hasStaff={hasStaff}
+          onImportClick={handleImportClick}
+          onDeleteStaffList={handleDeleteStaffList}
+          onOpenEditPattern={() => setEditPatternModalOpen(true)}
+          onExportAll={handleExportAll}
+          onExportWeekly={handleExportWeekly}
+          onExportIndividual={handleExportIndividual}
+          onExportExcel={handleExportExcel}
+          onExportGoogleSheet={handleExportGoogleSheet}
+      />
       <main className="max-w-[1600px] mx-auto px-6 mt-6">
         <div className={`bg-white p-5 border border-slate-200 mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
           <Controls 
