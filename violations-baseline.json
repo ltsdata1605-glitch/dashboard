@@ -574,14 +574,29 @@
     "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
+  "features/bi-dashboard/components/nhanvien/bonus/BonusDailyTable.tsx": {
+    "nonSemanticColor": 42,
+    "missingDarkVariant": 2,
+    "missingMobileToolbar": 0
+  },
+  "features/bi-dashboard/components/nhanvien/bonus/BonusDataModal.tsx": {
+    "nonSemanticColor": 6,
+    "missingDarkVariant": 9,
+    "missingMobileToolbar": 0
+  },
   "features/bi-dashboard/components/nhanvien/bonus/BonusMobileCard.tsx": {
     "nonSemanticColor": 12,
     "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
+  "features/bi-dashboard/components/nhanvien/bonus/bonusTableHelpers.tsx": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 4,
+    "missingMobileToolbar": 0
+  },
   "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
-    "nonSemanticColor": 58,
-    "missingDarkVariant": 21,
+    "nonSemanticColor": 10,
+    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
