@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product } from './types';
 import { parseCurrency } from './services/fileParser';
-import { XIcon, TrashIcon, MinusCircleIcon, PlusCircleIcon } from './Icons';
+import { TrashIcon, MinusCircleIcon, PlusCircleIcon } from './Icons';
 import { formatCurrency as formatCurrencyForDisplay } from './utils/format';
 import { ManualProductDoc } from './services/firebaseService';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 
 export interface ManualProductWithId extends Product {
     firebaseId?: string; // ID from Firestore document
@@ -220,27 +221,44 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
     }, 0);
 
     return (
-        <div className="fixed inset-0 z-[60] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
-            <div
-                className="relative bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[95vh]"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="p-5 flex-shrink-0 border-b border-slate-200">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-900">Nhập thông tin sản phẩm thủ công</h2>
-                            <p className="text-xs text-slate-500 mt-0.5">Ngành hàng: <b className="text-indigo-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</p>
-                        </div>
-                        <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors" aria-label="Đóng">
-                            <XIcon className="h-6 w-6" />
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            title="Nhập thông tin sản phẩm thủ công"
+            titleColorClass="text-slate-900"
+            subTitle={<>Ngành hàng: <b className="text-indigo-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</>}
+            maxWidth="lg"
+            footer={
+                <div className="flex justify-between items-center">
+                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-white hover:bg-slate-100 h-10 px-4 py-2">
+                        Đóng
+                    </Button>
+                    <div className="flex items-center gap-2">
+                        {selectedCount > 0 && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handlePrintSelected}
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-5 py-2"
+                            >
+                                In đã chọn ({selectedCount})
+                            </Button>
+                        )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={handlePrintAll}
+                            disabled={manualProducts.length === 0}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            In tất cả ({manualProducts.length})
                         </Button>
                     </div>
                 </div>
-
-                {/* Scrollable body */}
-                <div className="flex-grow overflow-y-auto">
-                    {/* Form */}
+            }
+        >
+            <div className="-m-5">
+                {/* Form */}
                     <form id="manual-form-top" onSubmit={editingId ? handleSaveEdit : handleAddProduct} className="p-5 space-y-3 bg-slate-50 border-b border-slate-200">
                         {editingId && (
                             <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
@@ -372,37 +390,8 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 flex justify-between items-center border-t border-slate-200 flex-shrink-0 bg-slate-50 rounded-b-2xl">
-                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-white hover:bg-slate-100 h-10 px-4 py-2">
-                        Đóng
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        {selectedCount > 0 && (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={handlePrintSelected}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-5 py-2"
-                            >
-                                In đã chọn ({selectedCount})
-                            </Button>
-                        )}
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={handlePrintAll}
-                            disabled={manualProducts.length === 0}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            In tất cả ({manualProducts.length})
-                        </Button>
-                    </div>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 

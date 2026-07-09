@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
-import { XIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 
 interface LayoutSelectionModalProps {
     onSelect: (tagsPerPage: PrintSettings['tagsPerPage']) => void;
@@ -46,23 +46,14 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
     ];
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
-            <div
-                className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-                    <h2 className="text-xl font-bold text-slate-900">Chọn Kiểu & Bố Cục In</h2>
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-                        aria-label="Đóng"
-                    >
-                        <XIcon className="h-6 w-6" />
-                    </Button>
-                </div>
-
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            title="Chọn Kiểu & Bố Cục In"
+            titleColorClass="text-slate-900"
+            maxWidth="2xl"
+        >
+            <div className="space-y-4">
                 <div className="py-2">
                     <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">1. Chọn Kiểu Sticker</h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -108,8 +99,7 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
                     </div>
                 </div>
             </div>
-
-        </div>
+        </Modal>
     );
 };
 

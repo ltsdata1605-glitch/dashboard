@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllUsers, updateUserRole, clearAllUsers, deleteUserDoc } from './services/firebaseService';
-import { XIcon, UserIcon, ShieldIcon, ShieldAlertIcon, Loader2Icon, Trash2Icon } from './Icons';
+import { UserIcon, ShieldIcon, ShieldAlertIcon, Loader2Icon, Trash2Icon } from './Icons';
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 import { StickerEventUserRecord } from './types';
 
 interface UserManagementModalProps {
@@ -126,22 +127,40 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-[70] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-            <div className="bg-white rounded-2xl shadow-2xl flex flex-col max-w-2xl w-full max-h-[80vh] overflow-hidden">
-                <div className="flex justify-between items-center p-4 border-b border-slate-200">
-                    <div className="flex items-center gap-2">
-                        <UserIcon className="h-6 w-6 text-indigo-600" />
-                        <h2 className="text-xl font-bold text-slate-900">Quản lý người dùng</h2>
-                    </div>
-                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
-                        <XIcon className="h-6 w-6" />
+        <>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={
+                <span className="flex items-center gap-2 text-xl">
+                    <UserIcon className="h-6 w-6 text-indigo-600" />
+                    Quản lý người dùng
+                </span>
+            }
+            titleColorClass="text-slate-900"
+            maxWidth="2xl"
+            footer={
+                <div className="flex justify-between items-center">
+                    <Button
+                        variant="ghost"
+                        onClick={handleResetAllUsers}
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-sm"
+                    >
+                        <Trash2Icon className="h-4 w-4" />
+                        Xóa tất cả người dùng
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={onClose}
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors font-medium"
+                    >
+                        Đóng
                     </Button>
                 </div>
-
-                <div className="p-4 flex-grow overflow-auto">
+            }
+        >
+                <div className="-m-5 p-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12">
                             <Loader2Icon className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
@@ -190,31 +209,16 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                         </div>
                     )}
                 </div>
-
-                <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
-                    <Button
-                        variant="ghost"
-                        onClick={handleResetAllUsers}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-sm"
-                    >
-                        <Trash2Icon className="h-4 w-4" />
-                        Xóa tất cả người dùng
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors font-medium"
-                    >
-                        Đóng
-                    </Button>
-                </div>
-            </div>
+        </Modal>
 
             {/* Confirmation Modal */}
             {confirmAction && (
-                <div className="fixed inset-0 z-[80] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-                    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
-                        <div className="flex items-center gap-3 mb-4">
+                <Modal
+                    isOpen={true}
+                    onClose={() => setConfirmAction(null)}
+                    maxWidth="sm"
+                    title={
+                        <span className="flex items-center gap-3 text-lg">
                             {confirmAction.type === 'error' ? (
                                 <ShieldAlertIcon className="h-6 w-6 text-rose-600" />
                             ) : confirmAction.type === 'info' ? (
@@ -222,9 +226,11 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                             ) : (
                                 <ShieldAlertIcon className="h-6 w-6 text-amber-600" />
                             )}
-                            <h3 className="text-lg font-bold text-slate-900">{confirmAction.title}</h3>
-                        </div>
-                        <p className="text-slate-600 mb-6">{confirmAction.message}</p>
+                            {confirmAction.title}
+                        </span>
+                    }
+                    titleColorClass="text-slate-900"
+                    footer={
                         <div className="flex justify-end gap-3">
                             {(confirmAction.type === 'delete_user' || confirmAction.type === 'reset_all') && (
                                 <Button
@@ -255,10 +261,12 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                 {confirmAction.type === 'error' || confirmAction.type === 'info' ? 'Đóng' : 'Xác nhận'}
                             </Button>
                         </div>
-                    </div>
-                </div>
+                    }
+                >
+                    <p className="text-slate-600">{confirmAction.message}</p>
+                </Modal>
             )}
-        </div>
+        </>
     );
 };
 

@@ -9,6 +9,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon } from '../Icons';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Modal } from '../../../../components/shared/ui/Modal';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
@@ -22,28 +23,29 @@ const ImportPrevMonthModal: React.FC<{
     onSave: (data: string) => void;
 }> = ({ isOpen, onClose, onSave }) => {
     const [pastedData, setPastedData] = useState('');
-    if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white uppercase">Nhập dữ liệu Bán kèm cùng kỳ</h3>
-                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 hover:bg-slate-100 rounded-full"><XIcon className="h-5 w-5" /></Button>
-                </div>
-                <p className="text-xs text-slate-500 mb-4">Dán dữ liệu bảng báo cáo "Hiệu quả bán kèm" của tháng trước hoặc cùng kỳ từ HRM vào đây.</p>
-                <textarea
-                    autoFocus
-                    value={pastedData}
-                    onChange={e => setPastedData(e.target.value)}
-                    placeholder="Click vào đây rồi nhấn Ctrl + V để dán bảng từ HRM..."
-                    className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-                />
-                <div className="mt-6 flex gap-3">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Nhập dữ liệu Bán kèm cùng kỳ"
+            titleColorClass="text-slate-800 dark:text-white"
+            maxWidth="md"
+            footer={
+                <div className="flex gap-3">
                     <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</Button>
                     <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</Button>
                 </div>
-            </div>
-        </div>
+            }
+        >
+            <p className="text-xs text-slate-500 mb-4">Dán dữ liệu bảng báo cáo "Hiệu quả bán kèm" của tháng trước hoặc cùng kỳ từ HRM vào đây.</p>
+            <textarea
+                autoFocus
+                value={pastedData}
+                onChange={e => setPastedData(e.target.value)}
+                placeholder="Click vào đây rồi nhấn Ctrl + V để dán bảng từ HRM..."
+                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+            />
+        </Modal>
     );
 };
 

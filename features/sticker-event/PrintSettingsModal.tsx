@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import { PrintSettings } from './services/printService';
-import { XIcon, TrashIcon } from './Icons';
+import { TrashIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 
 interface PrintSettingsModalProps {
     settings: PrintSettings;
@@ -134,23 +135,25 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
-            <div 
-                className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto" 
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-slate-900">Thiết kế Mẫu In Sticker</h2>
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            title="Thiết kế Mẫu In Sticker"
+            titleColorClass="text-slate-900"
+            maxWidth="sm"
+            footer={
+                <div className="text-right">
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-                        aria-label="Đóng"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
                     >
-                        <XIcon className="h-6 w-6" />
+                        Xong
                     </Button>
                 </div>
-
+            }
+        >
+            <div className="space-y-6">
                 <div>
                     <h3 className="text-base font-semibold text-slate-700 mb-2">Thông tin hiển thị</h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -205,18 +208,8 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
                         <CheckboxOption id="sortByName" label="Sắp xếp theo tên sản phẩm (A-Z)" checked={settings.sortByName} onChange={handleCheckboxChange} />
                     </div>
                 </div>
-                
-                <div className="text-right">
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
-                    >
-                        Xong
-                    </Button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 

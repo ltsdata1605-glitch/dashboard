@@ -10,6 +10,7 @@ import * as db from '../utils/db';
 import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
+import { Modal } from '../../../components/shared/ui/Modal';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
@@ -36,8 +37,6 @@ const BulkRenameModal: React.FC<{
         }
     }, [isOpen]); // Execute only when modal opens/closes
 
-    if (!isOpen) return null;
-
     const availableGroups = Array.from(new Set(
         competitions.map(c => {
             let defaultGroup = c.criteria === 'SLLK' ? 'Số lượng' : c.criteria === 'DTLK' ? 'Doanh thu' : c.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : c.criteria;
@@ -48,29 +47,33 @@ const BulkRenameModal: React.FC<{
     const filteredComps = competitions.filter(comp => comp.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl w-full max-w-3xl flex flex-col h-[85vh] border border-slate-200/50 dark:border-slate-700 animate-in zoom-in-95 overflow-hidden">
-                <div className="p-4 border-b border-sky-100/50 dark:border-slate-700 bg-sky-50/50 dark:bg-slate-800/50 flex justify-between items-center shrink-0 gap-4">
-                    <div className="flex-1">
-                        <h3 className="font-black text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</h3>
-                        <p className="text-[10px] text-sky-600/70 font-bold uppercase tracking-widest mt-0.5">Cấu hình tên hiển thị và tái định vị các nhóm. Thông tin sẽ đồng bộ toàn báo cáo.</p>
-                    </div>
-                    <div className="w-64 shrink-0">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm nhóm BI..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
-                        />
-                    </div>
-                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 rounded-xl transition-colors shrink-0"><XIcon className="h-4 w-4 text-sky-600/60 dark:text-slate-400" /></Button>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={<span className="font-black text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</span>}
+            subTitle="Cấu hình tên hiển thị và tái định vị các nhóm. Thông tin sẽ đồng bộ toàn báo cáo."
+            maxWidth="2xl"
+            controls={
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm nhóm BI..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-40 sm:w-64 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                />
+            }
+            footer={
+                <div className="flex gap-3">
+                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
+                    <Button variant="ghost" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
                 </div>
-                <div className="p-3 flex-1 overflow-y-auto space-y-2 bg-white dark:bg-slate-800">
-                    <datalist id="group-list">
-                        {availableGroups.map(g => <option key={g} value={g} />)}
-                    </datalist>
-                    {filteredComps.length > 0 ? filteredComps.map(comp => (
+            }
+        >
+            <div className="-m-5 p-3 space-y-2">
+                <datalist id="group-list">
+                    {availableGroups.map(g => <option key={g} value={g} />)}
+                </datalist>
+                {filteredComps.length > 0 ? filteredComps.map(comp => (
                         <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
                             <div className="flex-1 min-w-0">
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên gốc trong BI</p>
@@ -100,13 +103,8 @@ const BulkRenameModal: React.FC<{
                             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
                             <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Không có nhóm nào để sửa.</p>
                         </div>}
-                </div>
-                <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50 shrink-0">
-                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
-                    <Button variant="ghost" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 

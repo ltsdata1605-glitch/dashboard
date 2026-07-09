@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
 import { collection, query, where, getDocs, deleteDoc, doc, limit, Query, DocumentData } from 'firebase/firestore';
-import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
+import { Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 import { getErrorMessage } from '../../utils/dataUtils';
 import { StickerEventUserRecord } from './types';
 
@@ -66,8 +67,6 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     }
   }, [isOpen, fetchUsers]);
 
-  if (!isOpen) return null;
-
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     fetchUsers(searchStoreId);
@@ -93,19 +92,19 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-rose-50">
-          <div className="flex items-center gap-2 text-rose-700">
-            <ShieldAlert className="w-5 h-5" />
-            <h2 className="text-lg font-bold">Công cụ Super Admin</h2>
-          </div>
-          <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 hover:bg-rose-100 rounded-full transition-colors">
-            <X className="w-5 h-5 text-rose-700" />
-          </Button>
-        </div>
-
-        <div className="p-6 space-y-6 overflow-y-auto">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <span className="flex items-center gap-2 text-lg">
+          <ShieldAlert className="w-5 h-5" />
+          Công cụ Super Admin
+        </span>
+      }
+      titleColorClass="text-rose-700"
+      maxWidth="2xl"
+    >
+      <div className="space-y-6">
           <form onSubmit={handleSearch} className="space-y-2">
             <label className="block text-sm font-medium text-slate-700">Tìm kiếm tài khoản theo Mã kho hoặc Tên đăng nhập</label>
             <div className="flex gap-2">
@@ -173,9 +172,8 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
               </div>
             )}
           </div>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

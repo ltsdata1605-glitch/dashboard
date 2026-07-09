@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { SavedList, SavedListItem } from './types';
 import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from './services/firebaseService';
-import { XIcon, TrashIcon } from './Icons';
+import { TrashIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
 import { Button } from '../../components/shared/ui/Button';
+import { Modal } from '../../components/shared/ui/Modal';
 
 interface SavedListsModalProps {
     storeId: string;
@@ -64,23 +65,14 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
-            <div 
-                className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-6 max-h-[90vh] flex flex-col" 
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-slate-900">Danh sách đã lưu</h2>
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-                        aria-label="Đóng"
-                    >
-                        <XIcon className="h-6 w-6" />
-                    </Button>
-                </div>
-
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            title="Danh sách đã lưu"
+            titleColorClass="text-slate-900"
+            maxWidth="2xl"
+        >
+            <div className="space-y-6 flex flex-col h-full">
                 {error && (
                     <div className="bg-rose-50 text-rose-600 p-3 rounded-md text-sm">
                         {error}
@@ -140,23 +132,24 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                     )}
                 </div>
 
-                <ConfirmModal
-                    isOpen={isConfirmOpen}
-                    onClose={() => setIsConfirmOpen(false)}
-                    onConfirm={executeDelete}
-                    message="Bạn có chắc chắn muốn xóa danh sách này?"
-                    title="Xác nhận xóa"
-                    confirmText="Xóa"
-                    type="danger"
-                />
-
-                <AlertModal
-                    isOpen={alertConfig.isOpen}
-                    onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
-                    message={alertConfig.message}
-                />
             </div>
-        </div>
+
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={executeDelete}
+                message="Bạn có chắc chắn muốn xóa danh sách này?"
+                title="Xác nhận xóa"
+                confirmText="Xóa"
+                type="danger"
+            />
+
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                message={alertConfig.message}
+            />
+        </Modal>
     );
 };
 

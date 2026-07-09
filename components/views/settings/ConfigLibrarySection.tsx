@@ -3,6 +3,7 @@ import type { User } from 'firebase/auth';
 import { Icon } from '../../common/Icon';
 import { type SharedConfig } from '../../../services/firestoreService';
 import { Button } from '../../shared/ui/Button';
+import { Modal } from '../../shared/ui/Modal';
 
 interface ConfigLibrarySectionProps {
     sharedConfigs: SharedConfig[];
@@ -98,42 +99,43 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                 </div>
             )}
             
-            {showShareModal && (
-                <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-5 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80">
-                            <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                <Icon name="share-2" size={5} className="text-indigo-500" />
-                                Chia Sẻ Cấu Hình
-                            </h3>
-                            <Button variant="ghost" onClick={() => setShowShareModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><Icon name="x" size={5} /></Button>
-                        </div>
-                        <div className="p-5 space-y-4">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
-                                Mẫu cấu hình này sẽ bao gồm toàn bộ cài đặt <strong>bộ lọc, sắp xếp, ẩn hiện cột, cấu trúc bảng tự do</strong> hiện tại của bạn.
-                            </p>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Mô tả Cấu Hình <span className="text-rose-500">*</span></label>
-                                <input 
-                                    type="text" 
-                                    autoFocus
-                                    value={shareDescription}
-                                    onChange={e => setShareDescription(e.target.value)}
-                                    placeholder="Ví dụ: Mẫu Báo cáo Phụ Kiện T5/2024"
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:text-white"
-                                />
-                            </div>
-                        </div>
-                        <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/50 flex justify-end gap-3">
-                            <Button variant="ghost" onClick={() => setShowShareModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Hủy Bỏ</Button>
-                            <Button variant="ghost" onClick={onShareConfig} disabled={isSharing} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
-                                {isSharing ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="check" size={4} />}
-                                {isSharing ? 'Đang Đăng...' : 'Đăng Tải'}
-                            </Button>
-                        </div>
+            <Modal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                title={
+                    <span className="flex items-center gap-2">
+                        <Icon name="share-2" size={5} className="text-indigo-500" />
+                        Chia Sẻ Cấu Hình
+                    </span>
+                }
+                maxWidth="sm"
+                footer={
+                    <div className="flex justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setShowShareModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Hủy Bỏ</Button>
+                        <Button variant="ghost" onClick={onShareConfig} disabled={isSharing} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
+                            {isSharing ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="check" size={4} />}
+                            {isSharing ? 'Đang Đăng...' : 'Đăng Tải'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Mẫu cấu hình này sẽ bao gồm toàn bộ cài đặt <strong>bộ lọc, sắp xếp, ẩn hiện cột, cấu trúc bảng tự do</strong> hiện tại của bạn.
+                    </p>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Mô tả Cấu Hình <span className="text-rose-500">*</span></label>
+                        <input
+                            type="text"
+                            autoFocus
+                            value={shareDescription}
+                            onChange={e => setShareDescription(e.target.value)}
+                            placeholder="Ví dụ: Mẫu Báo cáo Phụ Kiện T5/2024"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:text-white"
+                        />
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };
