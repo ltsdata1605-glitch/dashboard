@@ -92,6 +92,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             // 1. Parse the main config sheet ("Ngành hàng" or sheet 0)
             const mainSheetName = workbook.SheetNames.find(name => name.toLowerCase().includes('ngành hàng')) || workbook.SheetNames[0];
             const mainSheet = workbook.Sheets[mainSheetName];
+            // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
             const parsedRows: any[][] = XLSX.utils.sheet_to_json(mainSheet, { header: 1, defval: '' });
             
             if (parsedRows.length < 2) {
@@ -159,6 +160,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             multiplierSheetNames.forEach(sheetName => {
                 try {
                     const sheet = workbook.Sheets[sheetName];
+                    // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim().toLowerCase().normalize('NFC'));
@@ -210,6 +212,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             if (htxSheetName) {
                 try {
                     const sheet = workbook.Sheets[htxSheetName];
+                    // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim());
@@ -264,6 +267,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             if (biSheetName) {
                 try {
                     const sheet = workbook.Sheets[biSheetName];
+                    // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim());
@@ -415,6 +419,7 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
+                // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                 const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
 
                 const map: DepartmentMap = {};

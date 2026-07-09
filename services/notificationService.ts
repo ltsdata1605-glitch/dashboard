@@ -7,7 +7,7 @@ export interface AppNotification {
     message: string;
     type: 'success' | 'warning' | 'info' | 'error';
     read: boolean;
-    createdAt: any;
+    createdAt: Timestamp;
 }
 
 // Bắn thông báo cá nhân

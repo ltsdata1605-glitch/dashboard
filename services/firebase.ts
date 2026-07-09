@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signOut, signInWithPopup } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4",
@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let analytics: any = null;
+let analytics: Analytics | null = null;
 isSupported().then(yes => {
     if (yes) {
         analytics = getAnalytics(app);

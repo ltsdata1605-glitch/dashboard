@@ -155,7 +155,7 @@ export function calculateWarehouseSummary(
 ): WarehouseSummaryRow[] | null {
     if (!dataForWarehouseSummary || dataForWarehouseSummary.length === 0) return [];
 
-    const summaryByKho: { [key: string]: any } = {};
+    const summaryByKho: { [key: string]: { customers: Set<string>; doanhThuTraCham: number; slThuHo: number; metrics: Omit<WarehouseSummaryRow['metrics'], 'byProduct'> & { byProduct: Record<string, MetricValues> } } } = {};
     const initMetricValues = (): MetricValues => ({ quantity: 0, revenue: 0, revenueQD: 0 });
 
     for (let i = 0, len = dataForWarehouseSummary.length; i < len; i++) {

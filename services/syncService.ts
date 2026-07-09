@@ -44,7 +44,7 @@ export const pushSettingsToFirebase = async () => {
         const allSettings = await getAllSettings();
         
         // Lọc chỉ đồng bộ các cấu hình tĩnh, dung lượng nhẹ. KHÔNG ĐỒNG BỘ data lớn.
-        const settingsToSync: Record<string, any> = {};
+        const settingsToSync: Record<string, unknown> = {};
         for (const key of Object.keys(allSettings)) {
             if (
                 !EXCLUDED_SYNC_KEYS.has(key) && 
@@ -103,7 +103,7 @@ export const initSyncListeners = () => {
     };
 
     // Khi người dùng thay đổi setting (IndexedDB trigger event) -> debounced sync
-    const handleSettingChanged = (e: any) => {
+    const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string }>) => {
         const key = e.detail?.key;
         if (key && (EXCLUDED_SYNC_KEYS.has(key) || key.startsWith('cached_'))) return;
         

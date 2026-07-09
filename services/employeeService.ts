@@ -443,7 +443,7 @@ export function processEmployeeData(
         employeesByDept[emp.department].push(emp);
     });
 
-    const deptThresholds: { [key: string]: any } = {};
+    const deptThresholds: { [key: string]: { dtqd_40p?: number; slCE_ICT_30p?: number; slTraCham_CE_ICT_30p?: number } } = {};
     for (const dept in employeesByDept) {
         const deptEmployees = employeesByDept[dept];
         const count = deptEmployees.length;

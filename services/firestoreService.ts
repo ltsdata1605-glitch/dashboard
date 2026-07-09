@@ -1,23 +1,27 @@
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
 
+// Nhóm ngành hàng "groups" của productConfig có thể ở dạng Set (runtime) hoặc string[] (đã phục hồi từ JSON)
+type ProductConfigGroups = Record<string, Set<string> | string[]>;
+
 export const syncToCloud = async (
-    user: User, 
-    payload: any
+    user: User,
+    payload: Record<string, unknown>
 ) => {
     if (!user) throw new Error("Chưa đăng nhập, không thể đồng bộ.");
 
     // Deep clone to safely convert Set objects to Arrays for Firebase compatibility
-    const safePayload = { ...payload };
-    if (safePayload.productConfig && safePayload.productConfig.groups) {
+    const safePayload: Record<string, unknown> = { ...payload };
+    const payloadProductConfig = safePayload.productConfig as { groups?: ProductConfigGroups } | undefined;
+    if (payloadProductConfig && payloadProductConfig.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
-        for (const [key, value] of Object.entries(safePayload.productConfig.groups)) {
+        for (const [key, value] of Object.entries(payloadProductConfig.groups)) {
             clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
         }
         safePayload.productConfig = {
-            ...safePayload.productConfig,
+            ...payloadProductConfig,
             groups: clonedGroups
         };
     }
@@ -78,8 +82,8 @@ export interface SharedConfig {
     role: string;
     departmentId: string;
     description: string;
-    createdAt: any;
-    payload: any;
+    createdAt: Timestamp;
+    payload: Record<string, unknown>;
 }
 
 export const shareCloudConfig = async (
@@ -87,23 +91,24 @@ export const shareCloudConfig = async (
     userRole: string,
     departmentId: string,
     description: string,
-    payload: any
+    payload: Record<string, unknown>
 ) => {
     if (!user) throw new Error("Chưa đăng nhập, không thể chia sẻ.");
 
-    const safePayload = { ...payload };
-    if (safePayload.productConfig && safePayload.productConfig.groups) {
+    const safePayload: Record<string, unknown> = { ...payload };
+    const payloadProductConfig = safePayload.productConfig as { groups?: ProductConfigGroups } | undefined;
+    if (payloadProductConfig && payloadProductConfig.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
-        for (const [key, value] of Object.entries(safePayload.productConfig.groups)) {
+        for (const [key, value] of Object.entries(payloadProductConfig.groups)) {
             clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
         }
         safePayload.productConfig = {
-            ...safePayload.productConfig,
+            ...payloadProductConfig,
             groups: clonedGroups
         };
     }
 
-    const cleanPayload: any = {};
+    const cleanPayload: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(safePayload)) {
         if (value !== undefined) {
             cleanPayload[key] = value;
@@ -169,7 +174,7 @@ export const deleteSharedConfig = async (configId: string) => {
     await deleteDoc(doc(db, 'shared_configs', configId));
 };
 
-export const syncScheduleToCloud = async (user: User, key: string, value: any) => {
+export const syncScheduleToCloud = async (user: User, key: string, value: unknown) => {
     if (!user) return;
     const safeKey = key.replace(/::/g, '__');
     const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);
@@ -238,52 +243,55 @@ export const isHeavySyncKey = (key: string): boolean => {
     return false;
 };
 
-export const syncHeavySettingToCloud = async (user: User, key: string, value: any) => {
+export const syncHeavySettingToCloud = async (user: User, key: string, value: unknown) => {
     if (!user) return;
     const docRef = doc(db, 'users', user.uid, 'configs', key);
-    
+
     // Safety check for Set conversion (like in productConfig.groups)
     let safeValue = value;
-    if (key === 'productConfig' && value && value.config && value.config.groups) {
+    const valueWithConfig = value as { config?: { groups?: ProductConfigGroups } } | undefined;
+    if (key === 'productConfig' && valueWithConfig && valueWithConfig.config && valueWithConfig.config.groups) {
         const clonedGroups: { [key: string]: string[] } = {};
-        for (const [gKey, gVal] of Object.entries(value.config.groups)) {
+        for (const [gKey, gVal] of Object.entries(valueWithConfig.config.groups)) {
             clonedGroups[gKey] = gVal instanceof Set ? Array.from(gVal) : (gVal as string[]);
         }
         safeValue = {
-            ...value,
+            ...valueWithConfig,
             config: {
-                ...value.config,
+                ...valueWithConfig.config,
                 groups: clonedGroups
             }
         };
     }
-    
+
     const cleanValue = JSON.parse(JSON.stringify(safeValue, (k, v) => v === undefined ? null : v));
-    
+
     await setDoc(docRef, {
         value: cleanValue,
         updatedAt: serverTimestamp()
     }, { merge: false });
 };
 
-export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<string, { value: any, updatedAt: number }>> => {
+export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<string, { value: unknown, updatedAt: number }>> => {
     if (!user) return {};
     const { collection, getDocs } = await import('firebase/firestore');
     const configsRef = collection(db, 'users', user.uid, 'configs');
     const snap = await getDocs(configsRef);
-    
-    const settings: Record<string, any> = {};
+
+    const settings: Record<string, { value: unknown, updatedAt: number }> = {};
     snap.forEach(docSnap => {
         const key = docSnap.id;
         const data = docSnap.data();
         if (data && data.value !== undefined) {
             let val = data.value;
-            if (key === 'productConfig' && val && val.config && val.config.groups) {
+            const valWithConfig = val as { config?: { groups?: ProductConfigGroups } } | undefined;
+            if (key === 'productConfig' && valWithConfig && valWithConfig.config && valWithConfig.config.groups) {
                 const restoredGroups: { [key: string]: Set<string> } = {};
-                for (const [gKey, gVal] of Object.entries(val.config.groups)) {
+                for (const [gKey, gVal] of Object.entries(valWithConfig.config.groups)) {
                     restoredGroups[gKey] = new Set(gVal as string[]);
                 }
-                val.config.groups = restoredGroups;
+                valWithConfig.config.groups = restoredGroups;
+                val = valWithConfig;
             }
             settings[key] = {
                 value: val,

@@ -36,10 +36,11 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
         data = null; // Tối ưu GC: Giải phóng Uint8Array
         
         const sheetName = workbook.SheetNames[0];
-        let worksheet: any = workbook.Sheets[sheetName];
+        let worksheet: XLSX.WorkSheet | null = workbook.Sheets[sheetName];
 
         postStatus({ message: `Trích xuất dữ liệu...`, type: 'info', progress: 50 });
         // ÉP CÂN DỮ LIỆU: Chỉ đọc dạng mảng 2 chiều để tránh phình to Object trong RAM với các string keys thừa
+        // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
         const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
         
         // Giải phóng workbook và worksheet sớm nhất có thể
@@ -74,7 +75,7 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
                 const rowArray = rows[r];
                 if (!rowArray || rowArray.length === 0) continue;
                 
-                const rowObj: any = {};
+                const rowObj: Record<string, unknown> = {};
                 let hasData = false;
                 for (const idxStr of Object.keys(reqIndices)) {
                     const idx = parseInt(idxStr);

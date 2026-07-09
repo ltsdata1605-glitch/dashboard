@@ -2,7 +2,7 @@
  * Helper service to write check-thuong state directly into the iframe's IndexedDB 'keyval-store' 
  * from the parent context (since they share the same origin).
  */
-export function saveCheckThuongDataToIframeDb(value: any): Promise<void> {
+export function saveCheckThuongDataToIframeDb(value: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
         try {
             const request = indexedDB.open('keyval-store', 1);

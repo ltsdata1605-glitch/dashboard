@@ -609,6 +609,15 @@ export interface CrossSellingConfig {
     sections: CrossSellingDynamicSection[]; // Cấu trúc Dòng nhóm theo Section
 }
 
+// Lịch đã lưu ở TrendChart (components/charts/TrendChart.tsx)
+export interface SavedCalendar {
+    id: string;
+    parentGroup: string[];
+    childGroup: string[];
+    month: string;
+    metric: string;
+}
+
 export type KpiMetricSource = 
   | 'doanhThuQD' 
   | 'totalRevenue' 

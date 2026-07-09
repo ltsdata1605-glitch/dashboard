@@ -146,6 +146,8 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
     return Promise.all(promises);
 };
 
+// any: được gọi từ >20 nơi ở nhiều module khác nhau (components/features/hooks) với các field options khác nhau;
+// siết kiểu ở đây sẽ kéo theo sửa hàng loạt file ngoài phạm vi module services/ đang làm — để lại cho đợt sau khi xử lý các module gọi nó.
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
     const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
@@ -520,7 +522,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // html-to-image has trouble with nested SVGs in foreignObject. Convert them to <img> tags.
     const liveSvgs = element.querySelectorAll('svg');
     const cloneSvgs = clone.querySelectorAll('svg');
-    cloneSvgs.forEach((svg: any, idx: number) => {
+    cloneSvgs.forEach((svg: SVGSVGElement, idx: number) => {
         // Handle Google Charts SVGs
         if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
             const currentWidthStr = svg.getAttribute('width');
@@ -542,7 +544,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // Use the LIVE element's SVGs (which have correct content) as the source
     const liveRechartsSvgs = element.querySelectorAll('svg.recharts-surface');
     const cloneRechartsSvgs = clone.querySelectorAll('svg.recharts-surface');
-    cloneRechartsSvgs.forEach((cloneSvg: any, idx: number) => {
+    cloneRechartsSvgs.forEach((cloneSvg: Element, idx: number) => {
         const liveSvg = idx < liveRechartsSvgs.length ? liveRechartsSvgs[idx] : null;
         const sourceSvg = liveSvg || cloneSvg;
         
@@ -559,7 +561,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
             // Inline computed styles for text elements (fonts, fills) 
             const liveTexts = sourceSvg.querySelectorAll('text, tspan');
-            svgClone.querySelectorAll('text, tspan').forEach((textEl: any, idx: number) => {
+            svgClone.querySelectorAll('text, tspan').forEach((textEl: SVGElement, idx: number) => {
                 const liveText = liveTexts[idx];
                 if (liveText) {
                     const computed = window.getComputedStyle(liveText);

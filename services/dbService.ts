@@ -10,7 +10,9 @@ import type {
     AnalysisRecord,
     Employee,
     HeadToHeadTableConfig,
-    FilterState
+    FilterState,
+    CrossSellingConfig,
+    SavedCalendar
 } from '../types';
 import { DepartmentMap } from './dataService';
 
@@ -99,7 +101,7 @@ export function getDb(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-export async function saveSetting(key: string, value: any, source?: string): Promise<void> {
+export async function saveSetting(key: string, value: unknown, source?: string): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -173,7 +175,7 @@ export async function saveSetting(key: string, value: any, source?: string): Pro
     }
 }
 
-export async function saveSettingFromCloud(key: string, value: any, updatedAt: number): Promise<void> {
+export async function saveSettingFromCloud(key: string, value: unknown, updatedAt: number): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -249,7 +251,7 @@ export async function saveSettingFromCloud(key: string, value: any, updatedAt: n
 }
 
 
-export async function getAllSettings(): Promise<Record<string, any>> {
+export async function getAllSettings(): Promise<Record<string, unknown>> {
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
@@ -274,7 +276,7 @@ export async function getAllSettings(): Promise<Record<string, any>> {
                         clearTimeout(timeoutId);
                         const keys = keysRequest.result;
                         const values = request.result;
-                        const settings: Record<string, any> = {};
+                        const settings: Record<string, unknown> = {};
                         for (let i = 0; i < keys.length; i++) {
                             settings[keys[i] as string] = values[i];
                         }
@@ -346,7 +348,7 @@ export async function clearAllSettings(): Promise<void> {
     }
 }
 
-export async function importAllSettings(settings: Record<string, any>): Promise<void> {
+export async function importAllSettings(settings: Record<string, unknown>): Promise<void> {
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
@@ -402,7 +404,7 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
     }
 }
 
-export async function mergeSettings(settings: Record<string, any>): Promise<void> {
+export async function mergeSettings(settings: Record<string, unknown>): Promise<void> {
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
@@ -1444,11 +1446,11 @@ export async function getGtdhTargets(): Promise<Record<string, number> | null> {
 }
 
 // --- Cross Selling Table Config ---
-export async function saveCrossSellingConfig(config: any): Promise<void> {
+export async function saveCrossSellingConfig(config: CrossSellingConfig): Promise<void> {
     return saveSetting('crossSellingConfig', config);
 }
 
-export async function getCrossSellingConfig(): Promise<any | null> {
+export async function getCrossSellingConfig(): Promise<CrossSellingConfig | null> {
     return getSetting('crossSellingConfig');
 }
 
@@ -1587,11 +1589,11 @@ export async function saveDeduplicationSetting(enabled: boolean): Promise<void> 
 }
 
 // --- Custom Calendars ---
-export async function saveCustomCalendars(calendars: any[]): Promise<void> {
+export async function saveCustomCalendars(calendars: SavedCalendar[]): Promise<void> {
     return saveSetting('customCalendars', calendars);
 }
 
-export async function getCustomCalendars(): Promise<any[] | null> {
+export async function getCustomCalendars(): Promise<SavedCalendar[] | null> {
     return getSetting('customCalendars');
 }
 

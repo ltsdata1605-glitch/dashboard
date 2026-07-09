@@ -10,7 +10,7 @@
  */
 
 import { db } from './firebase';
-import { doc, setDoc, getDoc, getDocs, deleteDoc, collection, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, getDocs, deleteDoc, collection, writeBatch, serverTimestamp, FieldValue } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
 
@@ -33,7 +33,7 @@ export interface SalesDataMeta {
     version: number;         // for future migration
     uploadedFrom: string;    // 'laptop' | 'mobile'
     isRealtime?: boolean;
-    updatedAt?: any;         // serverTimestamp
+    updatedAt?: FieldValue;  // serverTimestamp
 }
 
 /**

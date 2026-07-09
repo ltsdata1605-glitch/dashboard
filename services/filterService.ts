@@ -1,4 +1,4 @@
-import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData } from '../types';
+import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData, WarehouseSummaryRow } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
 import { getRowValue, getParentGroup } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
@@ -19,7 +19,7 @@ let _lastXuat: string = '';
 let _lastStartDate: string = '';
 let _lastEndDate: string = '';
 let _lastSelectedMonthsStr: string = '';
-let _lastWarehouseSummary: any[] | null = null;
+let _lastWarehouseSummary: WarehouseSummaryRow[] | null = null;
 let _lastWarehouseGlobalData: DataRow[] | null = null;
 let _lastTrangThaiStr: string = '';
 let _lastNguoiTaoStr: string = '';
