@@ -130,7 +130,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         if (stream) setActiveCameraId(stream.deviceId);
         setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
         setError(null);
-      }).catch((err: any) => {
+      }).catch((err: unknown) => {
         console.warn("Could not start scanner with ideal facingMode constraint, falling back to manual selection.", err);
         // Method 2 (Fallback): If the constraint fails, find a camera with "back" in its label or use the first available camera.
         const rearCamera = devices.find(device => device.label.toLowerCase().includes('back'));
@@ -176,7 +176,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
 
     return () => {
       if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch((error: any) => {
+        scannerRef.current.stop().catch((error: unknown) => {
           // console.warn("Lỗi khi dừng máy quét lúc dọn dẹp (có thể bỏ qua):", error);
         });
       }

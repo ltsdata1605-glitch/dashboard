@@ -1045,7 +1045,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        font-weight: bold;
                        font-size: 3.6cqw;
                        color: #000;
-                       background: #ffffff;
+                       background: transparent;
                        z-index: 10;
                        outline: none;
                        cursor: text;
@@ -1235,7 +1235,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        font-weight: bold;
                        font-size: 3.6cqw;
                        color: #000;
-                       background: #ffffff;
+                       background: transparent;
                        z-index: 10;
                        text-align: center;
                        white-space: nowrap;

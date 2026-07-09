@@ -609,11 +609,6 @@
     "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/nhanvien/DetailTab.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 11,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
     "nonSemanticColor": 19,
     "missingDarkVariant": 46,

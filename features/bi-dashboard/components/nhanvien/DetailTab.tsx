@@ -55,7 +55,7 @@ const LevelSelect: React.FC<{
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left font-bold"
             >
                 <span className="truncate">{displayValue}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 shrink-0" />
+                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 dark:text-slate-500 shrink-0" />
             </Button>
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col">
@@ -126,8 +126,8 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors flex-shrink-0"
                         >
                             {isExpanded
-                                ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
-                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                                ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                             }
                         </Button>
                     ) : (
@@ -157,7 +157,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
                 <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'text-slate-400'
+                            : 'text-slate-400 dark:text-slate-500'
                     }`}>
                     {Math.round(node.hieuQuaQD * 100)}%
                 </span>
@@ -205,7 +205,7 @@ const SearchableSelect: React.FC<{
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left"
             >
                 <span className="truncate">{displayValue}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 shrink-0" />
+                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 dark:text-slate-500 shrink-0" />
             </Button>
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-60">
@@ -238,7 +238,7 @@ const SearchableSelect: React.FC<{
                             >
                                 {opt}
                             </Button>
-                        )) : <div className="p-2 text-center text-slate-500">{emptyText}</div>}
+                        )) : <div className="p-2 text-center text-slate-500 dark:text-slate-400">{emptyText}</div>}
                     </div>
                 </div>
             )}
@@ -484,7 +484,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     if (!rawData) {
         return (
             <Card title="Chi Tiết Doanh Thu">
-                <div className="py-12 text-center text-slate-500">
+                <div className="py-12 text-center text-slate-500 dark:text-slate-400">
                     Chưa có dữ liệu. Vui lòng dán dữ liệu "BC Doanh thu theo NV" vào ô DOANH THU trong Cấu hình siêu thị.
                 </div>
             </Card>
@@ -494,7 +494,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     if (tree.length === 0) {
         return (
             <Card title="Chi Tiết Doanh Thu">
-                <div className="py-12 text-center text-slate-500">
+                <div className="py-12 text-center text-slate-500 dark:text-slate-400">
                     Không thể phân tích dữ liệu. Header cần có: "Nhân viên  DTLK  DTQĐ  Hiệu quả QĐ  Số lượng  Đơn giá"
                 </div>
             </Card>
@@ -574,7 +574,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         title="Mở rộng tất cả"
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
                     >
-                        <ChevronsUpDown className="h-3.5 w-3.5 text-slate-400" />
+                        <ChevronsUpDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                     </Button>
                     {/* Collapse all button */}
                     <Button
@@ -584,7 +584,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         title="Thu gọn tất cả"
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
                     >
-                        <ChevronsDownUp className="h-3.5 w-3.5 text-slate-400" />
+                        <ChevronsDownUp className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
@@ -595,7 +595,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 <Card noPadding rounded={false} title={
                     <div className="flex flex-col">
                         <span className="text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
-                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wide mt-1">Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1">Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
                     </div>
                 }>
                     <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -653,7 +653,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                                 link.click();
                                 URL.revokeObjectURL(url);
                             }}
-                            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow"
+                            className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600 text-white text-xs font-bold py-1.5 px-3 rounded shadow"
                         >
                             Tải xuống file text dữ liệu thô (.txt)
                         </Button>
