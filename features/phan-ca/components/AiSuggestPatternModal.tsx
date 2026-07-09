@@ -197,7 +197,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
             const jsonText = response.text?.trim() || '{}';
             const result = JSON.parse(jsonText);
 
-            if (result.ca_xoay && Array.isArray(result.ca_xoay) && result.ca_xoay.every((i: any) => typeof i === 'string')) {
+            if (result.ca_xoay && Array.isArray(result.ca_xoay) && result.ca_xoay.every((i: unknown) => typeof i === 'string')) {
                 setSuggestion(result.ca_xoay);
             } else {
                 throw new Error("Định dạng phản hồi của AI không chính xác. Vui lòng thử lại.");

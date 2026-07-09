@@ -1128,7 +1128,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   .draw-ticket-block .input-content-bottom-right {
                       position: absolute;
                       left: 52.4%;
-                      top: 53.0%;
+                      top: 50.0%;
                       width: 45.4%;
                       height: 30.0%;
                       display: flex;
@@ -1310,7 +1310,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   .draw-ticket-block .display-content-bottom-right {
                       position: absolute;
                       left: 52.4%;
-                      top: 53.0%;
+                      top: 50.0%;
                       width: 45.4%;
                       height: 30.0%;
                       display: flex;

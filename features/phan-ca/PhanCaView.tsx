@@ -902,7 +902,7 @@ const App: React.FC = () => {
                 });
             });
             // Conditional Formats for Tags
-            const addCondRule = (text: string, bg: { red: number; green: number; blue: number }, fg: { red: number; green: number; blue: number }) => {
+            const addCondRule = (text: string, bg: RgbColor, fg: RgbColor) => {
                 reqs.push({
                     addConditionalFormatRule: {
                         rule: {
