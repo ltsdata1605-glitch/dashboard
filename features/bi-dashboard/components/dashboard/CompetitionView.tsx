@@ -12,6 +12,15 @@ import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
 
+// Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
+export interface ProcessedProgram {
+    name: string;
+    data: (string | number)[];
+    metric: string;
+    htdkVT?: number;
+    conLai: number | null;
+}
+
 interface CompetitionViewProps {
     data: Record<string, SupermarketCompetitionData>;
     isRealtime: boolean;
@@ -79,14 +88,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         return matchKey ? data[matchKey] : undefined;
     }, [data, activeSupermarket]);
 
-    const processedSupermarketData = useMemo(() => {
+    const processedSupermarketData = useMemo((): { headers: string[]; programs: ProcessedProgram[] } | undefined => {
         if (!supermarketData || !supermarketData.headers) return undefined;
         let processedHeaders = [...supermarketData.headers];
-        let processedPrograms = JSON.parse(JSON.stringify(supermarketData.programs));
+        let processedPrograms: ProcessedProgram[] = JSON.parse(JSON.stringify(supermarketData.programs)).map((p: SupermarketCompetitionData['programs'][number]) => ({ ...p, conLai: null }));
         if (!isRealtime) {
             const htdkVTIndex = processedHeaders.indexOf('%HTDK V.Trội');
             if (htdkVTIndex !== -1) {
-                processedPrograms = processedPrograms.map((program: any) => ({
+                processedPrograms = processedPrograms.map((program) => ({
                     ...program,
                     htdkVT: parseNumber(program.data[htdkVTIndex])
                 }));
@@ -96,8 +105,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         const headerRenames: Record<string, string> = isRealtime ? { 'DT Realtime': 'Realtime', 'DT Realtime (QĐ)': 'Realtime (QĐ)', 'SL Realtime': 'Realtime', 'Target Ngày': 'Target', '% HT Target Ngày': '%HT', '%HT Target V.Trội': '%HT V.Trội' } : { 'DTLK': 'L.Kế', 'DTQĐ': 'L.Kế (QĐ)', 'SLLK': 'L.Kế', 'Target': 'Target', '% HT Target Tháng': '%HT', '% HT Dự Kiến': '%HTDK', 'Target V.Trội': 'Target V.Trội', '%HT Target V.Trội': '%HT V.Trội', '%HTDK V.Trội': '%HTDK V.Trội' };
         const indicesToRemove: number[] = [];
         processedHeaders = processedHeaders.map((header, index) => { if (headersToRemove.includes(header)) indicesToRemove.push(index); return headerRenames[header] || header; }).filter((_, index) => !indicesToRemove.includes(index));
-        processedPrograms = processedPrograms.map((program: { data: any[]; }) => ({ ...program, data: program.data.filter((_, index) => !indicesToRemove.includes(index)) }));
-        processedPrograms = processedPrograms.map((program: { data: (string | number)[], name: string }) => {
+        processedPrograms = processedPrograms.map((program) => ({ ...program, data: program.data.filter((_, index) => !indicesToRemove.includes(index)) }));
+        processedPrograms = processedPrograms.map((program) => {
             let conLaiValue: number | null = null;
             let actualIndex = isRealtime ? processedHeaders.findIndex(h => h.startsWith('Realtime')) : processedHeaders.findIndex(h => h.startsWith('L.Kế'));
             let targetIndex = processedHeaders.indexOf('Target');
@@ -129,13 +138,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const sortedPrograms = useMemo(() => {
         if (!processedSupermarketData?.programs) return [];
-        const currentProgramNames = processedSupermarketData.programs.map((p: any) => p.name);
+        const currentProgramNames = processedSupermarketData.programs.map((p) => p.name);
         const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
         const selectedSet = new Set(validSelected);
-        const visible = processedSupermarketData.programs.filter((p: any) => selectedSet.size === 0 || selectedSet.has(p.name));
+        const visible = processedSupermarketData.programs.filter((p) => selectedSet.size === 0 || selectedSet.has(p.name));
         if (sortConfig === null) return visible;
-        return [...visible].sort((a: any, b: any) => {
-            let aValue, bValue;
+        return [...visible].sort((a, b) => {
+            let aValue: string | number, bValue: string | number;
             if (sortConfig.columnIndex === 'conLai') { aValue = a.conLai ?? -Infinity; bValue = b.conLai ?? -Infinity; }
             else if (sortConfig.columnIndex === 'htdkVT') { aValue = a.htdkVT ?? -Infinity; bValue = b.htdkVT ?? -Infinity; }
             else if (sortConfig.columnIndex === -1) { aValue = shortenName(a.name, nameOverrides); bValue = shortenName(b.name, nameOverrides); }
@@ -146,12 +155,12 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides]);
 
     const groupedAndSortedPrograms = useMemo(() => {
-        return sortedPrograms.reduce((acc: any, program: any) => {
+        return sortedPrograms.reduce((acc, program) => {
             const metric = program.metric as Criterion;
             if (!acc[metric]) acc[metric] = [];
-            acc[metric].push(program);
+            acc[metric]!.push(program);
             return acc;
-        }, {} as Partial<Record<Criterion, any[]>>);
+        }, {} as Partial<Record<Criterion, ProcessedProgram[]>>);
     }, [sortedPrograms]);
 
     return (
@@ -178,7 +187,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         >
                             <FilterIcon className="h-4 w-4" />
                             {(() => {
-                                const currentProgramNames = processedSupermarketData?.programs?.map((p: any) => p.name) || [];
+                                const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
                                 const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
                                 const isFiltered = validSelected.length > 0 && validSelected.length < allProgramNames.length;
                                 return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;

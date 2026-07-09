@@ -3,13 +3,24 @@ import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeH
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { FilterIcon, ChevronDownIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { PieChart, Pie, Cell } from 'recharts';
+
+// 1 chương trình thi đua đã tính target/actual/completion cho nhân viên đang xem, gộp theo Criterion (SLLK/DTLK/DTQĐ)
+interface CompetitionPerformanceItem {
+    name: string;
+    originalTitle: string;
+    target: number;
+    actual: number;
+    completion: number;
+    remaining: number;
+}
+type GroupedPerformanceData = Partial<Record<Criterion, CompetitionPerformanceItem[]>>;
 
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
@@ -43,7 +54,7 @@ interface IndividualCompetitionViewProps {
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
     banKemRows?: CrossSellingRow[];
-    bonusData?: Record<string, any>;
+    bonusData?: Record<string, BonusMetrics | null>;
 }
 
 export interface IndividualCompetitionViewHandle {
@@ -144,24 +155,24 @@ const EmployeeProfileCard: React.FC<{
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
     banKemRows?: CrossSellingRow[];
-    bonusData?: Record<string, any>;
-    groupedPerformanceData: any;
+    bonusData?: Record<string, BonusMetrics | null>;
+    groupedPerformanceData: GroupedPerformanceData;
 }> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
     const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${selectedEmployee.originalName}`, null);
     
     const empRevenue = useMemo(() => {
         if (!revenueRows) return null;
-        return revenueRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName) as RevenueRow | undefined;
+        return revenueRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
     }, [revenueRows, selectedEmployee]);
 
     const empInstallment = useMemo(() => {
         if (!installmentRows) return null;
-        return installmentRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+        return installmentRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
     }, [installmentRows, selectedEmployee]);
 
     const empBanKem = useMemo(() => {
         if (!banKemRows) return null;
-        return banKemRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+        return banKemRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
     }, [banKemRows, selectedEmployee]);
 
     const empBonus = useMemo(() => {
@@ -186,7 +197,7 @@ const EmployeeProfileCard: React.FC<{
 
     const compStats = useMemo(() => {
         const allItems: { name: string; completion: number; remaining: number; target: number; actual: number }[] = [];
-        Object.values(groupedPerformanceData || {}).forEach((items: any) => {
+        Object.values(groupedPerformanceData || {}).forEach((items) => {
             if (Array.isArray(items)) allItems.push(...items);
         });
         const now = new Date();

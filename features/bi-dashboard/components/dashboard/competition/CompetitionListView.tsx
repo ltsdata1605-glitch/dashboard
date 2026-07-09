@@ -3,13 +3,14 @@ import React from 'react';
 import { Criterion, shortenName, parseNumber, roundUp } from '../../../utils/dashboardHelpers';
 import { ProgressBar } from '../DashboardWidgets';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
+import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionListViewProps {
-    groupedAndSortedPrograms: Partial<Record<Criterion, any[]>>;
+    groupedAndSortedPrograms: Partial<Record<Criterion, ProcessedProgram[]>>;
     headers: string[];
     hiddenColumns: string[];
     isRealtime: boolean;
-    handleSort: (col: any) => void;
+    handleSort: (col: number | 'conLai' | 'htdkVT' | -1) => void;
 }
 
 const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; badge: string }> = {
@@ -69,7 +70,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     {criterion}
                                 </div>
                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                                    {programs.map((program: any, index: number) => {
+                                    {programs.map((program, index: number) => {
                                         const conLai = program.conLai;
                                         const htValue = parseNumber(program.data[headers.indexOf(isRealtime ? '%HT' : '%HTDK')]);
                                         
@@ -166,7 +167,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                 <span className={`px-2 py-0.5 rounded mr-2 ${theme.badge}`}>Tiêu chí</span> {criterion}
                                             </td>
                                         </tr>
-                                        {programs.map((program: any, index: number) => {
+                                        {programs.map((program, index: number) => {
                                             const conLai = program.conLai;
                                             const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
                                             const percentHeadersToRound = new Set(['%HT', '%HTDK', '%HT V.Trội', '%HTDK V.Trội']);
@@ -177,7 +178,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>
-                                                    {program.data.map((cell: any, cIdx: number) => {
+                                                    {program.data.map((cell, cIdx: number) => {
                                                         const header = headers[cIdx];
                                                         if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
 
