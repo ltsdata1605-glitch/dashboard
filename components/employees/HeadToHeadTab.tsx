@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, forwardRef, useEffect } from 'react';
 import { Icon } from '../common/Icon';
-import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../types';
+import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig, HeadToHeadConditionalFormatRule } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables, getSetting, saveSetting } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -70,7 +70,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
         const loadTables = async () => {
             let savedTables = await getHeadToHeadCustomTables();
             const now = Date.now();
-            const belowAvgRule: any = {
+            const belowAvgRule: HeadToHeadConditionalFormatRule = {
                 id: `rule-below-avg-${now}`,
                 criteria: 'column_dept_avg',
                 operator: '<',
@@ -79,7 +79,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 textColor: DATA_STATUS_COLORS.negative.text
             };
 
-            const top3Rule: any = {
+            const top3Rule: HeadToHeadConditionalFormatRule = {
                 id: `rule-top-3-${now}`,
                 criteria: 'top_3',
                 operator: '=',

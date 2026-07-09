@@ -6,15 +6,16 @@ import IndustryAnalysisTab from './IndustryAnalysisTab';
 import HeadToHeadTab from './HeadToHeadTab';
 import ContestTable from './ContestTable';
 import { Icon } from '../common/Icon';
-import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee } from '../../types';
+import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee, EmployeeData, ProductConfig, ContestTableConfig, ModalState } from '../../types';
 import { Button } from '../shared/ui/Button';
 import type { Tab } from './EmployeeAnalysisTabs';
 
 type ColorTheme = { header: string; activeTab: string; row: string; border: string };
+type FilteredEmployeeAnalysisData = EmployeeData & { filteredBaseData: DataRow[] };
 
 interface EmployeeAnalysisContentProps {
     activeTab: string;
-    filteredEmployeeAnalysisData: any;
+    filteredEmployeeAnalysisData: FilteredEmployeeAnalysisData | null;
     isInitialTabsLoaded: boolean;
     industryAnalysisTables: CustomContestTab[];
     customTabs: CustomContestTab[];
@@ -24,13 +25,13 @@ interface EmployeeAnalysisContentProps {
     setEfficiencyExploitationTabs: React.Dispatch<React.SetStateAction<CustomExploitationTabConfig[]>>;
     baseFilteredData: DataRow[];
     allDatesBaseFilteredData: DataRow[];
-    productConfig: any;
+    productConfig: ProductConfig | null;
     isExporting: boolean;
     handleMainExport: () => Promise<void>;
     handleIndustryTabExport: () => Promise<void>;
-    handleBatchExport: (data: any) => void;
-    openPerformanceModal: (emp: any) => void;
-    setModalState: (state: any) => void;
+    handleBatchExport: (employees: Employee[]) => void;
+    openPerformanceModal: (employeeName: string) => void;
+    setModalState: (state: ModalState) => void;
     exportRef: React.RefObject<HTMLDivElement | null>;
     industryAnalysisTabRef: React.RefObject<HTMLDivElement | null>;
     colorThemes: ColorTheme[];
@@ -39,13 +40,13 @@ interface EmployeeAnalysisContentProps {
 }
 
 interface ContestTableItemProps {
-    tableConfig: any;
+    tableConfig: ContestTableConfig;
     customTabId: string;
     allEmployees: Employee[];
     baseFilteredData: DataRow[];
-    productConfig: any;
-    tableColorTheme: any;
-    setModalState: (state: any) => void;
+    productConfig: ProductConfig;
+    tableColorTheme: ColorTheme;
+    setModalState: (state: ModalState) => void;
     handleDeleteColumnDirect: (tabId: string, tableId: string, columnId: string) => void;
 }
 
@@ -101,7 +102,7 @@ const ContestTableItem: React.FC<ContestTableItemProps> = React.memo(({
                 tabId: customTabId, 
                 tableId: tableConfig.id, 
                 existingColumns: tableConfig.columns, 
-                editingColumn: tableConfig.columns.find((c: any) => c.id === columnId) 
+                editingColumn: tableConfig.columns.find((c) => c.id === columnId)
             }
         });
     }, [setModalState, customTabId, tableConfig.id, tableConfig.columns]);

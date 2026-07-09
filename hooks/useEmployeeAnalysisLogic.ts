@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { CustomContestTab, ContestTableConfig, ColumnConfig, CustomExploitationTabConfig, CustomColumnConfig } from '../types';
+import type { CustomContestTab, ContestTableConfig, ColumnConfig, CustomExploitationTabConfig, CustomColumnConfig, ModalState, CustomExploitationTabSaveInput } from '../types';
 import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndustryAnalysisCustomTabs, getSetting, saveSetting } from '../services/dbService';
 import { presetExploitationTabs } from './presetExploitationTabs';
 import type { Tab } from '../components/employees/EmployeeAnalysisTabs';
@@ -13,10 +13,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     const isHydratedRef = useRef(false);
     
     // Modal state management
-    const [modalState, setModalState] = useState<{
-        type: 'CREATE_TAB' | 'EDIT_TAB' | 'CREATE_TABLE' | 'EDIT_TABLE' | 'CREATE_COLUMN' | 'EDIT_COLUMN' | 'CONFIRM_DELETE_TAB' | 'CONFIRM_DELETE_TABLE' | 'CONFIRM_DELETE_COLUMN' | null, 
-        data?: any
-    }>({type: null});
+    const [modalState, setModalState] = useState<ModalState>({type: null});
     
     const [isClosingModal, setIsClosingModal] = useState(false);
 
@@ -423,16 +420,16 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         }
     }, [modalState.data]);
 
-    const handleSaveCustomExploitationTab = useCallback((tabConfig: any) => {
+    const handleSaveCustomExploitationTab = useCallback((tabConfig: CustomExploitationTabSaveInput) => {
         const targetMode = modalState.data?.targetMode || 'detail';
         const setTabs = targetMode === 'detail' ? setCustomExploitationTabs : setEfficiencyExploitationTabs;
         setTabs(prev => {
             if (tabConfig.id) {
                 const existing = prev.find(t => t.id === tabConfig.id);
                 if (existing) {
-                    return prev.map(t => t.id === tabConfig.id ? tabConfig : t);
+                    return prev.map(t => t.id === tabConfig.id ? (tabConfig as CustomExploitationTabConfig) : t);
                 } else {
-                    return [...prev, { ...tabConfig, order: prev.length }];
+                    return [...prev, { ...tabConfig, id: tabConfig.id, order: prev.length }];
                 }
             } else {
                 const safeId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'custom-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);

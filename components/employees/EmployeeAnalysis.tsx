@@ -12,6 +12,7 @@ import EmployeeAnalysisContent from './EmployeeAnalysisContent';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { getExportFilenamePrefix } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
+import type { ContestTableConfig } from '../../types';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
 
@@ -170,10 +171,12 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         }
     }, [filterState.kho, handleExport]);
 
-    const currentTableForColumns = modalState.type === 'CREATE_COLUMN' || modalState.type === 'EDIT_COLUMN'
-        ? (modalState.data.tabId === 'industryAnalysis' 
-            ? industryAnalysisTables.find(t => t.id === modalState.data.tableId) 
-            : customTabs.find(t => t.id === modalState.data.tabId)?.tables.find(t => t.id === modalState.data.tableId)
+    // Nhánh 'industryAnalysis' tra cứu trong industryAnalysisTables (CustomContestTab[], không phải ContestTableConfig[])
+    // — không có setModalState nào thực sự gán tabId này, giữ nguyên hành vi cũ bằng cast an toàn qua unknown.
+    const currentTableForColumns: ContestTableConfig | undefined = modalState.type === 'CREATE_COLUMN' || modalState.type === 'EDIT_COLUMN'
+        ? (modalState.data?.tabId === 'industryAnalysis'
+            ? (industryAnalysisTables.find(t => t.id === modalState.data?.tableId) as unknown as ContestTableConfig | undefined)
+            : customTabs.find(t => t.id === modalState.data?.tabId)?.tables.find(t => t.id === modalState.data?.tableId)
           )
         : undefined;
 

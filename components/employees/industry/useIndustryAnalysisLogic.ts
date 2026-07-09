@@ -1,11 +1,25 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { ExploitationData, CustomExploitationTabConfig, DataRow } from '../../../types';
+import type { ExploitationData, CustomExploitationTabConfig, DataRow, ProductConfig, ColumnFilterCriteria } from '../../../types';
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
 import { getRowValue, calculateRowMetrics, cleanAndNormalize } from '../../../utils/dataUtils';
 
-export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: DataRow[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
+interface DynamicSubHeader {
+    label: string;
+    key: string;
+    originalColId?: string;
+    originalType?: string;
+}
+interface DynamicHeaderGroup {
+    label: string;
+    colSpan: number;
+    bg: string;
+    text: string;
+    subHeaders: DynamicSubHeader[];
+}
+
+export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: DataRow[], productConfig?: ProductConfig, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
     const activeTabs = viewMode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
     const [visibleGroupsDetail, setVisibleGroupsDetail] = useState<Set<string>>(new Set());
@@ -80,7 +94,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     }, [activeTabs]);
 
         const dynamicHeaderGroups = useMemo(() => {
-        const baseGroups: any = { ...detailHeaderGroups };
+        const baseGroups: Record<string, DynamicHeaderGroup> = { ...detailHeaderGroups };
         
         // Apply overrides for doanhThu and spChinh if they were edited
         ['doanhThu', 'spChinh'].forEach(key => {
@@ -171,7 +185,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             if (wasAdded && sortKeyForToggledGroup) {
                 setSortConfig({ key: sortKeyForToggledGroup, direction: 'desc' });
             } else if (!wasAdded && sortConfig.key === sortKeyForToggledGroup) {
-                const remainingSpecialGroups: string[] = dynamicQuickFilters.map((f: any) => f.key).filter((key) => newVisibleGroups.has(key) && groupToSortKeyMap[key]);
+                const remainingSpecialGroups: string[] = dynamicQuickFilters.map((f) => f.key).filter((key) => newVisibleGroups.has(key) && groupToSortKeyMap[key]);
                 if (remainingSpecialGroups.length > 0) {
                     const firstKey = remainingSpecialGroups[0];
                     const newSortKey = groupToSortKeyMap[firstKey];
@@ -197,7 +211,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                     : !HINH_THUC_XUAT_THU_HO.has(htx);
             });
 
-            const checkMatch = (filters: any, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
+            const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
                 if (!filters) return false;
                 if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(industry)) {
                     return false;
@@ -510,7 +524,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             return { ...t, slSPChinh_Tong, hieuQuaQD, percentBaoHiem, percentSimKT, percentDongHoKT, percentPhuKienKT, percentGiaDungKT };
         };
 
-        const groupTotals: { [key: string]: any } = {};
+        const groupTotals: Record<string, ReturnType<typeof calculateTotals>> = {};
         for (const dept in finalGroupedData) { groupTotals[dept] = calculateTotals(finalGroupedData[dept]); }
         const grandTotal = calculateTotals(enhancedData);
 

@@ -1,8 +1,12 @@
 import React from 'react';
+import type { Employee } from '../../../types';
 import { DATA_STATUS_COLORS } from '../../../constants';
 
 export type SortDirection = 'asc' | 'desc';
 export type GroupType = 'doanhThu' | 'khaiThac' | 'vuotTroi';
+
+// Employee đã tính thêm target/percentHT/dtVuot (chỉ áp dụng cho nhóm 'vuotTroi' trong PerformanceTable.tsx)
+export type EmployeeWithTarget = Employee & { target: number; percentHT: number; dtVuot: number };
 
 export const getProgressBarColor = (pct: number) => {
     if (pct >= 100) return 'from-emerald-400 to-emerald-600';
@@ -41,9 +45,11 @@ export const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
     );
 };
 
-export const safeSort = (a: any, b: any, key: string, dir: SortDirection) => {
+export const safeSort = <T,>(a: T, b: T, key: string, dir: SortDirection) => {
     try {
-        const vA = a?.[key], vB = b?.[key];
+        const recA = a as unknown as Record<string, unknown> | null | undefined;
+        const recB = b as unknown as Record<string, unknown> | null | undefined;
+        const vA = recA?.[key], vB = recB?.[key];
         if (vA === vB) return 0;
         if (vA == null) return 1;
         if (vB == null) return -1;

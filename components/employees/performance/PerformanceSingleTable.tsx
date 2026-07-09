@@ -2,12 +2,29 @@ import React, { useMemo, useState } from 'react';
 import type { Employee } from '../../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../../utils/dataUtils';
 import { Icon } from '../../common/Icon';
-import { 
-    GroupType, SortDirection, TAB_THEMES, DEPT_COLORS, 
-    getProgressBarColor, getPercentBadge, getTraChamBadge, getHieuQuaBadge, RankBadge
+import {
+    GroupType, SortDirection, TAB_THEMES, DEPT_COLORS,
+    getProgressBarColor, getPercentBadge, getTraChamBadge, getHieuQuaBadge, RankBadge, EmployeeWithTarget
 } from './PerformanceTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { Button } from '../../shared/ui/Button';
+
+// Khớp object trả về bởi trueGrandTotal (useMemo) trong PerformanceTable.tsx
+interface GrandTotalData {
+    doanhThuThuc: number;
+    doanhThuQD: number;
+    slTiepCan: number;
+    slICT: number;
+    slCE_main: number;
+    slCE_ICT: number;
+    slTraCham_CE_ICT: number;
+    hieuQuaValue: number;
+    traChamPercent_CE_ICT: number;
+    dtTraChamPercent_CE_ICT: number;
+    target: number;
+    percentHT: number;
+    dtVuot: number;
+}
 
 interface RenderSingleTableProps {
     groupType: GroupType;
@@ -18,8 +35,8 @@ interface RenderSingleTableProps {
     onSingleExport: () => void;
     isExporting?: boolean;
     groupedData: { [key: string]: Employee[] };
-    outstandingData: { [key: string]: Employee[] };
-    grandTotal: any;
+    outstandingData: { [key: string]: EmployeeWithTarget[] };
+    grandTotal: GrandTotalData;
     targetPerEmployee: number;
     onEmployeeClick: (name: string) => void;
     isEditingTarget: boolean;
@@ -113,7 +130,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
         const result: string[] = [];
         
-        Object.entries(dataToRender).forEach(([dept, employees]: [string, any]) => {
+        Object.entries(dataToRender).forEach(([dept, employees]: [string, Employee[]]) => {
             if (!Array.isArray(employees) || employees.length === 0) return;
             
             const sorted = [...employees].sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0));
@@ -328,7 +345,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     </thead>
 
                     <tbody>
-                        {Object.entries(dataToRender).map(([dept, employees]: [string, any], deptIdx) => {
+                        {Object.entries(dataToRender).map(([dept, employees]: [string, EmployeeWithTarget[]], deptIdx) => {
                             if (!Array.isArray(employees)) return null;
                             const dc = DEPT_COLORS[deptIdx % DEPT_COLORS.length];
                             
@@ -353,7 +370,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     )}
 
                                     {/* Employee rows */}
-                                    {visibleEmployees.map((emp: any, idx: number) => {
+                                    {visibleEmployees.map((emp, idx: number) => {
                                         if (!emp) return null;
 
                                         return (

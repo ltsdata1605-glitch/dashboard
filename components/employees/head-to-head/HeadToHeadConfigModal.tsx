@@ -242,8 +242,8 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         const finalRules: HeadToHeadConditionalFormatRule[] = formattingRules
             .filter(rule => rule.condition.includes('avg') || rule.value1.trim() !== '')
             .map((rule, idx) => {
-                let criteria: any = 'specific_value';
-                let operator: any = '>';
+                let criteria: HeadToHeadConditionalFormatRule['criteria'] = 'specific_value';
+                let operator: HeadToHeadConditionalFormatRule['operator'] = '>';
                 
                 if (rule.condition === '=') operator = '=';
                 else if (rule.condition === '<' || rule.condition === '<avg') operator = '<';

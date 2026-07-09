@@ -3,22 +3,23 @@ import { TabModal, TableModal } from './modals/StructureModals';
 import ColumnConfigModal from './modals/ColumnConfigModal';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { CustomExploitationTabModal } from './modals/CustomExploitationTabModal';
+import type { ModalState, ColumnConfig, ContestTableConfig, CustomExploitationTabSaveInput } from '../../types';
 
 interface EmployeeAnalysisModalsProps {
-    modalState: any;
-    setModalState: (state: any) => void;
+    modalState: ModalState;
+    setModalState: (state: ModalState) => void;
     handleSaveTab: (tabName: string, icon: string, tabId?: string) => void;
     handleSaveTable: (tableName: string, defaultSortColumnId?: string) => void;
-    handleSaveColumn: (column: any) => void;
+    handleSaveColumn: (column: ColumnConfig) => void;
     handleDeleteTab: () => void;
     handleDeleteTable: () => void;
     handleConfirmDeleteColumn: () => void;
-    handleSaveCustomExploitationTab?: (tab: any) => void;
+    handleSaveCustomExploitationTab?: (tab: CustomExploitationTabSaveInput) => void;
     handleDeleteCustomExploitationTab?: () => void;
     allIndustries: string[];
     allSubgroups: string[];
     allManufacturers: string[];
-    currentTableForColumns: any;
+    currentTableForColumns: ContestTableConfig | undefined;
 }
 
 const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({

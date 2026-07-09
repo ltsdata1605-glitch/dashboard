@@ -2,12 +2,24 @@ import React, { forwardRef } from 'react';
 import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
-import type { ExploitationData, CustomColumnConfig, CustomExploitationTabConfig, DataRow } from '../../types';
+import type { ExploitationData, CustomColumnConfig, CustomExploitationTabConfig, DataRow, ProductConfig } from '../../types';
 import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, SortConfig } from './industry/IndustryTableUtils';
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
 import { DATA_STATUS_COLORS } from '../../constants';
 
+// Dữ liệu 1 dòng hiển thị chi tiết: có thể là 1 nhân viên (ExploitationData mở rộng) hoặc groupTotals/grandTotal (Record<string, number>)
+// Không khai báo index signature ở đây để tránh phá vỡ khả năng gán từ các kiểu cụ thể hơn (employee/groupTotals/grandTotal)
+// — truy cập theo key động (cột tùy chỉnh) được ép kiểu cục bộ qua Record<string, unknown> ở nơi dùng.
+interface DetailModeRowData {
+    doanhThuThuc?: number;
+    doanhThuQD?: number;
+    hieuQuaQD?: number;
+    slICT?: number;
+    slCE_main?: number;
+    slGiaDung_main?: number;
+    slSPChinh_Tong?: number;
+}
 
 interface IndustryAnalysisTabProps {
     data: ExploitationData[];
@@ -15,7 +27,7 @@ interface IndustryAnalysisTabProps {
     isExporting?: boolean;
     onBatchExport: (data: ExploitationData[]) => void;
     baseFilteredData?: DataRow[];
-    productConfig?: any;
+    productConfig?: ProductConfig;
     customExploitationTabs?: CustomExploitationTabConfig[];
     efficiencyExploitationTabs?: CustomExploitationTabConfig[];
     onManageCustomTabs?: (mode: 'detail' | 'efficiency') => void;
@@ -86,7 +98,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         return {};
     };
 
-    const renderDetailModeCells = (rowData: any, employeesInGroup?: Record<string, unknown>[]) => (
+    const renderDetailModeCells = (rowData: DetailModeRowData, employeesInGroup?: Record<string, unknown>[]) => (
         <>
             {Array.from(visibleGroups).map(key => {
                 if (key === 'doanhThu') {
@@ -104,7 +116,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
 
                     return (
                         <React.Fragment key={key}>
-                            {subHeaders.map((sh: any) => {
+                            {subHeaders.map((sh) => {
                                 if (sh.key === 'doanhThuThuc') {
                                     return (
                                         <td key={sh.key} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
@@ -137,7 +149,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                     );
                                 }
                                 // Render custom columns added to doanhThu
-                                const val = rowData[sh.key] || 0;
+                                const val = ((rowData as Record<string, unknown>)[sh.key] as number | undefined) || 0;
                                 const badgeStyle: React.CSSProperties = getRankStyle(employeesInGroup, sh.key, val);
                                 const hasStyle = Object.keys(badgeStyle).length > 0;
                                 if (sh.originalType === 'quantity') return <td key={sh.key} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700"><div className={`inline-block px-1 sm:px-1.5 py-0.5 ${hasStyle ? 'rounded-md' : ''}`} style={badgeStyle}>{formatNum(val)}</div></td>;
@@ -164,7 +176,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
 
                     return (
                         <React.Fragment key={key}>
-                            {subHeaders.map((sh: any) => {
+                            {subHeaders.map((sh) => {
                                 if (sh.key === 'slICT') return (
                                     <td key={sh.key} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
                                         <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleICT).length > 0 ? 'rounded-md' : ''}`} style={styleICT}>
@@ -195,7 +207,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 );
 
                                 // Render custom columns added to spChinh
-                                const val = rowData[sh.key] || 0;
+                                const val = ((rowData as Record<string, unknown>)[sh.key] as number | undefined) || 0;
                                 const badgeStyle: React.CSSProperties = getRankStyle(employeesInGroup, sh.key, val);
                                 const hasStyle = Object.keys(badgeStyle).length > 0;
                                 if (sh.originalType === 'quantity') return <td key={sh.key} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700"><div className={`inline-block px-1 sm:px-1.5 py-0.5 ${hasStyle ? 'rounded-md' : ''}`} style={badgeStyle}>{formatNum(val)}</div></td>;
@@ -218,7 +230,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     return (
                         <React.Fragment key={tab.id}>
                             {cols.map(col => {
-                                const val = rowData[`val_${tab.id}_${col.id}`] || 0;
+                                const val = ((rowData as Record<string, unknown>)[`val_${tab.id}_${col.id}`] as number | undefined) || 0;
                                 const badgeStyle: React.CSSProperties = getRankStyle(employeesInGroup, `val_${tab.id}_${col.id}`, val);
                                 const hasStyle = Object.keys(badgeStyle).length > 0;
 
@@ -391,7 +403,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                     {Array.from(visibleGroups).flatMap((key, gIdx) => {
                                         const f = dynamicQuickFilters.find(filter => filter.key === key);
                                         if (!f) return [];
-                                        return (dynamicHeaderGroups[f.key]?.subHeaders || []).map((subHeader: any, sIdx: number) => (
+                                        return (dynamicHeaderGroups[f.key]?.subHeaders || []).map((subHeader, sIdx: number) => (
                                             <HeaderCell 
                                                 key={subHeader.key} 
                                                 label={subHeader.label} 

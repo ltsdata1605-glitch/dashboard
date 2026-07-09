@@ -162,39 +162,31 @@ export interface EmployeeData {
     exploitationData: ExploitationData[];
 }
 
+export interface ColumnFilterCriteria {
+    selectedIndustries: string[];
+    selectedSubgroups: string[];
+    selectedManufacturers: string[];
+    productCodes: string[];
+}
+
 export interface CustomColumnConfig {
     id: string; // unique UUID cho cột
     name: string; // Tên hiển thị cột (VD: SL MLN)
     type: 'quantity' | 'revenue' | 'percentage' | 'sum';
     hidden?: boolean; // Ẩn/hiện cột trên bảng
-    
+
     // Dành cho type = quantity | revenue
-    filters?: {
-        selectedIndustries: string[];
-        selectedSubgroups: string[];
-        selectedManufacturers: string[];
-        productCodes: string[];
-    };
-    
+    filters?: ColumnFilterCriteria;
+
     // Dành cho type = sum
     excludedColIds?: string[];
-    
+
     // Dành cho type = percentage
     percentageConfig?: {
         numeratorMetric: 'quantity' | 'revenue';
         baseMetric: 'quantity' | 'revenue';
-        numeratorFilters: {
-            selectedIndustries: string[];
-            selectedSubgroups: string[];
-            selectedManufacturers: string[];
-            productCodes: string[];
-        };
-        denominatorFilters: {
-            selectedIndustries: string[];
-            selectedSubgroups: string[];
-            selectedManufacturers: string[];
-            productCodes: string[];
-        };
+        numeratorFilters: ColumnFilterCriteria;
+        denominatorFilters: ColumnFilterCriteria;
         operator?: '+' | '-' | '*' | '/';
         decimalPlaces?: number;
         formatAs?: 'percentage' | 'number';
@@ -209,11 +201,54 @@ export interface CustomExploitationTabConfig {
     icon?: string; // Tab icon
     order: number;
     columns: CustomColumnConfig[];
-    
+
     // Legacy fields for backward compatibility
     filters?: any;
     displayOptions?: any;
     percentageConfig?: any;
+}
+
+// Input shape passed từ CustomExploitationTabModal khi lưu (chưa có id/order với tab mới)
+export interface CustomExploitationTabSaveInput {
+    id?: string;
+    name: string;
+    columns: CustomColumnConfig[];
+    icon?: string;
+}
+
+export type ModalStateType =
+    | 'CREATE_TAB' | 'EDIT_TAB'
+    | 'CREATE_TABLE' | 'EDIT_TABLE'
+    | 'CREATE_COLUMN' | 'EDIT_COLUMN'
+    | 'CONFIRM_DELETE_TAB' | 'CONFIRM_DELETE_TABLE' | 'CONFIRM_DELETE_COLUMN'
+    | 'CREATE_CUSTOM_EXPLOITATION_TAB' | 'EDIT_CUSTOM_EXPLOITATION_TAB' | 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB'
+    | null;
+
+// State dùng chung cho các modal quản lý Tab/Bảng/Cột thi đua ở khu vực nhân viên (EmployeeAnalysis*)
+export interface ModalState {
+    type: ModalStateType;
+    data?: {
+        tabId?: string;
+        tableId?: string;
+        tableName?: string;
+        columns?: ColumnConfig[];
+        existingColumns?: ColumnConfig[];
+        editingColumn?: ColumnConfig;
+        initialSortColumnId?: string;
+        initialName?: string;
+        initialColumns?: CustomColumnConfig[];
+        initialIcon?: string;
+        tabName?: string;
+        columnName?: string;
+        targetMode?: 'detail' | 'efficiency';
+        // Nhánh module='industryAnalysis': hiện không có setModalState nào thực sự gán các field này (legacy/dead branch),
+        // giữ lại để khớp kiểu với code đọc phòng thủ trong useEmployeeAnalysisLogic.ts, không đổi hành vi runtime.
+        module?: string;
+        columnId?: string;
+        tabIdToDelete?: string;
+        activeIndustrySubTab?: string;
+        setActiveIndustrySubTab?: (id: string) => void;
+    };
 }
 
 export interface SummaryTableNode {

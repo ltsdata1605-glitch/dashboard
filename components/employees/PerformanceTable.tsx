@@ -3,7 +3,7 @@ import type { Employee, EmployeeData } from '../../types';
 import { Icon } from '../common/Icon';
 import { getDailyTarget, saveDailyTarget } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { GroupType, SortDirection, safeSort } from './performance/PerformanceTableUtils';
+import { GroupType, SortDirection, safeSort, EmployeeWithTarget } from './performance/PerformanceTableUtils';
 import { PerformanceSingleTable } from './performance/PerformanceSingleTable';
 
 type SortKey = keyof Employee | 'name' | 'percentHT' | 'dtVuot' | 'target' | 'dtTraChamPercent_CE_ICT' | 'traChamPercent_CE_ICT';
@@ -95,7 +95,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
             grouped[emp.department].push(emp);
         });
 
-        const outstanding: { [dept: string]: any[] } = {};
+        const outstanding: { [dept: string]: EmployeeWithTarget[] } = {};
         const fullOutstanding = sorted.map(emp => {
             if (!emp) return null;
             const percentHT = targetPerEmployee > 0 ? (emp.doanhThuQD / targetPerEmployee) * 100 : 0;

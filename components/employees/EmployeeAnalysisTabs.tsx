@@ -3,7 +3,7 @@ import React from 'react';
 import { Icon } from '../common/Icon';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { Button } from '../shared/ui/Button';
-import type { CustomContestTab } from '../../types';
+import type { CustomContestTab, ModalState } from '../../types';
 
 export interface Tab {
     id: string;
@@ -18,7 +18,7 @@ interface EmployeeAnalysisTabsProps {
     renderedCustomTabs: CustomContestTab[];
     activeTab: string;
     setActiveTab: (id: string) => void;
-    setModalState: (state: any) => void;
+    setModalState: (state: ModalState) => void;
     visibleTabs: Set<string>;
     handleToggleTabVisibility: (id: string) => void;
     allAvailableTabs: Tab[];

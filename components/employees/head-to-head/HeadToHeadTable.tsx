@@ -8,6 +8,16 @@ import { exportElementAsImage } from '../../../services/uiService';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { DEPT_COLORS, RankBadge } from '../performance/PerformanceTableUtils';
 
+// Khớp cấu trúc 1 dòng trong processedData.tableRows (hooks/useHeadToHeadLogic.ts) — hook đó vẫn dùng any[] nội bộ, chỉ gõ kiểu phần tiêu thụ ở đây
+interface HeadToHeadRowData {
+    name: string;
+    department: string;
+    dailyValues: { [dateKey: string]: number };
+    total: number;
+    daysWithNoSales: number;
+    rowAverage: number;
+}
+
 interface HeadToHeadTableProps {
     config: HeadToHeadTableConfig;
     baseFilteredData: DataRow[];
@@ -91,7 +101,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
         return formatQuantity(value);
     };
 
-    const getCellStyle = (value: number, row: any, dateKey: string | 'total'): React.CSSProperties => {
+    const getCellStyle = (value: number, row: HeadToHeadRowData, dateKey: string | 'total'): React.CSSProperties => {
         if (!config.conditionalFormats) return {};
         let finalStyle: React.CSSProperties = {};
 
