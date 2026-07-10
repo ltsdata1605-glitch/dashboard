@@ -13,8 +13,7 @@ import { Button } from '../shared/ui/Button';
 
 // Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
 // + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
-const LIGHT_COLORS = ['#0284c7', '#059669', '#f59e0b', '#f43f5e', '#6366f1', '#0ea5e9', '#d97706', '#fb7185', '#10b981', '#7dd3fc', '#94a3b8', '#a5b4fc'];
-const DARK_COLORS  = ['#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#818cf8', '#7dd3fc', '#fcd34d', '#fda4af', '#6ee7b7', '#bae6fd', '#cbd5e1', '#c7d2fe'];
+const CHART_COLORS = ['#0284c7', '#059669', '#f59e0b', '#f43f5e', '#6366f1', '#0ea5e9', '#d97706', '#fb7185', '#10b981', '#7dd3fc', '#94a3b8', '#a5b4fc'];
 
 // Giữ nguyên các key (blue/cyan/orange/pink/teal/violet/lime/fuchsia) để tra cứu cũ vẫn chạy,
 // nhưng ánh xạ về sắc độ semantic + indigo. Dùng sắc độ khác nhau để vẫn phân biệt được nhóm.
@@ -68,19 +67,10 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     const isSyncing            = useRef(false);
 
     const [isExporting, setIsExporting] = useState(false);
-    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
     const [metricToDisplay, setMetricToDisplay] = useState<'revenue' | 'quantity'>('quantity');
 
-    // Track dark mode changes
-    useEffect(() => {
-        const observer = new MutationObserver(() => {
-            setIsDark(document.documentElement.classList.contains('dark'));
-        });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        return () => observer.disconnect();
-    }, []);
-
-    const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
+    // Dark Mode đã tắt toàn dự án → luôn dùng bảng màu Sáng.
+    const COLORS = CHART_COLORS;
 
     const {
         drilldownPath,

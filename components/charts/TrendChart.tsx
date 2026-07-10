@@ -74,7 +74,6 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       metric: 'revenue' // 'revenue' | 'revenueQD' | 'quantity' | 'traChamPercent'
   });
 
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [savedCalendars, setSavedCalendars] = useState<SavedCalendar[]>([]);
   const [activeCalendarTab, setActiveCalendarTab] = useState<string>('1-thuc');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -254,13 +253,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       return Object.values(dailySums).sort((a,b) => a.rawDate.getTime() - b.rawDate.getTime());
   }, [displayMode, baseFilteredData, productConfig, calendarFilters]);
   
-  useEffect(() => {
-      const observer = new MutationObserver(() => {
-          setIsDark(document.documentElement.classList.contains('dark'));
-      });
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-      return () => observer.disconnect();
-  }, []);
+  // (Đã gỡ observer theo dõi '.dark' — Dark Mode tắt toàn dự án, chart luôn dùng màu Sáng)
 
   const { totalValue, chartData, hasData, metricName } = useTrendChartLogic({
       trendData,
@@ -293,9 +286,9 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       }
   };
   
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9';
-  const dailyBaseColor = isDark ? '#818cf8' : '#4f46e5';
+  const textColor = '#64748b';
+  const gridColor = '#f1f5f9';
+  const dailyBaseColor = '#4f46e5';
 
   const renderChart = () => {
     if (!hasData || chartData.length === 0) {
@@ -323,8 +316,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         strokeWidth={3} 
                         fillOpacity={1} 
                         fill="url(#colorValue)" 
-                        dot={{ fill: isDark ? '#1e293b' : '#ffffff', stroke: dailyBaseColor, strokeWidth: 2, r: 4 }} 
-                        activeDot={{ r: 6, stroke: isDark ? '#ffffff' : dailyBaseColor, strokeWidth: 2, fill: dailyBaseColor }} 
+                        dot={{ fill: '#ffffff', stroke: dailyBaseColor, strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: dailyBaseColor, strokeWidth: 2, fill: dailyBaseColor }}
                         isAnimationActive={CHART_ANIMATION_ENABLED && !isExporting}
                     >
                         <LabelList 
@@ -370,8 +363,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                 entry.fill 
                                     ? entry.fill 
                                     : entry.isDecrease 
-                                        ? (isDark ? '#F56565' : '#FC8181') 
-                                        : (isDark ? '#48BB78' : '#68D391')
+                                        ? '#FC8181'
+                                        : '#68D391'
                             } 
                         />
                     ))}
