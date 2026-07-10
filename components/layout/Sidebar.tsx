@@ -99,11 +99,11 @@ const NavItem = React.memo(({
                     }
                 }}
                 className={`
-                    bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
+                    border-0 rounded-none h-auto w-auto p-0 text-inherit
                     flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
                     ${isActive
-                        ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
+                        ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20 hover:bg-[#046ca3]'
+                        : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
                     }
                 `}
             >
@@ -178,11 +178,11 @@ const NavItem = React.memo(({
                                             }
                                         }}
                                         className={`
-                                            bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
+                                            border-0 rounded-none h-auto w-auto p-0 text-inherit
                                             flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative
                                             ${activeTab === sub.id
-                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-[#0584c7] font-semibold'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-[#0584c7] font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
+                                                : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }
                                         `}
                                     >
@@ -276,7 +276,7 @@ export default function Sidebar() {
                 variants={sidebarVariants}
                 transition={sidebarTransition}
                 className={`
-                    hidden lg:flex fixed top-0 left-0 h-screen z-[120] 
+                    hidden lg:flex fixed top-0 left-0 h-screen z-[160] 
                     bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
                     flex-col transition-colors duration-300
                     ${!effectiveCollapsed ? 'shadow-2xl' : ''}
