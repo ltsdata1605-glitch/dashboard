@@ -216,9 +216,10 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim());
-                        const htxIndex = sheetHeaders.indexOf('Hình thức xuất');
-                        const tinhDTIndex = sheetHeaders.indexOf('Tính doanh thu');
-                        const hinhThucIndex = sheetHeaders.indexOf('Hình thức');
+                        const sheetHeadersLower = sheetHeaders.map(h => h.toLowerCase());
+                        const htxIndex = sheetHeadersLower.indexOf('hình thức xuất');
+                        const tinhDTIndex = sheetHeadersLower.indexOf('tính doanh thu');
+                        const hinhThucIndex = sheetHeadersLower.indexOf('hình thức');
                         
                         if (htxIndex !== -1 && tinhDTIndex !== -1 && hinhThucIndex !== -1) {
                             let count = 0;

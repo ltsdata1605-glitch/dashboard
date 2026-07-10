@@ -19,7 +19,7 @@ function _buildFullEmployeeData(
     for (let i = 0; i < periodData.length; i++) {
         const row = periodData[i];
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
-        const isThuHo = productConfig && productConfig.htxClassification
+        const isThuHo = productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0
             ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
             : HINH_THUC_XUAT_THU_HO.has(htx);
         if (isThuHo) {

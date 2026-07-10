@@ -620,7 +620,7 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     
     const htx = getRowValue(row, COL.HINH_THUC_XUAT) || '';
     let isTraCham = false;
-    if (productConfig && productConfig.htxClassification) {
+    if (productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0) {
         isTraCham = productConfig.htxClassification[cleanAndNormalize(htx)] === 'tra_gop';
     } else {
         // So khớp đã chuẩn hoá — tránh bỏ sót đơn trả góp chỉ vì lệch hoa/thường/khoảng trắng

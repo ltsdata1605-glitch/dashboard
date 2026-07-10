@@ -79,7 +79,7 @@ export function processKpis(
     let soLuongThuHo = 0;
     for (let i = 0, len = allPeriodData.length; i < len; i++) {
         const hinhThucXuat = getRowValue(allPeriodData[i], COL.HINH_THUC_XUAT);
-        const isThuHo = productConfig && productConfig.htxClassification
+        const isThuHo = productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0
             ? productConfig.htxClassification[cleanAndNormalize(hinhThucXuat)] === 'thu_ho'
             : HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
         if (hinhThucXuat && isThuHo) {
