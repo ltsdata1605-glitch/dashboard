@@ -17,6 +17,7 @@ This script will handle both pushing the changes to Github and creating a zipped
 ## Communication Style & Reporting
 - Luôn mô tả và trình bày rõ ràng các hành động sẽ làm (Kế hoạch thực thi) trước khi bắt tay vào code hoặc sửa lỗi.
 - Giải thích rõ ràng mục đích của từng hành động (làm việc đó để đạt được kết quả gì, ảnh hưởng thế nào đến hệ thống) sau mỗi yêu cầu của người dùng.
+- Cuối mỗi phản hồi, luôn luôn đính kèm thời gian ngày và giờ thực tế tại thời điểm phản hồi theo định dạng: `[🕒 YYYY-MM-DD HH:mm:ss]`.
 
 ## Vibecoding Operation Standards
 Để đảm bảo chất lượng, hiệu năng và dễ bảo trì, mọi hành động sửa đổi hay nâng cấp đều BẮT BUỘC tuân thủ:
