@@ -581,7 +581,7 @@
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusDataModal.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 9,
+    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusMobileCard.tsx": {
@@ -734,14 +734,14 @@
     "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
-  "features/phan-ca/components/ScheduleTable.tsx": {
-    "nonSemanticColor": 11,
-    "missingDarkVariant": 46,
-    "missingMobileToolbar": 0
-  },
   "features/phan-ca/components/PhanCaToolbar.tsx": {
     "nonSemanticColor": 8,
     "missingDarkVariant": 12,
+    "missingMobileToolbar": 0
+  },
+  "features/phan-ca/components/ScheduleTable.tsx": {
+    "nonSemanticColor": 11,
+    "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/VerticalIndividualSchedule.tsx": {
@@ -884,14 +884,14 @@
     "missingDarkVariant": 17,
     "missingMobileToolbar": 0
   },
-  "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
-    "nonSemanticColor": 33,
-    "missingDarkVariant": 18,
-    "missingMobileToolbar": 0
-  },
   "features/sticker-event/stickerprinter/StickerModeToolbar.tsx": {
     "nonSemanticColor": 4,
     "missingDarkVariant": 0,
+    "missingMobileToolbar": 0
+  },
+  "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
+    "nonSemanticColor": 33,
+    "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintPreview.tsx": {
