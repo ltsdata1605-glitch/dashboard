@@ -200,7 +200,7 @@
     "missingMobileToolbar": 0
   },
   "components/kpis/KpiCards.tsx": {
-    "nonSemanticColor": 86,
+    "nonSemanticColor": 74,
     "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },

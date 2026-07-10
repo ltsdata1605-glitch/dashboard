@@ -51,11 +51,11 @@ const KpiCard: React.FC<{
             borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
         },
         emerald: {
-            gradient: 'from-emerald-500 via-emerald-400 to-green-400',
-            iconBg: 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-500/15 dark:to-green-500/10',
+            gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
+            iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
             iconText: 'text-emerald-600 dark:text-emerald-400',
             progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-            progressFill: 'bg-gradient-to-r from-emerald-500 to-green-400',
+            progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
             glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
             borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
         },
@@ -78,11 +78,11 @@ const KpiCard: React.FC<{
             borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
         },
         rose: {
-            gradient: 'from-rose-500 via-rose-400 to-orange-400',
-            iconBg: 'bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-500/15 dark:to-orange-500/10',
+            gradient: 'from-rose-500 via-rose-400 to-rose-300',
+            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
             iconText: 'text-rose-600 dark:text-rose-400',
             progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-            progressFill: 'bg-gradient-to-r from-rose-500 to-orange-400',
+            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
             glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
             borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
         },
@@ -105,11 +105,11 @@ const KpiCard: React.FC<{
             borderHover: 'hover:border-orange-300 dark:hover:border-orange-600'
         },
         amber: {
-            gradient: 'from-amber-500 via-amber-400 to-yellow-400',
-            iconBg: 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-500/15 dark:to-yellow-500/10',
+            gradient: 'from-amber-500 via-amber-400 to-amber-300',
+            iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
             iconText: 'text-amber-600 dark:text-amber-400',
             progressBg: 'bg-amber-100 dark:bg-amber-500/10',
-            progressFill: 'bg-gradient-to-r from-amber-500 to-yellow-400',
+            progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
             glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
             borderHover: 'hover:border-amber-300 dark:hover:border-amber-600'
         },
