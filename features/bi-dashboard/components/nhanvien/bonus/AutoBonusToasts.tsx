@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { BonusAutoSummary } from '../../../hooks/useBonusAutoBridge';
 import { MultiMonthSummary } from '../../../hooks/useMultiMonthBonusRun';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 const SUCCESS_DURATION_MS = 5000;
 const TOAST_ID = 'ycx-auto-bonus-result';
@@ -24,36 +25,50 @@ const SuccessToastBody: React.FC<{ id: string; headline: string; onExpire: () =>
 
     useEffect(() => {
         if (paused) return;
-        startRef.current = Date.now();
-        const timer = setTimeout(() => { toast.dismiss(id); onExpire(); }, remaining);
-        return () => clearTimeout(timer);
-         
-    }, [paused]);
+        const interval = setInterval(() => {
+            setRemaining(prev => {
+                const next = prev - 50;
+                if (next <= 0) {
+                    clearInterval(interval);
+                    toast.dismiss(id);
+                    onExpire();
+                    return 0;
+                }
+                return next;
+            });
+        }, 50);
+        return () => clearInterval(interval);
+    }, [paused, id, onExpire]);
 
-    const handleEnter = () => {
-        const elapsed = Date.now() - startRef.current;
-        const left = Math.max(0, remaining - elapsed);
-        percentAtPauseRef.current = (left / SUCCESS_DURATION_MS) * 100;
-        setRemaining(left);
-        setPaused(true);
-    };
-    const handleLeave = () => setPaused(false);
+    const percent = (remaining / SUCCESS_DURATION_MS) * 100;
 
     return (
         <div
-            onMouseEnter={handleEnter}
-            onMouseLeave={handleLeave}
-            className="w-80 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 px-4 py-3 overflow-hidden"
+            onMouseEnter={() => {
+                setPaused(true);
+                percentAtPauseRef.current = percent;
+            }}
+            onMouseLeave={() => {
+                setPaused(false);
+                startRef.current = Date.now();
+            }}
+            className={`w-80 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-xl rounded-xl sm:rounded-2xl p-4 text-slate-800 dark:text-slate-100 transition-all duration-300 relative overflow-hidden ${
+                mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+            }`}
         >
-            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{headline}</p>
-            <div className="h-1 bg-emerald-100 dark:bg-emerald-900/40 rounded-full mt-2 overflow-hidden">
+            <p className="text-xs sm:text-sm font-bold pr-6">{headline}</p>
+            <Button
+                variant="ghost"
+                onClick={() => { toast.dismiss(id); onExpire(); }}
+                className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 h-6 w-6 p-0 flex items-center justify-center rounded-full transition-colors"
+                aria-label="Đóng"
+            >
+                ✕
+            </Button>
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-sky-100 dark:bg-sky-950">
                 <div
-                    className="h-full bg-emerald-500 dark:bg-emerald-400"
-                    style={
-                        paused
-                            ? { width: `${percentAtPauseRef.current}%`, transition: 'none' }
-                            : { width: mounted ? '0%' : '100%', transition: mounted ? `width ${remaining}ms linear` : 'none' }
-                    }
+                    className="h-full bg-sky-500 dark:bg-sky-400 transition-all duration-100 ease-out"
+                    style={{ width: `${percent}%` }}
                 />
             </div>
         </div>
@@ -70,20 +85,22 @@ const IssueToastBody: React.FC<{
         <div className="w-80 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 px-4 py-3">
             <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-bold flex-1">{headline}</p>
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => { toast.dismiss(id); onDismiss(); }}
-                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs leading-none flex-shrink-0"
+                    className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 h-6 w-6 p-0 flex items-center justify-center rounded-full flex-shrink-0"
                     aria-label="Đóng"
                 >
                     ✕
-                </button>
+                </Button>
             </div>
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => { toast.dismiss(id); onViewDetail(); }}
-                className="mt-2 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline"
+                className="mt-2 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline p-0 h-auto"
             >
                 Xem chi tiết
-            </button>
+            </Button>
         </div>
     );
 };
