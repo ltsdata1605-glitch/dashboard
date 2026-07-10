@@ -5,7 +5,7 @@
     "missingMobileToolbar": 0
   },
   "components/charts/IndustryGrid.tsx": {
-    "nonSemanticColor": 54,
+    "nonSemanticColor": 26,
     "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
@@ -80,12 +80,12 @@
     "missingMobileToolbar": 0
   },
   "components/employees/ContestTable.tsx": {
-    "nonSemanticColor": 44,
+    "nonSemanticColor": 22,
     "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
   "components/employees/EmployeeAnalysis.tsx": {
-    "nonSemanticColor": 91,
+    "nonSemanticColor": 28,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
@@ -125,12 +125,12 @@
     "missingMobileToolbar": 0
   },
   "components/employees/industry/useIndustryAnalysisLogic.ts": {
-    "nonSemanticColor": 48,
+    "nonSemanticColor": 12,
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/employees/IndustryAnalysisTab.tsx": {
-    "nonSemanticColor": 29,
+    "nonSemanticColor": 25,
     "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
@@ -175,7 +175,7 @@
     "missingMobileToolbar": 0
   },
   "components/employees/performance/PerformanceTableUtils.tsx": {
-    "nonSemanticColor": 28,
+    "nonSemanticColor": 7,
     "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
@@ -200,7 +200,7 @@
     "missingMobileToolbar": 0
   },
   "components/kpis/KpiCards.tsx": {
-    "nonSemanticColor": 74,
+    "nonSemanticColor": 17,
     "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
@@ -275,12 +275,12 @@
     "missingMobileToolbar": 0
   },
   "components/modals/PerformanceModal.tsx": {
-    "nonSemanticColor": 45,
+    "nonSemanticColor": 28,
     "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/modals/UncollectedOrdersModal.tsx": {
-    "nonSemanticColor": 50,
+    "nonSemanticColor": 14,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
@@ -290,7 +290,7 @@
     "missingMobileToolbar": 0
   },
   "components/modals/UnshippedOrdersModal.tsx": {
-    "nonSemanticColor": 50,
+    "nonSemanticColor": 14,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
@@ -355,12 +355,12 @@
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSettingsModal.tsx": {
-    "nonSemanticColor": 80,
+    "nonSemanticColor": 31,
     "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSummary.tsx": {
-    "nonSemanticColor": 55,
+    "nonSemanticColor": 27,
     "missingDarkVariant": 13,
     "missingMobileToolbar": 0
   },
@@ -400,7 +400,7 @@
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableUtils.ts": {
-    "nonSemanticColor": 42,
+    "nonSemanticColor": 24,
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
@@ -560,7 +560,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
-    "nonSemanticColor": 58,
+    "nonSemanticColor": 54,
     "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
@@ -600,7 +600,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
-    "nonSemanticColor": 27,
+    "nonSemanticColor": 18,
     "missingDarkVariant": 26,
     "missingMobileToolbar": 0
   },
@@ -615,7 +615,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 63,
+    "nonSemanticColor": 52,
     "missingDarkVariant": 33,
     "missingMobileToolbar": 0
   },
@@ -690,7 +690,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/hooks/useCompetitionData.ts": {
-    "nonSemanticColor": 15,
+    "nonSemanticColor": 6,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
@@ -720,7 +720,7 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/EditShiftModal.tsx": {
-    "nonSemanticColor": 32,
+    "nonSemanticColor": 14,
     "missingDarkVariant": 15,
     "missingMobileToolbar": 0
   },
@@ -740,7 +740,7 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/ScheduleTable.tsx": {
-    "nonSemanticColor": 11,
+    "nonSemanticColor": 7,
     "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },

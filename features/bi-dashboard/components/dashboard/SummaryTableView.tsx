@@ -24,14 +24,14 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
     
     // HIỆU QUẢ
-    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
-    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
     
     // TRAFFIC
     'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
@@ -50,7 +50,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
     
     // KHÁC
-    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', text: 'text-fuchsia-800 dark:text-fuchsia-300' },
+    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
 };
 
 // --- Helpers ---

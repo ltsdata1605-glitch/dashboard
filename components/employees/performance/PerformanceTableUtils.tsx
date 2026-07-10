@@ -101,12 +101,12 @@ export const TAB_THEMES = {
 } as const;
 
 export const DEPT_COLORS = [
-    { row: 'bg-blue-50 dark:bg-blue-900', badge: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-400', strip: 'bg-blue-100 dark:bg-blue-800' },
+    { row: 'bg-sky-50 dark:bg-sky-900', badge: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-400', strip: 'bg-sky-100 dark:bg-sky-800' },
     { row: 'bg-emerald-50 dark:bg-emerald-900', badge: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', strip: 'bg-emerald-100 dark:bg-emerald-800' },
-    { row: 'bg-violet-50 dark:bg-violet-900', badge: 'bg-violet-500', text: 'text-violet-700 dark:text-violet-400', strip: 'bg-violet-100 dark:bg-violet-800' },
+    { row: 'bg-indigo-50 dark:bg-indigo-900', badge: 'bg-indigo-500', text: 'text-indigo-700 dark:text-indigo-400', strip: 'bg-indigo-100 dark:bg-indigo-800' },
     { row: 'bg-amber-50 dark:bg-amber-900', badge: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-400', strip: 'bg-amber-100 dark:bg-amber-800' },
     { row: 'bg-rose-50 dark:bg-rose-900', badge: 'bg-rose-500', text: 'text-rose-700 dark:text-rose-400', strip: 'bg-rose-100 dark:bg-rose-800' },
     { row: 'bg-sky-50 dark:bg-sky-900', badge: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-400', strip: 'bg-sky-100 dark:bg-sky-800' },
-    { row: 'bg-teal-50 dark:bg-teal-900', badge: 'bg-teal-500', text: 'text-teal-700 dark:text-teal-400', strip: 'bg-teal-100 dark:bg-teal-800' },
-    { row: 'bg-fuchsia-50 dark:bg-fuchsia-900', badge: 'bg-fuchsia-500', text: 'text-fuchsia-700 dark:text-fuchsia-400', strip: 'bg-fuchsia-100 dark:bg-fuchsia-800' },
+    { row: 'bg-emerald-50 dark:bg-emerald-900', badge: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', strip: 'bg-emerald-100 dark:bg-emerald-800' },
+    { row: 'bg-rose-50 dark:bg-rose-900', badge: 'bg-rose-500', text: 'text-rose-700 dark:text-rose-400', strip: 'bg-rose-100 dark:bg-rose-800' },
 ];

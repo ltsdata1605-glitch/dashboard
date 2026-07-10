@@ -36,7 +36,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-700 dark:text-violet-400' },
+    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
     'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
@@ -45,8 +45,8 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'Đơn giá': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
-    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
+    'Đơn giá': { label: 'GTĐH', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
+    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {

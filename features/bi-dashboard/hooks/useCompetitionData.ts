@@ -16,13 +16,13 @@ interface UseCompetitionDataProps {
 }
 
 const HIGHLIGHT_COLORS = [
-    { dot: 'bg-teal-500', row: 'bg-teal-200 dark:bg-teal-900/60' },
+    { dot: 'bg-emerald-500', row: 'bg-emerald-200 dark:bg-emerald-900/60' },
     { dot: 'bg-rose-500', row: 'bg-rose-200 dark:bg-rose-900/60' },
     { dot: 'bg-sky-500', row: 'bg-sky-200 dark:bg-sky-900/60' },
     { dot: 'bg-amber-500', row: 'bg-amber-200 dark:bg-amber-900/60' },
-    { dot: 'bg-violet-500', row: 'bg-violet-200 dark:bg-violet-900/60' },
-    { dot: 'bg-lime-500', row: 'bg-lime-200 dark:bg-teal-900/60' }, 
-    { dot: 'bg-pink-500', row: 'bg-pink-200 dark:bg-pink-900/60' },
+    { dot: 'bg-indigo-500', row: 'bg-indigo-200 dark:bg-indigo-900/60' },
+    { dot: 'bg-emerald-500', row: 'bg-emerald-200 dark:bg-emerald-900/60' }, 
+    { dot: 'bg-rose-500', row: 'bg-rose-200 dark:bg-rose-900/60' },
     { dot: 'bg-indigo-500', row: 'bg-indigo-200 dark:bg-indigo-900/60' },
 ];
 

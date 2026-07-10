@@ -34,17 +34,17 @@ const industryColors: { [key: string]: string } = {
 };
 
 // Tailwind JIT compiler hints
-// border-blue-500 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 bg-blue-500
 // border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-cyan-500 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400 bg-cyan-500
-// border-violet-500 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 bg-violet-500
-// border-orange-500 bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 bg-orange-500
-// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-500
-// border-teal-500 bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 bg-teal-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
-// border-lime-500 bg-lime-100 dark:bg-lime-900/50 text-lime-600 dark:text-lime-400 bg-lime-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
 // border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 bg-indigo-500
-// border-fuchsia-500 bg-fuchsia-100 dark:bg-fuchsia-900/50 text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-500
+// border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 bg-amber-500
+// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
+// border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 bg-indigo-500
+// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-500
 // border-slate-500 bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 bg-slate-500
 
 

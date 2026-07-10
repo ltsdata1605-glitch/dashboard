@@ -405,7 +405,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
                         <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} colorA="bg-emerald-500" textA="text-emerald-600 dark:text-emerald-400" colorB="bg-amber-500" textB="text-amber-600 dark:text-amber-400" />
                         <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-indigo-500" textA="text-indigo-600 dark:text-indigo-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
-                        <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} colorA="bg-cyan-500" textA="text-cyan-600 dark:text-cyan-400" colorB="bg-pink-500" textB="text-pink-600 dark:text-pink-400" />
+                        <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} colorA="bg-sky-500" textA="text-sky-600 dark:text-sky-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
                     </div>
 
                     {/* Ranks Strip */}
@@ -413,13 +413,13 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-indigo-600">{statsA.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-cyan-600">{statsA.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
                         </div>
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-fuchsia-600">{statsB.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-pink-600">{statsB.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtNotDat}</span></div>
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
                         </div>
                     </div>

@@ -375,16 +375,16 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
 
     const getPastelColor = (index: number) => {
         const colors = [
-            'bg-blue-50/80 dark:bg-blue-900/20',
+            'bg-sky-50/80 dark:bg-sky-900/20',
             'bg-emerald-50/80 dark:bg-emerald-900/20',
             'bg-amber-50/80 dark:bg-amber-900/20',
             'bg-rose-50/80 dark:bg-rose-900/20',
             'bg-indigo-50/80 dark:bg-indigo-900/20',
-            'bg-teal-50/80 dark:bg-teal-900/20',
-            'bg-orange-50/80 dark:bg-orange-900/20',
-            'bg-purple-50/80 dark:bg-purple-900/20',
-            'bg-cyan-50/80 dark:bg-cyan-900/20',
-            'bg-lime-50/80 dark:bg-lime-900/20',
+            'bg-emerald-50/80 dark:bg-emerald-900/20',
+            'bg-amber-50/80 dark:bg-amber-900/20',
+            'bg-indigo-50/80 dark:bg-indigo-900/20',
+            'bg-sky-50/80 dark:bg-sky-900/20',
+            'bg-emerald-50/80 dark:bg-emerald-900/20',
         ];
         return colors[index % colors.length];
     };
@@ -435,8 +435,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
                                         { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
                                         { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
-                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
-                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
+                                        { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
+                                        { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' }
                                     ];
                                     const config = colorConfigs[gIdx % colorConfigs.length];
                                     return (
@@ -450,7 +450,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     const colorConfigs = [
                                         { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
                                         { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' },
-                                        { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-700 dark:text-teal-300' },
+                                        { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
                                     ];
                                     const config = colorConfigs[cIdx % colorConfigs.length];
                                     return (
@@ -477,8 +477,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
                                         { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
                                         { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
-                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
-                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
+                                        { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
+                                        { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' }
                                     ];
                                     const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
                                     return (

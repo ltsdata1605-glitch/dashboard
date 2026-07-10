@@ -205,7 +205,7 @@ const CompactTargetItem: React.FC<{
     // Theme mapping
     const themes = {
         sky: { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', shadow: 'shadow-sm', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-        purple: { bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', shadow: 'shadow-sm', label: 'text-purple-700 dark:text-purple-400', after: 'text-purple-600 dark:text-purple-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-purple-200 dark:border-purple-700/50', inputText: 'text-purple-600', ring: 'focus-within:ring-purple-500', track: 'bg-purple-200 dark:bg-purple-900', thumb: 'accent-purple-500' },
+        purple: { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', shadow: 'shadow-sm', label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500' },
         amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', shadow: 'shadow-sm', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
         slate: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-200 dark:border-slate-700', shadow: 'shadow-sm', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-600', ring: 'focus-within:ring-slate-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-500' }
     };
@@ -399,7 +399,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             {combinedDepts.map((d, idx) => {
                                 const w = effectiveWeights[d.name] || 0;
                                 if (w <= 0) return null;
-                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-purple-500', 'bg-rose-500', 'bg-indigo-500'];
+                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-indigo-500', 'bg-rose-500', 'bg-indigo-500'];
                                 return <div key={d.name} style={{ width: `${Math.max(w, 100)}%` }} className={`${colors[idx % colors.length]} h-full opacity-90 transition-all`} title={`${d.name}: ${w.toFixed(1)}%`} />
                             })}
                         </div>

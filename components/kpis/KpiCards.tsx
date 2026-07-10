@@ -33,20 +33,20 @@ const KpiCard: React.FC<{
         borderHover: string
     }> = {
         blue: {
-            gradient: 'from-blue-500 via-blue-400 to-sky-400',
-            iconBg: 'bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-500/15 dark:to-sky-500/10',
-            iconText: 'text-blue-600 dark:text-blue-400',
-            progressBg: 'bg-blue-100 dark:bg-blue-500/10',
-            progressFill: 'bg-gradient-to-r from-blue-500 to-sky-400',
-            glowColor: 'shadow-blue-200/50 dark:shadow-blue-500/20',
-            borderHover: 'hover:border-blue-300 dark:hover:border-blue-600'
+            gradient: 'from-sky-500 via-sky-400 to-sky-300',
+            iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
+            iconText: 'text-sky-600 dark:text-sky-400',
+            progressBg: 'bg-sky-100 dark:bg-sky-500/10',
+            progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
+            glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
+            borderHover: 'hover:border-sky-300 dark:hover:border-sky-600'
         },
         teal: {
-            gradient: 'from-emerald-500 via-emerald-400 to-teal-400',
-            iconBg: 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/15 dark:to-teal-500/10',
+            gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
+            iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
             iconText: 'text-emerald-600 dark:text-emerald-400',
             progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-            progressFill: 'bg-gradient-to-r from-emerald-500 to-teal-400',
+            progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
             glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
             borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
         },
@@ -60,20 +60,20 @@ const KpiCard: React.FC<{
             borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
         },
         pink: {
-            gradient: 'from-pink-500 via-pink-400 to-rose-400',
-            iconBg: 'bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-500/15 dark:to-rose-500/10',
-            iconText: 'text-pink-600 dark:text-pink-400',
-            progressBg: 'bg-pink-100 dark:bg-pink-500/10',
-            progressFill: 'bg-gradient-to-r from-pink-500 to-rose-400',
-            glowColor: 'shadow-pink-200/50 dark:shadow-pink-500/20',
-            borderHover: 'hover:border-pink-300 dark:hover:border-pink-600'
-        },
-        red: {
-            gradient: 'from-rose-500 via-rose-400 to-red-400',
-            iconBg: 'bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-500/15 dark:to-red-500/10',
+            gradient: 'from-rose-500 via-rose-400 to-rose-300',
+            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
             iconText: 'text-rose-600 dark:text-rose-400',
             progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-            progressFill: 'bg-gradient-to-r from-rose-500 to-red-400',
+            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
+            glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
+            borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
+        },
+        red: {
+            gradient: 'from-rose-500 via-rose-400 to-rose-300',
+            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
+            iconText: 'text-rose-600 dark:text-rose-400',
+            progressBg: 'bg-rose-100 dark:bg-rose-500/10',
+            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
             glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
             borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
         },
@@ -87,22 +87,22 @@ const KpiCard: React.FC<{
             borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
         },
         purple: {
-            gradient: 'from-indigo-500 via-violet-400 to-purple-400',
-            iconBg: 'bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-500/15 dark:to-violet-500/10',
-            iconText: 'text-indigo-600 dark:text-indigo-400',
-            progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-            progressFill: 'bg-gradient-to-r from-indigo-500 to-violet-400',
-            glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
-            borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600'
+            gradient: 'from-slate-500 via-slate-400 to-slate-300',
+            iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-500/15 dark:to-slate-500/10',
+            iconText: 'text-slate-600 dark:text-slate-400',
+            progressBg: 'bg-slate-100 dark:bg-slate-500/10',
+            progressFill: 'bg-gradient-to-r from-slate-500 to-slate-300',
+            glowColor: 'shadow-slate-200/50 dark:shadow-slate-500/20',
+            borderHover: 'hover:border-slate-300 dark:hover:border-slate-600'
         },
         orange: {
-            gradient: 'from-orange-500 via-orange-400 to-amber-400',
-            iconBg: 'bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-500/15 dark:to-amber-500/10',
-            iconText: 'text-orange-600 dark:text-orange-400',
-            progressBg: 'bg-orange-100 dark:bg-orange-500/10',
-            progressFill: 'bg-gradient-to-r from-orange-500 to-amber-400',
-            glowColor: 'shadow-orange-200/50 dark:shadow-orange-500/20',
-            borderHover: 'hover:border-orange-300 dark:hover:border-orange-600'
+            gradient: 'from-amber-500 via-amber-400 to-amber-300',
+            iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
+            iconText: 'text-amber-600 dark:text-amber-400',
+            progressBg: 'bg-amber-100 dark:bg-amber-500/10',
+            progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
+            glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
+            borderHover: 'hover:border-amber-300 dark:hover:border-amber-600'
         },
         amber: {
             gradient: 'from-amber-500 via-amber-400 to-amber-300',
@@ -112,6 +112,33 @@ const KpiCard: React.FC<{
             progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
             glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
             borderHover: 'hover:border-amber-300 dark:hover:border-amber-600'
+        },
+        sky: {
+            gradient: 'from-sky-500 via-sky-400 to-sky-300',
+            iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
+            iconText: 'text-sky-600 dark:text-sky-400',
+            progressBg: 'bg-sky-100 dark:bg-sky-500/10',
+            progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
+            glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
+            borderHover: 'hover:border-sky-300 dark:hover:border-sky-600'
+        },
+        slate: {
+            gradient: 'from-slate-500 via-slate-400 to-slate-300',
+            iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-500/15 dark:to-slate-500/10',
+            iconText: 'text-slate-600 dark:text-slate-400',
+            progressBg: 'bg-slate-100 dark:bg-slate-500/10',
+            progressFill: 'bg-gradient-to-r from-slate-500 to-slate-300',
+            glowColor: 'shadow-slate-200/50 dark:shadow-slate-500/20',
+            borderHover: 'hover:border-slate-300 dark:hover:border-slate-600'
+        },
+        indigo: {
+            gradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
+            iconBg: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-500/15 dark:to-indigo-500/10',
+            iconText: 'text-indigo-600 dark:text-indigo-400',
+            progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
+            progressFill: 'bg-gradient-to-r from-indigo-500 to-indigo-300',
+            glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
+            borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600'
         },
     };
 
@@ -539,15 +566,15 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 let valueColor = 'text-slate-800 dark:text-slate-200';
                 if ((config.hasTarget && config.targetType !== 'none') || (isDTThucCard && dtThucTarget > 0)) {
                     valueColor = isGood ? `text-emerald-600 dark:text-emerald-400` : 'text-amber-600 dark:text-amber-400';
-                    if (config.metric === 'doanhThuQD') valueColor = 'text-blue-600 dark:text-blue-400';
+                    if (config.metric === 'doanhThuQD') valueColor = 'text-sky-600 dark:text-sky-400';
                 } else if (isSpecialUnshipped) {
                     valueColor = rawValue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500';
                 } else {
-                    if (config.iconColor === 'blue') valueColor = 'text-blue-600 dark:text-blue-400';
+                    if (config.iconColor === 'blue') valueColor = 'text-sky-600 dark:text-sky-400';
                     else if (config.iconColor === 'emerald') valueColor = 'text-emerald-600 dark:text-emerald-400';
-                    else if (config.iconColor === 'pink') valueColor = 'text-pink-600 dark:text-pink-400';
-                    else if (config.iconColor === 'orange') valueColor = 'text-orange-600 dark:text-orange-400';
-                    else if (config.iconColor === 'purple' || config.iconColor === 'violet') valueColor = 'text-indigo-600 dark:text-indigo-400';
+                    else if (config.iconColor === 'pink') valueColor = 'text-rose-600 dark:text-rose-400';
+                    else if (config.iconColor === 'orange') valueColor = 'text-amber-600 dark:text-amber-400';
+                    else if (config.iconColor === 'purple' || config.iconColor === 'violet') valueColor = 'text-slate-600 dark:text-slate-400';
                     else if (config.iconColor === 'red' || config.iconColor === 'rose') valueColor = 'text-rose-600 dark:text-rose-400';
                     else if (config.iconColor === 'amber') valueColor = 'text-amber-600 dark:text-amber-400';
                 }

@@ -89,13 +89,13 @@ const BulkRenameModal: React.FC<{
                                 />
                             </div>
                             <div className="flex-1">
-                                <p className="text-[9px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
+                                <p className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
                                 <input 
                                     list="group-list"
                                     value={tempGroup[comp.name] ?? ''}
                                     onChange={e => setTempGroup({...tempGroup, [comp.name]: e.target.value})}
                                     placeholder={comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 outline-none transition-all placeholder:text-slate-300"
                                 />
                             </div>
                         </div>
@@ -155,10 +155,10 @@ const StatusTile: React.FC<{
             ring: 'border-indigo-500 ring-2 ring-indigo-500/20'
         },
         purple: {
-            wrapper: 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800',
-            text: 'text-purple-800 dark:text-purple-200',
-            iconActive: 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 shadow-sm',
-            ring: 'border-purple-500 ring-2 ring-purple-500/20'
+            wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
+            text: 'text-indigo-800 dark:text-indigo-200',
+            iconActive: 'text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 shadow-sm',
+            ring: 'border-indigo-500 ring-2 ring-indigo-500/20'
         }
     };
 

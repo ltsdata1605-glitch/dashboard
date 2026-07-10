@@ -260,9 +260,9 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <td className="col-total border-r border-slate-300 text-sm text-slate-500">{Math.round(avgNormal)}</td>
                 <td className="col-total col-total-final border-r-2 border-slate-400 text-sm text-slate-900">{Math.round(avgTotal)}</td>
                 
-                <td className="col-stat border-r border-slate-300 text-sm text-purple-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
-                <td className="col-stat border-r border-slate-300 text-sm text-purple-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
-                <td className="col-stat border-r-2 border-slate-400 text-sm text-purple-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
+                <td className="col-stat border-r border-slate-300 text-sm text-indigo-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
+                <td className="col-stat border-r border-slate-300 text-sm text-indigo-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
+                <td className="col-stat border-r-2 border-slate-400 text-sm text-indigo-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
                 
                 <td colSpan={2} className="border-r-2 border-slate-400 bg-slate-50"></td>
                 <td colSpan={weekRange ? (weekRange.end - weekRange.start + 1) : duration} className="bg-slate-50 border-t-2 border-slate-400"></td>
@@ -300,8 +300,8 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="sticky-col px-1 text-center border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
                 </>
             )}
             <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>

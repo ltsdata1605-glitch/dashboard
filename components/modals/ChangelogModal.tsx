@@ -88,7 +88,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                             <span><strong>Loại bỏ code thừa & Tái cấu trúc:</strong> Xóa bỏ triệt để các tính năng/thành phần không còn sử dụng. Cơ sở mã nguồn được tối ưu và chia tách thành các module siêu nhỏ nhắn, tăng tốc độ tải trang cực nhanh.</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="layout-dashboard" size={4} className="text-purple-500 shrink-0 mt-0.5" />
+                            <Icon name="layout-dashboard" size={4} className="text-indigo-500 shrink-0 mt-0.5" />
                             <span><strong>Giao diện:</strong> Cập nhật thông tin phiên bản ở cuối trang. Thay thế thuật ngữ cũ bằng giao diện Lịch sử cập nhật chuyên nghiệp.</span>
                         </li>
                     </ul>

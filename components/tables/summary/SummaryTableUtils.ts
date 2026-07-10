@@ -101,7 +101,7 @@ export const HEADER_CONFIG: HeaderConfig[] = [
     { label: 'TrB DT', group: 'TB DOANH THU', key: 'avgRevenue', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'calculator' },
     
     { label: 'DTQĐ', group: '', key: 'totalRevenueQD', showInComparison: true, colorClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-500/20', icon: 'award' },
-    { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-500/20', icon: 'shopping-bag' },
+    { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'shopping-bag' },
     { label: 'TRẢ CHẬM', group: '', key: 'traGopPercent', showInComparison: true, colorClass: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', borderColor: 'border-rose-200 dark:border-rose-500/20', icon: 'clock' },
 ];
 
@@ -133,10 +133,10 @@ export const PILL_ICONS: Record<string, string> = {
 };
 
 export const PILL_COLORS: Record<string, string> = {
-    'kho': 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-900/40 dark:text-teal-200 dark:border-teal-700',
+    'kho': 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-700',
     'parent': 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-700',
-    'child': 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700',
-    'manufacturer': 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/40 dark:text-pink-200 dark:border-pink-700',
+    'child': 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/40 dark:text-sky-200 dark:border-sky-700',
+    'manufacturer': 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-700',
     'creator': 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-700',
-    'product': 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-900/40 dark:text-violet-200 dark:border-violet-700'
+    'product': 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-200 dark:border-indigo-700'
 };

@@ -32,7 +32,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
     'child': 'text-sky-700 dark:text-sky-300',           
     'manufacturer': 'text-primary-700 dark:text-primary-300', 
     'creator': 'text-amber-700 dark:text-amber-300',      
-    'product': 'text-violet-700 dark:text-violet-300'     
+    'product': 'text-indigo-700 dark:text-indigo-300'     
 };
 
 export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.memo(({
@@ -209,7 +209,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     const aov = (node && node.totalQuantity > 0) ? node.totalRevenue / node.totalQuantity : 0;
                     return (
                         <td key={`aov-${m.id}`} className="px-3 py-3 text-right">
-                            <span className="text-violet-600 dark:text-violet-400 font-medium text-[11px]">
+                            <span className="text-indigo-600 dark:text-indigo-400 font-medium text-[11px]">
                                 {aov > 0 ? formatCurrency(aov, 0) : '-'}
                             </span>
                         </td>

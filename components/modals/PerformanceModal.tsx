@@ -30,8 +30,8 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
             {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 */}
             {/* border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 */}
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
-            {/* border-purple-500 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 */}
-            {/* border-cyan-500 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400 */}
+            {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
+            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
             <div className="flex items-center gap-2 sm:gap-3">
                 <div className={`w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-lg bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
                     <Icon name={icon} size={3.5} className="sm:hidden" />
@@ -323,13 +323,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         
                         const barColors = [
                             'bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
-                            'bg-cyan-500', 'bg-purple-500', 'bg-orange-500', 'bg-teal-500',
-                            'bg-pink-500', 'bg-sky-500', 'bg-lime-500', 'bg-fuchsia-500'
+                            'bg-sky-500', 'bg-indigo-500', 'bg-amber-500', 'bg-emerald-500',
+                            'bg-rose-500', 'bg-sky-500', 'bg-emerald-500', 'bg-rose-500'
                         ];
                         const dotColors = [
                             'bg-indigo-400', 'bg-emerald-400', 'bg-amber-400', 'bg-rose-400',
-                            'bg-cyan-400', 'bg-purple-400', 'bg-orange-400', 'bg-teal-400',
-                            'bg-pink-400', 'bg-sky-400', 'bg-lime-400', 'bg-fuchsia-400'
+                            'bg-sky-400', 'bg-indigo-400', 'bg-amber-400', 'bg-emerald-400',
+                            'bg-rose-400', 'bg-sky-400', 'bg-emerald-400', 'bg-rose-400'
                         ];
 
                         if (sortedIndustries.length === 0) {

@@ -419,14 +419,14 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                         {Object.entries(processedData).map(([dept, employees], deptIdx) => {
                             const pastelColors = [
-                                'bg-blue-50/50 dark:bg-blue-900/20',
+                                'bg-sky-50/50 dark:bg-sky-900/20',
                                 'bg-emerald-50/50 dark:bg-emerald-900/20',
-                                'bg-purple-50/50 dark:bg-purple-900/20',
+                                'bg-indigo-50/50 dark:bg-indigo-900/20',
                                 'bg-amber-50/50 dark:bg-amber-900/20',
                                 'bg-rose-50/50 dark:bg-rose-900/20',
                                 'bg-sky-50/50 dark:bg-sky-900/20',
                                 'bg-indigo-50/50 dark:bg-indigo-900/20',
-                                'bg-teal-50/50 dark:bg-teal-900/20'
+                                'bg-emerald-50/50 dark:bg-emerald-900/20'
                             ];
                             const deptColor = pastelColors[deptIdx % pastelColors.length];
 

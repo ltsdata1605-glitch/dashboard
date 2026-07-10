@@ -394,7 +394,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                  <div className="flex justify-between items-center mb-2">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">CHỌN CA ĐẶC BIỆT</h3>
                      {!isAddingNewSpecial && (
-                        <Button variant="ghost" onClick={() => setIsAddingNewSpecial(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50 font-semibold py-1 px-2 rounded transition">
+                        <Button variant="ghost" onClick={() => setIsAddingNewSpecial(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 font-semibold py-1 px-2 rounded transition">
                             Thêm mới +
                         </Button>
                     )}
@@ -422,7 +422,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                                     variant="ghost"
                                     key={item.label}
                                     onClick={() => handleSelectShift(item.data)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-white dark:bg-slate-800 hover:bg-violet-50 dark:hover:bg-violet-900/20 border border-violet-300 dark:border-violet-700 text-violet-800 dark:text-violet-400 font-semibold py-2 px-3 rounded transition text-sm shadow-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-indigo-300 dark:border-indigo-700 text-indigo-800 dark:text-indigo-400 font-semibold py-2 px-3 rounded transition text-sm shadow-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     disabled={isDisabled}
                                     title={isDisabled ? "Ca Giao Hàng chỉ dành cho nhân viên Nam" : ""}
                                 >
@@ -448,7 +448,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                     <Button variant="ghost" onClick={() => handleBusyTimeClick('morning')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl transition text-sm shadow-md">BẬN SÁNG</Button>
-                    <Button variant="ghost" onClick={() => handleBusyTimeClick('afternoon')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2.5 px-4 rounded-xl transition text-sm shadow-md">BẬN CHIỀU</Button>
+                    <Button variant="ghost" onClick={() => handleBusyTimeClick('afternoon')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 px-4 rounded-xl transition text-sm shadow-md">BẬN CHIỀU</Button>
                 </div>
             </div>
         )}
@@ -532,12 +532,12 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   const renderSolutionAction = (action: SolutionAction, isPartOfPackage: boolean) => (
         <>
             <p className="text-sm text-slate-700 dark:text-slate-300">
-                <strong>{isPartOfPackage ? 'Hành động:' : 'Đề xuất cho:'}</strong> <strong className="text-cyan-600 dark:text-cyan-400">{action.staff.name}</strong>
+                <strong>{isPartOfPackage ? 'Hành động:' : 'Đề xuất cho:'}</strong> <strong className="text-sky-600 dark:text-sky-400">{action.staff.name}</strong>
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Ca hiện tại: <span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">{action.originalShift.role || 'Trống'}</span>
                 <span className="mx-2">→</span>
-                Ca mới: <span className="font-mono font-bold bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-300 px-1 rounded">{action.newShift.role}</span>
+                Ca mới: <span className="font-mono font-bold bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-300 px-1 rounded">{action.newShift.role}</span>
             </p>
         </>
     );
@@ -556,7 +556,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                              <div>
                                 <p className="font-semibold text-sky-800 dark:text-sky-400">Gợi Ý Hoán Đổi Tối Ưu</p>
                                 <p className="text-sm text-slate-700 dark:text-slate-300 mt-2">
-                                    <strong>Hoán đổi ca</strong> với <strong className="text-violet-600 dark:text-violet-400">{suggestion.partner.name}</strong>
+                                    <strong>Hoán đổi ca</strong> với <strong className="text-indigo-600 dark:text-indigo-400">{suggestion.partner.name}</strong>
                                 </p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     Ca của bạn (<span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">{info.currentShift.role}</span>)
@@ -569,16 +569,16 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                     </div>
                 )}
                 {suggestion.type === 'extend' && (
-                    <div className="p-3 bg-white dark:bg-slate-800 rounded border border-cyan-300 dark:border-cyan-700 flex justify-between items-center text-left">
+                    <div className="p-3 bg-white dark:bg-slate-800 rounded border border-sky-300 dark:border-sky-700 flex justify-between items-center text-left">
                         <div> {renderSolutionAction(suggestion, false)} </div>
-                        <Button variant="ghost" onClick={handleConfirmSuggestion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-1 px-3 rounded transition text-xs self-center flex-shrink-0 ml-2">Chọn</Button>
+                        <Button variant="ghost" onClick={handleConfirmSuggestion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-sky-600 hover:bg-sky-700 text-white font-bold py-1 px-3 rounded transition text-xs self-center flex-shrink-0 ml-2">Chọn</Button>
                     </div>
                 )}
                 {suggestion.type === 'split_cover' && (
-                     <div className="p-3 bg-white dark:bg-slate-800 rounded border border-teal-300 dark:border-teal-700 text-left">
+                     <div className="p-3 bg-white dark:bg-slate-800 rounded border border-emerald-300 dark:border-emerald-700 text-left">
                         <div className="flex justify-between items-center">
-                            <p className="font-bold text-teal-700 dark:text-teal-400">Gói giải pháp (Nhiều người)</p>
-                            <Button variant="ghost" onClick={handleConfirmSuggestion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-teal-600 hover:bg-teal-700 text-white font-bold py-1 px-3 rounded transition text-xs self-center flex-shrink-0 ml-2">Chọn Gói</Button>
+                            <p className="font-bold text-emerald-700 dark:text-emerald-400">Gói giải pháp (Nhiều người)</p>
+                            <Button variant="ghost" onClick={handleConfirmSuggestion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded transition text-xs self-center flex-shrink-0 ml-2">Chọn Gói</Button>
                         </div>
                         <div className="mt-2 space-y-2 border-t border-slate-200 dark:border-slate-700 pt-2">
                              {suggestion.actions.map((action, actionIndex) => (

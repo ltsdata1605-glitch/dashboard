@@ -11,24 +11,28 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
 import { Button } from '../shared/ui/Button';
 
-const LIGHT_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#10b981', '#60a5fa', '#94a3b8', '#a78bfa'];
-const DARK_COLORS  = ['#818cf8', '#4ade80', '#facc15', '#f87171', '#a78bfa', '#22d3ee', '#fb923c', '#f472b6', '#34d399', '#93c5fd', '#cbd5e1', '#c4b5fd'];
+// Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
+// + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
+const LIGHT_COLORS = ['#0284c7', '#059669', '#f59e0b', '#f43f5e', '#6366f1', '#0ea5e9', '#d97706', '#fb7185', '#10b981', '#7dd3fc', '#94a3b8', '#a5b4fc'];
+const DARK_COLORS  = ['#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#818cf8', '#7dd3fc', '#fcd34d', '#fda4af', '#6ee7b7', '#bae6fd', '#cbd5e1', '#c7d2fe'];
 
+// Giữ nguyên các key (blue/cyan/orange/pink/teal/violet/lime/fuchsia) để tra cứu cũ vẫn chạy,
+// nhưng ánh xạ về sắc độ semantic + indigo. Dùng sắc độ khác nhau để vẫn phân biệt được nhóm.
 const colorClasses: Record<string, { bg: string, text: string }> = {
-    blue:   { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400' },
+    blue:   { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
     emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400' },
     amber:  { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400' },
     rose:   { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400' },
     indigo: { bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400' },
-    cyan:   { bg: 'bg-cyan-50 dark:bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-400' },
-    orange: { bg: 'bg-orange-50 dark:bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400' },
-    pink:   { bg: 'bg-pink-50 dark:bg-pink-500/10', text: 'text-pink-600 dark:text-pink-400' },
-    teal:   { bg: 'bg-teal-50 dark:bg-teal-500/10', text: 'text-teal-600 dark:text-teal-400' },
+    cyan:   { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
+    orange: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300' },
+    pink:   { bg: 'bg-rose-100 dark:bg-rose-500/20', text: 'text-rose-700 dark:text-rose-300' },
+    teal:   { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300' },
     sky:    { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
-    violet: { bg: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400' },
+    violet: { bg: 'bg-indigo-100 dark:bg-indigo-500/20', text: 'text-indigo-700 dark:text-indigo-300' },
     slate:  { bg: 'bg-slate-100 dark:bg-slate-700/60', text: 'text-slate-500 dark:text-slate-400' },
-    lime:   { bg: 'bg-lime-50 dark:bg-lime-500/10', text: 'text-lime-600 dark:text-lime-400' },
-    fuchsia:{ bg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', text: 'text-fuchsia-600 dark:text-fuchsia-400' },
+    lime:   { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-500 dark:text-emerald-300' },
+    fuchsia:{ bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-500 dark:text-rose-300' },
 };
 
 // Level badge labels

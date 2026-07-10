@@ -20,11 +20,11 @@ import TimeProgressBar from './shared/TimeProgressBar';
 
 const PALETTE = [
   { main: 'bg-sky-600', light: 'bg-sky-100', text: 'text-sky-800', hover: 'hover:bg-sky-50', zebra: 'bg-sky-50/50', footer: 'bg-sky-800' },
-  { main: 'bg-teal-600', light: 'bg-teal-100', text: 'text-teal-800', hover: 'hover:bg-teal-50', zebra: 'bg-teal-50/50', footer: 'bg-teal-800' },
+  { main: 'bg-emerald-600', light: 'bg-emerald-100', text: 'text-emerald-800', hover: 'hover:bg-emerald-50', zebra: 'bg-emerald-50/50', footer: 'bg-emerald-800' },
   { main: 'bg-rose-600', light: 'bg-rose-100', text: 'text-rose-800', hover: 'hover:bg-rose-50', zebra: 'bg-sky-50/50', footer: 'bg-rose-800' },
   { main: 'bg-amber-500', light: 'bg-amber-100', text: 'text-amber-800', hover: 'hover:bg-amber-50', zebra: 'bg-sky-50/50', footer: 'bg-amber-800' },
   { main: 'bg-indigo-600', light: 'bg-indigo-100', text: 'text-indigo-800', hover: 'hover:bg-indigo-50', zebra: 'bg-sky-50/50', footer: 'bg-indigo-800' },
-  { main: 'bg-fuchsia-600', light: 'bg-fuchsia-100', text: 'text-fuchsia-800', hover: 'hover:bg-fuchsia-50', zebra: 'bg-sky-50/50', footer: 'bg-fuchsia-800' },
+  { main: 'bg-rose-600', light: 'bg-rose-100', text: 'text-rose-800', hover: 'hover:bg-rose-50', zebra: 'bg-sky-50/50', footer: 'bg-rose-800' },
 ];
 
 import { useCompetitionData } from '../../hooks/useCompetitionData';

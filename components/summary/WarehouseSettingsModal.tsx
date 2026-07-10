@@ -243,26 +243,26 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {
         'Doanh Thu': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
         'SP CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
-        'MÙA VỤ': { bg: 'bg-orange-50/30 dark:bg-orange-900/10', text: 'text-orange-600 dark:text-orange-400', indicator: 'bg-orange-500', border: 'border-orange-200 dark:border-orange-800' },
+        'MÙA VỤ': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
         'TRAFFIC': { bg: 'bg-slate-50/30 dark:bg-slate-900/10', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-800' },
-        'SL PHỤ KIỆN': { bg: 'bg-purple-50/30 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-400', indicator: 'bg-purple-500', border: 'border-purple-200 dark:border-purple-800' },
-        'SL DỊCH VỤ': { bg: 'bg-fuchsia-50/30 dark:bg-fuchsia-900/10', text: 'text-fuchsia-600 dark:text-fuchsia-400', indicator: 'bg-fuchsia-500', border: 'border-fuchsia-200 dark:border-fuchsia-800' },
+        'SL PHỤ KIỆN': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
+        'SL DỊCH VỤ': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
         'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
         'BẢO HIỂM ALL': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
-        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-violet-50/30 dark:bg-violet-900/10', text: 'text-violet-600 dark:text-violet-400', indicator: 'bg-violet-500', border: 'border-violet-200 dark:border-violet-800' },
-        'BẢO HIỂM ĐMX': { bg: 'bg-pink-50/30 dark:bg-pink-900/10', text: 'text-pink-600 dark:text-pink-400', indicator: 'bg-pink-500', border: 'border-pink-200 dark:border-pink-800' },
+        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
+        'BẢO HIỂM ĐMX': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 
     const itemPastelColors = [
-        { bg: 'bg-blue-50/50 dark:bg-blue-900/10', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-400' },
+        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
         { bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
-        { bg: 'bg-violet-50/50 dark:bg-violet-900/10', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-400' },
+        { bg: 'bg-indigo-50/50 dark:bg-indigo-900/10', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-400' },
         { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
-        { bg: 'bg-pink-50/50 dark:bg-pink-900/10', border: 'border-pink-200 dark:border-pink-800', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-400' },
-        { bg: 'bg-cyan-50/50 dark:bg-cyan-900/10', border: 'border-cyan-200 dark:border-cyan-800', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-400' },
         { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
-        { bg: 'bg-orange-50/50 dark:bg-orange-900/10', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-400' }
+        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
+        { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
+        { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' }
     ];
 
     const renderPickerView = () => (

@@ -24,7 +24,20 @@ const AVAILABLE_METRICS: { value: KpiMetricSource; label: string; format: 'curre
 ];
 
 const ICONS = ['wallet-cards', 'trending-up', 'receipt', 'fast-forward', 'shopping-bag', 'archive-restore', 'activity', 'dollar-sign', 'credit-card', 'percent'];
-const COLORS = ['blue', 'teal', 'emerald', 'pink', 'purple', 'violet', 'orange', 'red', 'rose', 'amber', 'slate'];
+const COLORS = ['sky', 'emerald', 'amber', 'rose', 'slate'];
+// Ánh xạ tên màu cũ (chỉ các giá trị iconColor mà picker cũ từng cho chọn) về palette
+// semantic, để config người dùng đã lưu vẫn hiển thị đồng nhất sau khi đổi palette.
+const COLOR_ALIAS: Record<string, string> = {
+    blue: 'sky', teal: 'emerald', pink: 'rose', purple: 'slate', violet: 'slate', orange: 'amber', red: 'rose',
+};
+const normColor = (c: string): string => COLOR_ALIAS[c] || c;
+// Tailwind safelist — các class dưới đây được dựng ĐỘNG từ tên màu (bg-${color}-...),
+// liệt kê tường minh để JIT sinh ra, không bị purge:
+// bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400
+// bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400
+// bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400
+// bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400
+// bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400
 
 const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave }) => {
     const { uniqueFilterOptions, productConfig, originalData } = useDashboardContext();
@@ -132,7 +145,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
             isVisible: true,
             title: 'Thẻ Mới',
             icon: 'activity',
-            iconColor: 'blue',
+            iconColor: 'sky',
             type: 'metric',
             metric: 'doanhThuQD',
             format: 'currency',
@@ -230,7 +243,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-600 p-1">
                                     <Icon name="grip-vertical" size={4.5} />
                                 </div>
-                                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${config.iconColor}-100 text-${config.iconColor}-600 dark:bg-${config.iconColor}-500/20 dark:text-${config.iconColor}-400`}>
+                                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${normColor(config.iconColor)}-100 text-${normColor(config.iconColor)}-600 dark:bg-${normColor(config.iconColor)}-500/20 dark:text-${normColor(config.iconColor)}-400`}>
                                     <Icon name={config.icon} size={3.5} className="sm:hidden" />
                                     <Icon name={config.icon} size={4.5} className="hidden sm:block" />
                                 </div>
@@ -461,7 +474,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     variant="ghost"
                                                     key={color}
                                                     onClick={() => updateEditingCard({ iconColor: color })}
-                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${editingCard.iconColor === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
+                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
                                                 >
                                                     <Icon name="palette" size={4} />
                                                 </Button>
