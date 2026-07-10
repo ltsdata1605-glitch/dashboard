@@ -219,6 +219,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
     clone.querySelectorAll<HTMLElement>('td, span, button, div, th').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
+        
+        // Skip table headers and elements inside thead to allow them to wrap naturally
+        if (el.closest('thead') || el.tagName.toUpperCase() === 'TH') {
+            return;
+        }
+
         const text = el.textContent?.trim() || '';
         
         // Target elements with truncate class or matching employee name pattern
@@ -479,6 +485,49 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     }
     
+    // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP
+    clone.querySelectorAll('.compact-export-table').forEach(table => {
+        if (!(table instanceof HTMLElement)) return;
+        table.style.setProperty('table-layout', 'auto', 'important');
+        table.style.setProperty('width', '100%', 'important');
+        table.style.setProperty('min-width', 'auto', 'important');
+    });
+
+    clone.querySelectorAll('.compact-export-table th').forEach(th => {
+        if (th instanceof HTMLElement) {
+            const isFirstCol = th.previousElementSibling === null;
+            if (!isFirstCol) {
+                th.style.setProperty('white-space', 'normal', 'important');
+                th.style.setProperty('word-break', 'break-word', 'important');
+                th.style.setProperty('max-width', '80px', 'important');
+                th.style.setProperty('min-width', '65px', 'important');
+            } else {
+                th.style.setProperty('min-width', '120px', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+            }
+            
+            th.querySelectorAll('span').forEach(span => {
+                span.classList.remove('truncate');
+                if (!isFirstCol) {
+                    span.style.setProperty('white-space', 'normal', 'important');
+                    span.style.setProperty('word-break', 'break-word', 'important');
+                }
+            });
+        }
+    });
+
+    clone.querySelectorAll('.compact-export-table td').forEach(td => {
+        if (td instanceof HTMLElement) {
+            const isFirstCol = td.previousElementSibling === null;
+            if (!td.classList.contains('sticky') && !isFirstCol) {
+                td.style.setProperty('min-width', '55px', 'important');
+                td.style.setProperty('max-width', '80px', 'important');
+                td.style.setProperty('white-space', 'normal', 'important');
+                td.style.setProperty('word-break', 'break-all', 'important');
+            }
+        }
+    });
+
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
     const scrollableContainers = clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
     const hideScrollbarStyle = document.createElement('style');
