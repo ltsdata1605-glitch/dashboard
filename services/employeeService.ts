@@ -240,8 +240,11 @@ export function processEmployeeData(
         const parentGroupCheck = getParentGroup(maNhomHangCheck, productConfig);
         if (!parentGroupCheck || parentGroupCheck === 'Không tính doanh thu') continue;
 
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, quantity: 0, isTraCham: false };
-        const { revenue, revenueQD, quantity, isTraCham } = metrics;
+        // Nguồn duy nhất cho revenue/revenueQD/weightedQuantity/isTraCham của dòng này — trước đây
+        // hàm này tính lại calculateRowMetrics 1 lần nữa bên dưới (dùng cho số liệu) trong khi vẫn
+        // đọc isTraCham từ row._metrics (do filterService gán) cho phần cộng dồn trả góp, tạo 2
+        // nguồn song song dư thừa. Gộp về 1 lần gọi duy nhất để tránh lệch nếu 2 nguồn từng khác nhau.
+        const { revenue, revenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const customer = getRowValue(row, COL.CUSTOMER_NAME);
@@ -270,74 +273,71 @@ export function processEmployeeData(
         if (!employeeDailyTrend[creator]) employeeDailyTrend[creator] = {};
         if (!employeeDailyTrend[creator][dateKey]) employeeDailyTrend[creator][dateKey] = 0;
 
-        // Logic trọng số số lượng và doanh thu đồng bộ
-        const { revenue: calcRevenue, revenueQD: calcRevenueQD, weightedQuantity, isTraCham: calcIsTraGop } = calculateRowMetrics(row, productConfig);
-
         // --- Aggregate general stats ---
         const emp = employeeStats[creator];
-        emp.doanhThuThuc! += calcRevenue;
-        emp.doanhThuQD! += calcRevenueQD;
+        emp.doanhThuThuc! += revenue;
+        emp.doanhThuQD! += revenueQD;
         emp.totalOrders! += 1;
         if (customer) emp.customerSet.add(customer);
         if (isTraCham) {
             emp.slTraCham! += weightedQuantity; // Cập nhật số lượng trọng số
-            emp.doanhThuTraCham! += calcRevenue;
+            emp.doanhThuTraCham! += revenue;
         }
-        
+
         const parentGroupForPerf = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
-            emp.doanhThu_CE_ICT! += calcRevenue;
+            emp.doanhThu_CE_ICT! += revenue;
             if (isTraCham) {
                 emp.slTraCham_CE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
-                emp.doanhThuTraCham_CE_ICT! += calcRevenue;
+                emp.doanhThuTraCham_CE_ICT! += revenue;
             }
         }
 
         // --- Aggregate industry stats ---
         const displayGroup = getDisplayParentGroup(maNhomHang, productConfig);
-        employeeIndustryStats[creator][displayGroup] = (employeeIndustryStats[creator][displayGroup] || 0) + calcRevenue;
-        employeeDailyTrend[creator][dateKey] += calcRevenueQD;
-        
+        employeeIndustryStats[creator][displayGroup] = (employeeIndustryStats[creator][displayGroup] || 0) + revenue;
+        employeeDailyTrend[creator][dateKey] += revenueQD;
+
         // --- Aggregate exploitation stats ---
         const stats = exploitationStats[creator];
-        stats.doanhThuThuc = (stats.doanhThuThuc || 0) + calcRevenue;
-        stats.doanhThuQD = (stats.doanhThuQD || 0) + calcRevenueQD;
-        
+        stats.doanhThuThuc = (stats.doanhThuThuc || 0) + revenue;
+        stats.doanhThuQD = (stats.doanhThuQD || 0) + revenueQD;
+
         const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
         const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
 
         // SP Chính
         if (parentGroup === 'ICT') {
             stats.slICT! += weightedQuantity;
-            stats.doanhThuICT! += calcRevenue;
+            stats.doanhThuICT! += revenue;
         } else if (parentGroup === 'CE') {
             stats.slCE_main! += weightedQuantity;
-            stats.doanhThuCE_main! += calcRevenue;
+            stats.doanhThuCE_main! += revenue;
         } else if (parentGroup === 'Gia dụng') {
-            stats.slGiaDung_main! += weightedQuantity; 
+            stats.slGiaDung_main! += weightedQuantity;
         }
 
         // Bán Kèm & Các nhóm khác
         if (parentGroup === 'Bảo hiểm') {
             stats.slBaoHiem! += weightedQuantity;
-            stats.doanhThuBaoHiem! += calcRevenue;
+            stats.doanhThuBaoHiem! += revenue;
         } else if (parentGroup === 'Sim') {
             stats.slSim! += weightedQuantity;
-            stats.doanhThuSim! += calcRevenue;
-        } else if (parentGroup === 'Đồng hồ') { 
+            stats.doanhThuSim! += revenue;
+        } else if (parentGroup === 'Đồng hồ') {
             stats.slDongHo! += weightedQuantity;
-            stats.doanhThuDongHo! += calcRevenue;
+            stats.doanhThuDongHo! += revenue;
         } else if (parentGroup === 'Phụ kiện') {
-            stats.doanhThuPhuKien! += calcRevenue;
-            stats.slPhuKien! += weightedQuantity; 
+            stats.doanhThuPhuKien! += revenue;
+            stats.slPhuKien! += weightedQuantity;
             if (childGroup === 'Camera') stats.slCamera! += weightedQuantity;
             else if (childGroup === 'Loa') stats.slLoa! += weightedQuantity;
             else if (childGroup === 'Pin SDP') stats.slPinSDP! += weightedQuantity;
             else if (childGroup === 'Tai nghe BLT') stats.slTaiNgheBLT! += weightedQuantity;
         } else if (parentGroup === 'Gia dụng') {
-            stats.doanhThuGiaDung! += calcRevenue;
-            stats.slGiaDung! += weightedQuantity; 
+            stats.doanhThuGiaDung! += revenue;
+            stats.slGiaDung! += weightedQuantity;
             if (childGroup === 'Máy lọc nước') stats.slMayLocNuoc! += weightedQuantity;
             else if (childGroup === 'Nồi cơm') stats.slNoiCom! += weightedQuantity;
             else if (childGroup === 'Nồi chiên') stats.slNoiChien! += weightedQuantity;

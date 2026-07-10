@@ -18,6 +18,15 @@ export const cleanAndNormalize = (val: any): string => {
     return cached;
 };
 
+// Bản chuẩn hoá (cleanAndNormalize) của 3 Set hình thức xuất tĩnh trong constants.ts — dùng làm
+// fallback phân loại tra_gop/tien_mat/thu_ho khi CHƯA có productConfig.htxClassification (chưa
+// upload Config Excel). Trước đây fallback so khớp chuỗi tuyệt đối (case/khoảng trắng nhạy cảm),
+// khiến đơn trả góp có thể âm thầm không được cộng +30% nếu dữ liệu thật lệch hoa/thường so với
+// danh sách hardcode. Tính 1 lần khi module load vì 3 Set nguồn là hằng số không đổi lúc runtime.
+const normalizedTraGopSet = new Set(Array.from(HINH_THUC_XUAT_TRA_GOP).map(v => cleanAndNormalize(v)));
+const normalizedTienMatSet = new Set(Array.from(HINH_THUC_XUAT_TIEN_MAT).map(v => cleanAndNormalize(v)));
+const normalizedThuHoSet = new Set(Array.from(HINH_THUC_XUAT_THU_HO).map(v => cleanAndNormalize(v)));
+
 // any: trả về giá trị ô thô của DataRow (string/number/Date/...) — hàm lõi được gọi ở hàng trăm nơi khắp 4 khu vực, đổi kiểu trả về sẽ vỡ diện rộng ngoài phạm vi utils/
 export function getRowValue(row: DataRow, keys: string[]): any {
     if (!row) return undefined;
@@ -286,10 +295,11 @@ export function getHinhThucThanhToan(row: DataRow, productConfig?: ProductConfig
         }
     }
     
-    // Fallback to static config
-    if (HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat)) return 'tra_gop';
-    if (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat)) return 'tien_mat';
-    if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return 'thu_ho';
+    // Fallback to static config — so khớp đã chuẩn hoá (không nhạy hoa/thường/khoảng trắng)
+    const normalizedHtx = cleanAndNormalize(hinhThucXuat);
+    if (normalizedTraGopSet.has(normalizedHtx)) return 'tra_gop';
+    if (normalizedTienMatSet.has(normalizedHtx)) return 'tien_mat';
+    if (normalizedThuHoSet.has(normalizedHtx)) return 'thu_ho';
     return 'khac';
 }
 
@@ -349,7 +359,7 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         'BÁN HÀNG ĐIỆN TỬ & ĐIỆN LẠNH HÃNG SAMSUNG': 'Samsung ĐT/ĐL',
         'NH MÁY GIẶT, SẤY': 'Máy giặt/sấy',
         'TRẢ CHẬM FECREDIT, TPBANK EVO': 'FE/TPB',
-        'PHỤ KIỆN - ĐỒNG HỒ': 'PK - Đồng hồ',
+        'PHỤ KIỆN - SIM - ĐỒNG HỒ': 'PK/Sim/ĐH',
         'ĐIỆN THOẠI & TABLET ANDROID TRÊN 7 TRIỆU': 'Android > 7Tr',
         'NẠP RÚT TIỀN TÀI KHOẢN NGÂN HÀNG': 'Nạp/Rút NH',
         'Thi đua Vivo': 'Vivo',
@@ -371,9 +381,51 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         'Nồi cơm': 'Nồi cơm',
         'Máy lọc nước': 'Máy lọc nước',
         'Camera': 'Camera',
+        'MOBIFONE&VINAPHONE&SIM DMX': 'Mobi/Vina/Sim',
+        'MOBIFONE&VINAPHONE&SIMDMX': 'Mobi/Vina/Sim',
+        'MANGO PLUS + ICALLME': 'Mango/iCallme',
+        'MANGO PLUS & ICALLME': 'Mango/iCallme',
+        'THI ĐUA ĐIỆN GIA DỤNG': 'TĐ Gia Dụng',
+        'THI ĐUA DỊCH VỤ': 'TĐ Dịch Vụ',
+        'CE - THI ĐUA HÃNG': 'TĐ Hãng',
     };
 
     if (rules[name]) return rules[name];
+
+    // Dynamic replacement for common long strings and separators
+    let processed = name;
+    const wordReplacements: Record<string, string> = {
+        'MOBIFONE': 'Mobi',
+        'VINAPHONE': 'Vina',
+        'VIETTEL': 'Viettel',
+        'SIM DMX': 'Sim',
+        'SIMDMX': 'Sim',
+        'MANGO PLUS': 'Mango',
+        'ICALLME': 'iCallme',
+        'PHỤ KIỆN': 'PK',
+        'ĐỒNG HỒ': 'ĐH',
+        'THI ĐUA': 'TĐ',
+        'DOANH THU': 'DT',
+        'TRẢ CHẬM': 'TC'
+    };
+
+    Object.keys(wordReplacements).forEach(word => {
+        const regex = new RegExp(word, 'gi');
+        processed = processed.replace(regex, wordReplacements[word]);
+    });
+
+    // Replace separators with slash
+    processed = processed
+        .replace(/\s*&\s*/g, '/')
+        .replace(/\s*\+\s*/g, '/')
+        .replace(/\s*-\s*/g, '/');
+
+    processed = processed.replace(/\/+/g, '/').trim();
+
+    if (processed !== name) {
+        return processed;
+    }
+
     if (name.toUpperCase().startsWith('BÁN HÀNG ')) {
         return name.replace(/BÁN HÀNG /i, '').split(' ')[0];
     }
@@ -571,7 +623,9 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     if (productConfig && productConfig.htxClassification) {
         isTraCham = productConfig.htxClassification[cleanAndNormalize(htx)] === 'tra_gop';
     } else {
-        isTraCham = HINH_THUC_XUAT_TRA_GOP.has(htx);
+        // So khớp đã chuẩn hoá — tránh bỏ sót đơn trả góp chỉ vì lệch hoa/thường/khoảng trắng
+        // so với danh sách hardcode khi chưa có Config Excel (xem HINH_THUC_XUAT_TRA_GOP).
+        isTraCham = normalizedTraGopSet.has(cleanAndNormalize(htx));
     }
     
     // DTQĐ = Doanh thu thực * Hệ số + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
