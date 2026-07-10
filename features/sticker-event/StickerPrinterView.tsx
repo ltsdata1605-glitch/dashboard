@@ -634,14 +634,6 @@ export default function StickerPrinterView() {
         return () => clearTimeout(timer);
     }, [isLoaded, printHistory]);
 
-
-    const parsePercentValue = (percentStr: string | undefined): number => {
-        if (!percentStr) return 0;
-        const clean = percentStr.replace(/[^0-9]/g, '');
-        const val = parseInt(clean, 10);
-        return isNaN(val) ? 0 : val;
-    };
-
     const handleDiscountThresholdChange = (val: string) => {
         setDiscountThreshold(val);
         const cleanInput = val.replace(/[^0-9]/g, '');

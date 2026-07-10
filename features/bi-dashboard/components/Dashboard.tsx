@@ -64,7 +64,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                                     <Button
                                         variant="ghost"
                                         onClick={onNavigate}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-[#0584c7] hover:bg-[#046ca3] shadow-md shadow-[#0584c7]/20 transition-all active:scale-95"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-800 shadow-md shadow-sky-600/20 transition-all active:scale-95"
                                     >
                                         Cập nhật dữ liệu
                                     </Button>

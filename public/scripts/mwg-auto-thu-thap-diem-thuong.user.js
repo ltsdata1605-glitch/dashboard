@@ -1,11 +1,14 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      0.8
+// @version      0.9
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
 // @match        http://127.0.0.1:5173/*
+// @match        http://127.0.0.1:5174/*
+// @match        http://localhost:5173/*
+// @match        http://localhost:5174/*
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -87,7 +90,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '0.8';
+  const SCRIPT_VERSION = '0.9';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
