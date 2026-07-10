@@ -71,10 +71,23 @@ export const AutoBonusInstallGuideModal: React.FC<{
             <div className="rounded-xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
                 <StepRow
                     index={1}
-                    title="Cài Tampermonkey"
-                    description={<>Tiện ích quản lý userscript cho Chrome. Sau khi cài, mở <span className="font-mono">chrome://extensions</span>, bật "Chế độ dành cho nhà phát triển" (Developer mode) ở góc trên bên phải để userscript chạy được.</>}
+                    title="Cài Tampermonkey & Bật Chế độ nhà phát triển"
+                    description={
+                        <div className="space-y-2 mt-1">
+                            <p className="text-slate-500 dark:text-slate-400">Tiện ích quản lý userscript cho Chrome.</p>
+                            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
+                                <span className="font-extrabold uppercase text-[10px] tracking-wider bg-amber-200 dark:bg-amber-900/50 px-1.5 py-0.5 rounded mr-1">⚠️ BẮT BUỘC</span>
+                                Để extension hoạt động trên Chrome, bạn cần kích hoạt <span className="font-bold underline">Developer Mode</span> theo các bước sau:
+                                <ol className="list-decimal list-inside mt-2 space-y-1 ml-1 text-slate-700 dark:text-slate-300">
+                                    <li>Mở một tab mới và truy cập địa chỉ: <code className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 rounded font-mono text-[11px] text-amber-900 dark:text-amber-200">chrome://extensions</code></li>
+                                    <li>Tìm công tắc <span className="font-bold">"Developer mode" (Chế độ dành cho nhà phát triển)</span> ở góc trên bên phải màn hình.</li>
+                                    <li>Gạt công tắc sang trạng thái <span className="font-bold text-emerald-600 dark:text-emerald-400">BẬT (Màu xanh)</span> để kích hoạt.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    }
                     action={
-                        <Button variant="ghost" onClick={() => window.open(TAMPERMONKEY_STORE_URL, '_blank')} className="bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30 border-0 rounded-lg h-auto w-auto px-3 py-1.5 text-inherit text-[11px] font-bold text-sky-700 dark:text-sky-400 whitespace-nowrap">
+                        <Button variant="ghost" onClick={() => window.open(TAMPERMONKEY_STORE_URL, '_blank')} className="bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30 border-0 rounded-lg h-auto w-auto px-3 py-1.5 text-inherit text-[11px] font-bold text-sky-700 dark:text-sky-400 whitespace-nowrap mt-1">
                             Mở Chrome Web Store
                         </Button>
                     }
