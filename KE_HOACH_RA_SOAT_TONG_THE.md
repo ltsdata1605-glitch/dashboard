@@ -246,3 +246,49 @@ Sau khi tách chạy `npm run check` + test đúng tính năng của file đó (
 
 > Mẹo: sau mỗi đợt, nếu `npm run check` xanh và bạn đã kiểm tra tay, hãy commit với message
 > mô tả rõ đợt vừa làm để dễ quay lui nếu cần.
+
+---
+
+# PHỤ LỤC — DARK MODE CHO `features/sticker-event` (làm trong Antigravity, cần soi mắt)
+> Phát hiện 10/07: sticker-event **chưa có dark mode nào** (root cứng `bg-white text-slate-800`,
+> ~450 class màu / 25 file, gần như 0 `dark:`). Trong dark mode nó là "ốc đảo sáng" — không
+> vỡ chữ nhưng lệch tông. Đây là việc **viết mới**, PHẢI xem app chạy để đối chiếu, nên làm ở
+> Antigravity (không làm mù). ⚠️ Điểm chí tử: **vùng xem trước con tem là GIẤY TRẮNG — KHÔNG
+> được cho tối** (nếu tối là hỏng chức năng in).
+
+### PROMPT DARK-CA — Thêm dark mode cho sticker-event (từng file, soi mắt)
+```
+Bối cảnh: dự án Dashboard YCX, features/sticker-event/ hiện chưa có dark mode. Đọc CLAUDE.md và
+CHUAN_THIET_KE_PHAN_TICH.md (lấy tab Phân Tích làm chuẩn tông màu dark). Dark mode toàn app là
+class .dark trên <html> (Tailwind dark:).
+
+Trước khi sửa: commit "chore: trước khi thêm dark mode sticker-event".
+
+Mục tiêu: thêm biến thể dark: cho phần CHROME của sticker-event (toolbar, panel, modal, nút, list,
+input...) để đồng nhất tông tối với phần còn lại của app.
+
+MAPPING chuẩn (2 tầng bề mặt như tab Phân Tích):
+  - Nền trang/gốc: bg-white  -> thêm dark:bg-slate-900
+  - Nền card/panel/modal: bg-white hoặc bg-slate-50 -> dark:bg-slate-800 ; bg-slate-100 -> dark:bg-slate-800
+  - Chữ chính: text-slate-800/900 -> dark:text-slate-100 ; text-slate-700 -> dark:text-slate-200
+  - Chữ phụ: text-slate-600 -> dark:text-slate-300 ; text-slate-500 -> dark:text-slate-400
+  - Viền: border-slate-100/200 -> dark:border-slate-700 ; border-slate-300 -> dark:border-slate-600
+  - Màu semantic nền nhạt: bg-{sky|emerald|amber|rose}-50 -> dark:bg-{...}-900/30 ;
+    text-{...}-600/700 -> dark:text-{...}-400
+
+⚠️ TUYỆT ĐỐI KHÔNG cho tối các vùng sau (giữ nền trắng giấy):
+  - Vùng xem trước con tem / phiếu (StickerPrintPreview.tsx và mọi div render nội dung tem).
+  - printService.ts (HTML in ấn — giữ nguyên hoàn toàn).
+  - Nút brand Google-yellow #fbbc04 trong StickerPrintControls.tsx (giữ nguyên).
+
+Cách làm BẮT BUỘC theo lô, có kiểm mắt:
+  1. Bật dark mode trên app, mở tab In tem. Chụp/nhìn trạng thái hiện tại.
+  2. Làm 1 file mỗi lần (bắt đầu: StickerEventApp.tsx -> BottomNavigation.tsx -> InventoryToolbar.tsx
+     -> ControlPanel.tsx -> ResultsDisplay.tsx -> các *Modal.tsx). Sau mỗi file, XEM LẠI trên app
+     ở cả light lẫn dark, đảm bảo: không có chữ tối trên nền tối, không có mảng trắng chói, vùng
+     xem trước tem VẪN trắng.
+  3. Sau mỗi 3-4 file chạy npm run check.
+  4. KHÔNG dùng find-replace mù toàn thư mục — dễ làm tối vùng giấy in.
+
+Xong: chạy npm run check, xác nhận vùng xem trước tem còn trắng, báo cáo từng file + ảnh light/dark.
+```
