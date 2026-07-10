@@ -191,9 +191,11 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             }
 
                             // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
+                            const localSettings = await dbService.getAllSettings().catch(() => ({}));
                             const allHeavyKeys = new Set([
                                 ...Array.from(HEAVY_SYNC_KEYS),
-                                ...Object.keys(heavyCloudData)
+                                ...Object.keys(heavyCloudData),
+                                ...Object.keys(localSettings).filter(k => isHeavySyncKey(k))
                             ]);
 
                             for (const key of Array.from(allHeavyKeys)) {

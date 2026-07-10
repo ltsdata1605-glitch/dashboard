@@ -222,6 +222,8 @@ export const useCloudSync = () => {
                         }
                     } catch (err) {
                         console.error(`[Cloud Sync] Đồng bộ khóa nặng "${key}" thất bại:`, err);
+                    } finally {
+                        delete heavyTimeoutsRef.current[key];
                     }
                 }, 2000); // Debounce 2 giây
                 return;
