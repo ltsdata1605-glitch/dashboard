@@ -85,7 +85,7 @@
     "missingMobileToolbar": 0
   },
   "components/employees/EmployeeAnalysis.tsx": {
-    "nonSemanticColor": 28,
+    "nonSemanticColor": 19,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
@@ -125,7 +125,7 @@
     "missingMobileToolbar": 0
   },
   "components/employees/industry/useIndustryAnalysisLogic.ts": {
-    "nonSemanticColor": 12,
+    "nonSemanticColor": 8,
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
