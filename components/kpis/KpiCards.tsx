@@ -289,10 +289,10 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     const hsx = String(row['Hãng'] || row['Hãng SX'] || '').trim().toLowerCase();
                     if (filterHsx.length > 0 && !filterHsx.includes(hsx)) continue;
 
-                    const nganhMapValue = String(childToParentMap[rawNhom] || row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '').trim().toLowerCase();
+                    const nganhMapValue = String(getParentGroup(rawNhom, productConfig) || row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '').trim().toLowerCase();
                     if (filterNganh.length > 0 && !filterNganh.includes(nganhMapValue)) continue;
 
-                    const nhomMapValue = String(childToSubgroupMap[rawNhom] || rawNhom).trim().toLowerCase();
+                    const nhomMapValue = String(getSubgroup(rawNhom, productConfig) || rawNhom).trim().toLowerCase();
                     if (filterNhom.length > 0 && !filterNhom.includes(nhomMapValue)) continue;
 
                     if (filters.metricType === 'quantity') {

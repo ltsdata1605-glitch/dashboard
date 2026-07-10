@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../types';
-import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize, getParentGroup, getSubgroup } from '../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 
 interface UseHeadToHeadLogicProps {
@@ -177,8 +177,8 @@ export const useHeadToHeadLogic = ({
                 // Data type (default)
                 const groupFilteredData = dataForTab.filter(row => {
                     const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const parentGroup = productConfig.childToParentMap[maNhomHang] || '';
-                    const subgroup = productConfig.childToSubgroupMap[maNhomHang] || '';
+                    const parentGroup = getParentGroup(maNhomHang, productConfig) || '';
+                    const subgroup = getSubgroup(maNhomHang, productConfig) || '';
                     const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                     const productCode = getRowValue(row, COL.PRODUCT) || '';
                     

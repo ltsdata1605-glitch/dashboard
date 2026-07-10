@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup } from '../../utils/dataUtils';
 import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
@@ -168,7 +168,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
               const parentVal = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
               if (parentVal === 'Không tính doanh thu') return;
-              const childVal = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
+              const childVal = getSubgroup(maNhomHang, productConfig) || 'Không xác định';
               const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
               const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                   ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
@@ -205,7 +205,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
           const parentGroup = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
           if (parentGroup === 'Không tính doanh thu') return;
-          const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
+          const childGroup = getSubgroup(maNhomHang, productConfig) || 'Không xác định';
 
           if (calendarFilters.parentGroup.length > 0 && !calendarFilters.parentGroup.includes(parentGroup)) return;
           if (calendarFilters.childGroup.length > 0 && !calendarFilters.childGroup.includes(childGroup)) return;

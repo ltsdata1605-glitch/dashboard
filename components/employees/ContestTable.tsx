@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
@@ -108,8 +108,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             if (col.type !== 'data') return;
 
             const filteredSalesData = validData.filter(row => {
-                const industry = productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
-                const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
+                const industry = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || '';
+                const subgroup = getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
 

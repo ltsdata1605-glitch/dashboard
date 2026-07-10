@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { SummaryTableNode } from '../../types';
-import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { abbreviateName, formatCurrency, formatQuantity, getParentGroup, getSubgroup } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 
@@ -107,11 +107,11 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     if (gtdhTargets && gtdhTargets[nodeKey]) {
         activeTarget = gtdhTargets[nodeKey];
     } else if (productConfig) {
-        const nhomHang = productConfig.childToSubgroupMap?.[nodeKey];
+        const nhomHang = getSubgroup(nodeKey, productConfig);
         if (nhomHang && gtdhTargets?.[nhomHang]) {
             activeTarget = gtdhTargets[nhomHang];
         } else {
-            const nganhHang = productConfig.childToParentMap?.[nhomHang || nodeKey];
+            const nganhHang = getParentGroup(nhomHang || nodeKey, productConfig);
             if (nganhHang && gtdhTargets?.[nganhHang]) {
                 activeTarget = gtdhTargets[nganhHang];
             }

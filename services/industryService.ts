@@ -1,6 +1,6 @@
 import type { DataRow, IndustryData, ProductConfig, FilterState } from '../types';
 import { COL } from '../constants';
-import { getRowValue, getDisplayParentGroup } from '../utils/dataUtils';
+import { getRowValue, getDisplayParentGroup, getSubgroup } from '../utils/dataUtils';
 
 export function processIndustryData(
     salesData: DataRow[],
@@ -14,7 +14,7 @@ export function processIndustryData(
         const { revenue, weightedQuantity } = metrics;
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
 
-        const childGroup = productConfig.childToSubgroupMap[maNhomHang];
+        const childGroup = getSubgroup(maNhomHang, productConfig);
         const displayParentGroup = row._parentGroup || getDisplayParentGroup(maNhomHang, productConfig);
 
         const isSubgroupSelected = filters.industryGrid.selectedSubgroups.length === 0 || (childGroup && filters.industryGrid.selectedSubgroups.includes(childGroup));

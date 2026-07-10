@@ -3,7 +3,7 @@ import type { SummaryTableNode } from '../../../types';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { processSummaryTable } from '../../../services/summaryService';
-import { getExportFilenamePrefix, getRowValue, abbreviateName } from '../../../utils/dataUtils';
+import { getExportFilenamePrefix, getRowValue, abbreviateName, getParentGroup, getSubgroup } from '../../../utils/dataUtils';
 import { COL } from '../../../constants';
 import { exportElementAsImage } from '../../../services/uiService';
 
@@ -114,8 +114,8 @@ export const useSummaryTableLogic = () => {
             processedData.filteredValidSalesData.forEach(row => {
                 const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
                 khoSet.add(String(getRowValue(row, COL.KHO) || 'Không xác định'));
-                parentSet.add(productConfig.childToParentMap[maNhomHang] || 'Không xác định');
-                childSet.add(productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định');
+                parentSet.add(getParentGroup(maNhomHang, productConfig) || 'Không xác định');
+                childSet.add(getSubgroup(maNhomHang, productConfig) || 'Không xác định');
                 manufacturerSet.add(getRowValue(row, COL.MANUFACTURER) || 'Không rõ');
                 creatorSet.add(abbreviateName(getRowValue(row, COL.NGUOI_TAO) || 'Không xác định'));
                 productSet.add(getRowValue(row, COL.PRODUCT) || 'N/A');

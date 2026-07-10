@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import type { DataRow, ProductConfig, IndustryData } from '../types';
-import { getRowValue } from '../utils/dataUtils';
+import { getRowValue, getParentGroup, getSubgroup } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 export interface GridItem {
@@ -111,8 +111,8 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
         // Filter data relevant to the selected top-level industry
         const dataForParent = allSalesData.filter(row => {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            const pGroup = productConfig.childToParentMap[maNhomHang] || 'Khác';
-            const cGroup = productConfig.childToSubgroupMap[maNhomHang];
+            const pGroup = getParentGroup(maNhomHang, productConfig) || 'Khác';
+            const cGroup = getSubgroup(maNhomHang, productConfig);
 
             let displayParentGroup = pGroup;
             if (pGroup === 'ICT' && ['Smartphone', 'Laptop', 'Tablet'].includes(cGroup)) {
@@ -137,7 +137,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
                 return { data: choiceData, totalRevenue: totalRevenueForPath, totalQuantity: totalQuantityForPath, levelType: 'choice' };
             } else {
                 const groupedData = dataForParent.reduce((acc, row) => {
-                    const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Khác';
+                    const subgroup = getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || 'Khác';
                     if (!acc[subgroup]) acc[subgroup] = { revenue: 0, quantity: 0 };
                     acc[subgroup].revenue += Number(getRowValue(row, COL.PRICE)) || 0;
                     acc[subgroup].quantity += Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -167,7 +167,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
                     ? getRowValue(row, COL.MANUFACTURER) 
                     : getRowValue(row, COL.NGUOI_TAO)) || 'Không rõ';
             } else {
-                dataToProcess = dataToProcess.filter(row => (productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Khác') === childItem);
+                dataToProcess = dataToProcess.filter(row => (getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || 'Khác') === childItem);
                 groupByFn = (row: DataRow) => getRowValue(row, COL.MANUFACTURER) || 'Không rõ';
             }
 

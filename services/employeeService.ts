@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics, getSubgroup } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
@@ -284,7 +284,7 @@ export function processEmployeeData(
             emp.doanhThuTraCham! += revenue;
         }
 
-        const parentGroupForPerf = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
+        const parentGroupForPerf = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThu_CE_ICT! += revenue;
@@ -304,8 +304,8 @@ export function processEmployeeData(
         stats.doanhThuThuc = (stats.doanhThuThuc || 0) + revenue;
         stats.doanhThuQD = (stats.doanhThuQD || 0) + revenueQD;
 
-        const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
-        const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
+        const parentGroup = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
+        const childGroup = getSubgroup(maNhomHang, productConfig) || 'Không xác định';
 
         // SP Chính
         if (parentGroup === 'ICT') {

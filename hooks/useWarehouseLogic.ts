@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, calculateRowMetrics, getParentGroup, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getParentGroup, cleanAndNormalize, getSubgroup } from '../utils/dataUtils';
 
 interface UseWarehouseLogicProps {
     data: WarehouseSummaryRow[];
@@ -82,8 +82,8 @@ export const useWarehouseLogic = ({
 
 
                 const productName = getRowValue(row, COL.PRODUCT);
-                const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
-                const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
+                const group = getSubgroup(nhomHang, productConfig) || 'Khác';
+                const rootIndustry = getParentGroup(nhomHang, productConfig) || 'Khác';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER);
                 const productNameStr = String(productName || '');
 
