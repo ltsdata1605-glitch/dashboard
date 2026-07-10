@@ -117,9 +117,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
             <Button
                 type="button"
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
+                className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
                     variant === 'compact' ? 'px-2 py-1 h-9' : 'px-3 py-2 h-9'
                 } ${
                     isOpen
@@ -207,10 +207,10 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     return (
                                         <Button
                                             type="button"
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
-                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all justify-start ${
+                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all justify-start ${
                                                 isSelected
                                                 ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'

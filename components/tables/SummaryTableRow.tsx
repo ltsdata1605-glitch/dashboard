@@ -187,7 +187,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     }
 
     if (isRoot) {
-        rowClasses = `bg-white dark:bg-[#1c1c1e] border-b border-slate-200 dark:border-slate-700 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all duration-200`;
+        rowClasses = `bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all duration-200`;
     } else {
         rowClasses = `bg-slate-50/30 dark:bg-white/[0.02] hover:bg-slate-100/50 dark:hover:bg-white/[0.05] border-b border-slate-200 dark:border-slate-700 transition-all duration-200`;
     }
@@ -206,7 +206,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 onClick={isExpandable ? () => toggleExpand(currentId) : undefined}
             >
                 {/* NGÀNH HÀNG */}
-                <td className={`px-2 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-[13px] whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/95 dark:bg-[#242426]/95'}`}>
+                <td className={`px-2 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-[13px] whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/95 dark:bg-slate-800/95'}`}>
                     <div className={`flex items-center gap-1.5 sm:gap-3 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
                         {isExpandable ? (
                             <div className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>

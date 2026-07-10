@@ -313,24 +313,24 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
                     <div className="flex items-center gap-1 sm:gap-2">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
-                            <Button variant="ghost" onClick={() => setViewMode('detail')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Chi tiết">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Chi tiết">
                                 <Icon name="list" size={3.5} className="sm:hidden" />
                                 <Icon name="list" size={5} className="hidden sm:block" />
                                 <span className="hidden sm:inline">Chi tiết</span>
                             </Button>
-                            <Button variant="ghost" onClick={() => setViewMode('efficiency')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Hiệu quả">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Hiệu quả">
                                 <Icon name="percent" size={3.5} className="sm:hidden" />
                                 <Icon name="percent" size={5} className="hidden sm:block" />
                                 <span className="hidden sm:inline">Hiệu quả</span>
                             </Button>
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1 shrink-0"></div>
-                         <Button variant="ghost" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                         <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all shrink-0">
                             <Icon name="images" size={3.5} className="sm:hidden" />
                             <Icon name="images" size={5} className="hidden sm:block" />
                         </Button>
                         {onExport && (
-                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all shrink-0">
                                 {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
                                 {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                             </Button>
@@ -345,10 +345,10 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                             const isActive = visibleGroups.has(f.key);
                             return (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 key={f.key}
                                 onClick={() => handleToggleGroup(f.key)}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                     isActive
                                     ? 'text-slate-800 dark:text-white'
                                     : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
@@ -362,7 +362,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         )})}
                         {onManageCustomTabs && (
                              <Button
-                                 variant="ghost"
+                                 variant="unstyled" size="none"
                                  onClick={() => onManageCustomTabs(viewMode)}
                                  title="Tạo thẻ mới"
                                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-indigo-600 flex items-center justify-center shrink-0"
@@ -393,8 +393,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                {onEditCustomTab && <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={3.5}/></Button>}
-                                                {f.isCustom && onDeleteCustomTab && <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={3.5}/></Button>}
+                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={3.5}/></Button>}
+                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={3.5}/></Button>}
                                             </div>
                                         </th>
                                     )})}

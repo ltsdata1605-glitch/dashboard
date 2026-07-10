@@ -122,7 +122,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const fullScreenClasses = isFullScreen 
         ? "fixed inset-0 z-[1000] bg-white dark:bg-slate-900 overflow-y-auto w-full h-full p-4 custom-scrollbar" 
-        : `bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
+        : `bg-white dark:bg-slate-900 shadow-lg border-y sm:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
 
     return (
         <>
@@ -232,7 +232,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -336,7 +336,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
                                     >
                                         DANH MỤC
                                     </th>

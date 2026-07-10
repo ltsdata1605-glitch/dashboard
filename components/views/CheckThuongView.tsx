@@ -132,34 +132,34 @@ export const CheckThuongView: React.FC = () => {
                 <input
                     type="text"
                     placeholder="Kho 1"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-40 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-40 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm`}
                     value={codes.code1}
                     onChange={(e) => handleCodeChange('code1', e.target.value)}
                 />
                 <input
                     type="text"
                     placeholder="Kho 2"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-36 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-36 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm`}
                     value={codes.code2}
                     onChange={(e) => handleCodeChange('code2', e.target.value)}
                 />
             </div>
             <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 border-l border-slate-200 dark:border-slate-700 pl-2'}`}>
                 <Button
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={() => {
                         setCodes(prev => ({ ...prev, code2: '' }));
                         iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
                     }}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
+                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
                     title="Xoá mã kho đang so sánh"
                 >
                     <Icon name="rotate-ccw" size={isMobile ? 3 : 3.5} />
                 </Button>
                 <Button
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={handleChangeFile}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                     title="Tải file khác"
                 >
                     <Icon name="upload" size={isMobile ? 3 : 3.5} />

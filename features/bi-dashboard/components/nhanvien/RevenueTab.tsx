@@ -344,7 +344,7 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1c1c1e] font-black">
+                                    <tbody className="bg-white dark:bg-slate-900 font-black">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department' || row.type === 'total') {
                                             const isGrandTotal = row.type === 'total';

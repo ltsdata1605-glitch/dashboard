@@ -517,7 +517,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                                     {sortedEmployees.map((emp, idx) => {
                                         const isEven = idx % 2 === 0;
-                                        const zebraClass = isEven ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/70 dark:bg-slate-800/30';
+                                        const zebraClass = isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/70 dark:bg-slate-800/30';
                                         const tongBot = getEmployeeTongBot(emp.name, emp.originalName);
                                         return (
                                             <tr key={emp.originalName} className={`${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>

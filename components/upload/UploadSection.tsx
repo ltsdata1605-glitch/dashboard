@@ -78,7 +78,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         </div>
                     )}
                     <div className="text-right">
-                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[12px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Hoàn tất</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="text-[12px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Hoàn tất</Button>
                     </div>
                 </div>
             ) : (
@@ -87,9 +87,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4 relative z-10">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setUploadType('realtime')}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                                 uploadType === 'realtime'
                                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -99,9 +99,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         </Button>
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setUploadType('historical')}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                                 uploadType === 'historical'
                                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -122,9 +122,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             <p className="text-[11px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
                         </div>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setIsSettingsOpen(true)}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                            className="p-1.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
                             title="Cài đặt cấu hình"
                         >
                             <Icon name="share-2" size={4.5} />

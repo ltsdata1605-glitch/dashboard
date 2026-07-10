@@ -81,7 +81,8 @@ const NavItem = React.memo(({
     return (
         <div className="w-full">
             <Button
-                variant="ghost"
+                variant="unstyled"
+                size="none"
                 onClick={(e) => {
                     if (hasSubItems && !isCollapsed) {
                         toggleExpand(e);
@@ -99,11 +100,10 @@ const NavItem = React.memo(({
                     }
                 }}
                 className={`
-                    border-0 rounded-none h-auto w-auto p-0 text-inherit
                     flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
                     ${isActive
-                        ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20 hover:bg-[#046ca3]'
-                        : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
+                        ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/20 dark:shadow-sky-500/20 hover:bg-sky-700'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-500'
                     }
                 `}
             >
@@ -166,7 +166,8 @@ const NavItem = React.memo(({
                             <div className="ml-5 pl-4 border-l-2 border-slate-200 dark:border-slate-700/50 mt-1 space-y-1">
                                 {item.subItems?.map((sub) => (
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled"
+                                        size="none"
                                         key={sub.id}
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -178,11 +179,10 @@ const NavItem = React.memo(({
                                             }
                                         }}
                                         className={`
-                                            border-0 rounded-none h-auto w-auto p-0 text-inherit
                                             flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative
                                             ${activeTab === sub.id
-                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-[#0584c7] font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
-                                                : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }
                                         `}
                                     >
@@ -346,12 +346,13 @@ export default function Sidebar() {
                 {/* Bottom Section */}
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800/50 flex flex-col gap-3">
                     <Button
-                        variant="ghost"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => {
                             setActiveTab('settings');
                             if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
                         }}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
+                        className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
                         title="Thông tin tài khoản"
                     >
                         <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">

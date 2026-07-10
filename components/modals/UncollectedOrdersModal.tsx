@@ -500,10 +500,10 @@ Link: ${url}`;
             <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
                  <Icon name="camera" size={4} />
             </Button>
-            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="outline" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Excel
             </Button>
-            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="ghost" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="outline" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Sheet
             </Button>
         </div>

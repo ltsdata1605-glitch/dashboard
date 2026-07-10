@@ -23,123 +23,30 @@ const KpiCard: React.FC<{
 }> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue, progressPercent, isGood = true }) => {
     const isClickable = !!onClick;
 
-    const colorMap: Record<string, {
-        gradient: string,
-        iconBg: string,
-        iconText: string,
-        progressBg: string,
-        progressFill: string,
-        glowColor: string,
-        borderHover: string
-    }> = {
-        blue: {
-            gradient: 'from-sky-500 via-sky-400 to-sky-300',
-            iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
-            iconText: 'text-sky-600 dark:text-sky-400',
-            progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-            progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
-            glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
-            borderHover: 'hover:border-sky-300 dark:hover:border-sky-600'
-        },
-        teal: {
-            gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
-            iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
-            iconText: 'text-emerald-600 dark:text-emerald-400',
-            progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-            progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
-            glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
-            borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
-        },
-        emerald: {
-            gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
-            iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
-            iconText: 'text-emerald-600 dark:text-emerald-400',
-            progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-            progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
-            glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
-            borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600'
-        },
-        pink: {
-            gradient: 'from-rose-500 via-rose-400 to-rose-300',
-            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
-            iconText: 'text-rose-600 dark:text-rose-400',
-            progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
-            glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
-            borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
-        },
-        red: {
-            gradient: 'from-rose-500 via-rose-400 to-rose-300',
-            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
-            iconText: 'text-rose-600 dark:text-rose-400',
-            progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
-            glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
-            borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
-        },
-        rose: {
-            gradient: 'from-rose-500 via-rose-400 to-rose-300',
-            iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
-            iconText: 'text-rose-600 dark:text-rose-400',
-            progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-            progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
-            glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
-            borderHover: 'hover:border-rose-300 dark:hover:border-rose-600'
-        },
-        purple: {
-            gradient: 'from-slate-500 via-slate-400 to-slate-300',
-            iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-500/15 dark:to-slate-500/10',
-            iconText: 'text-slate-600 dark:text-slate-400',
-            progressBg: 'bg-slate-100 dark:bg-slate-500/10',
-            progressFill: 'bg-gradient-to-r from-slate-500 to-slate-300',
-            glowColor: 'shadow-slate-200/50 dark:shadow-slate-500/20',
-            borderHover: 'hover:border-slate-300 dark:hover:border-slate-600'
-        },
-        orange: {
-            gradient: 'from-amber-500 via-amber-400 to-amber-300',
-            iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
-            iconText: 'text-amber-600 dark:text-amber-400',
-            progressBg: 'bg-amber-100 dark:bg-amber-500/10',
-            progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
-            glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
-            borderHover: 'hover:border-amber-300 dark:hover:border-amber-600'
-        },
-        amber: {
-            gradient: 'from-amber-500 via-amber-400 to-amber-300',
-            iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
-            iconText: 'text-amber-600 dark:text-amber-400',
-            progressBg: 'bg-amber-100 dark:bg-amber-500/10',
-            progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
-            glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
-            borderHover: 'hover:border-amber-300 dark:hover:border-amber-600'
-        },
-        sky: {
-            gradient: 'from-sky-500 via-sky-400 to-sky-300',
-            iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
-            iconText: 'text-sky-600 dark:text-sky-400',
-            progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-            progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
-            glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
-            borderHover: 'hover:border-sky-300 dark:hover:border-sky-600'
-        },
-        slate: {
-            gradient: 'from-slate-500 via-slate-400 to-slate-300',
-            iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-500/15 dark:to-slate-500/10',
-            iconText: 'text-slate-600 dark:text-slate-400',
-            progressBg: 'bg-slate-100 dark:bg-slate-500/10',
-            progressFill: 'bg-gradient-to-r from-slate-500 to-slate-300',
-            glowColor: 'shadow-slate-200/50 dark:shadow-slate-500/20',
-            borderHover: 'hover:border-slate-300 dark:hover:border-slate-600'
-        },
-        indigo: {
-            gradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
-            iconBg: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-500/15 dark:to-indigo-500/10',
-            iconText: 'text-indigo-600 dark:text-indigo-400',
-            progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-            progressFill: 'bg-gradient-to-r from-indigo-500 to-indigo-300',
-            glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
-            borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600'
-        },
+    /** Generate Tailwind class map from a single color name */
+    const makeStyle = (c: string) => ({
+        gradient: `from-${c}-500 via-${c}-400 to-${c}-300`,
+        iconBg: `bg-gradient-to-br from-${c}-50 to-${c}-100 dark:from-${c}-500/15 dark:to-${c}-500/10`,
+        iconText: `text-${c}-600 dark:text-${c}-400`,
+        progressBg: `bg-${c}-100 dark:bg-${c}-500/10`,
+        progressFill: `bg-gradient-to-r from-${c}-500 to-${c}-300`,
+        glowColor: `shadow-${c}-200/50 dark:shadow-${c}-500/20`,
+        borderHover: `hover:border-${c}-300 dark:hover:border-${c}-600`,
+    });
+
+    const colorMap: Record<string, ReturnType<typeof makeStyle>> = {
+        blue: makeStyle('sky'),
+        teal: makeStyle('emerald'),
+        emerald: makeStyle('emerald'),
+        pink: makeStyle('rose'),
+        red: makeStyle('rose'),
+        rose: makeStyle('rose'),
+        purple: makeStyle('slate'),
+        orange: makeStyle('amber'),
+        amber: makeStyle('amber'),
+        sky: makeStyle('sky'),
+        slate: makeStyle('slate'),
+        indigo: makeStyle('indigo'),
     };
 
     const style = colorMap[iconColor] || colorMap['blue'];
@@ -148,7 +55,7 @@ const KpiCard: React.FC<{
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-slate-900 rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
             {/* Gradient accent strip */}
             <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />

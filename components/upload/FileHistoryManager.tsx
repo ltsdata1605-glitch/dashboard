@@ -49,10 +49,10 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 </div>
                 {!compact && onViewReport && activeCount > 0 && (
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={onViewReport}
                         id="btn-view-historical-report"
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="play" size={3.5} />
                         <span>Xem Báo Cáo Gộp</span>
@@ -114,10 +114,10 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                             </div>
 
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => onDelete(file.id)}
                                 id={`btn-delete-file-${file.id}`}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
+                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
                                 title="Xóa tệp này"
                             >
                                 <Icon name="trash-2" size={4} />

@@ -210,7 +210,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
             maxWidth="4xl"
             footer={
                 <div className="flex justify-end gap-2 sm:gap-3">
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="unstyled" size="none" onClick={onClose}>
                         Hủy bỏ
                     </Button>
                     <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30">
@@ -224,7 +224,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 <div className="w-[30%] sm:w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
                         <h3 className="font-bold text-[10px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
-                        <Button variant="ghost" onClick={addNewCard} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-0.5 sm:gap-1">
+                        <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-0.5 sm:gap-1">
                             <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Thêm
                         </Button>
                     </div>
@@ -255,7 +255,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             : config.type === 'data' ? 'Bộ lọc Tùy Biên' : 'Công Thức'}
                                     </p>
                                 </div>
-                                <Button variant="ghost" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 rounded-md ${config.isVisible ? 'text-sky-600 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
+                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-600 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={3.5} className="sm:hidden" />
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} className="hidden sm:block" />
                                 </Button>
@@ -269,7 +269,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 h-10 sm:h-14 flex items-center">
                         <h3 className="font-semibold text-[10px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
                         {editingCard && (
-                            <Button variant="ghost" onClick={() => deleteCard(editingCard.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-auto text-rose-500 hover:text-rose-700 text-[10px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                            <Button variant="unstyled" size="none" onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-[10px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
                                 <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" /> Xóa thẻ
                             </Button>
                         )}
@@ -291,13 +291,13 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 <div className="flex bg-slate-100/50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-md p-1">
                                     {(['metric', 'data', 'calculated'] as const).map(tab => (
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             key={tab}
                                             onClick={() => {
                                                 setActiveTab(tab);
                                                 updateEditingCard({ type: tab });
                                             }}
-                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 text-[10px] sm:text-sm font-medium py-1.5 px-2 rounded transition-colors ${
+                                            className={`flex-1 text-[10px] sm:text-sm font-medium py-1.5 px-2 rounded transition-colors ${
                                                 (editingCard.type || 'metric') === tab
                                                 ? 'bg-white text-slate-800 shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
                                                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 border border-transparent dark:hover:bg-slate-800/50'
@@ -315,10 +315,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                                             {AVAILABLE_METRICS.map(m => (
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="unstyled" size="none"
                                                     key={m.value}
                                                     onClick={() => updateEditingCard({ metric: m.value })}
-                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start px-3 py-2 text-left rounded-md border text-xs sm:text-sm transition-colors ${editingCard.metric === m.value ? 'bg-sky-50 border-sky-200 text-sky-700 font-medium dark:bg-sky-500/10 dark:border-sky-500/30 dark:text-sky-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'}`}
+                                                    className={`justify-start px-3 py-2 text-left rounded-md border text-xs sm:text-sm transition-colors ${editingCard.metric === m.value ? 'bg-sky-50 border-sky-200 text-sky-700 font-medium dark:bg-sky-500/10 dark:border-sky-500/30 dark:text-sky-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'}`}
                                                 >
                                                     {m.label}
                                                 </Button>
@@ -456,10 +456,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {ICONS.map(icon => (
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="unstyled" size="none"
                                                     key={icon}
                                                     onClick={() => updateEditingCard({ icon })}
-                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-indigo-100 border-indigo-300 text-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-indigo-100 border-indigo-300 text-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
                                                 >
                                                     <Icon name={icon} size={3.5} className="sm:hidden" /><Icon name={icon} size={5} className="hidden sm:block" />
                                                 </Button>
@@ -471,10 +471,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {COLORS.map(color => (
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="unstyled" size="none"
                                                     key={color}
                                                     onClick={() => updateEditingCard({ iconColor: color })}
-                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
                                                 >
                                                     <Icon name="palette" size={4} />
                                                 </Button>

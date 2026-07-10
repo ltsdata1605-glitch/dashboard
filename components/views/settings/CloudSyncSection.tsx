@@ -43,10 +43,10 @@ export const CloudSyncSection: React.FC<CloudSyncSectionProps> = ({
                     </div>
                 </div>
                 <Button
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={onForceSync}
                     disabled={syncState === 'syncing' || !user || isDemoMode}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2.5 whitespace-nowrap font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto rounded-lg
+                    className={`px-5 py-2.5 whitespace-nowrap font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto rounded-lg
                         ${syncState === 'syncing'
                             ? 'bg-indigo-100 text-indigo-400 dark:bg-indigo-900/20 cursor-not-allowed'
                             : 'bg-white border-2 border-indigo-100 text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-indigo-400 dark:hover:border-indigo-500'}`}

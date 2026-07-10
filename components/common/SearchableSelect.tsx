@@ -50,9 +50,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
             <div className="relative">
                 <Button
                     type="button"
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
+                    className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
                 >
                     <span className={`truncate ${value ? 'text-slate-800 dark:text-slate-100' : 'text-slate-500'}`}>
                         {displayValue}

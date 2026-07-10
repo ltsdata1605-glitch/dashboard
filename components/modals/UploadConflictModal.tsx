@@ -140,9 +140,9 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         {/* Option 2: Merge & Deduplicate (Recommended) */}
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => onResolve('merge_deduplicate')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-3 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group shadow-sm"
+                            className="justify-start w-full text-left p-3 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group shadow-sm"
                         >
                             <div className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold">
                                 1
@@ -165,9 +165,9 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         {/* Option 1: Overwrite / Deactivate old */}
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => onResolve('overwrite_deactivate')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
+                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-amber-500 transition-colors">
                                 2
@@ -185,9 +185,9 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         {/* Option 3: Merge All */}
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => onResolve('merge_all')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
+                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-rose-500 transition-colors">
                                 3
@@ -208,9 +208,9 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                 <div className="pt-2 flex items-center justify-end">
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={() => onResolve('cancel')}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-bold uppercase tracking-wider text-[11px] rounded-xl active:scale-[0.97] transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-bold uppercase tracking-wider text-[11px] rounded-xl active:scale-[0.97] transition-all flex items-center gap-1.5"
                     >
                         <Icon name="x" size={3.5} />
                         Hủy nạp file

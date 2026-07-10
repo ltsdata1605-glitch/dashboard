@@ -280,7 +280,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
                         {onNewFile && (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
@@ -290,7 +290,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         )}
                         {onOpenHistory && (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={onOpenHistory}
                                 id="btn-mobile-history"
                                 title="Quản lý tệp đã lưu"
@@ -309,7 +309,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <Icon name="link" size={4} />
                         </a>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
@@ -346,9 +346,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             ].map(({ range, label }) => (
                                 <Button
                                     key={range}
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     onClick={() => handleDateRangeClick(range)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
+                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
                                         filterState.dateRange === range
                                         ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
                                         : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -449,9 +449,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         ].map(({ range, label }) => (
                             <Button
                                 key={range}
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => handleDateRangeClick(range)}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
+                                className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
                                     filterState.dateRange === range
                                     ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
                                     : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -500,7 +500,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     <div className="flex items-center gap-2 shrink-0">
                         {onNewFile && (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
@@ -510,7 +510,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         )}
                         {onOpenHistory && (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={onOpenHistory}
                                 id="btn-desktop-history"
                                 title="Quản lý tệp đã lưu"
@@ -529,7 +529,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <Icon name="link" size={4.5} />
                         </a>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"

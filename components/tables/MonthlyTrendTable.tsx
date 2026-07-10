@@ -38,7 +38,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                     <th 
                         rowSpan={2} 
                         scope="col" 
-                        className="w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]"
+                        className="w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900"
                     >
                         DANH MỤC
                     </th>

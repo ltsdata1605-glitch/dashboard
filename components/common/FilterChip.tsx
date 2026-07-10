@@ -37,12 +37,12 @@ const FilterChip: React.FC<FilterChipProps> = ({
             <span className="opacity-60">{label}:</span>
             <span className="max-w-[120px] truncate">{displayValue}</span>
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={(e) => {
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                className="ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 title={`Xóa lọc ${label}`}
             >
                 <Icon name="x" size={3} />

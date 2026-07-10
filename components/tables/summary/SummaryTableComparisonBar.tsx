@@ -119,10 +119,10 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 const isSelected = selectedWeeks.includes(w.id);
                                 return (
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         key={w.id}
                                         onClick={() => handleWeekPillClick(w.id)}
-                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                        className={`whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
                                             isSelected
                                             ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                             : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
@@ -157,10 +157,10 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 const isSelected = trendSelectedMonths.includes(m.id);
                                 return (
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         key={m.id}
                                         onClick={() => setTrendSelectedMonths(prev => prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id])}
-                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                        className={`whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
                                             isSelected
                                             ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
                                             : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'

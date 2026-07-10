@@ -60,11 +60,11 @@
   }
 
   .surface-card {
-    @apply bg-white dark:bg-[#1c1c1e] border border-slate-100 dark:border-white/5 rounded-[2rem] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)];
+    @apply bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl transition-all duration-300 hover:shadow-lg dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)];
   }
 
   .chart-card {
-    @apply bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-6 overflow-hidden border border-slate-100 dark:border-white/5 shadow-[0_2px_10px_rgba(0,0,0,0.02)];
+    @apply bg-white dark:bg-slate-900 rounded-2xl p-6 overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm;
   }
 
   .bento-grid {
@@ -241,14 +241,7 @@
   scroll-snap-align: start;
 }
 
-/* Smooth fade animations */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out forwards;
-}
+/* (duplicate slideUp removed — see line 128) */
 
 /* ═══ PREMIUM MOBILE ANIMATIONS ═══ */
 

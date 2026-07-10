@@ -27,13 +27,13 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                 </div>
                 <div className="flex items-center gap-4">
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={onToggleInspector}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-rose-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
+                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-rose-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
                     >
                         {isInspectorActive ? 'TẮT Inspector' : 'BẬT Inspector'}
                     </Button>
-                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
+                    <Button variant="unstyled" size="none" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
                         <Icon name="x" size={6} />
                     </Button>
                 </div>

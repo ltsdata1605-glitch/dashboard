@@ -78,8 +78,8 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
                                 const targetNum = parseNumber(row.target);
                                 const ht = targetNum !== 0 ? (row.actual / targetNum) * 100 : 0;
                                 return (
-                                    <tr key={row.id} className="bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 transition-colors">
-                                        <td className="px-3 py-2 text-[13px] font-extrabold sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 tabular-nums align-middle bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-300">
+                                    <tr key={row.id} className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 transition-colors">
+                                        <td className="px-3 py-2 text-[13px] font-extrabold sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 tabular-nums align-middle bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
                                             {row.name}
                                         </td>
                                         <td className="px-3 py-2 text-right border-r border-slate-200 dark:border-slate-700 align-middle">

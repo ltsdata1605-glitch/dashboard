@@ -424,7 +424,7 @@ const InstallmentTab: React.FC<{
                                         {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors">DT</th><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors">%</th></React.Fragment>)}
                                     </tr>}
                                 </thead>
-                                <tbody className="bg-white dark:bg-[#1c1c1e]">
+                                <tbody className="bg-white dark:bg-slate-900">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department') {
                                             return (

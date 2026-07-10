@@ -622,7 +622,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-[#1c1c1e]">
+                            <tbody className="bg-white dark:bg-slate-900">
                                 {renderRows(displayTree.tree, 'root')}
                             </tbody>
                         </table>

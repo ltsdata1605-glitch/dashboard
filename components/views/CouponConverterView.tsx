@@ -182,9 +182,9 @@ export default function CouponConverterView() {
                             </div>
                         </div>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setErrorMessage('')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 transition-colors p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40"
+                            className="text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 transition-colors p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40"
                         >
                             <Icon name="x" size={5} />
                         </Button>
@@ -201,8 +201,7 @@ export default function CouponConverterView() {
                               </h2>
                               <div className="flex items-center gap-1.5">
                                   <Button
-                                      variant="ghost"
-                                      size="sm"
+                                      variant="unstyled" size="none"
                                       onClick={handlePasteClick}
                                       className="h-8 px-2.5 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
@@ -210,8 +209,7 @@ export default function CouponConverterView() {
                                       <Icon name="clipboard-paste" size={4} />
                                   </Button>
                                   <Button
-                                      variant="ghost"
-                                      size="sm"
+                                      variant="unstyled" size="none"
                                       onClick={handleClearContent}
                                       className="h-8 px-2.5 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 rounded-lg"
                                       title="Xóa nội dung, giữ tiêu đề"
@@ -219,8 +217,7 @@ export default function CouponConverterView() {
                                       <Icon name="trash-2" size={4} />
                                   </Button>
                                   <Button
-                                      variant="ghost"
-                                      size="sm"
+                                      variant="unstyled" size="none"
                                       onClick={handleClearAll}
                                       className="h-8 px-2.5 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
                                       title="Xóa toàn bộ"

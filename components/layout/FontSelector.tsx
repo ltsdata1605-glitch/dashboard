@@ -144,10 +144,10 @@ const FontSelector: React.FC = () => {
     return (
         <div className="relative flex items-center bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30">
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 ref={buttonRef}
                 onClick={toggleOpen}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
+                className={`p-2.5 transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
                 title={`Font hiện tại: ${currentFontLabel}`}
             >
                 <Icon name="type" size={4} />
@@ -171,10 +171,10 @@ const FontSelector: React.FC = () => {
                             const isSelected = currentFont === font.value;
                             return (
                                 <Button
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     key={font.value}
                                     onClick={() => handleSelectFont(font.value)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
+                                    className={`justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
                                         ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                         : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                         }`}

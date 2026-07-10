@@ -372,9 +372,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
                         {/* Lũy kế button */}
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
@@ -386,19 +386,19 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <div className="hidden lg:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <Button variant="ghost" onClick={() => setIsSettingsModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <Icon name="settings-2" size={4} className="lg:hidden" />
                                 <Icon name="settings-2" size={5} className="hidden lg:block" />
                             </Button>
                         )}
 
                         {uniqueFilterOptions.kho.length > 1 && (
-                            <Button variant="ghost" onClick={onBatchExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
+                            <Button variant="unstyled" size="none" onClick={onBatchExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
                                 <Icon name="images" size={4} className="lg:hidden" />
                                 <Icon name="images" size={5} className="hidden lg:block" />
                             </Button>
                         )}
-                        <Button variant="ghost" onClick={handleSingleExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
+                        <Button variant="unstyled" size="none" onClick={handleSingleExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
                             {isExporting ? <Icon name="loader-2" className="animate-spin" size={4} /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                         </Button>
                     </div>
@@ -704,10 +704,10 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </span>
                         <div className="flex gap-2">
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
                             >
                                 Trước
                             </Button>
@@ -715,10 +715,10 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 {currentPage} / {totalPages}
                             </div>
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
                             >
                                 Sau
                             </Button>
@@ -818,8 +818,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         return <div className="mb-4" />;
                     })()}
                     <div className="flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={() => setEditingTargetKho(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
-                        <Button type="button" variant="ghost" onClick={() => handleTargetSave()} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</Button>
+                        <Button type="button" variant="unstyled" size="none" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
+                        <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</Button>
                     </div>
                 </div>
             </Modal>

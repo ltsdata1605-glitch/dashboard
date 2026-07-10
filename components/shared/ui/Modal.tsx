@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
 import { cn } from './utils';
 import { Button } from './Button';
+import { Icon } from '../../common/Icon';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -103,7 +103,7 @@ export function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
 
           {/* Modal Container */}
@@ -113,7 +113,7 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, type: 'spring', bounce: 0.25 }}
             className={cn(
-              "relative w-full bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700/50 flex flex-col max-h-[90vh] overflow-hidden",
+              "relative w-full bg-white dark:bg-slate-900 shadow-2xl border border-slate-200/80 dark:border-slate-700/50 flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-black/5 dark:ring-white/5",
               roundedClass,
               maxWidthClasses[maxWidth]
             )}
@@ -137,11 +137,12 @@ export function Modal({
                   {!hideCloseButton && (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="unstyled"
+                      size="none"
                       onClick={onClose}
-                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
+                      className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >
-                      <X size={18} />
+                      <Icon name="x" size={4.5} />
                     </Button>
                   )}
                 </div>

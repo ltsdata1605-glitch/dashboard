@@ -200,7 +200,7 @@
     "missingMobileToolbar": 0
   },
   "components/kpis/KpiCards.tsx": {
-    "nonSemanticColor": 17,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
@@ -431,7 +431,7 @@
   },
   "components/views/AboutView.tsx": {
     "nonSemanticColor": 13,
-    "missingDarkVariant": 11,
+    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/views/CheckThuongView.tsx": {
@@ -455,7 +455,7 @@
     "missingMobileToolbar": 0
   },
   "components/views/LoginView.tsx": {
-    "nonSemanticColor": 7,
+    "nonSemanticColor": 0,
     "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },

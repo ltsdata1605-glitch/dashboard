@@ -130,21 +130,23 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         }
     }, [isClosingModal]);
 
+    // Ramp 14 tab bằng palette semantic: 6 họ (sky/emerald/amber/rose/indigo/slate) × 2 tầng
+    // sắc độ (nhạt-50/đậm-100) để mỗi tab 1 tông riêng, không trùng.
     const colorThemes = useMemo(() => [
-        { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
         { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
+        { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
         { header: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', activeTab: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-b-[2.5px] border-amber-400', row: '', border: '' },
-        { header: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', activeTab: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border-b-[2.5px] border-indigo-400', row: '', border: '' },
         { header: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', activeTab: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-b-[2.5px] border-rose-400', row: '', border: '' },
-        { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
         { header: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', activeTab: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border-b-[2.5px] border-indigo-400', row: '', border: '' },
-        { header: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', activeTab: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-b-[2.5px] border-rose-400', row: '', border: '' },
-        { header: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', activeTab: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-b-[2.5px] border-amber-400', row: '', border: '' },
+        { header: 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300', activeTab: 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300 border-b-[2.5px] border-slate-400', row: '', border: '' },
+        { header: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300', activeTab: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300 border-b-[2.5px] border-sky-500', row: '', border: '' },
+        { header: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300', activeTab: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-b-[2.5px] border-emerald-500', row: '', border: '' },
+        { header: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300', activeTab: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border-b-[2.5px] border-amber-500', row: '', border: '' },
+        { header: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300', activeTab: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 border-b-[2.5px] border-rose-500', row: '', border: '' },
+        { header: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300', activeTab: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 border-b-[2.5px] border-indigo-500', row: '', border: '' },
+        { header: 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200', activeTab: 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200 border-b-[2.5px] border-slate-500', row: '', border: '' },
         { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
-        { header: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', activeTab: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-b-[2.5px] border-rose-400', row: '', border: '' },
         { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
-        { header: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', activeTab: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border-b-[2.5px] border-indigo-400', row: '', border: '' },
-        { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
     ], []);
 
     const handleMainExport = React.useCallback(async () => {
@@ -181,7 +183,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         : undefined;
 
     return (
-        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 rounded-none sm:rounded-xl mb-8 flex flex-col flex-grow transition-all duration-300">
+        <div className="bg-white dark:bg-slate-900 shadow-lg border-y sm:border border-slate-100 dark:border-slate-800 rounded-none sm:rounded-xl mb-8 flex flex-col flex-grow transition-all duration-300">
             {/* BEGIN: Header Section */}
             <SectionHeader
                 title={(

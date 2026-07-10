@@ -144,18 +144,18 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                     actionButtons={
                         <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={handleExport}
                                 disabled={isExporting}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
                                 title="Xuất ảnh"
                             >
                                 {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin" /> : <Icon name="camera" size={3.5} />}
                             </Button>
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => onRemove(filter.id)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-700/50 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors shadow-sm"
+                                className="p-1.5 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-700/50 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors shadow-sm"
                                 title="Xóa bảng lịch"
                             >
                                 <Icon name="trash-2" size={3.5} />

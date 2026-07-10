@@ -125,7 +125,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform relative pr-4">
                         {indentGuides}
                         {isExpandable ? (
-                            <Button variant="ghost" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
+                            <Button variant="unstyled" size="none" className={`w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
                                 <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-300'} />
                             </Button>
                         ) : (

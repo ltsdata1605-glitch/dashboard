@@ -205,7 +205,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 <Button
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     className={`px-1.5 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 h-8 sm:h-10 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                                     title={tabLabel}
                                 >
@@ -222,7 +222,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 onBatchExport();
                             }}
                             disabled={isExporting}
-                            variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="unstyled" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
                             <Icon name="images" size={4.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
@@ -230,7 +230,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                         <Button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting} isLoading={isExporting}
-                            variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="unstyled" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
                             {!isExporting && <><Icon name="camera" size={4.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
@@ -326,7 +326,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 {h.label}
                                                 {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <Button variant="ghost" onClick={e => handleCopyList(e, h.key, h.label)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
+                                                    <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
                                                     </Button>
                                                 )}
@@ -386,9 +386,9 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 {/* Name */}
                                                 <td className="px-1.5 sm:px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="unstyled" size="none"
                                                         onClick={() => onEmployeeClick(emp.name)}
-                                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 sm:gap-2 min-w-0 group/name"
+                                                        className="flex items-center gap-1 sm:gap-2 min-w-0 group/name"
                                                     >
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">
                                                             {abbreviateName(emp.name)}

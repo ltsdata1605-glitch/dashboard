@@ -223,7 +223,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         // Zebra striping
         const isEven = globalRowIndex % 2 === 0;
         globalRowIndex++;
-        const zebraClass = isHighlighted ? '' : (isEven ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/70 dark:bg-slate-800/30');
+        const zebraClass = isHighlighted ? '' : (isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/70 dark:bg-slate-800/30');
 
         return (
             <tr key={employee.originalName} className={`
@@ -251,7 +251,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     return (
         <div 
             ref={cardRef} 
-            className="competition-group-card bg-white dark:bg-[#1c1c1e] border border-slate-200 dark:border-slate-700 flex flex-col h-full overflow-hidden"
+            className="competition-group-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex flex-col h-full overflow-hidden"
         >
             {/* Title bar — flat, professional */}
             <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">

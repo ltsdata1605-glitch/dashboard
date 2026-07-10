@@ -270,15 +270,15 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <Button variant="ghost" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
                             <Icon name="plus" size={3.5} className="sm:hidden"/><Icon name="plus" size={5} className="hidden sm:block"/>
                         </Button>
                         {activeTable && (
                             <>
-                                <Button variant="ghost" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                     <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={5} className="hidden sm:block"/>
                                 </Button>
-                                <Button variant="ghost" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
                                     <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={5} className="hidden sm:block"/>
                                 </Button>
                             </>
@@ -290,7 +290,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         {/* Group 2 (RIGHT): Calendar → Batch export → Camera */}
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setIncludeToday(p => !p)}
                             className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg transition-all ${
                                 includeToday
@@ -302,7 +302,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={3.5} className="sm:hidden"/><Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={5} className="hidden sm:block"/>
                         </Button>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
@@ -312,7 +312,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             {isBatchExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="images" size={5} className="hidden sm:block" />}
                         </Button>
                         {onExport && (
-                            <Button variant="ghost" onClick={onExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
                                 {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                             </Button>
@@ -329,10 +329,10 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 const theme = colorThemes[tabIndex % colorThemes.length];
                                 return (
                                 <Button
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
                                         ? theme.activeTab || 'bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-white border-b-[2.5px] border-slate-800 dark:border-white'
                                         : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
@@ -393,8 +393,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     maxWidth="md"
                     footer={
                         <div className="flex justify-end gap-2 sm:gap-3">
-                            <Button type="button" variant="ghost" onClick={() => setModalState({ type: null })} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
-                            <Button type="button" variant="ghost" onClick={handleDelete} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors">Xóa</Button>
+                            <Button type="button" variant="unstyled" size="none" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
+                            <Button type="button" variant="unstyled" size="none" onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors">Xóa</Button>
                         </div>
                     }
                 >

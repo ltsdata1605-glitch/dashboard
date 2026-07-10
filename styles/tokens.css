@@ -153,6 +153,41 @@
   --p-z-max:       999;
 
 
+  /* ─── SEMANTIC TYPOGRAPHY TOKENS ─── */
+  /* Chuẩn hóa type scale cho toàn bộ dự án — thay thế arbitrary font-size */
+  --text-caption:      var(--p-text-2xs);    /* 10px — tiny labels, footnotes */
+  --text-overline:     11px;                 /* 11px — table headers, section labels */
+  --text-label:        var(--p-text-xs);     /* 12px — badges, tags, small labels */
+  --text-body-sm:      13px;                 /* 13px — compact body text, sub-labels */
+  --text-body:         var(--p-text-sm);     /* 14px — default body text */
+  --text-body-lg:      var(--p-text-base);   /* 16px — prominent body text */
+  --text-heading-sm:   var(--p-text-lg);     /* 18px — card titles, section headings */
+  --text-heading:      var(--p-text-xl);     /* 20px — page section headings */
+  --text-heading-lg:   var(--p-text-2xl);    /* 24px — page titles */
+  --text-display:      var(--p-text-3xl);    /* 30px — hero numbers, KPI values */
+  --text-display-lg:   var(--p-text-4xl);    /* 36px — hero headings */
+
+  /* ─── NAVIGATION TOKENS ─── */
+  --nav-item-height:       44px;
+  --nav-item-radius:       var(--p-radius-xl);
+  --nav-item-px:           var(--p-space-3);
+  --nav-item-py:           var(--p-space-3);
+  --nav-item-gap:          var(--p-space-3);
+  --nav-item-text:         var(--p-slate-500);
+  --nav-item-text-hover:   var(--brand);
+  --nav-item-bg-hover:     var(--p-slate-100);
+  --nav-item-active-bg:    var(--brand);
+  --nav-item-active-text:  #ffffff;
+  --nav-item-active-shadow: 0 4px 12px -2px rgba(5, 132, 199, 0.25);
+  --nav-sub-border:        var(--p-slate-200);
+
+  /* ─── FOCUS RING TOKENS ─── */
+  --focus-ring-width:      2px;
+  --focus-ring-offset:     2px;
+  --focus-ring-color:      rgba(14, 165, 233, 0.4);
+  --focus-ring-color-danger: rgba(244, 63, 94, 0.4);
+
+
   /* ─── SEMANTIC TOKENS (Light Mode) ─── */
 
   /* Brand */
@@ -379,4 +414,13 @@
 
   /* Tooltip */
   --tooltip-bg: var(--p-slate-700);
+
+  /* Navigation — Dark */
+  --nav-item-text:       var(--p-slate-400);
+  --nav-item-bg-hover:   var(--p-slate-800);
+  --nav-sub-border:      var(--p-slate-700);
+  --nav-item-active-shadow: 0 4px 12px -2px rgba(5, 132, 199, 0.3);
+
+  /* Focus Ring — Dark */
+  --focus-ring-color:    rgba(56, 189, 248, 0.5);
 }

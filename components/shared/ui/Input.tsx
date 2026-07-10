@@ -19,11 +19,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {leftIcon && (
           <Button
             type="button"
-            variant="ghost"
+            variant="unstyled" size="none"
             onClick={onLeftIconClick}
             disabled={!onLeftIconClick}
             className={cn(
-              "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
+              "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
               onLeftIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
             )}
           >
@@ -50,11 +50,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {rightIcon && (
           <Button
             type="button"
-            variant="ghost"
+            variant="unstyled" size="none"
             onClick={onRightIconClick}
             disabled={!onRightIconClick}
             className={cn(
-              "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
+              "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
               onRightIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
             )}
           >

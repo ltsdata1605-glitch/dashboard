@@ -384,7 +384,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   return (
     <div 
       ref={chartCardRef}
-      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 mb-3 lg:mb-8 transition-all duration-300 relative z-0"
+      className="bg-white dark:bg-slate-900 shadow-lg border border-slate-100 dark:border-white/5 mb-3 lg:mb-8 transition-all duration-300 relative z-0"
     >
       <SectionHeader 
         title={(
@@ -470,7 +470,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               <>
           <div className="lg:hidden relative">
               <Button
-                  variant="ghost"
+                  variant="unstyled" size="none"
                   onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
                   className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-md transition-colors relative ${
                       trendState._filterOpen
@@ -495,7 +495,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                               { value: 'monthly', label: 'Tháng' },
                           ] as const).map((item) => (
                               <Button
-                                  variant="ghost"
+                                  variant="unstyled" size="none"
                                   key={item.value}
                                   onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false }))}
                                   className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
@@ -514,10 +514,10 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           <div className="hidden lg:inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
                       <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         key={v}
                         onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
+                        className={`py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
                           trendState.view === v
                           ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20'
                           : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
@@ -531,7 +531,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           )}
 
           <Button
-              variant="ghost"
+              variant="unstyled" size="none"
               onClick={() => setDisplayMode('chart')}
               className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
                   displayMode === 'chart'
@@ -544,7 +544,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               <Icon name="bar-chart-2" size={5} className="hidden lg:block" />
           </Button>
           <Button
-              variant="ghost"
+              variant="unstyled" size="none"
               onClick={() => setDisplayMode('calendar')}
               className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
                   displayMode === 'calendar'
@@ -558,7 +558,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           </Button>
 
           <Button
-            variant="ghost"
+            variant="unstyled" size="none"
             onClick={handleExportClick}
             disabled={isExporting}
             className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
@@ -606,10 +606,10 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                     const isActive = activeCalendarTab === cal.id;
                                     return (
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             key={cal.id}
                                             onClick={() => setActiveCalendarTab(cal.id)}
-                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
                                                 isActive
                                                 ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-700'
                                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
@@ -651,7 +651,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                 actionButtons={
                                     <>
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             onClick={handleAddCalendar}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
@@ -659,7 +659,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             <Icon name="plus" size={3.5} />
                                         </Button>
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             onClick={handleExportDraft}
                                             disabled={isExporting}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"

@@ -23,9 +23,9 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
         <div className="relative flex items-center gap-2 hide-on-export">
             <Button
                 type="button"
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={handleToggle}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 rounded-lg transition-all ${
+                className={`p-1 sm:p-1.5 rounded-lg transition-all ${
                     hideZeroRevenue
                     ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'

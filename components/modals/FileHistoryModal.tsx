@@ -56,7 +56,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Tải lên, gộp và đối chiếu các tệp Excel doanh số lũy kế cũ (ví dụ: tháng trước, năm trước)</p>
                     </div>
                 </div>
-                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
+                <Button variant="unstyled" size="none" onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <Icon name="x" size={4} />
                 </Button>
             </div>
@@ -82,10 +82,10 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
 
                 <div className="pt-2 flex justify-between items-center gap-3 flex-wrap">
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={handleImportClick}
                         id="btn-modal-import-files"
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-semibold rounded-md shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-semibold rounded-md shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="file-up" size={3.5} />
                         <span>Tải YCX luỹ kế</span>
@@ -102,12 +102,12 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                     />
                     
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={() => {
                             if (onViewReport) onViewReport();
                             onClose();
                         }}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-md text-xs transition-all shadow-none active:scale-95"
+                        className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-md text-xs transition-all shadow-none active:scale-95"
                     >
                         Xem Báo Cáo
                     </Button>

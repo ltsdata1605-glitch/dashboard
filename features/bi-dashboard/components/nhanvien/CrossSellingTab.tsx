@@ -533,7 +533,7 @@ const CrossSellingTab: React.FC<{
                                             <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('pctBillBk')}>%B.Kèm</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1c1c1e]">
+                                    <tbody className="bg-white dark:bg-slate-900">
                                         {displayList.map((row, idx) => {
                                             if (row.type === 'department' || row.type === 'total') {
                                                 const isGrandTotal = row.type === 'total';

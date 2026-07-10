@@ -92,12 +92,12 @@ export const Dropdown: React.FC<DropdownProps> = ({
               }
               return (
                 <Button
-                  variant="ghost"
+                  variant="unstyled" size="none"
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   disabled={item.disabled}
                   className={cn(
-                    'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
+                    'justify-start w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
                     item.danger
                       ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                       : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50',
@@ -135,9 +135,9 @@ export interface DropdownButtonProps {
 
 export const DropdownButton: React.FC<DropdownButtonProps> = ({ label, icon, className }) => (
   <Button
-    variant="ghost"
+    variant="unstyled" size="none"
     className={cn(
-      'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center gap-1.5 px-3 h-9 text-sm font-medium',
+      'inline-flex items-center gap-1.5 px-3 h-9 text-sm font-medium',
       'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
       'rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700',
       'text-slate-700 dark:text-slate-300 transition-colors',

@@ -75,13 +75,13 @@ export const Tabs = React.memo<TabsProps>(({
           const isActive = item.id === activeId;
           return (
             <Button
-              variant="ghost"
+              variant="unstyled" size="none"
               key={item.id}
               ref={isActive ? activeRef : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0',
+                'relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -127,13 +127,13 @@ export const Tabs = React.memo<TabsProps>(({
           const isActive = item.id === activeId;
           return (
             <Button
-              variant="ghost"
+              variant="unstyled" size="none"
               key={item.id}
               ref={isActive ? activeRef : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0',
+                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -175,13 +175,13 @@ export const Tabs = React.memo<TabsProps>(({
         const isActive = item.id === activeId;
         return (
           <Button
-            variant="ghost"
+            variant="unstyled" size="none"
             key={item.id}
             ref={isActive ? activeRef : undefined}
             onClick={() => handleClick(item.id)}
             disabled={item.disabled}
             className={cn(
-              'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0',
+              'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0',
               sizeClasses[size],
               fullWidth && 'flex-1 justify-center',
               isActive

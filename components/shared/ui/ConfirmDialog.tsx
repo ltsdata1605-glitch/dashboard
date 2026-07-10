@@ -1,7 +1,7 @@
 import React from 'react';
-import { AlertCircle, Trash2, Info, CheckCircle2 } from 'lucide-react';
 import { Modal } from './Modal';
 import { Button } from './Button';
+import { Icon } from '../../common/Icon';
 
 export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
 
@@ -35,22 +35,22 @@ export function ConfirmDialog({
 
   const variants = {
     danger: {
-      icon: <Trash2 size={24} className="text-rose-500" />,
+      icon: <Icon name="trash-2" size={6} className="text-rose-500" />,
       bg: 'bg-rose-100 dark:bg-rose-900/30',
       button: 'danger' as const
     },
     warning: {
-      icon: <AlertCircle size={24} className="text-amber-500" />,
+      icon: <Icon name="alert-circle" size={6} className="text-amber-500" />,
       bg: 'bg-amber-100 dark:bg-amber-900/30',
-      button: 'primary' as const // Or a custom warning button variant
+      button: 'primary' as const
     },
     info: {
-      icon: <Info size={24} className="text-sky-500" />,
+      icon: <Icon name="info" size={6} className="text-sky-500" />,
       bg: 'bg-sky-100 dark:bg-sky-900/30',
       button: 'primary' as const
     },
     success: {
-      icon: <CheckCircle2 size={24} className="text-emerald-500" />,
+      icon: <Icon name="check-circle-2" size={6} className="text-emerald-500" />,
       bg: 'bg-emerald-100 dark:bg-emerald-900/30',
       button: 'primary' as const
     }

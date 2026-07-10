@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
-export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'unstyled';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'none';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -33,21 +33,27 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap';
+    const isUnstyled = variant === 'unstyled';
+    
+    const baseStyles = isUnstyled
+      ? 'outline-none disabled:opacity-50 disabled:cursor-not-allowed'
+      : 'inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap';
     
     const variants: Record<ButtonVariant, string> = {
       primary: 'bg-sky-600 hover:bg-sky-700 text-white border border-transparent',
       secondary: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700',
       danger: 'bg-rose-600 hover:bg-rose-700 text-white border border-transparent',
       ghost: 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent',
-      outline: 'bg-transparent text-sky-600 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20'
+      outline: 'bg-transparent text-sky-600 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20',
+      unstyled: '',
     };
 
     const sizes: Record<ButtonSize, string> = {
       sm: 'h-8 px-3 text-xs rounded-md',
       md: 'h-9 px-4 text-sm rounded-md',
       lg: 'h-11 px-6 text-base rounded-md',
-      icon: 'h-9 w-9 rounded-md p-0'
+      icon: 'h-9 w-9 rounded-md p-0',
+      none: '',
     };
 
     return (

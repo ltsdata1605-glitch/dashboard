@@ -164,7 +164,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                     })}
                 </tr>
             </thead>
-            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700/60">
+            <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-700/60">
                 {displayList.map((item, idx) => {
                     if (item.type === 'department' || item.type === 'total') {
                         const isGrandTotal = item.type === 'total';

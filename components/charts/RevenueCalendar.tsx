@@ -209,7 +209,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         const hasData = dayData.value !== null && dayData.value > 0;
                         const isToday = new Date().getDate() === dayData.day && new Date().getMonth() === month && new Date().getFullYear() === year;
                         
-                        let bgClass = 'bg-white dark:bg-[#1c1c1e]';
+                        let bgClass = 'bg-white dark:bg-slate-900';
                         let borderClass = 'border-slate-200/80 dark:border-white/10';
                         let textClass = 'text-slate-800 dark:text-slate-100';
                         let dayNumClass = 'text-slate-700 dark:text-slate-200';

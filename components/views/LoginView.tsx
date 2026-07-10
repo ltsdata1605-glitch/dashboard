@@ -42,18 +42,18 @@ const LoginView: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center bg-static-blobs">
+                <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 bg-static-blobs">
+            <div className="max-w-md w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50 animate-fade-in-up">
                 <div className="flex justify-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                        <Icon name="layout-dashboard" className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                    <div className="w-16 h-16 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center shadow-lg shadow-sky-100 dark:shadow-sky-900/20">
+                        <Icon name="layout-dashboard" className="w-8 h-8 text-sky-600 dark:text-sky-400" />
                     </div>
                 </div>
                 
@@ -63,12 +63,12 @@ const LoginView: React.FC = () => {
                 {isInAppWebView && (
                     <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
                         <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-                            <span className="text-base">⚠️</span> Lưu ý Đăng Nhập:
+                            <Icon name="alert-triangle" className="w-4 h-4" /> Lưu ý Đăng Nhập:
                         </div>
                         <p className="leading-relaxed">
                             Anh/Chị đang truy cập qua trình duyệt của <strong>Zalo/Facebook</strong>. Trình duyệt này chặn cửa sổ đăng nhập Google.
                         </p>
-                        <p className="font-semibold text-indigo-600 dark:text-indigo-400">
+                        <p className="font-semibold text-sky-600 dark:text-sky-400">
                             👉 Vui lòng nhấn vào nút ba dấu chấm (...) ở góc màn hình rồi chọn "Mở bằng trình duyệt" (hoặc "Mở bằng Safari / Chrome") để đăng nhập nhé!
                         </p>
                     </div>
@@ -83,10 +83,11 @@ const LoginView: React.FC = () => {
                 
                 <div className="space-y-4">
                     <Button
-                        variant="ghost"
+                        variant="unstyled"
+                        size="none"
                         onClick={handleLogin}
                         disabled={isLoggingIn}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800 font-bold text-slate-700 dark:text-white disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/30 font-bold text-slate-700 dark:text-white disabled:opacity-50"
                     >
                         {isLoggingIn ? (
                             <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
@@ -108,9 +109,10 @@ const LoginView: React.FC = () => {
                     </div>
                     
                     <Button
-                        variant="ghost"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => setDemoMode(true)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
+                        className="w-full flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-sky-400 dark:hover:border-sky-600 hover:bg-sky-50/50 dark:hover:bg-sky-900/10 transition-all font-medium text-slate-500 dark:text-slate-400"
                     >
                         <Icon name="glasses" size={5} />
                         Kích hoạt Chế độ Dùng Thử

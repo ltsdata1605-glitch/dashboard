@@ -92,9 +92,9 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
         <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
             <Button
                 type="button"
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                className={`w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
                     variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     hasSelection || isOpen
@@ -155,10 +155,10 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                     return (
                                         <Button
                                             type="button"
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             key={option.value}
                                             onClick={() => handleSelectOption(option.value)}
-                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full text-left px-2.5 py-2 rounded-lg transition-all ${
+                                            className={`flex items-center justify-between w-full text-left px-2.5 py-2 rounded-lg transition-all ${
                                                 isSelected
                                                 ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'

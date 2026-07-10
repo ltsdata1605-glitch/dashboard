@@ -236,9 +236,9 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
             <div className="-m-5">
                 <div className="flex flex-wrap justify-between items-center p-2.5 sm:p-4 bg-slate-100/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700 gap-2">
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={loadSampleConfig}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
                     >
                         <Icon name="layout-template" size={3.5} /> Nạp Cấu Hình Mẫu
                     </Button>
@@ -255,13 +255,13 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 Cấu Hình Cột
                             </h3>
                             <div className="flex gap-1.5 sm:gap-2">
-                                <Button variant="ghost" onClick={() => addColumn('target')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
                                     <Icon name="target" size={3} className="sm:hidden" /><Icon name="target" size={3.5} className="hidden sm:block" /> Mục Tiêu
                                 </Button>
-                                <Button variant="ghost" onClick={() => addColumn('data')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                     <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Dữ Liệu
                                 </Button>
-                                <Button variant="ghost" onClick={() => addColumn('ratio')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
                                     <Icon name="percent" size={3} className="sm:hidden" /><Icon name="percent" size={3.5} className="hidden sm:block" /> Tỉ Lệ
                                 </Button>
                             </div>
@@ -353,7 +353,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             )}
                                         </div>
                                     </div>
-                                    <Button variant="ghost" onClick={() => removeColumn(col.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors" title="Xóa cột"><Icon name="trash-2" size={4.5} /></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => removeColumn(col.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors" title="Xóa cột"><Icon name="trash-2" size={4.5} /></Button>
                                 </div>
                             ))}
                             {config.columns.length === 0 && <div className="text-center p-6 text-sm text-slate-400">Chưa có cột nào được thiết lập. Hãy thêm cột Dữ liệu trước.</div>}
@@ -368,7 +368,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 <Icon name="list" size={4.5} className="text-indigo-600 dark:text-indigo-400 hidden sm:block" />
                                 Cấu Hình Dòng
                             </h3>
-                            <Button variant="ghost" onClick={addSection} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800">
+                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800">
                                 <Icon name="plus" size={3.5} /> Thêm Nhóm
                             </Button>
                         </div>
@@ -389,7 +389,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                 placeholder="Tên Nhóm Dòng (Header)..."
                                             />
                                         </div>
-                                        <Button variant="ghost" onClick={() => removeSection(section.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"><Icon name="trash-2" size={4.5} /></Button>
+                                        <Button variant="unstyled" size="none" onClick={() => removeSection(section.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"><Icon name="trash-2" size={4.5} /></Button>
                                     </div>
 
                                     {/* Rows Wrapper */}
@@ -447,12 +447,12 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Button variant="ghost" onClick={() => removeRow(section.id, row.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors flex shrink-0 items-center justify-center"><Icon name="trash-2" size={4.5} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={() => removeRow(section.id, row.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors flex shrink-0 items-center justify-center"><Icon name="trash-2" size={4.5} /></Button>
                                             </div>
                                         ))}
 
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             onClick={() => addRow(section.id)}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
                                         >

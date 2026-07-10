@@ -78,7 +78,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </p>
                     </div>
                 </div>
-                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <Button variant="unstyled" size="none" onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                     <Icon name="x" size={4} />
                 </Button>
             </div>
@@ -115,21 +115,21 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                             <td className="px-4 py-3 text-right pr-4">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="unstyled" size="none"
                                                         onClick={() => handleCopyText(`${group.nganhHang}\t${group.nhomHang}\t\t${group.nhomHang.includes(' - ') ? group.nhomHang.split(' - ').slice(1).join(' - ').trim() : group.nhomHang.trim()}\t100%`, index)}
-                                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
                                                         title="Sao chép dòng cấu hình"
                                                     >
                                                         <Icon name="copy" size={3} />
                                                         <span>Sao chép</span>
                                                     </Button>
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="unstyled" size="none"
                                                         onClick={() => {
                                                             onIgnoreGroup(group.nhomHang);
                                                             toast.success(`Đã loại bỏ cảnh báo: ${group.nhomHang}`);
                                                         }}
-                                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-350 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                                        className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-350 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
                                                         title="Loại bỏ không hiển thị cảnh báo"
                                                     >
                                                         <Icon name="eye-off" size={3} />
@@ -172,12 +172,12 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                 </td>
                                                 <td className="px-4 py-2 text-right pr-4">
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="unstyled" size="none"
                                                         onClick={() => {
                                                             onRestoreGroup(group.nhomHang);
                                                             toast.success(`Đã khôi phục cảnh báo: ${group.nhomHang}`);
                                                         }}
-                                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded transition-colors text-[10px] font-bold"
+                                                        className="p-1 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded transition-colors text-[10px] font-bold"
                                                         title="Khôi phục hiển thị cảnh báo"
                                                     >
                                                         Khôi phục
@@ -208,10 +208,10 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                 {/* Actions */}
                 <div className="pt-3 flex justify-between items-center gap-3 flex-wrap border-t border-slate-100 dark:border-slate-800">
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={handleCopyAllRows}
                         disabled={unconfiguredGroups.length === 0}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-300/30 dark:shadow-none active:scale-95'}`}
+                        className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-300/30 dark:shadow-none active:scale-95'}`}
                     >
                         <Icon name="copy" size={3.5} />
                         <span>Sao chép toàn bộ dòng mới</span>

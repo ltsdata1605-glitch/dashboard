@@ -80,9 +80,9 @@ export const SettingsAccountTab: React.FC = () => {
                         
                         {userRole !== 'admin' && (
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm rounded-lg ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
+                                className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm rounded-lg ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
                             >
                                 <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
                                 {isEditingProfile ? 'Lưu Dữ Liệu' : 'Yêu Cầu Đổi Kho'}
@@ -148,9 +148,9 @@ export const SettingsAccountTab: React.FC = () => {
 
             <div className="pt-4 mt-8 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                 <Button
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={logout}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition-colors shadow-sm flex items-center gap-2 rounded-lg"
+                    className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition-colors shadow-sm flex items-center gap-2 rounded-lg"
                 >
                     <Icon name="log-out" size={5} />
                     Đăng Xuất Tài Khoản

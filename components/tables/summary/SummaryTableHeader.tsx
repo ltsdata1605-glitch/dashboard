@@ -39,7 +39,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
             <div className="flex flex-col gap-4 sm:gap-6">
                 <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shadow-sm shrink-0">
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shadow-sm shrink-0">
                             <Icon name="table" size={4} className="sm:hidden" />
                             <Icon name="table" size={5} className="hidden sm:block" />
                         </div>
@@ -91,9 +91,9 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                         <div className="flex items-center hide-on-export">
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setTableMode('standard')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${
+                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
                                     tableMode === 'standard'
                                     ? 'text-indigo-600 dark:text-indigo-400'
                                     : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -104,9 +104,9 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 <Icon name="table" size={5} className="hidden lg:block" />
                             </Button>
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setTableMode('comparison')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${
+                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
                                     tableMode === 'comparison'
                                     ? 'text-indigo-600 dark:text-indigo-400'
                                     : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -121,11 +121,11 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
                                 <Button
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     onClick={handleExport}
                                     disabled={isExporting}
                                     title="Xuất Ảnh"
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
                                 </Button>
@@ -133,14 +133,14 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 <>
                                     <div className="flex items-center gap-2">
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <Icon name="settings-2" size={4.5}/>
                                         </Button>
-                                        <Button variant="ghost" onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        <Button variant="unstyled" size="none" onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                                             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
                                         </Button>
                                     </div>
@@ -149,7 +149,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                             <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
                                                 <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                                <Button variant="ghost" onClick={() => setActiveFilterKey(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></Button>
+                                                <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></Button>
                                             </div>
                                             <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                                 {HEADER_CONFIG.filter((col) => {

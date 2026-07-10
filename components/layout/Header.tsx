@@ -95,9 +95,9 @@ const Header: React.FC<HeaderProps> = ({
             {mounted && fileInfo && (userRole === 'admin' || userRole === 'manager') && document.getElementById('mobile-topbar-actions') && createPortal(
                 <>
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={onLoadShiftFile}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95"
+                        className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95"
                         title="Tải DS Nhân viên"
                     >
                         <Icon name="users-round" size={4.5} />
@@ -120,11 +120,11 @@ const Header: React.FC<HeaderProps> = ({
             <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
                 {/* Shift Management Group */}
                 {(userRole === 'admin' || userRole === 'manager') && (
-                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={onLoadShiftFile}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors"
                         title="Tải lên báo cáo Phân ca"
                     >
                         <Icon name="users-round" size={4} />
@@ -134,9 +134,9 @@ const Header: React.FC<HeaderProps> = ({
                     {hasDepartmentData && (
                         <div className="flex items-center border-l border-slate-100 dark:border-slate-700">
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setShowEmployeeModal(true)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                                 title="Quản lý danh sách nhân viên"
                             >
                                 <Icon name="settings" size={4} />
@@ -174,13 +174,13 @@ const Header: React.FC<HeaderProps> = ({
                 )}
 
                 {/* Data Import Group */}
-                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                     {(userRole === 'admin' || userRole === 'manager') && (
                         <>
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={onNewFile}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
                                 <Icon name="file-up" size={4} />
@@ -204,7 +204,7 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
                 
                 {/* Notification Group */}
-                <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] relative z-[150]">
+                <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
                     <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
                 </div>
             </div>,
@@ -221,10 +221,10 @@ const Header: React.FC<HeaderProps> = ({
                 maxWidth="md"
                 footer={
                     <div className="flex justify-end gap-2 sm:gap-3">
-                        <Button variant="ghost" onClick={() => setShowInstructionModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-semibold">
+                        <Button variant="unstyled" size="none" onClick={() => setShowInstructionModal(false)} className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-semibold">
                             Hủy
                         </Button>
-                        <Button variant="ghost" onClick={proceedToExternalLink} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm transition-colors font-semibold">
+                        <Button variant="unstyled" size="none" onClick={proceedToExternalLink} className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm transition-colors font-semibold">
                             Đã Hiểu & Tiếp Tục
                         </Button>
                     </div>
