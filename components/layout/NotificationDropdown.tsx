@@ -207,7 +207,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                 className={`${buttonClassName || "relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}`}
                 title="Thông báo"
             >
-                <Icon name="bell" size={4} />
+                <Icon name="bell" size={5} />
                 {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>

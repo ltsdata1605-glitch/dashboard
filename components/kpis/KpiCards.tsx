@@ -63,8 +63,8 @@ const KpiCard: React.FC<{
             <div className="px-2.5 py-1.5 lg:px-4 lg:py-3.5 flex flex-col flex-1">
                 {/* Mobile: Icon + Title + Value in one row */}
                 <div className="flex items-center gap-1.5 lg:gap-2 mb-1 lg:mb-3">
-                    <div className={`w-6 h-6 lg:w-9 lg:h-9 rounded-md lg:rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                        <Icon name={icon} size={3} className="lg:hidden" />
+                    <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                        <Icon name={icon} size={4} className="lg:hidden" />
                         <Icon name={icon} size={4.5} className="hidden lg:block" />
                     </div>
                     <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0">{title}</h3>

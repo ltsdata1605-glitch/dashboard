@@ -154,20 +154,20 @@ function AppContent() {
 
     const getTabIcon = () => {
         switch (activeTab) {
-            case 'analysis': return <BarChart3 size={15} color="white" strokeWidth={2.5} />;
-            case 'check-thuong': return <LayoutDashboard size={15} color="white" strokeWidth={2.5} />;
-            case 'employees': return <Users size={15} color="white" strokeWidth={2.5} />;
-            case 'inventory': return <FileText size={15} color="white" strokeWidth={2.5} />;
-            case 'tools-print-sticker': return <Printer size={15} color="white" strokeWidth={2.5} />;
-            case 'tools-phanca': return <Calendar size={15} color="white" strokeWidth={2.5} />;
-            case 'tools-coupon': return <Ticket size={15} color="white" strokeWidth={2.5} />;
-            case 'tools-tax': return <Calculator size={15} color="white" strokeWidth={2.5} />;
-            case 'settings': return <Settings size={15} color="white" strokeWidth={2.5} />;
-            case 'help': return <HelpCircle size={15} color="white" strokeWidth={2.5} />;
-            case 'pending-approval': return <Shield size={15} color="white" strokeWidth={2.5} />;
+            case 'analysis': return <BarChart3 size={18} color="white" strokeWidth={2.5} />;
+            case 'check-thuong': return <LayoutDashboard size={18} color="white" strokeWidth={2.5} />;
+            case 'employees': return <Users size={18} color="white" strokeWidth={2.5} />;
+            case 'inventory': return <FileText size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-print-sticker': return <Printer size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-tax': return <Calculator size={18} color="white" strokeWidth={2.5} />;
+            case 'settings': return <Settings size={18} color="white" strokeWidth={2.5} />;
+            case 'help': return <HelpCircle size={18} color="white" strokeWidth={2.5} />;
+            case 'pending-approval': return <Shield size={18} color="white" strokeWidth={2.5} />;
             default:
-                if (activeTab.startsWith('tools')) return <Wrench size={15} color="white" strokeWidth={2.5} />;
-                return <BarChart3 size={15} color="white" strokeWidth={2.5} />;
+                if (activeTab.startsWith('tools')) return <Wrench size={18} color="white" strokeWidth={2.5} />;
+                return <BarChart3 size={18} color="white" strokeWidth={2.5} />;
         }
     };
 
@@ -225,7 +225,7 @@ function AppContent() {
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
-                            <span id="mobile-topbar-subtitle" className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
+                            <span id="mobile-topbar-subtitle" className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5">

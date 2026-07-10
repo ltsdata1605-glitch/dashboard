@@ -285,7 +285,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 title="Tải YCX lên"
                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
-                                <Icon name="file-up" size={4} />
+                                <Icon name="file-up" size={5} />
                             </Button>
                         )}
                         {onOpenHistory && (
@@ -296,7 +296,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 title="Quản lý tệp đã lưu"
                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
-                                <Icon name="database" size={4} />
+                                <Icon name="database" size={5} />
                             </Button>
                         )}
                         <a
@@ -306,7 +306,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             title="Tải dữ liệu báo cáo (BCNB)"
                             className="flex items-center justify-center w-[36px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="link" size={4} />
+                            <Icon name="link" size={5} />
                         </a>
                         <Button
                             variant="unstyled" size="none"
@@ -314,7 +314,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             title="Bộ lọc nâng cao"
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
+                            <Icon name="settings" size={5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </Button>
                     </div>
 

@@ -398,10 +398,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     {/* Super Admin Announcement Marquee */}
                                     {announcement && announcement.active && announcement.content && (
-                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
+                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[10px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
                                             <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-lg z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
-                                                <Icon name="megaphone" size={3.5} className="animate-bounce shrink-0" />
-                                                <span className="uppercase tracking-wider text-[9px] font-black">Thông báo</span>
+                                                <Icon name="megaphone" size={4} className="animate-bounce shrink-0" />
+                                                <span className="uppercase tracking-wider text-[10px] font-black">Thông báo</span>
                                             </div>
                                             <div className="flex-1 overflow-hidden whitespace-nowrap">
                                                 <div className="inline-block animate-marquee pl-[100%]">
@@ -486,14 +486,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     onClick={() => setActiveModal('unshipped_overdue')}
                                                     className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
                                                 >
-                                                    <div className="flex items-center gap-2 font-bold text-sm">
-                                                        <span className="relative flex h-3 w-3 mr-1">
+                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
+                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                                                         </span>
                                                         ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueUnshippedOrders.length})
                                                     </div>
-                                                    <div className="text-xs font-semibold underline underline-offset-2">
+                                                    <div className="text-[10px] sm:text-xs font-semibold underline underline-offset-2">
                                                         Xem chi tiết & Cập nhật nhanh
                                                     </div>
                                                 </div>
@@ -503,16 +503,16 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('uncollected')}
-                                                    className="relative bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20]"
+                                                    className="relative bg-amber-50 dark:bg-amber-955/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20]"
                                                 >
-                                                    <div className="flex items-center gap-2 font-bold text-sm">
-                                                        <span className="relative flex h-3 w-3 mr-1">
+                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
+                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                                                         </span>
                                                         ĐƠN HÀNG CHƯA THU | CHƯA HỦY ({processedData.uncollectedOrders.length})
                                                     </div>
-                                                    <div className="text-xs font-semibold underline underline-offset-2">
+                                                    <div className="text-[10px] sm:text-xs font-semibold underline underline-offset-2">
                                                         Xem danh sách
                                                     </div>
                                                 </div>
@@ -531,9 +531,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                                 <Button
                                                                     variant="unstyled" size="none"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none"
+                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[10px]"
                                                                 >
-                                                                    <Icon name="archive-restore" size={2.5} />
+                                                                    <Icon name="archive-restore" size={3.5} />
                                                                     Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}

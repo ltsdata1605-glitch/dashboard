@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95"
                         title="Tải DS Nhân viên"
                     >
-                        <Icon name="users-round" size={4.5} />
+                        <Icon name="users-round" size={5} />
                     </Button>
                     <a
                         href="#"
@@ -108,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95"
                         title="Mở trang quản lý phân ca"
                     >
-                        <Icon name="calendar-clock" size={4.5} />
+                        <Icon name="calendar-clock" size={5} />
                     </a>
 
                 </>,
