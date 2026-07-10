@@ -26,15 +26,15 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [activeTab, setActiveTabRaw] = useState('analysis');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    // Dark Mode đã bị vô hiệu hoá toàn dự án theo yêu cầu — luôn Sáng, không thể bật.
+    const [isDarkMode] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         Promise.all([
             getSetting<string>('active_tab'),
-            getSetting<boolean>('sidebar_collapsed'),
-            getSetting<boolean>('dark_mode')
-        ]).then(([savedTab, savedSidebar, savedDark]) => {
+            getSetting<boolean>('sidebar_collapsed')
+        ]).then(([savedTab, savedSidebar]) => {
             // Check URL query parameter first (has highest priority)
             const urlParams = new URLSearchParams(window.location.search);
             const urlTab = urlParams.get('tab');
@@ -50,11 +50,7 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
 
             if (savedSidebar !== undefined && savedSidebar !== null) setIsSidebarCollapsed(savedSidebar);
-            if (savedDark !== undefined && savedDark !== null) {
-                setIsDarkMode(savedDark);
-            } else {
-                setIsDarkMode(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            }
+            // Dark Mode đã tắt toàn dự án — bỏ qua setting đã lưu & prefers-color-scheme của hệ điều hành.
             setIsLoaded(true);
         }).catch(() => setIsLoaded(true));
     }, []);
@@ -87,18 +83,14 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }, [isSidebarCollapsed, isLoaded]);
 
     useEffect(() => {
-        if (!isLoaded) return;
-        saveSetting('dark_mode', isDarkMode).catch(() => {});
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-        }
-    }, [isDarkMode, isLoaded]);
+        // Dark Mode đã bị vô hiệu hoá toàn dự án — luôn ép giao diện Sáng ngay khi mount,
+        // đảm bảo không có class 'dark' nào trên <html> dù setting/hệ điều hành có gì.
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+    }, []);
 
-    const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+    // Giữ lại cho tương thích API (nhiều nơi vẫn nhận toggleDarkMode qua context) nhưng không làm gì.
+    const toggleDarkMode = () => { /* Dark Mode đã tắt toàn dự án — no-op */ };
 
     // Memoize tab context to prevent re-renders of tab consumers when layout state changes
     const tabContextValue = useMemo(() => ({
