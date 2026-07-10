@@ -19,9 +19,9 @@ export const initialFilterState: FilterState = {
     nguoiTao: [],
     department: [],
     parent: [],
-    startDate: todayStr,
-    endDate: todayStr,
-    dateRange: 'today',
+    startDate: '',
+    endDate: '',
+    dateRange: 'all',
     selectedMonths: [],
     industryGrid: {
         selectedGroups: [],
@@ -59,7 +59,10 @@ export const useFilterState = () => {
                     setFilterState({
                         ...initialFilterState,
                         ...fullSavedFilters,
-                        selectedMonths: loadedSelectedMonths,
+                        dateRange: 'all',
+                        startDate: '',
+                        endDate: '',
+                        selectedMonths: [],
                         // Dữ liệu cũ lưu trước khi migrate sang mảng có thể là string đơn (dù type khai báo string[])
                         kho: Array.isArray(fullSavedFilters.kho) ? fullSavedFilters.kho : (fullSavedFilters.kho ? [fullSavedFilters.kho as unknown as string] : []),
                         trangThai: fullSavedFilters.trangThai || [],
