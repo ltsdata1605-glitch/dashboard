@@ -46,3 +46,9 @@ export type { ProgressBarProps } from './ProgressBar';
 
 export { Dropdown, DropdownButton } from './Dropdown';
 export type { DropdownProps, DropdownItem, DropdownButtonProps } from './Dropdown';
+
+// Section-level patterns (Design upgrade — DESIGN_SYSTEM_MODERN.md)
+export { SectionCard } from './SectionCard';
+export { SectionHeader } from './SectionHeader';
+export { KpiCard } from './KpiCard';
+export type { KpiCardProps } from './KpiCard';

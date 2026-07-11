@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from './Icon';
+import { Icon } from '../../common/Icon';
 
 interface SectionHeaderProps {
     title: React.ReactNode;
@@ -8,6 +8,14 @@ interface SectionHeaderProps {
     children?: React.ReactNode;
 }
 
+/**
+ * Header chuẩn cho mọi "Card section" (KPI/Chart/Table...) — icon chip trái + tiêu đề,
+ * vùng actions phải (children, nên dùng kỹ thuật "double-icon" cho responsive, xem
+ * DESIGN_SYSTEM_MODERN.md §2). Breakpoint chính lg=1024px (mobile < lg, laptop >= lg).
+ *
+ * Khác với `CardHeader` (đơn giản, không icon chip, dùng cho Card tĩnh): `SectionHeader`
+ * có icon-chip + double-icon toolbar, dùng cho khung section cấp trang.
+ */
 export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children }) => {
     return (
         <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 flex flex-row justify-between items-center gap-1.5 lg:gap-2 border-b border-slate-100 dark:border-slate-800" style={{ borderImage: 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(14,165,233,0.1), transparent) 1' }}>
@@ -25,5 +33,3 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
         </div>
     );
 };
-
-

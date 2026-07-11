@@ -5,8 +5,8 @@ import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } fr
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
-import { SectionHeader } from '../common/SectionHeader';
-import { SectionCard } from '../common/SectionCard';
+import { SectionHeader } from '../shared/ui/SectionHeader';
+import { SectionCard } from '../shared/ui/SectionCard';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { isKhoMatch } from '../../services/filterService';

@@ -41,8 +41,8 @@ const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal
 import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
-import { SectionHeader } from '../common/SectionHeader';
-import { SectionCard } from '../common/SectionCard';
+import { SectionHeader } from '../shared/ui/SectionHeader';
+import { SectionCard } from '../shared/ui/SectionCard';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';

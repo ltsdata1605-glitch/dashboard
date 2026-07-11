@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, startTransition } from 'react';
 import type { WarehouseColumnConfig } from '../../types';
 import { Icon } from '../common/Icon';
-import { SectionHeader } from '../common/SectionHeader';
+import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
 import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';

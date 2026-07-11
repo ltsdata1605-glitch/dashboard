@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../shared/ui/utils';
+import { cn } from './utils';
 
 interface SectionCardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode;
@@ -11,6 +11,9 @@ interface SectionCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * Khung "Card section" chuẩn dùng chung toàn app (DESIGN_SYSTEM_MODERN.md §3.1):
  * mobile phẳng full-bleed (rounded-none, border-y), laptop bo góc nổi (rounded-2xl, border, shadow).
  * Chỉ cung cấp bg/rounded/border/shadow/overflow — không áp padding, để header/body tự quản lý spacing riêng.
+ *
+ * Khác với `Card` (tĩnh, không đổi hình theo breakpoint): `SectionCard` dành riêng cho khung bọc
+ * section cấp trang (KPI/Chart/Table) cần chuyển mobile-phẳng ↔ laptop-nổi.
  */
 export const SectionCard = React.forwardRef<HTMLDivElement, SectionCardProps>(
     ({ children, className, hoverable = true, ...rest }, ref) => (

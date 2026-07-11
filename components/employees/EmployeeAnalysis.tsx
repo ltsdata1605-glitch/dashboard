@@ -5,7 +5,7 @@ import { useEmployeeAnalysisLogic } from '../../hooks/useEmployeeAnalysisLogic';
 import { useEmployeeAnalysisData } from '../../hooks/useEmployeeAnalysisData';
 import { useEmployeeAnalysisTabs } from '../../hooks/useEmployeeAnalysisTabs';
 import { Icon } from '../common/Icon';
-import { SectionHeader } from '../common/SectionHeader';
+import { SectionHeader } from '../shared/ui/SectionHeader';
 import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
