@@ -109,7 +109,7 @@ export const GaugeChart: React.FC<{ value: number; label: string; target: number
 };
 
 export const KpiCard: React.FC<{ title: string; value: React.ReactNode; color: string; children?: React.ReactNode }> = ({ title, value, color, children }) => (
-    <div className={`py-3 px-4 rounded-none border flex items-center gap-3 transition-all hover:scale-[1.01] duration-300 ${color} shadow-sm`}>
+    <div className={`py-3 px-4 rounded-none lg:rounded-xl border flex items-center gap-3 transition-all hover:scale-[1.01] duration-300 ${color} shadow-sm`}>
         <div className="flex-shrink-0">{children}</div>
         <div className="flex-1 min-w-0">
             <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate mb-0.5">{title}</p>
