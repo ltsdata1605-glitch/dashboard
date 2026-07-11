@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { 
-    Printer, Settings, CheckCircle2, Upload, Plus, Trash2, 
-    RotateCcw, Download, FileSpreadsheet, Package 
+import {
+    Printer, Settings, CheckCircle2, Upload, Plus, Trash2,
+    RotateCcw, Download, FileSpreadsheet, Package, History
 } from 'lucide-react';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
 import { StickerManualQueue } from './StickerManualQueue';
-import { Button, Input } from '../../../components/shared/ui';
+import { Button, Input, Tabs, EmptyState } from '../../../components/shared/ui';
+import type { TabItem } from '../../../components/shared/ui';
 
 interface StickerPrintControlsProps {
     manualPages: StickerPage[];
@@ -118,6 +119,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
         return printHistory.filter(entry => entry.stickerType === stickerType);
     }, [printHistory, stickerType]);
 
+    const tabItems: TabItem[] = [
+        { id: 'data', label: 'Dữ liệu' },
+        ...(stickerType !== 'draw' ? [{ id: 'queue', label: 'D.Sách', badge: manualPages.length }] : []),
+        { id: 'history', label: 'Lịch sử', badge: filteredHistory.length },
+    ];
+
     return (
         <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
@@ -140,43 +147,15 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4 shrink-0">
-                <Button
-                    variant="ghost"
-                    onClick={() => setActiveSubTab('data')}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeSubTab === 'data'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                    }`}
-                >
-                    Dữ liệu
-                </Button>
-                {stickerType !== 'draw' && (
-                    <Button
-                        variant="ghost"
-                        onClick={() => setActiveSubTab('queue')}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                            activeSubTab === 'queue'
-                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                        }`}
-                    >
-                        D.Sách ({manualPages.length})
-                    </Button>
-                )}
-                <Button
-                    variant="ghost"
-                    onClick={() => setActiveSubTab('history')}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeSubTab === 'history'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                    }`}
-                >
-                    Lịch sử ({filteredHistory.length})
-                </Button>
-            </div>
+            <Tabs
+                items={tabItems}
+                activeId={activeSubTab}
+                onChange={(id) => setActiveSubTab(id as 'data' | 'queue' | 'history')}
+                variant="underline"
+                size="sm"
+                fullWidth
+                className="mb-4 shrink-0"
+            />
 
             {/* Tab Content (Scrollable Area) */}
             <div className={`flex-1 pr-1 -mr-1 scrollbar-thin ${activeSubTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-2'}`}>
@@ -195,24 +174,24 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                             Số bắt đầu
                                         </label>
-                                        <input 
+                                        <Input
                                             type="number"
                                             min="1"
                                             value={drawStartNumber}
                                             onChange={(e) => setDrawStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                                            className="text-xs font-semibold"
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                             Số lượng cần in
                                         </label>
-                                        <input 
+                                        <Input
                                             type="number"
                                             min="1"
                                             value={drawTotalTickets}
                                             onChange={(e) => setDrawTotalTickets(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                                            className="text-xs font-semibold"
                                         />
                                     </div>
                                 </div>
@@ -415,7 +394,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 {activeSubTab === 'history' && (
                     <div className="space-y-2 animate-in fade-in duration-200 pb-2">
                         {filteredHistory.length === 0 ? (
-                            <p className="text-xs text-slate-400 text-center py-12">Chưa có lịch sử in</p>
+                            <EmptyState icon={<History size={20} />} title="Chưa có lịch sử in" compact />
                         ) : (
                             filteredHistory.map(entry => (
                                 <div key={entry.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group text-left">

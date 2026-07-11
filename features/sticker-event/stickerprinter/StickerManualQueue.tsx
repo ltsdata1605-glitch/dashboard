@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Clock, Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins, Barcode } from 'lucide-react';
+import { Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins, Barcode, SearchX, Inbox } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
-import { Button, Input } from '../../../components/shared/ui';
+import { Button, Input, EmptyState } from '../../../components/shared/ui';
 
 const cleanDisplayLabel = (label: string) => {
     if (!label) return '';
@@ -427,7 +427,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             </div>
                         ))}
                         {filteredPages.length === 0 && (
-                            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Không tìm thấy sticker nào phù hợp</p>
+                            <EmptyState icon={<SearchX size={16} />} title="Không tìm thấy sticker phù hợp" compact />
                         )}
                     </div>
                 </div>
@@ -484,7 +484,12 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                 </div>
             )}
             {manualPages.length === 0 && savedLists.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-12">D.Sách in trống</p>
+                <EmptyState
+                    icon={<Inbox size={20} />}
+                    title="Danh sách in trống"
+                    description="Thêm sticker vào hàng đợi để in hàng loạt."
+                    compact
+                />
             )}
         </div>
     );
