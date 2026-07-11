@@ -651,6 +651,53 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     return { revenue, revenueQD, quantity, weightedQuantity, isTraCham };
 }
 
+/**
+ * Tính Doanh Thu Quy Đổi (DTQĐ) với công thức chuẩn:
+ * DTQĐ = (Doanh thu × Hệ số) + (30% Doanh thu nếu là trả góp/trả chậm)
+ * @param revenue - Doanh thu thực (Giá bán)
+ * @param heso - Hệ số quy đổi theo ngành/nhóm hàng
+ * @param isTraCham - Có phải đơn trả góp/trả chậm không
+ */
+export function calculateRevenueQD(revenue: number, heso: number, isTraCham: boolean): number {
+    return revenue * heso + (isTraCham ? revenue * 0.3 : 0);
+}
+
+/**
+ * Tính Số Lượng Quy Đổi dựa trên loại sản phẩm và cấu hình:
+ * - Vieon: qty × hệ số
+ * - VAS/Phụ kiện (không phải Bảo hiểm): qty × vasMultiplierMap hoặc quantityMultiplierMap
+ * - Sản phẩm khác: qty thô
+ * @param quantity - Số lượng gốc
+ * @param productCode - Mã sản phẩm (để tra multiplier)
+ * @param productConfig - Cấu hình sản phẩm (chứa multiplier maps)
+ * @param isVieon - Có phải Vieon không
+ * @param maNhomHang - Mã nhóm hàng (để kiểm tra Bảo hiểm)
+ * @param heso - Hệ số quy đổi (dùng cho Vieon)
+ */
+export function calculateWeightedQuantity(
+    quantity: number,
+    productCode: string,
+    productConfig: ProductConfig | null,
+    isVieon: boolean,
+    maNhomHang: string,
+    heso: number
+): number {
+    if (isVieon) {
+        return quantity * heso;
+    }
+
+    const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
+    const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
+    const isInsurance = industry === 'Bảo hiểm' || industry === 'Bảo hiểm ĐMX' || group === 'Bảo hiểm' || group === 'Bảo hiểm ĐMX';
+
+    let qtyMultiplier = undefined;
+    if (!isInsurance) {
+        qtyMultiplier = (productConfig?.vasMultiplierMap?.[productCode]) ?? (productConfig?.quantityMultiplierMap?.[productCode]);
+    }
+
+    return qtyMultiplier !== undefined ? quantity * qtyMultiplier : quantity;
+}
+
 /** Lấy message an toàn từ 1 giá trị catch (error: unknown), không giả định error là Error. */
 export function getErrorMessage(error: unknown): string {
     if (error instanceof Error) return error.message;
