@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup } from '../../utils/dataUtils';
-import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
@@ -84,10 +84,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         const employeeColumnValues = new Map<string, Map<string, number>>(); // Map<employeeName, Map<columnId, value>>
 
         const validData = baseFilteredData.filter(row => {
+            // Bỏ qua sản phẩm "Không tính doanh thu" (đồng nhất với WarehouseSummary/SummaryTable)
+            const parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+            if (parentGroup === 'Không tính doanh thu') return false;
             const htx = getRowValue(row, COL.HINH_THUC_XUAT);
             return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                 ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx || ''))
-                : !HINH_THUC_XUAT_THU_HO.has(htx);
+                : !normalizedThuHoSet.has(cleanAndNormalize(htx || ''));
         });
 
         // Step 1: Calculate all 'data' columns

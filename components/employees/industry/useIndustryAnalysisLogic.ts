@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import type { ExploitationData, CustomExploitationTabConfig, DataRow, ProductConfig, ColumnFilterCriteria } from '../../../types';
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
-import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
-import { getRowValue, calculateRowMetrics, cleanAndNormalize } from '../../../utils/dataUtils';
+import { COL } from '../../../constants';
+import { getRowValue, calculateRowMetrics, cleanAndNormalize, normalizedThuHoSet } from '../../../utils/dataUtils';
 
 interface DynamicSubHeader {
     label: string;
@@ -210,7 +210,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
                 return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                     ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
-                    : !HINH_THUC_XUAT_THU_HO.has(htx);
+                    : !normalizedThuHoSet.has(cleanAndNormalize(htx));
             });
 
             const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {

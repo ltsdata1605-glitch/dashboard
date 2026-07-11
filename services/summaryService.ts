@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, FilterState, SummaryTableNode, GrandTotal, WarehouseSummaryRow, MetricValues } from '../types';
-import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup, cleanAndNormalize, calculateRowMetrics } from '../utils/dataUtils';
+import { COL, HINH_THUC_XUAT_TRA_GOP } from '../constants';
+import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup, cleanAndNormalize, calculateRowMetrics, normalizedThuHoSet } from '../utils/dataUtils';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 export function processSummaryTable(
@@ -55,7 +55,7 @@ export function processSummaryTable(
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
             ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-            : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+            : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
         if (!isRevenue) continue;
 
         // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
@@ -189,7 +189,7 @@ export function calculateWarehouseSummary(
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0
             ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
-            : HINH_THUC_XUAT_THU_HO.has(htx);
+            : normalizedThuHoSet.has(cleanAndNormalize(htx));
 
         if (isThuHo) {
             summary.slThuHo++;
@@ -197,7 +197,7 @@ export function calculateWarehouseSummary(
 
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
             ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
-            : !HINH_THUC_XUAT_THU_HO.has(htx);
+            : !normalizedThuHoSet.has(cleanAndNormalize(htx));
 
         if (isRevenue) {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);

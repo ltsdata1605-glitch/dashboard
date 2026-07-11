@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../types';
-import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize, getParentGroup, getSubgroup } from '../utils/dataUtils';
-import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
+import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet } from '../utils/dataUtils';
+import { COL } from '../constants';
 
 interface UseHeadToHeadLogicProps {
     config: HeadToHeadTableConfig;
@@ -69,10 +69,13 @@ export const useHeadToHeadLogic = ({
         const baseLen = baseFilteredData.length;
         for (let i = 0; i < baseLen; i++) {
             const row = baseFilteredData[i];
+            // Bỏ qua sản phẩm "Không tính doanh thu" (đồng nhất với WarehouseSummary/SummaryTable)
+            const parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+            if (parentGroup === 'Không tính doanh thu') continue;
             const htx = getRowValue(row, COL.HINH_THUC_XUAT);
             const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                 ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
-                : !HINH_THUC_XUAT_THU_HO.has(htx);
+                : !normalizedThuHoSet.has(cleanAndNormalize(htx));
             if (isRevenue && isValidSale(row)) {
                 dataForTab.push(row);
             }
