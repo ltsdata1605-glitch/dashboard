@@ -54,6 +54,10 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             if (!rowDate || isNaN(rowDate.getTime())) return;
             if (rowDate.getFullYear() !== targetYear || rowDate.getMonth() !== targetMonth) return;
 
+            // Chỉ tính đơn ĐÃ THU TIỀN — đồng nhất với pipeline chuẩn processDataForPeriod
+            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+            if (thuTien !== 'đã thu') return;
+
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
             const parentGroup = getParentGroup(maNhomHang, productConfig) || 'Khác';
             if (parentGroup === 'Không tính doanh thu') return;

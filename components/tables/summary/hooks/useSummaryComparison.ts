@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { SummaryTableNode, GrandTotal, DataRow, ProductConfig, FilterState } from '../../../../types';
 import { getWeeksInMonth, getSafeDateInPrevMonth, toInputDate, toInputMonth, formatCompactDateRange } from '../SummaryTableUtils';
 import { processSummaryTable } from '../../../../services/summaryService';
-import { parseExcelDate, getRowValue } from '../../../../utils/dataUtils';
+import { parseExcelDate, getRowValue, cleanAndNormalize } from '../../../../utils/dataUtils';
 import { COL } from '../../../../constants';
 
 export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range' | 'monthly_trend';
@@ -80,19 +80,26 @@ export const useSummaryComparison = (
             return;
         }
 
+        // Chỉ tính đơn ĐÃ THU TIỀN — đồng nhất với pipeline chuẩn (processDataForPeriod/
+        // WarehouseSummary). processSummaryTable() không tự lọc tiêu chí này (giả định caller
+        // đã lọc sẵn), nên phải lọc trước khi truyền vào ở cả 2 chế độ bên dưới.
+        const validSalesData = baseFilteredData.filter(row =>
+            cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN)) === 'đã thu'
+        );
+
         if (compMode === 'monthly_trend') {
             const getValidDate = (r: DataRow) => parseExcelDate(getRowValue(r, COL.DATE_CREATED));
-            
-            const monthsList = Array.from(new Set(baseFilteredData.map(r => {
+
+            const monthsList = Array.from(new Set(validSalesData.map(r => {
                 const d = getValidDate(r);
                 return d ? toInputMonth(d) : null;
             }).filter(Boolean) as string[])).sort();
 
             const trees: { [month: string]: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal } } = {};
             const monthsMeta: { id: string, label: string, daysCount: number }[] = [];
-            
+
             monthsList.forEach(m => {
-                const monthData = baseFilteredData.filter(r => {
+                const monthData = validSalesData.filter(r => {
                     const d = getValidDate(r);
                     return d && toInputMonth(d) === m;
                 });
@@ -305,12 +312,12 @@ export const useSummaryComparison = (
             prev: formatCompactDateRange(prevStart, prevEnd)
         });
 
-        const currentDataRows = baseFilteredData.filter(row => {
+        const currentDataRows = validSalesData.filter(row => {
             const date = row.parsedDate;
             return date && date >= currentStart && date <= currentEnd;
         });
 
-        const prevDataRows = baseFilteredData.filter(row => {
+        const prevDataRows = validSalesData.filter(row => {
             const date = row.parsedDate;
             return date && date >= prevStart && date <= prevEnd;
         });

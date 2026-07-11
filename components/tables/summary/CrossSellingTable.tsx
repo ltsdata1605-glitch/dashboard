@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
-import { formatQuantity, formatCurrency, calculateRowMetrics } from '../../../utils/dataUtils';
+import { formatQuantity, formatCurrency, calculateRowMetrics, getRowValue, getParentGroup, cleanAndNormalize, normalizedThuHoSet } from '../../../utils/dataUtils';
+import { COL } from '../../../constants';
 import { CrossSellingConfig } from '../../../types';
 import { SAMPLE_CONFIG } from '../../modals/CrossSellingBuilderModal';
 
@@ -33,19 +34,29 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
 
         if (dataCols.length > 0) {
             baseFilteredData.forEach(row => {
-                const qty = Number(row['Số Lượng']) || Number(row['Số lượng']) || Number(row['S.Lượng']) || 0;
-                
+                // Chỉ tính đơn đủ điều kiện doanh thu (đồng nhất với SummaryTable/WarehouseSummary):
+                // đã thu tiền, không thuộc nhóm "Không tính doanh thu", hình thức xuất hợp lệ.
+                const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+                if (thuTien !== 'đã thu') return;
+                const parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+                if (parentGroup === 'Không tính doanh thu') return;
+                const htx = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+                const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                    ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
+                    : !normalizedThuHoSet.has(cleanAndNormalize(htx));
+                if (!isRevenue) return;
+
+                // Tính toán nền tảng doanh thu/số lượng (dùng chung calculateRowMetrics để khớp
+                // chuẩn DTQĐ + Số lượng quy đổi toàn app)
+                const metrics = calculateRowMetrics(row, productConfig);
+                const qty = metrics.weightedQuantity;
+                const doanhThuQD = metrics.revenueQD;
+
                 const NhomHang = row['Nhóm hàng'] || '';
                 const NganhHang = row['Ngành hàng'] || '';
                 const SanPham = row['Sản phẩm'] || '';
                 const HangSX = row['Hãng'] || row['Hãng SX'] || '';
                 const MaSP = String(row['Mã sản phẩm'] || row['Mã SP'] || '');
-
-                // Tính toán nền tảng doanh thu (dùng chung calculateRowMetrics để khớp chuẩn DTQĐ toàn app)
-                let doanhThuQD = 0;
-                if (qty > 0) {
-                    doanhThuQD = calculateRowMetrics(row, productConfig).revenueQD;
-                }
 
                 // 1. Phân tích Cột Fixed Data (Mẫu số)
                 dataCols.forEach(c => {
