@@ -532,7 +532,7 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
-    "nonSemanticColor": 33,
+    "nonSemanticColor": 24,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintPreview.tsx": {
