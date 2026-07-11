@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize } from '../../utils/dataUtils';
-import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
@@ -180,7 +180,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                     const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                         ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-                        : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                        : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
                     if (!isRevenue) continue;
 
                     const hsx = String(row['Hãng'] || row['Hãng SX'] || '').trim().toLowerCase();
@@ -197,7 +197,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     } else if (filters.metricType === 'revenueQD') {
                         val += calculateRowMetrics(row, productConfig).revenueQD;
                     } else { // revenue
-                        val += Number(row['Doanh Thu Thực'] || row['Doanh Thu Thuc'] || row['Doanh thu thực'] || 0);
+                        val += calculateRowMetrics(row, productConfig).revenue;
                     }
                 }
                 values[config.id] = val;
