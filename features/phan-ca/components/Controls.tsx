@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Select } from '../../../components/shared/ui/Select';
 
 interface ControlsProps {
   monthYear: string;
@@ -54,39 +56,39 @@ const Controls: React.FC<ControlsProps> = ({
   );
 
   return (
-    <div className={`flex flex-wrap items-end gap-4 ${isDisabled ? 'opacity-40 pointer-events-none' : ''}`}>
+    <div className={`flex flex-col lg:flex-row lg:flex-wrap items-stretch lg:items-end gap-3 lg:gap-4 ${isDisabled ? 'opacity-40 pointer-events-none' : ''}`}>
       {/* Date group — compact horizontal row */}
-      <div 
-        className={`flex items-end gap-3 relative ${controlHighlightClass(3)}`}
+      <div
+        className={`flex flex-wrap items-end gap-3 relative ${controlHighlightClass(3)}`}
         onClick={onDateControlClick}
       >
           {tooltip(3, 'Bước 3: Thời gian', 'Chọn Tháng/Năm, ngày bắt đầu và số ngày.')}
-          
+
           <div className="flex flex-col">
             <label htmlFor="cfgMonth" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Tháng / Năm
             </label>
-            <input 
-              type="month" 
-              id="cfgMonth" 
-              className="config-input h-9 w-44 text-sm" 
+            <Input
+              type="month"
+              id="cfgMonth"
+              className="h-9 w-full sm:w-44 text-sm"
               value={monthYear}
               onChange={(e) => setMonthYear(e.target.value)}
               disabled={isDisabled}
             />
           </div>
-          
+
           <div className="flex flex-col">
             <label htmlFor="cfgStartDay" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bắt đầu
             </label>
-            <input 
-              type="number" 
-              id="cfgStartDay" 
-              className="config-input h-9 w-16 text-sm text-center" 
+            <Input
+              type="number"
+              id="cfgStartDay"
+              className="h-9 w-16 text-sm text-center"
               value={startDay}
               onChange={(e) => setStartDay(parseInt(e.target.value))}
-              min="1" 
+              min="1"
               max="31"
               disabled={isDisabled}
             />
@@ -96,13 +98,13 @@ const Controls: React.FC<ControlsProps> = ({
             <label htmlFor="cfgDuration" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Số ngày
             </label>
-            <input 
-              type="number" 
-              id="cfgDuration" 
-              className="config-input h-9 w-16 text-sm text-center" 
+            <Input
+              type="number"
+              id="cfgDuration"
+              className="h-9 w-16 text-sm text-center"
               value={duration}
               onChange={(e) => setDuration(parseInt(e.target.value))}
-              min="1" 
+              min="1"
               max="31"
               disabled={isDisabled}
             />
@@ -110,17 +112,17 @@ const Controls: React.FC<ControlsProps> = ({
       </div>
 
       {/* Vertical separator */}
-      <div className="w-px h-9 bg-slate-200 self-end"></div>
+      <div className="hidden lg:block w-px h-9 bg-slate-200 self-end"></div>
 
       {/* Store & Department selectors */}
-      <div className="flex items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col">
           <label htmlFor="cfgSupermarket" className="text-[9px] font-bold text-indigo-500 mb-1 uppercase tracking-wider">
             Siêu thị
           </label>
-          <select 
+          <Select
               id="cfgSupermarket"
-              className="config-input h-9 w-44 text-sm font-semibold text-indigo-700 bg-indigo-50/50 border-indigo-200 focus:border-indigo-400"
+              className="h-9 w-full sm:w-44 text-sm font-semibold text-indigo-700 bg-indigo-50/50 border-indigo-200 focus-visible:border-indigo-400"
               value={currentSupermarket}
               onChange={(e) => setSupermarket(e.target.value)}
               disabled={supermarkets.length <= 1 && isDisabled}
@@ -131,16 +133,16 @@ const Controls: React.FC<ControlsProps> = ({
                       {sm}
                   </option>
               ))}
-          </select>
+          </Select>
         </div>
-        
+
         <div className="flex flex-col">
             <label htmlFor="cfgDepartment" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bộ phận
             </label>
-            <select 
+            <Select
                 id="cfgDepartment"
-                className="config-input h-9 w-48 text-sm"
+                className="h-9 w-full sm:w-48 text-sm"
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 disabled={isDisabled}
@@ -151,17 +153,17 @@ const Controls: React.FC<ControlsProps> = ({
                         {dep}
                     </option>
                 ))}
-            </select>
+            </Select>
         </div>
       </div>
 
       {/* Generate button */}
-      <div className="relative ml-auto">
+      <div className="relative lg:ml-auto">
         {tooltip(6, 'Bước 6: Hoàn tất!', 'Bấm vào đây để tạo lịch tự động!')}
         <Button
           variant="ghost"
           onClick={onGenerate}
-          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-9 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
+          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-11 lg:h-9 w-full lg:w-auto px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
           disabled={isGenerateDisabled}
           title={isGenerateDisabled ? "Vui lòng nhập danh sách nhân viên và tạo Ca Xoay trước." : "Tạo lịch làm việc mới"}
         >

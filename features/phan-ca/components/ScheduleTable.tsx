@@ -294,7 +294,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   }, [duration, year, month, startDay, dayToWeekMap, weekRange]);
 
   return (
-    <div className={`overflow-x-auto custom-scroll rounded-none bg-white border border-slate-200 shadow-xl ${isIndividualExport ? 'flex justify-center' : ''}`}>
+    <div className={`overflow-x-auto custom-scroll rounded-none bg-white border border-slate-200 shadow-sm ${isIndividualExport ? 'flex justify-center' : ''}`}>
       <table id="scheduleTable" ref={tableRef} className="w-full border-collapse">
         <thead className="bg-slate-50">
           <tr>

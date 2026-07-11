@@ -71,9 +71,9 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                 <table className="w-full text-left border-collapse min-w-max">
                     <thead>
                         <tr>
-                            <th className="sticky left-0 bg-slate-50 z-20 border-r border-b border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 uppercase w-24 text-center">Ca Làm Việc</th>
+                            <th className="sticky left-0 bg-slate-50 z-20 border-r border-b border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-24 text-center">Ca Làm Việc</th>
                             {canEditRequirements && (
-                                <th className="sticky left-[96px] bg-slate-50 z-20 border-r border-b border-slate-200 px-2 py-2 text-xs font-bold text-slate-500 uppercase w-20 text-center">Yêu Cầu</th>
+                                <th className="sticky left-[96px] bg-slate-50 z-20 border-r border-b border-slate-200 px-2 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-20 text-center">Yêu Cầu</th>
                             )}
                             {dayHeaders.map((dh, idx) => {
                                 const isSelected = dh.d === selectedDay;

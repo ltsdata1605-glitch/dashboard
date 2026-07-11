@@ -562,7 +562,7 @@ const App: React.FC = () => {
   }, [staffListForExport, staffList, departmentFilter]);
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
   return (
-    <div className="phanca-root phan-ca-layout min-h-screen bg-[#f0f2f5] pb-20">
+    <div className="phanca-root phan-ca-layout min-h-screen bg-slate-50 pb-20">
       {/* EXPORT OVERLAY */}
       {batchExportProgress && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
@@ -590,8 +590,8 @@ const App: React.FC = () => {
           onExportExcel={handleExportExcel}
           onExportGoogleSheet={handleExportGoogleSheet}
       />
-      <main className="max-w-[1600px] mx-auto px-6 mt-6">
-        <div className={`bg-white p-5 border border-slate-200 mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
+      <main className="max-w-[1600px] mx-auto px-0 lg:px-6 mt-3 lg:mt-6">
+        <div className={`bg-white rounded-none border-y lg:rounded-2xl lg:border border-slate-200 shadow-sm p-3 lg:p-6 mb-3 lg:mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
           <Controls 
             monthYear={monthYear} setMonthYear={setMonthYear} startDay={startDay} setStartDay={setStartDay} duration={duration} setDuration={setDuration}
             onGenerate={handleGenerateClick} departments={uniqueDepartments} departmentFilter={departmentFilter} setDepartmentFilter={setDepartmentFilter}

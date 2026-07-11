@@ -38,9 +38,9 @@ const Legend: React.FC<LegendProps> = ({
                     )}
 
                     {/* Targets row — flat inline layout */}
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
                         {/* Label */}
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                             <svg className="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734-2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379-1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                             </svg>
@@ -144,14 +144,14 @@ const Legend: React.FC<LegendProps> = ({
             )}
             
             {/* Color legend — minimal */}
-            <div className="flex gap-5 flex-wrap text-xs font-semibold text-slate-500 items-center border-t border-slate-100 pt-4 mt-2">
-                <span className="uppercase tracking-wider text-slate-400 mr-1">Ghi chú</span>
+            <div className="flex gap-3 lg:gap-5 flex-wrap text-xs font-semibold text-slate-500 items-center border-t border-slate-100 pt-4 mt-2">
+                <span className="uppercase tracking-wider text-slate-400 mr-1 text-[11px]">Ghi chú</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-amber-50 border border-amber-200"></span> Giao hàng</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-emerald-50 border border-emerald-200"></span> Kho</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-sky-50 border border-sky-200"></span> Thu ngân</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-white border border-slate-200"></span> Ca thường</span>
-                
-                <div className="ml-auto flex items-center gap-5">
+
+                <div className="lg:ml-auto flex items-center gap-3 lg:gap-5 flex-wrap">
                     <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#10b981' }}></span>Sửa trực tiếp</span>
                     <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ef4444' }}></span>Đang đổi</span>
                     <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#8b5cf6' }}></span>Xin nghỉ</span>
