@@ -337,9 +337,10 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     return (
         <div>
             <div className={`
-                grid grid-cols-2 gap-2 pb-1
-                md:grid-cols-3 md:gap-3
-                xl:grid-cols-5 md:gap-4 mb-3 lg:mb-8 kpi-grid-for-export
+                grid grid-cols-2 gap-2.5 pb-1
+                sm:grid-cols-3
+                lg:grid-cols-4 lg:gap-4
+                xl:grid-cols-5 mb-3 lg:mb-8 kpi-grid-for-export
             `}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
@@ -541,7 +542,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                             progressPercent={progressPercent}
                             isGood={isGood}
                         >
-                            <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight ${valueColor}`}>
+                            <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums ${valueColor}`}>
                                 {displayValue}
                             </div>
                         </KpiCard>
