@@ -42,6 +42,7 @@ import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
 import { SectionHeader } from '../common/SectionHeader';
+import { SectionCard } from '../common/SectionCard';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
@@ -395,7 +396,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         <>
                             <FilterProcessingOverlay isVisible={isFilterProcessing} />
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
-                                <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
+                                <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-3 lg:space-y-6">
                                     {/* Super Admin Announcement Marquee */}
                                     {announcement && announcement.active && announcement.content && (
                                         <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[10px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
@@ -458,8 +459,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                     )}
 
-                                    <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
-                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-lg border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-xl lg:rounded-none">
+                                    <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
+                                        <SectionCard ref={kpiCardsOnlyRef} className="relative">
                                             {/* Unconfigured Groups Warning Banner */}
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
                                                 <div
@@ -562,7 +563,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     <KpiCards onUnshippedClick={openUnshippedModal} />
                                                 </div>
                                             </div>
-                                        </div>
+                                        </SectionCard>
 
                                         {visibleComponents.trendChart && (
                                             <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>

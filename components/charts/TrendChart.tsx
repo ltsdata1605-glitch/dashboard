@@ -6,6 +6,7 @@ import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
+import { SectionCard } from '../common/SectionCard';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { isKhoMatch } from '../../services/filterService';
 import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
@@ -375,11 +376,11 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   };
 
   return (
-    <div 
+    <SectionCard
       ref={chartCardRef}
-      className="bg-white dark:bg-slate-900 shadow-lg border border-slate-100 dark:border-white/5 mb-3 lg:mb-8 transition-all duration-300 relative z-0"
+      className="mb-3 lg:mb-8 relative z-0"
     >
-      <SectionHeader 
+      <SectionHeader
         title={(
             <div className="flex flex-col">
                 <div className="flex items-center gap-3">
@@ -697,7 +698,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             ) : renderChart()}
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 });
 TrendChartInner.displayName = 'TrendChartInner';

@@ -1,927 +1,554 @@
 {
   "App.tsx": {
     "nonSemanticColor": 10,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "components/charts/IndustryGrid.tsx": {
     "nonSemanticColor": 26,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "components/charts/RevenueCalendar.tsx": {
     "nonSemanticColor": 16,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/charts/SavedCalendarCard.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/charts/TrendChart.tsx": {
     "nonSemanticColor": 39,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/common/DebugPanel.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 2,
-    "missingMobileToolbar": 0
-  },
-  "components/common/ErrorBoundary.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/common/ExportOptionsModal.tsx": {
     "nonSemanticColor": 15,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/common/FilterChip.tsx": {
     "nonSemanticColor": 8,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/common/FilterProcessingOverlay.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
-  "components/common/Icon.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/common/LoadingOverlay.tsx": {
     "nonSemanticColor": 1,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/common/MultiSelectDropdown.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/common/ProcessingLoader.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "components/common/SearchableSelect.tsx": {
     "nonSemanticColor": 11,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/common/SingleSelectDropdown.tsx": {
     "nonSemanticColor": 19,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/employees/ContestTable.tsx": {
     "nonSemanticColor": 22,
-    "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
   "components/employees/EmployeeAnalysis.tsx": {
     "nonSemanticColor": 19,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/employees/EmployeeAnalysisContent.tsx": {
     "nonSemanticColor": 11,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "components/employees/EmployeeAnalysisFilters.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
-  "components/employees/EmployeeAnalysisTabs.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/employees/head-to-head/HeadToHeadConfigModal.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 11,
     "missingMobileToolbar": 0
   },
   "components/employees/head-to-head/HeadToHeadTable.tsx": {
     "nonSemanticColor": 19,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/employees/HeadToHeadTab.tsx": {
     "nonSemanticColor": 10,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/employees/industry/IndustryTableUtils.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/employees/industry/useIndustryAnalysisLogic.ts": {
     "nonSemanticColor": 8,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/employees/IndustryAnalysisTab.tsx": {
     "nonSemanticColor": 25,
-    "missingDarkVariant": 3,
-    "missingMobileToolbar": 0
-  },
-  "components/employees/modals/column-config/CalculatedColumnForm.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 6,
-    "missingMobileToolbar": 0
-  },
-  "components/employees/modals/column-config/DataColumnForm.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 7,
-    "missingMobileToolbar": 0
-  },
-  "components/employees/modals/column-config/FormattingRulesForm.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "components/employees/modals/column-config/TargetColumnForm.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/employees/modals/ColumnConfigModal.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "components/employees/modals/CustomExploitationTabModal.tsx": {
     "nonSemanticColor": 23,
-    "missingDarkVariant": 26,
     "missingMobileToolbar": 0
   },
   "components/employees/modals/StructureModals.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/employees/performance/PerformanceSingleTable.tsx": {
     "nonSemanticColor": 20,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/employees/performance/PerformanceTableUtils.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/employees/PerformanceTable.tsx": {
     "nonSemanticColor": 1,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/employees/TopSellerList.tsx": {
     "nonSemanticColor": 18,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "components/filters/FilterBar.tsx": {
     "nonSemanticColor": 21,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "components/filters/FilterSection.tsx": {
     "nonSemanticColor": 35,
-    "missingDarkVariant": 3,
-    "missingMobileToolbar": 0
-  },
-  "components/kpis/KpiCards.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
   "components/kpis/modals/KpiCardConfigModal.tsx": {
     "nonSemanticColor": 15,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "components/layout/FontSelector.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/layout/Header.tsx": {
     "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 1
   },
   "components/layout/MobileBottomNav.tsx": {
     "nonSemanticColor": 24,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/layout/NotificationDropdown.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 5,
-    "missingMobileToolbar": 0
-  },
-  "components/layout/PendingApprovalBanner.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/layout/Sidebar.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 5,
-    "missingMobileToolbar": 0
-  },
-  "components/modals/AdminAnnouncementModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/modals/ChangelogModal.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 8,
     "missingMobileToolbar": 0
   },
   "components/modals/CrossSellingBuilderModal.tsx": {
     "nonSemanticColor": 25,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "components/modals/EmployeeManagerModal.tsx": {
     "nonSemanticColor": 11,
-    "missingDarkVariant": 6,
-    "missingMobileToolbar": 0
-  },
-  "components/modals/FileHistoryModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
-    "missingMobileToolbar": 0
-  },
-  "components/modals/FileNamingModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/modals/GtdhTargetModal.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/modals/PerformanceModal.tsx": {
     "nonSemanticColor": 28,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/modals/UncollectedOrdersModal.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/modals/UnconfiguredGroupsModal.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "components/modals/UnshippedOrdersModal.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/modals/UploadConflictModal.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "components/modals/UploadTypeSelectionModal.tsx": {
     "nonSemanticColor": 16,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Badge.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 6,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Button.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/ConfirmDialog.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/DataTable.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Dropdown.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/shared/ui/Input.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 7,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Modal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/ProgressBar.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Select.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 5,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/Tabs.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSettingsModal.tsx": {
     "nonSemanticColor": 31,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSummary.tsx": {
     "nonSemanticColor": 27,
-    "missingDarkVariant": 13,
-    "missingMobileToolbar": 0
-  },
-  "components/tables/MonthlyTrendTable.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/tables/MonthlyTrendTableRow.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/tables/summary/CrossSellingTable.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 3,
-    "missingMobileToolbar": 0
-  },
-  "components/tables/summary/FilterPopover.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableComparisonBar.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableFilterBar.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableHeader.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableUtils.ts": {
     "nonSemanticColor": 24,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "components/tables/SummaryTable.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "components/tables/SummaryTableRow.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/upload/FileHistoryManager.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "components/upload/StatusDisplay.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 7,
-    "missingMobileToolbar": 0
-  },
-  "components/upload/UploadSection.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/views/AboutView.tsx": {
     "nonSemanticColor": 13,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "components/views/CheckThuongView.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 1
   },
   "components/views/CouponConverterView.tsx": {
     "nonSemanticColor": 24,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/views/DashboardView.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 16,
     "missingMobileToolbar": 0
   },
   "components/views/LandingPageView.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 6,
-    "missingMobileToolbar": 0
-  },
-  "components/views/LoginView.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "components/views/PendingApprovalView.tsx": {
     "nonSemanticColor": 17,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "components/views/settings/BaseDataSection.tsx": {
     "nonSemanticColor": 1,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/views/settings/CloudSyncSection.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/views/settings/ConfigLibrarySection.tsx": {
     "nonSemanticColor": 20,
-    "missingDarkVariant": 3,
-    "missingMobileToolbar": 0
-  },
-  "components/views/settings/DangerZoneSection.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/views/settings/SettingsAccountTab.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "components/views/SettingsView.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 1
   },
   "components/views/UserManagementView.tsx": {
     "nonSemanticColor": 33,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "constants.ts": {
     "nonSemanticColor": 36,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/BiWrapper.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 1
   },
   "features/bi-dashboard/components/Dashboard.tsx": {
     "nonSemanticColor": 13,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionControlBar.tsx": {
     "nonSemanticColor": 8,
-    "missingDarkVariant": 0,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/dashboard/competition/CompetitionGridView.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/CompetitionView.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/DashboardHeader.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/DashboardWidgets.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/IndustryView.tsx": {
     "nonSemanticColor": 33,
-    "missingDarkVariant": 9,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/ReportView.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
     "nonSemanticColor": 54,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/DataUpdater.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/NhanVien.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusDailyTable.tsx": {
     "nonSemanticColor": 42,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusDataModal.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusMobileCard.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 6,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/bonus/bonusTableHelpers.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
     "nonSemanticColor": 10,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
     "nonSemanticColor": 18,
-    "missingDarkVariant": 26,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx": {
     "nonSemanticColor": 17,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
     "nonSemanticColor": 26,
-    "missingDarkVariant": 6,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
     "nonSemanticColor": 52,
-    "missingDarkVariant": 33,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CrossSellingTab.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
     "nonSemanticColor": 19,
-    "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 7,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/revenue/ColorSettingsModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/revenue/ImportPrevMonthModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/revenue/RevenueMobileCard.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/RevenueTab.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/shared/AvatarDisplay.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/shared/TimeProgressBar.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/Settings.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/shared/Badges.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 5,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/Slider.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 52,
-    "missingDarkVariant": 21,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/TargetHero.tsx": {
     "nonSemanticColor": 32,
-    "missingDarkVariant": 11,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/hooks/useCompetitionData.ts": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/services/uiService.ts": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "features/phan-ca/components/AiSuggestPatternModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/Controls.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/DailyStatsTable.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 21,
-    "missingMobileToolbar": 0
-  },
-  "features/phan-ca/components/EditPatternModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/EditShiftModal.tsx": {
     "nonSemanticColor": 14,
-    "missingDarkVariant": 15,
-    "missingMobileToolbar": 0
-  },
-  "features/phan-ca/components/HelpModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/Legend.tsx": {
     "nonSemanticColor": 15,
-    "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/PhanCaToolbar.tsx": {
     "nonSemanticColor": 8,
-    "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/ScheduleTable.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 46,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/VerticalIndividualSchedule.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 53,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/PhanCaView.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 17,
-    "missingMobileToolbar": 0
-  },
-  "features/phan-ca/services/googleSheetsExport.ts": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
-    "missingMobileToolbar": 0
-  },
-  "features/phan-ca/services/uiService.ts": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/AlertModal.tsx": {
     "nonSemanticColor": 3,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/BottomNavigation.tsx": {
     "nonSemanticColor": 3,
-    "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ChangePasswordModal.tsx": {
     "nonSemanticColor": 5,
-    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ConfirmModal.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 4,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ControlPanel.tsx": {
     "nonSemanticColor": 28,
-    "missingDarkVariant": 39,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ErrorBoundary.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 7,
-    "missingMobileToolbar": 0
-  },
-  "features/sticker-event/FileUpload.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/FilterModal.tsx": {
     "nonSemanticColor": 2,
-    "missingDarkVariant": 2,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/InventoryToolbar.tsx": {
     "nonSemanticColor": 9,
-    "missingDarkVariant": 13,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/LayoutSelectionModal.tsx": {
     "nonSemanticColor": 13,
-    "missingDarkVariant": 12,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/Login.tsx": {
     "nonSemanticColor": 15,
-    "missingDarkVariant": 16,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ManualInputModal.tsx": {
     "nonSemanticColor": 15,
-    "missingDarkVariant": 35,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/MultiSelectDropdown.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 14,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/PdfPreviewModal.tsx": {
     "nonSemanticColor": 3,
-    "missingDarkVariant": 3,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/PrintSettingsModal.tsx": {
     "nonSemanticColor": 12,
-    "missingDarkVariant": 20,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ResultsDisplay.tsx": {
     "nonSemanticColor": 39,
-    "missingDarkVariant": 55,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SavedListsModal.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SaveListModal.tsx": {
     "nonSemanticColor": 3,
-    "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/Scanner.tsx": {
     "nonSemanticColor": 3,
-    "missingDarkVariant": 13,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SearchBar.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 10,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/services/printService.ts": {
     "nonSemanticColor": 8,
-    "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/sticker-event/services/uiService.ts": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/StickerEventApp.tsx": {
     "nonSemanticColor": 7,
-    "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerManualQueue.tsx": {
     "nonSemanticColor": 73,
-    "missingDarkVariant": 17,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerModeToolbar.tsx": {
     "nonSemanticColor": 4,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
     "nonSemanticColor": 33,
-    "missingDarkVariant": 18,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintPreview.tsx": {
     "nonSemanticColor": 1,
-    "missingDarkVariant": 17,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/StickerPrinterView.tsx": {
     "nonSemanticColor": 1,
-    "missingDarkVariant": 3,
-    "missingMobileToolbar": 0
-  },
-  "features/sticker-event/SuperAdminModal.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 14,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/UserGuideModal.tsx": {
     "nonSemanticColor": 11,
-    "missingDarkVariant": 38,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/UserManagementModal.tsx": {
     "nonSemanticColor": 6,
-    "missingDarkVariant": 21,
-    "missingMobileToolbar": 0
-  },
-  "services/uiService.ts": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   }
 }

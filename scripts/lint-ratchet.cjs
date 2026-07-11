@@ -4,7 +4,12 @@
 /**
  * Ratchet script cho các quy tắc của Shared Core Contract (RULES.md §2.5)
  * mà ESLint không kiểm được đáng tin cậy bằng AST: màu hardcode ngoài palette
- * semantic, class màu thiếu cặp dark:, và view thiếu toolbar mobile tương ứng.
+ * semantic, và view thiếu toolbar mobile tương ứng.
+ *
+ * Lưu ý: rule "thiếu cặp dark:" (RULES.md §2.5.4) đã bị loại khỏi script này —
+ * dự án đã tắt Dark Mode hoàn toàn (commit d2397d4, LayoutContext ép Sáng) và
+ * DESIGN_SYSTEM_MODERN.md quy định KHÔNG tạo class dark: mới (không tốn công
+ * cho thứ không bao giờ hiển thị). Class dark: cũ trong code để yên (vô hiệu).
  *
  * Cơ chế: đếm vi phạm theo file, so với baseline đã commit (violations-baseline.json).
  * Fail nếu 1 file bất kỳ có số vi phạm TĂNG so với baseline. Tự hạ baseline khi giảm.
@@ -25,9 +30,6 @@ const IGNORE_DIRS = new Set([
 
 const NON_SEMANTIC_COLOR_PATTERN =
   /\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|accent|caret|decoration|shadow)-(?:indigo|blue|purple|violet|teal|cyan|orange|yellow|red|green|pink|fuchsia|lime|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)\b/g;
-
-const LIGHT_COLOR_ON_LINE =
-  /\b(?:bg|text|border)-(?:slate|sky|emerald|amber|rose|indigo|blue|purple|violet|teal|cyan|orange|yellow|red|green|pink|fuchsia|lime|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)\b/;
 
 function walk(dir, files) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -51,14 +53,6 @@ function countNonSemanticColors(content) {
   return matches ? matches.length : 0;
 }
 
-function countMissingDarkVariant(content) {
-  let count = 0;
-  for (const line of content.split('\n')) {
-    if (LIGHT_COLOR_ON_LINE.test(line) && !line.includes('dark:')) count++;
-  }
-  return count;
-}
-
 function countMissingMobileToolbar(content) {
   const hasDesktopPortal = content.includes('global-header-actions');
   const hasMobileToolbar = content.includes('lg:hidden');
@@ -72,10 +66,9 @@ function computeViolations() {
     const content = fs.readFileSync(file, 'utf8');
     const counts = {
       nonSemanticColor: countNonSemanticColors(content),
-      missingDarkVariant: countMissingDarkVariant(content),
       missingMobileToolbar: countMissingMobileToolbar(content),
     };
-    if (counts.nonSemanticColor || counts.missingDarkVariant || counts.missingMobileToolbar) {
+    if (counts.nonSemanticColor || counts.missingMobileToolbar) {
       result[relPath(file)] = counts;
     }
   }
@@ -108,7 +101,7 @@ function main() {
   let improved = false;
 
   for (const [file, counts] of Object.entries(current)) {
-    const base = baseline[file] || { nonSemanticColor: 0, missingDarkVariant: 0, missingMobileToolbar: 0 };
+    const base = baseline[file] || { nonSemanticColor: 0, missingMobileToolbar: 0 };
     const merged = { ...base };
     for (const key of Object.keys(counts)) {
       const baseVal = base[key] || 0;

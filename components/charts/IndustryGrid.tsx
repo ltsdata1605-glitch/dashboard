@@ -6,6 +6,7 @@ import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../u
 import type { DataRow, IndustryData, ProductConfig, FilterState } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
+import { SectionCard } from '../common/SectionCard';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
@@ -213,9 +214,9 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     const currentLevelLabel = levelLabels[drilldownPath.length] ?? '';
 
     return (
-        <div
+        <SectionCard
             ref={cardRef}
-            className="bg-white dark:bg-slate-900 shadow-lg border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none sm:rounded-xl lg:rounded-none mb-3 lg:mb-8"
+            className="mb-3 lg:mb-8"
         >
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
@@ -488,7 +489,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
 
                 </div>
             </div>
-        </div>
+        </SectionCard>
     );
 });
 IndustryGridInner.displayName = 'IndustryGridInner';
