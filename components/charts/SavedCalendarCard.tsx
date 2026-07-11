@@ -2,9 +2,9 @@ import React, { useMemo, useRef, useState } from 'react';
 import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
-import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
 import type { DataRow, ProductConfig } from '../../types';
-import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
+import { COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
 
@@ -66,7 +66,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
             const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                 ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-                : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
             if (!isRevenue) return;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;

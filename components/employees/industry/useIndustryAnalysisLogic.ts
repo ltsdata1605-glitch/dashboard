@@ -240,15 +240,18 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             validData.forEach(row => {
                 const rawCreator = getRowValue(row, COL.NGUOI_TAO);
                 if (!rawCreator) return;
-                
+
                 const employeeId = rawCreator.split(' - ')[0].trim();
                 const price = Number(getRowValue(row, COL.PRICE)) || 0;
-                
+
                 const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
                 const industry = productConfig.childToParentMap[rawGroup] || '';
                 const subgroup = productConfig.childToSubgroupMap[rawGroup] || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
+
+                // Bỏ qua sản phẩm không tính doanh thu (đồng nhất với WarehouseSummary)
+                if (industry === 'Không tính doanh thu') return;
 
                 const weightedQuantity = calculateRowMetrics(row, productConfig).weightedQuantity;
 

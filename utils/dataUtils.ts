@@ -25,7 +25,9 @@ export const cleanAndNormalize = (val: any): string => {
 // danh sách hardcode. Tính 1 lần khi module load vì 3 Set nguồn là hằng số không đổi lúc runtime.
 const normalizedTraGopSet = new Set(Array.from(HINH_THUC_XUAT_TRA_GOP).map(v => cleanAndNormalize(v)));
 const normalizedTienMatSet = new Set(Array.from(HINH_THUC_XUAT_TIEN_MAT).map(v => cleanAndNormalize(v)));
-const normalizedThuHoSet = new Set(Array.from(HINH_THUC_XUAT_THU_HO).map(v => cleanAndNormalize(v)));
+// Export để mọi nơi tính "doanh thu hợp lệ" (loại trừ thu hộ) dùng chung 1 bản đã chuẩn hoá,
+// thay vì so khớp trực tiếp với HINH_THUC_XUAT_THU_HO (nhạy hoa/thường, khoảng trắng).
+export const normalizedThuHoSet = new Set(Array.from(HINH_THUC_XUAT_THU_HO).map(v => cleanAndNormalize(v)));
 
 // any: trả về giá trị ô thô của DataRow (string/number/Date/...) — hàm lõi được gọi ở hàng trăm nơi khắp 4 khu vực, đổi kiểu trả về sẽ vỡ diện rộng ngoài phạm vi utils/
 export function getRowValue(row: DataRow, keys: string[]): any {

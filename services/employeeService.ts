@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
-import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics, getSubgroup } from '../utils/dataUtils';
+import { COL } from '../constants';
+import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics, getSubgroup, normalizedThuHoSet } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
@@ -21,7 +21,7 @@ function _buildFullEmployeeData(
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0
             ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
-            : HINH_THUC_XUAT_THU_HO.has(htx);
+            : normalizedThuHoSet.has(cleanAndNormalize(htx));
         if (isThuHo) {
             const creator = getRowValue(row, COL.NGUOI_TAO);
             if (creator && !creator.trim().startsWith('Yêu cầu xuất')) {
@@ -232,7 +232,7 @@ export function processEmployeeData(
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
             ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
-            : !HINH_THUC_XUAT_THU_HO.has(htx);
+            : !normalizedThuHoSet.has(cleanAndNormalize(htx));
         if (!isRevenue) continue;
 
         // Bỏ qua nhóm hàng "Không tính doanh thu"

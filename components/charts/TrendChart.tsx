@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
 import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
-import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
+import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
@@ -173,7 +173,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
               const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                   ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-                  : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                  : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
               if (!isRevenue) return;
 
               parents.add(parentVal);
@@ -214,7 +214,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
           const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
               ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-              : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+              : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
           if (!isRevenue) return;
 
           const price = Number(getRowValue(row, COL.PRICE)) || 0;

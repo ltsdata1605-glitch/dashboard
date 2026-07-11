@@ -5,9 +5,9 @@ import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
 import { applyFiltersAndProcess, deduplicateSalesData } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
+import { DEFAULT_KPI_CARDS, COL } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies, getErrorMessage } from '../utils/dataUtils';
+import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies, getErrorMessage, normalizedThuHoSet } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -772,9 +772,9 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             // Bỏ qua các dòng không tính doanh thu theo hình thức xuất
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
             const isRevenue = productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
-                : (!HINH_THUC_XUAT_THU_HO.has(hinhThucXuat) && 
-                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('thu hộ') && 
+                ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
+                : (!normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat)) &&
+                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('thu hộ') &&
                    !hinhThucXuat.toLowerCase().normalize('NFC').includes('khuyến mãi'));
             
             if (!isRevenue) continue;

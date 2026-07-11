@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData, WarehouseSummaryRow } from '../types';
-import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getParentGroup } from '../utils/dataUtils';
+import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
+import { getRowValue, getParentGroup, normalizedThuHoSet } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { processKpis } from './kpiService';
 import { processTrendData } from './trendService';
@@ -157,7 +157,7 @@ function processDataForPeriod(
                 const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                 const isRevenueOk = hasHTXConfig
                     ? productConfig.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
-                    : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                    : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
 
                 if (isRevenueOk) {
                     filteredValidSalesData.push(row);
