@@ -3,6 +3,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { Product } from './types';
 import { InfoIcon, SearchIcon, CheckboxIcon, CheckboxCheckedIcon, MinusCircleIcon, PlusCircleIcon, PrintIcon, Trash2Icon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
+import { EmptyState } from '../../components/shared/ui/EmptyState';
 
 interface ResultsDisplayProps {
   results: Product[];
@@ -157,18 +158,6 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
 });
 ProductCard.displayName = 'ProductCard';
 
-const EmptyState: React.FC<{ icon: React.ReactNode; title: string; message: string }> = ({ icon, title, message }) => (
-    <div className="flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
-        <div className="p-4 bg-slate-100 rounded-full mb-4">
-            {icon}
-        </div>
-        <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
-        <p className="mt-1 text-base text-slate-500 max-w-sm">
-            {message}
-        </p>
-    </div>
-);
-
 const Annotation: React.FC<{ number: number; className: string }> = ({ number, className }) => (
     <div className={`absolute w-5 h-5 bg-indigo-600 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white shadow-lg ${className}`}>
         {number}
@@ -320,11 +309,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
   }
   
   return (
-      <EmptyState
-          icon={<SearchIcon className="mx-auto h-12 w-12 text-slate-400" />}
-          title="Sẵn sàng tìm kiếm"
-          message="Danh sách kết quả của bạn đang trống. Sử dụng thanh tìm kiếm hoặc các công cụ nhanh để thêm sản phẩm."
-      />
+      <div className="flex items-center justify-center bg-white rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
+          <EmptyState
+              icon={<SearchIcon className="h-12 w-12 text-slate-400" />}
+              title="Sẵn sàng tìm kiếm"
+              description="Danh sách kết quả của bạn đang trống. Sử dụng thanh tìm kiếm hoặc các công cụ nhanh để thêm sản phẩm."
+          />
+      </div>
   );
 };
 

@@ -6,6 +6,8 @@ import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { EmptyState } from '../../components/shared/ui/EmptyState';
+import { Images } from 'lucide-react';
 
 interface SavedListsModalProps {
     storeId: string;
@@ -85,8 +87,8 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                             <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
                         </div>
                     ) : lists.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                            <p>Chưa có danh sách nào được lưu.</p>
+                        <div className="flex items-center justify-center h-full">
+                            <EmptyState icon={<Images size={24} />} title="Chưa có danh sách nào được lưu" />
                         </div>
                     ) : (
                         <div className="space-y-3">
