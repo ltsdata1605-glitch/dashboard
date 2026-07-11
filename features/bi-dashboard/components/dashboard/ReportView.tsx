@@ -86,7 +86,7 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
                                             <div className="flex justify-end">
                                                 <input 
                                                     type="text" 
-                                                    className="w-full min-w-[80px] max-w-[100px] text-right bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-[13px] font-bold tabular-nums text-slate-800 dark:text-slate-200 no-print"
+                                                    className="w-full min-w-[80px] max-w-[100px] text-right bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-[13px] font-bold tabular-nums text-slate-800 dark:text-slate-200 no-print"
                                                     value={row.isPercent ? row.target : (row.target ? f.format(parseInt(row.target, 10)) : '')}
                                                     onChange={(e) => handleTargetChange(row.id, e.target.value, row.isPercent)}
                                                     placeholder="Nhập..."
