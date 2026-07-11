@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { SchedulingRules } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface EditRulesModalProps {
   ruleKey: 'kho' | 'tn' | 'gh';
@@ -120,7 +121,7 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
               </Button>
             </div>
           )) : (
-            <p className="text-sm text-slate-500 dark:text-slate-400 italic text-center">Chưa có cấu hình ca nào. Hãy thêm ở bên dưới.</p>
+            <EmptyState title="Chưa có cấu hình ca nào. Hãy thêm ở bên dưới." compact />
           )}
         </div>
 

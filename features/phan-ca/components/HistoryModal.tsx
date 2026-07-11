@@ -2,6 +2,7 @@ import React from 'react';
 import { ScheduleHistoryEntry } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface HistoryModalProps {
   history: ScheduleHistoryEntry[];
@@ -23,9 +24,15 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ history, onRestore, onClose
       }
     >
       {history.length === 0 ? (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-slate-500 dark:text-slate-400 italic">Chưa có thay đổi nào được ghi lại cho lịch này.</p>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          title="Chưa có thay đổi nào được ghi lại cho lịch này."
+          compact
+        />
       ) : (
         <ul className="space-y-2">
           {history.map((entry, index) => (

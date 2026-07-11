@@ -2,6 +2,7 @@ import React from 'react';
 import { UnresolvedConflict } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface ConflictListModalProps {
   conflicts: UnresolvedConflict[];
@@ -47,7 +48,15 @@ const ConflictListModal: React.FC<ConflictListModalProps> = ({ conflicts, onClos
             </tbody>
           </table>
         ) : (
-          <p className="text-center text-slate-500 dark:text-slate-400 italic p-4">Không có ca nào cần xử lý.</p>
+          <EmptyState
+            icon={
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            title="Không có ca nào cần xử lý."
+            compact
+          />
         )}
       </div>
     </Modal>

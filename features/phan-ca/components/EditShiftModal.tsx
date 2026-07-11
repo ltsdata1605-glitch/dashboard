@@ -5,6 +5,7 @@ import { calculateTotalHours, findAutomaticReplacement } from '../utils/schedule
 import toast from 'react-hot-toast';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 
 interface EditShiftModalProps {
@@ -517,8 +518,12 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                       </div>
                   ))
               ) : (
-                  <div className="py-8 text-center text-slate-400 dark:text-slate-500 italic text-sm bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
-                      Không tìm thấy nhân viên phù hợp
+                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
+                      <EmptyState
+                          icon={<Search size={20} />}
+                          title="Không tìm thấy nhân viên phù hợp"
+                          compact
+                      />
                   </div>
               )}
           </div>

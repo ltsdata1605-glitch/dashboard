@@ -5,6 +5,7 @@ import * as idb from '../db/idb';
 import { DailyRequirements, ShiftDefinitions } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface EditPatternModalProps {
   currentPatterns: { [key: string]: string[] };
@@ -504,7 +505,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                   )
                 })
               ) : (
-                <p className="text-center text-slate-400 dark:text-slate-500 text-xs italic py-4">Chưa có mẫu ca nào cho bộ phận này.</p>
+                <EmptyState title="Chưa có mẫu ca nào cho bộ phận này." compact />
               )}
           </div>
 
