@@ -48,7 +48,11 @@ interface IndustryGridInnerProps {
     productConfig: ProductConfig | null;
     filters: FilterState;
     onFilterChange: (update: Partial<FilterState>) => void;
-    baseFilteredData: DataRow[];
+    // Dữ liệu ĐÃ qua đủ bộ lọc doanh thu hợp lệ (ngày/kho/trạng thái thu tiền/thu hộ/"Không tính
+    // doanh thu") — CÙNG nguồn tạo ra `industryData` cấp cha (processedData.filteredValidSalesData),
+    // để card cấp cha và card khi drill-down luôn khớp số. Chưa lọc theo Ngành hàng (filters.parent)
+    // để drilldown hoạt động đúng.
+    validSalesData: DataRow[];
 }
 
 const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
@@ -56,10 +60,9 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     productConfig,
     filters,
     onFilterChange,
-    baseFilteredData
+    validSalesData
 }) => {
-    // ✅ Dùng baseFilteredData (chưa filter parent) để drilldown hoạt động đúng
-    const allSales = baseFilteredData ?? [];
+    const allSales = validSalesData ?? [];
     const globalParentFilters = filters.parent;
 
     const cardRef              = useRef<HTMLDivElement>(null);
@@ -495,14 +498,14 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
 IndustryGridInner.displayName = 'IndustryGridInner';
 
 const IndustryGrid: React.FC = React.memo(() => {
-    const { processedData, productConfig, filterState: filters, handleFilterChange: onFilterChange, baseFilteredData } = useDashboardContext();
+    const { processedData, productConfig, filterState: filters, handleFilterChange: onFilterChange } = useDashboardContext();
     return (
         <IndustryGridInner
             industryData={processedData?.industryData ?? []}
             productConfig={productConfig}
             filters={filters}
             onFilterChange={onFilterChange}
-            baseFilteredData={baseFilteredData}
+            validSalesData={processedData?.filteredValidSalesData ?? []}
         />
     );
 });

@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import type { DataRow, ProductConfig, IndustryData } from '../types';
-import { getRowValue, getParentGroup, getSubgroup } from '../utils/dataUtils';
+import { getRowValue, getParentGroup, getSubgroup, calculateRowMetrics } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 export interface GridItem {
@@ -123,24 +123,27 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
             return displayParentGroup === parentGroup;
         });
         
-        const totalRevenueForPath = dataForParent.reduce((sum, row) => sum + (Number(getRowValue(row, COL.PRICE)) || 0), 0);
-        const totalQuantityForPath = dataForParent.reduce((sum, row) => sum + (Number(getRowValue(row, COL.QUANTITY)) || 0), 0);
-        
+        // Dùng calculateRowMetrics (revenue + weightedQuantity) — CÙNG công thức đã tạo ra
+        // industryData cấp cha, để card cấp cha và card khi drill-down luôn khớp số (số lượng có
+        // nhân hệ số quy đổi VAS/Bảo hiểm/Vieon giống nhau ở mọi cấp).
+        const totalRevenueForPath = dataForParent.reduce((sum, row) => sum + calculateRowMetrics(row, productConfig).revenue, 0);
+        const totalQuantityForPath = dataForParent.reduce((sum, row) => sum + calculateRowMetrics(row, productConfig).weightedQuantity, 0);
+
         // Level 1: Subgroups or Special Choices
         if (level === 1) {
             if (specialGroups.has(parentGroup)) {
-                const totalQuantity = dataForParent.reduce((sum, row) => sum + (Number(getRowValue(row, COL.QUANTITY)) || 0), 0);
                 const choiceData: GridItem[] = [
-                    { name: 'Hãng sản xuất', revenue: totalRevenueForPath, quantity: totalQuantity, icon: 'factory', color: parentColor },
-                    { name: 'Người tạo', revenue: totalRevenueForPath, quantity: totalQuantity, icon: 'user-cog', color: parentColor }
+                    { name: 'Hãng sản xuất', revenue: totalRevenueForPath, quantity: totalQuantityForPath, icon: 'factory', color: parentColor },
+                    { name: 'Người tạo', revenue: totalRevenueForPath, quantity: totalQuantityForPath, icon: 'user-cog', color: parentColor }
                 ];
                 return { data: choiceData, totalRevenue: totalRevenueForPath, totalQuantity: totalQuantityForPath, levelType: 'choice' };
             } else {
                 const groupedData = dataForParent.reduce((acc, row) => {
                     const subgroup = getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || 'Khác';
                     if (!acc[subgroup]) acc[subgroup] = { revenue: 0, quantity: 0 };
-                    acc[subgroup].revenue += Number(getRowValue(row, COL.PRICE)) || 0;
-                    acc[subgroup].quantity += Number(getRowValue(row, COL.QUANTITY)) || 0;
+                    const metrics = calculateRowMetrics(row, productConfig);
+                    acc[subgroup].revenue += metrics.revenue;
+                    acc[subgroup].quantity += metrics.weightedQuantity;
                     return acc;
                 }, {} as { [key: string]: { revenue: number; quantity: number } });
 
@@ -174,8 +177,9 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
             const groupedData = dataToProcess.reduce((acc, row) => {
                 const key = groupByFn(row);
                 if (!acc[key]) acc[key] = { revenue: 0, quantity: 0 };
-                acc[key].revenue += Number(getRowValue(row, COL.PRICE)) || 0;
-                acc[key].quantity += Number(getRowValue(row, COL.QUANTITY)) || 0;
+                const metrics = calculateRowMetrics(row, productConfig);
+                acc[key].revenue += metrics.revenue;
+                acc[key].quantity += metrics.weightedQuantity;
                 return acc;
             }, {} as { [key: string]: { revenue: number; quantity: number } });
             
