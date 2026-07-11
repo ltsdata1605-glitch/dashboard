@@ -15,7 +15,6 @@ export const SettingsDataTab: React.FC = () => {
     const { user, userRole, departmentId, isDemoMode } = useAuth();
     const { syncState, lastSyncTime, forceSync } = useSync();
     
-    const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
     const [configUrl, setConfigUrl] = useState('');
     const [isClearing, setIsClearing] = useState(false);
     
@@ -40,8 +39,6 @@ export const SettingsDataTab: React.FC = () => {
 
     useEffect(() => {
         const loadSettings = async () => {
-            const savedDedup = await dbService.getDeduplicationSetting();
-            setIsDeduplicationEnabled(savedDedup);
             const productConfig = await dbService.getProductConfig();
             if (productConfig) setConfigUrl(productConfig.url);
         };
@@ -61,14 +58,6 @@ export const SettingsDataTab: React.FC = () => {
         loadConfigs();
         return () => { isMounted = false; };
     }, [userRole, departmentId]);
-
-    const handleToggleDedup = async () => {
-        const newValue = !isDeduplicationEnabled;
-        setIsDeduplicationEnabled(newValue);
-        await dbService.saveDeduplicationSetting(newValue);
-        window.dispatchEvent(new CustomEvent('dedup-changed', { detail: newValue }));
-        toast.success(newValue ? 'Đã BẬT tính năng Gộp Chứng Từ' : 'Đã TẮT tính năng Gộp Chứng Từ');
-    };
 
     const handleClearLocalData = () => {
         showConfirm({
@@ -170,9 +159,7 @@ export const SettingsDataTab: React.FC = () => {
                 confirmText={confirmDialog.confirmText} 
             />
 
-            <BaseDataSection 
-                isDeduplicationEnabled={isDeduplicationEnabled}
-                onToggleDedup={handleToggleDedup}
+            <BaseDataSection
                 configUrl={configUrl}
             />
 

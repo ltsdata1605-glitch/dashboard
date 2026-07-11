@@ -18,7 +18,7 @@ interface UploadConflictModalProps {
     conflicts: UploadConflictInfo[];
     newFilename: string;
     newDateRangeStr: string;
-    onResolve: (action: 'overwrite_deactivate' | 'merge_deduplicate' | 'merge_all' | 'cancel') => void;
+    onResolve: (action: 'overwrite_deactivate' | 'merge_all' | 'cancel') => void;
 }
 
 export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
@@ -137,31 +137,6 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                     </span>
 
                     <div className="flex flex-col gap-2">
-                        {/* Option 2: Merge & Deduplicate (Recommended) */}
-                        <Button
-                            type="button"
-                            variant="unstyled" size="none"
-                            onClick={() => onResolve('merge_deduplicate')}
-                            className="justify-start w-full text-left p-3 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group shadow-sm"
-                        >
-                            <div className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                                1
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="font-extrabold text-indigo-700 dark:text-indigo-400 text-xs sm:text-[13px]">
-                                        Tự động lọc trùng mã đơn hàng
-                                    </span>
-                                    <span className="px-1.5 py-0.5 rounded-full text-[8px] font-black bg-emerald-500 text-white animate-pulse">
-                                        KHUYÊN DÙNG
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                                    Gộp chung dữ liệu, nhưng tự động loại bỏ các sản phẩm trùng mã đơn hàng. Luôn ưu tiên giữ lại dữ liệu của tệp mới hơn.
-                                </p>
-                            </div>
-                        </Button>
-
                         {/* Option 1: Overwrite / Deactivate old */}
                         <Button
                             type="button"
@@ -170,7 +145,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-amber-500 transition-colors">
-                                2
+                                1
                             </div>
                             <div className="flex-1 min-w-0">
                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xs sm:text-[13px]">
@@ -182,7 +157,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             </div>
                         </Button>
 
-                        {/* Option 3: Merge All */}
+                        {/* Option 2: Merge All */}
                         <Button
                             type="button"
                             variant="unstyled" size="none"
@@ -190,7 +165,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-rose-500 transition-colors">
-                                3
+                                2
                             </div>
                             <div className="flex-1 min-w-0">
                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-500 dark:group-hover:text-rose-400 text-xs sm:text-[13px]">

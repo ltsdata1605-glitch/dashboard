@@ -1,7 +1,5 @@
 import { getSetting, saveSetting } from './core';
 
-export const DEDUPLICATION_SETTING_KEY = 'isDeduplicationEnabled';
-
 // --- KPI Targets ---
 export async function saveKpiTargets(targets: { hieuQua: number, traGop: number, doanhThu?: number, gtdh?: number, doanhThuThuc?: number }): Promise<void> {
     return saveSetting('kpiTargets', targets);
@@ -47,12 +45,3 @@ export async function getGtdhTargets(): Promise<Record<string, number> | null> {
     return getSetting('gtdhTargets');
 }
 
-// --- Deduplication Setting ---
-export async function getDeduplicationSetting(): Promise<boolean> {
-    const value = await getSetting<boolean>(DEDUPLICATION_SETTING_KEY);
-    return value !== null ? value : false;
-}
-
-export async function saveDeduplicationSetting(enabled: boolean): Promise<void> {
-    return saveSetting(DEDUPLICATION_SETTING_KEY, enabled);
-}

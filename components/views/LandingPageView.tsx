@@ -8,8 +8,6 @@ interface LandingPageViewProps {
     onProcessFile: (files: File[]) => void;
     configUrl: string;
     onConfigUrlChange: (url: string) => void;
-    isDeduplicationEnabled?: boolean;
-    onDeduplicationChange?: (enabled: boolean) => void;
     registry?: UploadedFileRegistryItem[];
     onToggleActive?: (id: string) => Promise<void> | void;
     onDelete?: (id: string) => Promise<void> | void;
@@ -19,9 +17,7 @@ interface LandingPageViewProps {
 const LandingPageView: React.FC<LandingPageViewProps> = ({ 
     onProcessFile, 
     configUrl, 
-    onConfigUrlChange, 
-    isDeduplicationEnabled, 
-    onDeduplicationChange,
+    onConfigUrlChange,
     registry = [],
     onToggleActive = () => {},
     onDelete = () => {},
@@ -60,12 +56,10 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                         
                         <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
                             <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
-                                <UploadSection 
+                                <UploadSection
                                     onProcessFile={onProcessFile}
                                     configUrl={configUrl}
                                     onConfigUrlChange={onConfigUrlChange}
-                                    isDeduplicationEnabled={isDeduplicationEnabled}
-                                    onDeduplicationChange={onDeduplicationChange}
                                 />
                                 {registry.length > 0 && (
                                     <FileHistoryManager

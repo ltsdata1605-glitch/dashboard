@@ -187,10 +187,6 @@
     "nonSemanticColor": 14,
     "missingMobileToolbar": 0
   },
-  "components/modals/UploadConflictModal.tsx": {
-    "nonSemanticColor": 9,
-    "missingMobileToolbar": 0
-  },
   "components/modals/UploadTypeSelectionModal.tsx": {
     "nonSemanticColor": 16,
     "missingMobileToolbar": 0
@@ -265,10 +261,6 @@
   },
   "components/views/PendingApprovalView.tsx": {
     "nonSemanticColor": 17,
-    "missingMobileToolbar": 0
-  },
-  "components/views/settings/BaseDataSection.tsx": {
-    "nonSemanticColor": 1,
     "missingMobileToolbar": 0
   },
   "components/views/settings/CloudSyncSection.tsx": {

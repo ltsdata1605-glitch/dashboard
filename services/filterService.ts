@@ -9,9 +9,6 @@ import { processSummaryTable, calculateWarehouseSummary } from './summaryService
 import { processIndustryData } from './industryService';
 import { cleanAndNormalize, calculateRowMetrics } from '../utils/dataUtils';
 
-/** WeakMap cache for deduplication — keyed by allData array reference, auto-GC'd when data changes */
-const _dedupCache = new WeakMap<DataRow[], DataRow[]>();
-
 // Cache variables for warehouse global data and warehouse summary to prevent recalculations on filter changes
 let _lastAllData: DataRow[] | null = null;
 let _lastProductConfig: ProductConfig | null = null;
@@ -215,122 +212,14 @@ function processDataForPeriod(
 /**
  * Applies all filters to the dataset and orchestrates the processing of different data slices.
  */
-export function deduplicateSalesData(allData: DataRow[]): DataRow[] {
-    const cached = _dedupCache.get(allData);
-    if (cached) {
-        return cached;
-    }
-
-    const deduplicated: DataRow[] = [];
-    
-    // 1. Group rows by import file source to ensure counters align per file
-    const rowsByFile = new Map<string, DataRow[]>();
-    for (let i = 0; i < allData.length; i++) {
-        const row = allData[i];
-        const fileKey = String(row._fileSavedAt || row._fileLastModified || 'default');
-        if (!rowsByFile.has(fileKey)) {
-            rowsByFile.set(fileKey, []);
-        }
-        rowsByFile.get(fileKey)!.push(row);
-    }
-
-    // 2. Count occurrence of same product code per order inside each file to prevent dropping valid multi-line rows
-    const orderGroups = new Map<string, DataRow[]>();
-    for (const [_, fileRows] of rowsByFile.entries()) {
-        const counterMap = new Map<string, number>();
-        
-        for (let i = 0; i < fileRows.length; i++) {
-            const row = fileRows[i];
-            const orderId = String(getRowValue(row, COL.ID) || '').trim();
-            const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
-            
-            if (!orderId || !prodCode) {
-                deduplicated.push(row);
-                continue;
-            }
-            
-            const counterKey = `${orderId}§${prodCode}`;
-            const count = counterMap.get(counterKey) || 0;
-            counterMap.set(counterKey, count + 1);
-            
-            const itemKey = `${orderId}§${prodCode}§${count}`;
-            if (!orderGroups.has(itemKey)) {
-                orderGroups.set(itemKey, []);
-            }
-            orderGroups.get(itemKey)!.push(row);
-        }
-    }
-    
-    for (const [_, rowsList] of orderGroups.entries()) {
-        if (rowsList.length === 1) {
-            deduplicated.push(rowsList[0]);
-        } else {
-            // Sort descending: largest _fileLastModified first, then largest _fileSavedAt first
-            rowsList.sort((a, b) => {
-                const timeA = a._fileLastModified || 0;
-                const timeB = b._fileLastModified || 0;
-                if (timeB !== timeA) return timeB - timeA;
-                
-                const savedA = a._fileSavedAt || 0;
-                const savedB = b._fileSavedAt || 0;
-                return savedB - savedA;
-            });
-            deduplicated.push(rowsList[0]);
-        }
-    }
-    
-    // 2. Strict exact row signature deduplication (checks for identical rows)
-    const finalDeduplicated: DataRow[] = [];
-    const uniqueSet = new Set<string>();
-    const sampleRow = deduplicated[0];
-    
-    // Limit keys to only essential identifying fields to avoid string concatenation overhead
-    // of 30+ columns for every single row.
-    const essentialFields = [COL.ID, COL.DATE_CREATED, COL.PRICE, COL.QUANTITY, COL.NGUOI_TAO, COL.KHO, COL.PRODUCT_CODE];
-    const keysToCheck: string[] = [];
-    if (sampleRow) {
-        for (const fieldArr of essentialFields) {
-            for (const key of fieldArr) {
-                if (sampleRow[key] !== undefined) {
-                    keysToCheck.push(key);
-                    break;
-                }
-            }
-        }
-        // Fallback to checking basic keys if none found
-        if (keysToCheck.length === 0) {
-            keysToCheck.push(...Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')));
-        }
-    }
-
-    for (let i = 0; i < deduplicated.length; i++) {
-        const row = deduplicated[i];
-        let sig = '';
-        for (let j = 0; j < keysToCheck.length; j++) {
-            sig += row[keysToCheck[j]] + '§';
-        }
-        if (!uniqueSet.has(sig)) {
-            uniqueSet.add(sig);
-            finalDeduplicated.push(row);
-        }
-    }
-    _dedupCache.set(allData, finalDeduplicated);
-    return finalDeduplicated;
-}
-
 export function applyFiltersAndProcess(
     allData: DataRow[],
     productConfig: ProductConfig,
     filters: FilterState,
-    departmentMap: DepartmentMap | null,
-    enableDeduplication: boolean = true
+    departmentMap: DepartmentMap | null
 ): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
 
-    // Runtime deduplication — cached per allData reference to avoid recalculating on filter changes
-    let sourceData = allData;
-    if (enableDeduplication) {
-        sourceData = deduplicateSalesData(allData);
-    }
+    const sourceData = allData;
 
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
     if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);

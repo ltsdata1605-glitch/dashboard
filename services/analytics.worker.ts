@@ -12,16 +12,15 @@ self.onmessage = (event: MessageEvent) => {
         self.postMessage({ type: 'DATA_SET_SUCCESS' });
     } 
     else if (type === 'PROCESS') {
-        const { productConfig, filterState, departmentMap, isDeduplicationEnabled } = payload;
-        
+        const { productConfig, filterState, departmentMap } = payload;
+
         try {
             // Chạy thuật toán lọc và tính toán nặng trĩu trên Worker
             const { processedData, baseFilteredData, warehouseFilteredData, calendarSourceData } = applyFiltersAndProcess(
                 cachedData,
                 productConfig,
                 filterState,
-                departmentMap,
-                isDeduplicationEnabled
+                departmentMap
             );
 
             // Gửi kết quả (đã tính xong, rất nhẹ) về Main Thread

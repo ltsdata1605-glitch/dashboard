@@ -6,11 +6,9 @@ interface UploadSectionProps {
     onProcessFile: (files: File[], isCloudSync?: boolean, isHistorical?: boolean) => void;
     configUrl: string;
     onConfigUrlChange: (url: string) => void;
-    isDeduplicationEnabled?: boolean;
-    onDeduplicationChange?: (enabled: boolean) => void;
 }
 
-const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl, onConfigUrlChange, isDeduplicationEnabled = false, onDeduplicationChange }) => {
+const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl, onConfigUrlChange }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [uploadType, setUploadType] = useState<'realtime' | 'historical'>('realtime');
@@ -57,26 +55,6 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             placeholder="https://docs.google.com/..."
                         />
                     </div>
-                    {onDeduplicationChange && (
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <label htmlFor="dedupe-toggle" className="text-[13px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                                    Xử lý trùng lặp thông minh
-                                </label>
-                                <p className="text-[11px] text-slate-500 mt-0.5">Tự động phát hiện và gộp các dòng dữ liệu giống nhau.</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    id="dedupe-toggle"
-                                    className="sr-only peer" 
-                                    checked={isDeduplicationEnabled}
-                                    onChange={(e) => onDeduplicationChange(e.target.checked)}
-                                />
-                                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
-                            </label>
-                        </div>
-                    )}
                     <div className="text-right">
                         <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="text-[12px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Hoàn tất</Button>
                     </div>

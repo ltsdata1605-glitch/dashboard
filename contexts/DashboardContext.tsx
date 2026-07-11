@@ -44,8 +44,6 @@ interface DashboardContextType {
     updateKpiCardsConfig: (config: import('../types').KpiCardConfig[]) => void;
     isLuyKe: boolean;
     handleLuyKeChange: (enabled: boolean) => void;
-    isDeduplicationEnabled: boolean;
-    handleDeduplicationChange: (enabled: boolean) => void;
     editingTargetKho: { id: string, name: string, valueDTQD: string, valueDTThuc: string } | null;
     setEditingTargetKho: React.Dispatch<React.SetStateAction<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>>;
 }

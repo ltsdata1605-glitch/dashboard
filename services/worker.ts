@@ -5,17 +5,16 @@ import { COL } from '../constants';
 
 interface WorkerMessage {
     file: File;
-    enableDeduplication: boolean;
 }
 
 // The worker's message handler
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-    const { file, enableDeduplication } = event.data;
-    processSingleFileInWorker(file, enableDeduplication);
+    const { file } = event.data;
+    processSingleFileInWorker(file);
 };
 
 // This function is adapted from dataService.ts
-async function processSingleFileInWorker(file: File, enableDeduplication: boolean) {
+async function processSingleFileInWorker(file: File) {
     const postStatus = (status: Status) => {
         self.postMessage({ type: 'progress', payload: status });
     };

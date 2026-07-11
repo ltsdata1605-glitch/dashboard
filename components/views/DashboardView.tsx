@@ -79,8 +79,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
         openUnshippedModal, handleExport, handleBatchKhoExport, handleExportUncollectedSheet,
         filterState,
-        isDeduplicationEnabled,
-        handleDeduplicationChange,
         processingTime,
         handleFilterChange,
         baseFilteredData,
@@ -358,8 +356,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             onProcessFile={handleFileProcessing}
                             configUrl={configUrl}
                             onConfigUrlChange={setConfigUrl}
-                            isDeduplicationEnabled={isDeduplicationEnabled}
-                            onDeduplicationChange={handleDeduplicationChange}
                             registry={logic.fileRegistry}
                             onToggleActive={logic.handleToggleFileActive}
                             onDelete={logic.handleDeleteFile}

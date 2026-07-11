@@ -3,7 +3,7 @@ import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppSta
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
-import { applyFiltersAndProcess, deduplicateSalesData } from '../services/filterService';
+import { applyFiltersAndProcess } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL } from '../constants';
 import toast from 'react-hot-toast';
@@ -12,13 +12,12 @@ import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithP
 interface DataManagementProps {
     filterState: FilterState;
     configUrl: string;
-    isDeduplicationEnabled: boolean;
     setStatus: (status: Status) => void;
     setAppState: (state: AppState) => void;
     appState: AppState;
 }
 
-export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState, appState }: DataManagementProps) => {
+export const useDataManagement = ({ filterState, configUrl, setStatus, setAppState, appState }: DataManagementProps) => {
     const { user, userRole, departmentId, employeeName, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [fileRegistry, setFileRegistry] = useState<UploadedFileRegistryItem[]>([]);
@@ -568,29 +567,24 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
 
 
 
-    const deduplicatedData = useMemo(() => {
-        if (!isDeduplicationEnabled) return originalData;
-        return deduplicateSalesData(originalData);
-    }, [originalData, isDeduplicationEnabled]);
-
     const rbacData = useMemo(() => {
-        let data = deduplicatedData;
+        let data = originalData;
         if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
             const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
-            data = deduplicatedData.filter(row => {
+            data = originalData.filter(row => {
                 const kho = String(row['Mã kho tạo'] || '').trim();
                 if (!allowedKhos.includes(kho)) return false;
-                
+
                 if (userRole === 'employee') {
                     const emp = String(row['Người tạo'] || '').trim().toLowerCase();
                     if (emp !== employeeName?.trim().toLowerCase()) return false;
                 }
-                
+
                 return true;
             });
         }
         return data;
-    }, [deduplicatedData, userRole, departmentId, employeeName, user?.email, isDemoMode]);
+    }, [originalData, userRole, departmentId, employeeName, user?.email, isDemoMode]);
 
     
     // Analytics Worker setup
@@ -655,12 +649,11 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             workerRef.current.onmessage = handleWorkerMessage;
             workerRef.current.postMessage({ 
                 type: 'PROCESS', 
-                payload: { 
-                    productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null, 
-                    filterState, 
-                    departmentMap, 
-                    isDeduplicationEnabled: false 
-                } 
+                payload: {
+                    productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null,
+                    filterState,
+                    departmentMap
+                }
             });
         }
     }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState]);

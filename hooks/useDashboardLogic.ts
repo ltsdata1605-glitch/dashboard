@@ -25,7 +25,6 @@ export const useDashboardLogic = () => {
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=xlsx');
-    const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(false);
     const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<{ employeeName: string } | null>(null);
@@ -67,7 +66,7 @@ export const useDashboardLogic = () => {
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
         handleRestoreGroup
-    } = useDataManagement({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState, appState });
+    } = useDataManagement({ filterState, configUrl, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
     const { handleSaveWarehouseTargets } = useWarehouseTargets(setWarehouseTargets);
@@ -86,7 +85,6 @@ export const useDashboardLogic = () => {
         pendingConflict,
         setPendingConflict
     } = useFileUploadLogic({
-        isDeduplicationEnabled,
         originalData,
         setOriginalData,
         setDepartmentMap,
@@ -128,11 +126,6 @@ export const useDashboardLogic = () => {
     // which listens to 'ycx-setting-changed' events dispatched by dbService.saveSetting().
     // No need for manual triggerCloudSync calls — saving to IndexedDB triggers the event chain.
 
-    const handleDeduplicationChange = useStableCallback((enabled: boolean) => {
-        setIsDeduplicationEnabled(enabled);
-        dbService.saveDeduplicationSetting(enabled).catch(console.error);
-    });
-
     const handleLuyKeChange = useStableCallback((enabled: boolean) => {
         setIsLuyKe(enabled);
         dbService.saveSetting('kpi_luyke_mode', enabled).catch(console.error);
@@ -143,20 +136,6 @@ export const useDashboardLogic = () => {
         dbService.getSetting<boolean>('kpi_luyke_mode').then(val => {
             if (val !== null && val !== undefined) setIsLuyKe(val);
         }).catch(console.error);
-
-        dbService.getDeduplicationSetting().then(val => {
-            setIsDeduplicationEnabled(val);
-        }).catch(console.error);
-    }, []);
-
-    // Listen for dedup changes from SettingsView (outside DashboardContext)
-    useEffect(() => {
-        const handler = (e: Event) => {
-            const val = (e as CustomEvent).detail;
-            setIsDeduplicationEnabled(val);
-        };
-        window.addEventListener('dedup-changed', handler);
-        return () => window.removeEventListener('dedup-changed', handler);
     }, []);
 
     const updateWarehouseTarget = useStableCallback((kho: string, target: number) => {
@@ -289,8 +268,6 @@ export const useDashboardLogic = () => {
         handlePendingDownload,
         handlePendingShare,
         handlePendingClose,
-        isDeduplicationEnabled,
-        handleDeduplicationChange,
         isLuyKe,
         handleLuyKeChange,
         processingTime,
@@ -332,7 +309,6 @@ export const useDashboardLogic = () => {
         pendingNaming, pendingConflict,
         openPerformanceModal, openUnshippedModal, handleExport, handleBatchExport, handleBatchKhoExport, handleExportUncollectedSheet,
         pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose,
-        isDeduplicationEnabled, handleDeduplicationChange,
         isLuyKe, handleLuyKeChange,
         processingTime,
         warehouseTargets, updateWarehouseTarget,

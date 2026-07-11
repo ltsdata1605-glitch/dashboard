@@ -502,7 +502,7 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
  * Xử lý file YCX trực tiếp trên Main Thread (Tốc độ cao cho file < 50MB)
  * Thay thế Worker để tránh overhead load thư viện.
  */
-export async function processSalesFile(file: File, enableDeduplication: boolean, setStatus: StatusUpdater): Promise<DataRow[]> {
+export async function processSalesFile(file: File, setStatus: StatusUpdater): Promise<DataRow[]> {
     setStatus({ message: 'Đang đọc file...', type: 'info', progress: 10 });
     
     try {
@@ -530,32 +530,7 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         setStatus({ message: 'Đang chuyển đổi dữ liệu...', type: 'info', progress: 50 });
         const json: DataRow[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
         
-        let processedList: DataRow[] = json;
-
-        if (enableDeduplication) {
-            setStatus({ message: 'Đang xóa dữ liệu trùng...', type: 'info', progress: 70 });
-            const uniqueSet = new Set<string>();
-            const deduplicated: DataRow[] = [];
-            
-            const len = json.length;
-            for (let i = 0; i < len; i++) {
-                const row = json[i];
-                let signature = '';
-                // Fast signature generation
-                for (const key in row) {
-                    if (key !== 'STT_1') {
-                        signature += row[key] + '§'; 
-                    }
-                }
-
-                if (!uniqueSet.has(signature)) {
-                    uniqueSet.add(signature);
-                    deduplicated.push(row);
-                }
-            }
-            processedList = deduplicated;
-            uniqueSet.clear(); 
-        }
+        const processedList: DataRow[] = json;
 
         setStatus({ message: 'Đang chuẩn hóa dữ liệu...', type: 'info', progress: 90 });
         

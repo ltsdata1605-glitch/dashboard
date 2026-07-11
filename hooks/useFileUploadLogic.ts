@@ -13,7 +13,6 @@ import type { UploadConflictInfo } from '../components/modals/UploadConflictModa
 
 
 interface FileUploadLogicProps {
-    isDeduplicationEnabled: boolean;
     originalData: DataRow[];
     setOriginalData: (data: DataRow[]) => void;
     setDepartmentMap: (map: DepartmentMap | null) => void;
@@ -27,7 +26,6 @@ interface FileUploadLogicProps {
 }
 
 export const useFileUploadLogic = ({
-    isDeduplicationEnabled,
     originalData,
     setOriginalData,
     setDepartmentMap,
@@ -50,7 +48,7 @@ export const useFileUploadLogic = ({
         newFilename: string;
         newDateRangeStr: string;
         conflicts: UploadConflictInfo[];
-        resolve: (action: 'overwrite_deactivate' | 'merge_deduplicate' | 'merge_all' | 'cancel') => void;
+        resolve: (action: 'overwrite_deactivate' | 'merge_all' | 'cancel') => void;
     } | null>(null);
     const timerRef = useRef<number | undefined>(undefined);
 
@@ -207,7 +205,7 @@ export const useFileUploadLogic = ({
                         reject(new Error(`Lỗi luồng xử lý nền (Worker): ${file.name}`));
                     };
                     
-                    worker.postMessage({ file, enableDeduplication: isDeduplicationEnabled });
+                    worker.postMessage({ file });
                 });
                 
                 // Parse if it is a stringified JSON (from worker optimization)
@@ -388,7 +386,7 @@ export const useFileUploadLogic = ({
                         ? `${toLocalISOString(fileDates[0])} đến ${toLocalISOString(fileDates[fileDates.length - 1])}`
                         : 'Không xác định';
 
-                    const action = await new Promise<'overwrite_deactivate' | 'merge_deduplicate' | 'merge_all' | 'cancel'>((resolve) => {
+                    const action = await new Promise<'overwrite_deactivate' | 'merge_all' | 'cancel'>((resolve) => {
                         setPendingConflict({
                             newFilename: file.name,
                             newDateRangeStr: rangeStr,
@@ -410,10 +408,6 @@ export const useFileUploadLogic = ({
                                 await dbService.clearTempRealtimeData();
                             }
                         }
-                    } else if (action === 'merge_deduplicate') {
-                        await dbService.saveDeduplicationSetting(true);
-                        window.dispatchEvent(new CustomEvent('dedup-changed', { detail: true }));
-                        toast.success('Đã tự động kích hoạt tính năng lọc trùng mã đơn hàng!');
                     }
                 }
 
