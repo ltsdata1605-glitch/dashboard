@@ -383,6 +383,12 @@ export function applyFiltersAndProcess(
 
         if (!isKhoMatch(row, khoFilterSet)) continue;
 
+        // Bỏ qua những đơn đã hủy hoặc đã trả (đồng nhất với warehouseGlobalData)
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValidOrder = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        if (!isValidOrder) continue;
+
         baseFilteredData.push(row);
 
         if (mDate) {
