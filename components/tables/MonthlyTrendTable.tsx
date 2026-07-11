@@ -32,7 +32,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
     });
 
     return (
-        <table className="w-full table-fixed compact-export-table border-collapse bg-white dark:bg-slate-800" id="summary-trend-table">
+        <table className="w-full table-fixed compact-export-table border-collapse bg-white dark:bg-slate-800 tabular-nums" id="summary-trend-table">
             <thead className="sticky top-0 z-30">
                 <tr>
                     <th 

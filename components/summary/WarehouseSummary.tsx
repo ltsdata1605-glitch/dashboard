@@ -454,7 +454,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                 {columnsLoaded && (
                 <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
-                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">

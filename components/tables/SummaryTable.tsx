@@ -223,9 +223,9 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                           activeSortConfig={activeSortConfig}
                       />
                   ) : (
-                  <table className="min-w-max w-full table-auto compact-export-table border-collapse" id="summary-table">
+                  <table className="min-w-max w-full table-auto compact-export-table border-collapse tabular-nums" id="summary-table">
                       {/* HEADER */}
-                      <thead>
+                      <thead className="sticky top-0 z-30">
                         {isComparisonMode ? (
                             <>
                                 <tr>

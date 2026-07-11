@@ -125,7 +125,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
 
     return (
         <div className="w-full overflow-x-auto custom-scrollbar" ref={tableContainerRef}>
-            <table className="w-full min-w-[600px] border-collapse bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+            <table className="w-full min-w-[600px] border-collapse bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm tabular-nums">
                 <thead>
                     <tr className="bg-slate-100 dark:bg-slate-700/80 uppercase text-[10px] sm:text-[11px]">
                         <th className="px-4 py-3 text-left font-black text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-600 truncate max-w-[200px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-700/80 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
