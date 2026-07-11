@@ -207,6 +207,10 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
         try {
             const validData = baseFilteredData.filter(row => {
+                // Chỉ tính đơn ĐÃ THU TIỀN — đơn "Chưa thu" chưa đủ điều kiện tính doanh thu/số
+                // lượng (đồng nhất với WarehouseSummary/pipeline chuẩn processDataForPeriod)
+                const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+                if (thuTien !== 'đã thu') return false;
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
                 return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                     ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))

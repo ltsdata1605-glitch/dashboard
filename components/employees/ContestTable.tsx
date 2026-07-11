@@ -84,6 +84,10 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         const employeeColumnValues = new Map<string, Map<string, number>>(); // Map<employeeName, Map<columnId, value>>
 
         const validData = baseFilteredData.filter(row => {
+            // Chỉ tính đơn ĐÃ THU TIỀN — đơn "Chưa thu" chưa đủ điều kiện tính doanh thu/số lượng
+            // (đồng nhất với WarehouseSummary/pipeline chuẩn processDataForPeriod)
+            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+            if (thuTien !== 'đã thu') return false;
             // Bỏ qua sản phẩm "Không tính doanh thu" (đồng nhất với WarehouseSummary/SummaryTable)
             const parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
             if (parentGroup === 'Không tính doanh thu') return false;
