@@ -79,49 +79,127 @@
 
 ## 3. Component pattern chuẩn (8 mẫu)
 
+> **Đã trích xuất PHẦN B**: 3 pattern lõi (SectionCard, SectionHeader, KpiCard) đã chuyển vào
+> `components/shared/ui/` — nơi CẢ 4 khu vực (Root, `bi-dashboard`, `phan-ca`, `sticker-event`)
+> được phép import theo CLAUDE.md. Import qua barrel: `import { SectionCard, SectionHeader, KpiCard } from '.../shared/ui'`
+> (điều chỉnh số cấp `../` theo vị trí file gọi).
+
 ### 3.1 SectionCard
-Khung bọc mọi section. Mobile phẳng full-bleed, laptop bo góc nổi. → khuyến nghị tách 1 component `components/common/SectionCard.tsx` dùng lại.
+`components/shared/ui/SectionCard.tsx`. Khung bọc mọi section — mobile phẳng full-bleed
+(`rounded-none border-y`), laptop bo góc nổi (`rounded-2xl border shadow-sm hover:shadow-md`).
+Chỉ cấp bg/rounded/border/shadow/overflow — **không** áp padding (header/body tự quản lý).
+Khác với `Card` (có sẵn trong shared/ui, tĩnh không đổi theo breakpoint, dùng cho card thường) —
+`SectionCard` dành riêng cho khung section cấp trang cần đổi hình mobile↔laptop.
+
+```tsx
+import { SectionCard, SectionHeader } from '../shared/ui'; // hoặc '../../shared/ui' tuỳ vị trí
+
+<SectionCard className="mb-3 lg:mb-8" ref={myExportRef}>
+  <SectionHeader title="TIÊU ĐỀ SECTION" icon="bar-chart-3" subtitle="Mô tả phụ">
+    {/* toolbar actions bên phải, xem 3.2 */}
+  </SectionHeader>
+  <div className="p-2 lg:p-6">{/* nội dung */}</div>
+</SectionCard>
+```
+Có `hoverable?: boolean` (mặc định `true`) để tắt hover-shadow khi section không tương tác.
+Nếu section có state riêng (vd. `isFullScreen` đổi hẳn sang `fixed inset-0`), **không ép** dùng
+`SectionCard` — giữ `<div>` thường với className rẽ nhánh thủ công (xem `WarehouseSummary.tsx`,
+`SummaryTable.tsx` làm mẫu) để tránh xung đột class khi override.
 
 ### 3.2 SectionHeader + toolbar
-`components/common/SectionHeader.tsx`. Trái: icon + tiêu đề (`text-heading-sm font-bold text-slate-800`). Phải: actions (children) dùng double-icon. Mobile sticky top nền trắng.
+`components/shared/ui/SectionHeader.tsx`. Trái: icon chip (`bg-sky-600/10 text-sky-600`) + tiêu đề
+(`text-sm lg:text-xl font-bold text-slate-800 uppercase`) + subtitle phụ. Phải: `children` (toolbar
+actions) dùng kỹ thuật **double-icon** — 1 `<Button>` chứa 2 `<Icon>` (nhỏ `lg:hidden` / to `hidden
+lg:block`) thay vì 2 khối JSX tách biệt:
+```tsx
+<Button variant="unstyled" size="none" onClick={...} className="p-1.5 lg:p-2 rounded-md hover:bg-slate-100">
+  <Icon name="camera" size={4} className="lg:hidden" />
+  <Icon name="camera" size={5} className="hidden lg:block" />
+</Button>
+```
+Khác với `CardHeader` (có sẵn trong shared/ui, đơn giản, không icon chip) — dùng `SectionHeader`
+cho section cấp trang. **Không** thêm `sticky` vào `SectionHeader` — sticky toolbar (nếu cần) đã có
+sẵn ở cấp `FilterBar`/thanh công cụ trang, tránh chồng 2 lớp sticky.
 
 ### 3.3 KPI Card
-`components/kpis/KpiCards.tsx` (đã "premium"). Chuẩn: dải gradient accent trên, icon chip nền tint + `glowColor`, số `tabular-nums` `text-display`, nhãn `text-overline uppercase text-slate-400`, progress `progress-shimmer`, footer trend emerald/rose. Lưới `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 lg:gap-4`.
+`components/shared/ui/KpiCard.tsx` (tách từ `components/kpis/KpiCards.tsx`, component trình bày
+thuần — chỉ nhận props, không phụ thuộc hook/context nên dùng được ở cả `features/*`). Dải gradient
+accent trên, icon chip nền tint + `glowColor`, số `tabular-nums`, nhãn `text-[9px] lg:text-[11px]
+uppercase text-slate-400`, progress bar `progress-shimmer`, footer trend emerald/rose.
+```tsx
+import { KpiCard } from '../shared/ui/KpiCard';
+
+<KpiCard icon="wallet" iconColor="sky" title="Doanh thu" trendLabel="Mục tiêu" trendValue="85%" progressPercent={85}>
+  <div className="text-[15px] lg:text-2xl font-extrabold tabular-nums text-sky-600">1.2 Tỷ</div>
+</KpiCard>
+```
+Lưới bọc ngoài: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 lg:gap-4`.
+Khác với `StatCard` (có sẵn trong shared/ui, đơn giản hơn — không progress/gradient) — dùng
+`KpiCard` khi cần thể hiện tiến độ so với target.
 
 ### 3.4 Chart Card
-Header qua SectionHeader; thân chart cao vừa ở mobile, legend cuộn/đưa xuống; tooltip `rounded-lg shadow-xl bg-white`; màu chuỗi = ramp semantic (sky/emerald/amber/rose + sắc độ). Bỏ nhánh `isDark` (luôn LIGHT_COLORS).
+Bọc bằng `SectionCard` + header qua `SectionHeader`; thân chart cao vừa ở mobile, legend
+cuộn/đưa xuống; tooltip `rounded-lg shadow-xl bg-white`; màu chuỗi = ramp semantic (sky/emerald/
+amber/rose + sắc độ). Không nhánh `isDark` (luôn 1 bảng màu Sáng — dark mode đã tắt toàn dự án).
 
 ### 3.5 Table
-Header: `text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50`, sticky khi cuộn dọc. Ô: `text-[11px] sm:text-[13px] tabular-nums` (số căn phải). Mobile: khung `overflow-x-auto no-scrollbar`, cột đầu `sticky left-0 bg-white z-10`. Row hover `hover:bg-slate-50`. Tăng/giảm: `text-emerald-600`/`text-rose-600`. Bảng luôn `rounded-none`, viền mảnh `border-slate-200`.
+Header: `text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50`, có thể
+`sticky top-0 z-30` khi cần cố định lúc cuộn dọc (xem mẫu `MonthlyTrendTable.tsx`/`SummaryTable.tsx`).
+Ô: `text-[11px] sm:text-[13px]`, thêm `tabular-nums` **1 lần ở cấp `<table>`** (kế thừa CSS cho
+toàn bộ ô con, không cần sửa từng span). Mobile: khung `overflow-x-auto no-scrollbar`, cột đầu
+`sticky left-0 bg-white z-10`. Row hover `hover:bg-slate-50`. Tăng/giảm: `text-emerald-600`/
+`text-rose-600`. Bảng luôn `rounded-none`, viền mảnh `border-slate-200`.
 
 ### 3.6 Filter pill / chip
 `rounded-full` `text-label` `px-3 h-8`; active nền `sky-50 text-sky-700 border-sky-200`; dải pill cuộn ngang dùng `snap-scroll-x no-scrollbar`.
 
 ### 3.7 Empty state
-Giữa khung: icon mờ (`text-slate-300`), câu ngắn (`text-body text-slate-500`), 1 nút hành động (`shared/ui/Button`). Không để trống trơn.
+Dùng `EmptyState` có sẵn trong `components/shared/ui/EmptyState.tsx` — **không tự viết lại**
+khối icon+text rải rác mỗi nơi:
+```tsx
+import { EmptyState } from '../shared/ui/EmptyState';
+import { Icon } from '../common/Icon';
+
+<EmptyState icon={<Icon name="inbox" size={5} />} title="Không có dữ liệu" compact />
+```
+`compact` cho khung nhỏ (trong card/ô bảng); mặc định (không `compact`) cho khung lớn, có thể
+thêm `description` + `action` (nút `shared/ui/Button`).
 
 ### 3.8 Skeleton
-`components/common/SkeletonLoader.tsx` — khối `bg-slate-200 rounded-md animate-shimmer` khớp đúng khung thật (KPI/chart/table). Dùng khi tải.
+`components/common/SkeletonLoader.tsx` (Root: `KpiCardsSkeleton`/`ChartSkeleton`/`TableSkeleton`/
+`TabbedTableSkeleton`) — khung khớp `SectionCard` thật (`rounded-none lg:rounded-2xl border-y
+lg:border shadow-sm`) để không "nhảy" khung khi load xong dữ liệu. `features/*` nên tự viết
+skeleton riêng theo cùng công thức hình dạng này (không ép dùng chung 1 component vì kích thước
+KPI/chart mỗi feature khác nhau) — xem `components/shared/ui/Skeleton.tsx` (`SkeletonCard`/
+`SkeletonTable`/`SkeletonChart`) làm khối dựng sẵn nếu feature cần nhanh.
 
 ---
 
 ## 4. Checklist 12 điểm (đối chiếu khi áp cho mọi màn hình)
-1. [ ] Bọc trong **SectionCard** đúng pattern (mobile phẳng / laptop bo góc nổi).
-2. [ ] Container laptop `max-w-[960px] mx-auto`; mobile full-bleed, **không tràn ngang**.
+1. [ ] Bọc trong **`SectionCard`** (`components/shared/ui/SectionCard.tsx`) đúng pattern (mobile phẳng / laptop bo góc nổi) — trừ section có state riêng kiểu `isFullScreen` (xem ngoại lệ ở §3.1).
+2. [ ] Container laptop `max-w-[960px] mx-auto` (Root/Phân Tích) — `features/*` giữ khung container hiện có của feature, không ép 960px nếu phá layout riêng; mobile full-bleed, **không tràn ngang**.
 3. [ ] Spacing theo chuẩn: `p-3 lg:p-6`, `space-y-3 lg:space-y-6`, `gap-2.5 lg:gap-4`.
 4. [ ] Chỉ **palette semantic** (sky/slate/emerald/amber/rose, indigo=alias). Không màu lạ.
-5. [ ] Typography theo token (`text-overline` header bảng, số `tabular-nums`, tiêu đề `font-bold text-slate-800`).
+5. [ ] Typography theo token (`text-overline` header bảng, số `tabular-nums` — thêm 1 lần ở cấp `<table>`, tiêu đề `font-bold text-slate-800`).
 6. [ ] Bóng: card `shadow-sm`, hover `shadow-md`, modal/dropdown `shadow-xl`. Không lạm dụng `shadow-lg`.
-7. [ ] Toolbar responsive **double-icon**, không tạo 2 khối JSX tách biệt.
-8. [ ] Bảng: header sticky + `rounded-none` + mobile cuộn ngang cột đầu sticky.
-9. [ ] Nút/modal/input/badge **qua `shared/ui/*`**, không thô.
+7. [ ] Header section dùng **`SectionHeader`** (`components/shared/ui/SectionHeader.tsx`); toolbar responsive **double-icon**, không tạo 2 khối JSX tách biệt.
+8. [ ] Bảng: header (có thể `sticky top-0`) + `rounded-none` + mobile cuộn ngang cột đầu sticky.
+9. [ ] Nút/modal/input/badge/KPI card/empty-state **qua `shared/ui/*`** (`Button`, `Modal`, `KpiCard`, `EmptyState`...), không tự viết lại thô.
 10. [ ] Touch target mobile ≥ 44px; có `touch-feedback` ở phần tử bấm.
-11. [ ] **KHÔNG** class `dark:` mới; **KHÔNG** đụng logic/tính toán.
+11. [ ] **KHÔNG** class `dark:` mới; **KHÔNG** đụng logic/tính toán/data flow riêng của feature.
 12. [ ] `npm run check` xanh + test **Mobile 375px** & **Laptop 1280px**.
 
 ---
 
-## 5. Ghi chú hiện trạng (để làm Phần A)
+## 5. Ghi chú hiện trạng
 - Token/CSS nền tảng **đã đủ** — không cần thêm token; việc còn lại là **dùng nhất quán** ở tầng component.
 - `styles.css` còn nhiều class custom trỏ dark (`.surface-card`, `.chart-card`, `.bg-static-blobs`, scrollbar...) — **để yên** (vô hiệu ở Sáng), không cần dọn trong đợt này.
-- Điểm cần chuẩn hoá ở Phần A: đồng nhất khung SectionCard (hiện mỗi section tự viết wrapper), header bảng (cỡ chữ chưa đều), bỏ nhánh `isDark` thừa trong charts, thống nhất lưới KPI & spacing.
+- **PHẦN A + B đã xong** (module Phân Tích là "bản mẫu vàng"): `SectionCard`/`SectionHeader`/`KpiCard`
+  đã tách vào `components/shared/ui/` (dùng được cả `features/*`); KPI grid, bảng (`tabular-nums`,
+  sticky header), Empty state (`EmptyState` dùng chung), Skeleton đã khớp khung `SectionCard`.
+- `scripts/lint-ratchet.cjs`: đã gỡ rule `missingDarkVariant` (lỗi thời từ khi tắt Dark Mode) — không
+  cần thêm `dark:` cho code mới, `npm run check` sẽ không chặn vì thiếu `dark:`.
+- **Còn lại cho PHẦN C**: áp 6 pattern ở §3 cho `features/bi-dashboard`, `features/phan-ca`,
+  `features/sticker-event` — dùng đúng import `components/shared/ui/*`, KHÔNG import `components/common/*`
+  hay `hooks/services` gốc (vi phạm cách ly 4 khu vực). Mỗi feature có thể đã có style/khung riêng —
+  đối chiếu checklist §4 nhưng ưu tiên không phá layout/logic đặc thù đã hoạt động tốt của feature.
