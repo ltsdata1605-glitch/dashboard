@@ -7,6 +7,7 @@ import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { SectionCard } from '../common/SectionCard';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { isKhoMatch } from '../../services/filterService';
 import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
@@ -293,7 +294,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
   const renderChart = () => {
     if (!hasData || chartData.length === 0) {
-        return <div className="flex items-center justify-center h-full"><p className="text-center text-slate-500 dark:text-slate-400 text-sm font-semibold tracking-wide">Không có dữ liệu xu hướng.</p></div>;
+        return <div className="flex items-center justify-center h-full"><EmptyState icon={<Icon name="trending-up" size={5} />} title="Không có dữ liệu xu hướng" compact /></div>;
     }
 
     if (trendState.view === 'daily') {

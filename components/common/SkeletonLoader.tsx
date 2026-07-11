@@ -21,7 +21,7 @@ const KpiCardSkeleton: React.FC = () => (
 
 // Skeleton for the entire KPI cards section
 export const KpiCardsSkeleton: React.FC = () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 lg:gap-4 mb-3 lg:mb-8">
         <KpiCardSkeleton />
         <KpiCardSkeleton />
         <KpiCardSkeleton />
@@ -32,18 +32,18 @@ export const KpiCardsSkeleton: React.FC = () => (
 
 // Skeleton for chart-like components (TrendChart, IndustryGrid)
 export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-[442px]' }) => (
-    <div className={`bg-white dark:bg-slate-900 shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8 flex flex-col ${height}`}>
-        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+    <div className={`bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col ${height}`}>
+        <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <div>
-                <SkeletonPulse className="h-6 w-48 mb-2" />
-                <SkeletonPulse className="h-4 w-64" />
+                <SkeletonPulse className="h-5 lg:h-6 w-40 lg:w-48 mb-2" />
+                <SkeletonPulse className="h-3 lg:h-4 w-52 lg:w-64" />
             </div>
             <div className="flex items-center gap-2">
-                <SkeletonPulse className="h-9 w-24 rounded-lg" />
-                <SkeletonPulse className="h-9 w-32 rounded-lg" />
+                <SkeletonPulse className="h-8 lg:h-9 w-20 lg:w-24 rounded-lg" />
+                <SkeletonPulse className="h-8 lg:h-9 w-28 lg:w-32 rounded-lg" />
             </div>
         </div>
-        <div className="p-6 flex-grow">
+        <div className="p-3 lg:p-6 flex-grow">
             <SkeletonPulse className="w-full h-full" />
         </div>
     </div>
@@ -51,18 +51,18 @@ export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-[442p
 
 // Generic Skeleton for table-like components (SummaryTable, WarehouseSummary)
 export const TableSkeleton: React.FC<{rows?: number}> = ({ rows = 5 }) => (
-    <div className="bg-white dark:bg-slate-900 shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8">
-        <div className="px-6 py-5 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
+    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8">
+        <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
             <div>
-                <SkeletonPulse className="h-7 w-56 mb-2" />
-                <SkeletonPulse className="h-4 w-72" />
+                <SkeletonPulse className="h-6 lg:h-7 w-44 lg:w-56 mb-2" />
+                <SkeletonPulse className="h-3 lg:h-4 w-60 lg:w-72" />
             </div>
             <div className="flex items-center gap-3">
-                <SkeletonPulse className="h-10 w-28 rounded-md" />
-                <SkeletonPulse className="h-10 w-28 rounded-md" />
+                <SkeletonPulse className="h-9 lg:h-10 w-24 lg:w-28 rounded-md" />
+                <SkeletonPulse className="h-9 lg:h-10 w-24 lg:w-28 rounded-md" />
             </div>
         </div>
-        <div className="p-6">
+        <div className="p-3 lg:p-6">
             <div className="space-y-3">
                 {/* Header */}
                 <div className="grid grid-cols-5 gap-4 px-4">
@@ -82,9 +82,9 @@ export const TableSkeleton: React.FC<{rows?: number}> = ({ rows = 5 }) => (
 
 // A more specific skeleton for the EmployeeAnalysis component which has tabs
 export const TabbedTableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) => (
-    <div className="bg-white dark:bg-slate-900 shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8 flex flex-col flex-grow">
+    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col flex-grow">
         {/* Tab headers */}
-        <div className="flex justify-between items-center gap-y-2 border-b-2 border-slate-200 dark:border-slate-700 px-4 pt-4">
+        <div className="flex justify-between items-center gap-y-2 border-b-2 border-slate-200 dark:border-slate-700 px-2 lg:px-4 pt-3 lg:pt-4">
             <div className="flex items-center gap-4">
                 <SkeletonPulse className="h-5 w-24 pb-2" />
                 <SkeletonPulse className="h-5 w-28 pb-2" />
@@ -96,7 +96,7 @@ export const TabbedTableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) =
             </div>
         </div>
         {/* Table content */}
-        <div className="p-6 flex-grow">
+        <div className="p-3 lg:p-6 flex-grow">
             <div className="space-y-3">
                  <div className="flex justify-between items-center mb-4">
                     <SkeletonPulse className="h-6 w-48" />

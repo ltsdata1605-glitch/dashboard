@@ -7,6 +7,7 @@ import type { DataRow, IndustryData, ProductConfig, FilterState } from '../../ty
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { SectionCard } from '../common/SectionCard';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
@@ -321,9 +322,8 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         </div>
 
                         {currentView.data.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
-                                <Icon name="search-x" size={8} className="text-slate-300 dark:text-slate-700 mb-3" />
-                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
+                            <div className="bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+                                <EmptyState icon={<Icon name="search-x" size={6} />} title="Không có dữ liệu" compact />
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-2 industry-cards-grid">

@@ -4,6 +4,7 @@ import Sortable from 'sortablejs';
 import type { SummaryTableNode, GrandTotal } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { processSummaryTable } from '../../services/summaryService';
@@ -433,7 +434,9 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     />
                                 ))
                             ) : (
-                                 <tr><td colSpan={isComparisonMode ? 1 + visibleColumns.reduce((acc: number, key: string) => acc + (HEADER_CONFIG.find(h => h.key === key)?.singleColumnInCompare ? 1 : 2), 0) : visibleColumns.length + 1} className="text-center p-8 text-slate-500">Không có dữ liệu để hiển thị.</td></tr>
+                                 <tr><td colSpan={isComparisonMode ? 1 + visibleColumns.reduce((acc: number, key: string) => acc + (HEADER_CONFIG.find(h => h.key === key)?.singleColumnInCompare ? 1 : 2), 0) : visibleColumns.length + 1}>
+                                     <EmptyState icon={<Icon name="inbox" size={5} />} title="Không có dữ liệu để hiển thị" compact />
+                                 </td></tr>
                             )}
                         </tbody>
                         <tfoot className="bg-sky-100 dark:bg-sky-900/40 font-bold text-sm border-t-2 border-sky-200 dark:border-sky-800">
