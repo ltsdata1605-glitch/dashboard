@@ -6,6 +6,7 @@ import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 
@@ -352,7 +353,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     if (!headers || headers.length === 0 || !rows || rows.length === 0) {
         return (
             <Card title={title} rounded={false}>
-                <div className="text-center py-8 text-sm text-slate-500 dark:text-slate-400 mt-4 font-medium italic">Chưa có dữ liệu cho siêu thị này.</div>
+                <EmptyState title="Chưa có dữ liệu cho siêu thị này" compact />
             </Card>
         );
     }

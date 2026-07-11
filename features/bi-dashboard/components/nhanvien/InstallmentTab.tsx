@@ -7,9 +7,10 @@ import ExportButton from '../ExportButton';
 import { InstallmentRow, InstallmentProvider } from '../../types/nhanVienTypes';
 import { getYesterdayDateString, parseInstallmentData } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { ChevronDownIcon, ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, CheckCircleIcon, DownloadAllIcon } from '../Icons';
+import { ChevronDownIcon, ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, CheckCircleIcon, DownloadAllIcon, DocumentReportIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
@@ -343,7 +344,7 @@ const InstallmentTab: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card title="Phân tích Trả góp"><div className="py-20 text-center text-slate-500">Chưa có dữ liệu.</div></Card>;
+    if (rows.length === 0) return <Card title="Phân tích Trả góp"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
     
     const providers = rows.find(r => r.providers.length > 0)?.providers || [];
 

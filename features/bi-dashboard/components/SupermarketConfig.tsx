@@ -11,6 +11,7 @@ import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashb
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
 import { Modal } from '../../../components/shared/ui/Modal';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
@@ -422,9 +423,12 @@ const CompetitionTarget: React.FC<{
                     </div>
                 );
             })() : (
-                <div className="col-span-full py-16 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                    <AlertTriangleIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-4">Hãy cập nhật dữ liệu "Luỹ kế" bên dưới nhóm "Thi đua Cụm" để cấu hình.</p>
+                <div className="col-span-full">
+                    <EmptyState
+                        icon={<AlertTriangleIcon className="h-6 w-6" />}
+                        title='Chưa có dữ liệu "Luỹ kế"'
+                        description='Hãy cập nhật dữ liệu "Luỹ kế" bên dưới nhóm "Thi đua Cụm" để cấu hình.'
+                    />
                 </div>
             )}
 

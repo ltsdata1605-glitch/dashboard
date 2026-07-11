@@ -1,6 +1,7 @@
 import React from 'react';
 import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { onActivateKey } from '../../../../../components/shared/ui';
+import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import { MedalBadge, getWeekDates, getWeekdayAbbr, isUpdatedToday } from './bonusTableHelpers';
 import { BonusDisplayRow } from './BonusDisplayRow';
@@ -44,9 +45,10 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
 }) => {
     if (allDates.length === 0) {
         return (
-            <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                Không có dữ liệu theo ngày. Hãy nhấn "Thủ công" để tải lên bảng HRM chứa dữ liệu theo ngày.
-            </div>
+            <EmptyState
+                title="Không có dữ liệu theo ngày"
+                description='Hãy nhấn "Thủ công" để tải lên bảng HRM chứa dữ liệu theo ngày.'
+            />
         );
     }
 

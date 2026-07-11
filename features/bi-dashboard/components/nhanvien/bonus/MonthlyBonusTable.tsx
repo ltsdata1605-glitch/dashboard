@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
+import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
 import AvatarDisplay from '../shared/AvatarDisplay';
 
 /** Rút gọn theo đơn vị triệu, 1 chữ số thập phân, kèm hậu tố "Tr". */
@@ -132,9 +133,10 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
 
     if (!anyMonthHasData) {
         return (
-            <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                Chưa có dữ liệu tháng nào. Vào &quot;⚡ Tự động&quot; &gt; Năm hoặc Tháng để đổ dữ liệu.
-            </div>
+            <EmptyState
+                title="Chưa có dữ liệu tháng nào"
+                description='Vào "⚡ Tự động" > Năm hoặc Tháng để đổ dữ liệu.'
+            />
         );
     }
 

@@ -11,6 +11,7 @@ import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
@@ -265,7 +266,12 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     {processedSupermarketData && sortedPrograms.length > 0 ? (
                         viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
                         : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
-                    ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">{!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}". Vui lòng cập nhật dữ liệu.` : 'Không có chương trình thi đua nào được chọn.'}</p></div>}
+                    ) : (
+                        <EmptyState
+                            title={!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}"` : 'Không có chương trình thi đua nào được chọn'}
+                            description={!supermarketData ? 'Vui lòng cập nhật dữ liệu.' : undefined}
+                        />
+                    )}
                 </div>
                 </div>
             </div>

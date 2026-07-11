@@ -16,6 +16,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import TimeProgressBar from './shared/TimeProgressBar';
 
 const PALETTE = [
@@ -672,18 +673,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 ))}
 
                                 {(!Array.isArray(summaryTables) || summaryTables.length === 0) && (
-                                    <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4">
-                                        <p className="text-slate-500 font-bold">Chưa có bảng tổng hợp nào. Hãy bấm "Thêm bảng tổng hợp" để bắt đầu.</p>
-                                        <Button
-                                            variant="ghost"
-                                            type="button"
-                                            onClick={handleAddSummaryTable}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
-                                        >
-                                            <PlusIcon className="h-4 w-4" />
-                                            <span>Thêm bảng tổng hợp</span>
-                                        </Button>
-                                    </div>
+                                    <EmptyState
+                                        title="Chưa có bảng tổng hợp nào"
+                                        description='Hãy bấm "Thêm bảng tổng hợp" để bắt đầu.'
+                                        action={
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
+                                                type="button"
+                                                onClick={handleAddSummaryTable}
+                                                leftIcon={<PlusIcon className="h-4 w-4" />}
+                                            >
+                                                Thêm bảng tổng hợp
+                                            </Button>
+                                        }
+                                    />
                                 )}
                             </div>
                         )}

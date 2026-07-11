@@ -8,6 +8,7 @@ import { Search, ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-rea
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import * as dbService from '../../services/dbService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -484,9 +485,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     if (!rawData) {
         return (
             <Card title="Chi Tiết Doanh Thu">
-                <div className="py-12 text-center text-slate-500 dark:text-slate-400">
-                    Chưa có dữ liệu. Vui lòng dán dữ liệu "BC Doanh thu theo NV" vào ô DOANH THU trong Cấu hình siêu thị.
-                </div>
+                <EmptyState
+                    title="Chưa có dữ liệu"
+                    description='Vui lòng dán dữ liệu "BC Doanh thu theo NV" vào ô DOANH THU trong Cấu hình siêu thị.'
+                />
             </Card>
         );
     }
@@ -494,9 +496,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     if (tree.length === 0) {
         return (
             <Card title="Chi Tiết Doanh Thu">
-                <div className="py-12 text-center text-slate-500 dark:text-slate-400">
-                    Không thể phân tích dữ liệu. Header cần có: "Nhân viên  DTLK  DTQĐ  Hiệu quả QĐ  Số lượng  Đơn giá"
-                </div>
+                <EmptyState
+                    title="Không thể phân tích dữ liệu"
+                    description='Header cần có: "Nhân viên  DTLK  DTQĐ  Hiệu quả QĐ  Số lượng  Đơn giá"'
+                />
             </Card>
         );
     }

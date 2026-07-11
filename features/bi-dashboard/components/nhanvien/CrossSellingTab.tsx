@@ -6,10 +6,11 @@ import ExportButton from '../ExportButton';
 import { CrossSellingRow } from '../../types/nhanVienTypes';
 import { getYesterdayDateString, parseCrossSellingData } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon } from '../Icons';
+import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon, DocumentReportIcon } from '../Icons';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Modal } from '../../../../components/shared/ui/Modal';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
@@ -435,7 +436,7 @@ const CrossSellingTab: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card title="Hiệu quả Bán kèm"><div className="py-20 text-center text-slate-500">Chưa có dữ liệu.</div></Card>;
+    if (rows.length === 0) return <Card title="Hiệu quả Bán kèm"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">

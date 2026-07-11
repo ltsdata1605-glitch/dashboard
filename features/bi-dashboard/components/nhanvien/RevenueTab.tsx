@@ -20,6 +20,7 @@ import { RevenueMobileCard } from './revenue/RevenueMobileCard';
 import { RevenueDesktopRow } from './revenue/RevenueDesktopRow';
 import { useRevenueData } from '../../hooks/useRevenueData';
 import { Button } from '../../../../components/shared/ui/Button';
+import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 
 
@@ -217,7 +218,7 @@ const RevenueView: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (!supermarketName) return <Card title="Phân tích Nhân viên"><div className="py-12 text-center text-slate-500">Vui lòng chọn siêu thị.</div></Card>;
+    if (!supermarketName) return <Card title="Phân tích Nhân viên"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
     if (isLoading) return <Card title={cardTitle}><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-primary-500 animate-spin" /></div></Card>;
 
     const isMobile = false; // Always show table view, even on mobile
