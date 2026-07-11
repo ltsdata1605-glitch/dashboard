@@ -486,36 +486,50 @@ export function getSubgroup(maNhomHang: string | null | undefined, productConfig
 
 export function normalizeSalesData(data: DataRow[]): DataRow[] {
     if (!data) return [];
-    return data
-        .map(row => {
-            let dateObj: Date | null = null;
 
-            const rawDate = row.parsedDate;
-            if (rawDate) {
-                if (rawDate instanceof Date) {
-                    dateObj = isNaN(rawDate.getTime()) ? null : rawDate;
-                } else if (typeof rawDate === 'object' && ('seconds' in rawDate || '_seconds' in rawDate)) {
-                    // rawDate ở đây là any (kế thừa từ DataRow — ngoại lệ Excel raw data đã duyệt)
-                    const seconds = rawDate.seconds ?? rawDate._seconds;
-                    if (typeof seconds === 'number') {
-                        dateObj = new Date(seconds * 1000);
-                    }
-                } else if (typeof rawDate === 'string' || typeof rawDate === 'number') {
-                    dateObj = parseExcelDate(rawDate);
+    const result: (DataRow & { parsedDate: Date })[] = [];
+
+    for (let i = 0, len = data.length; i < len; i++) {
+        const row = data[i];
+        const rawDate = row.parsedDate;
+
+        // Fast path — dữ liệu đọc lại từ IndexedDB (đã tải file trước đó) hoặc từ cloud sync
+        // GẦN NHƯ LUÔN đã có parsedDate hợp lệ (được gán trực tiếp lúc xử lý file gốc trong
+        // services/worker.ts). Trả thẳng row cũ, KHÔNG spread {...row} tạo object mới — tránh
+        // cấp phát lại toàn bộ ~30 cột cho từng dòng, rất tốn kém khi dữ liệu lũy kế lên tới
+        // hàng chục/trăm nghìn dòng mỗi lần khởi động app.
+        if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+            result.push(row as DataRow & { parsedDate: Date });
+            continue;
+        }
+
+        let dateObj: Date | null = null;
+        if (rawDate) {
+            if (typeof rawDate === 'object' && ('seconds' in rawDate || '_seconds' in rawDate)) {
+                // rawDate ở đây là any (kế thừa từ DataRow — ngoại lệ Excel raw data đã duyệt)
+                const seconds = rawDate.seconds ?? rawDate._seconds;
+                if (typeof seconds === 'number') {
+                    dateObj = new Date(seconds * 1000);
                 }
+            } else if (typeof rawDate === 'string' || typeof rawDate === 'number') {
+                dateObj = parseExcelDate(rawDate);
             }
+        }
 
-            // Fallback to Ngày tạo/Ngày Tạo
-            if (!dateObj || isNaN(dateObj.getTime())) {
-                dateObj = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
-            }
+        // Fallback to Ngày tạo/Ngày Tạo
+        if (!dateObj || isNaN(dateObj.getTime())) {
+            dateObj = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
+        }
 
-            if (dateObj && !isNaN(dateObj.getTime())) {
-                return { ...row, parsedDate: dateObj };
-            }
-            return null;
-        })
-        .filter((row): row is (DataRow & { parsedDate: Date }) => row !== null);
+        if (dateObj && !isNaN(dateObj.getTime())) {
+            // Chỉ những dòng thực sự cần chuẩn hoá mới bị mutate — khớp quy ước đã dùng ở
+            // services/worker.ts (mutate trực tiếp, không spread).
+            row.parsedDate = dateObj;
+            result.push(row as DataRow & { parsedDate: Date });
+        }
+    }
+
+    return result;
 }
 
 // Marker interface cho Proxy trả về từ wrapMap() bên dưới — dùng để narrow thay vì `any`
