@@ -208,9 +208,18 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         try {
             const validData = baseFilteredData.filter(row => {
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
-                return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                const revenueCheck = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                     ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
                     : !HINH_THUC_XUAT_THU_HO.has(htx);
+
+                if (!revenueCheck) return false;
+
+                // Bỏ qua những đơn đã hủy hoặc đã trả (đồng nhất với WarehouseSummary)
+                const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+                const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+                const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+
+                return isValid;
             });
 
             const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
