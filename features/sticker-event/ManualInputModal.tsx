@@ -6,6 +6,8 @@ import { formatCurrency as formatCurrencyForDisplay } from './utils/format';
 import { ManualProductDoc } from './services/firebaseService';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { EmptyState } from '../../components/shared/ui/EmptyState';
+import { PackageX } from 'lucide-react';
 
 export interface ManualProductWithId extends Product {
     firebaseId?: string; // ID from Firestore document
@@ -327,8 +329,13 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         </div>
 
                         {manualProducts.length === 0 ? (
-                            <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
-                                <p>Chưa có sản phẩm nào. Nhập thông tin ở trên và bấm "Thêm sản phẩm".</p>
+                            <div className="border-2 border-dashed border-slate-200 rounded-xl">
+                                <EmptyState
+                                    icon={<PackageX size={20} />}
+                                    title="Chưa có sản phẩm nào"
+                                    description='Nhập thông tin ở trên và bấm "Thêm sản phẩm".'
+                                    compact
+                                />
                             </div>
                         ) : (
                             <div className="space-y-2">

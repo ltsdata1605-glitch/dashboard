@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
 import { collection, query, where, getDocs, deleteDoc, doc, limit, Query, DocumentData } from 'firebase/firestore';
-import { Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
+import { Search, Trash2, ShieldAlert, User as UserIcon, Users } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { EmptyState } from '../../components/shared/ui/EmptyState';
 import { getErrorMessage } from '../../utils/dataUtils';
 import { StickerEventUserRecord } from './types';
 
@@ -167,8 +168,8 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
-                Chưa có dữ liệu tìm kiếm
+              <div className="border-2 border-dashed border-slate-100 rounded-xl">
+                <EmptyState icon={<Users size={20} />} title="Chưa có dữ liệu tìm kiếm" />
               </div>
             )}
           </div>
