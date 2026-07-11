@@ -225,7 +225,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <FilterIcon className="h-4 w-4" />
                 </Button>
                 {isIndustryFilterOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
                         <input
                             type="text"
@@ -273,7 +273,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         </div>
                     </Button>
                     {isSubIndustryFilterOpen && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
                             <input
                                 type="text"
