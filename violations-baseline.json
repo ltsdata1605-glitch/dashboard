@@ -372,7 +372,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 52,
+    "nonSemanticColor": 49,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CrossSellingTab.tsx": {

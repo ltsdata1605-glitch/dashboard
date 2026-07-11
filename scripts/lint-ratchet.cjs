@@ -25,7 +25,7 @@ const BASELINE_PATH = path.join(ROOT, 'violations-baseline.json');
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx']);
 const IGNORE_DIRS = new Set([
   'node_modules', 'dist', 'archive', 'scratch', '.git',
-  'telegram-agent', 'design-system',
+  'telegram-agent', 'design-system', 'worktrees',
 ]);
 
 const NON_SEMANTIC_COLOR_PATTERN =
