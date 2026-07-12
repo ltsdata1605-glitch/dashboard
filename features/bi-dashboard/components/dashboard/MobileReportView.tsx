@@ -56,10 +56,10 @@ const MobileReportView = React.forwardRef<HTMLDivElement, MobileReportViewProps>
         const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
 
         return [
-            { id: 'dtqd', name: 'Doanh Thu Trả Chậm', actual: dtqd, target: targets['dtqd'] || '', isPercent: false, icon: '💳', color: 'bg-orange-500' },
+            { id: 'dtqd', name: 'Doanh Thu Trả Chậm', actual: dtqd, target: targets['dtqd'] || '', isPercent: false, icon: '💳', color: 'bg-amber-500' },
             { id: 'dtlk', name: 'Doanh Thu Quy Đổi', actual: dtlk, target: targets['dtlk'] || '', isPercent: false, icon: '💰', color: 'bg-emerald-500' },
-            { id: 'hqqd', name: 'Tỷ Lệ Phục Vụ', actual: hqqd, target: targets['hqqd'] || '', isPercent: true, icon: '👤', color: 'bg-blue-500' },
-            { id: 'tc', name: 'Tỷ Lệ Trả Chậm', actual: tc, target: targets['tc'] || '', isPercent: true, icon: '⏰', color: 'bg-purple-500' }
+            { id: 'hqqd', name: 'Tỷ Lệ Phục Vụ', actual: hqqd, target: targets['hqqd'] || '', isPercent: true, icon: '👤', color: 'bg-sky-500' },
+            { id: 'tc', name: 'Tỷ Lệ Trả Chậm', actual: tc, target: targets['tc'] || '', isPercent: true, icon: '⏰', color: 'bg-rose-500' }
         ];
     }, [data, activeSupermarket, targets]);
 
@@ -78,7 +78,7 @@ const MobileReportView = React.forwardRef<HTMLDivElement, MobileReportViewProps>
 
                     return (
                         <div key={item.id} className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                            <div className={`bg-gradient-to-br ${item.color === 'bg-orange-500' ? 'from-orange-500 to-orange-600' : item.color === 'bg-emerald-500' ? 'from-emerald-500 to-emerald-600' : item.color === 'bg-blue-500' ? 'from-blue-500 to-blue-600' : 'from-purple-500 to-purple-600'} p-5 text-white`}>
+                            <div className={`bg-gradient-to-br ${item.color === 'bg-amber-500' ? 'from-amber-500 to-amber-600' : item.color === 'bg-emerald-500' ? 'from-emerald-500 to-emerald-600' : item.color === 'bg-sky-500' ? 'from-sky-500 to-sky-600' : 'from-rose-500 to-rose-600'} p-5 text-white`}>
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl">{item.icon}</span>
