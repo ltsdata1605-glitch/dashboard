@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
 import { COL } from '../../constants';
-import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
 import { KpiCard } from '../shared/ui/KpiCard';
@@ -284,7 +283,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
                                     <span>{hieuQuaTarget}%</span>
-                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
+                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
                                     </span>
                                 </span>
@@ -302,7 +301,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
                                     <span>{traGopTarget}%</span>
-                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
+                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
                                     </span>
                                 </span>
@@ -367,17 +366,13 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
                 if (isSpecialUnshipped) {
                     const unshippedCount = processedData?.unshippedOrders?.length || 0;
-                    finalTrendLabel = "⚠ Cảnh báo";
+                    finalTrendLabel = "Cảnh báo";
                     isGood = unshippedCount === 0;
                     // Progress bar: visually show urgency (cap at 20 orders = 100%)
                     progressPercent = unshippedCount > 0 ? Math.min((unshippedCount / 20) * 100, 100) : 0;
                     if (unshippedCount > 0) {
-                        finalTrendValue = (
-                            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
-                                <Icon name="alert-triangle" size={3.5} />
-                                {unshippedCount} đơn
-                            </span>
-                        );
+                        // Không lặp icon cảnh báo (finalTrendLabel đã có sẵn ngữ cảnh cảnh báo)
+                        finalTrendValue = <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>;
                     } else {
                         finalTrendValue = <span className="text-emerald-600 dark:text-emerald-400">Không có đơn chờ</span>;
                     }
