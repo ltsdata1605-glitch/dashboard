@@ -18,7 +18,7 @@ import {
   Star, Swords, Table, Table2, Tablet, Tag, Target, ThermometerSnowflake, Tornado, Trash2,
   TrendingUp, Trophy, Truck, Tv, Type, Upload, UploadCloud, User, UserCheck, UserCog,
   UserMinus, UserRoundCheck, UserRoundX, Users, UsersRound, Wallet, WalletCards, Warehouse, Watch, Waves,
-  Wind, X, Zap,
+  Webcam, Wind, X, Zap,
 } from 'lucide-react';
 
 interface IconProps {
@@ -89,7 +89,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'user-minus': UserMinus, 'user-round-check': UserRoundCheck, 'user-round-x': UserRoundX,
   'users': Users, 'users-round': UsersRound, 'wallet': Wallet,
   'wallet-cards': WalletCards, 'warehouse': Warehouse, 'watch': Watch,
-  'waves': Waves, 'wind': Wind, 'x': X,
+  'waves': Waves, 'webcam': Webcam, 'wind': Wind, 'x': X,
   'zap': Zap,
 };
 
