@@ -89,16 +89,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
                             ))}
                         </select>
-                        <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-3 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 active:border-slate-400 dark:active:border-slate-500 active:bg-slate-50 dark:active:bg-slate-800 transition-all outline-none whitespace-nowrap">
+                        <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
                                 <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px]">
                                     {activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-full px-2 py-0.5">{supermarkets.length}</span>
-                                <ChevronDownIcon className="h-5 w-5 sm:h-4 sm:w-4 text-slate-400" />
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
+                                <ChevronDownIcon className="h-4 w-4 text-slate-400" />
                             </div>
                         </div>
                     </div>
@@ -173,7 +173,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     </div>
 
                     {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}
-                    <div className="flex items-center gap-1.5 lg:gap-1">
+                    <div className="flex items-center gap-1">
                         {/* Column settings portal target */}
                         <div id="column-settings-portal" />
 
@@ -187,7 +187,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <Button
                             onClick={onBatchExport}
                             disabled={isBatchExporting}
-                            variant="ghost" size="icon" className="h-9 w-9 lg:h-7 lg:w-7 text-slate-400"
+                            variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
                             title="Xuất tất cả ảnh"
                         >
                             {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
@@ -198,7 +198,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onExport}
                                 disabled={isExporting}
-                                variant="ghost" size="icon" className="h-9 w-9 lg:h-7 lg:w-7 text-slate-400"
+                                variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
                                 title="Xuất ảnh"
                             >
                                 {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}

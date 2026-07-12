@@ -302,7 +302,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="ghost"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 lg:p-1.5 transition-colors ${
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                     hiddenSupermarkets.length > 0
                         ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -350,7 +350,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="ghost"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 lg:p-1.5 transition-colors ${
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                     isColumnSelectorOpen
                         ? 'text-indigo-600 dark:text-indigo-400'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -398,61 +398,6 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         return { bg: 'bg-rose-500', text: 'text-white', badge: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' };
     };
 
-    // Nội dung + màu 1 ô, dùng chung cho <td> desktop và card mobile — tránh lặp lại logic
-    // isMerged/%HT/%HQQĐ/DTQĐ ở 2 nơi (any: cell có thể là string thô hoặc object merge, xem
-    // comment ở processedTable phía trên).
-    const renderCellValue = (h: string, cell: any, isTotal: boolean, smKey?: string) => {
-        const val = parseNumber(cell?.isMerged ? cell.value : cell);
-        const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
-        const isHqqd = h === '%HQQĐ' && !isNaN(val);
-
-        let colorCls = '';
-        if (!isTotal) {
-            if (isHtCol) colorCls = val >= 100 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-rose-600 dark:text-rose-400 font-bold';
-            if (isHqqd) colorCls = val >= (supermarketTargets[smKey || '']?.quyDoi ?? 40) ? 'text-emerald-400 font-bold' : 'text-rose-600 dark:text-rose-400 font-bold';
-            if (h === 'DTQĐ') colorCls = 'text-indigo-700 dark:text-indigo-400 font-semibold';
-        }
-
-        let node: React.ReactNode;
-        if (cell?.isMerged) {
-            node = (
-                <div className="flex flex-col items-center leading-tight justify-center">
-                    <span className={!isTotal && (h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)') ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>
-                        {cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}
-                    </span>
-                    <span className={`text-[8px] font-black ${isTotal ? 'opacity-70' : (parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400')}`}>
-                        {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
-                    </span>
-                </div>
-            );
-        } else if (h === 'Tên miền') {
-            node = isTotal ? 'TỔNG CỤM' : shortenSupermarketName(String(cell)).toUpperCase();
-        } else if (h === 'DTQĐ') {
-            node = <span className={isTotal ? 'text-indigo-700 dark:text-indigo-400' : `font-semibold ${colorCls}`}>{f.format(roundUp(val))}</span>;
-        } else if (!isTotal && (isHtCol || isHqqd)) {
-            node = <span className={`font-bold ${colorCls}`}>{roundUp(val)}%</span>;
-        } else {
-            node = (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ')) ? roundUp(val) + '%' : f.format(roundUp(val));
-        }
-
-        return { node, colorCls };
-    };
-
-    // Nhóm cột theo COLUMN_GROUPS (giống headerGroups ở trên) nhưng giữ lại danh sách header
-    // thật của từng nhóm — dùng để render card mobile theo từng cụm chỉ số (H.QUA/DT THỰC/...).
-    const mobileGroupedHeaders = useMemo(() => {
-        const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Tên miền');
-        const groups: { label: string; bg: string; text: string; headers: string[] }[] = [];
-        visH.forEach(h => {
-            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' };
-            const g = COLUMN_GROUPS[h] || defaultGroup;
-            const last = groups[groups.length - 1];
-            if (last && last.label === g.label) last.headers.push(h);
-            else groups.push({ ...g, headers: [h] });
-        });
-        return groups;
-    }, [orderedHeaders, visibleColumns]);
-
     // Find the portal target in the DashboardHeader action bar
     const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
     // Find the inline portal target next to the content title
@@ -466,74 +411,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {inlinePortalTarget && ReactDOM.createPortal(supermarketFilterDropdown, inlinePortalTarget)}
 
             <div className="w-full overflow-hidden">
-                    {/* ─── CARD VIEW (mobile) — mỗi siêu thị 1 card, nhóm chỉ số theo màu thay vì bảng dày đặc ─── */}
-                    <div className="lg:hidden space-y-2.5 p-2">
-                        {processedTable.allRows.map((row, rIdx) => {
-                            const nameIdxM = processedTable.allHeaders.indexOf('Tên miền');
-                            const rawName = row[nameIdxM];
-                            const isTotalM = rawName === 'Tổng';
-                            const isSelM = !isTotalM && rawName === activeSupermarket;
-                            const smKeyM = rawName;
-
-                            const htOIdx = processedTable.allHeaders.indexOf(htKey);
-                            const htCell = htOIdx !== -1 ? row[htOIdx] : undefined;
-                            const htValM = htCell !== undefined ? parseNumber(htCell?.isMerged ? htCell.value : htCell) : undefined;
-                            const htColorM = htValM !== undefined && !isNaN(htValM) ? getHtColor(htValM) : null;
-
-                            return (
-                                <div
-                                    key={rIdx}
-                                    className={`rounded-2xl border overflow-hidden shadow-sm ${
-                                        isTotalM
-                                            ? 'border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800'
-                                            : isSelM
-                                                ? 'border-sky-300 dark:border-sky-700 bg-sky-50/60 dark:bg-sky-900/20'
-                                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
-                                        <h4 className="font-extrabold text-[13px] uppercase tracking-tight text-slate-800 dark:text-slate-100 truncate">
-                                            {isTotalM ? 'TỔNG CỤM' : shortenSupermarketName(String(rawName))}
-                                        </h4>
-                                        {htColorM && (
-                                            <span className={`shrink-0 ml-2 text-[11px] font-black px-2 py-0.5 rounded-full ${htColorM.badge}`}>
-                                                {roundUp(htValM as number)}% HT
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="p-2.5 grid grid-cols-2 gap-1.5">
-                                        {mobileGroupedHeaders.map((g, gIdx) => (
-                                            <div key={gIdx} className={`rounded-lg px-2 py-1.5 ${g.bg} ${g.headers.length > 2 ? 'col-span-2' : ''}`}>
-                                                <div className={`text-[8px] font-bold uppercase tracking-wider mb-1 ${g.text}`}>{g.label}</div>
-                                                <div className={`grid gap-x-2 gap-y-1 ${g.headers.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                                                    {g.headers.map(h => {
-                                                        const oIdx = processedTable.allHeaders.indexOf(h);
-                                                        const cell = row[oIdx];
-                                                        const { node } = renderCellValue(h, cell, isTotalM, smKeyM);
-                                                        return (
-                                                            <div key={h} className="min-w-0">
-                                                                <div
-                                                                    className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase truncate"
-                                                                    dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/((<br\/?>)?V\.TRỘI)/gi, '').replace(/<br\/?>/g, ' ').trim() }}
-                                                                />
-                                                                <div className="text-[12px] font-bold tabular-nums text-slate-800 dark:text-slate-100 leading-tight">
-                                                                    {node}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* ─── TABLE VIEW (desktop) — styled like Chi Tiết Theo Kho ─── */}
-                    <div className="hidden lg:block overflow-x-auto custom-scrollbar lg:px-6 lg:pb-6 lg:pt-2">
+                    {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}
+                    <div className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2">
                         <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
@@ -609,6 +488,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     if (!visibleColumns.has(h)) return null;
                                                     const oIdx = processedTable.allHeaders.indexOf(h);
                                                     const cell = row[oIdx];
+                                                    const val = parseNumber(cell?.isMerged ? cell.value : cell);
 
                                                     return (
                                                         <td
@@ -623,7 +503,19 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                     : 'text-center'}
                                                             `}
                                                         >
-                                                            {renderCellValue(h, cell, true).node}
+                                                            {cell?.isMerged ? (
+                                                                <div className="flex flex-col items-center leading-tight justify-center">
+                                                                    <span>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                    <span className="text-[8px] font-black opacity-70">
+                                                                        {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                h === 'Tên miền'
+                                                                    ? 'TỔNG CỤM'
+                                                                    : h === 'DTQĐ' ? <span className="text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
+                                                                    : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                            )}
                                                         </td>
                                                     );
                                                 })}
@@ -641,9 +533,16 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 if (!visibleColumns.has(h)) return null;
                                                 const oIdx = processedTable.allHeaders.indexOf(h);
                                                 const cell = row[oIdx];
+                                                const val = parseNumber(cell?.isMerged ? cell.value : cell);
+                                                const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
+                                                const isHqqd = h === '%HQQĐ' && !isNaN(val);
                                                 const smKey = row[nameIdx];
-                                                const { node, colorCls } = renderCellValue(h, cell, false, smKey);
-
+    
+                                                let colorCls = '';
+                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
+                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
+                                                if (h === 'DTQĐ') colorCls = ' text-indigo-700 dark:text-indigo-400 font-semibold';
+    
                                                 return (
                                                     <td
                                                         key={h}
@@ -655,7 +554,27 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 : `text-center text-[11px] sm:text-sm ${colorCls || ''}`}
                                                         `}
                                                     >
-                                                        {node}
+                                                        {cell?.isMerged ? (
+                                                            <div className="flex flex-col items-center leading-tight justify-center">
+                                                                <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                <span className={`text-[8px] font-black ${
+                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
+                                                                }`}>
+                                                                    {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            h === 'Tên miền'
+                                                                ? shortenSupermarketName(String(cell)).toUpperCase()
+                                                                : (isHtCol || isHqqd)
+                                                                    ? (
+                                                                        <span className={`font-bold ${colorCls}`}>
+                                                                            {roundUp(val)}%
+                                                                        </span>
+                                                                    )
+                                                                : h === 'DTQĐ' ? <span className="font-semibold text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
+                                                                : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                        )}
                                                     </td>
                                                 );
                                             })}

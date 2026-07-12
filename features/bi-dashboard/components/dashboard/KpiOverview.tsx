@@ -65,14 +65,6 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
     const secondaryLabel = isRealtime ? 'MỤC TIÊU NGÀY' : 'MỤC TIÊU THÁNG';
 
-    // Màu progress bar theo % hoàn thành mục tiêu (đồng nhất với getHtColor ở SummaryTableView/IndustryView)
-    // — trước đây mỗi thẻ có 1 màu progress cố định riêng, không phản ánh đang đạt/chưa đạt mục tiêu.
-    const getStatusProgressColor = (pct: number) => {
-        if (pct >= 100) return 'bg-emerald-500';
-        if (pct >= 85) return 'bg-amber-400';
-        return 'bg-rose-500';
-    };
-
     // Helper for rendering the native-style KPI Card
     const renderCard = (props: {
         title: string; icon: React.ReactNode; iconBg: string; titleColor: string; 
@@ -125,16 +117,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         );
     };
 
-    const dtThucProgressPct = (!isRealtime && dtDuKien > 0) ? Math.ceil((dtlk / dtDuKien) * 100) : undefined;
-    const dtqdProgressPct = Math.ceil(secondaryPct);
-    const hqqdProgressPct = hqqd > 0 ? Math.ceil((hqqd / targets.quyDoi) * 100) : 0;
-    const traGopProgressPct = Math.ceil(parseNumber(kpiData.tyTrongTraGop)) > 0 ? Math.ceil((parseNumber(kpiData.tyTrongTraGop) / targets.traGop) * 100) : 0;
-
     return (
         <div className="js-kpi-overview-container space-y-2 sm:space-y-4">
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
             <div className="grid grid-cols-4 gap-1 sm:gap-4">
-
+                
                 {/* Card 1: DT THỰC */}
                 {renderCard({
                     title: 'DT THỰC',
@@ -144,8 +131,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     value: `${roundUp(dtlk).toLocaleString('vi-VN')} Tr`,
                     valueColor: 'text-amber-500 dark:text-amber-400',
                     rightEl: !isRealtime ? renderGrowth(kpiData.dtckThang) : null,
-                    progressPct: dtThucProgressPct,
-                    progressColor: getStatusProgressColor(dtThucProgressPct ?? 0),
+                    progressPct: (!isRealtime && dtDuKien > 0) ? Math.ceil((dtlk / dtDuKien) * 100) : undefined,
+                    progressColor: 'bg-emerald-400',
                     targetLabel: !isRealtime ? 'DỰ KIẾN THÁNG' : undefined,
                     targetStr: !isRealtime && dtDuKien > 0 ? `${roundUp(dtDuKien).toLocaleString('vi-VN')} Tr` : undefined
                 })}
@@ -158,10 +145,10 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${roundUp(dtqd).toLocaleString('vi-VN')} Tr`,
                     valueColor: 'text-amber-600 dark:text-amber-400',
-                    progressPct: dtqdProgressPct,
-                    progressColor: getStatusProgressColor(dtqdProgressPct),
+                    progressPct: Math.ceil(secondaryPct),
+                    progressColor: 'bg-amber-400',
                     targetLabel: secondaryLabel,
-                    targetStr: isRealtime
+                    targetStr: isRealtime 
                         ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined)
                         : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined)
                 })}
@@ -174,8 +161,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${Math.ceil(hqqd)}%`,
                     valueColor: 'text-amber-500 dark:text-amber-400',
-                    progressPct: hqqdProgressPct,
-                    progressColor: getStatusProgressColor(hqqdProgressPct),
+                    progressPct: hqqd > 0 ? Math.ceil((hqqd / targets.quyDoi) * 100) : 0,
+                    progressColor: 'bg-sky-400',
                     targetLabel: 'MỤC TIÊU',
                     targetStr: `${targets.quyDoi}%`
                 })}
@@ -188,8 +175,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${Math.ceil(parseNumber(kpiData.tyTrongTraGop))}%`,
                     valueColor: 'text-emerald-500 dark:text-emerald-400',
-                    progressPct: traGopProgressPct,
-                    progressColor: getStatusProgressColor(traGopProgressPct),
+                    progressPct: Math.ceil(parseNumber(kpiData.tyTrongTraGop)) > 0 ? Math.ceil((parseNumber(kpiData.tyTrongTraGop) / targets.traGop) * 100) : 0,
+                    progressColor: 'bg-amber-400',
                     targetLabel: 'MỤC TIÊU',
                     targetStr: `${targets.traGop}%`
                 })}
