@@ -366,7 +366,8 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
                 if (isSpecialUnshipped) {
                     const unshippedCount = processedData?.unshippedOrders?.length || 0;
-                    finalTrendLabel = "Cảnh báo";
+                    // Nhãn ngắn để không bị cắt chữ khi ghép với giá trị dài ("Còn 52 đơn") trong footer flex
+                    finalTrendLabel = "Lưu ý";
                     isGood = unshippedCount === 0;
                     // Progress bar: visually show urgency (cap at 20 orders = 100%)
                     progressPercent = unshippedCount > 0 ? Math.min((unshippedCount / 20) * 100, 100) : 0;
@@ -375,7 +376,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         finalTrendValue = (
                             <span className="flex flex-col items-end leading-tight">
                                 <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
-                                <span className="text-[9px] font-medium text-rose-400 dark:text-rose-500">Cần xử lý ngay</span>
+                                <span className="text-[9px] font-medium text-rose-400 dark:text-rose-500">Chờ xuất</span>
                             </span>
                         );
                     } else {
