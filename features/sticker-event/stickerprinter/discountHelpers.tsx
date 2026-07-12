@@ -1,4 +1,5 @@
 import React from 'react';
+import { normalizeStickerPriceUnit, formatPriceChangePercent, formatDiscountAmount } from '../utils/format';
 
 export const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) => {
     const oldVal = Number(oldPriceStr.replace(/\D/g, ''));
@@ -6,23 +7,11 @@ export const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) =
 
     if (oldVal <= 0 || newVal <= 0) return null;
 
-    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-        newVal = newVal * 1000;
-    }
+    newVal = normalizeStickerPriceUnit(oldVal, newVal);
 
-    const diff = oldVal - newVal;
-    if (diff <= 0) return null;
-
-    let num = '';
-    let unit = '';
-    if (diff < 1000000) {
-        num = (diff / 1000).toString();
-        unit = 'K';
-    } else {
-        const trVal = diff / 1000000;
-        num = Number(trVal.toFixed(1)).toString();
-        unit = 'triệu';
-    }
+    const result = formatDiscountAmount(oldVal, newVal);
+    if (!result) return null;
+    const { num, unit } = result;
 
     return (
         <span className="discount-amount font-bold">
@@ -33,19 +22,5 @@ export const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) =
     );
 };
 
-export const renderPercentDiscount = (oldPriceStr: string, newPriceStr: string) => {
-    const oldVal = Number(oldPriceStr.replace(/\D/g, ''));
-    let newVal = Number(newPriceStr.replace(/\D/g, ''));
-
-    if (oldVal <= 0 || newVal <= 0) return null;
-
-    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-        newVal = newVal * 1000;
-    }
-
-    const ratio = Math.round((newVal / oldVal - 1) * 100);
-    if (ratio < 0) {
-        return `${ratio}%`;
-    }
-    return '';
-};
+export const renderPercentDiscount = (oldPriceStr: string, newPriceStr: string) =>
+    formatPriceChangePercent(oldPriceStr, newPriceStr);

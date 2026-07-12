@@ -1,6 +1,7 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
 import { StickerPage, BatchItem } from './types';
 import { cleanWaterPurifierName, generatePageHtml } from './pageHtmlUtils';
+import { formatPriceChangePercent } from '../utils/format';
 
 export const parsePercentValue = (percentStr: string | undefined): number => {
     if (!percentStr) return 0;
@@ -429,16 +430,7 @@ export function parseErpPriceExcelData(
 
         const currentPrice = priceSource === 'service' ? (servicePrice || salePrice) : (salePrice || servicePrice);
 
-        let percent = '';
-        const oldVal = Number(oldPrice.replace(/\D/g, ''));
-        let newVal = Number(currentPrice.replace(/\D/g, ''));
-        if (oldVal > 0 && newVal > 0) {
-            if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                newVal = newVal * 1000;
-            }
-            const ratio = Math.round((newVal / oldVal - 1) * 100);
-            percent = ratio < 0 ? `${ratio}%` : '';
-        }
+        const percent = formatPriceChangePercent(oldPrice, currentPrice);
 
         const cleanInput = discountThreshold.replace(/[^0-9]/g, '');
         const limit = parseInt(cleanInput, 10);

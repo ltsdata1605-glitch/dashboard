@@ -5,6 +5,7 @@ import { DailyRequirements, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { getErrorMessage } from '../../../utils/dataUtils';
+import { HOURS_CONFIG } from '../constants';
 
 interface AiSuggestPatternModalProps {
   onClose: () => void;
@@ -40,9 +41,7 @@ const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, 
     const [slotRequirements, setSlotRequirements] = useState(dailyRequirements);
 
     // State cho bảng quy đổi giờ công
-    const [hourConfig, setHourConfig] = useState<{ [key: string]: number }>({
-        '1': 1, '2': 3, '3': 3, '4': 3, '5': 3, '6': 1
-    });
+    const [hourConfig, setHourConfig] = useState<{ [key: string]: number }>({ ...HOURS_CONFIG });
 
     const [isLoading, setIsLoading] = useState(false);
     const [suggestion, setSuggestion] = useState<string[] | null>(null);

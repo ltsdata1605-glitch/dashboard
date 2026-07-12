@@ -3,6 +3,7 @@ import { parseCurrency } from './fileParser';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
 import { fixOklchColors } from './uiService';
+import { calculateDiscountPercent } from '../utils/format';
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };
@@ -124,7 +125,7 @@ const generateModernPriceTagHTML = (product: Product, employeeName: string, sett
         smallPart = 'đ';
     }
 
-    const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+    const discountPercent = calculateDiscountPercent(originalPrice, finalPrice);
     
     // Dynamic styles for the wrapper to match aspect ratio
     const wrapperStyle = `width: ${contentWidth}px; height: ${contentHeight}px; transform: scale(${scale});`;

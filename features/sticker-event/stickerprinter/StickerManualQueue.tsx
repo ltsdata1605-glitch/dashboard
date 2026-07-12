@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins, Barcode, SearchX, Inbox } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
 import { Button, Input, EmptyState } from '../../../components/shared/ui';
+import { resolvePagePrices } from './pageHtmlUtils';
 
 const cleanDisplayLabel = (label: string) => {
     if (!label) return '';
@@ -10,40 +11,6 @@ const cleanDisplayLabel = (label: string) => {
     // Strip trailing parenthesized or bracketed number (e.g. " (1114171000181)")
     cleaned = cleaned.replace(/\s*[\(\[]\d+[\)\]]$/, '');
     return cleaned.trim();
-};
-
-const resolvePagePrices = (page: StickerPage, priceSource: 'sale' | 'service') => {
-    let newPrice = page.newPrice;
-    let percent = page.percent;
-
-    if (priceSource === 'service' && page.servicePrice) {
-        newPrice = page.servicePrice;
-        if (page.oldPrice && page.servicePrice) {
-            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
-            let newVal = Number(page.servicePrice.replace(/\D/g, ''));
-            if (oldVal > 0 && newVal > 0) {
-                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                    newVal = newVal * 1000;
-                }
-                const ratio = Math.round((newVal / oldVal - 1) * 100);
-                percent = ratio < 0 ? `${ratio}%` : '';
-            }
-        }
-    } else if (page.salePrice) {
-        newPrice = page.salePrice;
-        if (page.oldPrice && page.salePrice) {
-            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
-            let newVal = Number(page.salePrice.replace(/\D/g, ''));
-            if (oldVal > 0 && newVal > 0) {
-                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                    newVal = newVal * 1000;
-                }
-                const ratio = Math.round((newVal / oldVal - 1) * 100);
-                percent = ratio < 0 ? `${ratio}%` : '';
-            }
-        }
-    }
-    return { newPrice, percent };
 };
 
 interface StickerManualQueueProps {

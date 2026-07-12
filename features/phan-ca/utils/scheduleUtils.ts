@@ -62,6 +62,11 @@ export const calculateGhHours = (staff: StaffMember): number => {
             for (const char of cleanStr) {
                 if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
             }
+            if (info.addedWeekendShifts) {
+                for (const char of info.addedWeekendShifts) {
+                    if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
+                }
+            }
         }
     });
     return total;

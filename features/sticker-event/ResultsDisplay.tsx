@@ -17,7 +17,7 @@ interface ResultsDisplayProps {
   isMobile: boolean;
 }
 
-import { formatCurrency } from './utils/format';
+import { formatCurrency, calculateDiscountPercent } from './utils/format';
 
 interface ProductCardProps {
   result: Product;
@@ -38,7 +38,7 @@ const parsePrice = (priceStr: string): number => {
 const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, onToggleSelect, onQuantityChange, onSetQuantity, onPrintSingle, onDelete, isMobile }) => {
   const giaGocNum = parsePrice(result.giaGoc);
   const giaGiamNum = parsePrice(result.giaGiam);
-  const discountPercent = giaGocNum > 0 ? Math.round(((giaGocNum - giaGiamNum) / giaGocNum) * 100) : 0;
+  const discountPercent = calculateDiscountPercent(giaGocNum, giaGiamNum);
   
   return (
   <div 

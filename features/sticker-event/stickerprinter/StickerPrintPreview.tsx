@@ -7,6 +7,7 @@ import { DrawTicketBlock } from './DrawTicketBlock';
 import { useContentEditable } from './useContentEditable';
 import { renderAmountDiscount, renderPercentDiscount } from './discountHelpers';
 import { getStickerPreviewStyles } from './stickerPreviewStyles';
+import { normalizeStickerPriceUnit, formatDiscountAmount } from '../utils/format';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -364,25 +365,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
         const oldVal = Number(oldEl.innerText.replace(/\D/g, ''));
         let newVal = Number(newEl.innerText.replace(/\D/g, ''));
-        
+
         if (oldVal > 0 && newVal > 0) {
-            if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                newVal = newVal * 1000;
-            }
+            newVal = normalizeStickerPriceUnit(oldVal, newVal);
             if (discountDisplayMode === 'amount') {
-                const diff = oldVal - newVal;
-                if (diff > 0) {
-                    let num = '';
-                    let unit = '';
-                    if (diff < 1000000) {
-                        num = (diff / 1000).toString();
-                        unit = 'K';
-                    } else {
-                        num = Number((diff / 1000000).toFixed(1)).toString();
-                        unit = 'triệu';
-                    }
-                    const unitClass = unit === 'triệu' ? 'unit-trieu' : 'unit-k';
-                    pctEl.innerHTML = `<span class="discount-amount font-bold"><span class="discount-label">-</span><span class="discount-num">${num}</span><span class="discount-unit ${unitClass}">${unit}</span></span>`;
+                const result = formatDiscountAmount(oldVal, newVal);
+                if (result) {
+                    const unitClass = result.unit === 'triệu' ? 'unit-trieu' : 'unit-k';
+                    pctEl.innerHTML = `<span class="discount-amount font-bold"><span class="discount-label">-</span><span class="discount-num">${result.num}</span><span class="discount-unit ${unitClass}">${result.unit}</span></span>`;
                 } else {
                     pctEl.innerText = '';
                 }

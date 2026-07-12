@@ -1,5 +1,6 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
 import { StickerPage, PrintHistoryEntry } from './types';
+import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
 
 export const cleanWaterPurifierName = (nameStr: string): string => {
     if (!nameStr) return '';
@@ -30,28 +31,12 @@ export const resolvePagePrices = (page: StickerPage, priceSource: 'sale' | 'serv
     if (priceSource === 'service' && page.servicePrice) {
         newPrice = page.servicePrice;
         if (page.oldPrice && page.servicePrice) {
-            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
-            let newVal = Number(page.servicePrice.replace(/\D/g, ''));
-            if (oldVal > 0 && newVal > 0) {
-                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                    newVal = newVal * 1000;
-                }
-                const ratio = Math.round((newVal / oldVal - 1) * 100);
-                percent = ratio < 0 ? `${ratio}%` : '';
-            }
+            percent = formatPriceChangePercent(page.oldPrice, page.servicePrice);
         }
     } else if (page.salePrice) {
         newPrice = page.salePrice;
         if (page.oldPrice && page.salePrice) {
-            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
-            let newVal = Number(page.salePrice.replace(/\D/g, ''));
-            if (oldVal > 0 && newVal > 0) {
-                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                    newVal = newVal * 1000;
-                }
-                const ratio = Math.round((newVal / oldVal - 1) * 100);
-                percent = ratio < 0 ? `${ratio}%` : '';
-            }
+            percent = formatPriceChangePercent(page.oldPrice, page.salePrice);
         }
     }
     return { newPrice, percent };
@@ -110,9 +95,7 @@ export const generatePageHtml = (
         const oldVal = Number(String(page.oldPrice).replace(/\D/g, ''));
         let newVal = Number(String(newPrice).replace(/\D/g, ''));
         if (oldVal > 0 && newVal > 0) {
-            if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                newVal = newVal * 1000;
-            }
+            newVal = normalizeStickerPriceUnit(oldVal, newVal);
             const diff = oldVal - newVal;
             if (diff > 0) {
                 percent = `-${(diff/1000).toLocaleString('vi-VN')}K`;

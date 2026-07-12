@@ -346,7 +346,7 @@ const App: React.FC = () => {
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const data: (string | number)[][] = [['LỊCH PHÂN CA'], ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)]];
     sortedList.forEach(staff => {
-        const row = [staff.name, Math.ceil(calculateSpecialHours(staff, includeTnInSbh)), Math.ceil(calculateTotalHours(staff))];
+        const row = [staff.name, Math.round(calculateSpecialHours(staff, includeTnInSbh)), Math.round(calculateTotalHours(staff))];
         for (let d = 1; d <= duration; d++) row.push(staff.schedule[d]?.role || '');
         data.push(row);
     });
