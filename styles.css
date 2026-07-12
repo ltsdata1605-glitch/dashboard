@@ -145,6 +145,67 @@
   .dark .shadow-card-elevated-lg {
     box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.4);
   }
+
+  /* ═══ SEMANTIC TYPOGRAPHY HELPERS (Phase 4) ═══ */
+  .text-overline {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .text-label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .text-body {
+    font-size: 14px;
+  }
+
+  .text-body-sm {
+    font-size: 13px;
+  }
+
+  .text-heading-sm {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .text-heading {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .text-display {
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  /* Color semantic helpers */
+  .text-primary {
+    @apply text-slate-900 dark:text-slate-50;
+  }
+
+  .text-secondary {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .text-tertiary {
+    @apply text-slate-400 dark:text-slate-500;
+  }
+
+  .text-success {
+    @apply text-emerald-700 dark:text-emerald-500;
+  }
+
+  .text-warning {
+    @apply text-amber-700 dark:text-amber-500;
+  }
+
+  .text-danger {
+    @apply text-rose-700 dark:text-rose-500;
+  }
 }
 
 .animate-fade-in-up {

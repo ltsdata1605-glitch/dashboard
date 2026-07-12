@@ -104,8 +104,9 @@ export const ModernDashboardSection: React.FC<ModernDashboardSectionProps> = ({
   return (
     <div className="space-y-6 lg:space-y-8 px-3 lg:px-0">
       {/* Section 1: Gradient Revenue Header */}
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xs lg:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
+      <div className="flex flex-col gap-2 lg:gap-3">
+        {/* Section label — semantic: text-label + uppercase */}
+        <h2 className="text-[11px] lg:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
           Tổng quan hôm nay
         </h2>
         <KpiCard
@@ -125,7 +126,7 @@ export const ModernDashboardSection: React.FC<ModernDashboardSectionProps> = ({
 
       {/* Section 2: Stat Cards Grid */}
       <div className="flex flex-col gap-2 lg:gap-3">
-        <h2 className="text-xs lg:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
+        <h2 className="text-[11px] lg:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
           Chỉ số chính
         </h2>
         <StatCardsGrid cards={statCards} />
@@ -133,7 +134,7 @@ export const ModernDashboardSection: React.FC<ModernDashboardSectionProps> = ({
 
       {/* Section 3: Quick Action Tiles */}
       <div className="flex flex-col gap-2 lg:gap-3">
-        <h2 className="text-xs lg:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
+        <h2 className="text-[11px] lg:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 lg:px-0">
           Chức năng nhanh
         </h2>
         <QuickActionTiles actions={quickActions} />
