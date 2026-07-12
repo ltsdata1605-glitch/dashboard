@@ -101,6 +101,50 @@
   .js-report-title + span {
     font-family: 'UTM Avo', sans-serif !important;
   }
+
+  /* ═══ GRADIENT CARD UTILITIES ═══ */
+  .gradient-sky-card {
+    background: var(--gradient-sky-card);
+    @apply text-white shadow-lg;
+  }
+
+  .gradient-emerald-card {
+    background: var(--gradient-emerald-card);
+    @apply text-white shadow-lg;
+  }
+
+  .gradient-amber-card {
+    background: var(--gradient-amber-card);
+    @apply text-white shadow-lg;
+  }
+
+  .gradient-rose-card {
+    background: var(--gradient-rose-card);
+    @apply text-white shadow-lg;
+  }
+
+  .gradient-violet-card {
+    background: var(--gradient-violet-card);
+    @apply text-white shadow-lg;
+  }
+
+  /* Elevated card shadow variants */
+  .shadow-card-elevated {
+    box-shadow: var(--shadow-card-elevated);
+  }
+
+  .shadow-card-elevated-lg {
+    box-shadow: var(--shadow-card-elevated-lg);
+  }
+
+  /* Dark mode overrides for elevated shadows */
+  .dark .shadow-card-elevated {
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .shadow-card-elevated-lg {
+    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.4);
+  }
 }
 
 .animate-fade-in-up {
