@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { formatQuantity, formatCurrency, calculateRowMetrics, getRowValue, getParentGroup, cleanAndNormalize, normalizedThuHoSet } from '../../../utils/dataUtils';
+import { isDateMatch } from '../../../services/filterService';
 import { COL } from '../../../constants';
 import { CrossSellingConfig } from '../../../types';
 import { SAMPLE_CONFIG } from '../../modals/CrossSellingBuilderModal';
@@ -10,7 +11,7 @@ interface CrossSellingTableProps {
 }
 
 export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableContainerRef }) => {
-    const { baseFilteredData, crossSellingConfig, productConfig } = useDashboardContext();
+    const { baseFilteredData, crossSellingConfig, productConfig, filterState } = useDashboardContext();
     const config: CrossSellingConfig = (crossSellingConfig && (crossSellingConfig.columns.length > 0 || crossSellingConfig.sections.length > 0)) ? crossSellingConfig : SAMPLE_CONFIG;
 
     const stats = useMemo(() => {
@@ -32,8 +33,18 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
         const colGlobalQty: Record<string, number> = {};
         dataCols.forEach(c => colGlobalQty[c.id] = 0);
 
+        // Khoảng ngày đang chọn ở Bộ Lọc Phân Tích — baseFilteredData KHÔNG tự lọc theo ngày
+        // (chỉ lọc kho/xuất/người tạo/trạng thái hồ sơ/bộ phận), nên phải tự áp lại ở đây để
+        // đồng bộ với mọi khu vực khác (SummaryTable, IndustryGrid, KpiCards...).
+        const mainStartDate = filterState.startDate ? new Date(filterState.startDate) : null;
+        if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
+        const mainEndDate = filterState.endDate ? new Date(filterState.endDate) : null;
+        if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
+
         if (dataCols.length > 0) {
             baseFilteredData.forEach(row => {
+                if (!isDateMatch(row, mainStartDate, mainEndDate, filterState.selectedMonths)) return;
+
                 // Chỉ tính đơn đủ điều kiện doanh thu (đồng nhất với SummaryTable/WarehouseSummary):
                 // đã thu tiền, không thuộc nhóm "Không tính doanh thu", hình thức xuất hợp lệ.
                 const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
@@ -123,7 +134,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
         });
 
         return result;
-    }, [baseFilteredData, config]);
+    }, [baseFilteredData, config, productConfig, filterState.startDate, filterState.endDate, filterState.selectedMonths]);
 
     if (!config || !config.columns || config.columns.length === 0) {
         return (
