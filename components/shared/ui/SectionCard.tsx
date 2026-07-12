@@ -5,8 +5,6 @@ interface SectionCardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode;
     /** Tắt hover shadow ở laptop nếu section không cần nhấn tương tác (mặc định bật) */
     hoverable?: boolean;
-    /** Optional gradient background: 'sky' | 'emerald' | 'amber' | 'rose' | 'violet' (replaces white bg) */
-    gradientBg?: 'sky' | 'emerald' | 'amber' | 'rose' | 'violet';
 }
 
 /**
@@ -18,28 +16,19 @@ interface SectionCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * section cấp trang (KPI/Chart/Table) cần chuyển mobile-phẳng ↔ laptop-nổi.
  */
 export const SectionCard = React.forwardRef<HTMLDivElement, SectionCardProps>(
-    ({ children, className, hoverable = true, gradientBg, ...rest }, ref) => {
-        const isGradient = !!gradientBg;
-        const gradientClass = isGradient ? `gradient-${gradientBg}-card` : '';
-
-        return (
-            <div
-                ref={ref}
-                className={cn(
-                    'rounded-none lg:rounded-2xl overflow-hidden transition-all',
-                    isGradient
-                        ? `${gradientClass} border-0`
-                        : 'bg-white border-y lg:border border-slate-200 shadow-sm',
-                    hoverable && !isGradient && 'lg:hover:shadow-md',
-                    hoverable && isGradient && 'lg:hover:shadow-2xl',
-                    className
-                )}
-                {...rest}
-            >
-                {children}
-            </div>
-        );
-    }
+    ({ children, className, hoverable = true, ...rest }, ref) => (
+        <div
+            ref={ref}
+            className={cn(
+                'bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm transition-shadow overflow-hidden',
+                hoverable && 'lg:hover:shadow-md',
+                className
+            )}
+            {...rest}
+        >
+            {children}
+        </div>
+    )
 );
 SectionCard.displayName = 'SectionCard';
 

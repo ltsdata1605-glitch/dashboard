@@ -22,7 +22,6 @@ import IndustryGrid from '../charts/IndustryGrid';
 import EmployeeAnalysis from '../employees/EmployeeAnalysis';
 import SummaryTable from '../tables/SummaryTable';
 import WarehouseSummary from '../summary/WarehouseSummary';
-import ModernDashboardSection from '../sections/ModernDashboardSection';
 
 // Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
 // (đo thực tế: chunk DashboardView ~300kB gzip, phần lớn do các modal này luôn bị
@@ -513,13 +512,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     <div className="text-[10px] sm:text-xs font-semibold underline underline-offset-2">
                                                         Xem danh sách
                                                     </div>
-                                                </div>
-                                            )}
-
-                                            {/* Modern Dashboard Section — Phase 3 Integration */}
-                                            {processedData && (
-                                                <div className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                                    <ModernDashboardSection onUnshippedClick={openUnshippedModal} />
                                                 </div>
                                             )}
 

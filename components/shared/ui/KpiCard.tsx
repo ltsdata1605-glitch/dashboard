@@ -84,10 +84,6 @@ export interface KpiCardProps {
     /** 0-100, hiển thị thanh tiến độ khi có giá trị */
     progressPercent?: number;
     isGood?: boolean;
-    /** Gradient background variant: 'sky', 'emerald', 'amber', 'rose', 'violet' (replaces white card) */
-    gradientBg?: 'sky' | 'emerald' | 'amber' | 'rose' | 'violet';
-    /** Trend direction indicator: 'up' | 'down' (shows ↑ or ↓) */
-    trendDirection?: 'up' | 'down';
 }
 
 /**
@@ -95,63 +91,30 @@ export interface KpiCardProps {
  * Component trình bày thuần (chỉ nhận props, không phụ thuộc hook/context) nên dùng được ở
  * cả 4 khu vực (Root + features/*). Khác với `StatCard` (đơn giản hơn, không progress/gradient):
  * dùng KpiCard khi cần thể hiện tiến độ so với mục tiêu.
- *
- * Variant mới: `gradientBg` transform card thành full-gradient (white → gradient-{color}-card)
- * Perfect cho hero KPI cards, revenue headers, etc.
  */
-export const KpiCard: React.FC<KpiCardProps> = ({
-  icon,
-  iconColor,
-  title,
-  onClick,
-  children,
-  trendLabel,
-  trendValue,
-  progressPercent,
-  isGood = true,
-  gradientBg,
-  trendDirection
-}) => {
+export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue, progressPercent, isGood = true }) => {
     const isClickable = !!onClick;
     const style = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
-    const isGradientVariant = !!gradientBg;
-
-    // Map gradient variant to CSS class
-    const gradientClass = isGradientVariant ? `gradient-${gradientBg}-card` : '';
 
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full rounded-2xl lg:rounded-3xl overflow-hidden transition-all duration-300 group touch-feedback ${
-              isGradientVariant
-                ? `${gradientClass} border-0`
-                : `bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.06] ${style.borderHover}`
-            } ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98]' : 'hover:shadow-lg'} ${isGradientVariant ? '' : 'premium-card-shadow'}`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-slate-900 rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
-            {/* Gradient accent strip — hidden on gradient variant */}
-            {!isGradientVariant && (
-              <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
-            )}
+            {/* Gradient accent strip */}
+            <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
-            <div className={`flex flex-col flex-1 ${isGradientVariant ? 'px-5 py-5 lg:px-6 lg:py-6' : 'px-2.5 py-1.5 lg:px-4 lg:py-3.5'}`}>
+            <div className="px-2.5 py-1.5 lg:px-4 lg:py-3.5 flex flex-col flex-1">
                 {/* Mobile: Icon + Title + Value in one row */}
-                <div className="flex items-center gap-1.5 lg:gap-3 mb-1 lg:mb-4">
-                    <div className={`${
-                      isGradientVariant
-                        ? 'w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 text-white'
-                        : `w-7 h-7 lg:w-9 lg:h-9 rounded-lg ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor}`
-                    } flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110 ${isGradientVariant ? 'group-hover:bg-white/30' : 'group-hover:shadow-md'} ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                        <Icon name={icon} size={isGradientVariant ? 5 : 4} className="lg:hidden" />
-                        <Icon name={icon} size={isGradientVariant ? 5.5 : 4.5} className="hidden lg:block" />
+                <div className="flex items-center gap-1.5 lg:gap-2 mb-1 lg:mb-3">
+                    <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                        <Icon name={icon} size={4} className="lg:hidden" />
+                        <Icon name={icon} size={4.5} className="hidden lg:block" />
                     </div>
-                    <h3 className={`font-semibold uppercase tracking-wide leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0 ${
-                      isGradientVariant
-                        ? 'text-[11px] lg:text-[13px] text-white'
-                        : 'text-[9px] lg:text-[11px] text-slate-400 dark:text-slate-500'
-                    }`}>{title}</h3>
+                    <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0">{title}</h3>
                     {/* Mobile inline value */}
-                    <div className={`lg:hidden shrink-0 ${isGradientVariant ? 'text-white font-bold text-base lg:text-lg' : ''}`}>
+                    <div className="lg:hidden shrink-0">
                         {children}
                     </div>
                 </div>
@@ -182,27 +145,10 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
                     {/* Trend / Target footer */}
                     {(trendLabel || trendValue) && (
-                        <div className={`flex items-center justify-between gap-1 lg:gap-2 mt-2 lg:mt-4 pt-2 lg:pt-3 ${
-                          isGradientVariant
-                            ? 'border-t border-white/20'
-                            : 'border-t border-slate-100 dark:border-white/[0.04]'
-                        }`}>
-                            <span className={`text-[8px] lg:text-[10px] font-semibold uppercase tracking-wider truncate ${
-                              isGradientVariant
-                                ? 'text-white/70'
-                                : 'text-slate-400 dark:text-slate-500'
-                            }`}>{trendLabel}</span>
-                            <div className={`text-[9px] lg:text-[12px] font-bold text-right shrink-0 flex items-center gap-0.5 ${
-                              isGradientVariant
-                                ? 'text-white'
-                                : 'text-slate-600 dark:text-slate-400'
-                            }`}>
-                              {trendDirection && (
-                                <span className={`text-xs ${trendDirection === 'up' ? 'text-emerald-300' : 'text-rose-300'}`}>
-                                  {trendDirection === 'up' ? '↑' : '↓'}
-                                </span>
-                              )}
-                              {trendValue}
+                        <div className="flex items-center justify-between gap-1 lg:gap-1.5 mt-1.5 lg:mt-2 pt-1.5 lg:pt-2 border-t border-slate-100 dark:border-white/[0.04]">
+                            <span className="text-[8px] lg:text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
+                            <div className="text-[9px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
+                                {trendValue}
                             </div>
                         </div>
                     )}

@@ -542,13 +542,5 @@
   "features/sticker-event/UserManagementModal.tsx": {
     "nonSemanticColor": 6,
     "missingMobileToolbar": 0
-  },
-  "components/shared/ui/StatCardsGrid.tsx": {
-    "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
-  "components/shared/ui/QuickActionTiles.tsx": {
-    "nonSemanticColor": 10,
-    "missingMobileToolbar": 0
   }
 }
