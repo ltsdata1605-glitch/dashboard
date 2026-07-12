@@ -9,6 +9,18 @@ interface KpiCardsProps {
     onUnshippedClick: () => void;
 }
 
+/** Map iconColor (kể cả tên màu cũ) sang class text màu tương ứng — dùng cho cả 2 nhánh valueColor bên dưới */
+function iconColorToTextClass(iconColor: string): string {
+    switch (iconColor) {
+        case 'blue': case 'sky': return 'text-sky-600 dark:text-sky-400';
+        case 'emerald': case 'teal': return 'text-emerald-600 dark:text-emerald-400';
+        case 'pink': case 'red': case 'rose': return 'text-rose-600 dark:text-rose-400';
+        case 'orange': case 'amber': return 'text-amber-600 dark:text-amber-400';
+        case 'purple': case 'violet': case 'slate': return 'text-slate-600 dark:text-slate-400';
+        default: return 'text-slate-800 dark:text-slate-200';
+    }
+}
+
 const KpiTargetEditor: React.FC<{
     value: string;
     onChange: (val: string) => void;
@@ -392,18 +404,14 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 // Color mappings based on 'isGood' and icon color
                 let valueColor = 'text-slate-800 dark:text-slate-200';
                 if ((config.hasTarget && config.targetType !== 'none') || (isDTThucCard && dtThucTarget > 0)) {
-                    valueColor = isGood ? `text-emerald-600 dark:text-emerald-400` : 'text-amber-600 dark:text-amber-400';
+                    // "Chưa đạt mục tiêu" dùng đúng màu định danh riêng của thẻ (thay vì amber chung cho mọi thẻ)
+                    // để tránh 2 thẻ khác màu (vd. HQQĐ=slate, TRẢ CHẬM=amber) hiển thị con số trùng màu khi cùng dưới target.
+                    valueColor = isGood ? 'text-emerald-600 dark:text-emerald-400' : iconColorToTextClass(config.iconColor);
                     if (config.metric === 'doanhThuQD') valueColor = 'text-sky-600 dark:text-sky-400';
                 } else if (isSpecialUnshipped) {
                     valueColor = rawValue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500';
                 } else {
-                    if (config.iconColor === 'blue') valueColor = 'text-sky-600 dark:text-sky-400';
-                    else if (config.iconColor === 'emerald') valueColor = 'text-emerald-600 dark:text-emerald-400';
-                    else if (config.iconColor === 'pink') valueColor = 'text-rose-600 dark:text-rose-400';
-                    else if (config.iconColor === 'orange') valueColor = 'text-amber-600 dark:text-amber-400';
-                    else if (config.iconColor === 'purple' || config.iconColor === 'violet') valueColor = 'text-slate-600 dark:text-slate-400';
-                    else if (config.iconColor === 'red' || config.iconColor === 'rose') valueColor = 'text-rose-600 dark:text-rose-400';
-                    else if (config.iconColor === 'amber') valueColor = 'text-amber-600 dark:text-amber-400';
+                    valueColor = iconColorToTextClass(config.iconColor);
                 }
 
                 const isDTQDCard = config.metric === 'doanhThuQD';
