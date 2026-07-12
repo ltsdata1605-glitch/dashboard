@@ -7,6 +7,7 @@ import { Switch } from './dashboard/DashboardWidgets';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
 import ReportView from './dashboard/ReportView';
+import MobileReportView from './dashboard/MobileReportView';
 import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
@@ -337,10 +338,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                             </div>
                         )}
                         {activeSubTab === 'revenue' && isReportView && (
-                            <ReportView 
-                                data={summaryRealtimeParsed.table} 
-                                activeSupermarket={activeSupermarket} 
-                            />
+                            <>
+                                <div className="hidden lg:block">
+                                    <ReportView
+                                        data={summaryRealtimeParsed.table}
+                                        activeSupermarket={activeSupermarket}
+                                    />
+                                </div>
+                                <div className="lg:hidden">
+                                    <MobileReportView
+                                        data={summaryRealtimeParsed.table}
+                                        activeSupermarket={activeSupermarket}
+                                    />
+                                </div>
+                            </>
                         )}
                     </DashboardHeader>
 
