@@ -183,14 +183,14 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }, []);
 
     const actionButton = (
-        <div className="industry-view-controls flex items-center gap-1 sm:gap-2 no-print flex-wrap justify-end">
+        <div className="industry-view-controls flex items-center gap-2 sm:gap-2 no-print flex-wrap justify-end">
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
                 <div className="flex items-center gap-0.5">
                     <Button
                         variant="ghost"
                         onClick={expandAll}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 lg:p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
                         title="Mở rộng tất cả"
                     >
                         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
@@ -198,7 +198,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="ghost"
                         onClick={collapseAll}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 lg:p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
@@ -215,7 +215,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="ghost"
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 lg:p-1.5 transition-colors ${
                         hiddenIndustries.length > 0
                             ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -260,7 +260,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="ghost"
                         onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
-                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 lg:p-1.5 transition-colors ${
                             hiddenSubIndustries.length > 0
                                 ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -308,7 +308,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="ghost"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 lg:p-1.5 transition-colors ${
                         isColumnSelectorOpen
                             ? 'text-indigo-600 dark:text-indigo-400'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'

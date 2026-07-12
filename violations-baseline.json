@@ -319,12 +319,16 @@
     "nonSemanticColor": 33,
     "missingMobileToolbar": 0
   },
+  "features/bi-dashboard/components/dashboard/MobileReportView.tsx": {
+    "nonSemanticColor": 11,
+    "missingMobileToolbar": 0
+  },
   "features/bi-dashboard/components/dashboard/ReportView.tsx": {
     "nonSemanticColor": 7,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
-    "nonSemanticColor": 54,
+    "nonSemanticColor": 52,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/DataUpdater.tsx": {
