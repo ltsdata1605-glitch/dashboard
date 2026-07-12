@@ -275,23 +275,39 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     } else if (config.targetRef === 'hieuQua') {
                         finalTrendLabel = "Mục tiêu";
                         editableField = 'hieuQua';
+                        isGood = rawValue >= hieuQuaTarget;
+                        progressPercent = hieuQuaTarget > 0 ? (rawValue / hieuQuaTarget) * 100 : 0;
                         if (editingState.field === 'hieuQua') {
                             finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
                         } else {
-                            finalTrendValue = <span className="cursor-pointer hover:text-sky-500 transition-colors">{hieuQuaTarget}%</span>;
+                            const gap = rawValue - hieuQuaTarget;
+                            finalTrendValue = (
+                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                                    <span>{hieuQuaTarget}%</span>
+                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
+                                        {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
+                                    </span>
+                                </span>
+                            );
                         }
-                        isGood = rawValue >= hieuQuaTarget;
-                        progressPercent = hieuQuaTarget > 0 ? (rawValue / hieuQuaTarget) * 100 : 0;
                     } else if (config.targetRef === 'traGop') {
                         finalTrendLabel = "Mục tiêu";
                         editableField = 'traGop';
+                        isGood = rawValue >= traGopTarget;
+                        progressPercent = traGopTarget > 0 ? (rawValue / traGopTarget) * 100 : 0;
                         if (editingState.field === 'traGop') {
                             finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
                         } else {
-                            finalTrendValue = <span className="cursor-pointer hover:text-sky-500 transition-colors">{traGopTarget}%</span>;
+                            const gap = rawValue - traGopTarget;
+                            finalTrendValue = (
+                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                                    <span>{traGopTarget}%</span>
+                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
+                                        {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
+                                    </span>
+                                </span>
+                            );
                         }
-                        isGood = rawValue >= traGopTarget;
-                        progressPercent = traGopTarget > 0 ? (rawValue / traGopTarget) * 100 : 0;
                     }
                 } else if (config.hasTarget && config.targetType === 'custom') {
                     const monthlyTarget = config.customTargetValue || 0;
