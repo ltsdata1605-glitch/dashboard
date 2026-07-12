@@ -371,10 +371,20 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     // Progress bar: visually show urgency (cap at 20 orders = 100%)
                     progressPercent = unshippedCount > 0 ? Math.min((unshippedCount / 20) * 100, 100) : 0;
                     if (unshippedCount > 0) {
-                        // Không lặp icon cảnh báo (finalTrendLabel đã có sẵn ngữ cảnh cảnh báo)
-                        finalTrendValue = <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>;
+                        // Dòng phụ bên dưới để đồng bộ bố cục footer 2 dòng với các thẻ khác (HQQĐ/TRẢ CHẬM...)
+                        finalTrendValue = (
+                            <span className="flex flex-col items-end leading-tight">
+                                <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
+                                <span className="text-[9px] font-medium text-rose-400 dark:text-rose-500">Cần xử lý ngay</span>
+                            </span>
+                        );
                     } else {
-                        finalTrendValue = <span className="text-emerald-600 dark:text-emerald-400">Không có đơn chờ</span>;
+                        finalTrendValue = (
+                            <span className="flex flex-col items-end leading-tight">
+                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">Không có đơn chờ</span>
+                                <span className="text-[9px] font-medium text-emerald-400 dark:text-emerald-500">Đã xử lý hết</span>
+                            </span>
+                        );
                     }
                 }
 

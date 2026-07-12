@@ -63,15 +63,6 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
         glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
         borderHover: 'hover:border-rose-300 dark:hover:border-rose-600',
     },
-    indigo: {
-        gradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
-        iconBg: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-500/15 dark:to-indigo-500/10',
-        iconText: 'text-indigo-600 dark:text-indigo-400',
-        progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-        progressFill: 'bg-gradient-to-r from-indigo-500 to-indigo-300',
-        glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
-        borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600',
-    },
 };
 
 // Alias tên màu cũ (dùng ở nhiều nơi gọi KpiCard) trỏ về đúng màu semantic tĩnh ở trên.
