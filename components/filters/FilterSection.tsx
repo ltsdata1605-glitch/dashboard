@@ -106,6 +106,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
             startDate: '',
             endDate: '',
             dateRange: 'all',
+            selectedMonths: []
         });
     };
 
@@ -134,12 +135,16 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
         updateLocalFilter({
             startDate: start ? toLocalISOString(start) : '',
             endDate: end ? toLocalISOString(end) : '',
-            dateRange: range
+            dateRange: range,
+            // Xoá lựa chọn "Tháng" cũ (nếu có, chọn từ FilterBar) — isDateMatch() ưu tiên
+            // selectedMonths hơn startDate/endDate, không xoá sẽ khiến khoảng ngày mới chọn
+            // ở đây bị bộ lọc Tháng cũ âm thầm ghi đè.
+            selectedMonths: []
         });
     };
 
     const handleDateChange = (type: 'startDate' | 'endDate', value: string) => {
-        updateLocalFilter({ [type]: value, dateRange: '' });
+        updateLocalFilter({ [type]: value, dateRange: '', selectedMonths: [] });
     };
     
     const handleDropdownChange = (type: string, selected: string[]) => {
