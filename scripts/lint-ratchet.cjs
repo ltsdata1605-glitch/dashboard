@@ -55,7 +55,11 @@ function countNonSemanticColors(content) {
 
 function countMissingMobileToolbar(content) {
   const hasDesktopPortal = content.includes('global-header-actions');
-  const hasMobileToolbar = content.includes('lg:hidden');
+  // 2 pattern mobile toolbar hợp lệ trong dự án: div inline 'lg:hidden', hoặc
+  // portal riêng vào mount point 'mobile-topbar-actions' (Header/SettingsView/
+  // BiWrapper/CheckThuongView dùng pattern này — ratchet trước đây không nhận
+  // diện được, gây false-positive).
+  const hasMobileToolbar = content.includes('lg:hidden') || content.includes('mobile-topbar-actions');
   return hasDesktopPortal && !hasMobileToolbar ? 1 : 0;
 }
 

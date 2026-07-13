@@ -140,7 +140,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
         );
     }
 
-    const thBase = 'px-2 py-1.5 text-center text-[12px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
+    const thBase = 'px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
     const tdBase = 'px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-100 dark:border-slate-800';
 
     return (
@@ -148,7 +148,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
             <table className="w-full border-collapse compact-export-table">
                 <thead className="sticky top-0 z-10">
                     <tr>
-                        <th className="px-2 py-1.5 text-left text-[12px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700">Nhân viên</th>
+                        <th className="px-2 py-1.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700">Nhân viên</th>
                         {orderedMonths.map(m => (
                             <th key={m.yyyymm} onClick={() => handleSort(m.yyyymm)} className={`${thBase} text-sky-700 dark:text-sky-400`}>
                                 T{m.label.split('/')[0]} {sortField === m.yyyymm ? (sortDir === 'asc' ? '↑' : '↓') : ''}

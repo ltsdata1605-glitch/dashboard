@@ -139,10 +139,6 @@
     "nonSemanticColor": 6,
     "missingMobileToolbar": 0
   },
-  "components/layout/Header.tsx": {
-    "nonSemanticColor": 0,
-    "missingMobileToolbar": 1
-  },
   "components/layout/MobileBottomNav.tsx": {
     "nonSemanticColor": 24,
     "missingMobileToolbar": 0
@@ -245,7 +241,7 @@
   },
   "components/views/CheckThuongView.tsx": {
     "nonSemanticColor": 4,
-    "missingMobileToolbar": 1
+    "missingMobileToolbar": 0
   },
   "components/views/CouponConverterView.tsx": {
     "nonSemanticColor": 24,
@@ -277,19 +273,19 @@
   },
   "components/views/SettingsView.tsx": {
     "nonSemanticColor": 2,
-    "missingMobileToolbar": 1
+    "missingMobileToolbar": 0
   },
   "components/views/UserManagementView.tsx": {
     "nonSemanticColor": 33,
     "missingMobileToolbar": 0
   },
   "constants.ts": {
-    "nonSemanticColor": 36,
+    "nonSemanticColor": 12,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/BiWrapper.tsx": {
     "nonSemanticColor": 5,
-    "missingMobileToolbar": 1
+    "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/Dashboard.tsx": {
     "nonSemanticColor": 13,

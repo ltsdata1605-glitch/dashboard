@@ -570,7 +570,7 @@ Link: ${url}`;
                                             </summary>
                                             <div className="mt-1 pb-3">
                                                 <table className="w-full text-sm table-fixed compact-export-table border-collapse">
-                                                    <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
+                                                    <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                                         <tr>
                                                             <th className="py-2.5 px-2 text-left font-semibold w-[22%]">Mã ĐH</th>
                                                             <th className="py-2.5 px-2 text-left font-semibold w-[12%] whitespace-nowrap">Ngày tạo</th>

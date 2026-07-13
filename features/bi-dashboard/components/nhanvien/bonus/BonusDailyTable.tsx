@@ -56,14 +56,14 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
         <table className="w-full border-collapse compact-export-table">
             <thead className="sticky top-0 z-10">
                 <tr>
-                    <th rowSpan={2} className="px-2 py-2 text-left text-[12px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle">Nhân viên</th>
+                    <th rowSpan={2} className="px-2 py-2 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle">Nhân viên</th>
                     <th
                         rowSpan={2}
                         onClick={() => {
                             setSortField('tong');
                             setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                         }}
-                        className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                     >
                         Tổng {sortField === 'tong' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                     </th>
@@ -73,7 +73,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             setSortField('weekBelowAvg');
                             setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                         }}
-                        className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         title="Số tuần có thưởng < Trung bình tuần"
                     >
                         Tuần &lt;TB {sortField === 'weekBelowAvg' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
@@ -84,7 +84,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             setSortField('belowAvgDays');
                             setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                         }}
-                        className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         title="Số ngày có thu nhập dưới trung bình"
                     >
                         Ngày &lt;TB {sortField === 'belowAvgDays' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
@@ -100,7 +100,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         setSortField(`week:${week.id}`);
                                         setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                     }}
-                                    className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50/5 dark:bg-indigo-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 select-none"
+                                    className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50/5 dark:bg-indigo-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 select-none"
                                 >
                                     <span
                                         onClick={(e) => {

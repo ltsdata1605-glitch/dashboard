@@ -350,7 +350,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                 <div className="overflow-x-auto">
                     <table className="w-full text-center text-xs border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                            <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
                                 <th className="p-1.5 text-left w-20 font-black">Chỉ số</th>
                                 <th className="p-1.5 font-black">Ca 1</th>
                                 <th className="p-1.5 font-black">Ca 2</th>
