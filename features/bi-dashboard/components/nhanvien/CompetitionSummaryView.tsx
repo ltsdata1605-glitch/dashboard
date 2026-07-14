@@ -448,7 +448,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
     return (
         <div ref={cardRef} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <Card noPadding title={cardTitle} actionButton={headerActions}>
+            <Card noPadding title={cardTitle} actionButton={headerActions} icon="trophy">
                 {selectedTitles.length === 0 ? (
                     <div className="py-20 text-center text-slate-400 italic bg-slate-50 dark:bg-slate-900/30">
                         Bấm biểu tượng lọc <FilterIcon className="inline h-4 w-4" /> để chọn các cột dữ liệu hiển thị cho bảng này.

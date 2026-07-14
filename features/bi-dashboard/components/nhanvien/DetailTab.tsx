@@ -484,7 +484,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     if (!rawData) {
         return (
-            <Card title="Chi Tiết Doanh Thu">
+            <Card title="Chi Tiết Doanh Thu" icon="list-todo">
                 <EmptyState
                     title="Chưa có dữ liệu"
                     description='Vui lòng dán dữ liệu "BC Doanh thu theo NV" vào ô DOANH THU trong Cấu hình siêu thị.'
@@ -495,7 +495,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     if (tree.length === 0) {
         return (
-            <Card title="Chi Tiết Doanh Thu">
+            <Card title="Chi Tiết Doanh Thu" icon="list-todo">
                 <EmptyState
                     title="Không thể phân tích dữ liệu"
                     description='Header cần có: "Nhân viên  DTLK  DTQĐ  Hiệu quả QĐ  Số lượng  Đơn giá"'
@@ -595,7 +595,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding rounded={false} title={
+                <Card noPadding rounded={false} icon="list-todo" title={
                     <div className="flex flex-col">
                         <span className="text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
                         <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1">Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>

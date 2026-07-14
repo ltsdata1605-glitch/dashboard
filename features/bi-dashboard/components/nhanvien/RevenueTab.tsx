@@ -218,8 +218,8 @@ const RevenueView: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (!supermarketName) return <Card title="Phân tích Nhân viên"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
-    if (isLoading) return <Card title={cardTitle}><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-primary-500 animate-spin" /></div></Card>;
+    if (!supermarketName) return <Card title="Phân tích Nhân viên" icon="users"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
+    if (isLoading) return <Card title={cardTitle} icon="trending-up"><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-primary-500 animate-spin" /></div></Card>;
 
     const isMobile = false; // Always show table view, even on mobile
 
@@ -271,7 +271,7 @@ const RevenueView: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle} rounded={false}>
+                <Card noPadding title={cardTitle} rounded={false} icon="trending-up">
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {isMobile ? (
