@@ -34,7 +34,7 @@ const ImportPrevMonthModal: React.FC<{
             footer={
                 <div className="flex gap-3">
                     <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</Button>
-                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</Button>
+                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-primary-700 transition-colors">Lưu dữ liệu</Button>
                 </div>
             }
         >

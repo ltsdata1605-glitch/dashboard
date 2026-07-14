@@ -334,7 +334,7 @@ const CompetitionTarget: React.FC<{
                 });
 
                 return (
-                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
+                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-3">
                                 <h3 className="text-[14px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
@@ -540,7 +540,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     return (
-        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
+        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-6">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
                 <nav className="flex space-x-6 min-w-max" aria-label="Tabs">
                     {[

@@ -311,7 +311,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 pb-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-4 sm:p-6 mt-4">
+        <div className="space-y-4 pb-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-4 sm:p-6 mt-4">
             {/* Auto Pairing Quick Select */}
             {autoPairs.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
