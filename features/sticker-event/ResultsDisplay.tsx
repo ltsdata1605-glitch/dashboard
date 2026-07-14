@@ -159,7 +159,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
 ProductCard.displayName = 'ProductCard';
 
 const Annotation: React.FC<{ number: number; className: string }> = ({ number, className }) => (
-    <div className={`absolute w-5 h-5 bg-indigo-600 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white shadow-lg ${className}`}>
+    <div className={`absolute w-5 h-5 bg-indigo-600 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm ${className}`}>
         {number}
     </div>
 );
@@ -203,7 +203,7 @@ const InstructionsPanel = () => (
             
             {/* Demo 1: Annotated Sticker */}
             <div className="relative flex-shrink-0 w-[280px] h-[170px]">
-                <div className="absolute top-2 left-2 w-64 h-40 bg-white border-2 border-black rounded-lg p-2 flex flex-col shadow-lg">
+                <div className="absolute top-2 left-2 w-64 h-40 bg-white border-2 border-black rounded-lg p-2 flex flex-col shadow-sm">
                     <div className="w-full h-full border-t-2 border-l-2 border-r-2 border-b-8 border-black p-1.5 flex justify-between">
                         <div className="w-4">&nbsp;</div> {/* Ghost Bar */}
                         <div className="flex-grow flex flex-col justify-around text-center relative">
@@ -232,7 +232,7 @@ const InstructionsPanel = () => (
             </div>
 
             {/* Demo 2: Medium Sticker */}
-            <div className="flex-shrink-0 w-48 h-32 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-lg mt-2">
+            <div className="flex-shrink-0 w-48 h-32 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-sm mt-2">
                 <div className="w-full h-full border-t border-l border-r border-b-4 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">NỒI CƠM ĐIỆN TỬ SHARP</p>
                     <div>
@@ -244,7 +244,7 @@ const InstructionsPanel = () => (
             </div>
 
             {/* Demo 3: Bill Printer Sticker */}
-             <div className="flex-shrink-0 w-32 h-48 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-lg mt-2">
+             <div className="flex-shrink-0 w-32 h-48 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-sm mt-2">
                 <div className="w-full h-full border-t border-l border-r border-b-8 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">TAI NGHE BLUETOOTH SONY</p>
                      <div>
@@ -309,7 +309,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
   }
   
   return (
-      <div className="flex items-center justify-center bg-white rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
+      <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[400px]">
           <EmptyState
               icon={<SearchIcon className="h-12 w-12 text-slate-400" />}
               title="Sẵn sàng tìm kiếm"

@@ -30,7 +30,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           <Button
             variant="ghost"
             onClick={onClose}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95"
           >
             Đã hiểu
           </Button>

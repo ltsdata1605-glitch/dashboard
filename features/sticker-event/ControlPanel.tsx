@@ -289,7 +289,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
                         {/* Print buttons — full width stacked */}
                         <div className="flex flex-col gap-2">
-                            <Button variant="ghost" onClick={props.onPrintSelected} disabled={selectedCount === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200/40">
+                            <Button variant="ghost" onClick={props.onPrintSelected} disabled={selectedCount === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-indigo-200/40">
                                 <PrintIcon className="h-4 w-4" /> In đã chọn ({selectedCount})
                             </Button>
                             <Button variant="ghost" onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">

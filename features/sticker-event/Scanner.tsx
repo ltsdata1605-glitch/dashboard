@@ -229,7 +229,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           animation: scan-laser 2s infinite ease-in-out;
         }
       ` }} />
-      <div className="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-xl">
         <div id={readerId} className="w-full aspect-square"></div>
         
         {/* Overlay for scanning frame */}
@@ -283,7 +283,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         <Button
           variant="ghost"
           onClick={onClose}
-          className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
+          className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-sm shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
         >
           <XIcon className="h-5 w-5" />
           Đóng / Dừng quét
