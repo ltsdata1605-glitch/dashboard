@@ -191,15 +191,22 @@ KPI/chart mỗi feature khác nhau) — xem `components/shared/ui/Skeleton.tsx` 
 
 ---
 
-## 5. Ghi chú hiện trạng
-- Token/CSS nền tảng **đã đủ** — không cần thêm token; việc còn lại là **dùng nhất quán** ở tầng component.
-- `styles.css` còn nhiều class custom trỏ dark (`.surface-card`, `.chart-card`, `.bg-static-blobs`, scrollbar...) — **để yên** (vô hiệu ở Sáng), không cần dọn trong đợt này.
-- **PHẦN A + B đã xong** (module Phân Tích là "bản mẫu vàng"): `SectionCard`/`SectionHeader`/`KpiCard`
-  đã tách vào `components/shared/ui/` (dùng được cả `features/*`); KPI grid, bảng (`tabular-nums`,
-  sticky header), Empty state (`EmptyState` dùng chung), Skeleton đã khớp khung `SectionCard`.
-- `scripts/lint-ratchet.cjs`: đã gỡ rule `missingDarkVariant` (lỗi thời từ khi tắt Dark Mode) — không
-  cần thêm `dark:` cho code mới, `npm run check` sẽ không chặn vì thiếu `dark:`.
-- **Còn lại cho PHẦN C**: áp 6 pattern ở §3 cho `features/bi-dashboard`, `features/phan-ca`,
-  `features/sticker-event` — dùng đúng import `components/shared/ui/*`, KHÔNG import `components/common/*`
-  hay `hooks/services` gốc (vi phạm cách ly 4 khu vực). Mỗi feature có thể đã có style/khung riêng —
-  đối chiếu checklist §4 nhưng ưu tiên không phá layout/logic đặc thù đã hoạt động tốt của feature.
+## 5. Báo cáo lệch chuẩn hiện trạng module Phân tích (Lập ngày 14/07/2026)
+
+Qua kiểm tra rà soát chi tiết giao diện module **Phân Tích** (DashboardView và các component con), dưới đây là danh sách các điểm lệch chuẩn cần xử lý trong **PHẦN A**:
+
+1. **`components/employees/EmployeeAnalysis.tsx`** (Dòng 186):
+   - **Lệch**: Vẫn đang dùng thẻ div thô với shadow và border tự do (`bg-white shadow-lg border-y sm:border rounded-none sm:rounded-xl`).
+   - **Cách sửa (Đợt A1)**: Đổi wrapper ngoài cùng sang dùng component dùng chung `<SectionCard>`.
+
+2. **`components/views/DashboardView.tsx`** (Dòng 540-553):
+   - **Lệch**: Toolbar actions trong SectionHeader bọc KPI đang dùng JSX nút bấm thô (`Button variant="unstyled"`) lặp lại nhiều lần.
+   - **Cách sửa (Đợt A5)**: Rà soát và tối ưu các actions này theo kỹ thuật double-icon đồng bộ.
+
+3. **`components/kpis/KpiCards.tsx`**:
+   - **Lệch**: Khoảng cách grid gap và spacing ở mobile vẫn còn dùng trị số tùy tiện lệch 4/8pt.
+   - **Cách sửa (Đợt A2)**: Đồng bộ grid layout: `gap-2.5 lg:gap-4` và `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5`.
+
+4. **Typography và bảng biểu (`SummaryTable.tsx`)**:
+   - **Lệch**: Cần kiểm tra kỹ việc thêm thuộc tính font `tabular-nums` đồng bộ ở cấp thẻ `<table>` để bảo đảm các số liệu doanh thu căn thẳng hàng sắc nét.
+   - **Cách sửa (Đợt A4)**: Xác minh class `tabular-nums` được thêm đúng nơi.

@@ -537,16 +537,16 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         </span>
                                                     </>}
                                                 >
-                                                    <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export">
-                                                        <Button variant="unstyled" size="none" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                    <div className="flex items-center gap-0.5 lg:gap-1 hide-on-export">
+                                                        <Button variant="ghost" size="icon" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
                                                             <Icon name="settings-2" size={5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        <Button variant="ghost" size="icon" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
                                                             <Icon name="download" size={4} className="lg:hidden" />
                                                             <Icon name="download" size={5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        <Button variant="ghost" size="icon" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
                                                             <Icon name="camera" size={5} className="hidden lg:block" />
                                                         </Button>

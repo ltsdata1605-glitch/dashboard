@@ -6,6 +6,7 @@ import { useEmployeeAnalysisData } from '../../hooks/useEmployeeAnalysisData';
 import { useEmployeeAnalysisTabs } from '../../hooks/useEmployeeAnalysisTabs';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
+import { SectionCard } from '../shared/ui/SectionCard';
 import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
@@ -183,7 +184,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         : undefined;
 
     return (
-        <div className="bg-white dark:bg-slate-900 shadow-lg border-y sm:border border-slate-100 dark:border-slate-800 rounded-none sm:rounded-xl mb-8 flex flex-col flex-grow transition-all duration-300">
+        <SectionCard className="mb-8 flex flex-col flex-grow">
             {/* BEGIN: Header Section */}
             <SectionHeader
                 title={(
@@ -304,7 +305,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                 allManufacturers={allManufacturers}
                 currentTableForColumns={currentTableForColumns}
             />
-        </div>
+        </SectionCard>
     );
 });
 
