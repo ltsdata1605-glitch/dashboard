@@ -229,7 +229,67 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
-                <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
+                <div className="p-2 sm:p-3 space-y-3 sm:space-y-4">
+                    {/* Quản lý Nhân sự & Phân ca */}
+                    {(userRole === 'admin' || userRole === 'manager') && (
+                        <div className="space-y-2.5 pb-3 px-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
+                                <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                                <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Quản Lý Nhân Sự & Phân Ca</h2>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                                {/* Tải lên báo cáo Phân ca */}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={onLoadShiftFile}
+                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left"
+                                >
+                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
+                                        <Icon name="users-round" size={4} />
+                                    </div>
+                                    <div className="flex flex-col leading-tight">
+                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Tải lên Phân ca</span>
+                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Import Excel Nhân viên</span>
+                                    </div>
+                                </Button>
+
+                                {/* Mở trang Quản lý phân ca ERP */}
+                                <a
+                                    href="https://office.thegioididong.com/quan-ly-phan-ca"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left animate-none"
+                                >
+                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
+                                        <Icon name="calendar-clock" size={4} />
+                                    </div>
+                                    <div className="flex flex-col leading-tight">
+                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý Phân ca</span>
+                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Mở ERP TGDĐ</span>
+                                    </div>
+                                </a>
+
+                                {/* Quản lý danh sách nhân viên (nếu có dữ liệu) */}
+                                {hasDepartmentData && (
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={() => setShowEmployeeModal(true)}
+                                        className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left col-span-2"
+                                    >
+                                        <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/40 rounded-lg text-emerald-600 dark:text-emerald-400">
+                                            <Icon name="settings" size={4} />
+                                        </div>
+                                        <div className="flex flex-col leading-tight">
+                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Danh sách Nhân viên</span>
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Quản lý & Xem chi tiết ca kíp</span>
+                                        </div>
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                         {/* 1. Kho Tạo */}
                         <div className="space-y-1 sm:space-y-1.5">
@@ -416,62 +476,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                     </div>
 
-                    {/* Quản lý Nhân sự & Phân ca */}
-                    {(userRole === 'admin' || userRole === 'manager') && (
-                        <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 px-1">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Quản Lý Nhân Sự & Phân Ca</label>
-                            
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* Tải lên báo cáo Phân ca */}
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={onLoadShiftFile}
-                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left"
-                                >
-                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
-                                        <Icon name="users-round" size={4} />
-                                    </div>
-                                    <div className="flex flex-col leading-tight">
-                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Tải lên Phân ca</span>
-                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Import Excel Nhân viên</span>
-                                    </div>
-                                </Button>
 
-                                {/* Mở trang Quản lý phân ca ERP */}
-                                <a
-                                    href="https://office.thegioididong.com/quan-ly-phan-ca"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left animate-none"
-                                >
-                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
-                                        <Icon name="calendar-clock" size={4} />
-                                    </div>
-                                    <div className="flex flex-col leading-tight">
-                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý Phân ca</span>
-                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Mở ERP TGDĐ</span>
-                                    </div>
-                                </a>
-
-                                {/* Quản lý danh sách nhân viên (nếu có dữ liệu) */}
-                                {hasDepartmentData && (
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        onClick={() => setShowEmployeeModal(true)}
-                                        className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left col-span-2"
-                                    >
-                                        <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/40 rounded-lg text-emerald-600 dark:text-emerald-400">
-                                            <Icon name="settings" size={4} />
-                                        </div>
-                                        <div className="flex flex-col leading-tight">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Danh sách Nhân viên</span>
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Quản lý & Xem chi tiết ca kíp</span>
-                                        </div>
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    )}
 
                     {/* GTĐH Settings */}
                     <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
