@@ -24,6 +24,7 @@ import { PhanCaToolbar } from './components/PhanCaToolbar';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
 import { SectionCard } from '../../components/shared/ui/SectionCard';
+import { SectionHeader } from '../../components/shared/ui/SectionHeader';
 import { exportScheduleToGoogleSheet } from './services/googleSheetsExport';
 import { usePhanCaData } from './hooks/usePhanCaData';
 import {
@@ -600,86 +601,92 @@ const App: React.FC = () => {
             hasStaff={hasStaff} hasPatternsForCurrentDept={!!departmentPatterns[departmentFilter]} onDateControlClick={handleDateControlClick}
           />
         </SectionCard>
-        <div ref={exportContainerRef} className={`bg-white overflow-hidden border border-slate-200 shadow-sm ${isIndividualExport ? 'max-w-5xl mx-auto' : ''}`}>
-          <div className={`px-8 pt-8 pb-6 border-b border-slate-100 ${isIndividualExport ? 'hidden' : ''}`}>
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-                  {exportTitle || `LỊCH PHÂN CA - ${currentSupermarket || 'Cửa Hàng'}`}
-                </h1>
-              </div>
+        <SectionCard ref={exportContainerRef} className={isIndividualExport ? 'max-w-5xl mx-auto' : ''}>
+          {!isIndividualExport && (
+            <SectionHeader
+              title={exportTitle || `LỊCH PHÂN CA - ${currentSupermarket || 'Cửa Hàng'}`}
+              icon="calendar"
+            >
               {!isExportingImage && (
-                <Button variant="ghost" onClick={() => setHistoryModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2.5 border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-colors" title="Lịch sử thay đổi">
+                <Button variant="ghost" size="icon" onClick={() => setHistoryModalOpen(true)} title="Lịch sử thay đổi" className="text-slate-400">
                   <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </Button>
               )}
-            </div>
-            <div>
-               <Legend 
-                 targets={targets} 
-                 onEditRule={handleEditRule} 
-                 includeTnInSbh={includeTnInSbh} 
-                 onIncludeTnInSbhChange={setIncludeTnInSbh} 
-                 onboardingStep={onboardingStep} 
-                 autoAddWeekendShifts={autoAddWeekendShifts}
-                 onAutoAddWeekendShiftsChange={handleAutoAddWeekendShiftsChange}
-                 autoAddWeekendShift1={autoAddWeekendShift1}
-                 onAutoAddWeekendShift1Change={handleAutoAddWeekendShift1Change}
-               />
-            </div>
-          </div>
-          <div className={`px-5 pb-0 ${isExportingImage ? 'export-hidden' : ''}`}>
-             <DailyStatsTable 
-                staffList={staffList} config={scheduleConfig} requirements={dailyRequirements} setRequirements={setDailyRequirements}
-                selectedDay={statsDay} setSelectedDay={setStatsDay} departmentFilter={departmentFilter} unresolvedConflicts={unresolvedConflicts} onShowUnresolvedConflicts={handleShowConflicts}
-             />
-          </div>
-          <div className="px-5 py-6">
-            {hasStaff && targets ? (
-              isIndividualExport ? (
-                 <VerticalIndividualSchedule 
-                    staff={listForTable[0]} 
-                    config={scheduleConfig} 
-                    targets={targets} 
-                    includeTnInSbh={includeTnInSbh} 
+            </SectionHeader>
+          )}
+          
+          <div className="p-3 lg:p-6 space-y-4">
+            {!isIndividualExport && (
+              <div>
+                 <Legend 
+                   targets={targets} 
+                   onEditRule={handleEditRule} 
+                   includeTnInSbh={includeTnInSbh} 
+                   onIncludeTnInSbhChange={setIncludeTnInSbh} 
+                   onboardingStep={onboardingStep} 
+                   autoAddWeekendShifts={autoAddWeekendShifts}
+                   onAutoAddWeekendShiftsChange={handleAutoAddWeekendShiftsChange}
+                   autoAddWeekendShift1={autoAddWeekendShift1}
+                   onAutoAddWeekendShift1Change={handleAutoAddWeekendShift1Change}
                  />
-              ) : (
-                <ScheduleTable 
-                    staffList={listForTable} 
-                    config={scheduleConfig} 
-                    targets={targets} 
-                    tableRef={tableRef}
-                    includeTnInSbh={includeTnInSbh}
-                    onDeleteEmployee={handleDeleteEmployee} 
-                    onEditShift={handleEditShift}
-                    onDayClick={setStatsDay}
-                    weekRange={weeklyExportConfig} 
-                    highlightId={currentHighlightedId}
-                    onSwapShift={handleSwapShifts}
-                />
-              )
-            ) : hasStaff ? (
-              <div className="py-32 flex flex-col items-center justify-center">
-                <div className="spinner !w-10 !h-10"></div>
-                <p className="mt-4 font-semibold text-slate-400 text-sm">Đang khởi tạo mục tiêu...</p>
-              </div>
-            ) : (
-              <div className="py-32 flex flex-col items-center justify-center opacity-25">
-                <svg className="w-24 h-24 mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                <p className="font-bold text-lg uppercase tracking-[0.15em] text-slate-400">Dữ liệu đang trống</p>
               </div>
             )}
+
+            <div className={isExportingImage ? 'export-hidden' : ''}>
+               <DailyStatsTable 
+                  staffList={staffList} config={scheduleConfig} requirements={dailyRequirements} setRequirements={setDailyRequirements}
+                  selectedDay={statsDay} setSelectedDay={setStatsDay} departmentFilter={departmentFilter} unresolvedConflicts={unresolvedConflicts} onShowUnresolvedConflicts={handleShowConflicts}
+               />
+            </div>
+
+            <div>
+              {hasStaff && targets ? (
+                isIndividualExport ? (
+                   <VerticalIndividualSchedule 
+                      staff={listForTable[0]} 
+                      config={scheduleConfig} 
+                      targets={targets} 
+                      includeTnInSbh={includeTnInSbh} 
+                   />
+                ) : (
+                  <ScheduleTable 
+                      staffList={listForTable} 
+                      config={scheduleConfig} 
+                      targets={targets} 
+                      tableRef={tableRef}
+                      includeTnInSbh={includeTnInSbh}
+                      onDeleteEmployee={handleDeleteEmployee} 
+                      onEditShift={handleEditShift}
+                      onDayClick={setStatsDay}
+                      weekRange={weeklyExportConfig} 
+                      highlightId={currentHighlightedId}
+                      onSwapShift={handleSwapShifts}
+                  />
+                )
+              ) : hasStaff ? (
+                <div className="py-32 flex flex-col items-center justify-center">
+                  <div className="spinner !w-10 !h-10"></div>
+                  <p className="mt-4 font-semibold text-slate-400 text-sm">Đang khởi tạo mục tiêu...</p>
+                </div>
+              ) : (
+                <div className="py-32 flex flex-col items-center justify-center opacity-25">
+                  <svg className="w-24 h-24 mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  <p className="font-bold text-lg uppercase tracking-[0.15em] text-slate-400">Dữ liệu đang trống</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer signature for official exports */}
+            {!isIndividualExport && isExportingImage && (
+                <div className="py-8 flex justify-end">
+                    <div className="text-center w-56 border-t-2 border-slate-200 pt-4">
+                        <p className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-10">Quản Lý Duyệt</p>
+                        <p className="font-semibold text-slate-400 text-[9px] italic">(Ký và ghi rõ họ tên)</p>
+                    </div>
+                </div>
+            )}
           </div>
-          {/* Footer signature for official exports */}
-          {!isIndividualExport && isExportingImage && (
-              <div className="px-8 py-8 flex justify-end">
-                  <div className="text-center w-56 border-t-2 border-slate-200 pt-4">
-                      <p className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-10">Quản Lý Duyệt</p>
-                      <p className="font-semibold text-slate-400 text-[9px] italic">(Ký và ghi rõ họ tên)</p>
-                  </div>
-              </div>
-          )}
-        </div>
+        </SectionCard>
       </main>
       {/* Modals & Inputs */}
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls" />

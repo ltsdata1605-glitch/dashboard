@@ -68,7 +68,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
             </div>
             
             <div className="overflow-x-auto custom-scroll pb-2">
-                <table className="w-full text-left border-collapse min-w-max">
+                <table className="w-full text-left border-collapse min-w-max tabular-nums">
                     <thead>
                         <tr>
                             <th className="sticky left-0 bg-slate-50 z-20 border-r border-b border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-24 text-center">Ca Làm Việc</th>

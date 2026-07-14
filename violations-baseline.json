@@ -424,7 +424,7 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/PhanCaView.tsx": {
-    "nonSemanticColor": 5,
+    "nonSemanticColor": 3,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/AlertModal.tsx": {

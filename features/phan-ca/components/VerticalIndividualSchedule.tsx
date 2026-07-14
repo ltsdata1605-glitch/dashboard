@@ -24,7 +24,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
          <h3 className="text-xl font-bold text-slate-700 uppercase tracking-wider text-left pl-2">{staff.name}</h3>
       </div>
       
-      <table className="w-full border-collapse bg-white border border-slate-200 shadow-sm">
+      <table className="w-full border-collapse bg-white border border-slate-200 shadow-sm tabular-nums">
         <thead>
           <tr>
             <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-black text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
@@ -77,7 +77,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
       </table>
 
       <div className="pt-2">
-        <table className="w-full border-collapse text-left bg-white border border-slate-200 shadow-sm">
+        <table className="w-full border-collapse text-left bg-white border border-slate-200 shadow-sm tabular-nums">
         <thead className="bg-slate-50">
           <tr>
             <th className="py-3 px-4 border-b-2 border-r border-slate-300 text-[11px] font-bold text-slate-500 uppercase text-center whitespace-nowrap tracking-wider">Ngày</th>
