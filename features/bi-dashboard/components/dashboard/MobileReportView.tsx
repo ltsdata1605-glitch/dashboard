@@ -77,7 +77,7 @@ const MobileReportView = React.forwardRef<HTMLDivElement, MobileReportViewProps>
                     const isPercent = item.isPercent;
 
                     return (
-                        <div key={item.id} className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                        <div key={item.id} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className={`bg-gradient-to-br ${item.color === 'bg-amber-500' ? 'from-amber-500 to-amber-600' : item.color === 'bg-emerald-500' ? 'from-emerald-500 to-emerald-600' : item.color === 'bg-sky-500' ? 'from-sky-500 to-sky-600' : 'from-rose-500 to-rose-600'} p-5 text-white`}>
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">
