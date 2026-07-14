@@ -70,7 +70,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 flex flex-col">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 flex flex-col">
           <div className="p-2 border-b border-slate-100 sticky top-0 bg-white z-10 rounded-t-lg">
             <input
               type="text"

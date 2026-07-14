@@ -55,7 +55,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </Button>
           </div>
           {(suggestions.length > 0 || showNoResults) && (
-             <ul className={`absolute z-20 w-full ${isMobile ? 'bottom-full mb-1' : 'mt-1'} bg-white border border-slate-300 rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
+             <ul className={`absolute z-20 w-full ${isMobile ? 'bottom-full mb-1' : 'mt-1'} bg-white border border-slate-300 rounded-lg shadow-xl max-h-60 overflow-y-auto`}>
                 {suggestions.map((suggestion) => (
                     <li
                         key={suggestion.msp}
