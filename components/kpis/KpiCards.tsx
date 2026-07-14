@@ -245,8 +245,8 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     return (
         <div>
             <div className={`
-                grid grid-cols-2 gap-2.5 pb-1
-                sm:grid-cols-3
+                grid grid-cols-4 gap-1.5 pb-1
+                sm:grid-cols-4 sm:gap-2.5
                 lg:grid-cols-4 lg:gap-4
                 xl:grid-cols-5 mb-3 lg:mb-8 kpi-grid-for-export
             `}>

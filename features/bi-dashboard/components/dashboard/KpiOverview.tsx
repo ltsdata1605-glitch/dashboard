@@ -73,46 +73,81 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         targetStr?: string; targetLabel?: string;
         rightEl?: React.ReactNode;
     }) => {
+        const hasTarget = !!props.targetStr;
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-none lg:rounded-xl border border-slate-200 dark:border-slate-700 p-1.5 sm:p-3 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-lg lg:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden premium-card-shadow">
                 {/* Top styling bar like in image */}
-                <div className={`absolute top-0 left-0 w-full h-1 ${props.iconBg.split(' ')[0]} opacity-50`}></div>
+                <div className={`absolute top-0 left-0 w-full h-[3px] ${props.iconBg.split(' ')[0]} opacity-80`}></div>
                 
-                <div className="flex justify-between items-start mb-1 sm:mb-2">
-                    <div className="flex items-center gap-1 sm:gap-2 overflow-hidden">
-                        <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg shrink-0 flex items-center justify-center ${props.iconBg}`}>
-                            {props.icon}
+                {/* Desktop view (sm trở lên) */}
+                <div className="hidden sm:flex flex-col justify-between h-full p-3 flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                            <div className={`p-1.5 rounded-lg shrink-0 flex items-center justify-center ${props.iconBg}`}>
+                                {props.icon}
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${props.titleColor}`}>
+                                {props.title}
+                            </span>
                         </div>
-                        <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider truncate ${props.titleColor}`}>
-                            {props.title}
-                        </span>
+                        {props.rightEl && <div className="shrink-0 ml-1">{props.rightEl}</div>}
                     </div>
-                    {props.rightEl && <div className="shrink-0 ml-1">{props.rightEl}</div>}
-                </div>
 
-                <div className="flex justify-between items-end mb-1 sm:mb-2 gap-1 overflow-hidden">
-                    <span className={`text-sm sm:text-2xl font-black tracking-tight leading-none truncate ${props.valueColor}`} title={props.value}>
-                        {props.value}
-                    </span>
-                    {props.progressPct !== undefined && (
-                        <span className={`text-[9px] sm:text-sm font-bold tabular-nums shrink-0 leading-none ${props.valueColor}`}>
-                            {props.progressPct}%
+                    <div className="flex justify-between items-end mb-2 gap-1 overflow-hidden">
+                        <span className={`text-2xl font-black tracking-tight leading-none truncate ${props.valueColor}`} title={props.value}>
+                            {props.value}
                         </span>
+                        {props.progressPct !== undefined && (
+                            <span className={`text-sm font-bold tabular-nums shrink-0 leading-none ${props.valueColor}`}>
+                                {props.progressPct}%
+                            </span>
+                        )}
+                    </div>
+
+                    {props.progressPct !== undefined && props.progressColor && (
+                        <div className="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-1 sm:h-1.5 mb-1.5 sm:mb-2 mt-0.5 overflow-hidden">
+                            <div className={`h-full rounded-full ${props.progressColor}`} style={{ width: `${Math.min(props.progressPct, 100)}%` }} />
+                        </div>
+                    )}
+
+                    {props.targetLabel && (
+                        <div className="flex justify-between items-center text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto gap-1">
+                            <span className="truncate">{props.targetLabel}</span>
+                            {props.targetStr && <span className="text-slate-600 dark:text-slate-300 font-bold shrink-0 truncate">{props.targetStr}</span>}
+                        </div>
                     )}
                 </div>
 
-                {props.progressPct !== undefined && props.progressColor && (
-                    <div className="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-1 sm:h-1.5 mb-1.5 sm:mb-2 mt-0.5 overflow-hidden">
-                        <div className={`h-full rounded-full ${props.progressColor}`} style={{ width: `${Math.min(props.progressPct, 100)}%` }} />
+                {/* Mobile view (dưới sm) - dạng đứng căn giữa cực gọn */}
+                <div className="sm:hidden flex flex-col items-center justify-between flex-1 px-1 py-2 text-center h-full">
+                    {/* Hàng 1: Icon */}
+                    <div className={`p-1 rounded-md shrink-0 flex items-center justify-center ${props.iconBg} mb-1 w-6 h-6`}>
+                        {props.icon}
                     </div>
-                )}
-
-                {props.targetLabel && (
-                    <div className="flex justify-between items-center text-[8px] sm:text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto gap-1">
-                        <span className="truncate">{props.targetLabel}</span>
-                        {props.targetStr && <span className="text-slate-600 dark:text-slate-300 font-bold shrink-0 truncate">{props.targetStr}</span>}
-                    </div>
-                )}
+                    
+                    {/* Hàng 2: Title */}
+                    <span className={`text-[9px] font-extrabold uppercase tracking-wide truncate ${props.titleColor} leading-tight mb-0.5`}>
+                        {props.title}
+                    </span>
+                    
+                    {/* Hàng 3: Value */}
+                    <span className={`text-xs font-black tracking-tight leading-none truncate ${props.valueColor} my-0.5 w-full`} title={props.value}>
+                        {props.value}
+                    </span>
+                    
+                    {/* Hàng 4: Label phụ */}
+                    {props.rightEl ? (
+                        <div className="text-[9px] font-bold text-slate-400 shrink-0 leading-none h-3 flex items-center justify-center">
+                            {props.rightEl}
+                        </div>
+                    ) : hasTarget ? (
+                        <span className="text-[9px] font-bold text-slate-400 leading-none h-3 truncate w-full flex items-center justify-center">
+                            {props.targetStr}
+                        </span>
+                    ) : (
+                        <span className="text-[9px] font-bold text-slate-400 leading-none h-3 flex items-center justify-center">-</span>
+                    )}
+                </div>
             </div>
         );
     };
