@@ -510,8 +510,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isFirstCol = th.previousElementSibling === null;
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
+            // Ép cỡ chữ và padding nhỏ để bảng gọn gàng khi export
+            th.style.setProperty('font-size', '10px', 'important');
+            th.style.setProperty('padding', '4px 2px', 'important');
+
             if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
-                th.style.setProperty('min-width', '120px', 'important');
+                th.style.setProperty('min-width', '100px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
                 
@@ -524,7 +528,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
                 th.style.setProperty('max-width', '80px', 'important');
-                th.style.setProperty('min-width', '65px', 'important');
+                th.style.setProperty('min-width', '55px', 'important');
             }
             
             th.querySelectorAll('span').forEach(span => {
@@ -545,9 +549,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 const isFirstCol = td.previousElementSibling === null;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
+                // Ép cỡ chữ và padding nhỏ để bảng gọn gàng khi export
+                td.style.setProperty('font-size', '10px', 'important');
+                td.style.setProperty('padding', '4px 2px', 'important');
+
                 if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                    td.style.setProperty('min-width', '120px', 'important');
+                    td.style.setProperty('min-width', '100px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
                     
                     // Bọc thẻ span con chống ngắt dòng
@@ -557,7 +565,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     }
                 } else {
                     if (!td.classList.contains('sticky') && !isFirstCol) {
-                        td.style.setProperty('min-width', '55px', 'important');
+                        td.style.setProperty('min-width', '45px', 'important');
                         td.style.setProperty('max-width', '80px', 'important');
 
                         // Tự động nhận diện các ô số, phần trăm hoặc ProgressBar để chống ngắt dòng
