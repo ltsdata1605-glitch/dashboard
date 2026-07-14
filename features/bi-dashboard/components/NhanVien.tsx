@@ -385,7 +385,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
 
             {/* 3. Tab Switcher — minimal bottom-border style */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
                 <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
                     <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
