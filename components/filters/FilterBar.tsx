@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
@@ -23,6 +24,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
     } = useDashboardContext();
 
     const [selectedWeek, setSelectedWeek] = useState<string>('');
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { availableWeeks, availableMonths } = useMemo(() => {
         const weeksMap = new Map<string, string>();
@@ -179,197 +184,118 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
     };
 
     return (
-        <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
-            
-            
-            <style>{`
-                .grouped-filters {
-                    height: 28px !important;
-                }
-                .grouped-filters button {
-                    border: 0 !important;
-                    border-radius: 0 !important;
-                    box-shadow: none !important;
-                    height: 26px !important;
-                    padding-top: 0 !important;
-                    padding-bottom: 0 !important;
-                }
-                .grouped-filters button:not(.bg-indigo-50):not(.dark\\:bg-indigo-900\\/40) {
-                    background: transparent !important;
-                }
-                .grouped-filters button:focus,
-                .grouped-filters button:active {
-                    outline: none !important;
-                    box-shadow: none !important;
-                }
-                .grouped-filters button span {
-                    font-size: 10px !important;
-                    font-weight: 900 !important;
-                    text-transform: uppercase !important;
-                    letter-spacing: 0.05em !important;
-                }
-                .grouped-filters button:not(.text-indigo-600):not(.dark\\:text-indigo-400) span {
-                    color: #64748b !important;
-                }
-                .grouped-filters button.text-indigo-600 span {
-                    color: #4f46e5 !important;
-                }
-                .grouped-filters button.dark\\:text-indigo-400 span {
-                    color: #818cf8 !important;
-                }
-                /* active background for dropdown button */
-                .grouped-filters button.border-indigo-500 {
-                    background-color: #f5f3ff !important;
-                }
-                .dark .grouped-filters button.border-indigo-500 {
-                    background-color: rgba(79, 70, 229, 0.2) !important;
-                }
-                .grouped-filters button span.text-sky-600,
-                .grouped-filters button span.text-sky-400 {
-                    color: #0284c7 !important;
-                }
-                .grouped-filters svg {
-                    width: 10px !important;
-                    height: 10px !important;
-                }
-                .grouped-filters > div:first-of-type button {
-                    border-top-left-radius: 0.5rem !important;
-                    border-bottom-left-radius: 0.5rem !important;
-                }
-                .grouped-filters > div:last-of-type button {
-                    border-top-right-radius: 0.5rem !important;
-                    border-bottom-right-radius: 0.5rem !important;
-                }
-            `}</style>
+        <>
+            {/* Mobile Actions Portal */}
+            {mounted && document.getElementById('mobile-topbar-actions') && createPortal(
+                <div className="flex items-center gap-0.5">
+                    {onNewFile && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onNewFile}
+                            title="Tải YCX lên"
+                            className="flex items-center justify-center w-8 h-8 text-emerald-600 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
+                        >
+                            <Icon name="file-up" size={5} />
+                        </Button>
+                    )}
+                    {onOpenHistory && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onOpenHistory}
+                            id="btn-mobile-history"
+                            title="Quản lý tệp đã lưu"
+                            className="flex items-center justify-center w-8 h-8 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
+                        >
+                            <Icon name="database" size={5} />
+                        </Button>
+                    )}
+                    <a
+                        href="https://report.mwgroup.vn/home/dashboard/77"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Tải dữ liệu báo cáo (BCNB)"
+                        className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95 shrink-0"
+                    >
+                        <Icon name="link" size={5} />
+                    </a>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={onToggleAdvanced}
+                        title="Bộ lọc nâng cao"
+                        className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95 shrink-0"
+                    >
+                        <Icon name="settings" size={5} />
+                    </Button>
+                </div>,
+                document.getElementById('mobile-topbar-actions')!
+            )}
 
+            <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export hidden lg:block">
+                
+                <style>{`
+                    .grouped-filters {
+                        height: 28px !important;
+                    }
+                    .grouped-filters button {
+                        border: 0 !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                        height: 26px !important;
+                        padding-top: 0 !important;
+                        padding-bottom: 0 !important;
+                    }
+                    .grouped-filters button:not(.bg-indigo-50):not(.dark\\:bg-indigo-900\\/40) {
+                        background: transparent !important;
+                    }
+                    .grouped-filters button:focus,
+                    .grouped-filters button:active {
+                        outline: none !important;
+                        box-shadow: none !important;
+                    }
+                    .grouped-filters button span {
+                        font-size: 10px !important;
+                        font-weight: 900 !important;
+                        text-transform: uppercase !important;
+                        letter-spacing: 0.05em !important;
+                    }
+                    .grouped-filters button:not(.text-indigo-600):not(.dark\\:text-indigo-400) span {
+                        color: #64748b !important;
+                    }
+                    .grouped-filters button.text-indigo-600 span {
+                        color: #4f46e5 !important;
+                    }
+                    .grouped-filters button.dark\\:text-indigo-400 span {
+                        color: #818cf8 !important;
+                    }
+                    /* active background for dropdown button */
+                    .grouped-filters button.border-indigo-500 {
+                        background-color: #f5f3ff !important;
+                    }
+                    .dark .grouped-filters button.border-indigo-500 {
+                        background-color: rgba(79, 70, 229, 0.2) !important;
+                    }
+                    .grouped-filters button span.text-sky-600,
+                    .grouped-filters button span.text-sky-400 {
+                        color: #0284c7 !important;
+                    }
+                    .grouped-filters svg {
+                        width: 10px !important;
+                        height: 10px !important;
+                    }
+                    .grouped-filters > div:first-of-type button {
+                        border-top-left-radius: 0.5rem !important;
+                        border-bottom-left-radius: 0.5rem !important;
+                    }
+                    .grouped-filters > div:last-of-type button {
+                        border-top-right-radius: 0.5rem !important;
+                        border-bottom-right-radius: 0.5rem !important;
+                    }
+                `}</style>
 
-            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
-                {/* === MOBILE LAYOUT (<lg): 1 compact row === */}
-                <div className="lg:hidden space-y-1.5">
-                    {/* Row 1: Actions */}
-                    <div className="flex gap-2 items-center justify-between w-full">
-                        {/* Bên trái: Nút tải YCX (emerald) nổi bật */}
-                        {onNewFile ? (
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onNewFile}
-                                title="Tải YCX lên"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-8.5 flex items-center justify-center px-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0 gap-1.5 border border-emerald-200/50"
-                            >
-                                <Icon name="file-up" size={4.5} />
-                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Tải dữ liệu YCX</span>
-                            </Button>
-                        ) : <div />}
-
-                        {/* Bên phải: Các nút hành động khác */}
-                        <div className="flex gap-1.5 items-center">
-                            {onOpenHistory && (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={onOpenHistory}
-                                    id="btn-mobile-history"
-                                    title="Quản lý tệp đã lưu"
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-8 flex items-center justify-center bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0 border border-rose-200/30"
-                                >
-                                    <Icon name="database" size={4} />
-                                </Button>
-                            )}
-                            <a
-                                href="https://report.mwgroup.vn/home/dashboard/77"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Tải dữ liệu báo cáo (BCNB)"
-                                className="flex items-center justify-center w-8 h-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-lg transition-all active:scale-95 shrink-0 border border-slate-200/40"
-                            >
-                                <Icon name="link" size={4} />
-                            </a>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onToggleAdvanced}
-                                title="Bộ lọc nâng cao"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 flex items-center justify-center px-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all active:scale-95 shrink-0 gap-1"
-                            >
-                                <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
-                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Bộ lọc</span>
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
-                    <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
-                        {/* Date Range Segments */}
-                        <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
-                            {/* Dropdown chon Tuan */}
-                            <div className="w-[75px] shrink-0">
-                                <SingleSelectDropdown
-                                    label="Tuần"
-                                    options={availableWeeks.map(w => ({
-                                        value: w.value,
-                                        label: w.label.replace('Tuần ', 'T').replace(' - Tháng ', '/').replace(/\/202(\d)/, '/$1')
-                                    }))}
-                                    selected={selectedWeek}
-                                    onChange={handleWeekSelect}
-                                    variant="compact"
-                                />
-                            </div>
-                            
-                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
-                            
-                            {/* Cac nut H.nay, H.qua, All */}
-                            {[
-                                { range: 'today', label: 'H.nay' },
-                                { range: 'yesterday', label: 'H.qua' },
-                                { range: 'all', label: 'All' }
-                            ].map(({ range, label }) => (
-                                <Button
-                                    key={range}
-                                    variant="unstyled" size="none"
-                                    onClick={() => handleDateRangeClick(range)}
-                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
-                                        filterState.dateRange === range
-                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
-                                        : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                                    }`}
-                                >
-                                    {label}
-                                </Button>
-                            ))}
-                        </div>
-
-                        {/* Divider */}
-                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 shrink-0"></div>
-
-                        {/* Export Status Segments */}
-                        <div className="w-auto min-w-[125px] shrink-0">
-                            <SingleSelectDropdown
-                                label="T.Thái Xuất"
-                                options={[
-                                    { value: 'all', label: 'Tất cả' },
-                                    { value: 'Đã', label: 'Đã xuất' },
-                                    { value: 'Chưa', label: 'Chưa xuất' }
-                                ]}
-                                selected={filterState.xuat}
-                                onChange={(val) => handleFilterChange({ xuat: val })}
-                                variant="compact"
-                            />
-                        </div>
-
-                        {/* Active Filter Chips */}
-                        {activeChips.length > 0 && activeChips.map(chip => (
-                            <FilterChip
-                                key={chip.id}
-                                label={chip.label}
-                                value={chip.value}
-                                onRemove={() => handleRemoveChip(chip.id)}
-                                color={chip.color}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                {/* === DESKTOP LAYOUT (lg+): Original horizontal row === */}
-                <div className="hidden lg:flex flex-row gap-3 items-center">
+                    {/* === DESKTOP LAYOUT (lg+): Original horizontal row === */}
+                    <div className="hidden lg:flex flex-row gap-3 items-center">
                     
                     {/* 1. Primary: Warehouse Multi-select & Month (Grouped) */}
                     <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
@@ -518,6 +444,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                 </div>
             </div>
         </div>
+      </>
     );
 };
 
