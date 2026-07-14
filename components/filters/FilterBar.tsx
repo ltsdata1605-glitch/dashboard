@@ -245,77 +245,55 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
-                {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
+                {/* === MOBILE LAYOUT (<lg): 1 compact row === */}
                 <div className="lg:hidden space-y-1.5">
-                    {/* Row 1: Dropdowns */}
-                    <div className="flex gap-1.5 items-stretch w-full">
-                        <div className="flex-1 flex gap-0 items-stretch grouped-filters bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 min-w-0">
-                            <div className="flex-1 min-w-0">
-                                <MultiSelectDropdown
-                                    label="Kho"
-                                    options={uniqueFilterOptions.kho}
-                                    selected={filterState.kho}
-                                    onChange={(sel) => handleFilterChange({ kho: sel })}
-                                    variant="compact"
-                                />
-                            </div>
-                            <div className="self-center h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
-                            <div className="flex-1 min-w-0">
-                                <MultiSelectDropdown
-                                    label="Tháng"
-                                    options={availableMonths}
-                                    selected={filterState.selectedMonths || []}
-                                    onChange={(sel) => {
-                                        handleFilterChange({ 
-                                            selectedMonths: sel, 
-                                            dateRange: sel.length > 0 ? '' : 'all',
-                                            startDate: '',
-                                            endDate: '',
-                                        });
-                                    }}
-                                    variant="compact"
-                                />
-                            </div>
-                        </div>
-
-                        {onNewFile && (
+                    {/* Row 1: Actions */}
+                    <div className="flex gap-2 items-center justify-between w-full">
+                        {/* Bên trái: Nút tải YCX (emerald) nổi bật */}
+                        {onNewFile ? (
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-8.5 flex items-center justify-center px-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0 gap-1.5 border border-emerald-200/50"
                             >
-                                <Icon name="file-up" size={5} />
+                                <Icon name="file-up" size={4.5} />
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Tải dữ liệu YCX</span>
                             </Button>
-                        )}
-                        {onOpenHistory && (
+                        ) : <div />}
+
+                        {/* Bên phải: Các nút hành động khác */}
+                        <div className="flex gap-1.5 items-center">
+                            {onOpenHistory && (
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={onOpenHistory}
+                                    id="btn-mobile-history"
+                                    title="Quản lý tệp đã lưu"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-8 flex items-center justify-center bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0 border border-rose-200/30"
+                                >
+                                    <Icon name="database" size={4} />
+                                </Button>
+                            )}
+                            <a
+                                href="https://report.mwgroup.vn/home/dashboard/77"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Tải dữ liệu báo cáo (BCNB)"
+                                className="flex items-center justify-center w-8 h-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-lg transition-all active:scale-95 shrink-0 border border-slate-200/40"
+                            >
+                                <Icon name="link" size={4} />
+                            </a>
                             <Button
                                 variant="unstyled" size="none"
-                                onClick={onOpenHistory}
-                                id="btn-mobile-history"
-                                title="Quản lý tệp đã lưu"
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                onClick={onToggleAdvanced}
+                                title="Bộ lọc nâng cao"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 flex items-center justify-center px-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all active:scale-95 shrink-0 gap-1"
                             >
-                                <Icon name="database" size={5} />
+                                <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Bộ lọc</span>
                             </Button>
-                        )}
-                        <a
-                            href="https://report.mwgroup.vn/home/dashboard/77"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Tải dữ liệu báo cáo (BCNB)"
-                            className="flex items-center justify-center w-[36px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0"
-                        >
-                            <Icon name="link" size={5} />
-                        </a>
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={onToggleAdvanced}
-                            title="Bộ lọc nâng cao"
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
-                        >
-                            <Icon name="settings" size={5} className="group-hover:rotate-90 transition-transform duration-300" />
-                        </Button>
+                        </div>
                     </div>
 
                     {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
