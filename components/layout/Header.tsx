@@ -90,30 +90,7 @@ const Header: React.FC<HeaderProps> = ({
                 <>📅 Cập nhật: {fileInfo.savedAt}</>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
-
-            {/* Portal action buttons into mobile top bar */}
-            {mounted && fileInfo && (userRole === 'admin' || userRole === 'manager') && document.getElementById('mobile-topbar-actions') && createPortal(
-                <>
-                    <Button
-                        variant="unstyled" size="none"
-                        onClick={onLoadShiftFile}
-                        className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95"
-                        title="Tải DS Nhân viên"
-                    >
-                        <Icon name="users-round" size={5} />
-                    </Button>
-                    <a
-                        href="#"
-                        onClick={handleExternalLinkClick}
-                        className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95"
-                        title="Mở trang quản lý phân ca"
-                    >
-                        <Icon name="calendar-clock" size={5} />
-                    </a>
-
-                </>,
-                document.getElementById('mobile-topbar-actions')!
-            )}
+            {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}
 
         {/* Desktop: Full inline toolbar ported to Global Header */}
         {mounted && document.getElementById('global-header-actions') && createPortal(

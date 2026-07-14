@@ -599,6 +599,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             visibility={visibleComponents}
                                             onVisibilityChange={handleVisibilityChange}
                                             onClose={() => setIsFilterSidebarOpen(false)}
+                                            onLoadShiftFile={handleShiftFileClick}
+                                            hasDepartmentData={!!departmentMap}
                                         />
                                     </div>
                                 </div>

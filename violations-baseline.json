@@ -128,7 +128,7 @@
     "missingMobileToolbar": 0
   },
   "components/filters/FilterSection.tsx": {
-    "nonSemanticColor": 35,
+    "nonSemanticColor": 23,
     "missingMobileToolbar": 0
   },
   "components/kpis/modals/KpiCardConfigModal.tsx": {

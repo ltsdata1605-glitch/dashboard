@@ -199,50 +199,26 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <Icon name="upload" size={5} />
                         </Button>
                     )}
-                    
-                    {/* Menu ba chấm dọc chứa Quản lý tệp & Link BCNB */}
-                    <div className="relative">
+                    {onOpenHistory && (
                         <Button
                             variant="unstyled" size="none"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            title="Hành động thêm"
-                            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 shrink-0 ${isMenuOpen ? 'text-sky-600 bg-sky-50 dark:bg-sky-950/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700'}`}
+                            onClick={onOpenHistory}
+                            id="btn-mobile-history"
+                            title="Quản lý tệp đã lưu"
+                            className="flex items-center justify-center w-8 h-8 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="more-vertical" size={5} />
+                            <Icon name="database" size={5} />
                         </Button>
-
-                        {isMenuOpen && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)}></div>
-                                <div className="absolute right-0 mt-1 w-44 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-200/50 dark:border-slate-800/80 shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                                    {onOpenHistory && (
-                                        <Button
-                                            variant="unstyled" size="none"
-                                            onClick={() => {
-                                                onOpenHistory();
-                                                setIsMenuOpen(false);
-                                            }}
-                                            className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                        >
-                                            <Icon name="database" size={4} className="text-rose-500" />
-                                            <span>Quản lý tệp đã lưu</span>
-                                        </Button>
-                                    )}
-                                    <a
-                                        href="https://report.mwgroup.vn/home/dashboard/77"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                    >
-                                        <Icon name="link" size={4} className="text-sky-500" />
-                                        <span>Dữ liệu báo cáo (BCNB)</span>
-                                    </a>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
+                    )}
+                    <a
+                        href="https://report.mwgroup.vn/home/dashboard/77"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Tải dữ liệu báo cáo (BCNB)"
+                        className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95 shrink-0"
+                    >
+                        <Icon name="link" size={5} />
+                    </a>
                     <Button
                         variant="unstyled" size="none"
                         onClick={onToggleAdvanced}

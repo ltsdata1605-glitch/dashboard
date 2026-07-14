@@ -5,6 +5,8 @@ import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import GtdhTargetModal from '../modals/GtdhTargetModal';
+import EmployeeManagerModal from '../modals/EmployeeManagerModal';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 
 const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; onToggle: () => void; color: string; }> = ({ label, icon, isActive, onToggle, color }) => {
@@ -70,9 +72,20 @@ interface FilterSectionProps {
     visibility: VisibilityState;
     onVisibilityChange: (component: keyof VisibilityState, isVisible: boolean) => void;
     onClose: () => void;
+    onLoadShiftFile?: () => void;
+    hasDepartmentData?: boolean;
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVisibilityChange, onClose }) => {
+const FilterSection: React.FC<FilterSectionProps> = ({ 
+    options, 
+    visibility, 
+    onVisibilityChange, 
+    onClose,
+    onLoadShiftFile,
+    hasDepartmentData
+}) => {
+    const { userRole } = useAuth();
+    const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const { 
         filterState: globalFilters, 
         handleFilterChange: applyGlobalFilters, 
@@ -403,16 +416,73 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                         </div>
                     </div>
 
+                    {/* Quản lý Nhân sự & Phân ca */}
+                    {(userRole === 'admin' || userRole === 'manager') && (
+                        <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 px-1">
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Quản Lý Nhân Sự & Phân Ca</label>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                                {/* Tải lên báo cáo Phân ca */}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={onLoadShiftFile}
+                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left"
+                                >
+                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
+                                        <Icon name="users-round" size={4} />
+                                    </div>
+                                    <div className="flex flex-col leading-tight">
+                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Tải lên Phân ca</span>
+                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Import Excel Nhân viên</span>
+                                    </div>
+                                </Button>
+
+                                {/* Mở trang Quản lý phân ca ERP */}
+                                <a
+                                    href="https://office.thegioididong.com/quan-ly-phan-ca"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left animate-none"
+                                >
+                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
+                                        <Icon name="calendar-clock" size={4} />
+                                    </div>
+                                    <div className="flex flex-col leading-tight">
+                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý Phân ca</span>
+                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Mở ERP TGDĐ</span>
+                                    </div>
+                                </a>
+
+                                {/* Quản lý danh sách nhân viên (nếu có dữ liệu) */}
+                                {hasDepartmentData && (
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={() => setShowEmployeeModal(true)}
+                                        className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left col-span-2"
+                                    >
+                                        <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/40 rounded-lg text-emerald-600 dark:text-emerald-400">
+                                            <Icon name="settings" size={4} />
+                                        </div>
+                                        <div className="flex flex-col leading-tight">
+                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Danh sách Nhân viên</span>
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Quản lý & Xem chi tiết ca kíp</span>
+                                        </div>
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* GTĐH Settings */}
                     <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setGtdhModalOpen(true)}
-                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
+                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group"
                         >
                             <div className="flex items-center gap-2 sm:gap-2.5">
-                                <div className="p-1 sm:p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-md sm:rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
+                                <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-md sm:rounded-lg text-sky-600 dark:text-sky-400 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/60 transition-colors">
                                     <Icon name="settings-2" size={3.5} className="sm:hidden" />
                                     <Icon name="settings-2" size={4} className="hidden sm:block" />
                                 </div>
@@ -421,8 +491,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <span className="text-[8px] sm:text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
-                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors sm:hidden" />
-                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hidden sm:block" />
+                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors sm:hidden" />
+                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors hidden sm:block" />
                         </Button>
                     </div>
                 </div>
@@ -431,6 +501,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
             <GtdhTargetModal 
                 isOpen={isGtdhModalOpen} 
                 onClose={() => setGtdhModalOpen(false)} 
+            />
+
+            <EmployeeManagerModal
+                isOpen={showEmployeeModal}
+                onClose={() => setShowEmployeeModal(false)}
             />
         </div>
     );
