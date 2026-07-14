@@ -203,19 +203,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             {/* Slide Menu Header */}
             <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-indigo-600 rounded-full" />
-                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+                    <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Tuỳ Chỉnh Nâng Cao</h2>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
-                    <Button
-                        variant="unstyled" size="none"
-                        onClick={handleResetFilters}
-                        className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                        title="Đặt lại bộ lọc"
-                    >
-                        <Icon name="rotate-ccw" size={4} className="sm:hidden" />
-                        <Icon name="rotate-ccw" size={5} className="hidden sm:block" />
-                    </Button>
                     <Button
                         variant="unstyled" size="none"
                         onClick={onClose}
@@ -291,9 +282,20 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     )}
 
                     {/* Tiêu đề nhóm Bộ lọc phân tích */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 px-1 pt-1 mt-1">
-                        <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
-                        <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+                    <div className="flex items-center justify-between px-1 pt-1 mt-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                            <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+                        </div>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleResetFilters}
+                            className="p-1 sm:p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                            title="Đặt lại bộ lọc"
+                        >
+                            <Icon name="rotate-ccw" size={4} className="sm:hidden" />
+                            <Icon name="rotate-ccw" size={5} className="hidden sm:block" />
+                        </Button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
