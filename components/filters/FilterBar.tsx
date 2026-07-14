@@ -195,7 +195,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             title="Tải YCX lên"
                             className="flex items-center justify-center w-8 h-8 text-emerald-600 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="file-up" size={5} />
+                            <Icon name="upload" size={5} />
                         </Button>
                     )}
                     {onOpenHistory && (
@@ -409,7 +409,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 title="Tải YCX lên"
                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                             >
-                                <Icon name="file-up" size={4.5} />
+                                <Icon name="upload" size={4.5} />
                             </Button>
                         )}
                         {onOpenHistory && (
