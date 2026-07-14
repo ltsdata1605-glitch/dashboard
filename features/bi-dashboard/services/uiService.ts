@@ -559,8 +559,20 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     if (!td.classList.contains('sticky') && !isFirstCol) {
                         td.style.setProperty('min-width', '55px', 'important');
                         td.style.setProperty('max-width', '80px', 'important');
-                        td.style.setProperty('white-space', 'normal', 'important');
-                        td.style.setProperty('word-break', 'break-all', 'important');
+
+                        // Tự động nhận diện các ô số, phần trăm hoặc ProgressBar để chống ngắt dòng
+                        const text = td.textContent?.trim() || '';
+                        const isNumeric = /^[0-9%\s.,+\-/]+$/.test(text);
+                        if (isNumeric || td.querySelector('.w-10')) {
+                            td.style.setProperty('white-space', 'nowrap', 'important');
+                            if (!td.querySelector('.export-nowrap-wrapper')) {
+                                const content = td.innerHTML;
+                                td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                            }
+                        } else {
+                            td.style.setProperty('white-space', 'normal', 'important');
+                            td.style.setProperty('word-break', 'break-all', 'important');
+                        }
                     }
                 }
             });
