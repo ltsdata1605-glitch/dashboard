@@ -132,14 +132,14 @@ export const CheckThuongView: React.FC = () => {
                 <input
                     type="text"
                     placeholder="Kho 1"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-40 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-40 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm`}
                     value={codes.code1}
                     onChange={(e) => handleCodeChange('code1', e.target.value)}
                 />
                 <input
                     type="text"
                     placeholder="Kho 2"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-36 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-36 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm`}
                     value={codes.code2}
                     onChange={(e) => handleCodeChange('code2', e.target.value)}
                 />

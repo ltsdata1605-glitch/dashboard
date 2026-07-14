@@ -239,10 +239,6 @@
     "nonSemanticColor": 13,
     "missingMobileToolbar": 0
   },
-  "components/views/CheckThuongView.tsx": {
-    "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
   "components/views/CouponConverterView.tsx": {
     "nonSemanticColor": 24,
     "missingMobileToolbar": 0

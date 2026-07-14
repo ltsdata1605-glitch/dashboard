@@ -33,7 +33,7 @@
         .nav-bar { max-width: 960px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
         .hero-content { max-width: 640px; margin: 0 auto; padding: 20px 24px 0; }
         /* Modern card */
-        .mod-card { background: #fff; border-radius: 0; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .mod-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         /* Pastel group header colors */
         .pastel-green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
         .pastel-amber { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
@@ -66,13 +66,13 @@
         .stat-mini:hover::before { opacity: 1; width: 6px; }
         .stat-mini:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.08); border-bottom-color: rgba(0,0,0,0.12); }
         /* Modern input */
-        .mod-input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 0; padding: 8px 12px; font-size: 14px; font-weight: 600; outline: none; background: #fff; transition: all 0.2s; font-family: inherit; color: #111827; }
-        .mod-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.15); }
+        .mod-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 600; outline: none; background: #fff; transition: all 0.2s; font-family: inherit; color: #111827; }
+        .mod-input:focus { border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
         .mod-input::placeholder { color: #c7c7cc; font-weight: 400; }
         /* Modern button */
-        .mod-btn { width: 38px; height: 38px; border-radius: 0; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.15s; }
-        .mod-btn-primary { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
-        .mod-btn-primary:hover { background: linear-gradient(135deg, #4f46e5, #6366f1); transform: translateY(-1px); }
+        .mod-btn { width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.15s; }
+        .mod-btn-primary { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff; box-shadow: 0 2px 8px rgba(14,165,233,0.3); }
+        .mod-btn-primary:hover { background: linear-gradient(135deg, #0284c7, #0ea5e9); transform: translateY(-1px); }
         .mod-btn-ghost { background: #f3f4f6; color: #6b7280; }
         .mod-btn-ghost:hover { background: #e5e7eb; color: #374151; }
         /* Summary banner */
@@ -1271,7 +1271,7 @@
                                 </h3>
                             </div>
                             <div id="detailTableContainer" class="w-full overflow-x-auto">
-                                <table id="detailComparisonTable" class="w-full text-[10px]">
+                                <table id="detailComparisonTable" class="w-full text-[10px] tabular-nums">
                                     <thead class="sticky top-0 z-10 text-[10px]">
                                         <tr>
                                             <th rowspan="2" class="px-2 py-1 text-left font-bold text-gray-700 sticky left-0 bg-slate-100 align-middle uppercase border-b border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] z-20 text-[9px] min-w-[80px]">Ngành Hàng</th>
@@ -1429,7 +1429,7 @@
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
 
                 let tableHtml = `<h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
-                                 <div class="overflow-x-auto"><table class="text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>`;
+                                 <div class="overflow-x-auto"><table class="text-sm text-left text-gray-500 tabular-nums"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>`;
                 
                 Object.entries(sortKeys).forEach(([key, col]) => {
                     const isSortable = col !== null;
@@ -1719,7 +1719,7 @@
                     if (singleViewMode === 'list') {
                         const groupRowsHtml = group.data.map((row, index) => renderSingleRow(row, group.key, index + 1)).join('');
                         contentHtml = `<div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
+                                <table class="w-full text-left border-collapse tabular-nums">
                                     <thead>
                                         <tr class="bg-gray-50/50 text-[11px] uppercase text-gray-500 border-b border-gray-200">
                                             <th class="px-3 py-2 font-bold">Ngành Hàng</th>
@@ -1759,7 +1759,7 @@
                 const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
                 let tableHtml = `<div class="p-4 bg-white"><h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
-                                 <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>
+                                 <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500 tabular-nums"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>
                                     <th scope="col" class="px-4 py-1 text-center">SIÊU THỊ</th>
                                     <th scope="col" class="px-4 py-1 text-center">%DKHT</th>
                                     <th scope="col" class="px-4 py-1 text-center">D.KIẾN DT/SL</th>
