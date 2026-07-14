@@ -290,6 +290,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                     )}
 
+                    {/* Tiêu đề nhóm Bộ lọc phân tích */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 px-1 pt-1 mt-1">
+                        <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                        <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                         {/* 1. Kho Tạo */}
                         <div className="space-y-1 sm:space-y-1.5">
