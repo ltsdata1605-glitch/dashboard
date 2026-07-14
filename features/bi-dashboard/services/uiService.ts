@@ -255,6 +255,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
     });
 
+
+
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
 
@@ -491,41 +493,78 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         table.style.setProperty('table-layout', 'auto', 'important');
         table.style.setProperty('width', '100%', 'important');
         table.style.setProperty('min-width', 'auto', 'important');
-    });
 
-    clone.querySelectorAll('.compact-export-table th').forEach(th => {
-        if (th instanceof HTMLElement) {
+        // Tìm index của cột "NHÓM THI ĐUA" trong bảng
+        let nhomThiDuaColIdx = -1;
+        const ths = table.querySelectorAll('thead th');
+        ths.forEach((th, idx) => {
+            const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
+            if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
+                nhomThiDuaColIdx = idx;
+            }
+        });
+
+        // Xử lý các thẻ th của bảng
+        table.querySelectorAll('thead th').forEach((th, idx) => {
+            if (!(th instanceof HTMLElement)) return;
             const isFirstCol = th.previousElementSibling === null;
-            if (!isFirstCol) {
+            const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+
+            if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
+                th.style.setProperty('min-width', '120px', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+                th.style.setProperty('max-width', 'none', 'important');
+                
+                // Bọc thẻ span con để tránh bug html2canvas ngắt dòng text thô
+                if (!th.querySelector('.export-nowrap-wrapper')) {
+                    const content = th.innerHTML;
+                    th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                }
+            } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
                 th.style.setProperty('max-width', '80px', 'important');
                 th.style.setProperty('min-width', '65px', 'important');
-            } else {
-                th.style.setProperty('min-width', '120px', 'important');
-                th.style.setProperty('white-space', 'nowrap', 'important');
             }
             
             th.querySelectorAll('span').forEach(span => {
                 span.classList.remove('truncate');
-                if (!isFirstCol) {
+                if (!isFirstCol && !isNhomThiDuaCol) {
                     span.style.setProperty('white-space', 'normal', 'important');
                     span.style.setProperty('word-break', 'break-word', 'important');
+                } else {
+                    span.style.setProperty('white-space', 'nowrap', 'important');
                 }
             });
-        }
-    });
+        });
 
-    clone.querySelectorAll('.compact-export-table td').forEach(td => {
-        if (td instanceof HTMLElement) {
-            const isFirstCol = td.previousElementSibling === null;
-            if (!td.classList.contains('sticky') && !isFirstCol) {
-                td.style.setProperty('min-width', '55px', 'important');
-                td.style.setProperty('max-width', '80px', 'important');
-                td.style.setProperty('white-space', 'normal', 'important');
-                td.style.setProperty('word-break', 'break-all', 'important');
-            }
-        }
+        // Xử lý các thẻ td của bảng
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+            tr.querySelectorAll('td').forEach((td, idx) => {
+                if (!(td instanceof HTMLElement)) return;
+                const isFirstCol = td.previousElementSibling === null;
+                const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+
+                if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
+                    td.style.setProperty('white-space', 'nowrap', 'important');
+                    td.style.setProperty('min-width', '120px', 'important');
+                    td.style.setProperty('max-width', 'none', 'important');
+                    
+                    // Bọc thẻ span con chống ngắt dòng
+                    if (!td.querySelector('.export-nowrap-wrapper')) {
+                        const content = td.innerHTML;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                    }
+                } else {
+                    if (!td.classList.contains('sticky') && !isFirstCol) {
+                        td.style.setProperty('min-width', '55px', 'important');
+                        td.style.setProperty('max-width', '80px', 'important');
+                        td.style.setProperty('white-space', 'normal', 'important');
+                        td.style.setProperty('word-break', 'break-all', 'important');
+                    }
+                }
+            });
+        });
     });
 
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
