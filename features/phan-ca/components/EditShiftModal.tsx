@@ -455,7 +455,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
         )}
 
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
-            <Button variant="ghost" onClick={handleOffClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full text-inherit bg-rose-600 hover:bg-rose-700 text-white font-black py-3 px-4 rounded-xl transition w-full text-sm tracking-widest shadow-lg uppercase">
+            <Button variant="ghost" onClick={handleOffClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full text-inherit bg-rose-600 hover:bg-rose-700 text-white font-black py-3 px-4 rounded-xl transition w-full text-sm tracking-widest shadow-sm uppercase">
                 CHO NGHỈ (OFF)
             </Button>
         </div>

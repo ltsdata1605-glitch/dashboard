@@ -566,7 +566,7 @@ const App: React.FC = () => {
       {/* EXPORT OVERLAY */}
       {batchExportProgress && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
-              <div className="bg-white p-10 shadow-2xl flex flex-col items-center max-w-md w-full border border-slate-200">
+              <div className="bg-white p-10 shadow-xl flex flex-col items-center max-w-md w-full border border-slate-200">
                 <div className="spinner !w-14 !h-14 !border-[5px] mb-6"></div>
                 <p className="text-xl font-extrabold text-slate-800 mb-3">Đang xử lý dữ liệu</p>
                 <div className="w-full bg-slate-100 h-2 mb-3 overflow-hidden">
