@@ -407,9 +407,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                     </div>
                                 </div>
                              </summary>
-                              <div className="pb-3 px-2">
+                              <div className="pb-3 px-2 overflow-auto custom-scrollbar">
                                  <div className="ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
-                                     <table className="w-full text-sm table-fixed compact-export-table border-collapse">
+                                     <table className="min-w-[600px] md:w-full text-sm table-fixed compact-export-table border-collapse">
                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
                                                  <th className="py-1 px-1.5 text-left font-semibold w-[135px]">Mã ĐH</th>

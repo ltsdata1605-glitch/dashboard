@@ -93,8 +93,8 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                 {/* Table list */}
                 {unconfiguredGroups.length > 0 ? (
                     <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-                        <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse text-xs">
+                        <div className="max-h-[250px] overflow-auto custom-scrollbar">
+                            <table className="min-w-[400px] md:w-full text-left border-collapse text-xs">
                                 <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 sticky top-0 font-bold border-b border-slate-100 dark:border-slate-800">
                                     <tr>
                                         <th className="px-4 py-2.5 w-12 text-center">STT</th>
@@ -158,8 +158,8 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                             Danh sách nhóm đã loại bỏ ({ignoredUnconfiguredGroups.length})
                         </h4>
                         <div className="border border-slate-100 dark:border-slate-850 rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
-                            <div className="max-h-[150px] overflow-y-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse text-xs">
+                            <div className="max-h-[150px] overflow-auto custom-scrollbar">
+                                <table className="min-w-[400px] md:w-full text-left border-collapse text-xs">
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
                                         {ignoredUnconfiguredGroups.map((group, index) => (
                                             <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
