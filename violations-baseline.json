@@ -480,7 +480,7 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/ResultsDisplay.tsx": {
-    "nonSemanticColor": 39,
+    "nonSemanticColor": 38,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/SavedListsModal.tsx": {

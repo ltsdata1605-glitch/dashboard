@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
 import { StickerManualQueue } from './StickerManualQueue';
-import { Button, Input, Tabs, EmptyState } from '../../../components/shared/ui';
+import { Button, Input, Tabs, EmptyState, SectionCard } from '../../../components/shared/ui';
 import type { TabItem } from '../../../components/shared/ui';
 
 interface StickerPrintControlsProps {
@@ -126,7 +126,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     ];
 
     return (
-        <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
+        <SectionCard className="w-full max-w-sm aspect-[197/285] p-3 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
             <div className="flex gap-2 mb-3 shrink-0">
                 <Button 
@@ -438,6 +438,6 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     </div>
                 )}
             </div>
-        </div>
+        </SectionCard>
     );
 };

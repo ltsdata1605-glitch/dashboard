@@ -43,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
   return (
   <div 
     data-msp={result.msp}
-    className={`bg-white ${isMobile ? 'p-1.5' : 'px-3 py-2'} rounded-md shadow-sm border hover:shadow-md hover:border-indigo-400 transition-all duration-200 flex flex-col sm:flex-row ${isMobile ? 'gap-1' : 'gap-3'} items-start sm:items-center fade-in ${isHighlighted ? 'animate-pulse-strong border-amber-500 border-2' : 'border-slate-200'}`}
+    className={`bg-white ${isMobile ? 'p-1.5' : 'px-3 py-2'} rounded-md shadow-sm border hover:shadow-md hover:border-sky-400 transition-all duration-200 flex flex-col sm:flex-row ${isMobile ? 'gap-1' : 'gap-3'} items-start sm:items-center fade-in ${isHighlighted ? 'animate-pulse-strong border-amber-500 border-2' : 'border-slate-200'}`}
   >
     {/* Left/Top: Info */}
     <div className="flex-1 min-w-0 w-full">
@@ -59,22 +59,22 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
           {/* Giá + %giảm */}
           <div className="text-left sm:text-right">
             <div className="flex items-center gap-1.5 sm:justify-end">
-              <p className="text-sm font-bold text-rose-600 leading-none">{result.giaGiam}</p>
+              <p className="text-sm font-bold text-rose-600 leading-none tabular-nums">{result.giaGiam}</p>
               {discountPercent > 0 && (
-                <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded leading-none">
+                <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded leading-none tabular-nums">
                   -{discountPercent}%
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-slate-400 line-through">{result.giaGoc}</p>
+            <p className="text-[10px] text-slate-400 line-through tabular-nums">{result.giaGoc}</p>
           </div>
           {/* Thưởng — ưu tiên to hơn */}
           <div className="text-right">
-            <p className="text-sm font-bold text-sky-600 leading-none">{formatCurrency(result.tongThuong)}</p>
+            <p className="text-sm font-bold text-sky-600 leading-none tabular-nums">{formatCurrency(result.tongThuong)}</p>
             <p className="text-[10px] text-slate-400">
-              <span className="text-emerald-600">ERP: {formatCurrency(result.thuongERP)}</span>
+              <span className="text-emerald-600 tabular-nums">ERP: {formatCurrency(result.thuongERP)}</span>
               <span className="mx-0.5">|</span>
-              <span className="text-rose-500">Nóng: {formatCurrency(result.thuongNong)}</span>
+              <span className="text-rose-500 tabular-nums">Nóng: {formatCurrency(result.thuongNong)}</span>
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                         else if (e.target.value === '') onSetQuantity(result.msp, 1);
                     }}
                     onFocus={(e) => e.target.select()}
-                    className="w-10 text-center font-bold text-base text-slate-800 bg-transparent border-none focus:ring-0 p-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none -moz-appearance-textfield"
+                    className="w-10 text-center font-bold text-base text-slate-800 bg-transparent border-none focus:ring-0 p-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none -moz-appearance-textfield tabular-nums"
                 />
                 <Button
                     variant="ghost"

@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useMemo } from 'react';
+import { SectionCard } from '../../../components/shared/ui/SectionCard';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { Bold, Italic, Underline } from 'lucide-react';
@@ -427,7 +428,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     };
 
     return (
-        <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
+        <SectionCard className="p-0 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
                 {useMemo(() => getStickerPreviewStyles({
                     stickerType, bgImage, headerTextSize, subHeaderTextSize, percentTextSize,
@@ -743,7 +744,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     </div>
                 </div>
             )}
-        </div>
+        </SectionCard>
     );
 };
 
