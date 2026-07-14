@@ -514,7 +514,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     };
 
     return (
-        <div className="js-industry-view-container relative z-10">
+        <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
             <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding>
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
