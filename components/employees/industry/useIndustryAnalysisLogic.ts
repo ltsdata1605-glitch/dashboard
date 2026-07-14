@@ -257,7 +257,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 // Bỏ qua sản phẩm không tính doanh thu (đồng nhất với WarehouseSummary)
                 if (industry === 'Không tính doanh thu') return;
 
-                const weightedQuantity = calculateRowMetrics(row, productConfig).weightedQuantity;
+                const metrics = calculateRowMetrics(row, productConfig);
+                const weightedQuantity = metrics.weightedQuantity;
+                const revenueQD = metrics.revenueQD;
 
                 allTabs.forEach(tab => {
                     const cols = tab.columns || [];
@@ -287,13 +289,33 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                             }
                             
                             const colData = empData[tab.id][col.id];
+                            
+                            const mainFilters = (col.type === 'percentage' ? col.percentageConfig?.numeratorFilters : col.filters) as any;
+                            const colAny = col as any;
+                            const isMainQD = mainFilters?.metricType === 'revenueQD' || 
+                                             col.id?.toLowerCase().includes('qd') || 
+                                             col.id?.toLowerCase().includes('quy_doi') || 
+                                             col.name?.toLowerCase().includes('quy đổi') || 
+                                             colAny.subHeader?.toLowerCase().includes('qd') || 
+                                             colAny.subHeader?.toLowerCase().includes('quy đổi');
+                            const mainDtVal = isMainQD ? revenueQD : price;
+
+                            const baseFilters = (col.type === 'percentage' ? col.percentageConfig?.denominatorFilters : col.filters) as any;
+                            const isBaseQD = baseFilters?.metricType === 'revenueQD' || 
+                                             col.id?.toLowerCase().includes('qd') || 
+                                             col.id?.toLowerCase().includes('quy_doi') || 
+                                             col.name?.toLowerCase().includes('quy đổi') || 
+                                             colAny.subHeader?.toLowerCase().includes('qd') || 
+                                             colAny.subHeader?.toLowerCase().includes('quy đổi');
+                            const baseDtVal = isBaseQD ? revenueQD : price;
+
                             if (isMainMatch) {
                                 colData.mainSl += weightedQuantity;
-                                colData.mainDt += price;
+                                colData.mainDt += mainDtVal;
                             }
                             if (isBaseMatch) {
                                 colData.baseSl += weightedQuantity;
-                                colData.baseDt += price;
+                                colData.baseDt += baseDtVal;
                             }
                         }
                     });
