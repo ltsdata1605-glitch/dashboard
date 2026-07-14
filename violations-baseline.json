@@ -412,7 +412,7 @@
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/ScheduleTable.tsx": {
-    "nonSemanticColor": 7,
+    "nonSemanticColor": 4,
     "missingMobileToolbar": 0
   },
   "features/phan-ca/components/VerticalIndividualSchedule.tsx": {
