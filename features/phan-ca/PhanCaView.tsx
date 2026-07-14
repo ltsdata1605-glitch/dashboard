@@ -23,6 +23,7 @@ import AiSuggestPatternModal from './components/AiSuggestPatternModal';
 import { PhanCaToolbar } from './components/PhanCaToolbar';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
+import { SectionCard } from '../../components/shared/ui/SectionCard';
 import { exportScheduleToGoogleSheet } from './services/googleSheetsExport';
 import { usePhanCaData } from './hooks/usePhanCaData';
 import {
@@ -591,14 +592,14 @@ const App: React.FC = () => {
           onExportGoogleSheet={handleExportGoogleSheet}
       />
       <main className="max-w-[1600px] mx-auto px-0 lg:px-6 mt-3 lg:mt-6">
-        <div className={`bg-white rounded-none border-y lg:rounded-2xl lg:border border-slate-200 shadow-sm p-3 lg:p-6 mb-3 lg:mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
-          <Controls 
+        <SectionCard className={`p-3 lg:p-6 mb-3 lg:mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
+          <Controls
             monthYear={monthYear} setMonthYear={setMonthYear} startDay={startDay} setStartDay={setStartDay} duration={duration} setDuration={setDuration}
             onGenerate={handleGenerateClick} departments={uniqueDepartments} departmentFilter={departmentFilter} setDepartmentFilter={setDepartmentFilter}
             supermarkets={supermarkets} currentSupermarket={currentSupermarket} setSupermarket={handleSupermarketChange} onboardingStep={onboardingStep}
             hasStaff={hasStaff} hasPatternsForCurrentDept={!!departmentPatterns[departmentFilter]} onDateControlClick={handleDateControlClick}
           />
-        </div>
+        </SectionCard>
         <div ref={exportContainerRef} className={`bg-white overflow-hidden border border-slate-200 shadow-sm ${isIndividualExport ? 'max-w-5xl mx-auto' : ''}`}>
           <div className={`px-8 pt-8 pb-6 border-b border-slate-100 ${isIndividualExport ? 'hidden' : ''}`}>
             <div className="flex justify-between items-start mb-6">
