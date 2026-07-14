@@ -278,7 +278,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         isGood = pctHT >= 100;
                         progressPercent = pctHT;
                         finalTrendValue = revenueTarget > 0
-                            ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                            ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                 <span>{formatCurrency(activeTarget)} / {pctHT.toFixed(0)}%</span>
                                 <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
                             </span>
@@ -293,7 +293,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         } else {
                             const gap = rawValue - hieuQuaTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                     <span>{hieuQuaTarget}%</span>
                                     <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
@@ -311,7 +311,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         } else {
                             const gap = rawValue - traGopTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                     <span>{traGopTarget}%</span>
                                     <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
@@ -348,13 +348,13 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     }
 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="flex flex-col items-end leading-tight">
+                        ? <span className="flex flex-col items-center lg:items-end leading-tight">
                             <span>{formattedActive} / {pctHT.toFixed(0)}%</span>
                             <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
                           </span>
                         : <span className="text-slate-400 italic text-[10px]">Chưa cài đặt</span>;
                 }
-
+ 
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
                 const isDTThucCard = config.metric === 'totalRevenue' || config.metric === 'doanhThuThuc';
                 if (isDTThucCard) {
@@ -366,15 +366,15 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     
                     isGood = pct >= 100;
                     progressPercent = pct;
-
+ 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-end leading-tight">
+                        ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
                             <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
                         </span>
                         : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
                 }
-
+ 
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
                 if (isSpecialUnshipped) {
                     const unshippedCount = processedData?.unshippedOrders?.length || 0;
@@ -386,14 +386,14 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     if (unshippedCount > 0) {
                         // Dòng phụ bên dưới để đồng bộ bố cục footer 2 dòng với các thẻ khác (HQQĐ/TRẢ CHẬM...)
                         finalTrendValue = (
-                            <span className="flex flex-col items-end leading-tight">
+                            <span className="flex flex-col items-center lg:items-end leading-tight">
                                 <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
                                 <span className="text-[9px] font-medium text-rose-400 dark:text-rose-500">Chờ xuất</span>
                             </span>
                         );
                     } else {
                         finalTrendValue = (
-                            <span className="flex flex-col items-end leading-tight">
+                            <span className="flex flex-col items-center lg:items-end leading-tight">
                                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">Không có đơn chờ</span>
                                 <span className="text-[9px] font-medium text-emerald-400 dark:text-emerald-500">Đã xử lý hết</span>
                             </span>

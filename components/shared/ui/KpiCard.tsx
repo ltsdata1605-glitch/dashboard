@@ -164,11 +164,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 
                 {/* Hàng 4: Label phụ */}
                 {trendValue ? (
-                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-none h-3 mt-0.5 truncate w-full flex items-center justify-center">
+                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-none h-3 mt-0.5 truncate w-full flex items-center justify-center">
+                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
                 ) : (
