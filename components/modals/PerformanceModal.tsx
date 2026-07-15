@@ -420,7 +420,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                  <th className="py-1 px-1.5 text-left font-semibold">Sản phẩm</th>
                                                  <th className="py-1 px-1.5 text-center font-semibold w-[30px]">SL</th>
                                                  <th className="py-1 px-1.5 text-right font-semibold w-[75px] whitespace-nowrap">Doanh Thu</th>
-                                                 <th className="py-1 px-1.5 text-center font-semibold w-[85px]">Trạng Thái</th>
+                                                 <th className="py-1 px-1.5 text-center font-semibold w-[40px] sm:w-[65px]">Trạng Thái</th>
                                              </tr>
                                          </thead>
                                          <tbody>
@@ -472,17 +472,15 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                             <td className="py-1 px-1.5 text-center text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
                                                             <td className="py-1 px-1.5 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700">{formatCurrency(price)}</td>
                                                             {lineIndex === 0 && (
-                                                                <td rowSpan={group.lines.length} className="py-1 px-1.5 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                                <td rowSpan={group.lines.length} className="py-1 px-1.5 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700 w-[40px] sm:w-[65px]">
                                                                     {isUnshipped ? (
-                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
-                                                                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5 animate-pulse"></span>
-                                                                            Chưa xuất
-                                                                        </span>
+                                                                        <div className="flex items-center justify-center text-rose-500 animate-pulse" title="Chưa xuất">
+                                                                            <Icon name="x-circle" size={4} />
+                                                                        </div>
                                                                     ) : (
-                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                                                                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
-                                                                            Đã xuất
-                                                                        </span>
+                                                                        <div className="flex items-center justify-center text-emerald-500" title="Đã xuất">
+                                                                            <Icon name="check-circle" size={4} />
+                                                                        </div>
                                                                     )}
                                                                 </td>
                                                             )}
