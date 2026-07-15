@@ -228,9 +228,9 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
                 {/* Table */}
                 <div className="flex-grow overflow-auto custom-scrollbar">
-                    <table className="min-w-full text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800">
+                    <table className="min-w-[600px] sm:min-w-full text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800">
                         <thead className="bg-indigo-50 dark:bg-indigo-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
-                            <tr className="text-[10px] sm:text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-tight">
+                            <tr className="text-[10px] sm:text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-tight whitespace-nowrap">
                                 <th onClick={() => handleSort('id')} className="cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-16 sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
@@ -261,7 +261,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
-                                <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
                                     <td className="px-2 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
@@ -300,18 +300,18 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium">{emp.name}</td>
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">{emp.name}</td>
                                             <td className="px-2 sm:px-4 py-1 sm:py-1.5">
-                                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/20">
+                                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/20 whitespace-nowrap">
                                                     {emp.dept}
                                                 </span>
                                             </td>
                                             <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-center">
                                                 <div className="flex justify-center gap-1" style={{ opacity: 1 }}>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
+                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-1 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
                                                         <Icon name="pencil" size={3.5} />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
+                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
                                                         <Icon name="trash-2" size={3.5} />
                                                     </Button>
                                                 </div>
