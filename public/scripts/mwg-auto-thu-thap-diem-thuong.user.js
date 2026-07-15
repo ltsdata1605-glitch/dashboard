@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.0
+// @version      1.1
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -94,7 +94,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.0';
+  const SCRIPT_VERSION = '1.1';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -1159,9 +1159,9 @@
       };
 
       const clickedSet = new Set();
-      const getNextPendingButtons = (count) => {
+      const getNextPendingButton = () => {
         const buttons = getPlusButtons();
-        return buttons.filter(el => !clickedSet.has(el)).slice(0, count);
+        return buttons.find(el => !clickedSet.has(el));
       };
 
       const initialButtons = getPlusButtons();
@@ -1173,26 +1173,23 @@
 
       try {
         while (!userStop) {
-          // Click song song 2 nút một lượt để tăng gấp đôi tốc độ
-          const pbs = getNextPendingButtons(2);
-          if (pbs.length === 0) {
+          const pb = getNextPendingButton();
+          if (!pb) {
             // Đợi một chút đề phòng render chậm
             await sleep(150);
-            const doubleCheck = getNextPendingButtons(1);
-            if (doubleCheck.length === 0 || userStop) break; // Đã hết thực sự hoặc user dừng
+            const doubleCheck = getNextPendingButton();
+            if (!doubleCheck || userStop) break; // Đã hết thực sự hoặc user dừng
             continue;
           }
 
-          pbs.forEach(pb => {
-            clickedSet.add(pb);
-            processed++;
-            try {
-              pb.click();
-              clicked++;
-            } catch (err) {
-              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
-            }
-          });
+          clickedSet.add(pb);
+          processed++;
+          try {
+            pb.click();
+            clicked++;
+          } catch (err) {
+            console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+          }
 
           if (processed > estimatedTotal) {
             estimatedTotal = processed;
@@ -1200,9 +1197,15 @@
 
           updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
 
-          // Nhịp độ click: Click song song 2 nút, sau đó yield browser 1 frame (16ms) để render mượt mà
-          await yieldToBrowser();
-          await sleep(10);
+          // Nhịp độ click an toàn:
+          // Mỗi 6 nút sẽ nghỉ lâu hơn (200ms) để giải phóng network pool và render UI
+          // Clicks thông thường cách nhau 50ms
+          if (clicked > 0 && clicked % 6 === 0) {
+            await sleep(200);
+            await yieldToBrowser();
+          } else {
+            await sleep(50);
+          }
         }
 
         updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
