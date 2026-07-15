@@ -227,17 +227,17 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 </div>
 
                 {/* Table */}
-                <div className="flex-grow overflow-auto custom-scrollbar">
-                    <table className="min-w-[600px] sm:min-w-full text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800">
+                <div className="flex-grow overflow-y-auto custom-scrollbar">
+                    <table className="min-w-full text-[10px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
                         <thead className="bg-indigo-50 dark:bg-indigo-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
                             <tr className="text-[10px] sm:text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-tight whitespace-nowrap">
-                                <th onClick={() => handleSort('id')} className="cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-16 sm:w-20">
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[13%] sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[47%] sm:w-auto">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
-                                <th className="px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-36 sm:w-44">
+                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[27%] sm:w-64">
                                     <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')} onKeyDown={onActivateKey(() => handleSort('dept'))}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
@@ -250,44 +250,44 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                 <option value="">Tất cả</option>
                                                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
-                                            <Button variant="unstyled" size="none" className={`p-1 rounded transition-colors ${filterDept ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
-                                                <Icon name="filter" size={3.5} />
+                                            <Button variant="unstyled" size="none" className={`p-0.5 sm:p-1 rounded transition-colors ${filterDept ? 'text-indigo-650 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                                <Icon name="filter" size={3} />
                                             </Button>
                                         </div>
                                     </div>
                                 </th>
-                                <th className="px-2 sm:px-4 py-1.5 sm:py-2 w-20 sm:w-24 text-center">Thao tác</th>
+                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 w-[13%] sm:w-24 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
                                 <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
-                                    <td className="px-2 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{emp.id}</td>
+                                    <td className="px-1 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" title={emp.id}>{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
                                         <>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5">
                                                 <Input 
                                                     type="text" 
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
                                                     autoFocus
                                                 />
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5">
                                                 <Input 
                                                     list="department-options"
                                                     type="text" 
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
                                                     placeholder="Chọn hoặc nhập..."
                                                 />
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-center">
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center">
                                                 <div className="flex justify-center gap-1">
                                                     <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
                                                         <Icon name="check" size={3.5} />
@@ -300,19 +300,24 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">{emp.name}</td>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
-                                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/20 whitespace-nowrap">
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium truncate" title={emp.name}>{emp.name}</td>
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 truncate">
+                                                <span 
+                                                    title={emp.dept}
+                                                    className="inline-block max-w-full truncate px-1 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/20"
+                                                >
                                                     {emp.dept}
                                                 </span>
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-center">
-                                                <div className="flex justify-center gap-1" style={{ opacity: 1 }}>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-1 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
-                                                        <Icon name="pencil" size={3.5} />
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center w-[13%] sm:w-24">
+                                                <div className="flex justify-center gap-0.5 sm:gap-1">
+                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-0.5 sm:p-1 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
+                                                        <Icon name="pencil" size={3} className="sm:hidden" />
+                                                        <Icon name="pencil" size={3.5} className="hidden sm:block" />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
-                                                        <Icon name="trash-2" size={3.5} />
+                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-0.5 sm:p-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
+                                                        <Icon name="trash-2" size={3} className="sm:hidden" />
+                                                        <Icon name="trash-2" size={3.5} className="hidden sm:block" />
                                                     </Button>
                                                 </div>
                                             </td>
