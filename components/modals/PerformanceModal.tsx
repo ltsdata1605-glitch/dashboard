@@ -293,23 +293,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </KpiCard>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
-                {/* Top Products */}
-                <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
-                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="award" size={4} className="text-amber-500 sm:hidden"/><Icon name="award" size={5} className="text-amber-500 hidden sm:block"/> Top 5 Sản Phẩm Bán Chạy</h4>
-                    <ul className="space-y-1 flex-1">
-                        {topProducts.map((p, i) => (
-                            <li key={i} className="flex justify-between items-center py-0.5 sm:py-1 px-1.5 sm:px-2 rounded bg-slate-50 dark:bg-slate-700/50">
-                                <div className="truncate pr-3">
-                                    <p className="font-bold text-[10px] sm:text-xs text-slate-700 dark:text-slate-200 truncate" title={p.name}>{p.name}</p>
-                                    <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 leading-none mt-0.5">{formatQuantity(p.quantity)} SP</p>
-                                </div>
-                                <span className="font-black text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{formatCurrency(p.revenue)}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
+            <div className="w-full">
                 <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
                     <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-sky-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-sky-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
                     <div className="flex-1">
@@ -416,11 +400,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                      <table className="w-full text-[10px] sm:text-sm table-fixed compact-export-table border-collapse">
                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[9px] sm:text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
-                                                 <th className="py-1 px-1 text-left font-semibold w-[90px] min-[360px]:w-[100px] min-[390px]:w-[110px] sm:w-[135px]">Mã ĐH</th>
+                                                 <th className="py-1 px-1 text-left font-semibold w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]">Mã ĐH</th>
                                                  <th className="py-1 px-1 text-left font-semibold">Sản phẩm</th>
                                                  <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[30px]">SL</th>
-                                                 <th className="py-1 px-1 text-right font-semibold w-[50px] min-[360px]:w-[55px] sm:w-[75px] whitespace-nowrap">Doanh Thu</th>
-                                                 <th className="py-1 px-1 text-center font-semibold w-[32px] min-[360px]:w-[35px] sm:w-[65px]">Trạng Thái</th>
+                                                 <th className="py-1 px-1 text-right font-semibold w-[55px] min-[360px]:w-[60px] sm:w-[85px] whitespace-nowrap">Doanh Thu</th>
                                              </tr>
                                          </thead>
                                          <tbody>
@@ -434,7 +417,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                             {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[90px] min-[360px]:w-[100px] min-[390px]:w-[110px] sm:w-[135px]"
+                                                            <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
                                                                 onClick={() => {
                                                                     if (orderId && orderId !== '-') {
                                                                         navigator.clipboard.writeText(orderId).then(() => {
@@ -447,10 +430,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                         });
                                                                     }
                                                                 }}
-                                                                title={orderId !== '-' ? 'Nh\u1ea5n \u0111\u1ec3 sao ch\u00e9p' : ''}
+                                                                title={orderId !== '-' ? `${isUnshipped ? 'Chưa xuất' : 'Đã xuất'} - Nhấn để sao chép` : ''}
                                                             >
                                                                     <div className="flex flex-col items-start justify-center gap-0.5">
-                                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs whitespace-nowrap">{orderId}</span>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isUnshipped ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+                                                                            <span className={`font-mono font-bold text-[10px] sm:text-xs whitespace-nowrap ${isUnshipped ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>{orderId}</span>
+                                                                        </div>
                                                                         {group.isAttached && (
                                                                             <span className="inline-flex w-fit items-center px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
                                                                                 Bán kèm
@@ -473,19 +459,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                             </td>
                                                             <td className="py-1 px-1 text-center text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
                                                             <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[10px] sm:text-xs">{formatCurrency(price)}</td>
-                                                            {lineIndex === 0 && (
-                                                                <td rowSpan={group.lines.length} className="py-1 px-1 text-center text-[10px] sm:text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700 w-[32px] min-[360px]:w-[35px] sm:w-[65px]">
-                                                                    {isUnshipped ? (
-                                                                        <div className="flex items-center justify-center text-rose-500 animate-pulse" title="Chưa xuất">
-                                                                            <Icon name="x-circle" size={4} />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="flex items-center justify-center text-emerald-500" title="Đã xuất">
-                                                                            <Icon name="check-circle" size={4} />
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                            )}
+
                                                         </tr>
                                                     );
                                                 });

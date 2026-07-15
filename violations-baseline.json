@@ -168,7 +168,7 @@
     "missingMobileToolbar": 0
   },
   "components/modals/PerformanceModal.tsx": {
-    "nonSemanticColor": 28,
+    "nonSemanticColor": 26,
     "missingMobileToolbar": 0
   },
   "components/modals/UncollectedOrdersModal.tsx": {
