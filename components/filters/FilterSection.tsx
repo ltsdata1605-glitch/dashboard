@@ -203,7 +203,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             {/* Slide Menu Header */}
             <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Tuỳ Chỉnh Nâng Cao</h2>
+                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">TUỲ CHỈNH</h2>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
                     <Button
@@ -225,40 +225,43 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-2.5 pb-3 px-1 border-b border-slate-100 dark:border-slate-800/80">
                             <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
                                 <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
-                                <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Quản Lý Nhân Sự & Phân Ca</h2>
+                                <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">NHÂN VIÊN</h2>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-2">
-                                {/* Tải lên báo cáo Phân ca */}
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={onLoadShiftFile}
-                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left"
-                                >
-                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
-                                        <Icon name="users-round" size={4} />
-                                    </div>
-                                    <div className="flex flex-col leading-tight">
-                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Tải lên Phân ca</span>
-                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Import Excel Nhân viên</span>
-                                    </div>
-                                </Button>
+                                {/* Khối kết hợp Nhập file | Lấy danh sách */}
+                                <div className="col-span-2 grid grid-cols-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-sm hover:border-sky-400 dark:hover:border-sky-500 transition-all">
+                                    {/* Nhập file */}
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={onLoadShiftFile}
+                                        className="flex items-center gap-2 px-2.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors text-left border-r border-slate-200 dark:border-slate-700"
+                                    >
+                                        <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400 shrink-0">
+                                            <Icon name="upload-cloud" size={4} />
+                                        </div>
+                                        <div className="flex flex-col leading-tight overflow-hidden">
+                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">Nhập file</span>
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Excel Phân ca</span>
+                                        </div>
+                                    </Button>
 
-                                {/* Mở trang Quản lý phân ca ERP */}
-                                <a
-                                    href="https://office.thegioididong.com/quan-ly-phan-ca"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left animate-none"
-                                >
-                                    <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400">
-                                        <Icon name="calendar-clock" size={4} />
-                                    </div>
-                                    <div className="flex flex-col leading-tight">
-                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý Phân ca</span>
-                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Mở ERP TGDĐ</span>
-                                    </div>
-                                </a>
+                                    {/* Lấy danh sách */}
+                                    <a
+                                        href="https://office.thegioididong.com/quan-ly-phan-ca"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-2.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors text-left overflow-hidden"
+                                    >
+                                        <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400 shrink-0">
+                                            <Icon name="external-link" size={4} />
+                                        </div>
+                                        <div className="flex flex-col leading-tight overflow-hidden">
+                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">Lấy danh sách</span>
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Mở ERP TGDĐ</span>
+                                        </div>
+                                    </a>
+                                </div>
 
                                 {/* Quản lý danh sách nhân viên (nếu có dữ liệu) */}
                                 {hasDepartmentData && (
@@ -271,8 +274,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                             <Icon name="settings" size={4} />
                                         </div>
                                         <div className="flex flex-col leading-tight">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Danh sách Nhân viên</span>
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Quản lý & Xem chi tiết ca kíp</span>
+                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Xem chi tiết ca kíp nhân viên</span>
                                         </div>
                                     </Button>
                                 )}
@@ -283,9 +286,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     {/* Tiêu đề nhóm Bộ lọc phân tích */}
                     <div className="flex items-center justify-between px-1 pt-1 mt-1">
                         <div className="flex items-center gap-1.5 sm:gap-2">
-                            <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
-                            <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
-                        </div>
+                             <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                             <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">BỘ LỌC</h2>
+                         </div>
                         <Button
                             variant="unstyled" size="none"
                             onClick={handleResetFilters}
