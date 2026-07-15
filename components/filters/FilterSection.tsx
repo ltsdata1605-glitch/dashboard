@@ -228,27 +228,28 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                 <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">NHÂN VIÊN</h2>
                             </div>
                             
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-stretch gap-2">
                                 {/* Quản lý danh sách nhân viên */}
                                 <Button
                                     variant="unstyled" size="none"
                                     disabled={!hasDepartmentData}
                                     onClick={() => hasDepartmentData && setShowEmployeeModal(true)}
-                                    className={`flex-grow flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl transition-all text-left ${
+                                    className={`flex-grow flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl transition-all text-left ${
                                         hasDepartmentData 
                                             ? 'hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm cursor-pointer group' 
                                             : 'opacity-50 cursor-not-allowed'
                                     }`}
                                 >
-                                    <div className={`p-1.5 rounded-lg transition-colors ${
+                                    <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg transition-colors ${
                                         hasDepartmentData 
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100' 
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/60' 
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                                     }`}>
-                                        <Icon name="settings" size={4} />
+                                        <Icon name="settings" size={3.5} className="sm:hidden" />
+                                        <Icon name="settings" size={4} className="hidden sm:block" />
                                     </div>
                                     <div className="flex flex-col leading-tight">
-                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
+                                        <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
                                         <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">
                                             {hasDepartmentData ? 'Xem chi tiết ca kíp' : 'Chưa có dữ liệu ca'}
                                         </span>
@@ -259,21 +260,23 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={onLoadShiftFile}
-                                    className="w-10 h-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
+                                    className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Nhập file Excel Phân ca"
                                 >
-                                    <Icon name="upload-cloud" size={4.5} />
+                                    <Icon name="upload-cloud" size={3.5} className="sm:hidden" />
+                                    <Icon name="upload-cloud" size={4} className="hidden sm:block" />
                                 </Button>
 
-                                {/* Lấy danh sách (icon) */}
+                                {/* Lấy danh sách (icon liên kết) */}
                                 <a
                                     href="https://office.thegioididong.com/quan-ly-phan-ca"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-10 h-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
+                                    className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Lấy danh sách phân ca từ ERP TGDĐ"
                                 >
-                                    <Icon name="external-link" size={4.5} />
+                                    <Icon name="link" size={3.5} className="sm:hidden" />
+                                    <Icon name="link" size={4} className="hidden sm:block" />
                                 </a>
                             </div>
                         </div>
