@@ -892,7 +892,7 @@
         requestAnimationFrame(() => setTimeout(resolve, 0));
       });
 
-    // --- Tìm nút dấu cộng ---
+    // --- Tìm nút dấu cộng (quét cả iframe cùng nguồn) ---
     function isPlusButton(el) {
       return Boolean(
         el && el.isConnected && el.classList &&
@@ -905,14 +905,33 @@
     }
 
     function getPlusButtons() {
-      let buttons = Array.from(
-        document.querySelectorAll('.fa-solid.fa-plus.text-gray-700')
-      );
+      const allButtons = [];
+      
+      // 1. Quét document chính
+      let buttons = Array.from(document.querySelectorAll('.fa-solid.fa-plus.text-gray-700'));
       if (!buttons.length) {
         buttons = Array.from(document.querySelectorAll('.fa-plus'));
       }
+      allButtons.push(...buttons);
+
+      // 2. Quét các iframe cùng nguồn (same-origin)
+      document.querySelectorAll('iframe').forEach(iframe => {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (iframeDoc) {
+            let ifrButtons = Array.from(iframeDoc.querySelectorAll('.fa-solid.fa-plus.text-gray-700'));
+            if (!ifrButtons.length) {
+              ifrButtons = Array.from(iframeDoc.querySelectorAll('.fa-plus'));
+            }
+            allButtons.push(...ifrButtons);
+          }
+        } catch (e) {
+          // Bỏ qua nếu dính CORS của iframe khác nguồn
+        }
+      });
+
       return Array.from(
-        new Set(buttons.filter(el => isPlusButton(el) && isVisible(el)))
+        new Set(allButtons.filter(el => isPlusButton(el) && isVisible(el)))
       );
     }
 
@@ -998,7 +1017,7 @@
       return box;
     }
 
-    function showAcpProgress(total) {
+    function showAcpProgress(total, onCancel) {
       closeAcpMessage();
       const box = document.createElement('div');
       box.id = ACP_MSG_ID;
@@ -1007,7 +1026,7 @@
         width:310px;max-width:calc(100vw - 40px);padding:14px 16px;
         border-radius:12px;background:linear-gradient(135deg,#0284c7,#2563eb);
         color:#fff;box-shadow:0 8px 25px rgba(0,0,0,.28);
-        font:14px Arial,sans-serif;pointer-events:none;
+        font:14px Arial,sans-serif;
       `;
       box.innerHTML = `
         <div data-role="title" style="font-size:15px;font-weight:700;margin-bottom:8px">Đang mở rộng dữ liệu...</div>
@@ -1016,7 +1035,12 @@
         <div style="height:8px;margin-top:10px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.25)">
           <div data-role="bar" style="width:0%;height:100%;border-radius:99px;background:#fff"></div>
         </div>
+        <button type="button" data-role="cancel" style="margin-top:12px;width:100%;padding:8px;border:0;border-radius:8px;background:rgba(255,255,255,0.2);color:#fff;font-weight:700;cursor:pointer;font-size:12px;transition:background 0.2s;">⏹ Dừng lại</button>
       `;
+      const cancelBtn = box.querySelector('[data-role="cancel"]');
+      cancelBtn.addEventListener('click', onCancel);
+      cancelBtn.addEventListener('mouseenter', () => { cancelBtn.style.background = 'rgba(255,255,255,0.3)'; });
+      cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.background = 'rgba(255,255,255,0.2)'; });
       document.body.appendChild(box);
       return {
         box,
@@ -1102,10 +1126,16 @@
       const btn = getAcpButton();
       if (btn) { btn.disabled = true; btn.style.cursor = 'wait'; btn.style.background = '#475569'; }
 
+      let userStop = false;
+      const onUserCancel = () => {
+        userStop = true;
+        showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
+      };
+
       const clickedSet = new Set();
-      const getNextPendingButton = () => {
+      const getNextPendingButtons = (count) => {
         const buttons = getPlusButtons();
-        return buttons.find(el => !clickedSet.has(el));
+        return buttons.filter(el => !clickedSet.has(el)).slice(0, count);
       };
 
       const initialButtons = getPlusButtons();
@@ -1113,28 +1143,30 @@
       const startedAt = performance.now();
       let processed = 0;
       let clicked = 0;
-      const ui = showAcpProgress(estimatedTotal);
+      const ui = showAcpProgress(estimatedTotal, onUserCancel);
 
       try {
-        while (true) {
-          const pb = getNextPendingButton();
-          if (!pb) {
+        while (!userStop) {
+          // Click song song 2 nút một lượt để tăng gấp đôi tốc độ
+          const pbs = getNextPendingButtons(2);
+          if (pbs.length === 0) {
             // Đợi một chút đề phòng render chậm
             await sleep(150);
-            const doubleCheck = getNextPendingButton();
-            if (!doubleCheck) break; // Đã hết thực sự
+            const doubleCheck = getNextPendingButtons(1);
+            if (doubleCheck.length === 0 || userStop) break; // Đã hết thực sự hoặc user dừng
             continue;
           }
 
-          clickedSet.add(pb);
-          processed++;
-
-          try {
-            pb.click();
-            clicked++;
-          } catch (err) {
-            console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
-          }
+          pbs.forEach(pb => {
+            clickedSet.add(pb);
+            processed++;
+            try {
+              pb.click();
+              clicked++;
+            } catch (err) {
+              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+            }
+          });
 
           if (processed > estimatedTotal) {
             estimatedTotal = processed;
@@ -1142,17 +1174,13 @@
 
           updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
 
-          // Nhịp độ click tối ưu: batch 4 clicks thì nhường render 1 frame (16ms)
-          // Các clicks bình thường chỉ nghỉ siêu ngắn (10ms)
-          if (clicked > 0 && clicked % 4 === 0) {
-            await yieldToBrowser();
-          } else {
-            await sleep(10);
-          }
+          // Nhịp độ click: Click song song 2 nút, sau đó yield browser 1 frame (16ms) để render mượt mà
+          await yieldToBrowser();
+          await sleep(10);
         }
 
         updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
-        ui.title.textContent = 'Đang chuẩn bị copy...';
+        ui.title.textContent = userStop ? 'Đang chuẩn bị copy (Dừng bởi user)...' : 'Đang chuẩn bị copy...';
         if (btn) btn.textContent = 'Đang copy...';
         await sleep(ACP_WAIT_BEFORE_COPY);
         await yieldToBrowser();
@@ -1160,11 +1188,11 @@
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
-            title: '✅ Hoàn tất',
+            title: userStop ? '⏹ Đã dừng lại' : '✅ Hoàn tất',
             message: `Đã mở <b>${clicked}/${estimatedTotal}</b> mục.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
-            success: true,
+            success: !userStop,
           });
-          if (btn) btn.textContent = '✅ Đã copy';
+          if (btn) btn.textContent = userStop ? '⏹ Đã dừng' : '✅ Đã copy';
         } else {
           showAcpMessage({
             title: '⚠️ Trình duyệt chặn tự copy',
