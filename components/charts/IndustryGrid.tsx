@@ -80,12 +80,29 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     const {
         drilldownPath,
         setDrilldownPath,
-        currentView,
+        currentView: rawCurrentView,
         allSubgroups,
         selectedChartSubgroups,
         setSelectedChartSubgroups,
         getTitle,
     } = useIndustryGridLogic({ industryData, allSalesData: allSales, productConfig });
+
+    const currentView = useMemo(() => {
+        const sorted = [...rawCurrentView.data].sort((a, b) => {
+            const valA = metricToDisplay === 'revenue' ? a.revenue : a.quantity;
+            const valB = metricToDisplay === 'revenue' ? b.revenue : b.quantity;
+            return valB - valA;
+        });
+        const top6 = sorted.slice(0, 6);
+        const totalRevenue = top6.reduce((sum, item) => sum + item.revenue, 0);
+        const totalQuantity = top6.reduce((sum, item) => sum + item.quantity, 0);
+        return {
+            ...rawCurrentView,
+            data: top6,
+            totalRevenue,
+            totalQuantity
+        };
+    }, [rawCurrentView, metricToDisplay]);
 
     // ── Sync: globalParentFilters → drilldownPath ────────────────────────────
     // Khi user chọn filter từ FilterSection bên ngoài, cập nhật drilldown path
@@ -468,7 +485,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     </div>
 
                                     {/* Cột phải: Chú thích (Legend) */}
-                                    <div className="w-[55%] sm:w-[52%] flex flex-col gap-1.5 overflow-y-auto no-scrollbar max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] pr-1">
+                                    <div className="w-[55%] sm:w-[52%] grid grid-cols-2 gap-x-2.5 gap-y-1 overflow-y-auto no-scrollbar max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] pr-1">
                                         {pieChartData.map((item, idx) => {
                                             const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                             const val = metricToDisplay === 'revenue' ? item.revenue : item.quantity;
@@ -476,14 +493,14 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                             return (
                                                 <div 
                                                     key={item.name} 
-                                                    className="flex items-center justify-between min-w-0 py-0.5 border-b border-slate-100/50 dark:border-slate-800/30 last:border-0" 
+                                                    className="flex items-center justify-between min-w-0 py-0.5" 
                                                     title={`${item.name}: ${metricToDisplay === 'revenue' ? formatCurrency(item.revenue) : formatQuantity(item.quantity)} (${pct}%)`}
                                                 >
-                                                    <div className="flex items-center min-w-0 mr-1.5">
-                                                        <span className="w-2 h-2 rounded-full flex-shrink-0 mr-1.5" style={{ background: COLORS[idx % COLORS.length] }} />
-                                                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
+                                                    <div className="flex items-center min-w-0 mr-1">
+                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mr-1" style={{ background: COLORS[idx % COLORS.length] }} />
+                                                        <span className="text-[9.5px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
                                                     </div>
-                                                    <span className="text-[9.5px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0">{pct}%</span>
+                                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1">{pct}%</span>
                                                 </div>
                                             );
                                         })}
