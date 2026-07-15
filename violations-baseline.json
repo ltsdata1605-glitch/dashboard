@@ -196,7 +196,7 @@
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSummary.tsx": {
-    "nonSemanticColor": 36,
+    "nonSemanticColor": 33,
     "missingMobileToolbar": 0
   },
   "components/tables/MonthlyTrendTableRow.tsx": {
