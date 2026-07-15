@@ -72,8 +72,8 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 className="relative h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 flex items-center justify-center transition-colors dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-800/60"
                                 title="Mở rộng 1 cấp độ"
                             >
-                                <Icon name="maximize-2" size={3} className="lg:hidden" />
-                                <Icon name="maximize-2" size={4} className="hidden lg:block" />
+                                <Icon name="chevrons-up-down" size={3} className="lg:hidden" />
+                                <Icon name="chevrons-up-down" size={4} className="hidden lg:block" />
                                 {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-sky-500 text-white text-[7px] lg:text-[8px] font-bold rounded-full">{expandLevel}</span>}
                             </Button>
                             <div className="hidden lg:block w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
@@ -83,8 +83,8 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 className="h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 flex items-center justify-center transition-colors dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-800/60"
                                 title="Thu gọn 1 cấp độ"
                             >
-                                <Icon name="minimize-2" size={3} className="lg:hidden" />
-                                <Icon name="minimize-2" size={4} className="hidden lg:block" />
+                                <Icon name="chevrons-down-up" size={3} className="lg:hidden" />
+                                <Icon name="chevrons-down-up" size={4} className="hidden lg:block" />
                             </Button>
                             {setIsFullScreen && (
                                 <>
