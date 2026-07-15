@@ -37,11 +37,11 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
                     <Icon name={icon} size={3.5} />
                 </div>
                 <div className="min-w-0 flex-1 text-center sm:text-left">
-                    <p className="text-[6.5px] min-[360px]:text-[7px] min-[390px]:text-[7.5px] sm:text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter truncate w-full" title={label}>{label}</p>
+                    <p className="text-[6.5px] min-[360px]:text-[7px] min-[390px]:text-[7.5px] sm:text-[9px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-tighter truncate w-full" title={label}>{label}</p>
                     <p className={`text-[10px] min-[360px]:text-[10.5px] min-[390px]:text-[11px] sm:text-xs font-black text-${color}-600 dark:text-${color}-400 leading-tight truncate w-full`}>{value}</p>
                 </div>
             </div>
-            {children && <div className="mt-0.5 text-[8.5px] sm:text-[9px] leading-tight hidden sm:block">{children}</div>}
+            {children && <div className="mt-0.5 text-[6.5px] min-[360px]:text-[7px] min-[390px]:text-[7.5px] sm:text-[9px] leading-tight border-t border-slate-100/50 dark:border-slate-800/20 pt-0.5 w-full">{children}</div>}
         </div>
     );
 };
@@ -267,28 +267,28 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             {/* KPIs */}
             <div className="grid grid-cols-5 gap-1 sm:gap-2.5">
                 <KpiCard icon="dollar-sign" label="Tổng DTQĐ" value={formatCurrency(employeeData.doanhThuQD)} color="indigo">
-                    <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
-                        <span>Thực:</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-200">{formatCurrency(employeeData.doanhThuThuc)}</span>
+                    <div className="flex flex-col min-[370px]:flex-row justify-between items-center w-full gap-0.5 text-slate-500 dark:text-slate-400">
+                        <span className="shrink-0">Thực:</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{formatCurrency(employeeData.doanhThuThuc)}</span>
                     </div>
                 </KpiCard>
                 <KpiCard icon="trending-up" label="Hiệu Quả QĐ" value={`${employeeData.hieuQuaValue.toFixed(0)}%`} color={employeeData.hieuQuaValue >= 40 ? 'emerald' : 'rose'} />
                 <KpiCard icon="clock" label="% T.Chậm" value={`${employeeData.traChamPercent.toFixed(0)}%`} color="amber">
-                    <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
-                        <span>%TG CE+ICT: <span className="font-black text-amber-700 dark:text-amber-400">{employeeData.traChamPercent_CE_ICT.toFixed(0)}%</span></span>
-                        <span>Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{formatQuantity(employeeData.slTraCham_CE_ICT)}/{formatQuantity(employeeData.slCE_ICT)} đơn</span></span>
+                    <div className="flex flex-col gap-0.5 text-slate-500 dark:text-slate-400 w-full text-center">
+                        <div className="truncate">CE+ICT: <span className="font-extrabold text-amber-700 dark:text-amber-400">{employeeData.traChamPercent_CE_ICT.toFixed(0)}%</span></div>
+                        <div className="truncate">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{formatQuantity(employeeData.slTraCham_CE_ICT)}/{formatQuantity(employeeData.slCE_ICT)}</span></div>
                     </div>
                 </KpiCard>
                 <KpiCard icon="shopping-bag" label="ĐH B.Kèm" value={formatQuantity(attachOrdersMetrics.count)} color="cyan">
-                    <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
-                        <span>%BK: <span className="font-black text-sky-700 dark:text-sky-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></span>
-                        <span>Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} đơn</span></span>
+                    <div className="flex flex-col gap-0.5 text-slate-500 dark:text-slate-400 w-full text-center">
+                        <div className="truncate">%BK: <span className="font-extrabold text-sky-700 dark:text-sky-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></div>
+                        <div className="truncate">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} ĐH</span></div>
                     </div>
                 </KpiCard>
                 <KpiCard icon="users" label="Tiếp Cận" value={formatQuantity(employeeData.slTiepCan)} color="purple">
-                     <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
-                        <span>Thu Hộ:</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-200">{formatQuantity(employeeData.slThuHo)}</span>
+                     <div className="flex flex-col min-[370px]:flex-row justify-between items-center w-full gap-0.5 text-slate-500 dark:text-slate-400">
+                        <span className="shrink-0">Thu Hộ:</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{formatQuantity(employeeData.slThuHo)}</span>
                     </div>
                 </KpiCard>
             </div>
@@ -312,7 +312,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
                 <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
                     <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-sky-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-sky-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
-                    <div className={(isBatchExporting || isExporting) ? "flex-1" : "flex-1 overflow-y-auto"}>
+                    <div className="flex-1">
                     {(() => {
                         const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
                         const sortedIndustries = Object.entries(industryBreakdown)
@@ -336,23 +336,23 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         }
 
                         return (
-                            <ul className="space-y-1.5 mt-1">
+                            <ul className="space-y-1 mt-0.5">
                                 {sortedIndustries.map(([name, revenue], i) => {
                                     const percent = totalIndustryRevenue > 0 ? (revenue / totalIndustryRevenue) * 100 : 0;
                                     return (
                                         <li key={name}>
                                             <div className="flex items-center justify-between mb-0.5">
-                                                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
-                                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
+                                                <span className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                                                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
                                                     {name}
                                                 </span>
-                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
+                                                <span className="text-[10px] sm:text-xs font-black text-slate-700 dark:text-slate-200 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                     <div className={`h-full rounded-full ${barColors[i % barColors.length]} transition-all duration-500`} style={{ width: `${percent}%` }}></div>
                                                 </div>
-                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-10 text-right">{percent.toFixed(0)}%</span>
+                                                <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 w-8 text-right">{percent.toFixed(0)}%</span>
                                             </div>
                                         </li>
                                     );
