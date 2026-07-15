@@ -402,8 +402,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
-                            <Icon name={viewMode === 'horizontal' ? 'rows-3' : 'table-2'} size={4} className="lg:hidden" />
-                            <Icon name={viewMode === 'horizontal' ? 'rows-3' : 'table-2'} size={5} className="hidden lg:block" />
+                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4} className="lg:hidden" />
+                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={5} className="hidden lg:block" />
                             <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
                         </Button>
 
