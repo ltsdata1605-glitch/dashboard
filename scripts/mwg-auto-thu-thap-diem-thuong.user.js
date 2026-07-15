@@ -1102,34 +1102,56 @@
       const btn = getAcpButton();
       if (btn) { btn.disabled = true; btn.style.cursor = 'wait'; btn.style.background = '#475569'; }
 
-      const plusButtons = getPlusButtons();
-      const total = plusButtons.length;
+      const clickedSet = new Set();
+      const getNextPendingButton = () => {
+        const buttons = getPlusButtons();
+        return buttons.find(el => !clickedSet.has(el));
+      };
+
+      const initialButtons = getPlusButtons();
+      let estimatedTotal = initialButtons.length;
       const startedAt = performance.now();
       let processed = 0;
       let clicked = 0;
-      const ui = showAcpProgress(total);
+      const ui = showAcpProgress(estimatedTotal);
 
       try {
-        if (total > 0) {
-          for (const pb of plusButtons) {
-            processed++;
-            try {
-              if (!isPlusButton(pb)) { updateAcpProgress(ui, processed, total, clicked, startedAt); continue; }
-              pb.click();
-              clicked++;
-            } catch (err) {
-              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
-            }
-            updateAcpProgress(ui, processed, total, clicked, startedAt);
-            if (clicked > 0 && clicked % ACP_BATCH_SIZE === 0) {
-              await sleep(ACP_BATCH_PAUSE);
-              await yieldToBrowser();
-            } else {
-              await sleep(ACP_DELAY);
-            }
+        while (true) {
+          const pb = getNextPendingButton();
+          if (!pb) {
+            // Đợi một chút đề phòng render chậm
+            await sleep(150);
+            const doubleCheck = getNextPendingButton();
+            if (!doubleCheck) break; // Đã hết thực sự
+            continue;
+          }
+
+          clickedSet.add(pb);
+          processed++;
+
+          try {
+            pb.click();
+            clicked++;
+          } catch (err) {
+            console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+          }
+
+          if (processed > estimatedTotal) {
+            estimatedTotal = processed;
+          }
+
+          updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
+
+          // Nhịp độ click tối ưu: batch 4 clicks thì nhường render 1 frame (16ms)
+          // Các clicks bình thường chỉ nghỉ siêu ngắn (10ms)
+          if (clicked > 0 && clicked % 4 === 0) {
+            await yieldToBrowser();
+          } else {
+            await sleep(10);
           }
         }
-        updateAcpProgress(ui, processed, total, clicked, startedAt, true);
+
+        updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
         ui.title.textContent = 'Đang chuẩn bị copy...';
         if (btn) btn.textContent = 'Đang copy...';
         await sleep(ACP_WAIT_BEFORE_COPY);
@@ -1139,14 +1161,14 @@
         if (copied) {
           showAcpMessage({
             title: '✅ Hoàn tất',
-            message: `Đã mở <b>${clicked}/${total}</b> mục.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
+            message: `Đã mở <b>${clicked}/${estimatedTotal}</b> mục.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
             success: true,
           });
           if (btn) btn.textContent = '✅ Đã copy';
         } else {
           showAcpMessage({
             title: '⚠️ Trình duyệt chặn tự copy',
-            message: `Đã mở <b>${clicked}/${total}</b> mục.<br>Bấm nút bên dưới để copy.`,
+            message: `Đã mở <b>${clicked}/${estimatedTotal}</b> mục.<br>Bấm nút bên dưới để copy.`,
             success: false, showCopyButton: true, autoClose: false,
           });
           if (btn) btn.textContent = '📋 Copy thủ công';
