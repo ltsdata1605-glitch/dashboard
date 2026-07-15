@@ -394,14 +394,19 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
-                             <summary className="py-1 sm:py-1.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
-                                <p className="font-bold text-xs sm:text-sm text-sky-950 dark:text-sky-100 pl-1">{customer.name.toUpperCase()}</p>
-                                <div className="flex items-center gap-x-2 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[9px] sm:text-[11px] font-semibold">
+                             <summary className="py-1.5 px-2 sm:px-3 cursor-pointer flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
+                                <div className="flex items-center justify-between w-full sm:w-auto">
+                                    <p className="font-extrabold text-[11px] sm:text-sm text-sky-950 dark:text-sky-100 pl-1 whitespace-nowrap">{customer.name.toUpperCase()}</p>
+                                    <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2 sm:hidden">
+                                        <Icon name="chevron-down" />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-x-2 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 flex-wrap justify-start sm:justify-end text-[9px] sm:text-[11px] font-semibold w-full sm:w-auto">
                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-600 dark:text-rose-400">{formatCurrency(customer.totalRevenue)}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
-                                    <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
+                                    <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2 hidden sm:block">
                                         <Icon name="chevron-down" />
                                     </div>
                                 </div>
@@ -411,7 +416,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                      <table className="min-w-[600px] md:w-full text-sm table-fixed compact-export-table border-collapse">
                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
-                                                 <th className="py-1 px-1.5 text-left font-semibold w-[135px]">Mã ĐH</th>
+                                                 <th className="py-1 px-1.5 text-left font-semibold w-[110px] sm:w-[135px]">Mã ĐH</th>
                                                  <th className="py-1 px-1.5 text-left font-semibold">Sản phẩm</th>
                                                  <th className="py-1 px-1.5 text-center font-semibold w-[30px]">SL</th>
                                                  <th className="py-1 px-1.5 text-right font-semibold w-[75px] whitespace-nowrap">Doanh Thu</th>
@@ -429,7 +434,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                             {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="py-1 px-1.5 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                            <td rowSpan={group.lines.length} className="py-1 px-1.5 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[110px] sm:w-[135px]"
                                                                 onClick={() => {
                                                                     if (orderId && orderId !== '-') {
                                                                         navigator.clipboard.writeText(orderId).then(() => {
@@ -445,9 +450,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                 title={orderId !== '-' ? 'Nh\u1ea5n \u0111\u1ec3 sao ch\u00e9p' : ''}
                                                             >
                                                                     <div className="flex flex-col items-start justify-center gap-0.5">
-                                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 break-all">{orderId}</span>
+                                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs whitespace-nowrap">{orderId}</span>
                                                                         {group.isAttached && (
-                                                                            <span className="inline-flex w-fit items-center px-1.5 py-1 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
+                                                                            <span className="inline-flex w-fit items-center px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
                                                                                 Bán kèm
                                                                             </span>
                                                                         )}
