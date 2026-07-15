@@ -411,16 +411,16 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                     </div>
                                 </div>
                              </summary>
-                              <div className="pb-3 px-2 overflow-auto custom-scrollbar">
-                                 <div className="ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
-                                     <table className="min-w-[600px] md:w-full text-sm table-fixed compact-export-table border-collapse">
-                                         <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
+                              <div className="pb-3 px-1 sm:px-2 overflow-x-hidden">
+                                 <div className="ml-1 pl-1 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
+                                     <table className="w-full text-[10px] sm:text-sm table-fixed compact-export-table border-collapse">
+                                         <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[9px] sm:text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
-                                                 <th className="py-1 px-1.5 text-left font-semibold w-[110px] sm:w-[135px]">Mã ĐH</th>
-                                                 <th className="py-1 px-1.5 text-left font-semibold">Sản phẩm</th>
-                                                 <th className="py-1 px-1.5 text-center font-semibold w-[30px]">SL</th>
-                                                 <th className="py-1 px-1.5 text-right font-semibold w-[75px] whitespace-nowrap">Doanh Thu</th>
-                                                 <th className="py-1 px-1.5 text-center font-semibold w-[40px] sm:w-[65px]">Trạng Thái</th>
+                                                 <th className="py-1 px-1 text-left font-semibold w-[90px] min-[360px]:w-[100px] min-[390px]:w-[110px] sm:w-[135px]">Mã ĐH</th>
+                                                 <th className="py-1 px-1 text-left font-semibold">Sản phẩm</th>
+                                                 <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[30px]">SL</th>
+                                                 <th className="py-1 px-1 text-right font-semibold w-[50px] min-[360px]:w-[55px] sm:w-[75px] whitespace-nowrap">Doanh Thu</th>
+                                                 <th className="py-1 px-1 text-center font-semibold w-[32px] min-[360px]:w-[35px] sm:w-[65px]">Trạng Thái</th>
                                              </tr>
                                          </thead>
                                          <tbody>
@@ -434,7 +434,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                             {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="py-1 px-1.5 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[110px] sm:w-[135px]"
+                                                            <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[90px] min-[360px]:w-[100px] min-[390px]:w-[110px] sm:w-[135px]"
                                                                 onClick={() => {
                                                                     if (orderId && orderId !== '-') {
                                                                         navigator.clipboard.writeText(orderId).then(() => {
@@ -459,7 +459,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     </div>
                                                                 </td>
                                                             )}
-                                                            <td className="py-1 px-1.5 text-left text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                            <td className="py-1 px-1 text-left text-[10px] sm:text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
                                                                 <div className="flex items-center gap-1.5 min-w-0 w-full">
                                                                     <span className="truncate text-slate-700 dark:text-slate-300" title={getRowValue(order, COL.PRODUCT) as string}>
                                                                         {getRowValue(order, COL.PRODUCT)}
@@ -471,10 +471,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     )}
                                                                 </div>
                                                             </td>
-                                                            <td className="py-1 px-1.5 text-center text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                            <td className="py-1 px-1.5 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700">{formatCurrency(price)}</td>
+                                                            <td className="py-1 px-1 text-center text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                            <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[10px] sm:text-xs">{formatCurrency(price)}</td>
                                                             {lineIndex === 0 && (
-                                                                <td rowSpan={group.lines.length} className="py-1 px-1.5 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700 w-[40px] sm:w-[65px]">
+                                                                <td rowSpan={group.lines.length} className="py-1 px-1 text-center text-[10px] sm:text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700 w-[32px] min-[360px]:w-[35px] sm:w-[65px]">
                                                                     {isUnshipped ? (
                                                                         <div className="flex items-center justify-center text-rose-500 animate-pulse" title="Chưa xuất">
                                                                             <Icon name="x-circle" size={4} />
