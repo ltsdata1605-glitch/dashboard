@@ -194,13 +194,17 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                     <Button
                         onClick={handleRestore}
                         variant="secondary"
-                        leftIcon={<Icon name="rotate-ccw" size={4} />}
+                        size="sm"
+                        leftIcon={<Icon name="rotate-ccw" size={3.5} />}
+                        className="text-[11px] sm:text-xs py-1 px-2.5"
                     >
                         Khôi phục gốc
                     </Button>
                     <Button
                         onClick={handleClose}
                         variant="primary"
+                        size="sm"
+                        className="text-[11px] sm:text-xs py-1 px-3"
                     >
                         {hasUnsavedChanges ? 'Lưu & Đóng' : 'Đóng'}
                     </Button>

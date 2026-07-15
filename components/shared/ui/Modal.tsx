@@ -121,13 +121,13 @@ export function Modal({
           >
             {/* Header */}
             {showHeader && (
-              <div className="flex-none px-5 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
+              <div className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
                 <div>
                   {subTitle && (
-                    <p className="text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
+                    <p className="text-[10px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
                   )}
                   {title && (
-                    <h3 className={cn("font-bold text-lg tracking-tight", titleColorClass)}>
+                    <h3 className={cn("font-bold text-sm sm:text-lg tracking-tight", titleColorClass)}>
                       {title}
                     </h3>
                   )}
@@ -140,9 +140,10 @@ export function Modal({
                       variant="unstyled"
                       size="none"
                       onClick={onClose}
-                      className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
+                      className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >
-                      <Icon name="x" size={4.5} />
+                      <Icon name="x" size={3.5} className="sm:hidden" />
+                      <Icon name="x" size={4.5} className="hidden sm:block" />
                     </Button>
                   )}
                 </div>
@@ -150,13 +151,13 @@ export function Modal({
             )}
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-5 custom-scrollbar">
               {children}
             </div>
 
             {/* Footer */}
             {footer && (
-              <div className={cn("flex-none px-5 py-4 border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50", roundedFooterClass)}>
+              <div className={cn("flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50", roundedFooterClass)}>
                 {footer}
               </div>
             )}
