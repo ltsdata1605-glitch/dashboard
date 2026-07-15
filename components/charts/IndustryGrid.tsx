@@ -436,10 +436,11 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             </Button>
                         </div>
 
-                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col">
+                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col justify-center">
                             {pieChartData.length > 0 ? (
-                                <>
-                                    <div className="h-[180px] lg:h-[230px] -mx-2">
+                                <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 py-1.5 lg:py-3 flex-grow min-h-[150px]">
+                                    {/* Cột trái: Biểu đồ */}
+                                    <div className="w-[45%] sm:w-[48%] h-[150px] sm:h-[180px] lg:h-[200px] shrink-0">
                                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                                 <Pie
@@ -448,7 +449,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                     nameKey="name"
                                                     cx="50%"
                                                     cy="50%"
-                                                    innerRadius="40%"
+                                                    innerRadius="35%"
                                                     outerRadius="80%"
                                                     paddingAngle={2}
                                                     stroke="none"
@@ -466,22 +467,28 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                         </ResponsiveContainer>
                                     </div>
 
-                                    {/* Legend grid */}
-                                    <div className="mt-1.5 lg:mt-3 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1 lg:gap-y-2 pr-1">
+                                    {/* Cột phải: Chú thích (Legend) */}
+                                    <div className="w-[55%] sm:w-[52%] flex flex-col gap-1.5 overflow-y-auto no-scrollbar max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] pr-1">
                                         {pieChartData.map((item, idx) => {
                                             const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                             const val = metricToDisplay === 'revenue' ? item.revenue : item.quantity;
                                             const pct = totalVal > 0 ? (val / totalVal * 100).toFixed(1) : '0.0';
                                             return (
-                                                <div key={item.name} className="flex items-center min-w-0" title={`${item.name}: ${metricToDisplay === 'revenue' ? formatCurrency(item.revenue) : formatQuantity(item.quantity)} (${pct}%)`}>
-                                                    <span className="w-2 h-2 rounded-full flex-shrink-0 mr-1.5" style={{ background: COLORS[idx % COLORS.length] }} />
-                                                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
-                                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1.5">{pct}%</span>
+                                                <div 
+                                                    key={item.name} 
+                                                    className="flex items-center justify-between min-w-0 py-0.5 border-b border-slate-100/50 dark:border-slate-800/30 last:border-0" 
+                                                    title={`${item.name}: ${metricToDisplay === 'revenue' ? formatCurrency(item.revenue) : formatQuantity(item.quantity)} (${pct}%)`}
+                                                >
+                                                    <div className="flex items-center min-w-0 mr-1.5">
+                                                        <span className="w-2 h-2 rounded-full flex-shrink-0 mr-1.5" style={{ background: COLORS[idx % COLORS.length] }} />
+                                                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
+                                                    </div>
+                                                    <span className="text-[9.5px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0">{pct}%</span>
                                                 </div>
                                             );
                                         })}
                                     </div>
-                                </>
+                                </div>
                             ) : (
                                 <div className="flex-grow flex items-center justify-center text-xs text-slate-400 dark:text-slate-600">
                                     Không có dữ liệu biểu đồ

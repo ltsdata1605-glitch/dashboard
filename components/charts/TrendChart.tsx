@@ -426,16 +426,16 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
           {displayMode === 'calendar' ? (
-              <div className="flex flex-row items-center gap-1.5 flex-nowrap sm:flex-wrap">
+              <div className="flex flex-row items-center gap-1 sm:gap-1.5 flex-nowrap sm:flex-wrap">
                   <Select
                       fullWidth={false}
-                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 py-1 px-2 h-8 uppercase tracking-wider w-[85px] sm:w-[95px] pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
+                      className="text-[9px] sm:text-[10px] font-bold text-indigo-600 dark:text-indigo-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[70px] sm:w-[95px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.month}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
                   >
                       {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
                   </Select>
-                  <div className="w-[85px] sm:w-[105px] shrink-0">
+                  <div className="w-[70px] sm:w-[105px] shrink-0">
                       <MultiSelectDropdown
                           label="Ngành"
                           options={uniqueParentGroups}
@@ -444,7 +444,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                           variant="compact"
                       />
                   </div>
-                  <div className="w-[85px] sm:w-[105px] shrink-0">
+                  <div className="w-[70px] sm:w-[105px] shrink-0">
                       <MultiSelectDropdown
                           label="Nhóm"
                           options={uniqueChildGroups}
@@ -455,14 +455,14 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   </div>
                   <Select
                       fullWidth={false}
-                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 py-1 px-2 h-8 uppercase tracking-wider w-[100px] sm:w-[120px] pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
+                      className="text-[9px] sm:text-[10px] font-bold text-rose-600 dark:text-rose-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[82px] sm:w-[120px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.metric}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
                   >
-                      <option value="revenue">Doanh thu</option>
+                      <option value="revenue">D.Thu</option>
                       <option value="revenueQD">DT QĐ</option>
-                      <option value="quantity">Số lượng</option>
-                      <option value="traChamPercent">Trả Chậm</option>
+                      <option value="quantity">S.Lượng</option>
+                      <option value="traChamPercent">Tr.Chậm</option>
                   </Select>
               </div>
           ) : (

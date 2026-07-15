@@ -86,16 +86,16 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
-        if (selected.length === 0) return <span className="text-slate-500 font-normal text-xs sm:text-sm whitespace-nowrap">{label}</span>;
+        if (selected.length === 0) return <span className="text-slate-500 font-normal text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
         
         if (selected.length === allUniqueOptions.length) {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
         }
         
         if (variant === 'compact') {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">{label}</span>;
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
@@ -110,7 +110,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">{selected.length} {label}</span>;
+        return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     return (
@@ -120,7 +120,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 variant="unstyled" size="none"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
-                    variant === 'compact' ? 'px-2 py-1 h-9' : 'px-3 py-2 h-9'
+                    variant === 'compact' ? 'px-1.5 sm:px-2 py-0.5 sm:py-1 h-8 sm:h-9' : 'px-3 py-2 h-9'
                 } ${
                     isOpen
                     ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500'
@@ -130,16 +130,21 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 <div className="flex-grow flex items-center overflow-hidden">
                     {renderContent()}
                 </div>
-                <div className="flex items-center gap-1.5 ml-2">
+                <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
                     {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                        <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200">
+                        <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
                             {selected.length}
                         </div>
                     )}
                     <Icon
                         name="chevron-down"
+                        size={3}
+                        className={`text-slate-400 transition-transform duration-200 sm:hidden ${isOpen ? 'rotate-180' : ''}`}
+                    />
+                    <Icon
+                        name="chevron-down"
                         size={3.5}
-                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                        className={`text-slate-400 transition-transform duration-200 hidden sm:block ${isOpen ? 'rotate-180' : ''}`}
                     />
                 </div>
             </Button>
