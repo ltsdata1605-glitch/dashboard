@@ -228,57 +228,53 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                 <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">NHÂN VIÊN</h2>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* Khối kết hợp Nhập file | Lấy danh sách */}
-                                <div className="col-span-2 grid grid-cols-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-sm hover:border-sky-400 dark:hover:border-sky-500 transition-all">
-                                    {/* Nhập file */}
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        onClick={onLoadShiftFile}
-                                        className="flex items-center gap-2 px-2.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors text-left border-r border-slate-200 dark:border-slate-700"
-                                    >
-                                        <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400 shrink-0">
-                                            <Icon name="upload-cloud" size={4} />
-                                        </div>
-                                        <div className="flex flex-col leading-tight overflow-hidden">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">Nhập file</span>
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Excel Phân ca</span>
-                                        </div>
-                                    </Button>
+                            <div className="flex items-center gap-2">
+                                {/* Quản lý danh sách nhân viên */}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    disabled={!hasDepartmentData}
+                                    onClick={() => hasDepartmentData && setShowEmployeeModal(true)}
+                                    className={`flex-grow flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl transition-all text-left ${
+                                        hasDepartmentData 
+                                            ? 'hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm cursor-pointer group' 
+                                            : 'opacity-50 cursor-not-allowed'
+                                    }`}
+                                >
+                                    <div className={`p-1.5 rounded-lg transition-colors ${
+                                        hasDepartmentData 
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100' 
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                                    }`}>
+                                        <Icon name="settings" size={4} />
+                                    </div>
+                                    <div className="flex flex-col leading-tight">
+                                        <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
+                                        <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">
+                                            {hasDepartmentData ? 'Xem chi tiết ca kíp' : 'Chưa có dữ liệu ca'}
+                                        </span>
+                                    </div>
+                                </Button>
 
-                                    {/* Lấy danh sách */}
-                                    <a
-                                        href="https://office.thegioididong.com/quan-ly-phan-ca"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 px-2.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors text-left overflow-hidden"
-                                    >
-                                        <div className="p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-lg text-sky-600 dark:text-sky-400 shrink-0">
-                                            <Icon name="external-link" size={4} />
-                                        </div>
-                                        <div className="flex flex-col leading-tight overflow-hidden">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">Lấy danh sách</span>
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Mở ERP TGDĐ</span>
-                                        </div>
-                                    </a>
-                                </div>
+                                {/* Nhập file (icon) */}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={onLoadShiftFile}
+                                    className="w-10 h-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
+                                    title="Nhập file Excel Phân ca"
+                                >
+                                    <Icon name="upload-cloud" size={4.5} />
+                                </Button>
 
-                                {/* Quản lý danh sách nhân viên (nếu có dữ liệu) */}
-                                {hasDepartmentData && (
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        onClick={() => setShowEmployeeModal(true)}
-                                        className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group text-left col-span-2"
-                                    >
-                                        <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/40 rounded-lg text-emerald-600 dark:text-emerald-400">
-                                            <Icon name="settings" size={4} />
-                                        </div>
-                                        <div className="flex flex-col leading-tight">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400">Xem chi tiết ca kíp nhân viên</span>
-                                        </div>
-                                    </Button>
-                                )}
+                                {/* Lấy danh sách (icon) */}
+                                <a
+                                    href="https://office.thegioididong.com/quan-ly-phan-ca"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
+                                    title="Lấy danh sách phân ca từ ERP TGDĐ"
+                                >
+                                    <Icon name="external-link" size={4.5} />
+                                </a>
                             </div>
                         </div>
                     )}
