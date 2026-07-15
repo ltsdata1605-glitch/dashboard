@@ -974,11 +974,18 @@
       closeAcpMessage();
       const box = document.createElement('div');
       box.id = ACP_MSG_ID;
+      
+      const bgColor = success ? '#f0fdf4' : '#fee2e2';
+      const textColor = success ? '#166534' : '#991b1b';
+      const borderColor = success ? '#bbf7d0' : '#fca5a5';
+      const shadowColor = success ? 'rgba(22, 101, 52, 0.12)' : 'rgba(153, 27, 27, 0.12)';
+
       box.style.cssText = `
         position:fixed;top:20px;right:20px;z-index:2147483647;
         width:310px;max-width:calc(100vw - 40px);padding:14px 16px;
-        border-radius:12px;background:${success ? '#166534' : '#991b1b'};
-        color:#fff;box-shadow:0 8px 25px rgba(0,0,0,.28);font:14px Arial,sans-serif;
+        border-radius:12px;background:${bgColor};color:${textColor};
+        border:1px solid ${borderColor};box-shadow:0 8px 25px ${shadowColor};
+        font:14px Arial,sans-serif;
       `;
       const titleEl = document.createElement('div');
       titleEl.style.cssText = 'margin-bottom:6px;font-size:15px;font-weight:700;';
@@ -995,14 +1002,19 @@
         copyBtn.textContent = '📋 Copy ngay';
         copyBtn.style.cssText = `
           width:100%;margin-top:12px;padding:10px;border:0;border-radius:8px;
-          background:#fff;color:#111827;font-weight:700;cursor:pointer;
+          background:${textColor};color:#fff;font-weight:700;cursor:pointer;
+          box-shadow:0 4px 10px rgba(0,0,0,0.1);transition:opacity 0.2s;
         `;
+        copyBtn.addEventListener('mouseenter', () => { copyBtn.style.opacity = '0.9'; });
+        copyBtn.addEventListener('mouseleave', () => { copyBtn.style.opacity = '1'; });
         copyBtn.onclick = async () => {
           copyBtn.disabled = true;
           copyBtn.textContent = 'Đang copy...';
           const copied = await copyBiPageText();
           if (copied) {
-            box.style.background = '#166534';
+            box.style.background = '#f0fdf4';
+            box.style.color = '#166534';
+            box.style.borderColor = '#bbf7d0';
             box.innerHTML = '✅ Đã copy toàn bộ nội dung.';
             setTimeout(closeAcpMessage, 1800);
           } else {
