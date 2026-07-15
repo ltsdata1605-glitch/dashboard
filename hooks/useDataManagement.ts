@@ -77,14 +77,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
                 
-                // If core config is missing, URL has changed, or the new product groups (7161/7139) are missing, or industryBiMap is missing, or does not have compound keys, force load from sheet
-                const hasCompoundKeys = config && config.industryBiMap && Object.keys(config.industryBiMap).some(k => k.includes('|||'));
+                // PERF FIX: Chỉ kiểm tra điều kiện cơ bản (config tồn tại, có groups, URL khớp).
+                // Các kiểm tra chi tiết (7161, 7139, industryBiMap, compound keys) được xử lý
+                // bởi Background Sheet Check (setTimeout 5s) ở phía dưới — tránh blocking
+                // luồng khởi tạo bằng network fetch nặng mỗi lần mở app.
                 const isConfigOutOfDate = !config || !config.groups || Object.keys(config.groups).length === 0 || 
-                                          cachedUrl !== configUrl || 
-                                          !config.childToParentMap['7161 - Dịch vụ bảo hành 1 đổi 1 Thợ Điện Máy Xanh'] ||
-                                          !config.childToParentMap['7139 - Dịch vụ Bảo hành mở rộng Thợ Điện Máy Xanh'] ||
-                                          !config.industryBiMap ||
-                                          !hasCompoundKeys;
+                                          cachedUrl !== configUrl;
 
                 if (isConfigOutOfDate) {
                     try {
@@ -190,18 +188,25 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             }
 
                             // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
+                            // PERF FIX: Batch tất cả IDB reads song song thay vì loop tuần tự
+                            // (trước đó mỗi key gọi 2 IDB reads tuần tự → N×2 transactions chậm)
                             const localSettings = await dbService.getAllSettings().catch(() => ({}));
-                            const allHeavyKeys = new Set([
+                            const allHeavyKeys = Array.from(new Set([
                                 ...Array.from(HEAVY_SYNC_KEYS),
                                 ...Object.keys(heavyCloudData),
                                 ...Object.keys(localSettings).filter(k => isHeavySyncKey(k))
+                            ])).filter(k => isHeavySyncKey(k));
+
+                            // Batch fetch: 1 Promise.all thay vì N×2 await tuần tự
+                            const [allLocalValues, allLocalTimes] = await Promise.all([
+                                Promise.all(allHeavyKeys.map(k => dbService.getSetting<unknown>(k))),
+                                Promise.all(allHeavyKeys.map(k => dbService.getSetting<number>(`lastModified_${k}`)))
                             ]);
 
-                            for (const key of Array.from(allHeavyKeys)) {
-                                if (!isHeavySyncKey(key)) continue;
-
-                                const localValue = await dbService.getSetting<unknown>(key);
-                                const localTime = await dbService.getSetting<number>(`lastModified_${key}`) || 0;
+                            for (let i = 0; i < allHeavyKeys.length; i++) {
+                                const key = allHeavyKeys[i];
+                                const localValue = allLocalValues[i];
+                                const localTime = allLocalTimes[i] || 0;
                                 const cloudItem = heavyCloudData[key];
                                 const cloudTime = cloudItem?.updatedAt || 0;
 
@@ -231,7 +236,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                     window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
                                 } else if (localTime > cloudTime) {
                                     console.warn(`[Cloud Sync] Local mới hơn Cloud cho khóa nặng "${key}" (${localTime} > ${cloudTime}). Đang đồng bộ lên...`);
-                                    const localValue = await dbService.getSetting(key);
                                     if (localValue !== null) {
                                         await syncHeavySettingToCloud(user, key, localValue);
                                     }
