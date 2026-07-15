@@ -274,15 +274,17 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </KpiCard>
                 <KpiCard icon="trending-up" label="Hiệu Quả QĐ" value={`${employeeData.hieuQuaValue.toFixed(0)}%`} color={employeeData.hieuQuaValue >= 40 ? 'emerald' : 'rose'} />
                 <KpiCard icon="clock" label="% T.Chậm" value={`${employeeData.traChamPercent.toFixed(0)}%`} color="amber">
-                    <div className="flex flex-col gap-0.5 text-slate-500 dark:text-slate-400 w-full text-center">
-                        <div className="truncate">CE+ICT: <span className="font-extrabold text-amber-700 dark:text-amber-400">{employeeData.traChamPercent_CE_ICT.toFixed(0)}%</span></div>
-                        <div className="truncate">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{formatQuantity(employeeData.slTraCham_CE_ICT)}/{formatQuantity(employeeData.slCE_ICT)}</span></div>
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-y-0.5 gap-x-1.5 text-slate-500 dark:text-slate-400 w-full text-center text-[10px] sm:text-[11px] leading-tight">
+                        <div className="whitespace-nowrap">CE+ICT: <span className="font-extrabold text-amber-700 dark:text-amber-400">{employeeData.traChamPercent_CE_ICT.toFixed(0)}%</span></div>
+                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600">|</span>
+                        <div className="whitespace-nowrap">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{formatQuantity(employeeData.slTraCham_CE_ICT)}/{formatQuantity(employeeData.slCE_ICT)}</span></div>
                     </div>
                 </KpiCard>
                 <KpiCard icon="shopping-bag" label="ĐH B.Kèm" value={formatQuantity(attachOrdersMetrics.count)} color="cyan">
-                    <div className="flex flex-col gap-0.5 text-slate-500 dark:text-slate-400 w-full text-center">
-                        <div className="truncate">%BK: <span className="font-extrabold text-sky-700 dark:text-sky-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></div>
-                        <div className="truncate">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} ĐH</span></div>
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-y-0.5 gap-x-1.5 text-slate-500 dark:text-slate-400 w-full text-center text-[10px] sm:text-[11px] leading-tight">
+                        <div className="whitespace-nowrap">%BK: <span className="font-extrabold text-sky-700 dark:text-sky-400">{attachOrdersMetrics.percent.toFixed(0)}%</span></div>
+                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600">|</span>
+                        <div className="whitespace-nowrap">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} ĐH</span></div>
                     </div>
                 </KpiCard>
                 <KpiCard icon="users" label="Tiếp Cận" value={formatQuantity(employeeData.slTiepCan)} color="purple">
