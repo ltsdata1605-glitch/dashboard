@@ -160,7 +160,7 @@
     "missingMobileToolbar": 0
   },
   "components/modals/EmployeeManagerModal.tsx": {
-    "nonSemanticColor": 11,
+    "nonSemanticColor": 10,
     "missingMobileToolbar": 0
   },
   "components/modals/GtdhTargetModal.tsx": {

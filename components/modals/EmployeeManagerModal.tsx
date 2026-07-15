@@ -221,23 +221,23 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                         <Icon name="search" size={3.5} className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
                         <Icon name="search" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
                     </div>
-                    <div className="hidden sm:flex gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="hidden sm:flex gap-2 text-xs text-slate-400 dark:text-slate-500">
                         <span>Lưu ý: Dữ liệu được lưu tự động và an toàn (IndexedDB).</span>
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="flex-1 overflow-auto custom-scrollbar">
-                    <table className="min-w-full text-xs sm:text-sm text-left border-collapse border border-slate-200 dark:border-slate-700">
-                        <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
-                            <tr>
-                                <th onClick={() => handleSort('id')} className="cursor-pointer px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-24 sm:w-32 hover:bg-slate-100 transition-colors">
+                <div className="flex-grow overflow-auto custom-scrollbar">
+                    <table className="min-w-full text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800">
+                        <thead className="bg-slate-50 dark:bg-slate-850 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-855">
+                            <tr className="text-[10px] sm:text-xs font-semibold text-slate-650 dark:text-slate-300">
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-slate-100 transition-colors w-24 sm:w-32">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
-                                <th className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-48 sm:w-64 hover:bg-slate-100 transition-colors">
+                                <th className="px-2 sm:px-4 py-1.5 sm:py-2 hover:bg-slate-100 transition-colors w-48 sm:w-64">
                                     <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')} onKeyDown={onActivateKey(() => handleSort('dept'))}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
@@ -250,69 +250,69 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                 <option value="">Tất cả</option>
                                                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
-                                            <Button variant="unstyled" size="none" className={`p-1 rounded transition-colors ${filterDept ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                            <Button variant="unstyled" size="none" className={`p-1 rounded transition-colors ${filterDept ? 'text-indigo-650 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
                                                 <Icon name="filter" size={3.5} />
                                             </Button>
                                         </div>
                                     </div>
                                 </th>
-                                <th className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-20 sm:w-24 text-center">Thao tác</th>
+                                <th className="px-2 sm:px-4 py-1.5 sm:py-2 w-20 sm:w-24 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
                                 <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-2 sm:px-4 py-2 sm:py-3 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700">{emp.id}</td>
+                                    <td className="px-2 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
                                         <>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
                                                 <Input 
                                                     type="text" 
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
                                                     autoFocus
                                                 />
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
                                                 <Input 
                                                     list="department-options"
                                                     type="text" 
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
-                                                    placeholder="Chọn hoặc nhập phòng ban..."
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    placeholder="Chọn hoặc nhập..."
                                                 />
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
-                                                <div className="flex justify-center gap-1 sm:gap-2">
-                                                    <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
-                                                        <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-center">
+                                                <div className="flex justify-center gap-1">
+                                                    <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
+                                                        <Icon name="check" size={3.5} />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => setEditingId(null)} className="p-1 sm:p-1.5 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
-                                                        <Icon name="x" size={3.5} className="sm:hidden" /><Icon name="x" size={4} className="hidden sm:block" />
+                                                    <Button variant="unstyled" size="none" onClick={() => setEditingId(null)} className="p-1 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
+                                                        <Icon name="x" size={3.5} />
                                                     </Button>
                                                 </div>
                                             </td>
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{emp.name}</td>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium">{emp.name}</td>
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5">
                                                 <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                                                     {emp.dept}
                                                 </span>
                                             </td>
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1 sm:py-1.5 text-center">
                                                 <div className="flex justify-center gap-1" style={{ opacity: 1 }}>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
-                                                        <Icon name="pencil" size={3.5} className="sm:hidden" /><Icon name="pencil" size={4} className="hidden sm:block" />
+                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
+                                                        <Icon name="pencil" size={3.5} />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
-                                                        <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" />
+                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
+                                                        <Icon name="trash-2" size={3.5} />
                                                     </Button>
                                                 </div>
                                             </td>
