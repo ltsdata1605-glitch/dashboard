@@ -7,8 +7,11 @@
 // @match        https://dashboard.pro.vn/*
 // @match        http://127.0.0.1:5173/*
 // @match        http://127.0.0.1:5174/*
+// @match        http://127.0.0.1/*
 // @match        http://localhost:5173/*
 // @match        http://localhost:5174/*
+// @match        http://localhost/*
+// @match        https://localhost/*
 // @match        https://bi.thegioididong.com/*
 // @grant        GM_setClipboard
 // @grant        GM_setValue
