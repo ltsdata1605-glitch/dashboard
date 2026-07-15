@@ -426,17 +426,17 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     <div className="space-y-2 sm:space-y-3 pt-1 px-1">
                         <div className="space-y-1 sm:space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
-                            <div className="grid grid-cols-3 gap-1.5">
+                            <div className="grid grid-cols-5 gap-1">
                                 {[
-                                    { range: 'today', label: 'Hôm nay' }, { range: 'yesterday', label: 'Hôm qua' },
+                                    { range: 'today', label: 'H.nay' }, { range: 'yesterday', label: 'H.Qua' },
                                     { range: 'week', label: 'Tuần này' }, { range: 'month', label: 'Tháng này' },
-                                    { range: 'all', label: 'Tất cả' }
+                                    { range: 'all', label: 'All' }
                                 ].map(({ range, label }) => (
                                     <Button
                                         variant="unstyled" size="none"
                                         key={range}
                                         onClick={() => handleDateRangeClick(range)}
-                                        className={`h-9 text-xs sm:text-sm font-medium rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
+                                        className={`h-9 text-[9px] xs:text-[10px] sm:text-xs font-semibold rounded-md transition-all border flex items-center justify-center text-center px-0.5 ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
                                     >
                                         {label}
                                     </Button>
