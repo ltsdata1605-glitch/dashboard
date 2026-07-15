@@ -24,7 +24,7 @@ interface PerformanceModalProps {
 
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
     return (
-        <div className={`flex-1 p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow border-l-[3px] sm:border-l-4 border-${color}-500 flex flex-col justify-center gap-0.5 sm:gap-1`}>
+        <div className={`flex-1 p-1.5 sm:p-2.5 bg-white dark:bg-slate-800 rounded-md sm:rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.05)] border-l-2 sm:border-l-3 border-${color}-500 flex flex-col justify-center gap-0.5`}>
             {/* Color mapping for JIT compiler */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
             {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 */}
@@ -32,17 +32,17 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
             {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
-            <div className="flex items-center gap-2 sm:gap-3">
-                <div className={`w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-lg bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
-                    <Icon name={icon} size={3.5} className="sm:hidden" />
-                    <Icon name={icon} size={5} className="hidden sm:block" />
+            <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
+                    <Icon name={icon} size={3} className="sm:hidden" />
+                    <Icon name={icon} size={4} className="hidden sm:block" />
                 </div>
-                <div>
-                    <p className="text-[8px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">{label}</p>
-                    <p className={`text-sm sm:text-xl font-black text-${color}-600 dark:text-${color}-400 leading-none`}>{value}</p>
+                <div className="min-w-0 flex-1">
+                    <p className="text-[7.5px] sm:text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight truncate">{label}</p>
+                    <p className={`text-[11px] sm:text-sm font-black text-${color}-600 dark:text-${color}-400 leading-none truncate`}>{value}</p>
                 </div>
             </div>
-            {children && <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[10px]">{children}</div>}
+            {children && <div className="mt-0.5 text-[8.5px] sm:text-[9.5px] leading-tight">{children}</div>}
         </div>
     );
 };
@@ -300,12 +300,12 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                     <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="award" size={4} className="text-amber-500 sm:hidden"/><Icon name="award" size={5} className="text-amber-500 hidden sm:block"/> Top 5 Sản Phẩm Bán Chạy</h4>
                     <ul className="space-y-1 flex-1">
                         {topProducts.map((p, i) => (
-                            <li key={i} className="flex justify-between items-center text-sm py-1 px-2 rounded-md bg-slate-50 dark:bg-slate-700/50">
-                                <div className="truncate pr-4">
-                                    <p className="font-semibold text-slate-700 dark:text-slate-200 truncate" title={p.name}>{p.name}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-none mt-0.5">{formatQuantity(p.quantity)} SP</p>
+                            <li key={i} className="flex justify-between items-center py-0.5 sm:py-1 px-1.5 sm:px-2 rounded bg-slate-50 dark:bg-slate-700/50">
+                                <div className="truncate pr-3">
+                                    <p className="font-bold text-[10px] sm:text-xs text-slate-700 dark:text-slate-200 truncate" title={p.name}>{p.name}</p>
+                                    <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 leading-none mt-0.5">{formatQuantity(p.quantity)} SP</p>
                                 </div>
-                                <span className="font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{formatCurrency(p.revenue)}</span>
+                                <span className="font-black text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{formatCurrency(p.revenue)}</span>
                             </li>
                         ))}
                     </ul>
