@@ -459,11 +459,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     </div>
                                                                 </td>
                                                             )}
-                                                            <td className="py-1 px-1.5 text-left text-slate-700 dark:text-slate-300 truncate w-full border-b border-dashed border-slate-300 dark:border-slate-700">
-                                                                <div className="flex flex-wrap items-center gap-1.5">
-                                                                    <span className="truncate w-full block" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</span>
+                                                            <td className="py-1 px-1.5 text-left text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                                <div className="flex items-center gap-1.5 min-w-0 w-full">
+                                                                    <span className="truncate text-slate-700 dark:text-slate-300" title={getRowValue(order, COL.PRODUCT) as string}>
+                                                                        {getRowValue(order, COL.PRODUCT)}
+                                                                    </span>
                                                                     {isInstallment && (
-                                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
+                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex-shrink-0 whitespace-nowrap leading-none">
                                                                             Trả góp
                                                                         </span>
                                                                     )}
