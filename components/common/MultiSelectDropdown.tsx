@@ -86,16 +86,16 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
-        if (selected.length === 0) return <span className="text-slate-500 font-normal text-sm whitespace-nowrap">{label}</span>;
+        if (selected.length === 0) return <span className="text-slate-500 font-normal text-xs sm:text-sm whitespace-nowrap">{label}</span>;
         
         if (selected.length === allUniqueOptions.length) {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
         }
         
         if (variant === 'compact') {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">{label}</span>;
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
@@ -110,7 +110,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">{selected.length} {label}</span>;
+        return <span className="text-sky-600 dark:text-sky-400 font-medium text-xs sm:text-sm whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     return (

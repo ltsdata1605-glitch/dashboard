@@ -56,7 +56,7 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
                     <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
                     <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-bold text-[10px] sm:text-[11px] transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-bold text-xs sm:text-sm transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
@@ -203,7 +203,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             {/* Slide Menu Header */}
             <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
                     <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Tuỳ Chỉnh Nâng Cao</h2>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
@@ -437,7 +436,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                         variant="unstyled" size="none"
                                         key={range}
                                         onClick={() => handleDateRangeClick(range)}
-                                        className={`py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
+                                        className={`h-9 text-xs sm:text-sm font-medium rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
                                     >
                                         {label}
                                     </Button>
@@ -447,21 +446,21 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Từ ngày</label>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Từ ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.startDate} 
                                     onChange={e => handleDateChange('startDate', e.target.value)} 
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                    className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đến ngày</label>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Đến ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.endDate} 
                                     onChange={e => handleDateChange('endDate', e.target.value)} 
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                    className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
                                 />
                             </div>
                         </div>
@@ -487,8 +486,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
 
                     {/* GTĐH Settings */}
-                    <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
+                    <div className="space-y-2.5 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
+                            <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
+                            <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu Hình GTĐH Mục Tiêu</h2>
+                        </div>
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setGtdhModalOpen(true)}
