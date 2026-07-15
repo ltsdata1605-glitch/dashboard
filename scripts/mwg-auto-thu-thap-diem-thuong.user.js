@@ -1110,8 +1110,22 @@
       await yieldToBrowser();
       const text = getBiPageText();
       if (!text) return false;
+
+      // 1. Ưu tiên tuyệt đối GM_setClipboard (Đặc quyền Tampermonkey - KHÔNG BAO GIỜ bị chặn)
+      try {
+        if (typeof GM_setClipboard !== 'undefined') {
+          GM_setClipboard(text);
+          return true;
+        }
+      } catch (e) {
+        console.warn('AutoClick+ GM_setClipboard error:', e);
+      }
+
+      // 2. Dự phòng 1: Clipboard API
       const ok = await copyUsingClipboardApi(text);
       if (ok) return true;
+
+      // 3. Dự phòng 2: Textarea document.execCommand
       return copyUsingTextarea(text);
     }
 
