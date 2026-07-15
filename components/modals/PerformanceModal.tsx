@@ -24,7 +24,7 @@ interface PerformanceModalProps {
 
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
     return (
-        <div className={`flex-1 p-1.5 sm:p-2.5 bg-white dark:bg-slate-800 rounded-md sm:rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.05)] border-l-2 sm:border-l-3 border-${color}-500 flex flex-col justify-center gap-0.5`}>
+        <div className={`flex-1 p-1 sm:p-2 bg-white dark:bg-slate-800 rounded sm:rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.05)] border-l-2 border-${color}-500 flex flex-col justify-center gap-0.5`}>
             {/* Color mapping for JIT compiler */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
             {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 */}
@@ -32,17 +32,16 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
             {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
-                    <Icon name={icon} size={3} className="sm:hidden" />
-                    <Icon name={icon} size={4} className="hidden sm:block" />
+            <div className="flex items-center sm:gap-1.5 justify-center sm:justify-start">
+                <div className={`hidden sm:flex w-7 h-7 rounded bg-${color}-100 dark:bg-${color}-900/50 items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
+                    <Icon name={icon} size={3.5} />
                 </div>
-                <div className="min-w-0 flex-1">
-                    <p className="text-[7.5px] sm:text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight truncate">{label}</p>
-                    <p className={`text-[11px] sm:text-sm font-black text-${color}-600 dark:text-${color}-400 leading-none truncate`}>{value}</p>
+                <div className="min-w-0 flex-1 text-center sm:text-left">
+                    <p className="text-[6.5px] min-[360px]:text-[7px] min-[390px]:text-[7.5px] sm:text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter truncate w-full" title={label}>{label}</p>
+                    <p className={`text-[10px] min-[360px]:text-[10.5px] min-[390px]:text-[11px] sm:text-xs font-black text-${color}-600 dark:text-${color}-400 leading-tight truncate w-full`}>{value}</p>
                 </div>
             </div>
-            {children && <div className="mt-0.5 text-[8.5px] sm:text-[9.5px] leading-tight">{children}</div>}
+            {children && <div className="mt-0.5 text-[8.5px] sm:text-[9px] leading-tight hidden sm:block">{children}</div>}
         </div>
     );
 };
@@ -266,7 +265,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     ) : (
         <div className="space-y-3 sm:space-y-6">
             {/* KPIs */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3">
+            <div className="grid grid-cols-5 gap-1 sm:gap-2.5">
                 <KpiCard icon="dollar-sign" label="Tổng DTQĐ" value={formatCurrency(employeeData.doanhThuQD)} color="indigo">
                     <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
                         <span>Thực:</span>
