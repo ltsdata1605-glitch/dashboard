@@ -9,6 +9,7 @@
 // @match        http://127.0.0.1:5174/*
 // @match        http://localhost:5173/*
 // @match        http://localhost:5174/*
+// @match        https://bi.thegioididong.com/*
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -868,9 +869,312 @@
     }, 2500);
   }
 
+  // ====== TRANG BI: AutoClick+ mở nút dấu cộng + tự copy ======
+  const BI_HOSTNAME = 'bi.thegioididong.com';
+
+  function initBiPage() {
+    const ACP_BTN_ID = 'acp-laptop-btn';
+    const ACP_MSG_ID = 'acp-laptop-msg';
+    const ACP_DELAY = 55;
+    const ACP_BATCH_SIZE = 6;
+    const ACP_BATCH_PAUSE = 220;
+    const ACP_UI_THROTTLE = 140;
+    const ACP_WAIT_BEFORE_COPY = 500;
+
+    let acpRunning = false;
+    let acpLastUiUpdate = 0;
+
+    const yieldToBrowser = () =>
+      new Promise(resolve => {
+        requestAnimationFrame(() => setTimeout(resolve, 0));
+      });
+
+    // --- Tìm nút dấu cộng ---
+    function isPlusButton(el) {
+      return Boolean(
+        el && el.isConnected && el.classList &&
+        el.classList.contains('fa-plus') && !el.classList.contains('fa-minus')
+      );
+    }
+
+    function isVisible(el) {
+      return Boolean(el && el.isConnected && el.getClientRects().length > 0);
+    }
+
+    function getPlusButtons() {
+      let buttons = Array.from(
+        document.querySelectorAll('.fa-solid.fa-plus.text-gray-700')
+      );
+      if (!buttons.length) {
+        buttons = Array.from(document.querySelectorAll('.fa-plus'));
+      }
+      return Array.from(
+        new Set(buttons.filter(el => isPlusButton(el) && isVisible(el)))
+      );
+    }
+
+    // --- Giao diện ---
+    function closeAcpMessage() {
+      document.getElementById(ACP_MSG_ID)?.remove();
+    }
+
+    function getAcpButton() {
+      return document.getElementById(ACP_BTN_ID);
+    }
+
+    function refreshAcpButtonLabel() {
+      const btn = getAcpButton();
+      if (!btn || acpRunning) return;
+      btn.textContent = getPlusButtons().length ? '📋 AutoClick+' : '📄 Copy All';
+    }
+
+    function createAcpButton() {
+      if (!document.body || getAcpButton()) return;
+      const btn = document.createElement('button');
+      btn.id = ACP_BTN_ID;
+      btn.type = 'button';
+      btn.textContent = '📋 AutoClick+';
+      btn.style.cssText = `
+        position:fixed;right:20px;bottom:80px;z-index:2147483647;
+        min-width:150px;padding:12px 18px;border:0;border-radius:999px;
+        background:#2563eb;color:#fff;
+        box-shadow:0 6px 20px rgba(0,0,0,.25);
+        font:700 15px Arial,sans-serif;cursor:pointer;user-select:none;
+      `;
+      btn.addEventListener('mouseenter', () => { if (!acpRunning) btn.style.background = '#1d4ed8'; });
+      btn.addEventListener('mouseleave', () => { if (!acpRunning) btn.style.background = '#2563eb'; });
+      btn.addEventListener('click', runAutoClick);
+      document.body.appendChild(btn);
+      refreshAcpButtonLabel();
+    }
+
+    function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true }) {
+      closeAcpMessage();
+      const box = document.createElement('div');
+      box.id = ACP_MSG_ID;
+      box.style.cssText = `
+        position:fixed;top:20px;right:20px;z-index:2147483647;
+        width:310px;max-width:calc(100vw - 40px);padding:14px 16px;
+        border-radius:12px;background:${success ? '#166534' : '#991b1b'};
+        color:#fff;box-shadow:0 8px 25px rgba(0,0,0,.28);font:14px Arial,sans-serif;
+      `;
+      const titleEl = document.createElement('div');
+      titleEl.style.cssText = 'margin-bottom:6px;font-size:15px;font-weight:700;';
+      titleEl.textContent = title;
+      box.appendChild(titleEl);
+      if (message) {
+        const msgEl = document.createElement('div');
+        msgEl.innerHTML = message;
+        box.appendChild(msgEl);
+      }
+      if (showCopyButton) {
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.textContent = '📋 Copy ngay';
+        copyBtn.style.cssText = `
+          width:100%;margin-top:12px;padding:10px;border:0;border-radius:8px;
+          background:#fff;color:#111827;font-weight:700;cursor:pointer;
+        `;
+        copyBtn.onclick = async () => {
+          copyBtn.disabled = true;
+          copyBtn.textContent = 'Đang copy...';
+          const copied = await copyBiPageText();
+          if (copied) {
+            box.style.background = '#166534';
+            box.innerHTML = '✅ Đã copy toàn bộ nội dung.';
+            setTimeout(closeAcpMessage, 1800);
+          } else {
+            copyBtn.disabled = false;
+            copyBtn.textContent = '📋 Thử copy lại';
+          }
+        };
+        box.appendChild(copyBtn);
+      }
+      document.body.appendChild(box);
+      if (autoClose && !showCopyButton) setTimeout(closeAcpMessage, 3500);
+      return box;
+    }
+
+    function showAcpProgress(total) {
+      closeAcpMessage();
+      const box = document.createElement('div');
+      box.id = ACP_MSG_ID;
+      box.style.cssText = `
+        position:fixed;top:20px;right:20px;z-index:2147483647;
+        width:310px;max-width:calc(100vw - 40px);padding:14px 16px;
+        border-radius:12px;background:linear-gradient(135deg,#0284c7,#2563eb);
+        color:#fff;box-shadow:0 8px 25px rgba(0,0,0,.28);
+        font:14px Arial,sans-serif;pointer-events:none;
+      `;
+      box.innerHTML = `
+        <div data-role="title" style="font-size:15px;font-weight:700;margin-bottom:8px">Đang mở rộng dữ liệu...</div>
+        <div data-role="progress">0 / ${total}</div>
+        <div data-role="time" style="margin-top:5px;font-size:13px;opacity:.95">Thời gian: 0.0 giây</div>
+        <div style="height:8px;margin-top:10px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.25)">
+          <div data-role="bar" style="width:0%;height:100%;border-radius:99px;background:#fff"></div>
+        </div>
+      `;
+      document.body.appendChild(box);
+      return {
+        box,
+        title: box.querySelector('[data-role="title"]'),
+        progress: box.querySelector('[data-role="progress"]'),
+        time: box.querySelector('[data-role="time"]'),
+        bar: box.querySelector('[data-role="bar"]'),
+      };
+    }
+
+    function updateAcpProgress(ui, processed, total, clicked, startedAt, force = false) {
+      const now = performance.now();
+      if (!force && now - acpLastUiUpdate < ACP_UI_THROTTLE) return;
+      acpLastUiUpdate = now;
+      const percent = total ? Math.round((processed / total) * 100) : 100;
+      const elapsed = ((now - startedAt) / 1000).toFixed(1);
+      ui.progress.textContent = `${processed} / ${total} — đã mở ${clicked}`;
+      ui.time.textContent = `Thời gian: ${elapsed} giây`;
+      ui.bar.style.width = `${percent}%`;
+      const btn = getAcpButton();
+      if (btn) btn.textContent = `Đang mở ${processed}/${total}`;
+    }
+
+    // --- Copy nội dung ---
+    function getBiPageText() {
+      const btn = getAcpButton();
+      const msg = document.getElementById(ACP_MSG_ID);
+      const oldBtnDisplay = btn?.style.display;
+      const oldMsgDisplay = msg?.style.display;
+      if (btn) btn.style.display = 'none';
+      if (msg) msg.style.display = 'none';
+      let text = '';
+      try {
+        text = document.body?.innerText || '';
+      } finally {
+        if (btn) btn.style.display = oldBtnDisplay || '';
+        if (msg) msg.style.display = oldMsgDisplay || '';
+      }
+      return text.trim();
+    }
+
+    async function copyUsingClipboardApi(text) {
+      if (!navigator.clipboard || !window.isSecureContext) return false;
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch { return false; }
+    }
+
+    function copyUsingTextarea(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.focus({ preventScroll: true });
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch { copied = false; }
+      ta.remove();
+      window.getSelection()?.removeAllRanges();
+      return copied;
+    }
+
+    async function copyBiPageText() {
+      await yieldToBrowser();
+      const text = getBiPageText();
+      if (!text) return false;
+      const ok = await copyUsingClipboardApi(text);
+      if (ok) return true;
+      return copyUsingTextarea(text);
+    }
+
+    // --- Chạy AutoClick ---
+    async function runAutoClick() {
+      if (acpRunning) {
+        showAcpMessage({ title: '⚠️ AutoClick+ đang chạy', message: 'Không cần bấm thêm lần nữa.', success: false });
+        return;
+      }
+      acpRunning = true;
+      closeAcpMessage();
+      const btn = getAcpButton();
+      if (btn) { btn.disabled = true; btn.style.cursor = 'wait'; btn.style.background = '#475569'; }
+
+      const plusButtons = getPlusButtons();
+      const total = plusButtons.length;
+      const startedAt = performance.now();
+      let processed = 0;
+      let clicked = 0;
+      const ui = showAcpProgress(total);
+
+      try {
+        if (total > 0) {
+          for (const pb of plusButtons) {
+            processed++;
+            try {
+              if (!isPlusButton(pb)) { updateAcpProgress(ui, processed, total, clicked, startedAt); continue; }
+              pb.click();
+              clicked++;
+            } catch (err) {
+              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+            }
+            updateAcpProgress(ui, processed, total, clicked, startedAt);
+            if (clicked > 0 && clicked % ACP_BATCH_SIZE === 0) {
+              await sleep(ACP_BATCH_PAUSE);
+              await yieldToBrowser();
+            } else {
+              await sleep(ACP_DELAY);
+            }
+          }
+        }
+        updateAcpProgress(ui, processed, total, clicked, startedAt, true);
+        ui.title.textContent = 'Đang chuẩn bị copy...';
+        if (btn) btn.textContent = 'Đang copy...';
+        await sleep(ACP_WAIT_BEFORE_COPY);
+        await yieldToBrowser();
+        const copied = await copyBiPageText();
+        const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
+        if (copied) {
+          showAcpMessage({
+            title: '✅ Hoàn tất',
+            message: `Đã mở <b>${clicked}/${total}</b> mục.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
+            success: true,
+          });
+          if (btn) btn.textContent = '✅ Đã copy';
+        } else {
+          showAcpMessage({
+            title: '⚠️ Trình duyệt chặn tự copy',
+            message: `Đã mở <b>${clicked}/${total}</b> mục.<br>Bấm nút bên dưới để copy.`,
+            success: false, showCopyButton: true, autoClose: false,
+          });
+          if (btn) btn.textContent = '📋 Copy thủ công';
+        }
+      } catch (error) {
+        console.error('AutoClick+ lỗi:', error);
+        showAcpMessage({
+          title: '⚠️ Không thể hoàn tất',
+          message: 'Trang có thể đang tải hoặc thay đổi cấu trúc. Mở Console để xem chi tiết.',
+          success: false,
+        });
+      } finally {
+        acpRunning = false;
+        if (btn) { btn.disabled = false; btn.style.cursor = 'pointer'; btn.style.background = '#2563eb'; }
+        setTimeout(refreshAcpButtonLabel, 1800);
+      }
+    }
+
+    // Khởi tạo nút
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', createAcpButton, { once: true });
+    } else {
+      createAcpButton();
+    }
+  }
+
   // ====== RẼ NHÁNH THEO DOMAIN ======
   if (location.hostname === MWG_HOSTNAME) {
     initMwgPage();
+  } else if (location.hostname === BI_HOSTNAME) {
+    initBiPage();
   } else {
     initDashboardPage();
   }
