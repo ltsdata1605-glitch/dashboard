@@ -83,6 +83,25 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
     const [columnsLoaded, setColumnsLoaded] = useState(false);
+
+    // View mode: 'table' (bảng ngang) hoặc 'card' (bảng dọc từng kho)
+    const [viewMode, setViewMode] = useState<'table' | 'card'>(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) return 'card';
+        return 'table';
+    });
+
+    // Load/save preference
+    useEffect(() => {
+        getSetting<'table' | 'card'>('warehouseViewMode').then(saved => {
+            if (saved) setViewMode(saved);
+        }).catch(console.error);
+    }, []);
+
+    const handleToggleViewMode = () => {
+        const next = viewMode === 'table' ? 'card' : 'table';
+        setViewMode(next);
+        saveSetting('warehouseViewMode', next).catch(console.error);
+    };
     
     const { editingTargetKho, setEditingTargetKho } = useDashboardContext();
     const targetInputRef = useRef<HTMLInputElement>(null);
@@ -370,6 +389,17 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
+                        {/* Toggle View Mode: Bảng ngang ↔ Bảng dọc */}
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleToggleViewMode}
+                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${viewMode === 'card' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            title={viewMode === 'card' ? 'Chuyển sang bảng ngang' : 'Chuyển sang bảng dọc'}
+                        >
+                            <Icon name={viewMode === 'card' ? 'list' : 'layout-list'} size={4} className="lg:hidden" />
+                            <Icon name={viewMode === 'card' ? 'list' : 'layout-list'} size={5} className="hidden lg:block" />
+                        </Button>
+
                         {/* Lũy kế button */}
                         <Button
                             variant="unstyled" size="none"
@@ -407,8 +437,182 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 {/* END: Header Section */}
 
 
+                {/* === VERTICAL CARD VIEW === */}
+                {viewMode === 'card' && columnsLoaded && (
+                    <div className="p-1.5 sm:p-2 lg:p-4 space-y-2">
+                        {/* Totals summary card */}
+                        <div className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                                <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Tổng cộng</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {visibleColumns.slice(0, 6).map(col => {
+                                    let value;
+                                    if (col.isCustom) {
+                                        value = customTotals.get(col.id) || 0;
+                                    } else if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
+                                        value = totals[col.metric as keyof typeof totals];
+                                    } else if (col.metric === 'target') {
+                                        value = totalTarget;
+                                    } else if (col.metric === 'percentHT') {
+                                        const totalDTQD = totals.doanhThuQD || 0;
+                                        if (isLuyKe) {
+                                            const projected = (totalDTQD / daysPassed) * daysInMonth;
+                                            value = totalTarget > 0 ? (projected / totalTarget) * 100 : 0;
+                                        } else {
+                                            value = totalTarget > 0 ? (totalDTQD / totalTarget) * 100 : 0;
+                                        }
+                                    } else {
+                                        value = customTotals.get(col.id) || 0;
+                                    }
+                                    const isRevenue = col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target' || col.metricType === 'revenue' || col.metricType === 'revenueQD';
+                                    const isPercent = col.metric === 'hieuQuaQD' || col.metric === 'percentHT' || col.metric === 'traChamPercent';
+                                    let display = '—';
+                                    if (isPercent && value !== undefined && value !== 0) display = `${Math.round(value)}%`;
+                                    else if (isRevenue) display = formatRevenueForKho(value);
+                                    else if (value !== undefined && value !== 0) display = formatQuantityForKho(value);
+                                    return (
+                                        <div key={col.id} className="bg-white dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200/60 dark:border-slate-700/60 min-w-[60px] text-center">
+                                            <div className="text-[8px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-none mb-0.5">{col.subHeader}</div>
+                                            <div className="text-[12px] font-black text-slate-800 dark:text-slate-100 leading-none">{display}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Per-warehouse cards */}
+                        {currentData.map(row => (
+                            <div
+                                key={row.khoName}
+                                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm"
+                            >
+                                {/* Card header — Warehouse name */}
+                                <div
+                                    className={`flex items-center justify-between px-3 py-2 bg-gradient-to-r from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800 ${userRole !== 'employee' ? 'cursor-pointer active:bg-rose-100 dark:active:bg-rose-900/40' : ''}`}
+                                    onClick={() => handleTargetClick(row.khoName)}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-sm">
+                                            <Icon name="warehouse" size={3.5} className="text-white" />
+                                        </div>
+                                        <span className="text-[13px] font-black text-slate-900 dark:text-white tracking-tight">{row.khoName}</span>
+                                    </div>
+                                    {userRole !== 'employee' && <Icon name="pencil" size={3} className="text-slate-300 dark:text-slate-600" />}
+                                </div>
+
+                                {/* Card body — Grouped metrics */}
+                                <div className="px-2.5 py-2 space-y-1.5">
+                                    {groupedHeaders.map((group, gIdx) => {
+                                        const groupCols = visibleColumns.slice(group.startIndex, group.startIndex + group.colSpan);
+                                        const groupName = group.name && group.name !== '-' && group.name.trim() !== '' ? group.name : null;
+                                        const theme = groupName ? (groupColorMap[groupName] || { sub: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-slate-500 dark:text-slate-400' }) : { sub: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-slate-500 dark:text-slate-400' };
+
+                                        return (
+                                            <div key={gIdx}>
+                                                {/* Group label */}
+                                                {groupName && (
+                                                    <div className={`text-[8px] font-black uppercase tracking-[0.15em] mb-0.5 px-0.5 ${theme.text}`}>
+                                                        {groupName}
+                                                    </div>
+                                                )}
+                                                {/* Metrics grid */}
+                                                <div className={`grid gap-[3px] rounded-lg p-1 ${theme.sub}`} style={{ gridTemplateColumns: `repeat(${Math.min(groupCols.length, 5)}, minmax(0, 1fr))` }}>
+                                                    {groupCols.map(col => {
+                                                        const isHqqd = col.metric === 'hieuQuaQD';
+                                                        const isDTQD = col.metric === 'doanhThuQD';
+                                                        const isPercentHT = col.metric === 'percentHT';
+
+                                                        let value = getColumnValue(row, col);
+                                                        if (col.metric === 'target') {
+                                                            const monthly = warehouseTargets[row.khoName] || 0;
+                                                            value = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
+                                                        } else if (col.metric === 'percentHT') {
+                                                            const monthly = warehouseTargets[row.khoName] || 0;
+                                                            const dtqd = row.doanhThuQD || 0;
+                                                            if (isLuyKe) {
+                                                                const target = monthly;
+                                                                const projected = (dtqd / daysPassed) * daysInMonth;
+                                                                value = target > 0 ? (projected / target) * 100 : 0;
+                                                            } else {
+                                                                const target = monthly > 0 ? monthly / daysInMonth : 0;
+                                                                value = target > 0 ? (dtqd / target) * 100 : 0;
+                                                            }
+                                                        }
+
+                                                        // Format display
+                                                        const isRevenue = col.metric === 'doanhThuThuc' || isDTQD || col.metric === 'target' || col.metricType === 'revenue' || col.metricType === 'revenueQD';
+                                                        const isPercent = isHqqd || isPercentHT || col.metric === 'traChamPercent';
+                                                        let display = '—';
+                                                        let valueColor = 'text-slate-800 dark:text-slate-100';
+
+                                                        if (isPercent) {
+                                                            display = value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—';
+                                                            if (isHqqd) valueColor = 'text-amber-500 font-bold';
+                                                            if (isPercentHT) {
+                                                                if (value !== undefined && value >= 120) valueColor = 'text-rose-600 font-black';
+                                                                else if (value !== undefined && value >= 100) valueColor = 'text-emerald-600 font-extrabold';
+                                                                else valueColor = 'text-amber-500 font-bold';
+                                                            }
+                                                        } else if (col.type === 'calculated') {
+                                                            const decimals = col.decimalPlaces ?? 0;
+                                                            if (col.displayAs === 'percentage') {
+                                                                const pctVal = (value || 0) * 100;
+                                                                display = `${pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}%`;
+                                                                valueColor = 'text-slate-700 dark:text-slate-300 font-bold';
+                                                            } else {
+                                                                display = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                                                                valueColor = 'text-indigo-700 dark:text-indigo-400 font-semibold';
+                                                            }
+                                                        } else if (isRevenue) {
+                                                            display = formatRevenueForKho(value);
+                                                            if (isDTQD) valueColor = 'text-indigo-700 dark:text-indigo-400 font-semibold';
+                                                        } else {
+                                                            display = formatQuantityForKho(value);
+                                                        }
+
+                                                        // Conditional formatting color override
+                                                        let customColor: string | null = null;
+                                                        if (col.conditionalFormatting && value !== undefined) {
+                                                            for (const rule of col.conditionalFormatting) {
+                                                                let isMatch = false;
+                                                                switch (rule.condition) {
+                                                                    case '>': isMatch = value > rule.value1; break;
+                                                                    case '<': isMatch = value < rule.value1; break;
+                                                                    case '=': isMatch = value === rule.value1; break;
+                                                                    case 'between': isMatch = rule.value2 !== undefined && value >= rule.value1 && value <= rule.value2; break;
+                                                                }
+                                                                if (isMatch) { customColor = rule.color; break; }
+                                                            }
+                                                        }
+
+                                                        return (
+                                                            <div key={col.id} className="bg-white/70 dark:bg-slate-900/50 rounded px-1 py-1 text-center min-w-0">
+                                                                <div className="text-[7px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-none mb-0.5 truncate">
+                                                                    {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
+                                                                </div>
+                                                                <div
+                                                                    className={`text-[11px] leading-none font-semibold ${customColor ? '' : valueColor}`}
+                                                                    style={customColor ? { color: customColor } : {}}
+                                                                >
+                                                                    {display}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* === TABLE VIEW (all screen sizes) === */}
-                <div className="overflow-hidden">
+                <div className={viewMode === 'table' ? 'overflow-hidden' : 'hidden'}>
 
                 {/* Skeleton while columns load from IndexedDB */}
                 {!columnsLoaded && (
