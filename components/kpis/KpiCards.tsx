@@ -128,19 +128,30 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         if (filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')) {
             return filterState.kho.reduce((acc, k) => acc + (warehouseTargets[k] || 0), 0);
         } else {
-            // Sum all available warehouse targets
+            // Chỉ cộng dồn target của những kho thực sự phát sinh dữ liệu (có mặt trong warehouseSummary)
+            const activeKhos = (processedData?.warehouseSummary || []).map(w => w.khoName);
+            if (activeKhos.length > 0) {
+                return activeKhos.reduce((acc, k) => acc + (warehouseTargets[k] || 0), 0);
+            }
+            // Fallback nếu chưa có dữ liệu tổng hợp
             return Object.values(warehouseTargets).reduce((acc: number, val: number) => acc + (val || 0), 0);
         }
-    }, [filterState.kho, warehouseTargets]);
+    }, [filterState.kho, warehouseTargets, processedData?.warehouseSummary]);
 
     const dtThucTarget = useMemo(() => {
         const targets = warehouseDTThucTargets || {};
         if (filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')) {
             return filterState.kho.reduce((acc, k) => acc + (targets[k] || 0), 0);
         } else {
+            // Chỉ cộng dồn target của những kho thực sự phát sinh dữ liệu (có mặt trong warehouseSummary)
+            const activeKhos = (processedData?.warehouseSummary || []).map(w => w.khoName);
+            if (activeKhos.length > 0) {
+                return activeKhos.reduce((acc, k) => acc + (targets[k] || 0), 0);
+            }
+            // Fallback nếu chưa có dữ liệu tổng hợp
             return Object.values(targets).reduce((acc: number, val: number) => acc + (val || 0), 0);
         }
-    }, [filterState.kho, warehouseDTThucTargets]);
+    }, [filterState.kho, warehouseDTThucTargets, processedData?.warehouseSummary]);
 
     // Calculate days in month for daily target
     const daysInMonth = useMemo(() => {

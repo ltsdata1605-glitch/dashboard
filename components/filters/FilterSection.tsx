@@ -428,7 +428,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
                             <div className="grid grid-cols-5 gap-1">
                                 {[
-                                    { range: 'today', label: 'H.nay' }, { range: 'yesterday', label: 'H.Qua' },
+                                    { range: 'today', label: 'H.Nay' }, { range: 'yesterday', label: 'H.Qua' },
                                     { range: 'week', label: 'Tuần này' }, { range: 'month', label: 'Tháng này' },
                                     { range: 'all', label: 'All' }
                                 ].map(({ range, label }) => (
@@ -489,7 +489,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     <div className="space-y-2.5 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
                         <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
                             <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-sky-600 rounded-full" />
-                            <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu Hình GTĐH Mục Tiêu</h2>
+                            <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">CẤU HÌNH</h2>
                         </div>
                         <Button
                             variant="unstyled" size="none"
@@ -502,7 +502,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="settings-2" size={4} className="hidden sm:block" />
                                 </div>
                                 <div className="flex flex-col items-start leading-tight">
-                                    <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
+                                    <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Mục tiêu GTĐH</span>
                                     <span className="text-[8px] sm:text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
