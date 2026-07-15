@@ -93,12 +93,12 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
             const valB = metricToDisplay === 'revenue' ? b.revenue : b.quantity;
             return valB - valA;
         });
-        const top6 = sorted.slice(0, 6);
-        const totalRevenue = top6.reduce((sum, item) => sum + item.revenue, 0);
-        const totalQuantity = top6.reduce((sum, item) => sum + item.quantity, 0);
+        const top8 = sorted.slice(0, 8);
+        const totalRevenue = top8.reduce((sum, item) => sum + item.revenue, 0);
+        const totalQuantity = top8.reduce((sum, item) => sum + item.quantity, 0);
         return {
             ...rawCurrentView,
-            data: top6,
+            data: top8,
             totalRevenue,
             totalQuantity
         };
