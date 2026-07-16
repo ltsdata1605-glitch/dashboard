@@ -1,6 +1,6 @@
 # Implementation Plan — Bổ sung Backend (Firebase Cloud Functions) cho Bảo mật & Phân quyền
 
-> Trạng thái: **DRAFT — chờ duyệt trước khi code.** Chưa có dòng code nào được sửa.
+> Trạng thái: **Bước 0-3 đã code xong** (rules + 4 Cloud Functions + wiring client), **chưa deploy lên Firebase thật**. Xem mục 11 để biết chính xác việc gì đã làm và việc gì còn lại (Bước deploy) cần bạn tự thực hiện.
 > Phạm vi đợt này: **Root app (`hooks/`, `services/`, `contexts/`, `components/`) + `features/phan-ca`** — vì hai khu vực này dùng chung 1 Firebase project (`dashboa-7e20b`) và chung `AuthProvider`.
 > **Ngoài phạm vi đợt này**: `features/sticker-event` (dùng Firebase project riêng/cấu hình động qua `firebase-applet-config.json`, không có sẵn ở repo) và `features/bi-dashboard` (không thấy truy cập Firestore trực tiếp — chỉ hiển thị dữ liệu nhận qua props/context). Ghi chú ở mục 7 để làm đợt sau.
 
@@ -55,11 +55,13 @@ AuthContext.tsx          ──onCall──▶  resolveSession()                
 AuthContext.requestAccess ─onCall─▶   requestAccess()                          ──w───▶ users/{uid}
                                         - CHỈ được set role='pending' cho CHÍNH mình
 
-UserManagementView.tsx    ─onCall─▶   reviewAccessRequest()                    ──w───▶ users/{targetUid}
-  (admin duyệt)                        - kiểm tra request.auth.token.role=='admin'/'manager'
-                                        - set role/status/departmentId/expiresAt cho user khác
+UserManagementView.tsx    ─onCall─▶   adminUpdateUser()                        ──w───▶ users/{targetUid}
+  (nút Duyệt/Từ chối/Thu hồi            - kiểm tra request.auth.token.role=='admin'/'manager'
+   + autoSave từng ô)                   - set role/status/departmentId/employeeName/expiresAt
+                                          cho user khác (partial update, chỉ ghi field được gửi)
+                                        - chỉ admin (không phải manager) được set role=admin/manager
                                         - setCustomUserClaims cho user đó
-                                        - gửi notification (tái dùng notificationService pattern)
+                                        - gửi notification nếu client truyền `notify` payload
 
 AiSuggestPatternModal.tsx ─onCall─▶   generateWithGemini()                     (không đụng Firestore)
                                         - gọi Gemini bằng key lưu server-side (Secret Manager)
@@ -86,7 +88,7 @@ AiSuggestPatternModal.tsx ─onCall─▶   generateWithGemini()                
 | `functions/tsconfig.json` | Cấu hình build riêng cho Cloud Functions (Node runtime, không dùng chung tsconfig Vite của client) |
 | `functions/src/index.ts` | Export 4 functions |
 | `functions/src/session.ts` | `resolveSession`, `requestAccess`, `demoteExpiredUsers` |
-| `functions/src/admin.ts` | `reviewAccessRequest` |
+| `functions/src/admin.ts` | `adminUpdateUser` |
 | `functions/src/gemini.ts` | `generateWithGemini` |
 | `functions/.gitignore` | `node_modules/`, `lib/` |
 
@@ -142,22 +144,23 @@ service cloud.firestore {
 
 2. **`requestAccess`** (`onCall`) — thay [contexts/AuthContext.tsx:212-240](contexts/AuthContext.tsx#L212-L240). Chỉ cho phép set `role='pending'`, `status='pending'` cho **chính uid gọi hàm** — không thể tự nâng quyền vì luôn hard-code `role: 'pending'` trong function, không nhận role từ input của client.
 
-3. **`reviewAccessRequest`** (`onCall`) — thay [components/views/UserManagementView.tsx:92](components/views/UserManagementView.tsx#L92). Input: `{targetUid, action: 'approve'|'reject', role, departmentId, expiresAt}`. Function tự kiểm tra `context.auth.token.role` phải là `admin`/`manager` trước khi ghi — nếu không, `throw new HttpsError('permission-denied', ...)`. Giữ nguyên việc gửi notification qua `notifyAdminsAndManagers`-style logic (chuyển phần ghi vào `users/{uid}/notifications` sang server).
+3. **`adminUpdateUser`** (`onCall`) — thay 2 điểm ghi ở `components/views/UserManagementView.tsx`: nút Duyệt/Từ chối/Thu hồi (`handleApproval`) **và** autosave từng ô inline (`autoSave` — sửa role/departmentId/employeeName/expiresAt của user đã duyệt). Khi audit sâu hơn phát hiện UI có 2 luồng ghi khác nhau (không chỉ 1 flow approve/reject đơn giản như bản nháp ban đầu), nên gộp thành 1 callable tổng quát nhận partial update `{targetUid, role?, status?, departmentId?, employeeName?, expiresAt?, notify?}` — chỉ ghi field được client gửi. Function tự kiểm tra `request.auth.token.role` phải là `admin`/`manager`; riêng việc set `role='admin'|'manager'` cho người khác chỉ `admin` mới được phép (khớp UI: dropdown role đầy đủ chỉ hiện với `userRole==='admin'`, manager chỉ thấy badge readonly). Nếu có `notify`, gửi qua `notifyUser`.
 
 4. **`generateWithGemini`** (`onCall`) — thay lệnh gọi trực tiếp ở [AiSuggestPatternModal.tsx:176](features/phan-ca/components/AiSuggestPatternModal.tsx#L176). Key lưu bằng `firebase functions:secrets:set GEMINI_API_KEY` (Secret Manager), không còn nằm trong `.env.local`/bundle client. Sau khi xong, xóa 2 dòng `define` ở [vite.config.ts:34-37](vite.config.ts#L34-L37).
 
 5. **`demoteExpiredUsers`** (scheduled, Cloud Scheduler mỗi ngày 1 lần) — lưới an toàn bổ sung, không bắt buộc phải làm ngay đợt 1 (đánh dấu optional).
 
-## 6. File client cần sửa (đợt 2, sau khi functions đã deploy & test)
+## 6. File client đã sửa — ĐÃ XONG (xem mục 11)
 
 | File | Thay đổi |
 |---|---|
-| `contexts/AuthContext.tsx` | Thay logic đọc/ghi Firestore trực tiếp trong `onAuthStateChanged` bằng gọi `resolveSession`; `requestAccess()` gọi callable thay vì `updateDoc` |
-| `components/views/UserManagementView.tsx` | Thay `updateDoc(userRef, updateData)` bằng gọi `reviewAccessRequest` |
-| `features/phan-ca/components/AiSuggestPatternModal.tsx` | Thay `new GoogleGenAI({apiKey:...})` bằng gọi `httpsCallable(functions, 'generateWithGemini')` |
-| `vite.config.ts` | Xóa 2 dòng `define` nhúng `GEMINI_API_KEY` |
-| `services/firebase.ts`, `features/phan-ca/services/firebase.ts` | Thêm `import { getFunctions } from 'firebase/functions'` + export instance `functions` |
-| `package.json` (root) | Thêm devDependency `firebase-tools`, thêm script `"deploy:rules": "firebase deploy --only firestore:rules"`, `"deploy:functions": "firebase deploy --only functions"` |
+| `contexts/AuthContext.tsx` | Thay logic đọc/ghi Firestore trực tiếp trong `onAuthStateChanged` bằng gọi `resolveSession()` + `getIdToken(true)`; `requestAccess()` gọi callable qua `services/sessionService.ts` thay vì `updateDoc` |
+| `components/views/UserManagementView.tsx` | `handleApproval` + `autoSave` đổi sang gọi `adminUpdateUser()` (qua `services/adminUserService.ts`) thay vì `updateDoc(userRef, ...)` trực tiếp |
+| `features/phan-ca/components/AiSuggestPatternModal.tsx` | Thay `new GoogleGenAI({apiKey:...})` bằng gọi `suggestShiftPattern()` (`features/phan-ca/services/geminiService.ts`) |
+| `vite.config.ts` | Đã xóa `define` nhúng `GEMINI_API_KEY` (và `loadEnv`/`env` không dùng nữa) |
+| `services/firebase.ts`, `features/phan-ca/services/firebase.ts` | Đã thêm `getFunctions(app)` + export `functions` |
+| `services/sessionService.ts`, `services/adminUserService.ts`, `features/phan-ca/services/geminiService.ts` | **Mới** — wrapper `httpsCallable` cho từng Cloud Function, giữ `contexts/AuthContext.tsx` và `UserManagementView.tsx` gọn |
+| `package.json` (root) | Đã thêm devDependency `firebase-tools@^15` (bản `^13` lỗi `ERR_REQUIRE_ESM` trên Node 22), script `deploy:rules` / `deploy:functions` |
 
 ---
 
@@ -188,4 +191,24 @@ service cloud.firestore {
 
 ---
 
-**Cần bạn duyệt trước khi tôi bắt đầu code**: xác nhận phạm vi (chỉ root+phan-ca, đúng như mục 7 loại trừ sticker-event/bi-dashboard), và xác nhận nội dung `firestore.rules` ở mục 4 + danh sách 4 Cloud Functions ở mục 5 là đúng ý định.
+## 11. Trạng thái thực tế (đã cập nhật sau khi code xong)
+
+**Đã xong, đã xác minh (`npm run check` sạch ở root + `npm run build`/`typecheck` sạch ở `functions/`):**
+- Bước 0 (commit trước khi sửa), Bước 1 (rules + hạ tầng), Bước 2 (4 Cloud Functions), Bước 3 (wiring client).
+- Xác nhận `dist/` sau build không còn chuỗi `GEMINI_API_KEY`/`process.env.API_KEY`/`GoogleGenAI` nào (grep rỗng).
+- `firebase-tools` nâng lên `^15.24.0` vì bản `^13` pin ban đầu bị lỗi `ERR_REQUIRE_ESM` trên Node 22 của máy này.
+
+**Chưa làm — cần bạn tự thực hiện (đăng nhập tài khoản Google của bạn, tôi không nên/không thể làm thay):**
+```bash
+npx firebase login
+# Test kỹ firestore.rules qua Rules Playground trên Firebase Console trước khi deploy thật
+npx firebase deploy --only firestore:rules
+cd functions && npx firebase functions:secrets:set GEMINI_API_KEY
+npm run deploy:functions   # chạy ở thư mục gốc
+```
+**Quan trọng**: sau khi các bước trên hoàn tất và xác nhận hoạt động đúng, **mới** được chạy `npm run deploy` (build + push `dist/` lên production) — vì code client hiện tại đã gọi `resolveSession`/`requestAccess`/`adminUpdateUser`/`generateWithGemini`, nếu deploy web trước khi các Cloud Function này tồn tại trên Firebase thật thì **toàn bộ đăng nhập của mọi user sẽ gãy** (function not-found).
+
+**Chưa làm — theo đúng lộ trình phased đã duyệt:**
+- Bước 4 (xóa `GEMINI_API_KEY` khỏi `.env.local`) — chỉ làm sau khi xác nhận `generateWithGemini` chạy ổn trên production.
+- `demoteExpiredUsers` đã viết nhưng là scheduled function optional — sẽ tự chạy khi deploy cùng các hàm khác, không cần thao tác thêm.
+- Mục 7 (sticker-event, bi-dashboard) — vẫn ngoài phạm vi, chưa động tới.

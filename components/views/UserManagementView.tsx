@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
-import { notifyUser } from '../../services/notificationService';
+import { adminUpdateUser, AdminRole } from '../../services/adminUserService';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -68,11 +68,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         debounceTimers.current[key] = setTimeout(async () => {
             try {
                 setSavingIds(prev => new Set(prev).add(requestId));
-                const userRef = doc(db, 'users', requestId);
-                const updateData: Record<string, unknown> = {};
+                const updateData: Parameters<typeof adminUpdateUser>[0] = { targetUid: requestId };
 
                 if (field === 'role') {
-                    updateData.role = value;
+                    updateData.role = value as AdminRole;
                     updateData.status = value === 'blocked' ? 'blocked' : 'approved';
                 } else if (field === 'departmentId') {
                     updateData.departmentId = value;
@@ -80,16 +79,15 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     updateData.employeeName = value;
                 } else if (field === 'expiresAt') {
                     if (value) {
-                        const { Timestamp } = await import('firebase/firestore');
                         const d = new Date(value);
                         d.setHours(23, 59, 59, 999);
-                        updateData.expiresAt = Timestamp.fromDate(d);
+                        updateData.expiresAt = d.toISOString();
                     } else {
                         updateData.expiresAt = null;
                     }
                 }
 
-                await updateDoc(userRef, updateData);
+                await adminUpdateUser(updateData);
                 toast.success('Đã tự động lưu!', { duration: 1500, id: `autosave-${requestId}` });
             } catch (err) {
                 console.warn('Auto-save failed:', err);
@@ -270,53 +268,47 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
 
         try {
-            const { Timestamp } = await import('firebase/firestore');
-            const userRef = doc(db, 'users', requestId);
-            
             if (isApproved) {
-                const targetRole = editRoles[requestId];
-                const updateData: Record<string, unknown> = {
+                const targetRole = editRoles[requestId] as AdminRole | undefined;
+
+                // Add expiresAt if specified — set to end of the selected day
+                const dateStr = expiryDates[requestId];
+                let expiresAtIso: string | null = null;
+                if (dateStr) {
+                    const d = new Date(dateStr);
+                    d.setHours(23, 59, 59, 999);
+                    expiresAtIso = d.toISOString();
+                }
+
+                await adminUpdateUser({
+                    targetUid: requestId,
                     role: targetRole || 'pending',
                     status: targetRole === 'blocked' ? 'blocked' : 'approved',
                     departmentId: editDepartments[requestId] || '',
-                    employeeName: editNames[requestId] || ''
-                };
-                
-                // Add expiresAt if specified
-                const dateStr = expiryDates[requestId];
-                if (dateStr) {
-                    const d = new Date(dateStr);
-                    // Set expiry to end of the selected day
-                    d.setHours(23, 59, 59, 999);
-                    updateData.expiresAt = Timestamp.fromDate(d);
-                } else {
-                    updateData.expiresAt = null; // Clear if not set
-                }
-
-                await updateDoc(userRef, updateData);
-                
-                // Thuận nước đẩy Notification
-                await notifyUser(requestId, {
-                    title: 'Phân quyền thành công',
-                    message: `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
-                    type: 'success'
+                    employeeName: editNames[requestId] || '',
+                    expiresAt: expiresAtIso,
+                    notify: {
+                        title: 'Phân quyền thành công',
+                        message: `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
+                        type: 'success'
+                    }
                 });
-                
+
                 toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
             } else {
-                await updateDoc(userRef, {
-                    status: listMode === 'pending' ? 'rejected' : 'expired'
+                await adminUpdateUser({
+                    targetUid: requestId,
+                    status: listMode === 'pending' ? 'rejected' : 'expired',
+                    notify: {
+                        title: listMode === 'pending' ? 'Yêu cầu bị từ chối' : 'Thu hồi quyền truy cập',
+                        message: `Quản trị viên đã ${listMode === 'pending' ? 'từ chối yêu cầu đăng ký' : 'ngừng cấp phép sử dụng'} của bạn. Liên hệ Quản lý Vùng để biết thêm chi tiết.`,
+                        type: 'error'
+                    }
                 });
-                
-                await notifyUser(requestId, {
-                    title: listMode === 'pending' ? 'Yêu cầu bị từ chối' : 'Thu hồi quyền truy cập',
-                    message: `Quản trị viên đã ${listMode === 'pending' ? 'từ chối yêu cầu đăng ký' : 'ngừng cấp phép sử dụng'} của bạn. Liên hệ Quản lý Vùng để biết thêm chi tiết.`,
-                    type: 'error'
-                });
-                
+
                 toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
-            
+
             fetchRequests(); // Refresh data
         } catch (error) {
             console.warn('Lỗi khi cập nhật trạng thái:', error);

@@ -3,80 +3,78 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, auth } from './firebaseAdmin';
 import { notifyUser } from './notifications';
 
-type Role = 'admin' | 'manager' | 'employee' | 'pending';
+type Role = 'admin' | 'manager' | 'employee' | 'pending' | 'blocked';
+type Status = 'pending' | 'approved' | 'rejected' | 'new' | 'expired' | 'blocked';
 
-interface ReviewAccessRequestInput {
-  targetUid: string;
-  action: 'approve' | 'reject';
-  role?: Role;
-  departmentId?: string;
-  expiresAt?: string | null;
+interface NotifyPayload {
+  title: string;
+  message: string;
+  type: 'success' | 'warning' | 'info' | 'error';
 }
 
-// Thay thế components/views/UserManagementView.tsx updateDoc(userRef, ...) —
-// admin/manager không còn ghi trực tiếp field role/status/departmentId/
-// expiresAt của user khác qua client SDK (bị Firestore Rules chặn), mà phải
-// đi qua function này để được kiểm tra quyền ở server.
-export const reviewAccessRequest = onCall(async (request) => {
+interface AdminUpdateUserInput {
+  targetUid: string;
+  role?: Role;
+  status?: Status;
+  departmentId?: string;
+  employeeName?: string;
+  expiresAt?: string | null;
+  notify?: NotifyPayload;
+}
+
+// Thay thế mọi updateDoc(userRef, ...) mà admin/manager ghi vào doc CỦA NGƯỜI
+// KHÁC ở components/views/UserManagementView.tsx — cả nút Duyệt/Từ chối/Thu
+// hồi (handleApproval) lẫn autosave từng ô (autoSave). firestore.rules chỉ
+// cho phép isSelf(uid) ghi users/{uid}, nên admin/manager sửa hồ sơ người
+// khác bắt buộc đi qua function này để được kiểm tra quyền ở server.
+export const adminUpdateUser = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
   const callerRole = request.auth.token.role;
   if (callerRole !== 'admin' && callerRole !== 'manager') {
-    throw new HttpsError('permission-denied', 'Chỉ admin/manager được duyệt yêu cầu truy cập.');
+    throw new HttpsError('permission-denied', 'Chỉ admin/manager được sửa hồ sơ người dùng khác.');
   }
 
-  const { targetUid, action, role, departmentId, expiresAt } = (request.data ?? {}) as ReviewAccessRequestInput;
-  if (!targetUid || (action !== 'approve' && action !== 'reject')) {
-    throw new HttpsError('invalid-argument', 'Thiếu targetUid hoặc action không hợp lệ.');
+  const { targetUid, role, status, departmentId, employeeName, expiresAt, notify } =
+    (request.data ?? {}) as AdminUpdateUserInput;
+  if (!targetUid) {
+    throw new HttpsError('invalid-argument', 'Thiếu targetUid.');
   }
 
   const targetRef = db.collection('users').doc(targetUid);
   const snap = await targetRef.get();
   if (!snap.exists) {
-    throw new HttpsError('not-found', 'Không tìm thấy user cần duyệt.');
+    throw new HttpsError('not-found', 'Không tìm thấy user cần cập nhật.');
   }
 
-  let updates: Record<string, unknown>;
-  let notifyPayload: { title: string; message: string; type: 'success' | 'warning' | 'info' | 'error' };
-  let finalRole: Role;
-  let finalDepartmentId: string;
-
-  if (action === 'approve') {
-    finalRole = role ?? 'employee';
-    if (!['admin', 'manager', 'employee'].includes(finalRole)) {
-      throw new HttpsError('invalid-argument', 'role không hợp lệ.');
-    }
-    // Chỉ admin (không phải manager) mới được cấp quyền admin/manager cho người khác.
-    if ((finalRole === 'admin' || finalRole === 'manager') && callerRole !== 'admin') {
-      throw new HttpsError('permission-denied', 'Chỉ admin được cấp quyền admin/manager.');
-    }
-    finalDepartmentId = departmentId ?? (snap.get('departmentId') as string) ?? '';
-    updates = {
-      role: finalRole,
-      status: 'approved',
-      departmentId: finalDepartmentId,
-      expiresAt: expiresAt ? Timestamp.fromDate(new Date(expiresAt)) : FieldValue.delete(),
-    };
-    notifyPayload = {
-      title: 'Yêu cầu đã được duyệt',
-      message: `Tài khoản của bạn đã được cấp quyền ${finalRole}.`,
-      type: 'success',
-    };
-  } else {
-    finalRole = 'pending';
-    finalDepartmentId = (snap.get('departmentId') as string) ?? '';
-    updates = { role: 'pending', status: 'rejected' };
-    notifyPayload = {
-      title: 'Yêu cầu bị từ chối',
-      message: 'Yêu cầu truy cập của bạn đã bị từ chối.',
-      type: 'warning',
-    };
+  // Chỉ admin (không phải manager) mới được cấp quyền admin/manager cho người khác —
+  // khớp với UI hiện tại: dropdown role đầy đủ (gồm admin/manager) chỉ hiện với
+  // userRole === 'admin', manager chỉ thấy badge readonly.
+  if ((role === 'admin' || role === 'manager') && callerRole !== 'admin') {
+    throw new HttpsError('permission-denied', 'Chỉ admin được cấp quyền admin/manager.');
   }
 
-  await targetRef.update(updates);
+  const updates: Record<string, unknown> = {};
+  if (role !== undefined) updates.role = role;
+  if (status !== undefined) updates.status = status;
+  if (departmentId !== undefined) updates.departmentId = departmentId;
+  if (employeeName !== undefined) updates.employeeName = employeeName;
+  if (expiresAt !== undefined) {
+    updates.expiresAt = expiresAt ? Timestamp.fromDate(new Date(expiresAt)) : FieldValue.delete();
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await targetRef.update(updates);
+  }
+
+  const finalRole = (role ?? (snap.get('role') as Role) ?? 'pending');
+  const finalDepartmentId = (departmentId ?? (snap.get('departmentId') as string) ?? null);
   await auth.setCustomUserClaims(targetUid, { role: finalRole, departmentId: finalDepartmentId || null });
-  await notifyUser(targetUid, notifyPayload);
 
-  return { success: true, role: finalRole };
+  if (notify) {
+    await notifyUser(targetUid, notify);
+  }
+
+  return { success: true };
 });

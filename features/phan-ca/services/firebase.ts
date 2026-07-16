@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 // Named app instance dùng chung project Firebase với hệ thống chính (services/firebase.ts),
 // nhưng khởi tạo riêng để tránh lỗi "Firebase App named '[DEFAULT]' already exists" và
@@ -23,6 +24,7 @@ const app = getApps().find(a => a.name === PHANCA_APP_NAME)
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const functions = getFunctions(app);
 
 export const loginWithGoogleForceConsent = async () => {
     const consentProvider = new GoogleAuthProvider();

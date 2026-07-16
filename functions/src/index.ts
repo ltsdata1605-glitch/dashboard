@@ -1,5 +1,5 @@
 // Entry point Cloud Functions — xem implementation_plan.md mục 5 để biết
 // vai trò từng hàm và file client sẽ gọi tới nó.
 export { resolveSession, requestAccess, demoteExpiredUsers } from './session';
-export { reviewAccessRequest } from './admin';
+export { adminUpdateUser } from './admin';
 export { generateWithGemini } from './gemini';

@@ -1,11 +1,11 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
-// import { GoogleGenAI, Type } from "@google/genai"; // Removed top-level import
 import { DailyRequirements, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { getErrorMessage } from '../../../utils/dataUtils';
 import { HOURS_CONFIG } from '../constants';
+import { suggestShiftPattern } from '../services/geminiService';
 
 interface AiSuggestPatternModalProps {
   onClose: () => void;
@@ -172,36 +172,8 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
 }`;
 
         try {
-            const { GoogleGenAI, Type } = await import("@google/genai");
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro',
-                contents: prompt,
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            ca_xoay: {
-                                type: Type.ARRAY,
-                                items: { type: Type.STRING },
-                                description: "Danh sách các mã ca trong chuỗi ca xoay."
-                            }
-                        },
-                        required: ["ca_xoay"]
-                    }
-                }
-            });
-
-            const jsonText = response.text?.trim() || '{}';
-            const result = JSON.parse(jsonText);
-
-            if (result.ca_xoay && Array.isArray(result.ca_xoay) && result.ca_xoay.every((i: unknown) => typeof i === 'string')) {
-                setSuggestion(result.ca_xoay);
-            } else {
-                throw new Error("Định dạng phản hồi của AI không chính xác. Vui lòng thử lại.");
-            }
-
+            const caXoay = await suggestShiftPattern(prompt);
+            setSuggestion(caXoay);
         } catch (e: unknown) {
             console.error(e);
             setError(`Đã có lỗi xảy ra: ${getErrorMessage(e) || 'Không thể tạo gợi ý.'}`);

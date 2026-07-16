@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
-import { notifyAdminsAndManagers } from '../services/notificationService';
+import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
 
 interface AuthContextType {
     user: User | null;
@@ -81,110 +81,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(false); // Stop spinner immediately!
             if (currentUser) {
                 try {
-                    const { doc, getDoc, setDoc, serverTimestamp, updateDoc, increment } = await import('firebase/firestore');
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    const snap = await getDoc(userRef);
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        
-                        let currentRole = data.role || 'pending';
-                        let currentStatus = data.status || (currentRole === 'pending' ? 'new' : 'approved');
+                    // Toàn bộ logic phân quyền (role/status/departmentId/expiresAt, cấp Super
+                    // Admin, tự demote khi hết hạn) giờ chạy ở server — functions/src/session.ts.
+                    // Client không còn tự updateDoc() field nhạy cảm (bị firestore.rules chặn).
+                    const profile = await resolveSession();
+                    // Force-refresh ID token để nhận custom claims (role/departmentId) mới nhất
+                    // mà resolveSession vừa set — cần cho firestore.rules dùng request.auth.token.role.
+                    await currentUser.getIdToken(true);
 
-                        // Bỏ qua đăng ký, cấp quyền Super Admin lập tức
-                        if (currentUser.email === 'lts.truongson@gmail.com') {
-                            currentRole = 'admin';
-                            currentStatus = 'approved';
-                            data.departmentId = 'ALL (Super Admin)';
-                            if (data.role !== 'admin' || data.status !== 'approved') {
-                                // Tự động sửa lại DB nếu ai đó lỡ hạ quyền
-                                updateDoc(userRef, { role: 'admin', status: 'approved', departmentId: 'ALL (Super Admin)' }).catch(console.error);
-                            }
-                        }
+                    setUserRole(profile.role);
+                    setStatus(profile.status);
+                    setDepartmentId(profile.departmentId ?? undefined);
+                    setEmployeeName(profile.employeeName ?? undefined);
+                    setExpiresAt(profile.expiresAt ? new Date(profile.expiresAt) : null);
 
-                        // Check Expiration
-                        if (data.expiresAt && typeof data.expiresAt.toDate === 'function') {
-                            const expiryDate = data.expiresAt.toDate();
-                            setExpiresAt(expiryDate);
-                            if (new Date() > expiryDate && currentRole !== 'pending' && currentRole !== 'admin') {
-                                // Demote expired user
-                                currentRole = 'pending';
-                                currentStatus = 'expired';
-                                try {
-                                    await updateDoc(userRef, { role: 'pending', status: 'expired' });
-                                } catch (e) { console.error("Could not auto-demote:", e); }
-                            }
-                        } else {
-                            setExpiresAt(null);
-                        }
+                    // Cache values for next fast-load
+                    saveSetting('cached_user_role', profile.role).catch(() => {});
+                    saveSetting('cached_user_status', profile.status).catch(() => {});
+                    if (profile.departmentId) saveSetting('cached_dept_id', profile.departmentId).catch(() => {});
+                    if (profile.employeeName) saveSetting('cached_emp_name', profile.employeeName).catch(() => {});
 
-                        // Tích hợp đồng bộ cài đặt cá nhân từ mây xuống máy
-                        if (data.settings) {
-                            mergeSettings(data.settings).catch(e => console.warn('Sync merge failed:', e));
-                        }
-
-                        setUserRole(currentRole);
-                        setDepartmentId(data.departmentId);
-                        setEmployeeName(data.employeeName);
-                        setStatus(currentStatus);
-                        
-                        // Cache values for next fast-load
-                        saveSetting('cached_user_role', currentRole).catch(() => {});
-                        saveSetting('cached_user_status', currentStatus).catch(() => {});
-                        if (data.departmentId) saveSetting('cached_dept_id', data.departmentId).catch(() => {});
-                        if (data.employeeName) saveSetting('cached_emp_name', data.employeeName).catch(() => {});
-
-                        // Increment login count & update lastLogin (once per session)
-                        const sessionKey = `login_counted_${currentUser.uid}`;
-                        if (!sessionStorage.getItem(sessionKey)) {
-                            sessionStorage.setItem(sessionKey, '1');
-                            updateDoc(userRef, {
-                                loginCount: increment(1),
-                                lastLogin: serverTimestamp()
-                            }).catch(e => console.warn('loginCount update failed:', e));
-                        }
-                    } else {
-                        let initialRole: 'admin' | 'pending' = 'pending';
-                        let initialStatus: 'approved' | 'new' = 'new';
-                        let initialDept: string | undefined = undefined;
-
-                        if (currentUser.email === 'lts.truongson@gmail.com') {
-                            initialRole = 'admin';
-                            initialStatus = 'approved';
-                            initialDept = 'ALL (Super Admin)';
-                        }
-
-                        await setDoc(userRef, {
-                            uid: currentUser.uid,
-                            email: currentUser.email,
-                            displayName: currentUser.displayName,
-                            photoURL: currentUser.photoURL,
-                            role: initialRole,
-                            status: initialStatus,
-                            departmentId: initialDept || '',
-                            createdAt: serverTimestamp(),
-                            lastLogin: serverTimestamp(),
-                            loginCount: 1
-                        });
-                        setUserRole(initialRole);
-                        setStatus(initialStatus);
-                        setDepartmentId(initialDept);
-                        
-                        saveSetting('cached_user_role', initialRole).catch(() => {});
-                        saveSetting('cached_user_status', initialStatus).catch(() => {});
-                        if (initialDept) saveSetting('cached_dept_id', initialDept).catch(() => {});
+                    // Tích hợp đồng bộ cài đặt cá nhân từ mây xuống máy — `settings` không nằm
+                    // trong protectedKeys() của firestore.rules nên vẫn đọc trực tiếp được.
+                    const { doc, getDoc } = await import('firebase/firestore');
+                    const settingsSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                    const settings = settingsSnap.exists() ? settingsSnap.data().settings : undefined;
+                    if (settings) {
+                        mergeSettings(settings).catch(e => console.warn('Sync merge failed:', e));
                     }
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
-                    // Fallback: force admin for super admin email even when Firestore is down
-                    if (currentUser.email === 'lts.truongson@gmail.com') {
-                        setUserRole('admin');
-                        setStatus('approved');
-                        setDepartmentId('ALL (Super Admin)');
-                        saveSetting('cached_user_role', 'admin').catch(() => {});
-                        saveSetting('cached_user_status', 'approved').catch(() => {});
-                        saveSetting('cached_dept_id', 'ALL (Super Admin)').catch(() => {});
-                    }
-                    // Do not overwrite cached role on network error for other users to allow offline use
+                    // Không overwrite role/status đã cache khi lỗi mạng — cho phép dùng offline.
                 }
             } else {
                 setUserRole(null);
@@ -212,27 +139,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const requestAccess = async (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => {
         if (!user) return;
         try {
-            const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
-            const userRef = doc(db, 'users', user.uid);
-            await updateDoc(userRef, {
-                role: 'pending',
-                requestedRole: requestedRole,
-                departmentId: deptId,
-                employeeName: empName || '',
-                status: 'pending',
-                requestDate: serverTimestamp()
-            });
+            // Gọi Cloud Function requestAccess (functions/src/session.ts) — hàm này tự
+            // gửi notification cho admin/manager của deptId, client không cần gọi lại.
+            await requestAccessApi(requestedRole, deptId, empName);
             setUserRole('pending');
             setStatus('pending');
             setDepartmentId(deptId);
             setEmployeeName(empName);
-            
-            // Notification: Alert Admins and Managers of this department
-            await notifyAdminsAndManagers(deptId, {
-                title: 'Đăng ký vào Kho mới',
-                message: `${user.displayName} (Email: ${user.email}) vừa đăng ký truy cập mã Kho gốc: ${deptId}.`,
-                type: 'info'
-            });
         } catch (error) {
             console.error("Lỗi gửi yêu cầu truy cập:", error);
             throw error;
