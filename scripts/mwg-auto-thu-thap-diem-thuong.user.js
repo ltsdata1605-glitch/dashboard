@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.2
+// @version      1.3
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -94,7 +94,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.2';
+  const SCRIPT_VERSION = '1.3';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -1158,43 +1158,19 @@
         showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
       };
 
-      const clickedSet = new Set();
-      const getPendingButtons = () => {
-        const buttons = getPlusButtons();
-        return buttons.filter(el => !clickedSet.has(el));
-      };
-
-      const initialButtons = getPlusButtons();
-      let estimatedTotal = initialButtons.length;
+      const pending = getPlusButtons();
+      let estimatedTotal = pending.length;
       const startedAt = performance.now();
       let processed = 0;
       let clicked = 0;
       const ui = showAcpProgress(estimatedTotal, onUserCancel);
 
       try {
-        let pass = 1;
-        // Hỗ trợ mở rộng tối đa 8 tầng lồng nhau (hoặc các lượt tải thêm động)
-        while (pass <= 8 && !userStop) {
-          const pending = getPendingButtons();
-          if (pending.length === 0) {
-            // Đợi 350ms đề phòng mạng chậm hoặc render chậm
-            await sleep(350);
-            const retryPending = getPendingButtons();
-            if (retryPending.length === 0 || userStop) {
-              break; // Thực sự hết nút hoặc user nhấn dừng
-            }
-            continue;
-          }
-
-          // Cập nhật tổng số lượng đích thực tế cho tiến trình
-          estimatedTotal = clickedSet.size + pending.length;
-          updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
-
-          // Click tuần tự nhóm nút của lượt này (tránh quét DOM liên tục gây lag)
+        if (estimatedTotal > 0) {
+          // Chỉ click một lượt các nút dấu cộng đang hiển thị tại thời điểm bấm, không đệ quy mở thêm cấp con
           for (const pb of pending) {
             if (userStop) break;
 
-            clickedSet.add(pb);
             processed++;
             try {
               pb.click();
@@ -1205,15 +1181,10 @@
 
             updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
 
-            // Giãn cách click an toàn: 55ms
+            // Giãn cách click an toàn: 55ms để tránh treo trình duyệt
             await sleep(55);
             await yieldToBrowser();
           }
-
-          // Nghỉ 350ms cuối lượt để chờ các API AJAX tải xong và vẽ ra các nút mới
-          await sleep(350);
-          await yieldToBrowser();
-          pass++;
         }
 
         updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
