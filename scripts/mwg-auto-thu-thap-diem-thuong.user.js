@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.4
+// @version      1.5
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -94,7 +94,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.4';
+  const SCRIPT_VERSION = '1.5';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -904,6 +904,27 @@
       return Boolean(el && el.isConnected && el.getClientRects().length > 0);
     }
 
+    function getRowContainer(el) {
+      if (!el) return null;
+      const tableRow = el.closest('tr') || el.closest('td');
+      if (tableRow) return tableRow;
+
+      // Hỗ trợ cấu trúc div của DevExpress (dx-row, v.v.) hoặc các hàng ảo
+      let cur = el.parentElement;
+      while (cur && cur !== document.body) {
+        if (cur.classList) {
+          for (const cls of cur.classList) {
+            const clsLower = cls.toLowerCase();
+            if (clsLower.includes('row') || clsLower.includes('td') || clsLower.includes('tr')) {
+              return cur;
+            }
+          }
+        }
+        cur = cur.parentElement;
+      }
+      return el.parentElement;
+    }
+
     function getPlusButtons() {
       const allButtons = [];
       
@@ -934,17 +955,23 @@
         new Set(allButtons.filter(el => isPlusButton(el) && isVisible(el)))
       );
 
-      // Tránh click đúp trên cùng một hàng (tr) hoặc ô (td) gây hiện tượng mở ra rồi tự thu lại
-      const finalButtons = [];
-      const seenContainers = new Set();
+      // Bước A: Loại bỏ các thẻ cha bao ngoài nếu thẻ con của nó cũng nằm trong danh sách click (chỉ giữ phần tử sâu nhất)
+      const deepestButtons = uniqueButtons.filter(btnA => {
+        const hasDescendant = uniqueButtons.some(btnB => btnB !== btnA && btnA.contains(btnB));
+        return !hasDescendant;
+      });
 
-      for (const btn of uniqueButtons) {
-        const container = btn.closest('tr') || btn.closest('td') || btn.parentElement;
-        if (container) {
-          if (seenContainers.has(container)) {
+      // Bước B: Đảm bảo chỉ click tối đa một lần trên mỗi hàng (row container) để tránh trigger click đúp do nổi bọt sự kiện
+      const finalButtons = [];
+      const seenRows = new Set();
+
+      for (const btn of deepestButtons) {
+        const row = getRowContainer(btn);
+        if (row) {
+          if (seenRows.has(row)) {
             continue;
           }
-          seenContainers.add(container);
+          seenRows.add(row);
         }
         finalButtons.push(btn);
       }
