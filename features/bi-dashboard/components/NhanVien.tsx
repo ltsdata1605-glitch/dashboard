@@ -52,7 +52,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [activeTab, setActiveTab] = useIndexedDBState<Tab>('nhanvien-active-tab', 'revenue');
     const [visitedTabs, setVisitedTabs] = useState<Set<Tab>>(() => new Set<Tab>(['revenue']));
 
-    // Removed useEffect that resets activeTab on isActive change to persist tab state
+    // Mặc định luôn mở tab Doanh thu khi người dùng chuyển sang màn hình Nhân viên
+    useEffect(() => {
+        if (isActive) {
+            setActiveTab('revenue');
+        }
+    }, [isActive, setActiveTab]);
 
     useEffect(() => {
         if (activeTab) {

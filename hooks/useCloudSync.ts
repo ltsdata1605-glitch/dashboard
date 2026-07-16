@@ -9,6 +9,22 @@ import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
+const isLocalOnlyKey = (key: string): boolean => {
+    const k = key.startsWith('bi_') ? key.slice(3) : key;
+    return (
+        k === 'nhanvien-active-tab' ||
+        k === 'nhanvien-active-competition-tab' ||
+        k === 'dashboard-main-tab' ||
+        k === 'dashboard-sub-tab' ||
+        k === 'main-active-view' ||
+        k === 'dashboard-active-supermarket' ||
+        k === 'nhanvien-active-supermarkets' ||
+        k === 'nhanvien-active-depts-multi' ||
+        k === 'highlight-employees-multi' ||
+        k.startsWith('active-')
+    );
+};
+
 export const useCloudSync = () => {
     const { user, isDemoMode } = useAuth();
     const [syncState, setSyncState] = useState<SyncState>('idle');
@@ -67,6 +83,7 @@ export const useCloudSync = () => {
                 if (
                     !excludedKeys.has(key) && 
                     !isHeavySyncKey(key) &&
+                    !isLocalOnlyKey(key) &&
                     !key.startsWith('cached_') && 
                     !key.startsWith('lastModified_') &&
                     !key.startsWith('summary-') && 
@@ -139,7 +156,7 @@ export const useCloudSync = () => {
                 const backup = data.settingsStoreBackup;
                 if (backup) {
                     for (const [k, v] of Object.entries(backup)) {
-                        if (!isHeavySyncKey(k) && k !== 'salesFilesRegistry') {
+                        if (!isHeavySyncKey(k) && !isLocalOnlyKey(k) && k !== 'salesFilesRegistry') {
                             await saveSettingFromCloud(k, v, cloudLastMod);
                         }
                     }
@@ -253,6 +270,7 @@ export const useCloudSync = () => {
                 key && (
                     excludedKeys.has(key) || 
                     isHeavySyncKey(key) ||
+                    isLocalOnlyKey(key) ||
                     key.startsWith('cached_') || 
                     key.startsWith('summary-') || 
                     key.startsWith('competition-')
