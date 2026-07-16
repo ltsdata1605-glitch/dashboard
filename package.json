@@ -15,7 +15,9 @@
     "audit": "npm audit || true",
     "check": "npm run typecheck && npm run lint:eslint && npm run build && npm run lint:ratchet",
     "predeploy": "npm run build",
-    "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist"
+    "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:functions": "firebase deploy --only functions"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
@@ -52,6 +54,7 @@
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "firebase-tools": "^13.29.1",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.2",

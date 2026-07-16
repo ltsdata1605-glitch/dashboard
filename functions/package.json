@@ -1,0 +1,25 @@
+{
+  "name": "dashboardycx-functions",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "serve": "npm run build && firebase emulators:start --only functions,firestore,auth",
+    "deploy": "npm run build && firebase deploy --only functions"
+  },
+  "dependencies": {
+    "@google/genai": "^1.48.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.3.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}

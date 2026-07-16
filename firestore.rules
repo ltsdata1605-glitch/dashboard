@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isSelf(uid)   { return isSignedIn() && request.auth.uid == uid; }
+    function role()        { return isSignedIn() ? request.auth.token.role : null; }
+    function isAdmin()     { return role() == 'admin'; }
+    function isManager()   { return role() == 'admin' || role() == 'manager'; }
+    function protectedKeys() {
+      return ['role', 'status', 'departmentId', 'expiresAt', 'requestedRole'];
+    }
+
+    match /users/{uid} {
+      allow get:    if isSelf(uid) || isManager();
+      allow list:   if isManager(); // UserManagementView query where(role in [...])
+      allow create: if isSelf(uid)
+                    && !request.resource.data.keys().hasAny(protectedKeys());
+      allow update: if isSelf(uid)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedKeys());
+      // Không có allow update cho isAdmin() ở đây — thay đổi role/status/departmentId/
+      // expiresAt/requestedRole chỉ được thực hiện qua Cloud Function reviewAccessRequest /
+      // resolveSession (Admin SDK, tự bypass Rules), không cho phép client SDK ghi thẳng
+      // dù là admin hay không.
+
+      match /setting/{doc}       { allow read, write: if isSelf(uid); }
+      match /schedules/{doc}     { allow read, write: if isSelf(uid); }
+      match /configs/{doc}       { allow read, write: if isSelf(uid); }
+      match /notifications/{id}  { allow read, update: if isSelf(uid); allow create: if isSignedIn(); }
+    }
+
+    match /shared_configs/{id} {
+      allow read:  if isSignedIn();
+      allow write: if isManager();
+    }
+
+    match /_system/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if false; // chỉ Cloud Function (Admin SDK) được ghi thống kê hệ thống
+    }
+  }
+}
