@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.3
+// @version      1.4
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -94,7 +94,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.3';
+  const SCRIPT_VERSION = '1.4';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -930,9 +930,26 @@
         }
       });
 
-      return Array.from(
+      const uniqueButtons = Array.from(
         new Set(allButtons.filter(el => isPlusButton(el) && isVisible(el)))
       );
+
+      // Tránh click đúp trên cùng một hàng (tr) hoặc ô (td) gây hiện tượng mở ra rồi tự thu lại
+      const finalButtons = [];
+      const seenContainers = new Set();
+
+      for (const btn of uniqueButtons) {
+        const container = btn.closest('tr') || btn.closest('td') || btn.parentElement;
+        if (container) {
+          if (seenContainers.has(container)) {
+            continue;
+          }
+          seenContainers.add(container);
+        }
+        finalButtons.push(btn);
+      }
+
+      return finalButtons;
     }
 
     // --- Giao diện ---
