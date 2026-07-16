@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.1
+// @version      1.2
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -94,7 +94,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.1';
+  const SCRIPT_VERSION = '1.2';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -1159,9 +1159,9 @@
       };
 
       const clickedSet = new Set();
-      const getNextPendingButton = () => {
+      const getPendingButtons = () => {
         const buttons = getPlusButtons();
-        return buttons.find(el => !clickedSet.has(el));
+        return buttons.filter(el => !clickedSet.has(el));
       };
 
       const initialButtons = getPlusButtons();
@@ -1172,40 +1172,48 @@
       const ui = showAcpProgress(estimatedTotal, onUserCancel);
 
       try {
-        while (!userStop) {
-          const pb = getNextPendingButton();
-          if (!pb) {
-            // Đợi một chút đề phòng render chậm
-            await sleep(150);
-            const doubleCheck = getNextPendingButton();
-            if (!doubleCheck || userStop) break; // Đã hết thực sự hoặc user dừng
+        let pass = 1;
+        // Hỗ trợ mở rộng tối đa 8 tầng lồng nhau (hoặc các lượt tải thêm động)
+        while (pass <= 8 && !userStop) {
+          const pending = getPendingButtons();
+          if (pending.length === 0) {
+            // Đợi 350ms đề phòng mạng chậm hoặc render chậm
+            await sleep(350);
+            const retryPending = getPendingButtons();
+            if (retryPending.length === 0 || userStop) {
+              break; // Thực sự hết nút hoặc user nhấn dừng
+            }
             continue;
           }
 
-          clickedSet.add(pb);
-          processed++;
-          try {
-            pb.click();
-            clicked++;
-          } catch (err) {
-            console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
-          }
+          // Cập nhật tổng số lượng đích thực tế cho tiến trình
+          estimatedTotal = clickedSet.size + pending.length;
+          updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
 
-          if (processed > estimatedTotal) {
-            estimatedTotal = processed;
-          }
+          // Click tuần tự nhóm nút của lượt này (tránh quét DOM liên tục gây lag)
+          for (const pb of pending) {
+            if (userStop) break;
 
-          updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
+            clickedSet.add(pb);
+            processed++;
+            try {
+              pb.click();
+              clicked++;
+            } catch (err) {
+              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+            }
 
-          // Nhịp độ click an toàn:
-          // Mỗi 6 nút sẽ nghỉ lâu hơn (200ms) để giải phóng network pool và render UI
-          // Clicks thông thường cách nhau 50ms
-          if (clicked > 0 && clicked % 6 === 0) {
-            await sleep(200);
+            updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
+
+            // Giãn cách click an toàn: 55ms
+            await sleep(55);
             await yieldToBrowser();
-          } else {
-            await sleep(50);
           }
+
+          // Nghỉ 350ms cuối lượt để chờ các API AJAX tải xong và vẽ ra các nút mới
+          await sleep(350);
+          await yieldToBrowser();
+          pass++;
         }
 
         updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
