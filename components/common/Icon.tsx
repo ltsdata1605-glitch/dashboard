@@ -1,7 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Activity, AlertCircle, AlertTriangle, Apple, ArchiveRestore, AreaChart, ArrowRight, Award, Backpack, Banknote,
+  Activity, AlertCircle, AlertTriangle, Apple, ArchiveRestore, AreaChart, ArrowDown, ArrowRight, ArrowUp, Award, Backpack, Banknote,
   BarChart2, BarChart3, BarChartHorizontal, BatteryCharging, Bell, BellOff, Box, Briefcase, Bug, Cable,
   Calculator, Calendar, CalendarClock, CalendarDays, Camera, Check, CheckCircle, CheckCircle2, CheckSquare, ChefHat,
   ChevronDown, ChevronLeft, ChevronRight, ChevronsDownUp, ChevronsUpDown, CircleDollarSign, ClipboardList, ClipboardPaste, Clock, CloudDownload,
@@ -34,7 +34,7 @@ interface IconProps {
 const ICON_MAP: Record<string, LucideIcon> = {
   'activity': Activity, 'alert-circle': AlertCircle, 'alert-triangle': AlertTriangle,
   'apple': Apple, 'archive-restore': ArchiveRestore, 'area-chart': AreaChart,
-  'arrow-right': ArrowRight, 'award': Award, 'backpack': Backpack,
+  'arrow-down': ArrowDown, 'arrow-right': ArrowRight, 'arrow-up': ArrowUp, 'award': Award, 'backpack': Backpack,
   'banknote': Banknote, 'bar-chart-2': BarChart2, 'bar-chart-3': BarChart3,
   'bar-chart-horizontal': BarChartHorizontal, 'battery-charging': BatteryCharging, 'bell': Bell,
   'bell-off': BellOff, 'blender': PlugZap, 'box': Box,
