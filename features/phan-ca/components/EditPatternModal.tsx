@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Zap } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { HOURS_CONFIG } from '../constants';
 import * as idb from '../db/idb';
 import { DailyRequirements, ShiftDefinitions } from '../types';
@@ -33,7 +32,6 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
   const [showHelp, setShowHelp] = useState(false);
   const [departmentRequirements, setDepartmentRequirements] = useState<{ [key: string]: DailyRequirements }>({});
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const [isSuggesting, setIsSuggesting] = useState(false);
 
 
   useEffect(() => {
@@ -215,59 +213,6 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
     }
   };
 
-
-  const suggestPattern = async () => {
-    if (!selectedDept) return;
-    const reqs = departmentRequirements[selectedDept] || dailyRequirements;
-    if (!reqs) return;
-
-    setIsSuggesting(true);
-    try {
-        // Thuật toán gợi ý đơn giản:
-        // 1. Xác định số lượng nhân sự cần thiết (max của các yêu cầu ca)
-        // 2. Tạo các chuỗi ca xoay vòng
-        const slots = ['1', '2', '3', '4', '5', '6'];
-        const totalReq = slots.reduce((sum, s) => sum + (reqs[s] || 0), 0);
-
-        // Chưa nhập ô "Yêu Cầu" nào → không có gì để tính, dừng lại thay vì ghi đè
-        // danh sách ca đang có sẵn bằng các pattern rỗng (mất dữ liệu đã cấu hình).
-        if (totalReq <= 0) {
-            toast.error('Vui lòng nhập số lượng "Yêu Cầu" cho ít nhất 1 ca trước khi gợi ý.', { duration: 3000 });
-            return;
-        }
-
-        // Giả định số lượng nhân sự tối ưu là khoảng 1.5 - 2 lần tổng yêu cầu ca (để có ngày nghỉ)
-        // Hoặc dựa trên yêu cầu thực tế nếu đã nhập.
-        const staffNeeded = Math.max(staffCountByDept[selectedDept] || 0, Math.ceil(totalReq * 1.5));
-
-        const newPatterns: string[] = [];
-        for (let i = 0; i < staffNeeded; i++) {
-            newPatterns.push("");
-        }
-
-        let currentStaffIdx = 0;
-        slots.forEach(slot => {
-            const count = reqs[slot] || 0;
-            for (let c = 0; c < count; c++) {
-                // Phân bổ ca này cho nhân sự tiếp theo
-                newPatterns[currentStaffIdx % staffNeeded] += slot;
-                currentStaffIdx++;
-            }
-        });
-
-        // Sắp xếp lại các ký tự trong mỗi pattern
-        const finalPatterns = newPatterns.map(p => p.split('').sort().join(''));
-
-        setPatternsByDept(prev => ({
-            ...prev,
-            [selectedDept]: finalPatterns
-        }));
-    } catch (error) {
-        console.error("Suggestion failed:", error);
-    } finally {
-        setIsSuggesting(false);
-    }
-  };
 
   const handleSave = async () => {
     if (showHelp) {
@@ -452,19 +397,6 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         <div className="mb-3 border-t border-slate-200 dark:border-slate-700 pt-3">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-xs font-black text-slate-700 dark:text-slate-300">Danh sách ca: <span className="text-sky-600 dark:text-sky-400">{selectedDept}</span></h3>
-            <Button
-                variant="ghost"
-                onClick={suggestPattern}
-                disabled={isSuggesting || !selectedDept}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 text-xs font-bold transition-all disabled:opacity-50 rounded"
-            >
-                {isSuggesting ? (
-                    <div className="w-3 h-3 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                    <Zap size={14} />
-                )}
-                Gợi ý ca xoay
-            </Button>
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
