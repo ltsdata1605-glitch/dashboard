@@ -92,7 +92,7 @@ AiSuggestPatternModal.tsx ─onCall─▶   generateWithGemini()                
 | `functions/src/gemini.ts` | `generateWithGemini` |
 | `functions/.gitignore` | `node_modules/`, `lib/` |
 
-## 4. Nội dung `firestore.rules` (bản nháp để duyệt)
+## 4. Nội dung `firestore.rules` (đã sửa sau khi test thật phát hiện thiếu — xem mục 11)
 
 ```js
 rules_version = '2';
@@ -120,6 +120,7 @@ service cloud.firestore {
       match /setting/{doc}       { allow read, write: if isSelf(uid); }
       match /schedules/{doc}     { allow read, write: if isSelf(uid); }
       match /configs/{doc}       { allow read, write: if isSelf(uid); }
+      match /salesData/{doc}     { allow read, write: if isSelf(uid); }
       match /notifications/{id}  { allow read, update: if isSelf(uid); allow create: if isSignedIn(); }
     }
 
@@ -128,9 +129,10 @@ service cloud.firestore {
       allow write: if isManager();
     }
 
+    // Bộ đếm lượt truy cập (hooks/useSystemTraffic.ts) — không nhạy cảm về
+    // phân quyền, chỉ cần đăng nhập là ghi được.
     match /_system/{doc} {
-      allow read:  if isSignedIn();
-      allow write: if false; // chỉ Cloud Function (Admin SDK) được ghi thống kê hệ thống
+      allow read, write: if isSignedIn();
     }
   }
 }
@@ -212,3 +214,15 @@ npm run deploy:functions   # chạy ở thư mục gốc
 - Bước 4 (xóa `GEMINI_API_KEY` khỏi `.env.local`) — chỉ làm sau khi xác nhận `generateWithGemini` chạy ổn trên production.
 - `demoteExpiredUsers` đã viết nhưng là scheduled function optional — sẽ tự chạy khi deploy cùng các hàm khác, không cần thao tác thêm.
 - Mục 7 (sticker-event, bi-dashboard) — vẫn ngoài phạm vi, chưa động tới.
+
+## 12. Bug phát hiện khi test thật (2026-07-17) — đã sửa
+
+Sau khi deploy functions + rules và test bằng `npm run dev`, Console báo 2 lỗi `Missing or insufficient permissions`:
+- **`users/{uid}/salesData/{doc}` bị thiếu trong `firestore.rules`** — gây "Đồng bộ dữ liệu thất bại" ở [services/cloudDataService.ts](services/cloudDataService.ts). Nguyên nhân: lệnh gọi `collection(db, 'users', uid, 'salesData')` (nhiều tham số path) lọt qua quy tắc `grep` lúc audit ban đầu ở mục 1.2 — bài học: audit lại bằng cách grep rộng hơn (`collection(db\|doc(db`) thay vì regex chỉ bắt 1 segment.
+- **`_system/{doc}` bị chặn write hoàn toàn** (`allow write: if false`) — gây "Traffic Counter Error" ở [hooks/useSystemTraffic.ts](hooks/useSystemTraffic.ts), một bộ đếm lượt truy cập vô hại, không liên quan phân quyền. Tôi đã chặn nhầm theo giả định chung "chỉ Cloud Function được ghi" mà không kiểm tra thực tế ai/tại sao ghi vào đó.
+
+**Đã sửa** cả hai trong `firestore.rules` (mục 4 đã cập nhật). **Cần bạn deploy lại**:
+```bash
+npx firebase deploy --only firestore:rules
+```
+Sau đó test lại `npm run dev`, xác nhận Console không còn 2 lỗi trên, rồi mới sang Bước 6 (`npm run deploy` production).
