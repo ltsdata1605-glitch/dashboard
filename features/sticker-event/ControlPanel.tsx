@@ -225,14 +225,14 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
             {/* ───────── Tìm kiếm sản phẩm ───────── */}
             <div 
-                className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
+                className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty && !props.isMobile ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
                 style={props.isMobile ? { bottom: 'calc(112px + env(safe-area-inset-bottom, 0px))' } : {}}
             >
                 <SearchBar
                     searchQuery={props.searchQuery}
                     onSearchChange={props.onSearchChange}
                     onIconClick={props.onOpenScanner}
-                    disabled={props.allProducts.length === 0 || props.isLoading || isEmployeeNameEmpty}
+                    disabled={props.allProducts.length === 0 || props.isLoading || (isEmployeeNameEmpty && !props.isMobile)}
                     suggestions={props.suggestions}
                     onSuggestionClick={props.onSuggestionClick}
                     showNoResults={props.showNoResults}
