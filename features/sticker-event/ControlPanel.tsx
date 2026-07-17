@@ -232,7 +232,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     searchQuery={props.searchQuery}
                     onSearchChange={props.onSearchChange}
                     onIconClick={props.onOpenScanner}
-                    disabled={props.allProducts.length === 0 || props.isLoading || (isEmployeeNameEmpty && !props.isMobile)}
+                    disabled={props.isLoading || (isEmployeeNameEmpty && !props.isMobile)}
                     suggestions={props.suggestions}
                     onSuggestionClick={props.onSuggestionClick}
                     showNoResults={props.showNoResults}
@@ -241,7 +241,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
             </div>
 
              {/* ───────── Công cụ nhanh + Thao tác ───────── */}
-             {props.allProducts.length > 0 && !props.isLoading && (
+             {!props.isLoading && (
                  <div className={`space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'hidden' : ''}`}>
 
                     <div className="pt-3 border-t border-slate-100">
