@@ -214,6 +214,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
         <Modal
             isOpen
             onClose={onClose}
+            zIndex="z-[70]"
             maxWidth="4xl"
             title={<>Gợi Ý Ca Xoay Bằng AI cho <span className="text-sky-600 dark:text-sky-400">{departmentName}</span></>}
             footer={
