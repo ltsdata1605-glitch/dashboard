@@ -1,12 +1,16 @@
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { db } from './firebase';
 
 // Bản zone-local của syncScheduleToCloud/fetchScheduleFromCloud (services/firestoreService.ts),
 // đọc/ghi đúng path 'users/{uid}/schedules/{key}' như bản gốc — cùng project Firestore
 // (dashboa-7e20b) nên dữ liệu không đổi, chỉ tách JS module theo RULES.md §2.0.
+//
+// `db` bắt buộc lấy từ useAuth() (root AuthContext), KHÔNG dùng db của app Firebase
+// riêng phan-ca (./firebase.ts) — app riêng đó có auth session KHÁC session người
+// dùng thật đăng nhập, nên request sẽ có request.auth == null và bị firestore.rules
+// (isSelf(uid)) từ chối. Cùng nguyên nhân đã gặp với generateWithGemini.
 
-export const syncScheduleToCloud = async (user: User, key: string, value: unknown) => {
+export const syncScheduleToCloud = async (db: Firestore, user: User, key: string, value: unknown) => {
     if (!user) return;
     const safeKey = key.replace(/::/g, '__');
     const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);
@@ -19,7 +23,7 @@ export const syncScheduleToCloud = async (user: User, key: string, value: unknow
     }, { merge: false });
 };
 
-export const fetchScheduleFromCloud = async (user: User, key: string) => {
+export const fetchScheduleFromCloud = async (db: Firestore, user: User, key: string) => {
     if (!user) return null;
     const safeKey = key.replace(/::/g, '__');
     const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);

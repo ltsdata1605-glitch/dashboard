@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
+import type { Firestore } from 'firebase/firestore';
 import { auth, db, functions, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
@@ -19,11 +20,12 @@ interface AuthContextType {
     isDemoMode: boolean;
     setDemoMode: (val: boolean) => void;
     requestAccess: (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => Promise<void>;
-    // Instance Functions gắn với app + auth session THẬT (root) — features/* (vd:
-    // phan-ca) cần dùng đúng instance này khi gọi Cloud Function callable, vì app
-    // Firebase riêng của feature (named app khác) không có session đăng nhập nên
-    // request sẽ không có Authorization header (bị Cloud Run từ chối ở tầng hạ tầng).
+    // Instance Functions/Firestore gắn với app + auth session THẬT (root) —
+    // features/* (vd: phan-ca) cần dùng đúng instance này khi gọi Cloud Function
+    // callable hoặc đọc/ghi Firestore theo uid, vì app Firebase riêng của feature
+    // (named app khác) không có session đăng nhập nên request.auth sẽ là null.
     functions: Functions;
+    db: Firestore;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -171,7 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const activeStatus = isDemoMode ? 'approved' : status;
 
     return (
-        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess, functions }}>
+        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess, functions, db }}>
             {children}
         </AuthContext.Provider>
     );
@@ -188,6 +190,7 @@ const SAFE_AUTH_FALLBACK: AuthContextType = {
     setDemoMode: () => {},
     requestAccess: async () => { console.warn('[Auth] requestAccess called outside AuthProvider'); },
     functions,
+    db,
 };
 
 export const useAuth = () => {

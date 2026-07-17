@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 
 // Named app instance dùng chung project Firebase với hệ thống chính (services/firebase.ts),
 // nhưng khởi tạo riêng để tránh lỗi "Firebase App named '[DEFAULT]' already exists" và
@@ -23,12 +22,13 @@ const app = getApps().find(a => a.name === PHANCA_APP_NAME)
 
 // ⚠️ `auth` ở đây là session RIÊNG, KHÁC với session người dùng thật sự đăng
 // nhập (ở app '[DEFAULT]' trong services/firebase.ts) — sign-in không tự đồng
-// bộ qua lại giữa 2 named app dù cùng project. Vì vậy KHÔNG dùng `getFunctions(app)`
-// ở đây để gọi Cloud Function callable — request sẽ không có Authorization
-// header (Cloud Run từ chối ở tầng hạ tầng, xem bug đã sửa ở AiSuggestPatternModal).
-// Muốn gọi Cloud Function, lấy `functions` qua useAuth() (root AuthContext) thay vào đó.
+// bộ qua lại giữa 2 named app dù cùng project. Chỉ dùng `auth` này cho
+// loginWithGoogleForceConsent (lấy access token Google Sheets/Drive riêng biệt).
+// KHÔNG dùng để gọi Cloud Function hay đọc/ghi Firestore theo uid — request sẽ
+// có request.auth == null (đã gặp bug thật với generateWithGemini và
+// firestoreSync.ts). Cần Firestore/Functions gắn đúng session thật, lấy qua
+// useAuth() (root AuthContext) thay vào đó.
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 
 export const loginWithGoogleForceConsent = async () => {
     const consentProvider = new GoogleAuthProvider();

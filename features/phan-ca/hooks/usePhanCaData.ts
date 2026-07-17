@@ -23,7 +23,7 @@ import { DEFAULT_SHIFT_DEFINITIONS, getDefaultMonthYear, DEFAULT_RULES, ZERO_REQ
 // trước đó cố ý chưa tách vì rủi ro cao). Chỉ di chuyển nguyên trạng, không đổi
 // logic: cùng state, cùng effect body/deps, cùng thứ tự gọi idb/firestoreSync.
 export function usePhanCaData() {
-  const { user } = useAuth();
+  const { user, db } = useAuth();
   const lastSyncedRef = useRef<{ [key: string]: string }>({});
   const staffListRef = useRef<StaffMember[]>([]);
   const isImportingRef = useRef<boolean>(false);
@@ -91,7 +91,7 @@ export function usePhanCaData() {
           return localData !== undefined ? localData : defaultValue;
       }
       try {
-          const cloudResult = await fetchScheduleFromCloud(user, key);
+          const cloudResult = await fetchScheduleFromCloud(db, user, key);
           if (cloudResult) {
               const cloudTime = cloudResult.updatedAt || 0;
               const cloudData = cloudResult.data as T;
@@ -101,19 +101,19 @@ export function usePhanCaData() {
                   return cloudData;
               } else if (localTime > cloudTime && localData !== undefined) {
                   console.warn(`[Cloud Sync PhanCa] Local is newer for ${key} (${localTime} > ${cloudTime}). Syncing to cloud...`);
-                  await syncScheduleToCloud(user, key, localData);
+                  await syncScheduleToCloud(db, user, key, localData);
                   lastSyncedRef.current[key] = JSON.stringify(localData);
               }
           } else if (localData !== undefined) {
               console.warn(`[Cloud Sync PhanCa] Cloud is empty for ${key}. Syncing local to cloud...`);
-              await syncScheduleToCloud(user, key, localData);
+              await syncScheduleToCloud(db, user, key, localData);
               lastSyncedRef.current[key] = JSON.stringify(localData);
           }
       } catch (e) {
           console.error(`[Cloud Sync PhanCa] Error syncing key ${key}:`, e);
       }
       return localData !== undefined ? localData : defaultValue;
-  }, [user]);
+  }, [user, db]);
 
   useEffect(() => {
     const initApp = async () => {
@@ -265,7 +265,7 @@ export function usePhanCaData() {
         const serialized = JSON.stringify(data);
         if (lastSyncedRef.current[key] === serialized) return;
         try {
-          await syncScheduleToCloud(user, key, data);
+          await syncScheduleToCloud(db, user, key, data);
           lastSyncedRef.current[key] = serialized;
         } catch (err) {
           console.error(`Lỗi khi đồng bộ ${key}:`, err);
@@ -285,7 +285,7 @@ export function usePhanCaData() {
       await syncIfChanged(getKey(`unresolved-${monthYear}`), unresolvedConflicts);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts, user, supermarkets]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts, user, db, supermarkets]);
 
   useEffect(() => {
     if (monthYear) {
