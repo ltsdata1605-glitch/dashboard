@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Trash2, Zap } from 'lucide-react';
 import { HOURS_CONFIG } from '../constants';
 import * as idb from '../db/idb';
-import { DailyRequirements, ShiftDefinitions } from '../types';
+import { DailyRequirements, ShiftDefinitions, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
+import AiSuggestPatternModal from './AiSuggestPatternModal';
 
 interface EditPatternModalProps {
   currentPatterns: { [key: string]: string[] };
@@ -17,6 +18,8 @@ interface EditPatternModalProps {
   onRequirementsUpdate: (reqs: DailyRequirements) => void;
   shiftDefinitions: ShiftDefinitions;
   onShiftDefinitionsUpdate: (sd: ShiftDefinitions) => void;
+  nams: StaffInitialData[];
+  nus: StaffInitialData[];
 }
 
 interface PreviewStats {
@@ -25,13 +28,14 @@ interface PreviewStats {
 }
 
 
-const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, allDepartments, onClose, onSave, staffCountByDept, dailyRequirements, onRequirementsUpdate, shiftDefinitions, onShiftDefinitionsUpdate }) => {
+const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, allDepartments, onClose, onSave, staffCountByDept, dailyRequirements, onRequirementsUpdate, shiftDefinitions, onShiftDefinitionsUpdate, nams, nus }) => {
   const [patternsByDept, setPatternsByDept] = useState(currentPatterns);
   const [selectedDept, setSelectedDept] = useState<string>(allDepartments[0] || '');
   const [previewStats, setPreviewStats] = useState<PreviewStats | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [departmentRequirements, setDepartmentRequirements] = useState<{ [key: string]: DailyRequirements }>({});
   const [onboardingStep, setOnboardingStep] = useState(0);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -240,8 +244,10 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
 
   const patternsForSelectedDept = patternsByDept[selectedDept] || [];
   const SHIFTS = [1, 2, 3, 4, 5, 6];
+  const reqsForAi = departmentRequirements[selectedDept] || dailyRequirements;
 
   return (
+    <>
     <Modal
       isOpen
       onClose={handleClose}
@@ -397,6 +403,16 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         <div className="mb-3 border-t border-slate-200 dark:border-slate-700 pt-3">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-xs font-black text-slate-700 dark:text-slate-300">Danh sách ca: <span className="text-sky-600 dark:text-sky-400">{selectedDept}</span></h3>
+            <Button
+                variant="ghost"
+                onClick={() => setIsAiModalOpen(true)}
+                disabled={!selectedDept || !reqsForAi}
+                title={!reqsForAi ? 'Cần nhập Yêu Cầu nhân sự tối thiểu/ca trước' : undefined}
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 text-xs font-bold transition-all disabled:opacity-50 rounded"
+            >
+                <Zap size={14} />
+                Gợi ý AI
+            </Button>
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
@@ -462,6 +478,20 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
            </div>
         </div>
     </Modal>
+    {isAiModalOpen && reqsForAi && (
+        <AiSuggestPatternModal
+            onClose={() => setIsAiModalOpen(false)}
+            onApply={(patterns) => {
+                setPatternsByDept(prev => ({ ...prev, [selectedDept]: patterns }));
+                setIsAiModalOpen(false);
+            }}
+            departmentName={selectedDept}
+            nams={nams}
+            nus={nus}
+            dailyRequirements={reqsForAi}
+        />
+    )}
+    </>
   );
 };
 
