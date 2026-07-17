@@ -4,6 +4,7 @@ import { DailyRequirements, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { getErrorMessage } from '../../../utils/dataUtils';
+import { useAuth } from '../../../contexts/AuthContext';
 import { HOURS_CONFIG } from '../constants';
 import { suggestShiftPattern } from '../services/geminiService';
 
@@ -19,6 +20,7 @@ interface AiSuggestPatternModalProps {
 type SpecialShiftRole = 'kho' | 'tn' | 'gh';
 
 const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, onApply, departmentName, nams, nus, dailyRequirements }) => {
+    const { functions } = useAuth();
     const initialStaffInDept = useMemo(() => {
         const namCount = nams.filter(n => n.department === departmentName).length;
         const nuCount = nus.filter(n => n.department === departmentName).length;
@@ -172,7 +174,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
 }`;
 
         try {
-            const caXoay = await suggestShiftPattern(prompt);
+            const caXoay = await suggestShiftPattern(functions, prompt);
             setSuggestion(caXoay);
         } catch (e: unknown) {
             console.error(e);
@@ -180,7 +182,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
         } finally {
             setIsLoading(false);
         }
-    }, [departmentName, numNam, numNu, maxHours, commonShifts, slotRequirements, specialShifts, hourConfig]);
+    }, [functions, departmentName, numNam, numNu, maxHours, commonShifts, slotRequirements, specialShifts, hourConfig]);
 
     const renderSpecialShiftConfig = (role: SpecialShiftRole, title: string) => (
         <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
