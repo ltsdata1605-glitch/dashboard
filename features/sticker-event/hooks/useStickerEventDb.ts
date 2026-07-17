@@ -80,151 +80,166 @@ export function useStickerEventDb({
       setIsLoading(true);
       setError(null);
 
-      // Verify store has an admin (for Staff users) — cached in sessionStorage
-      if (userData?.role === 'staff') {
-        const adminCacheKey = `adminCheck_${storeId}`;
-        const cachedAdminCheck = sessionStorage.getItem(adminCacheKey);
-        
-        if (!cachedAdminCheck) {
-          const usersRef = collection(db, 'users');
-          const q = query(usersRef, where('storeId', '==', storeId), where('role', '==', 'admin'), limit(1));
-          
-          let adminCheckSnapshot;
-          let retries = 3;
-          while (retries > 0) {
-              try {
-                  adminCheckSnapshot = await getDocs(q);
-                  break;
-              } catch (err: unknown) {
-                  console.warn(`Lỗi kiểm tra admin (còn ${retries - 1} lần thử):`, err);
-                  retries--;
-                  if (retries === 0) throw err;
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-              }
-          }
-          
-          if (adminCheckSnapshot!.empty) {
-            setError(`Mã kho "${storeId}" hiện không có Quản trị viên quản lý. Bạn không thể xem dữ liệu.`);
-            setAllProducts([]);
-            setInventory([]);
-            setIsLoading(false);
-            setIsInitializing(false);
-            return;
-          }
-          sessionStorage.setItem(adminCacheKey, 'true');
-        }
-      }
-
-      // Smart Sync: Check single merged metadata doc
-      const syncMetaRef = doc(db, 'stores', storeId, 'metadata', 'sync');
-      let syncMetaSnap;
-      let retries = 3;
-      while (retries > 0) {
-          try {
-              syncMetaSnap = await getDoc(syncMetaRef);
-              break;
-          } catch (err: unknown) {
-              console.warn(`Lỗi tải metadata (còn ${retries - 1} lần thử):`, err);
-              retries--;
-              if (retries === 0) throw err;
-              await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-      }
-
-      let firestoreLatestProducts = 0;
-      let firestoreLatestInv = 0;
-      
-      if (syncMetaSnap!.exists()) {
-        const syncData = syncMetaSnap!.data();
-        firestoreLatestProducts = syncData.productsLastUpdated?.toMillis() || 0;
-        firestoreLatestInv = syncData.inventoryLastUpdated?.toMillis() || 0;
-      } else {
-        const [prodMetaSnap, invMetaSnap] = await Promise.all([
-            getDoc(doc(db, 'stores', storeId, 'metadata', 'products')),
-            getDoc(doc(db, 'stores', storeId, 'metadata', 'inventory'))
+      // Định nghĩa timeout 8 giây cho các thao tác mạng với Firestore
+      const runWithTimeout = <T>(promise: Promise<T>, ms = 8000): Promise<T> => {
+        return Promise.race([
+          promise,
+          new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Timeout kết nối Server (8s)")), ms))
         ]);
-        firestoreLatestProducts = prodMetaSnap.exists() ? prodMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
-        firestoreLatestInv = invMetaSnap.exists() ? invMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
-      }
+      };
 
-      const localLatestProducts = localProdTs?.getTime() || 0;
-      const localLatestInv = localInvTs?.getTime() || 0;
-
-      const shouldFetchProducts = firestoreLatestProducts > localLatestProducts || localProducts.length === 0;
-      const shouldFetchInventory = firestoreLatestInv > localLatestInv || localInventory.length === 0;
-
-      if (shouldFetchProducts || shouldFetchInventory) {
-          const fetchPromises = [];
-          if (shouldFetchProducts) fetchPromises.push(fetchProductsFromFirestore(storeId));
-          else fetchPromises.push(Promise.resolve(localProducts));
-
-          if (shouldFetchInventory) fetchPromises.push(fetchInventoryFromFirestore(storeId));
-          else fetchPromises.push(Promise.resolve(localInventory));
-
-          const [firestoreProducts, firestoreInventory] = await Promise.all(fetchPromises);
+      // Bọc toàn bộ các hoạt động Firestore bằng timeout
+      await runWithTimeout((async () => {
+        // Verify store has an admin (for Staff users) — cached in sessionStorage
+        if (userData?.role === 'staff') {
+          const adminCacheKey = `adminCheck_${storeId}`;
+          const cachedAdminCheck = sessionStorage.getItem(adminCacheKey);
           
-          if (shouldFetchProducts && firestoreProducts.length > 0) {
-              setAllProducts(firestoreProducts);
-              if (firestoreLatestProducts > 0) setUploadTimestamp(new Date(firestoreLatestProducts));
-              saveData(firestoreProducts, {
-                  fileName: fileName || 'Dữ liệu từ server',
-                  uploadTimestamp: new Date(firestoreLatestProducts),
-                  fileExportDate: fileExportDate
-              });
+          if (!cachedAdminCheck) {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('storeId', '==', storeId), where('role', '==', 'admin'), limit(1));
+            
+            let adminCheckSnapshot;
+            let retries = 3;
+            while (retries > 0) {
+                try {
+                    adminCheckSnapshot = await getDocs(q);
+                    break;
+                } catch (err: unknown) {
+                    console.warn(`Lỗi kiểm tra admin (còn ${retries - 1} lần thử):`, err);
+                    retries--;
+                    if (retries === 0) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            
+            if (adminCheckSnapshot!.empty) {
+              setError(`Mã kho "${storeId}" hiện không có Quản trị viên quản lý. Bạn không thể xem dữ liệu.`);
+              setAllProducts([]);
+              setInventory([]);
+              setIsLoading(false);
+              setIsInitializing(false);
+              return;
+            }
+            sessionStorage.setItem(adminCacheKey, 'true');
           }
+        }
 
-          if (shouldFetchInventory && firestoreInventory.length > 0) {
-              setInventory(firestoreInventory);
-              if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
-              saveInventoryData(firestoreInventory, new Date(firestoreLatestInv));
-          }
-      } else {
-          if (firestoreLatestProducts > 0) setUploadTimestamp(new Date(firestoreLatestProducts));
-          if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
-      }
+        // Smart Sync: Check single merged metadata doc
+        const syncMetaRef = doc(db, 'stores', storeId, 'metadata', 'sync');
+        let syncMetaSnap;
+        let retries = 3;
+        while (retries > 0) {
+            try {
+                syncMetaSnap = await getDoc(syncMetaRef);
+                break;
+            } catch (err: unknown) {
+                console.warn(`Lỗi tải metadata (còn ${retries - 1} lần thử):`, err);
+                retries--;
+                if (retries === 0) throw err;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
 
-      // Load manual products
-      try {
-        const manualDocs = await fetchManualProducts(storeId);
-        const manualProds: ManualProductWithId[] = manualDocs.map(d => ({
-          sanPham: d.sanPham,
-          msp: d.msp,
-          giaGoc: d.giaGoc,
-          giaGiam: d.giaGiam,
-          thuongERP: d.thuongERP,
-          thuongNong: d.thuongNong,
-          tongThuong: d.tongThuong,
-          khuyenMai: d.khuyenMai,
-          ngayIn: d.ngayIn,
-          selected: false,
-          quantity: 1,
-          firebaseId: d.id,
-        }));
-        setManualProducts(manualProds);
-        setAllProducts(prev => {
-          const filtered = prev.filter(p => !(p as ManualProductWithId).firebaseId);
-          return [...filtered, ...manualProds];
-        });
-      } catch (err) {
-        console.error('Error loading manual products:', err);
-      }
+        let firestoreLatestProducts = 0;
+        let firestoreLatestInv = 0;
+        
+        if (syncMetaSnap!.exists()) {
+          const syncData = syncMetaSnap!.data();
+          firestoreLatestProducts = syncData.productsLastUpdated?.toMillis() || 0;
+          firestoreLatestInv = syncData.inventoryLastUpdated?.toMillis() || 0;
+        } else {
+          const [prodMetaSnap, invMetaSnap] = await Promise.all([
+              getDoc(doc(db, 'stores', storeId, 'metadata', 'products')),
+              getDoc(doc(db, 'stores', storeId, 'metadata', 'inventory'))
+          ]);
+          firestoreLatestProducts = prodMetaSnap.exists() ? prodMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
+          firestoreLatestInv = invMetaSnap.exists() ? invMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
+        }
+
+        const localLatestProducts = localProdTs?.getTime() || 0;
+        const localLatestInv = localInvTs?.getTime() || 0;
+
+        const shouldFetchProducts = firestoreLatestProducts > localLatestProducts || localProducts.length === 0;
+        const shouldFetchInventory = firestoreLatestInv > localLatestInv || localInventory.length === 0;
+
+        if (shouldFetchProducts || shouldFetchInventory) {
+            const fetchPromises = [];
+            if (shouldFetchProducts) fetchPromises.push(fetchProductsFromFirestore(storeId));
+            else fetchPromises.push(Promise.resolve(localProducts));
+
+            if (shouldFetchInventory) fetchPromises.push(fetchInventoryFromFirestore(storeId));
+            else fetchPromises.push(Promise.resolve(localInventory));
+
+            const [firestoreProducts, firestoreInventory] = await Promise.all(fetchPromises);
+            
+            if (shouldFetchProducts && firestoreProducts.length > 0) {
+                setAllProducts(firestoreProducts);
+                if (firestoreLatestProducts > 0) setUploadTimestamp(new Date(firestoreLatestProducts));
+                saveData(firestoreProducts, {
+                    fileName: fileName || 'Dữ liệu từ server',
+                    uploadTimestamp: new Date(firestoreLatestProducts),
+                    fileExportDate: fileExportDate
+                });
+            }
+
+            if (shouldFetchInventory && firestoreInventory.length > 0) {
+                setInventory(firestoreInventory);
+                if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
+                saveInventoryData(firestoreInventory, new Date(firestoreLatestInv));
+            }
+        } else {
+            if (firestoreLatestProducts > 0) setUploadTimestamp(new Date(firestoreLatestProducts));
+            if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
+        }
+
+        // Load manual products
+        try {
+          const manualDocs = await fetchManualProducts(storeId);
+          const manualProds: ManualProductWithId[] = manualDocs.map(d => ({
+            sanPham: d.sanPham,
+            msp: d.msp,
+            giaGoc: d.giaGoc,
+            giaGiam: d.giaGiam,
+            thuongERP: d.thuongERP,
+            thuongNong: d.thuongNong,
+            tongThuong: d.tongThuong,
+            khuyenMai: d.khuyenMai,
+            ngayIn: d.ngayIn,
+            selected: false,
+            quantity: 1,
+            firebaseId: d.id,
+          }));
+          setManualProducts(manualProds);
+          setAllProducts(prev => {
+            const filtered = prev.filter(p => !(p as ManualProductWithId).firebaseId);
+            return [...filtered, ...manualProds];
+          });
+        } catch (err) {
+          console.error('Error loading manual products:', err);
+        }
+      })());
 
     } catch (err: unknown) {
       console.error("Error loading from Firestore:", err);
-      let displayError = "Lỗi tải dữ liệu từ server. Vui lòng kiểm tra kết nối mạng hoặc quyền truy cập.";
+      let displayError = "Không thể kết nối đến máy chủ để đồng bộ. Hệ thống đang chạy ở chế độ offline.";
       const errMessage = getErrorMessage(err);
-      try {
-        const errObj = JSON.parse(errMessage);
-        if (errObj.error) {
-          displayError = `Lỗi hệ thống: ${errObj.error}`;
-          if (errObj.error.includes('insufficient permissions')) {
-            displayError = "Bạn không có quyền truy cập dữ liệu của kho này. Vui lòng liên hệ Admin để kiểm tra quyền hạn.";
-          } else if (errObj.error.includes('Quota exceeded')) {
-            displayError = "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày. Vui lòng quay lại vào ngày mai hoặc nâng cấp gói dịch vụ.";
+      if (errMessage && errMessage.includes("8s")) {
+         displayError = "Không thể kết nối đến máy chủ (Quá thời gian phản hồi 8s). Bạn đang sử dụng dữ liệu offline.";
+      } else if (errMessage) {
+        try {
+          const errObj = JSON.parse(errMessage);
+          if (errObj.error) {
+            displayError = `Lỗi hệ thống: ${errObj.error}`;
+            if (errObj.error.includes('insufficient permissions')) {
+              displayError = "Bạn không có quyền truy cập dữ liệu của kho này. Vui lòng liên hệ Admin để kiểm tra quyền hạn.";
+            } else if (errObj.error.includes('Quota exceeded')) {
+              displayError = "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày. Vui lòng quay lại vào ngày mai.";
+            }
           }
+        } catch {
+          displayError = errMessage;
         }
-      } catch {
-        if (errMessage) displayError = errMessage;
       }
       setError(displayError);
     } finally {
