@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { HOURS_CONFIG } from '../constants';
 import * as idb from '../db/idb';
 import { DailyRequirements, ShiftDefinitions } from '../types';
@@ -227,6 +228,13 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         // 2. Tạo các chuỗi ca xoay vòng
         const slots = ['1', '2', '3', '4', '5', '6'];
         const totalReq = slots.reduce((sum, s) => sum + (reqs[s] || 0), 0);
+
+        // Chưa nhập ô "Yêu Cầu" nào → không có gì để tính, dừng lại thay vì ghi đè
+        // danh sách ca đang có sẵn bằng các pattern rỗng (mất dữ liệu đã cấu hình).
+        if (totalReq <= 0) {
+            toast.error('Vui lòng nhập số lượng "Yêu Cầu" cho ít nhất 1 ca trước khi gợi ý.', { duration: 3000 });
+            return;
+        }
 
         // Giả định số lượng nhân sự tối ưu là khoảng 1.5 - 2 lần tổng yêu cầu ca (để có ngày nghỉ)
         // Hoặc dựa trên yêu cầu thực tế nếu đã nhập.
