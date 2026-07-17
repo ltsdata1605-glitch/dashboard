@@ -44,6 +44,24 @@ Dự án thực tế gồm 4 khu vực "mini-app" song song hoạt động độ
 
 ---
 
+## 1.1. Backend — Cloud Functions & Firestore Rules (bổ sung 2026-07-17)
+
+Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend thật sự** (không chỉ Firebase BaaS thuần client-to-Firestore):
+
+| Thành phần | Vị trí | Vai trò |
+|---|---|---|
+| Cloud Functions | `functions/` (project Node/TypeScript riêng, KHÔNG thuộc build Vite) | `resolveSession`, `requestAccess`, `adminUpdateUser`, `generateWithGemini`, `demoteExpiredUsers` |
+| Firestore Rules | `firestore.rules` (repo root) | Chặn client (kể cả admin) ghi trực tiếp field nhạy cảm vào `users/{uid}` |
+
+**Quy tắc bắt buộc:**
+- 🔴 Mọi thay đổi `role`, `status`, `departmentId`, `expiresAt`, `requestedRole` của user (kể cả tự sửa hay admin duyệt người khác) **bắt buộc đi qua Cloud Function** (`resolveSession`/`requestAccess`/`adminUpdateUser`). **Cấm** `updateDoc`/`setDoc` trực tiếp các field này từ client — `firestore.rules` đã chặn cứng, code client vi phạm sẽ nhận `permission-denied`.
+- ⚠️ Khi thêm **collection/subcollection Firestore mới** ở root hoặc `features/phan-ca` (2 khu vực này dùng chung project Firebase `dashboa-7e20b`), **bắt buộc cập nhật `firestore.rules`** tương ứng. Quên bước này gây lỗi "Missing or insufficient permissions" im lặng (đã xảy ra thật với `users/{uid}/salesData` và `_system/stats` — audit ban đầu bỏ sót vì dùng grep quá hẹp, chỉ bắt `collection(db, 'x')` 1 tham số, không bắt được `collection(db, 'users', uid, 'salesData')` nhiều tham số).
+- `functions/` là project TypeScript độc lập (tsconfig/package.json riêng), bị loại trừ khỏi `tsconfig.json` và `eslint.config.js` ở gốc — không chạy qua `npm run check`, phải tự `cd functions && npm run typecheck && npm run build` để kiểm tra riêng.
+- Deploy: `npm run deploy:rules` / `npm run deploy:functions` (cần `firebase login` thủ công bằng tài khoản Google có quyền trên project — không tự động hoá, không phải việc agent tự chạy).
+- `features/sticker-event` dùng Firebase project riêng/cấu hình động (`firebase-applet-config.json`, gitignored) — **chưa** áp dụng pattern Cloud Functions này, vẫn ghi `role` trực tiếp từ client (xem `services/firebaseService.ts` trong feature đó). Việc này để ngoài phạm vi cho tới khi có yêu cầu cụ thể.
+
+---
+
 ## 2. Quy chuẩn Thiết kế & Giao diện (Design System)
 
 - **Màu sắc**: Chỉ dùng bảng màu semantic đã duyệt: `sky` (primary), `slate` (secondary), `emerald` (success), `amber` (warning), `rose` (danger). Cấm khai báo custom property màu sắc mới trong `features/*`.
