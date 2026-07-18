@@ -96,6 +96,10 @@ export function useStickerPrinterData() {
     const [printHistory, setPrintHistory] = useState<PrintHistoryEntry[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [savedLists, setSavedLists] = useState<SavedStickerList[]>([]);
+    // true = savedLists vừa được cập nhật từ storage (indexeddb-change), không phải người
+    // dùng gõ — effect ghi-lại IndexedDB đọc cờ này để không ghi lại y hệt dữ liệu vừa đọc
+    // ra (tránh vòng lặp vô hạn với useCloudSync.ts, xem 2 effect bên dưới).
+    const skipNextSavedListsSaveRef = useRef(false);
     const [showSavedLists, setShowSavedLists] = useState(false);
     const [previewName, setPreviewName] = useState('Quạt điều hoà Daikiosan DMI03');
     const [previewOldPrice, setPreviewOldPrice] = useState('5.490.000');
@@ -475,12 +479,18 @@ export function useStickerPrinterData() {
         };
     }, []);
 
-    // Sync savedLists từ cloud sync
+    // Sync savedLists từ cloud sync — đánh dấu lần cập nhật này KHÔNG phải do
+    // người dùng gõ, để effect "Sync savedLists to IndexedDB" bên dưới bỏ qua
+    // đúng 1 lần, tránh ghi lại y hệt dữ liệu vừa đọc từ storage (xem giải
+    // thích vòng lặp ở skipNextSavedListsSaveRef).
     useEffect(() => {
         const handleDbChange = (event: Event) => {
             if ((event as CustomEvent<{ key?: string }>).detail?.key === STICKER_SAVED_LISTS_KEY) {
                 getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(data => {
-                    if (data) setSavedLists(data);
+                    if (data) {
+                        skipNextSavedListsSaveRef.current = true;
+                        setSavedLists(data);
+                    }
                 });
             }
         };
@@ -551,9 +561,18 @@ export function useStickerPrinterData() {
         drawTitleSize, drawCodeSize, drawFooterSize
     ]);
 
-    // Sync savedLists to IndexedDB
+    // Sync savedLists to IndexedDB — bỏ qua nếu thay đổi này vừa đến từ chính
+    // storage (xem handleDbChange ở trên). Nếu không bỏ qua: đọc từ cloud →
+    // setSavedLists → effect này ghi lại y hệt dữ liệu đó → bắn lại
+    // 'ycx-setting-changed' → useCloudSync.ts (hooks/) coi là sửa đổi mới của
+    // user → đồng bộ lên Firestore lần nữa → cloud "mới hơn" → quay lại đầu →
+    // vòng lặp vô hạn ghi/đọc mỗi ~2.5s (đã xác nhận bằng log thật 2026-07-18).
     useEffect(() => {
         if (!isLoaded) return;
+        if (skipNextSavedListsSaveRef.current) {
+            skipNextSavedListsSaveRef.current = false;
+            return;
+        }
         const timer = setTimeout(async () => {
             try {
                 await saveSetting(STICKER_SAVED_LISTS_KEY, savedLists);

@@ -301,3 +301,29 @@ npm run deploy:functions               # stickerRegister/stickerResolveSession/s
 **⚠️ Rủi ro đã biết cần verify tiếp** (rút kinh nghiệm từ mục 13, điểm 3 — `generateWithGemini` từng bị thiếu quyền "Allow public access" trên Cloud Run ngay sau lần deploy/tạo mới đầu tiên, khiến request bị chặn ở tầng hạ tầng trước khi chạm code): 3 hàm sticker* vừa **tạo mới lần đầu** (create operation, không phải update) nên có cùng rủi ro. **Chưa tự test được** (cần đăng nhập sticker-event thật). Trước khi báo tính năng hoạt động, cần bạn tự đăng nhập thử 1 tài khoản sticker-event và xác nhận không gặp lỗi "internal"/"UNAUTHENTICATED" ở tầng Cloud Run — nếu có, vào Google Cloud Console → Cloud Run → từng hàm `stickerregister`/`stickerresolvesession`/`stickeradminupdateuser` → tab Security → bật "Allow public access" (không cần deploy lại).
 
 **Vẫn CHƯA deploy web** (`npm run deploy` / `gh-pages`) — production web hiện vẫn chạy code cũ (chưa gọi các hàm sticker* mới), nên chưa ảnh hưởng user thật. Chỉ chạy `npm run deploy` sau khi đã tự test kỹ luồng đăng nhập/đăng ký/quản trị sticker-event với functions+rules mới này.
+
+### 14.6. Bug phát hiện khi test thật (2026-07-18) — đã sửa: cache sessionStorage bỏ qua đồng bộ claim
+
+User tự test bằng `npm run dev` với 1 tài khoản NV có sẵn (Kho 300) → gặp lỗi Firestore "Missing or insufficient permissions" ngay ở màn hình In Sticker (đọc `stores/{storeId}/**`).
+
+**Nguyên nhân**: `Login.tsx` cache `userData_{uid}` vào `sessionStorage`; khi cache tồn tại, code trả về `onLoginSuccess` ngay và **bỏ qua** việc gọi `stickerResolveSession()` + `user.getIdToken(true)`. Tài khoản đã đăng nhập từ TRƯỚC khi 3 Cloud Function này tồn tại có token không mang claim `stickerRole`/`stickerStoreId` → rule `myStoreId() == storeId` luôn sai → mọi đọc/ghi `stores/{storeId}/**` bị từ chối. Đăng xuất/đăng nhập lại cùng tài khoản **không tự sửa được** vì cache key theo `uid`, vẫn trúng cache cũ.
+
+**Đã sửa** (`Login.tsx`, nhánh cache-hit): trước khi tin cache, gọi `user.getIdTokenResult()` (đọc token hiện có, không force refresh) kiểm tra `claims.stickerRole` đã tồn tại chưa — nếu chưa thì bỏ qua cache, rơi xuống gọi `stickerResolveSession()` như bình thường (tự đồng bộ claim + cache lại). User cũ chỉ cần đăng nhập lại 1 lần sau khi có bản code này là tự khỏi, không cần tự xoá `sessionStorage` tay.
+
+**Cần làm**: build lại + `npm run dev`/test lại đúng tài khoản NV/Kho 300 đã báo lỗi để xác nhận hết "Missing or insufficient permissions", rồi mới tính đến `npm run deploy`.
+
+### 14.7. Bug thứ 2 phát hiện khi test thật (2026-07-18) — đã sửa: vòng lặp đồng bộ vô hạn `stickerSavedLists`
+
+Sau khi hết lỗi permission (14.6), log Console cho thấy `hooks/useCloudSync.ts` (ROOT, cơ chế đồng bộ "khóa nặng" dùng chung cho cả 4 khu vực) ghi/đọc lại key `stickerSavedLists` liên tục mỗi ~2.5 giây, không dừng — **không liên quan gì đến phần bảo mật sticker-event vừa làm**, là bug riêng ở tầng đồng bộ chung.
+
+**Nguyên nhân** (đã trace qua code, không phải đoán): vòng khép kín 4 bước giữa `features/sticker-event/hooks/useStickerPrinterData.ts` và `hooks/useCloudSync.ts`:
+1. Cloud có bản mới → `useCloudSync.ts` ghi xuống IndexedDB (`saveSettingFromCloud`, dùng chung DB `BI_HUB_DATABASE_V2` với zone sticker-event — xem mục kiến trúc "zone-local dbService") → bắn event `indexeddb-change`.
+2. `useStickerPrinterData.ts` (dòng ~478-489 bản cũ) nghe event đó → `setSavedLists(data)`.
+3. Effect "Sync savedLists to IndexedDB" (dòng ~554-565 bản cũ) chạy lại vì `savedLists` đổi (state) → gọi `saveSetting()` ghi lại **y hệt dữ liệu vừa đọc từ storage** → hàm này (khác `saveSettingFromCloud`) bắn thêm event `ycx-setting-changed`.
+4. `useCloudSync.ts` nghe `ycx-setting-changed` → coi là sửa đổi thật của user → debounce 2s → ghi lại lên Firestore với `serverTimestamp()` mới → cloud "mới hơn" local → quay lại bước 1.
+
+**Đã sửa** (chỉ trong `useStickerPrinterData.ts`, không đụng `hooks/useCloudSync.ts` dùng chung cho 4 khu vực): thêm `skipNextSavedListsSaveRef` — khi state `savedLists` được cập nhật từ `indexeddb-change` (bước 2), đánh dấu cờ này; effect ghi-lại (bước 3) đọc cờ, nếu đang bật thì bỏ qua đúng 1 lần rồi tắt cờ, không ghi lại/không bắn `ycx-setting-changed` nữa → cắt vòng lặp.
+
+**Ghi chú phạm vi**: grep thấy 4 file khác (`features/bi-dashboard/hooks/useMonthlyBonusArchive.ts`, `useNhanVienData.ts`, `useDashboardLogic.ts`, `hooks/useEmployeeAnalysisLogic.ts`) cũng nghe `indexeddb-change` — **chưa kiểm tra** có cùng pattern lỗi (effect tự ghi-lại state vừa nhận từ storage) hay không, vì ngoài phạm vi bug cụ thể được yêu cầu sửa lần này. Nếu sau này gặp log lặp tương tự ở các key khác (`productConfig`, `customTabs`...), nên soát lại đúng 4 file này theo cùng cách.
+
+**Cần làm**: test lại `npm run dev`, mở "In Sticker" > Danh sách đã lưu, theo dõi Console — log `[Cloud Sync] Real-time... stickerSavedLists` không được lặp lại vô hạn nữa (chỉ chạy 1 lần khi có thay đổi thật).

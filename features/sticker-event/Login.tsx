@@ -31,13 +31,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Try cached userData first to save a Firestore read
+          // Try cached userData first to save a Firestore read — nhưng chỉ tin cache
+          // nếu token hiện tại đã có custom claim stickerRole. Phiên đăng nhập từ
+          // TRƯỚC khi 3 Cloud Function này tồn tại (hoặc trước khi tài khoản này
+          // từng gọi stickerResolveSession) sẽ có token không claim gì cả — nếu cứ
+          // tin cache thì mọi thao tác đọc stores/{storeId}/** sẽ bị Rules từ chối
+          // vĩnh viễn cho tới khi user tự xoá sessionStorage (đăng xuất/đăng nhập lại
+          // cùng uid vẫn trúng cache cũ, không tự sửa được).
           const cacheKey = `userData_${user.uid}`;
           const cachedData = sessionStorage.getItem(cacheKey);
           if (cachedData) {
             try {
-              onLoginSuccess(user, JSON.parse(cachedData));
-              return;
+              const parsed = JSON.parse(cachedData) as StickerEventUserData;
+              const tokenResult = await user.getIdTokenResult();
+              if (tokenResult.claims.stickerRole) {
+                onLoginSuccess(user, parsed);
+                return;
+              }
+              // Claim chưa đồng bộ — bỏ qua cache, rơi xuống gọi stickerResolveSession() bên dưới.
             } catch { /* cache invalid, fall through to server */ }
           }
 
