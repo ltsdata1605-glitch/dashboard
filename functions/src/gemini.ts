@@ -22,7 +22,7 @@ export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, async (r
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY.value() });
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-pro',
+    model: 'gemini-3.5-flash',
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
