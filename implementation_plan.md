@@ -278,3 +278,13 @@ Trái với mục 0 ghi "dùng Firebase project riêng" — audit sâu cho thấ
 - Không đụng đến `features/bi-dashboard` (vẫn xác nhận không có truy cập Firestore riêng).
 
 **⚠️ Trạng thái deploy tại thời điểm viết mục này**: toàn bộ 6 commit của mục 11-13 (gắn nút AI, cập nhật CLAUDE.md, và 4 fix ở trên) **mới chỉ có ở local, CHƯA push lên GitHub, CHƯA deploy production** (`gh-pages` lần cuối publish 2026-07-17 16:39, trước tất cả các commit này). Cần chạy `npm run deploy` để đưa lên production thật.
+
+### 14.4. Lỗ hổng leo thang đặc quyền phát hiện khi review (2026-07-18) — ĐÃ SỬA
+
+Trước khi deploy, review phát hiện `protectedKeys()` trong `firestore.stickerevent.rules` (bản nháp mục 14.2) chỉ khoá `['role', 'storeId']`, bỏ sót `username`. Trong khi `stickerResolveSession` (gọi mỗi lần đăng nhập) tin `username` đọc từ Firestore để xét Super Admin (`isSuperAdminIdentity` so khớp `username === 'admin'/'21707'`) — field này KHÔNG được khoá nên client tự `updateDoc(users/{uid}, {username:'admin'})` là tự cấp được custom claim `stickerRole:'superadmin'` cho chính mình, bỏ qua mọi ràng buộc `storeId`. Đây là lỗ hổng nghiêm trọng nhất trong toàn bộ đợt mở rộng bảo mật sang sticker-event, phá vỡ đúng mục tiêu "không còn đường nào để client tự nâng quyền" đã đặt ra từ mục 2.
+
+So sánh với root (`functions/src/session.ts` dùng `SUPER_ADMIN_EMAIL` — chỉ đọc từ `request.auth.token.email` đã xác thực bởi Firebase Auth, không bao giờ đọc từ Firestore do client ghi) thì đây là điểm sticker-event làm khác/kém an toàn hơn.
+
+**Đã sửa**: thêm `'username'` vào `protectedKeys()` (`firestore.stickerevent.rules`). Không cần sửa `functions/src/stickerEvent.ts` — logic server giữ nguyên, lỗ hổng nằm hoàn toàn ở tầng Rules thiếu khoá field. Đã grep xác nhận không nơi nào khác trong `features/sticker-event` tự ghi `username` ngoài `stickerRegister` (qua Admin SDK, không bị Rules chặn) nên không phá tính năng nào.
+
+**Cần làm khi deploy** (bổ sung vào checklist mục 11): sau `firebase deploy --only firestore`, test lại đúng kịch bản này trên Emulator/thật — 1 tài khoản staff/admin thường tự `updateDoc` field `username` phải nhận `permission-denied`.

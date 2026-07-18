@@ -8,7 +8,13 @@ service cloud.firestore {
     function isSuperAdmin() { return role() == 'superadmin'; }
     function isAdmin()      { return role() == 'admin' || isSuperAdmin(); }
     function protectedKeys() {
-      return ['role', 'storeId'];
+      // 'username' bị khoá vì stickerResolveSession() (functions/src/stickerEvent.ts)
+      // tin dữ liệu Firestore của field này để xét quyền Super Admin
+      // (isSuperAdminIdentity so khớp username == 'admin'/'21707'). Nếu không khoá,
+      // 1 user thường tự updateDoc(username:'admin') rồi đăng nhập lại là tự
+      // được cấp custom claim stickerRole:'superadmin' — leo thang đặc quyền
+      // toàn hệ thống mà không qua Cloud Function nào.
+      return ['role', 'storeId', 'username'];
     }
 
     match /users/{uid} {
