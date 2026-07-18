@@ -288,3 +288,16 @@ So sánh với root (`functions/src/session.ts` dùng `SUPER_ADMIN_EMAIL` — ch
 **Đã sửa**: thêm `'username'` vào `protectedKeys()` (`firestore.stickerevent.rules`). Không cần sửa `functions/src/stickerEvent.ts` — logic server giữ nguyên, lỗ hổng nằm hoàn toàn ở tầng Rules thiếu khoá field. Đã grep xác nhận không nơi nào khác trong `features/sticker-event` tự ghi `username` ngoài `stickerRegister` (qua Admin SDK, không bị Rules chặn) nên không phá tính năng nào.
 
 **Cần làm khi deploy** (bổ sung vào checklist mục 11): sau `firebase deploy --only firestore`, test lại đúng kịch bản này trên Emulator/thật — 1 tài khoản staff/admin thường tự `updateDoc` field `username` phải nhận `permission-denied`.
+
+### 14.5. Đã deploy rules + functions lên production Firebase (2026-07-18)
+
+Đã chạy (theo yêu cầu trực tiếp của user, nêu rõ đúng 2 lệnh):
+```bash
+npx firebase deploy --only firestore   # firestore.rules + firestore.stickerevent.rules — cả 2 "released" thành công
+npm run deploy:functions               # stickerRegister/stickerResolveSession/stickerAdminUpdateUser: create OK; 5 hàm cũ: update OK
+```
+`firebase login:list` xác nhận CLI đã đăng nhập sẵn `lts.truongson@gmail.com` trước khi chạy — không cần thêm bước đăng nhập.
+
+**⚠️ Rủi ro đã biết cần verify tiếp** (rút kinh nghiệm từ mục 13, điểm 3 — `generateWithGemini` từng bị thiếu quyền "Allow public access" trên Cloud Run ngay sau lần deploy/tạo mới đầu tiên, khiến request bị chặn ở tầng hạ tầng trước khi chạm code): 3 hàm sticker* vừa **tạo mới lần đầu** (create operation, không phải update) nên có cùng rủi ro. **Chưa tự test được** (cần đăng nhập sticker-event thật). Trước khi báo tính năng hoạt động, cần bạn tự đăng nhập thử 1 tài khoản sticker-event và xác nhận không gặp lỗi "internal"/"UNAUTHENTICATED" ở tầng Cloud Run — nếu có, vào Google Cloud Console → Cloud Run → từng hàm `stickerregister`/`stickerresolvesession`/`stickeradminupdateuser` → tab Security → bật "Allow public access" (không cần deploy lại).
+
+**Vẫn CHƯA deploy web** (`npm run deploy` / `gh-pages`) — production web hiện vẫn chạy code cũ (chưa gọi các hàm sticker* mới), nên chưa ảnh hưởng user thật. Chỉ chạy `npm run deploy` sau khi đã tự test kỹ luồng đăng nhập/đăng ký/quản trị sticker-event với functions+rules mới này.
