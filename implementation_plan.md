@@ -226,3 +226,16 @@ Sau khi deploy functions + rules và test bằng `npm run dev`, Console báo 2 l
 npx firebase deploy --only firestore:rules
 ```
 Sau đó test lại `npm run dev`, xác nhận Console không còn 2 lỗi trên, rồi mới sang Bước 6 (`npm run deploy` production).
+
+## 13. Gắn tính năng AI vào UI + 4 lớp lỗi phải gỡ tuần tự (2026-07-17 → 07-18) — ĐÃ XONG, ĐÃ XÁC NHẬN HOẠT ĐỘNG
+
+`AiSuggestPatternModal.tsx` (gọi `generateWithGemini`) trước đó là code mồ côi — import trong `PhanCaView.tsx` nhưng chưa từng gắn nút mở lên UI. Đã gắn nút "Gợi ý AI" vào `EditPatternModal.tsx` (đúng chỗ nút "Gợi ý ca xoay" cục bộ bị lỗi vừa xóa, xem commit `61f3030`). Quá trình test thật sau đó lộ ra 4 lớp lỗi độc lập, phải gỡ tuần tự:
+
+1. **z-index** — modal AI mở lồng trong `EditPatternModal` (`z-[60]`) nhưng dùng z-index mặc định `z-50` của component `Modal` → bị che khuất, tưởng bấm không phản ứng. Fix: set `z-[70]` (commit `edeed3e`).
+2. **Sai session Firebase** — `features/phan-ca/services/firebase.ts` dùng named app riêng (`'phanca'`) để né lỗi "app already exists", nhưng app riêng này có auth session KHÁC session người dùng thật (ở app `[DEFAULT]`, `services/firebase.ts` gốc). Gọi Cloud Function qua app riêng này → không đính kèm ID token → Cloud Run từ chối ở tầng hạ tầng ("Empty Authorization header"). Fix: expose `functions` VÀ `db` (gắn đúng session thật) qua root `AuthContext`, `AiSuggestPatternModal.tsx` và `firestoreSync.ts`/`usePhanCaData.ts` lấy qua `useAuth()` thay vì tự tạo từ app riêng (commit `a6b446f`, `13fddae`).
+3. **Thiếu quyền "Allow public access" trên Cloud Run** — sót lại từ các lần deploy đầu gặp lỗi 409 liên tục (xem mục troubleshooting trước đó). Xác nhận qua log: `resolvesession` có `"Callable request verification passed"`, `generatewithgemini` thì không — bị chặn trước khi chạm code. **Người dùng tự cấp quyền** qua Google Cloud Console → Cloud Run → `generatewithgemini` → tab Security → "Allow public access" (không cần qua CLI/deploy lại).
+4. **Model `gemini-2.5-pro` đã bị Google ngừng cấp cho user mới** — lỗi thật đọc được từ log sau khi 3 lớp trên đã thông: `"This model models/gemini-2.5-pro is no longer available to new users"`. Đổi sang `gemini-3.5-flash` (bản GA — Generally Available — Google khuyến nghị thay thế, xác nhận qua tài liệu chính thức tháng 07/2026). Commit `ddb76ac`, đã deploy riêng hàm này.
+
+**Bài học rút ra**: khi 1 trong 5 Cloud Function báo lỗi mà 4 hàm còn lại hoạt động bình thường, đừng vội nghi ngờ code chung (rules/client auth) — nhiều khả năng là cấu hình deploy/hạ tầng riêng của đúng hàm đó (IAM invoker, model bên thứ 3 hết hạn...). Luôn đọc log thật (`firebase functions:log`) trước khi đoán, vì thông báo lỗi phía client ("internal") không phản ánh nguyên nhân gốc.
+
+**⚠️ Trạng thái deploy tại thời điểm viết mục này**: toàn bộ 6 commit của mục 11-13 (gắn nút AI, cập nhật CLAUDE.md, và 4 fix ở trên) **mới chỉ có ở local, CHƯA push lên GitHub, CHƯA deploy production** (`gh-pages` lần cuối publish 2026-07-17 16:39, trước tất cả các commit này). Cần chạy `npm run deploy` để đưa lên production thật.
