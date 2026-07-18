@@ -1,6 +1,7 @@
 import { db, auth } from '../firebase';
 import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
 import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord } from '../types';
+import { stickerAdminUpdateUser } from './adminUserService';
 
 enum OperationType {
   CREATE = 'create',
@@ -52,8 +53,6 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
-
-const BATCH_SIZE = 500;
 
 export const uploadProductsToFirestore = async (storeId: string, products: Product[]) => {
   if (!storeId) throw new Error("Mã kho không hợp lệ.");
@@ -202,13 +201,14 @@ export const fetchAllUsers = async (storeId: string): Promise<StickerEventUserRe
     }
 };
 
+// Cả 3 hàm dưới đây gọi Cloud Function stickerAdminUpdateUser thay vì ghi
+// trực tiếp từ client — giữ nguyên chữ ký hàm để UserManagementModal.tsx/
+// SuperAdminModal.tsx không cần sửa gì thêm. Server kiểm tra caller có phải
+// admin/superadmin, và (trừ superadmin) target phải cùng storeId với caller.
 export const updateUserRole = async (userId: string, role: 'admin' | 'staff') => {
     if (!userId) throw new Error("User ID is required");
-    const userRef = doc(db, 'users', userId);
     try {
-        const batch = writeBatch(db);
-        batch.update(userRef, { role });
-        await batch.commit();
+        await stickerAdminUpdateUser({ action: 'setRole', targetUid: userId, role });
     } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
     }
@@ -216,9 +216,8 @@ export const updateUserRole = async (userId: string, role: 'admin' | 'staff') =>
 
 export const deleteUserDoc = async (userId: string) => {
     if (!userId) throw new Error("User ID is required");
-    const userRef = doc(db, 'users', userId);
     try {
-        await deleteDoc(userRef);
+        await stickerAdminUpdateUser({ action: 'delete', targetUid: userId });
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, `users/${userId}`);
     }
@@ -226,22 +225,8 @@ export const deleteUserDoc = async (userId: string) => {
 
 export const clearAllUsers = async (storeId: string) => {
     if (!storeId) return;
-    const usersRef = collection(db, 'users');
     try {
-    const q = query(usersRef, where('storeId', '==', storeId), limit(300));
-        const snapshot = await getDocs(q);
-        const docs = snapshot.docs;
-        
-        for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-            const batch = writeBatch(db);
-            const chunk = docs.slice(i, i + BATCH_SIZE);
-            chunk.forEach(doc => {
-                if (doc.data().username !== 'admin') {
-                    batch.delete(doc.ref);
-                }
-            });
-            await batch.commit();
-        }
+        await stickerAdminUpdateUser({ action: 'clearStore', storeId });
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, 'users');
     }

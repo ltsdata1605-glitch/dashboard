@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db } from './firebase';
+import { auth } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { Button } from '../../components/shared/ui/Button';
 import { StickerEventUserData } from './types';
+import { stickerRegister, stickerResolveSession } from './services/sessionService';
+import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 interface LoginProps {
   onLoginSuccess: (user: User, userData: StickerEventUserData) => void;
@@ -26,9 +27,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Default password for staff to enable "passwordless" experience
-  const STAFF_DEFAULT_PASSWORD = "staff_default_password_123";
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -40,55 +38,59 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             try {
               onLoginSuccess(user, JSON.parse(cachedData));
               return;
-            } catch { /* cache invalid, fall through to Firestore */ }
+            } catch { /* cache invalid, fall through to server */ }
           }
 
-          let userDoc;
+          let profile;
           let retries = 3;
           let lastError: unknown;
 
           while (retries > 0) {
             try {
-              userDoc = await getDoc(doc(db, 'users', user.uid));
+              profile = await stickerResolveSession();
               break; // Success
             } catch (err: unknown) {
-              console.warn(`Lỗi tải dữ liệu người dùng (còn ${retries - 1} lần thử):`, err);
+              const code = getErrorCode(err) || '';
+              // "not-found" = hồ sơ Firestore chưa kịp ghi xong ngay sau khi đăng ký
+              // (stickerRegister vẫn đang chạy) — thử lại thay vì báo lỗi ngay.
+              const isNotFound = code.includes('not-found');
+              console.warn(`Lỗi tải phiên đăng nhập (còn ${retries - 1} lần thử):`, err);
               lastError = err;
               retries--;
-              if (retries === 0) throw lastError;
-              // Đợi 1 giây trước khi thử lại (giúp xử lý lỗi token chưa kịp refresh hoặc mạng chậm)
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              if (retries === 0 || !isNotFound) throw lastError;
+              await new Promise(resolve => setTimeout(resolve, 1200));
             }
           }
-          
-          // Handle race condition during registration where doc is created right after auth
-          if (userDoc && !userDoc.exists()) {
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              userDoc = await getDoc(doc(db, 'users', user.uid));
-          }
 
-          if (userDoc && userDoc.exists()) {
-            const data = userDoc.data();
-            // Cache to sessionStorage to avoid Firestore read on next page load
+          if (profile) {
+            // Đồng bộ custom claims (stickerRole/stickerStoreId) mới nhất vào ID token
+            // để các thao tác tiếp theo (đọc danh sách user theo kho...) dùng đúng quyền.
+            await user.getIdToken(true);
+
+            const data: StickerEventUserData = {
+              uid: user.uid,
+              username: profile.username ?? undefined,
+              email: user.email ?? undefined,
+              role: profile.role,
+              storeId: profile.storeId ?? undefined,
+            };
             sessionStorage.setItem(cacheKey, JSON.stringify(data));
             onLoginSuccess(user, data);
-          } else {
-            setError('Không tìm thấy thông tin người dùng. Tài khoản có thể đã bị xóa.');
-            await signOut(auth);
-            setLoading(false);
           }
         } catch (err: unknown) {
-          console.error("Lỗi kết nối Firestore:", err);
-          const authErr = err as AuthErrorLike;
-          const errMsg = authErr.message || "";
-          const errCode = authErr.code || "";
-          
-          if (errMsg.includes("permissions") || errMsg.includes("Quyền") || errCode === 'permission-denied') {
-             setError('Lỗi phân quyền. Vui lòng tải lại trang (F5) hoặc liên hệ Admin.');
-          } else if (errCode === 'unavailable' || errCode === 'deadline-exceeded') {
-             setError('Không thể kết nối đến máy chủ dữ liệu. Vui lòng kiểm tra internet hoặc thử lại sau.');
+          console.error("Lỗi lấy thông tin người dùng:", err);
+          const code = getErrorCode(err) || '';
+          const msg = getErrorMessage(err) || '';
+
+          if (code.includes('not-found')) {
+            setError('Không tìm thấy thông tin người dùng. Tài khoản có thể đã bị xóa.');
+            await signOut(auth);
+          } else if (code.includes('permission-denied') || msg.includes('permissions') || msg.includes('Quyền')) {
+            setError('Lỗi phân quyền. Vui lòng tải lại trang (F5) hoặc liên hệ Admin.');
+          } else if (code.includes('unavailable') || code.includes('deadline-exceeded')) {
+            setError('Không thể kết nối đến máy chủ dữ liệu. Vui lòng kiểm tra internet hoặc thử lại sau.');
           } else {
-             setError(`Lỗi kết nối (${errCode || 'unknown'}): ${errMsg || 'Vui lòng kiểm tra mạng và thử lại.'}`);
+            setError(`Lỗi kết nối (${code || 'unknown'}): ${msg || 'Vui lòng kiểm tra mạng và thử lại.'}`);
           }
           setLoading(false);
         }
@@ -106,18 +108,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
     // Append a dummy domain to create a valid email format for Firebase Auth
     const email = username.includes('@') ? username : `${username}@example.com`;
-    
-    // Determine password to use
+
+    // Firebase requires at least 6 characters — nếu user nhập mật khẩu ngắn
+    // hơn thì lặp lại cho đủ 6 ký tự (áp dụng cho cả admin lẫn staff — không
+    // còn mật khẩu mặc định dùng chung nữa, mỗi người tự đặt mật khẩu riêng).
     let finalPassword = password;
-    
-    if (role === 'staff') {
-        finalPassword = STAFF_DEFAULT_PASSWORD;
-    } else {
-        // Firebase requires at least 6 characters. 
-        // If user enters '123', we pad it to '123123' to meet the requirement.
-        if (password && password.length < 6) {
-            finalPassword = password.repeat(Math.ceil(6 / password.length)).substring(0, 6);
-        }
+    if (password && password.length < 6) {
+        finalPassword = password.repeat(Math.ceil(6 / password.length)).substring(0, 6);
     }
 
     try {
@@ -150,64 +147,46 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             return;
         }
 
-        // Check if Store ID is already taken by another Admin (if registering as Admin)
-        // Or check if Store ID exists (if registering as Staff)
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('storeId', '==', cleanStoreId), where('role', '==', 'admin'), limit(1));
-        const adminCheckSnapshot = await getDocs(q);
-        
-        if (role === 'admin') {
-            if (!adminCheckSnapshot.empty) {
-                setError(`Mã kho "${cleanStoreId}" đã có quản trị viên. Mỗi mã kho chỉ được có 1 tài khoản Admin duy nhất.`);
-                setLoading(false);
-                return;
-            }
-        } else if (role === 'staff') {
-            if (adminCheckSnapshot.empty) {
-                setError(`Lưu ý về lỗi "Mã kho chưa được khởi tạo": Lỗi này xuất hiện khi một Nhân viên đăng ký vào một mã kho mà chưa có Quản lý (Admin) nào đăng ký trước đó cho kho đó. Bạn hãy thông tin Quản lý, cần đăng ký tài khoản cho mã kho, sau đó Nhân viên mới có thể đăng ký vào.`);
-                setLoading(false);
-                return;
+        // Việc kiểm tra "kho đã có admin chưa" giờ do server (stickerRegister)
+        // quyết định — client không tự đọc Firestore rồi tự tin ghi thẳng nữa.
+
+        let user;
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, finalPassword);
+            user = userCredential.user;
+        } catch (regErr: unknown) {
+            if ((regErr as AuthErrorLike).code === 'auth/email-already-in-use') {
+                // If email exists, try to login to update the profile (allows updating storeId)
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, finalPassword);
+                    user = userCredential.user;
+                } catch {
+                    // If login fails, it means password was wrong or some other issue
+                    throw {
+                        code: 'auth/email-already-in-use',
+                        message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
+                    };
+                }
+            } else {
+                throw regErr;
             }
         }
 
-        // Password check removed as per user request
-
-        try {
-            let user;
+        if (user) {
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, finalPassword);
-                user = userCredential.user;
-            } catch (regErr: unknown) {
-                if ((regErr as AuthErrorLike).code === 'auth/email-already-in-use') {
-                    // If email exists, try to login to update the profile (allows updating storeId)
-                    try {
-                        const userCredential = await signInWithEmailAndPassword(auth, email, finalPassword);
-                        user = userCredential.user;
-                    } catch {
-                        // If login fails, it means password was wrong or some other issue
-                        throw {
-                            code: 'auth/email-already-in-use',
-                            message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
-                        };
-                    }
+                await stickerRegister({ username, storeId: cleanStoreId, requestedRole: role });
+            } catch (fnErr: unknown) {
+                const code = getErrorCode(fnErr) || '';
+                let message = 'Đăng ký thất bại. Vui lòng thử lại.';
+                if (code.includes('already-exists')) {
+                    message = `Mã kho "${cleanStoreId}" đã có quản trị viên. Mỗi mã kho chỉ được có 1 tài khoản Admin duy nhất.`;
+                } else if (code.includes('failed-precondition')) {
+                    message = `Lưu ý về lỗi "Mã kho chưa được khởi tạo": Lỗi này xuất hiện khi một Nhân viên đăng ký vào một mã kho mà chưa có Quản lý (Admin) nào đăng ký trước đó cho kho đó. Bạn hãy thông tin Quản lý, cần đăng ký tài khoản cho mã kho, sau đó Nhân viên mới có thể đăng ký vào.`;
                 } else {
-                    throw regErr;
+                    message = getErrorMessage(fnErr) || message;
                 }
+                throw { code: 'sticker/register-failed', message };
             }
-
-            if (user) {
-                // Create or update user document in Firestore
-                await setDoc(doc(db, 'users', user.uid), {
-                  uid: user.uid,
-                  username: username,
-                  email: user.email,
-                  role: role,
-                  storeId: cleanStoreId,
-                  createdAt: new Date()
-                }, { merge: true });
-            }
-        } catch (regErr: unknown) {
-            throw regErr;
         }
       }
       setLoading(false);
@@ -215,7 +194,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       const authErr = err as AuthErrorLike;
       console.error("Auth Error Details:", authErr.code, authErr.message);
 
-      if (authErr.code === 'auth/email-already-in-use') {
+      if (authErr.code === 'sticker/register-failed') {
+        setError(authErr.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      } else if (authErr.code === 'auth/email-already-in-use') {
         setError(authErr.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng thử Đăng nhập.');
       } else if (authErr.code === 'auth/invalid-email') {
         setError('Tên đăng nhập không hợp lệ.');
@@ -303,22 +284,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
 
-          {/* Password field only for Admin */}
-          {role === 'admin' && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Mật khẩu
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                required={role === 'admin'}
-                placeholder="Nhập mật khẩu..."
-              />
-            </div>
-          )}
+          {/* Mật khẩu — bắt buộc cho cả 2 vai trò, mỗi người tự đặt riêng
+              (không còn dùng chung 1 mật khẩu mặc định cho mọi nhân viên) */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Mật khẩu
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              required
+              placeholder="Nhập mật khẩu..."
+            />
+          </div>
 
           {/* Store ID required for both Admin and Staff only during Registration */}
           {!isLogin && (

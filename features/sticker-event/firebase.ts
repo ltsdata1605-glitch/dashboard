@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 const STICKER_APP_NAME = 'stickerevent';
 
@@ -54,4 +55,9 @@ const app = getApps().find(a => a.name === STICKER_APP_NAME)
 
 export const auth = getAuth(app);
 export const db = getFirestore(app, dbId);
+// An toàn để dùng getFunctions(app) trực tiếp ở đây (khác với bug đã gặp ở
+// phan-ca) — Login.tsx đăng nhập/đăng ký NGAY TRÊN app riêng này (không mượn
+// session app khác), nên auth.currentUser của app này luôn đúng người dùng
+// thật, request gọi Cloud Function sẽ có Authorization header hợp lệ.
+export const functions = getFunctions(app);
 

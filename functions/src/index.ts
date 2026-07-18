@@ -3,3 +3,4 @@
 export { resolveSession, requestAccess, demoteExpiredUsers } from './session';
 export { adminUpdateUser } from './admin';
 export { generateWithGemini } from './gemini';
+export { stickerRegister, stickerResolveSession, stickerAdminUpdateUser } from './stickerEvent';

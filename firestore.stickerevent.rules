@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isSelf(uid)   { return isSignedIn() && request.auth.uid == uid; }
+    function role()        { return isSignedIn() ? request.auth.token.stickerRole : null; }
+    function myStoreId()   { return isSignedIn() ? request.auth.token.stickerStoreId : null; }
+    function isSuperAdmin() { return role() == 'superadmin'; }
+    function isAdmin()      { return role() == 'admin' || isSuperAdmin(); }
+    function protectedKeys() {
+      return ['role', 'storeId'];
+    }
+
+    match /users/{uid} {
+      allow get:    if isSelf(uid) || isSuperAdmin() || (role() == 'admin' && resource.data.storeId == myStoreId());
+      allow list:   if isSuperAdmin() || (role() == 'admin' && resource.data.storeId == myStoreId());
+      // Không có allow create — hồ sơ user chỉ được tạo qua Cloud Function
+      // stickerRegister (Admin SDK bypass rules). Client không tự setDoc được nữa.
+      allow update: if isSelf(uid)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedKeys());
+      // Đổi role/storeId của CHÍNH MÌNH hay người khác đều phải qua Cloud
+      // Function stickerAdminUpdateUser — không có allow update cho isAdmin() ở đây.
+
+      match /state/{doc} { allow read, write: if isSelf(uid); }
+    }
+
+    match /stores/{storeId}/{document=**} {
+      allow read, write: if isSignedIn() && (isSuperAdmin() || myStoreId() == storeId);
+    }
+  }
+}

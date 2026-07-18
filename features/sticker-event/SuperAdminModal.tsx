@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
-import { collection, query, where, getDocs, deleteDoc, doc, limit, Query, DocumentData } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, Query, DocumentData } from 'firebase/firestore';
 import { Search, Trash2, ShieldAlert, User as UserIcon, Users } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
 import { getErrorMessage } from '../../utils/dataUtils';
 import { StickerEventUserRecord } from './types';
+import { deleteUserDoc } from './services/firebaseService';
 
 interface SuperAdminModalProps {
   isOpen: boolean;
@@ -77,8 +78,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     setLoading(true);
     setError(null);
     try {
-      const userDocRef = doc(db, 'users', userId);
-      await deleteDoc(userDocRef);
+      await deleteUserDoc(userId);
       setUsers(prev => prev.filter(u => u.id !== userId));
     } catch (err: unknown) {
       console.error("Delete error:", err);

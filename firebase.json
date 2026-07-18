@@ -1,7 +1,14 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "ai-studio-16672ec9-22fb-43a6-b6ee-e59aa8a8c699",
+      "rules": "firestore.stickerevent.rules"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
