@@ -238,4 +238,43 @@ Sau đó test lại `npm run dev`, xác nhận Console không còn 2 lỗi trên
 
 **Bài học rút ra**: khi 1 trong 5 Cloud Function báo lỗi mà 4 hàm còn lại hoạt động bình thường, đừng vội nghi ngờ code chung (rules/client auth) — nhiều khả năng là cấu hình deploy/hạ tầng riêng của đúng hàm đó (IAM invoker, model bên thứ 3 hết hạn...). Luôn đọc log thật (`firebase functions:log`) trước khi đoán, vì thông báo lỗi phía client ("internal") không phản ánh nguyên nhân gốc.
 
+---
+
+## 14. Mở rộng bảo mật sang `features/sticker-event` (2026-07-18) — ĐANG LÀM
+
+### 14.1. Audit thực tế (không như giả định ban đầu ở đầu file này)
+
+Trái với mục 0 ghi "dùng Firebase project riêng" — audit sâu cho thấy sticker-event dùng **CÙNG project** `dashboa-7e20b`, chỉ khác **Firestore database riêng** tên `ai-studio-16672ec9-22fb-43a6-b6ee-e59aa8a8c699` (không phải `(default)`), cấu hình tại `features/sticker-event/firebase-applet-config.json` (đang bị track trong git dù tưởng đã gitignore — ghi chú riêng, không phải rủi ro nghiêm trọng vì bảo mật thật nằm ở Rules chứ không phải giấu API key).
+
+**5 lỗ hổng tìm thấy:**
+1. `Login.tsx:200-207` — tự đăng ký, user tự chọn `role` bằng radio button rồi tự `setDoc` thẳng vào Firestore.
+2. `services/firebaseService.ts:205-215,217-225,227-248` — `updateUserRole`/`deleteUserDoc`/`clearAllUsers` ghi trực tiếp từ client, guard chỉ ở component (`UserManagementModal.tsx`).
+3. **Cross-tenant**: `updateUserRole(userId, role)`/`deleteUserDoc(userId)` không kiểm tra `userId` đó có cùng `storeId` với admin gọi hay không — admin kho A về lý thuyết sửa được user kho B nếu biết UID.
+4. 🔴 **Mật khẩu mặc định dùng chung `staff_default_password_123` cho MỌI tài khoản `staff`** (`Login.tsx:30,114`) — ai biết username là đăng nhập được. Người dùng đã xác nhận xử lý luôn đợt này.
+5. **"Super Admin" chỉ là so sánh chuỗi client-side** (`StickerEventApp.tsx:403`): `username==='admin'||username==='21707'||email in [...]`.
+6. `stores/{storeId}/**` (productChunks, inventoryChunks, metadata, savedLists, manualProducts) **chưa có Rules nào ràng buộc theo storeId** trong repo — nguy cơ 1 user kho A đọc/ghi được dữ liệu kho B nếu Rules hiện tại (ngoài repo, trên Console) đang lỏng.
+
+### 14.2. Thiết kế
+
+**Custom claims namespace RIÊNG** — `stickerRole` / `stickerStoreId` (KHÔNG dùng lại tên `role`/`departmentId` của root) — vì `setCustomUserClaims()` GHI ĐÈ toàn bộ claims chứ không merge; dù cùng 1 Auth user pool (project chung), 2 hệ thống set tên claim khác nhau để tránh khả năng đè lẫn nhau nếu có ngày trùng UID.
+
+**3 Cloud Function mới** (`functions/src/stickerEvent.ts`, cùng codebase/deploy với 5 hàm hiện có vì chung project):
+1. `stickerRegister({username, storeId, requestedRole})` — thay `Login.tsx` tự `setDoc`. Kiểm tra server-side "kho đã có admin chưa" (thay vì client tự query rồi tự tin ghi), set custom claims sau khi ghi.
+2. `stickerResolveSession()` — gọi mỗi lần đăng nhập (thay raw `getDoc` trong `onAuthStateChanged`), đọc role/storeId thật từ Firestore, áp logic Super Admin (danh sách username/email y hệt bản cũ nhưng chuyển hẳn vào server) để set claim `stickerRole` chính xác.
+3. `stickerAdminUpdateUser({action:'setRole'|'delete'|'clearStore', targetUid?, role?, storeId?})` — thay `updateUserRole`/`deleteUserDoc`/`clearAllUsers`. Enforce: admin thường chỉ thao tác trong `storeId` của chính mình (Firestore lookup xác nhận target cùng kho), `superadmin` claim mới bỏ qua ràng buộc này. Giữ nguyên các guard cũ (không tự sửa mình, không đụng username `"admin"`).
+
+**Firestore Rules mới** (`firestore.stickerevent.rules`, deploy cho database `ai-studio-16672ec9-...` qua `firebase.json` dạng mảng multi-database):
+- `users/{uid}`: `get`/`list` theo `isSelf` hoặc cùng `stickerStoreId` (admin) hoặc `isSuperAdmin`; `update` tự thân chỉ cho field không nhạy cảm (`role`/`storeId` bị khoá); `create` luôn `false` (chỉ Cloud Function tạo).
+- `users/{uid}/state/{doc}`: `isSelf` — không đổi hành vi hiện có.
+- `stores/{storeId}/**`: cho phép đọc/ghi nếu `isSignedIn() && (isSuperAdmin() || myStoreId()==storeId)` — vá lỗ hổng #6, không siết thêm phân biệt admin/staff trong cùng kho (giữ nguyên hành vi nghiệp vụ hiện có, chỉ thêm ranh giới theo kho).
+
+**⚠️ Bug đã biết của Firebase CLI với multi-database**: `firebase deploy --only firestore:rules` có thể báo "Deploy complete!" nhưng KHÔNG deploy gì cả với cấu hình multi-database dạng mảng (xác nhận qua GitHub issue firebase-tools#10447). Phải dùng `firebase deploy --only firestore` (không chỉ định sub-target) và **tự xác minh lại trên Firebase Console** sau khi deploy, không tin tưởng output CLI.
+
+**Client cần sửa**: `features/sticker-event/firebase.ts` (thêm export `functions`), `Login.tsx` (bỏ `STAFF_DEFAULT_PASSWORD`, hiện ô mật khẩu cho cả 2 role, gọi `stickerRegister`/`stickerResolveSession` thay vì tự đọc/ghi Firestore), `services/firebaseService.ts` (3 hàm role/delete/clear đổi sang gọi Cloud Function nhưng GIỮ NGUYÊN chữ ký hàm để `UserManagementModal.tsx` không cần sửa), `SuperAdminModal.tsx` (đổi `deleteDoc` trực tiếp sang gọi `deleteUserDoc` qua service).
+
+### 14.3. Ngoài phạm vi / giữ nguyên hành vi
+- Không xoá Firebase Auth account khi xoá user (giữ đúng hạn chế đã ghi rõ trong UI hiện tại: "cần xoá tài khoản Auth trong Firebase Console để xoá hoàn toàn").
+- Không đổi danh sách ai được là Super Admin — chỉ chuyển đúng logic hiện có (username/email cụ thể) sang server-side, không mở rộng/thu hẹp quyền truy cập.
+- Không đụng đến `features/bi-dashboard` (vẫn xác nhận không có truy cập Firestore riêng).
+
 **⚠️ Trạng thái deploy tại thời điểm viết mục này**: toàn bộ 6 commit của mục 11-13 (gắn nút AI, cập nhật CLAUDE.md, và 4 fix ở trên) **mới chỉ có ở local, CHƯA push lên GitHub, CHƯA deploy production** (`gh-pages` lần cuối publish 2026-07-17 16:39, trước tất cả các commit này). Cần chạy `npm run deploy` để đưa lên production thật.
