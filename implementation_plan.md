@@ -401,6 +401,18 @@ Thiết kế:
 
 `npm run check` xanh. **Chưa test tay** trên trình duyệt với dữ liệu thật nhiều tháng (cần user tự xác nhận: tải app lên, kiểm tra `FileHistoryManager` xem file cũ có tự untick đúng không, và so sánh cùng kỳ năm trước vẫn hoạt động bình thường).
 
-### 15.5. Phần 2b — Tối ưu `getHeSoQuyDoi` (`calculateRowMetrics`) — CHƯA LÀM
+### 15.5. Phần 2b — Tối ưu `getHeSoQuyDoi` (`calculateRowMetrics`) — ĐÃ LÀM (2026-07-19)
 
-Vẫn chờ user xác nhận có muốn làm tiếp không (cần viết test đối chiếu kết quả trước/sau do đụng hàm tính DTQĐ chuẩn, theo đúng cảnh báo CLAUDE.md mục 1).
+**Cân nhắc trước khi chọn giải pháp**: `getHeSoQuyDoi` (`utils/dataUtils.ts`) có 2 vòng lặp chậm (dòng 189-193, 197-201 bản cũ) — với MỌI dòng doanh số không khớp exact-key trong `vasNameMultiplierMap`/`PRODUCT_NAME_COEFFICIENTS` (đa số hàng điện máy thường), code duyệt tuần tự ~109 pattern bằng `.includes()` (substring match, không phải exact-key). Vì đây là so khớp CHUỖI CON (không phải tra cứu theo key), không thể thay bằng Map/object lookup đơn thuần — giải pháp đúng đắn về thuật toán (Aho-Corasick multi-pattern search) sẽ đổi hẳn cấu trúc matching, rủi ro cao cho hàm nhạy cảm nhất dự án. Đã cân nhắc và **KHÔNG chọn hướng đó**.
+
+**Giải pháp đã chọn: memoization (cache kết quả) — không đổi thuật toán/logic gốc.** Lý do an toàn: `getHeSoQuyDoi` là hàm thuần (pure function, không side-effect, kết quả chỉ phụ thuộc 5 tham số đầu vào). Dữ liệu bán lẻ điện máy thực tế có tỷ lệ trùng lặp rất cao (cùng 1 SKU/tên sản phẩm xuất hiện hàng trăm-hàng nghìn lần trong dữ liệu gộp nhiều tháng) — cache theo tổ hợp `productCode|maNganhHang|maNhomHang|productName` giúp các dòng trùng chỉ tính 1 lần.
+
+File đổi: `utils/dataUtils.ts` — thêm `heSoQuyDoiCache` (`WeakMap<ProductConfig, Map<string, number>>`, key theo object `productConfig` để tự giải phóng cache khi config đổi, ví dụ sau Background Sheet Check — không cần tự tay invalidate), đổi thân hàm gốc thành `computeHeSoQuyDoi()` (private, y nguyên logic cũ), `getHeSoQuyDoi()` giờ chỉ là lớp cache mỏng bọc ngoài.
+
+**Xác minh trước khi merge**: viết script `_perf_test_getHeSoQuyDoi.ts` (tạm, đã xoá sau khi xong — không commit) — 35 kịch bản test phủ hết các nhánh (VAS exact/substring, static coefficients, VieON 3 mốc, toàn bộ case switch(parentGroup), Priority-2 fallback, switch(maNganhHang) cuối, config null, gọi lặp lại cùng input, 2 object config khác nhau cùng nội dung). Chạy **trước khi sửa** (baseline, đối chiếu với code gốc): 35/35 pass. Chạy **lại sau khi thêm cache**: vẫn 35/35 pass — xác nhận zero thay đổi kết quả.
+
+`npm run check` xanh. **Chưa đo được tốc độ thật với dữ liệu production** (không có sẵn dataset thật để benchmark) — mức độ tăng tốc phụ thuộc tỷ lệ trùng lặp SKU/tên sản phẩm thực tế của user, chưa có con số cụ thể để báo cáo.
+
+### 15.6. Tổng kết mục 15 — trạng thái cuối
+
+Cả 3 phần đã làm xong (15.3 Firestore-first, 15.4 giới hạn 14 tháng, 15.5 memoization), đều đã qua `npm run check`. **Chưa test tay trên trình duyệt với dữ liệu thật** — cần user tự xác nhận: (a) tốc độ khởi động có cải thiện rõ rệt không, (b) `FileHistoryManager` hiển thị đúng file cũ bị tự untick, (c) các bảng/biểu đồ so sánh (đặc biệt "cùng kỳ năm trước") vẫn cho số liệu đúng như trước.

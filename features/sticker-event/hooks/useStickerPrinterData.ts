@@ -4,6 +4,7 @@ import { saveSetting, getSetting } from '../services/dbService';
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from '../stickerprinter/types';
 import { resolvePagePrices, generatePageHtml, isHistoryDuplicate } from '../stickerprinter/pageHtmlUtils';
 import { parsePercentValue, parseBatchItemsFromExcelRows, downloadStickerTemplate, parseTemplateExcelData, parseErpPriceExcelData } from '../stickerprinter/excelParsers';
+import { getStickerPreviewStyles } from '../stickerprinter/stickerPreviewStyles';
 
 const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
@@ -904,6 +905,99 @@ export function useStickerPrinterData() {
     };
 
     const handlePrint = () => {
+        if (stickerType === 'draw') {
+            const totalPages = Math.ceil((drawTickets?.length || 0) / 4);
+            if (totalPages === 0) {
+                toast.error("Không có phiếu rút thăm nào để in!");
+                return;
+            }
+
+            const printHost = document.createElement('div');
+            printHost.id = 'print-host';
+            
+            printHost.innerHTML = `
+                <style>
+                    #print-host .header-text { font-size: ${headerTextSize}cqi !important; }
+                    #print-host .sub-header { font-size: ${subHeaderTextSize}cqi !important; }
+                    #print-host .extra1 { font-size: ${percentTextSize}cqi !important; }
+                    #print-host .old { font-size: ${oldPriceTextSize}cqi !important; }
+                    #print-host .name { font-size: ${nameTextSize}cqi !important; }
+                    #print-host .extra2 { font-size: ${newPriceTextSize}cqi !important; }
+                    #print-host .footer-text { font-size: ${footerTextSize}cqi !important; }
+                    #print-host .sticker-container {
+                        outline: none !important;
+                    }
+                    ${getStickerPreviewStyles({
+                        stickerType,
+                        bgImage,
+                        headerTextSize,
+                        subHeaderTextSize,
+                        percentTextSize,
+                        oldPriceTextSize,
+                        nameTextSize,
+                        newPriceTextSize,
+                        footerTextSize
+                    })}
+                </style>
+            `;
+
+            const printSection = document.getElementById('print-section');
+            if (printSection) {
+                printHost.insertAdjacentHTML('beforeend', printSection.innerHTML);
+            }
+
+            document.body.appendChild(printHost);
+
+            const root = document.getElementById('root');
+            if (root) root.style.display = 'none';
+
+            const historyEntry: PrintHistoryEntry = {
+                id: `history_${Date.now()}`,
+                timestamp: Date.now(),
+                label: 'Phiếu Rút Thăm',
+                pageCount: totalPages,
+                stickerType,
+                bgImage,
+                headerTextSize,
+                subHeaderTextSize,
+                percentTextSize,
+                oldPriceTextSize,
+                nameTextSize,
+                newPriceTextSize,
+                footerTextSize,
+                batchItems: [],
+                headerTextContent,
+                subHeaderTextContent,
+                footerTextContent,
+                showBarcode,
+                manualPages: [],
+                discountDisplayMode,
+            };
+
+            setPrintHistory(prev => {
+                const dupIdx = prev.findIndex(entry => isHistoryDuplicate(entry, historyEntry));
+                let next;
+                if (dupIdx !== -1) {
+                    const matched = { ...prev[dupIdx], timestamp: Date.now() };
+                    const filtered = prev.filter((_, idx) => idx !== dupIdx);
+                    next = [matched, ...filtered];
+                } else {
+                    next = [historyEntry, ...prev];
+                }
+                const sliced = next.slice(0, 20);
+                saveSetting(STICKER_HISTORY_KEY, sliced).catch(() => {});
+                return sliced;
+            });
+
+            setTimeout(() => {
+                window.print();
+                if (root) root.style.display = '';
+                document.body.removeChild(printHost);
+            }, 200);
+
+            return;
+        }
+
         const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0);
         const selectedManualPages = manualPages.filter(p => p.selected !== false);
         const totalPages = previewPageCount + selectedManualPages.length;

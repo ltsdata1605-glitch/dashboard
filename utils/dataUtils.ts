@@ -167,7 +167,34 @@ export function formatQuantityWithFraction(value: number | null | undefined): st
 }
 
 
+// Cache kết quả getHeSoQuyDoi theo đúng object productConfig đang dùng (WeakMap tự giải
+// phóng khi config đổi, ví dụ sau Background Sheet Check nạp bản mới — không cần tự tay
+// invalidate). Dữ liệu doanh số điện máy thực tế có rất nhiều dòng trùng
+// tên/mã/ngành/nhóm sản phẩm (cùng 1 SKU bán lặp lại hàng nghìn lần), nên cache theo tổ
+// hợp 4 input tránh phải lặp lại 2 vòng lặp .includes() (109 pattern) cho mỗi dòng trùng.
+// KHÔNG đổi bất kỳ logic/kết quả nào so với bản gốc — xem test đối chiếu
+// `_perf_test_getHeSoQuyDoi.ts` (35 kịch bản, chạy trước/sau khi thêm cache đều pass).
+const heSoQuyDoiCache = new WeakMap<NonNullable<ProductConfig>, Map<string, number>>();
+
 export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string, productCode?: string): number {
+    if (!productConfig) {
+        return computeHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+    }
+    let cache = heSoQuyDoiCache.get(productConfig);
+    if (!cache) {
+        cache = new Map();
+        heSoQuyDoiCache.set(productConfig, cache);
+    }
+    const cacheKey = `${productCode ?? ''}|${maNganhHang ?? ''}|${maNhomHang ?? ''}|${productName ?? ''}`;
+    const cached = cache.get(cacheKey);
+    if (cached !== undefined) return cached;
+
+    const result = computeHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+    cache.set(cacheKey, result);
+    return result;
+}
+
+function computeHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string, productCode?: string): number {
     // 0. Logic đặc thù cho Vieon dựa trên mã sản phẩm hoặc tên sản phẩm (Ưu tiên cao nhất)
     if (productCode) {
         const trimmedCode = String(productCode).trim();
