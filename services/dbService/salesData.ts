@@ -585,9 +585,50 @@ export async function clearTempRealtimeData(): Promise<void> {
     }
 }
 
+// Số tháng dữ liệu lịch sử tự động giữ ở trạng thái isActive khi gộp. Tính năng
+// "so sánh cùng kỳ năm trước" (useSummaryComparison.ts) cần tới 12 tháng lùi lại —
+// 14 tháng chừa biên độ an toàn. File cũ hơn KHÔNG bị xoá, chỉ tự untick (isActive:
+// false) — người dùng vẫn tự bật lại được bất cứ lúc nào qua FileHistoryManager.
+const RETENTION_MONTHS = 14;
+
+// Ưu tiên ngày dữ liệu thực trong file (maxDate, trích từ cột ngày bán lúc upload).
+// Registry cũ tạo trước khi có tính năng này có thể chưa có maxDate — fallback về
+// savedAt (ngày bấm upload) làm proxy gần đúng, thay vì coi là "không bao giờ hết hạn"
+// (sẽ vô hiệu hoá mục đích giới hạn cho đúng các file thực sự cũ).
+function isFileWithinRetention(file: UploadedFileRegistryItem, cutoffTime: number): boolean {
+    const referenceTime = file.maxDate ?? file.savedAt;
+    return referenceTime >= cutoffTime;
+}
+
+async function pruneStaleActiveFiles(registry: UploadedFileRegistryItem[]): Promise<UploadedFileRegistryItem[]> {
+    const cutoffTime = Date.now() - RETENTION_MONTHS * 30 * 24 * 60 * 60 * 1000;
+
+    // An toàn: nếu việc prune sẽ tắt HẾT toàn bộ file đang active (vd. user không mở app
+    // suốt hơn 14 tháng), bỏ qua đợt prune này thay vì để dashboard trống trơn không rõ
+    // lý do — thà chậm hơn 1 lần còn hơn trông như mất dữ liệu.
+    const activeFiles = registry.filter(f => f.isActive);
+    if (activeFiles.length > 0 && activeFiles.every(f => !isFileWithinRetention(f, cutoffTime))) {
+        return registry;
+    }
+
+    let changed = false;
+    const pruned = registry.map(f => {
+        if (f.isActive && !isFileWithinRetention(f, cutoffTime)) {
+            changed = true;
+            return { ...f, isActive: false };
+        }
+        return f;
+    });
+    if (changed) {
+        await saveSalesFilesRegistry(pruned);
+    }
+    return pruned;
+}
+
 export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number; isRealtime?: boolean } | null> {
     try {
-        const registry = await getSalesFilesRegistry();
+        const rawRegistry = await getSalesFilesRegistry();
+        const registry = await pruneStaleActiveFiles(rawRegistry);
         let activeFiles = registry.filter(f => f.isActive);
 
         // MIGRATION: Nếu registry trống, kiểm tra xem có dữ liệu đơn lẻ 'salesData' cũ không

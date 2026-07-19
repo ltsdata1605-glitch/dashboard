@@ -349,3 +349,58 @@ Ngoài phạm vi sticker-event: user (email `lts.truongson@gmail.com`, đúng `S
 **Xác nhận 2026-07-19 (đã test lại đúng kịch bản F5-khi-đã-đăng-nhập, bật "Preserve log")**: **hết nháy hoàn toàn** — dashboard render thẳng, không còn thấy `PendingApprovalView`/"Cập Nhật Mã Kho", không có lỗi `resolveSession`. 2 fix ở 14.8 (dời `isLoading` vào `finally` + huỷ `fallbackTimer` ngay khi có kết quả auth) đã giải quyết đúng root cause. Coi như ĐÃ XONG mục 14.8.
 
 **Phát hiện phụ (ngoài phạm vi, chưa xử lý)**: log lộ lỗi Firestore thật lặp lại — `setDoc() called with invalid data. Nested arrays are not supported (found in document users/{uid}/configs/checkthuong_data)`. Tính năng "Check Thưởng" đang cố đồng bộ 1 field kiểu mảng-lồng-mảng lên Firestore (Firestore không hỗ trợ), bị lỗi và tự bắt (`useDataManagement.ts:253`, log rõ "không ảnh hưởng app" — có catch, không crash). Chưa xác định field cụ thể nào lồng mảng. Không xử lý trong phiên này vì ngoài phạm vi (bảo mật sticker-event + bug nháy màn hình ROOT).
+
+---
+
+## 15. Tối ưu tốc độ khởi động (2026-07-19) — chủ đề mới, KHÔNG liên quan mục 1-14
+
+> Phạm vi: `hooks/useDataManagement.ts` (CRITICAL, dùng chung tab Phân Tích + Check Thưởng) và các service liên quan tính DTQĐ (`utils/dataUtils.ts`, `services/filterService.ts`). Khác hẳn chủ đề mục 1-14 (Cloud Functions bảo mật) — đây là vấn đề hiệu năng thuần tuý.
+
+### 15.1. Bối cảnh
+
+User báo app load rất lâu mỗi lần khởi động, cả mobile lẫn laptop, kèm ảnh chụp modal "AI ENGINE PROCESSING — Nạp dữ liệu đã lưu lên bảng điều khiển..." đứng ở 25%. User đề xuất: cấu hình (hệ số Bảo Hiểm/VAS/Hình thức xuất/Ngành hàng BI, tổng ~1242 dòng) hiện quản lý trên Google Sheet cho dễ sửa, nhưng mỗi lần khởi động phải tải lại — hỏi có nên tự động lưu cấu hình đó vào Firebase để tải nhanh hơn không.
+
+### 15.2. Điều tra (đã đọc code, chưa sửa gì tại thời điểm viết mục này)
+
+**A. Màn hình trong ảnh chụp KHÔNG phải bước tải Google Sheet.** Message "Nạp dữ liệu đã lưu lên bảng điều khiển..." (`hooks/useDataManagement.ts:139`) là bước mount lại **dữ liệu doanh số Excel đã lưu trước đó của user** (khác message "Tải cấu hình lõi từ Sheet..." ở dòng 89). Modal chỉ tắt khi Web Worker (`services/analytics.worker.ts`, nạp qua `hooks/useDataManagement.ts:600`) xử lý xong.
+
+**B. Nguồn dữ liệu doanh số là TOÀN BỘ lịch sử, không giới hạn.** `dbService.getMergedSalesData()` (`services/dbService/salesData.ts:588-734`) gộp **mọi file có `isActive=true` trong registry** (dòng 591, 620-640) — không có `MAX_ROWS`/`MAX_FILES`. Comment ở `utils/dataUtils.ts:499` xác nhận có thể lên tới hàng chục/trăm nghìn dòng. Đây nhiều khả năng là nguyên nhân chính của độ trễ trong ảnh chụp — không phải do Google Sheet.
+
+**C. Bên trong Worker, `calculateRowMetrics` (qua `getHeSoQuyDoi`, `utils/dataUtils.ts:170-256`) có nhánh chậm ẩn**: với mỗi dòng doanh số KHÔNG khớp exact-key trong `vasNameMultiplierMap`/`PRODUCT_NAME_COEFFICIENTS` (tức đa số dòng điện máy thường, không phải VAS/bảo hiểm), code duyệt tuần tự ~109 entry bằng `.includes()` chuỗi (dòng 189-193, 197-201) thay vì tra cứu O(1). Với dataset lớn (mục B), đây là hệ số nhân đáng kể trong hot path chạy cho MỌI dòng dữ liệu.
+
+**D. Về câu hỏi Google Sheet → Firebase của user**: kiến trúc **đã có sẵn** IndexedDB cache (`services/dbService/settings.ts`) — nếu cache hợp lệ, không gọi mạng (`useDataManagement.ts:84-95`, đã có "PERF FIX" từ trước). **Đã có** đồng bộ lên Firestore (`users/{uid}/configs/productConfig` qua `services/firestoreService.ts`) làm bản sao lưu đa thiết bị. Nhưng khi cache IndexedDB trống (hay gặp trên mobile vì Safari/iOS tự dọn IndexedDB để tiết kiệm dung lượng — ITP storage eviction, hành vi đã biết của WebKit), code đi thẳng xuống tải **toàn bộ workbook Excel từ Google Sheet** (`services/dataService.ts` — fetch `output=xlsx`, không ETag/partial fetch), bỏ qua bản Firestore nhẹ hơn nhiều đã có sẵn.
+
+### 15.3. Kế hoạch xử lý — chia 2 phần theo mức độ rủi ro
+
+**Phần 1 (làm ngay, rủi ro thấp) — đúng yêu cầu gốc của user: đọc Firestore trước khi tải Sheet khi cache trống**
+
+File đổi: `hooks/useDataManagement.ts` (chỉ đoạn dòng 87-95).
+
+Thiết kế: khi `isConfigOutOfDate` = true, tách 2 trường hợp:
+- Cache **trống hoàn toàn** (`!config`) và có user đăng nhập (không demo) → thử đọc `users/{uid}/configs/productConfig` qua `fetchHeavySettingsFromCloud` (đã có sẵn trong `services/firestoreService.ts`, đang được gọi lại ở dòng 158 cho mục đích khác — dùng lại, không viết hàm mới) TRƯỚC. Nếu có dữ liệu hợp lệ → dùng ngay (nhanh, chỉ 1 doc JSON nhỏ so với cả workbook Excel), lưu lại vào IndexedDB, **không** tải Sheet ở bước blocking.
+- Cache tồn tại nhưng **URL khác** (`cachedUrl !== configUrl`, tức admin vừa đổi Sheet cấu hình) → **KHÔNG** dùng Firestore fallback, vì bản ghi trên Firestore không mang theo metadata URL nên không biết nó ứng với Sheet nào — phải tải thẳng từ Sheet mới để chắc chắn đúng dữ liệu, tránh hiển thị nhầm cấu hình cũ.
+- Nếu Firestore cũng trống/lỗi (user mới toanh, chưa từng sync) → rơi xuống đúng luồng tải Sheet cũ (giữ nguyên, không đổi).
+
+**Không đổi gì ở Background Sheet Check (dòng 310-348)** — đã tự đúng: do dùng bản Firestore thì biến `cachedConfigReq` (đọc từ IndexedDB gốc) vẫn `null`/không có `fetchedAt`, nên điều kiện dòng 320 tự động fail → `shouldDownload` giữ `true` mặc định → vẫn tự tải Sheet thật để xác nhận/cập nhật trong nền sau 5s, không chặn UI. Tức là: **Sheet vẫn là nguồn sự thật cuối cùng** như user muốn giữ (dễ sửa trên Sheet), chỉ đổi bước NÀO được phép chặn màn hình đầu tiên.
+
+**Phần 2 (CHƯA làm, cần user quyết định trước)** — vì đụng logic tính toán / thay đổi phạm vi dữ liệu hiển thị, rủi ro cao hơn phần 1:
+- **15.2.B** (gộp toàn bộ lịch sử doanh số, không giới hạn) là quyết định NGHIỆP VỤ, không phải bug thuần kỹ thuật — giới hạn số file/số dòng nghĩa là dữ liệu cũ sẽ KHÔNG còn xuất hiện trên dashboard nữa. Cần hỏi user trước khi tự ý thêm giới hạn.
+- **15.2.C** (tối ưu vòng lặp `.includes()` trong `getHeSoQuyDoi`) nằm NGAY BÊN TRONG `calculateRowMetrics` — theo CLAUDE.md mục 1 ("Nguồn chân lý duy nhất... CẤM tự ý viết lại công thức tính cục bộ ở nơi khác gây sai số chênh lệch"), đây là hàm nhạy cảm nhất dự án, mọi thay đổi phải giữ NGUYÊN 100% kết quả đầu ra, chỉ đổi cách tra cứu nội bộ cho nhanh hơn (ví dụ build sẵn 1 index từ `vasNameMultiplierMap`/`PRODUCT_NAME_COEFFICIENTS` 1 lần khi có `productConfig`, thay vì lặp `.includes()` cho từng dòng) — cần viết test đối chiếu kết quả trước/sau (tương tự script `npx tsx` 6 kịch bản đã dùng ở đợt rà soát 07/10) trước khi coi là an toàn để merge.
+
+### 15.4. Phần 2a — Giới hạn dữ liệu lịch sử gộp (2026-07-19) — ĐÃ LÀM
+
+User chọn: giữ **14 tháng** (đủ biên độ an toàn cho so sánh cùng kỳ năm trước cần 12 tháng), **cứng trong code** (không thêm UI Settings).
+
+File đổi: `services/dbService/salesData.ts` — thêm `RETENTION_MONTHS = 14`, `isFileWithinRetention()`, `pruneStaleActiveFiles()`, gọi trong `getMergedSalesData()` ngay sau khi đọc registry, trước khi lọc `activeFiles`.
+
+Thiết kế:
+- Tái sử dụng ĐÚNG field `isActive` sẵn có (không thêm field/cơ chế mới) — file cũ hơn 14 tháng tự động `isActive: false`, **không xoá dữ liệu**. User vẫn tự bật lại bất cứ lúc nào qua `FileHistoryManager` (UI thủ công đã có sẵn, dùng chung `saveSalesFilesRegistry`).
+- Mốc thời gian ưu tiên `file.maxDate` (ngày dữ liệu thực trong file, trích lúc upload) — registry cũ chưa có field này (tính năng mới, backfill lazy) fallback về `file.savedAt` (ngày upload) làm proxy gần đúng.
+- **An toàn**: nếu việc prune sẽ tắt HẾT toàn bộ file active (vd. user không mở app > 14 tháng), bỏ qua đợt prune đó — tránh dashboard trống trơn không rõ lý do, thà chậm hơn 1 lần.
+- Không đụng `useSummaryComparison.ts`/`TrendChart.tsx`/Head-to-Head — các tính năng này vẫn đọc `originalData` như cũ, chỉ là tập dữ liệu gộp giờ nhỏ hơn (nhanh hơn) nếu user có > 14 tháng lịch sử tích luỹ.
+
+`npm run check` xanh. **Chưa test tay** trên trình duyệt với dữ liệu thật nhiều tháng (cần user tự xác nhận: tải app lên, kiểm tra `FileHistoryManager` xem file cũ có tự untick đúng không, và so sánh cùng kỳ năm trước vẫn hoạt động bình thường).
+
+### 15.5. Phần 2b — Tối ưu `getHeSoQuyDoi` (`calculateRowMetrics`) — CHƯA LÀM
+
+Vẫn chờ user xác nhận có muốn làm tiếp không (cần viết test đối chiếu kết quả trước/sau do đụng hàm tính DTQĐ chuẩn, theo đúng cảnh báo CLAUDE.md mục 1).

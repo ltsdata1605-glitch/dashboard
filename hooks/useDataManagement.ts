@@ -76,21 +76,45 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
-                
+
                 // PERF FIX: Chỉ kiểm tra điều kiện cơ bản (config tồn tại, có groups, URL khớp).
                 // Các kiểm tra chi tiết (7161, 7139, industryBiMap, compound keys) được xử lý
                 // bởi Background Sheet Check (setTimeout 5s) ở phía dưới — tránh blocking
                 // luồng khởi tạo bằng network fetch nặng mỗi lần mở app.
-                const isConfigOutOfDate = !config || !config.groups || Object.keys(config.groups).length === 0 || 
-                                          cachedUrl !== configUrl;
+                const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
+                const isConfigOutOfDate = isConfigMissing || cachedUrl !== configUrl;
 
                 if (isConfigOutOfDate) {
-                    try {
-                        setStatus({ message: 'Tải cấu hình lõi từ Sheet...', type: 'info', progress: 15 });
-                        config = await loadConfigFromSheet(configUrl, () => {});
-                        dbService.saveProductConfig(config, configUrl).catch(console.error);
-                    } catch (e) {
-                         console.error("Không tải được cấu hình mạng, sử dụng dữ liệu cũ rỗng.");
+                    let loadedFromFirestore = false;
+                    // Cache IndexedDB trống hoàn toàn (hay gặp trên mobile — Safari/iOS tự dọn
+                    // IndexedDB để tiết kiệm dung lượng) → thử đọc bản Firestore nhẹ (1 doc JSON)
+                    // trước khi tải cả workbook Excel từ Google Sheet. CHỈ áp dụng khi cache
+                    // trống hẳn (isConfigMissing) — nếu chỉ là URL đổi (admin vừa đổi Sheet cấu
+                    // hình), bản Firestore cũ không mang metadata URL nên không biết có khớp
+                    // Sheet mới hay không, phải tải thẳng từ Sheet để chắc chắn đúng dữ liệu.
+                    if (isConfigMissing && user && !isDemoMode) {
+                        try {
+                            setStatus({ message: 'Tải cấu hình từ máy chủ...', type: 'info', progress: 12 });
+                            const { fetchHeavySettingsFromCloud } = await import('../services/firestoreService');
+                            const cloudSettings = await fetchHeavySettingsFromCloud(user);
+                            const cloudConfig = cloudSettings['productConfig']?.value as ProductConfig | undefined;
+                            if (cloudConfig && cloudConfig.groups && Object.keys(cloudConfig.groups).length > 0) {
+                                config = cloudConfig;
+                                dbService.saveProductConfig(config, configUrl).catch(console.error);
+                                loadedFromFirestore = true;
+                            }
+                        } catch (e) {
+                            console.warn("Không đọc được cấu hình từ Firestore, sẽ tải trực tiếp từ Sheet.", e);
+                        }
+                    }
+                    if (!loadedFromFirestore) {
+                        try {
+                            setStatus({ message: 'Tải cấu hình lõi từ Sheet...', type: 'info', progress: 15 });
+                            config = await loadConfigFromSheet(configUrl, () => {});
+                            dbService.saveProductConfig(config, configUrl).catch(console.error);
+                        } catch (e) {
+                             console.error("Không tải được cấu hình mạng, sử dụng dữ liệu cũ rỗng.");
+                        }
                     }
                 }
                 if (config) setProductConfig(config);
