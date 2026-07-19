@@ -85,8 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 5000);
 
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            // Mục đích ban đầu của fallbackTimer (Firebase Auth không phản hồi) đã xong ngay
+            // khi callback này chạy — huỷ luôn, nếu không nó vẫn tự bắn sau đúng 5s kể từ lúc
+            // mount và ép isLoading=false NGAY CẢ KHI resolveSession() bên dưới còn đang chạy
+            // (vd: Cloud Function cold-start > 5s ngay sau khi vừa deploy) — tái tạo lại đúng
+            // race nháy màn "Cập Nhật Mã Kho" mà finally bên dưới vừa mới chặn.
+            clearTimeout(fallbackTimer);
             setUser(currentUser);
-            setIsLoading(false); // Stop spinner immediately!
             if (currentUser) {
                 try {
                     // Toàn bộ logic phân quyền (role/status/departmentId/expiresAt, cấp Super
@@ -120,6 +125,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
                     // Không overwrite role/status đã cache khi lỗi mạng — cho phép dùng offline.
+                } finally {
+                    // Chỉ tắt spinner SAU KHI resolveSession() xong (không phải ngay khi Firebase
+                    // Auth vừa xác nhận có user) — nếu tắt sớm, App.tsx render tạm với userRole
+                    // vẫn null/cũ (chưa kịp nhận 'admin'...) và nháy màn "Cập Nhật Mã Kho" trước
+                    // khi tự sửa lại, gây hiểu nhầm là bị mất quyền admin (đã xác nhận qua test
+                    // thật 2026-07-18 — màn hình tự hết sau vài giây/F5, đúng dấu hiệu race này).
+                    setIsLoading(false);
                 }
             } else {
                 setUserRole(null);
@@ -131,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 saveSetting('cached_user_status', null).catch(() => {});
                 saveSetting('cached_dept_id', null).catch(() => {});
                 saveSetting('cached_emp_name', null).catch(() => {});
+                setIsLoading(false);
             }
         });
 

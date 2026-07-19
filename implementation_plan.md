@@ -327,3 +327,25 @@ Sau khi hết lỗi permission (14.6), log Console cho thấy `hooks/useCloudSyn
 **Ghi chú phạm vi**: grep thấy 4 file khác (`features/bi-dashboard/hooks/useMonthlyBonusArchive.ts`, `useNhanVienData.ts`, `useDashboardLogic.ts`, `hooks/useEmployeeAnalysisLogic.ts`) cũng nghe `indexeddb-change` — **chưa kiểm tra** có cùng pattern lỗi (effect tự ghi-lại state vừa nhận từ storage) hay không, vì ngoài phạm vi bug cụ thể được yêu cầu sửa lần này. Nếu sau này gặp log lặp tương tự ở các key khác (`productConfig`, `customTabs`...), nên soát lại đúng 4 file này theo cùng cách.
 
 **Cần làm**: test lại `npm run dev`, mở "In Sticker" > Danh sách đã lưu, theo dõi Console — log `[Cloud Sync] Real-time... stickerSavedLists` không được lặp lại vô hạn nữa (chỉ chạy 1 lần khi có thay đổi thật).
+
+### 14.8. Bug thứ 3 phát hiện khi test thật (2026-07-18) — đã sửa: nháy màn "Cập Nhật Mã Kho" cho tài khoản Super Admin ROOT
+
+Ngoài phạm vi sticker-event: user (email `lts.truongson@gmail.com`, đúng `SUPER_ADMIN_EMAIL` trong `functions/src/session.ts`) đăng nhập tab **Phân Tích** (`?tab=analysis`, module ROOT — khác hoàn toàn hệ đăng nhập sticker-event) và bị đá sang màn `PendingApprovalView forceDeptUpdate` ("Cập Nhật Mã Kho") dù đúng ra phải được tự động cấp `role='admin'`. Xác nhận qua hỏi trực tiếp: **không phải lỗi persistent** — tự hết sau vài giây hoặc F5, đúng dấu hiệu race condition khi tải trang, không phải lỗi logic `resolveSession()`.
+
+**Nguyên nhân**: `contexts/AuthContext.tsx` (trước sửa) gọi `setIsLoading(false)` **ngay khi** `onAuthStateChanged` xác nhận có user, **trước khi** `resolveSession()` (bất đồng bộ, phải gọi Cloud Function) chạy xong. Trong khoảng hở đó, `App.tsx` render dựa trên `userRole` vẫn là `null`/giá trị cache cũ (nếu là trình duyệt/thiết bị mới, chưa có cache) → `App.tsx:210` (`userRole !== 'admin' && !departmentId`) → hiện nhầm màn "Cập Nhật Mã Kho" → tự sửa lại ngay khi `resolveSession()` trả về `role:'admin'` một khắc sau đó.
+
+**Đã sửa** (`contexts/AuthContext.tsx`): dời `setIsLoading(false)` vào `finally` của khối `try { resolveSession()... }` (nhánh có user) và giữ nguyên ở nhánh không có user (logout) — spinner giờ hiển thị xuyên suốt tới khi có kết quả `resolveSession()` thật, không còn render tạm với `userRole` chưa cập nhật. Timeout dự phòng 5s (`fallbackTimer`, dòng ~82) vẫn giữ nguyên làm lưới an toàn nếu `resolveSession()` treo.
+
+**Phạm vi**: chỉ sửa `contexts/AuthContext.tsx` (dùng chung cho ROOT + `features/phan-ca` qua `useAuth()`) — KHÔNG đụng `functions/src/session.ts` (logic server không có lỗi). Rủi ro thấp: chỉ đổi thời điểm tắt spinner, không đổi luồng dữ liệu/quyền.
+
+**Cần làm**: test lại đăng nhập bằng đúng tài khoản `lts.truongson@gmail.com` ở tab Phân Tích, xác nhận không còn nháy màn "Cập Nhật Mã Kho" (vào thẳng dashboard sau khi spinner tắt).
+
+**Cập nhật 2026-07-18 (sau khi test lại, vẫn còn nháy)**: fix ở 14.8 chưa đủ — còn 1 nguồn race thứ 2. `fallbackTimer` (dòng ~82, "Firebase Auth response timeout... stop loading", set 5s) **không bao giờ bị huỷ** khi `onAuthStateChanged` đã có kết quả (chỉ huỷ ở cleanup effect lúc unmount, gần như không bao giờ xảy ra trong vòng đời app). Sau khi 14.8 dời `setIsLoading(false)` vào `finally` của `resolveSession()`, timer 5s này vẫn tự bắn độc lập và ép `isLoading=false` bất kể `resolveSession()` xong chưa — nếu Cloud Function cold-start (rất dễ xảy ra ngay sau khi vừa `npm run deploy:functions` ở mục 14.5) mất hơn 5s, vẫn tái tạo đúng race cũ, chỉ trong cửa sổ 5s thay vì tức thì. Khớp triệu chứng user báo: nháy màn hình, tự hết "sau một lúc", F5 (function đã ấm) thì nhanh hơn.
+
+**Đã sửa thêm**: `clearTimeout(fallbackTimer)` ngay dòng đầu callback `onAuthStateChanged` — mục đích ban đầu của timer (đề phòng Firebase Auth không bao giờ phản hồi) đã hoàn thành ngay khi callback này chạy, không cần giữ nó sống thêm để can thiệp vào phần chờ `resolveSession()` phía sau.
+
+**Cần làm**: test lại lần nữa (nhớ hard refresh / restart `npm run dev` để chắc chắn không dùng bundle cũ qua HMR), xác nhận hết nháy hoàn toàn.
+
+**Xác nhận 2026-07-19 (đã test lại đúng kịch bản F5-khi-đã-đăng-nhập, bật "Preserve log")**: **hết nháy hoàn toàn** — dashboard render thẳng, không còn thấy `PendingApprovalView`/"Cập Nhật Mã Kho", không có lỗi `resolveSession`. 2 fix ở 14.8 (dời `isLoading` vào `finally` + huỷ `fallbackTimer` ngay khi có kết quả auth) đã giải quyết đúng root cause. Coi như ĐÃ XONG mục 14.8.
+
+**Phát hiện phụ (ngoài phạm vi, chưa xử lý)**: log lộ lỗi Firestore thật lặp lại — `setDoc() called with invalid data. Nested arrays are not supported (found in document users/{uid}/configs/checkthuong_data)`. Tính năng "Check Thưởng" đang cố đồng bộ 1 field kiểu mảng-lồng-mảng lên Firestore (Firestore không hỗ trợ), bị lỗi và tự bắt (`useDataManagement.ts:253`, log rõ "không ảnh hưởng app" — có catch, không crash). Chưa xác định field cụ thể nào lồng mảng. Không xử lý trong phiên này vì ngoài phạm vi (bảo mật sticker-event + bug nháy màn hình ROOT).
