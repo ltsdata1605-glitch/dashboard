@@ -87,18 +87,20 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (isConfigOutOfDate) {
                     let loadedFromFirestore = false;
                     // Cache IndexedDB trống hoàn toàn (hay gặp trên mobile — Safari/iOS tự dọn
-                    // IndexedDB để tiết kiệm dung lượng) → thử đọc bản Firestore nhẹ (1 doc JSON)
-                    // trước khi tải cả workbook Excel từ Google Sheet. CHỈ áp dụng khi cache
-                    // trống hẳn (isConfigMissing) — nếu chỉ là URL đổi (admin vừa đổi Sheet cấu
-                    // hình), bản Firestore cũ không mang metadata URL nên không biết có khớp
-                    // Sheet mới hay không, phải tải thẳng từ Sheet để chắc chắn đúng dữ liệu.
+                    // IndexedDB để tiết kiệm dung lượng; cũng gặp trên dev server nếu port đổi
+                    // giữa các lần restart — port khác = origin khác = IndexedDB khác) → thử đọc
+                    // bản Firestore nhẹ (1 doc JSON) trước khi tải cả workbook Excel từ Google
+                    // Sheet. Giá trị lưu trên Firestore theo ĐÚNG format IndexedDB
+                    // (dbService/settings.ts:saveProductConfig): { config, url, fetchedAt } — có
+                    // mang theo url nên vẫn đối chiếu được với configUrl hiện tại trước khi tin
+                    // dùng, không phải đoán mò.
                     if (isConfigMissing && user && !isDemoMode) {
                         try {
                             setStatus({ message: 'Tải cấu hình từ máy chủ...', type: 'info', progress: 12 });
-                            const { fetchHeavySettingsFromCloud } = await import('../services/firestoreService');
-                            const cloudSettings = await fetchHeavySettingsFromCloud(user);
-                            const cloudConfig = cloudSettings['productConfig']?.value as ProductConfig | undefined;
-                            if (cloudConfig && cloudConfig.groups && Object.keys(cloudConfig.groups).length > 0) {
+                            const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
+                            const cloudConfigEntry = await fetchProductConfigFromCloud(user);
+                            const cloudConfig = cloudConfigEntry?.config;
+                            if (cloudConfig && cloudConfig.groups && Object.keys(cloudConfig.groups).length > 0 && cloudConfigEntry?.url === configUrl) {
                                 config = cloudConfig;
                                 dbService.saveProductConfig(config, configUrl).catch(console.error);
                                 loadedFromFirestore = true;

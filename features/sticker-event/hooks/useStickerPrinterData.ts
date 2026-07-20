@@ -1020,7 +1020,7 @@ export function useStickerPrinterData() {
                 #print-host .extra2 { font-size: ${newPriceTextSize}cqi !important; }
                 #print-host .footer-text { font-size: ${footerTextSize}cqi !important; }
                 #print-host .sticker-container {
-                    outline: ${stickerType === 'draw' ? 'none' : '1.5px dashed #6366f1'};
+                    outline: 1.5px dashed #6366f1;
                     outline-offset: 1px;
                 }
             </style>

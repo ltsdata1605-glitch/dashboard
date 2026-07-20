@@ -302,3 +302,30 @@ export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<st
     return settings;
 };
 
+// Đọc RIÊNG 1 document users/{uid}/configs/productConfig — nhanh hơn hẳn
+// fetchHeavySettingsFromCloud() (tải cả collection configs, có thể kéo theo
+// checkthuong_data/customCalendars... rất nặng) khi chỉ cần mỗi productConfig
+// (dùng cho luồng khởi động ở hooks/useDataManagement.ts, khi IndexedDB cache trống).
+export const fetchProductConfigFromCloud = async (user: User): Promise<{ config: ProductConfig; url?: string } | null> => {
+    if (!user) return null;
+    const docRef = doc(db, 'users', user.uid, 'configs', 'productConfig');
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return null;
+
+    const data = snap.data();
+    if (!data || data.value === undefined) return null;
+
+    const wrapper = data.value as { config?: { groups?: ProductConfigGroups }; url?: string };
+    if (!wrapper.config || !wrapper.config.groups) return null;
+
+    const restoredGroups: { [key: string]: Set<string> } = {};
+    for (const [gKey, gVal] of Object.entries(wrapper.config.groups)) {
+        restoredGroups[gKey] = new Set(gVal as unknown as string[]);
+    }
+
+    return {
+        config: { ...wrapper.config, groups: restoredGroups } as ProductConfig,
+        url: wrapper.url
+    };
+};
+

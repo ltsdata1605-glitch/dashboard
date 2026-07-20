@@ -416,3 +416,21 @@ File đổi: `utils/dataUtils.ts` — thêm `heSoQuyDoiCache` (`WeakMap<ProductC
 ### 15.6. Tổng kết mục 15 — trạng thái cuối
 
 Cả 3 phần đã làm xong (15.3 Firestore-first, 15.4 giới hạn 14 tháng, 15.5 memoization), đều đã qua `npm run check`. **Chưa test tay trên trình duyệt với dữ liệu thật** — cần user tự xác nhận: (a) tốc độ khởi động có cải thiện rõ rệt không, (b) `FileHistoryManager` hiển thị đúng file cũ bị tự untick, (c) các bảng/biểu đồ so sánh (đặc biệt "cùng kỳ năm trước") vẫn cho số liệu đúng như trước.
+
+**Đã deploy production qua `npm run deploy` (do user tự chạy) trước khi kịp test tay** — commit `0cb5df1`.
+
+### 15.7. Bug nghiêm trọng phát hiện (2026-07-20): Firestore-first (15.3) KHÔNG BAO GIỜ hoạt động — đã sửa
+
+User báo sau khi deploy: **mỗi lần mở trang đều load cấu hình rất lâu**, không phụ thuộc dữ liệu doanh số nặng/nhẹ — dấu hiệu cho thấy vấn đề nằm ở bước tải CONFIG (không phải Worker xử lý doanh số như 15.4/15.5 đã tối ưu).
+
+**Nguyên nhân — bug tự gây ra ở 15.3**: `services/dbService/settings.ts:saveProductConfig()` lưu dữ liệu IndexedDB dưới dạng BỌC `{config: ProductConfig, url, fetchedAt}` (dòng 26), và khi đồng bộ lên Firestore qua cơ chế heavy-key sync, giá trị lưu trên `users/{uid}/configs/productConfig` cũng giữ NGUYÊN dạng bọc này. Nhưng code Firestore-fallback viết ở 15.3 (`hooks/useDataManagement.ts:100`, bản cũ) lại đọc thẳng `value` như thể chính nó là `ProductConfig` (`cloudSettings['productConfig']?.value as ProductConfig`) — nên `cloudConfig.groups` LUÔN `undefined`, điều kiện `if (cloudConfig && cloudConfig.groups...)` LUÔN false, code LUÔN rơi xuống nhánh tải lại toàn bộ Google Sheet — im lặng không báo lỗi gì. Tức là toàn bộ mục 15.3 **chưa từng thực sự chạy được** kể từ khi viết, dù `npm run check` xanh (lỗi shape runtime, TypeScript không bắt được vì ép kiểu `as ProductConfig`).
+
+**Đã sửa 2 việc**:
+1. `hooks/useDataManagement.ts` — đọc đúng field lồng `cloudConfigEntry.config` (không phải `.value` trực tiếp), đồng thời **đối chiếu `cloudConfigEntry.url === configUrl`** trước khi tin dùng (trước đây tưởng nhầm là "Firestore không mang metadata URL" — thực ra CÓ mang, chỉ là đọc sai chỗ).
+2. `services/firestoreService.ts` — thêm `fetchProductConfigFromCloud(user)`, đọc ĐÚNG 1 document `configs/productConfig` bằng `getDoc` thay vì `fetchHeavySettingsFromCloud()` (tải cả collection `configs`, có thể kéo theo `checkthuong_data`/`customCalendars`... rất nặng chỉ để lấy 1 field) — nhanh hơn đáng kể, đặc biệt với user có nhiều dữ liệu Check Thưởng/lịch đã lưu.
+
+**Phát hiện phụ, đã sửa luôn (ngoài phạm vi gốc nhưng chặn `npm run check`)**: `features/sticker-event/hooks/useStickerPrinterData.ts:1023` — lỗi TypeScript `stickerType === 'draw'` so sánh không giao nhau, do `handlePrint()` (dòng 907-999) đã có nhánh `if (stickerType === 'draw') {...return;}` riêng từ trước (đổi bởi user ở bản sync `0cb5df1`, không phải tôi) — dòng 1023 nằm SAU nhánh đó nên `stickerType` chắc chắn không còn là `'draw'`, code cũ là tàn dư luôn resolve về giá trị else. Đơn giản hoá về đúng giá trị hằng, không đổi hành vi runtime.
+
+`npm run check` xanh hoàn toàn (typecheck + eslint + build + lint-ratchet).
+
+**Cần test lại**: đây là fix cho đúng vấn đề user báo — cần xác nhận lại tốc độ khởi động thực tế sau khi deploy bản này, đặc biệt khi IndexedDB cache trống (ví dụ mở incognito/xoá site data) để thấy rõ nhánh Firestore-fallback hoạt động (sẽ thấy message "Tải cấu hình từ máy chủ..." thay vì "Tải cấu hình lõi từ Sheet..." trong lúc load).
