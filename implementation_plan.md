@@ -501,3 +501,17 @@ User gửi ảnh production mobile: kẹt ở vòng xoay trắng đơn thuần (
 `npm run check` xanh. **Chưa test tay** — cần user xác nhận trên production sau khi deploy: thời gian từ lúc mở app tới khi hết vòng xoay trắng có rút ngắn rõ rệt không.
 
 **Lưu ý còn lại (P2, chưa làm)**: nếu sau P1 vẫn còn chậm ở đúng bước này, khả năng cao là do `resolveSession()` (Cloud Function) bị cold-start hoặc do điều kiện mạng thực tế (ảnh mobile cho thấy sóng WiFi yếu) — cả hai đều KHÔNG thể khắc phục bằng sửa code phía client, cần xem `firebase functions:log` để đo tần suất cold-start thật trước khi cân nhắc trả phí giữ `minInstances`.
+
+---
+
+## 17. Đồng nhất định dạng thẻ KPI (2026-07-20) — ngoài chủ đề hiệu năng mục 15-16
+
+User yêu cầu trực tiếp qua ảnh chụp: 2 thẻ **DT THỰC** và **DTQĐ** (`components/kpis/KpiCards.tsx`) áp dụng cùng định dạng dòng "Mục tiêu" với thẻ **HQQĐ**/**TRẢ CHẬM** ("Đây là chuẩn") — thay vì hiện số target thô kèm nhãn "TAR NGÀY"/"Tháng: X Tỷ" màu xám, đổi sang: dòng 1 = giá trị mục tiêu, dòng 2 = % chênh lệch có màu (xanh emerald "Đã vượt +X%" nếu đạt/vượt mục tiêu, đỏ rose "Còn thiếu X%" nếu chưa đạt).
+
+**Đã sửa** `components/kpis/KpiCards.tsx`, 2 đoạn (nhánh DTQĐ dòng ~282-296, nhánh DT THỰC dòng ~371-387): tái sử dụng ĐÚNG % tiến độ đã tính sẵn (`pctHT`/`pct` — chính là số hiện ở thanh "Tiến độ" đầu thẻ, không phải tính mới) trừ 100 ra phần trăm chênh lệch, dùng chung class màu `text-emerald-500 dark:text-emerald-400` / `text-rose-500 dark:text-rose-400` y hệt thẻ HQQĐ/TRẢ CHẬM. Đổi nhãn `finalTrendLabel` từ "Tar ngày"/"Lũy kế" sang "Mục tiêu" cho khớp. Không đụng logic tính `rawValue`/`activeTarget`/`isGood` (giữ nguyên công thức `pct >= 100`) — chỉ đổi phần hiển thị dòng phụ.
+
+**Đánh đổi đã chấp nhận**: bỏ hiển thị số target thô còn lại (trước đây dòng phụ luôn hiện "Ngày: X"/"Tháng: Y" — số target ở chế độ KHÔNG active) để đổi lấy đúng định dạng "chuẩn" user yêu cầu. Nếu sau này cần xem lại số target ngày/tháng cụ thể, vẫn bấm vào thẻ để mở modal chỉnh target (`KpiCards.tsx:430-454`) xem đầy đủ.
+
+`npm run check` xanh. Không đụng `calculateRowMetrics`/logic tính toán — chỉ đổi JSX hiển thị dựa trên giá trị đã có sẵn, rủi ro thấp.
+
+**Cập nhật 2026-07-20 (sau khi test, user phản hồi)**: dòng chênh lệch ban đầu hiện % ("Còn thiếu 46%") — user muốn hiện SỐ TIỀN thay vì %, đúng bản chất 2 thẻ này là tiền tệ (khác HQQĐ/TRẢ CHẬM vốn là %). Đã sửa: `gapPct` (%) → `gapValue = rawValue - activeTarget` (tiền), hiện qua `formatCurrency()` — "Còn thiếu 369 Tr" / "Đã vượt +X Tr" thay vì "%". `npm run check` xanh.

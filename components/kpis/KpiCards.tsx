@@ -281,17 +281,22 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
                 if (config.hasTarget && config.targetType === 'global') {
                     if (config.metric === 'doanhThuQD') {
-                        // DTQD: target from warehouse summary
+                        // DTQD: target from warehouse summary — áp dụng cùng định dạng "Mục tiêu +
+                        // chênh lệch màu" như thẻ HQQĐ/TRẢ CHẬM, nhưng hiện SỐ TIỀN còn thiếu/đã
+                        // vượt (không phải %, vì đây là thẻ tiền tệ, khác HQQĐ/TRẢ CHẬM vốn là %).
                         const dailyRevTarget = revenueTarget > 0 ? revenueTarget / daysInMonth : 0;
                         const activeTarget = isLuyKe ? revenueTarget : dailyRevTarget;
                         const pctHT = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
-                        finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Tar ngày") : "Tar";
+                        finalTrendLabel = activeTarget > 0 ? "Mục tiêu" : "Tar";
                         isGood = pctHT >= 100;
                         progressPercent = pctHT;
+                        const gapValue = rawValue - activeTarget;
                         finalTrendValue = revenueTarget > 0
                             ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
-                                <span>{formatCurrency(activeTarget)} / {pctHT.toFixed(0)}%</span>
-                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
+                                <span>{formatCurrency(activeTarget)}</span>
+                                <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                    {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
+                                </span>
                             </span>
                             : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
                     } else if (config.targetRef === 'hieuQua') {
@@ -369,19 +374,24 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
                 const isDTThucCard = config.metric === 'totalRevenue' || config.metric === 'doanhThuThuc';
                 if (isDTThucCard) {
+                    // Áp dụng cùng định dạng "Mục tiêu + chênh lệch màu" như thẻ HQQĐ/TRẢ CHẬM,
+                    // nhưng hiện SỐ TIỀN còn thiếu/đã vượt (không phải %, vì đây là thẻ tiền tệ).
                     const monthlyTarget = dtThucTarget;
                     const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
                     const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
                     const pct = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
-                    finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Tar ngày") : "Tar";
-                    
+                    finalTrendLabel = activeTarget > 0 ? "Mục tiêu" : "Tar";
+
                     isGood = pct >= 100;
                     progressPercent = pct;
- 
+                    const gapValue = rawValue - activeTarget;
+
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
-                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
+                            <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
+                            </span>
                         </span>
                         : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
                 }
