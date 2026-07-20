@@ -230,6 +230,21 @@ export async function saveSalesFilesRegistry(registry: UploadedFileRegistryItem[
     await saveSetting('salesFilesRegistry', registry);
 }
 
+// Reset toàn bộ file "lũy kế" (registry) về isActive=false — CHỈ gọi đúng 1 lần lúc khởi
+// động app (hooks/useDataManagement.ts:loadInitialData), KHÔNG gọi trong
+// getMergedSalesData() hay bất kỳ chỗ nào chạy nhiều lần trong 1 phiên, để không tự ý
+// huỷ lựa chọn thủ công của user ngay sau khi họ tick lại 1 file để xem trong phiên đó.
+// Mặc định app chỉ mở dữ liệu Realtime cho nhanh; user cần xem lũy kế thì tự tick lại qua
+// FileHistoryManager mỗi phiên. File vừa upload xong trong phiên hiện tại KHÔNG bị ảnh
+// hưởng (giữ nguyên isActive=true như cũ) vì hàm này chỉ chạy lúc mount, trước khi có
+// upload nào trong phiên.
+export async function resetHistoricalFilesToInactive(): Promise<void> {
+    const registry = await getSalesFilesRegistry();
+    if (!registry.some(f => f.isActive)) return;
+    const updated = registry.map(f => f.isActive ? { ...f, isActive: false } : f);
+    await saveSalesFilesRegistry(updated);
+}
+
 export async function saveSalesFileData(fileId: string, data: DataRow[]): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
@@ -587,9 +602,10 @@ export async function clearTempRealtimeData(): Promise<void> {
 
 // Số tháng dữ liệu lịch sử tự động giữ ở trạng thái isActive khi gộp. Tính năng
 // "so sánh cùng kỳ năm trước" (useSummaryComparison.ts) cần tới 12 tháng lùi lại —
-// 14 tháng chừa biên độ an toàn. File cũ hơn KHÔNG bị xoá, chỉ tự untick (isActive:
-// false) — người dùng vẫn tự bật lại được bất cứ lúc nào qua FileHistoryManager.
-const RETENTION_MONTHS = 14;
+// 24 tháng chừa biên độ an toàn rộng hơn (đủ cho cả so sánh lùi 2 năm). File cũ hơn
+// KHÔNG bị xoá, chỉ tự untick (isActive: false) — người dùng vẫn tự bật lại được bất
+// cứ lúc nào qua FileHistoryManager.
+const RETENTION_MONTHS = 24;
 
 // Ưu tiên ngày dữ liệu thực trong file (maxDate, trích từ cột ngày bán lúc upload).
 // Registry cũ tạo trước khi có tính năng này có thể chưa có maxDate — fallback về

@@ -472,4 +472,32 @@ Không chặn (chạy song song), nhưng cạnh tranh băng thông/CPU cùng lú
 
 ### 16.4. Trạng thái
 
-Mới dừng ở NGHIÊN CỨU + LẬP KẾ HOẠCH theo đúng yêu cầu user — CHƯA sửa code gì ở mục 16. Chờ user xác nhận: (a) deploy P0 trước rồi đo lại xem còn chậm bao nhiêu, hay (b) muốn làm luôn 1 vài mục P1-P4 song song.
+P0 (deploy `813c5eb`) đã xong — commit `30f3a50`, đã publish `gh-pages`. Chờ user đo lại trước khi làm tiếp P1-P4.
+
+### 16.5. Tính năng mới (2026-07-20): mặc định chỉ mở Realtime, "lũy kế" phải tự tick mỗi phiên
+
+User đề xuất trực tiếp: mặc định khi mở dự án, toàn bộ file "YCX lũy kế" (`FileHistoryManager`) không được tick — chỉ dữ liệu Realtime tự động hiện. User cần xem lũy kế thì tự tick lại. Đây là đòn bẩy giảm khối lượng dữ liệu mạnh hơn hẳn giới hạn 14 tháng ở mục 15.4 (giảm về ĐÚNG những gì user chủ động cần xem, thay vì 1 ngưỡng thời gian cố định).
+
+**Quyết định thiết kế quan trọng (đã hỏi & user xác nhận)**: chỉ reset lúc **MỞ LẠI dự án** (F5/khởi động lại), KHÔNG áp dụng ngay lúc **upload** file lũy kế mới — vì nếu áp dụng lúc upload, file đầu tiên (chưa có Realtime) sẽ khiến user thấy màn hình trắng ngay sau khi tải lên, không có thông báo giải thích (đã xác nhận qua research code trước khi hỏi).
+
+File đổi:
+- `services/dbService/salesData.ts` — thêm `resetHistoricalFilesToInactive()`: set toàn bộ `isActive` trong registry về `false`. **CHỈ được gọi đúng 1 lần lúc khởi động** — KHÔNG đặt trong `getMergedSalesData()` (khác `pruneStaleActiveFiles` ở mục 15.4, hàm đó chạy trong `getMergedSalesData()` nên gọi lại nhiều lần/phiên) vì nếu gọi lặp lại sẽ tự ý huỷ lựa chọn tick-lại-để-xem của user ngay trong cùng phiên.
+- `hooks/useDataManagement.ts` — gọi `await dbService.resetHistoricalFilesToInactive()` ngay đầu `loadInitialData()`, TRƯỚC `Promise.all` chứa `getMergedSalesData()` — đảm bảo có hiệu lực từ lần tải đầu tiên của phiên.
+
+**Không ảnh hưởng**: luồng upload (`useFileUploadLogic.ts:442`, `isActive: true` khi upload mới) giữ nguyên — file vừa tải lên trong phiên vẫn hiện ngay như trước, không bị hàm reset này đụng tới (vì reset chỉ chạy lúc mount, trước mọi upload trong phiên).
+
+**Lưu ý phụ (chưa xử lý, chỉ ghi nhận)**: `pruneStaleActiveFiles` (mục 15.4, giới hạn 14 tháng) vẫn giữ nguyên, chạy độc lập bên trong `getMergedSalesData()`. Về lý thuyết có 1 tương tác cạnh: nếu user chủ động tick lại 1 file CŨ HƠN 14 tháng để xem trong phiên, `pruneStaleActiveFiles` sẽ tự động untick lại nó ở lần gọi `getMergedSalesData()` tiếp theo (ví dụ khi bấm "Xem Báo Cáo") — silently huỷ lựa chọn thủ công đó. Đây là hành vi CÓ TỪ TRƯỚC (không phải bug mới do tính năng này gây ra), nhưng giờ dễ gặp hơn vì tính năng mới khuyến khích user tick-lại-lũy kế mỗi phiên. Chưa sửa vì ngoài phạm vi yêu cầu — báo user biết, sửa sau nếu cần.
+
+`npm run check` xanh. **Chưa test tay trên trình duyệt** — cần user xác nhận: mở lại app (F5) thấy dashboard chỉ có Realtime (hoặc trống nếu chưa từng upload Realtime), vào "Lịch sử file" thấy checkbox lũy kế đã tự untick hết, tick lại 1 file rồi bấm "Xem Báo Cáo" thấy dữ liệu gộp đúng như mong đợi.
+
+**Cập nhật 2026-07-20**: user đổi ngưỡng retention (mục 15.4) từ 14 → **24 tháng** — `services/dbService/salesData.ts:RETENTION_MONTHS`. `npm run check` xanh.
+
+### 16.6. P1 đã làm (2026-07-20): bỏ 1 trong 3 round-trip mạng chặn màn hình mở đầu
+
+User gửi ảnh production mobile: kẹt ở vòng xoay trắng đơn thuần (spinner gốc `App.tsx:191-197`, chưa tới cả modal "AI Engine Processing") — xác nhận đúng dự đoán P1 ở mục 16.3: nghẽn ở `contexts/AuthContext.tsx`, TRƯỚC khi `DashboardView`/`useDataManagement` kịp chạy dòng nào.
+
+**Đã sửa**: `contexts/AuthContext.tsx` — bước `getDoc(users/{uid})` đọc field `settings` (đồng bộ tuỳ chọn cá nhân, KHÔNG phải role/quyền — role/status/departmentId đã lấy đủ từ `resolveSession()` rồi) không còn `await` chặn `isLoading`, chuyển thành fire-and-forget chạy nền, tự `mergeSettings()` khi xong. Giữ nguyên 2 bước còn lại (`resolveSession()`, `getIdToken(true)`) trong đường găng — cả hai đều ảnh hưởng trực tiếp phân quyền/Firestore Rules, bỏ đi có nguy cơ tái phát lớp bug permission-denied đã gặp trước đó trong dự án.
+
+`npm run check` xanh. **Chưa test tay** — cần user xác nhận trên production sau khi deploy: thời gian từ lúc mở app tới khi hết vòng xoay trắng có rút ngắn rõ rệt không.
+
+**Lưu ý còn lại (P2, chưa làm)**: nếu sau P1 vẫn còn chậm ở đúng bước này, khả năng cao là do `resolveSession()` (Cloud Function) bị cold-start hoặc do điều kiện mạng thực tế (ảnh mobile cho thấy sóng WiFi yếu) — cả hai đều KHÔNG thể khắc phục bằng sửa code phía client, cần xem `firebase functions:log` để đo tần suất cold-start thật trước khi cân nhắc trả phí giữ `minInstances`.

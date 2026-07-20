@@ -116,12 +116,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                     // Tích hợp đồng bộ cài đặt cá nhân từ mây xuống máy — `settings` không nằm
                     // trong protectedKeys() của firestore.rules nên vẫn đọc trực tiếp được.
-                    const { doc, getDoc } = await import('firebase/firestore');
-                    const settingsSnap = await getDoc(doc(db, 'users', currentUser.uid));
-                    const settings = settingsSnap.exists() ? settingsSnap.data().settings : undefined;
-                    if (settings) {
-                        mergeSettings(settings).catch(e => console.warn('Sync merge failed:', e));
-                    }
+                    // KHÔNG await ở đây: bước này chỉ ảnh hưởng tuỳ chọn cá nhân (settings),
+                    // không ảnh hưởng role/quyền/hiển thị gì — giữ nó trong đường găng trước
+                    // đây chỉ cộng thêm 1 round-trip Firestore không cần thiết vào thời gian
+                    // tới lúc thấy dashboard (đặc biệt nặng trên mobile mạng yếu). Chạy nền,
+                    // tự merge khi xong, không chặn setIsLoading(false) ở finally bên dưới.
+                    import('firebase/firestore').then(async ({ doc, getDoc }) => {
+                        try {
+                            const settingsSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                            const settings = settingsSnap.exists() ? settingsSnap.data().settings : undefined;
+                            if (settings) {
+                                mergeSettings(settings).catch(e => console.warn('Sync merge failed:', e));
+                            }
+                        } catch (e) {
+                            console.warn('Đồng bộ cài đặt cá nhân thất bại (không ảnh hưởng app):', e);
+                        }
+                    });
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
                     // Không overwrite role/status đã cache khi lỗi mạng — cho phép dùng offline.

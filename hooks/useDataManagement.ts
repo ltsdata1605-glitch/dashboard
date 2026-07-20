@@ -50,7 +50,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             setIsHardProcessing(true);
             try {
                 setStatus({ message: 'Đang tải cấu hình cục bộ...', type: 'info', progress: 10 });
-                
+
+                // Mỗi lần mở lại dự án: bỏ tick toàn bộ file "lũy kế" (chỉ giữ Realtime mặc
+                // định) để giảm khối lượng dữ liệu phải gộp/xử lý — user cần xem lũy kế thì tự
+                // tick lại trong phiên qua FileHistoryManager. PHẢI chạy TRƯỚC
+                // getMergedSalesData() bên dưới để có hiệu lực ngay từ lần tải đầu tiên.
+                await dbService.resetHistoricalFilesToInactive();
+
                 // 1. Parallel Local IDB Fetch (Fast Offline First)
                 const [
                     cachedConfigReq,
