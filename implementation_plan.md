@@ -434,3 +434,42 @@ User báo sau khi deploy: **mỗi lần mở trang đều load cấu hình rất
 `npm run check` xanh hoàn toàn (typecheck + eslint + build + lint-ratchet).
 
 **Cần test lại**: đây là fix cho đúng vấn đề user báo — cần xác nhận lại tốc độ khởi động thực tế sau khi deploy bản này, đặc biệt khi IndexedDB cache trống (ví dụ mở incognito/xoá site data) để thấy rõ nhánh Firestore-fallback hoạt động (sẽ thấy message "Tải cấu hình từ máy chủ..." thay vì "Tải cấu hình lõi từ Sheet..." trong lúc load).
+
+---
+
+## 16. Kế hoạch tối ưu toàn diện tốc độ khởi động (2026-07-20)
+
+> User vẫn báo production (`dashboard.pro.vn`, mobile 5G + desktop) load rất lâu mỗi lần refresh, YÊU CẦU điều tra kỹ + lên kế hoạch — không chỉ dừng ở 3 việc đã làm ở mục 15 (vốn chỉ tối ưu KHỐI LƯỢNG dữ liệu, chưa đụng tới các nguồn chậm khác). Đã điều tra thêm (agent research, chỉ đọc code + build, chưa sửa gì).
+
+### 16.1. Phát hiện quan trọng nhất: production CHƯA có bản vá mục 15.7
+
+Bản deploy gần nhất (`0cb5df1`, `npm run deploy` do user chạy 19/7) đã bao gồm mục 15.3-15.5 nhưng đó là **bản Firestore-first bị lỗi shape** (không bao giờ hoạt động thật, luôn rớt về tải Sheet). Bản sửa đúng (`813c5eb`, mục 15.7) mới chỉ push GitHub, **chưa deploy**. → Toàn bộ ảnh chụp production user gửi hôm nay nhiều khả năng vẫn phản ánh đúng bug đã tìm ra và sửa hôm qua, chỉ là chưa lên production. **Việc đầu tiên cần làm: deploy `npm run deploy` bản mới nhất**, rồi mới đánh giá các nguồn chậm khác còn tồn tại sau đó.
+
+### 16.2. Các nguồn chậm KHÁC (độc lập với mục 15, chưa từng được tối ưu)
+
+**A. Auth chặn CỨNG toàn bộ UI trước khi có bất kỳ nội dung nào** (`contexts/AuthContext.tsx`, `App.tsx:191-197`)
+Khi `isLoading=true`, app không render GÌ CẢ (kể cả Sidebar) — chỉ 1 spinner trắng. `isLoading` chỉ về `false` sau 3 lệnh `await` NỐI TIẾP: `resolveSession()` (Cloud Function, ~200ms ấm – vài giây nếu cold-start, không có cấu hình `minInstances` nên dễ cold) → `getIdToken(true)` (~100-500ms) → `getDoc(users/uid)` đọc `settings` cá nhân (~100-800ms, mạng 5G có latency cao hơn wifi). Đây là round-trip mạng cộng dồn **hoàn toàn TRƯỚC** khi `DashboardView`/`useDataManagement` bắt đầu chạy dòng nào — độc lập hoàn toàn với mọi tối ưu ở mục 15.
+
+**B. Tổng payload JS phải tải trước khi tab Phân Tích (mặc định) hiện nội dung: ~730 kB gzip / ~2.7 MB giải nén**
+`DashboardView` tuy đã `lazy()` nhưng là tab mặc định nên tải gần như ngay (278 kB gzip/1 MB raw — chunk lớn nhất toàn dự án). Cộng thêm 4 chunk vendor bị `<link rel="modulepreload">` tải VÔ ĐIỀU KIỆN trong `dist/index.html` bất kể tab nào mở: `vendor-firebase` (146 kB gzip), `vendor-charts`/recharts (116 kB gzip), `vendor-motion` (32 kB gzip), `vendor-icons` (21 kB gzip). Trên mobile 5G (băng thông biến thiên) + CPU di động yếu hơn desktop (parse/execute JS chậm hơn), đây là chi phí đáng kể mà 3 việc ở mục 15 (chỉ tối ưu dữ liệu) không hề đụng tới.
+
+**C. Parse Excel/tính toán chạy trên Main Thread, không qua Worker, ở 2 chỗ**
+- `services/dataService.ts:loadConfigFromSheet` — khi phải tải Google Sheet (cache/Firestore đều trống), `XLSX.read()` chạy main thread, chặn UI trong lúc parse.
+- File doanh số: có comment CHỦ Ý ("Xử lý file YCX trực tiếp trên Main Thread... Thay thế Worker để tránh overhead load thư viện") ở luồng xử lý file — **đây là quyết định thiết kế cũ, chưa rõ áp dụng cho luồng nào (upload mới hay cả reload lúc khởi động) và lý do gốc còn đúng không** — cần điều tra thêm lịch sử/log trước khi cân nhắc đổi lại, tránh lặp lại sai lầm y hệt Worker cũ từng bị revert.
+
+**D. 2 Firestore `onSnapshot` listener (`hooks/useCloudSync.ts`) mở song song ngay khi có user**
+Không chặn (chạy song song), nhưng cạnh tranh băng thông/CPU cùng lúc với việc tải 730 kB JS + config trên thiết bị di động.
+
+### 16.3. Kế hoạch hành động — xếp theo ưu tiên tác động/rủi ro
+
+| # | Việc | Tác động | Rủi ro | Cần gì trước khi làm |
+|---|---|---|---|---|
+| P0 | **Deploy `npm run deploy` bản `813c5eb`** | Rất cao — khả năng cao giải quyết phần lớn phàn nàn hiện tại | Không (đã test kỹ, chỉ chưa lên production) | Không cần gì, làm ngay |
+| P1 | Bỏ bớt 1 trong 3 round-trip nối tiếp ở AuthContext — cụ thể: `getDoc(users/uid)` đọc `settings` cá nhân (dòng ~119) không thật sự cần CHẶN `isLoading`, có thể tách chạy nền sau khi role/quyền đã có | Cao — giảm ~100-800ms mỗi lần mở app, mọi tab | Trung bình — đụng đúng file vừa sửa flash-bug tuần trước, cần test kỹ lại không tái phát race | Đọc kỹ lại toàn bộ AuthContext, xác nhận `settings` không có gì khác phụ thuộc nó chặn trước |
+| P2 | Cân nhắc `minInstances`/tối ưu cold-start cho `resolveSession` (Cloud Function) | Cao nếu cold-start đang là thủ phạm chính, nhưng chưa đo được thực tế | Thấp về code, nhưng **tốn phí** (minInstances giữ instance luôn chạy) — cần user đồng ý ngân sách | Đo thực tế qua `firebase functions:log` xem tần suất cold-start bao nhiêu trước khi quyết định chi tiền |
+| P3 | Rà lại 4 `modulepreload` vô điều kiện trong `index.html`, xem có chunk nào không cần thiết cho tab mặc định bị tải thừa | Trung bình | Trung bình — đụng cấu hình build/Vite, cần test không phá tab khác | Xác nhận từng vendor chunk THẬT SỰ cần cho tab nào, tránh cắt nhầm gây lỗi tab khác |
+| P4 | Điều tra lịch sử quyết định "không dùng Worker cho parse Excel", xem còn hợp lý không với khối lượng dữ liệu hiện tại | Không rõ (có thể cao hoặc có thể lặp lại sai lầm cũ) | Cao — đã từng thử và revert 1 lần | Tìm hiểu qua `git log`/`git blame` lý do revert cũ trước khi động lại |
+
+### 16.4. Trạng thái
+
+Mới dừng ở NGHIÊN CỨU + LẬP KẾ HOẠCH theo đúng yêu cầu user — CHƯA sửa code gì ở mục 16. Chờ user xác nhận: (a) deploy P0 trước rồi đo lại xem còn chậm bao nhiêu, hay (b) muốn làm luôn 1 vài mục P1-P4 song song.
