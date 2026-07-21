@@ -66,14 +66,17 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     // Màu thứ 6 được CLAUDE.md xác nhận hợp lệ ngoài 5 màu semantic chính (dùng cho
     // ramp/phân biệt) — dùng cho thẻ HQQĐ vì cả 5 màu chính đã bị 4 thẻ KPI khác dùng hết,
     // cần 1 màu tươi/nổi bật hơn "slate" (trước đây HQQĐ dùng alias purple→slate, nhìn xám xịt).
+    // Cố ý đậm hơn 1 bậc so với 5 màu chuẩn (700/600/500 thay vì 500/400/300) — bản đầu
+    // dùng cùng tông với các thẻ khác (500/400/300) khiến indigo đọc gần giống sky (đều
+    // là "màu xanh" khi nhìn nhanh). Tông đậm này ngả tím rõ, tách biệt hẳn khỏi sky.
     indigo: {
-        gradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
-        iconBg: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-500/15 dark:to-indigo-500/10',
-        iconText: 'text-indigo-600 dark:text-indigo-400',
+        gradient: 'from-indigo-700 via-indigo-600 to-indigo-500',
+        iconBg: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-500/20 dark:to-indigo-500/15',
+        iconText: 'text-indigo-700 dark:text-indigo-400',
         progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-        progressFill: 'bg-gradient-to-r from-indigo-500 to-indigo-300',
-        glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
-        borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600',
+        progressFill: 'bg-gradient-to-r from-indigo-700 to-indigo-500',
+        glowColor: 'shadow-indigo-300/50 dark:shadow-indigo-500/20',
+        borderHover: 'hover:border-indigo-400 dark:hover:border-indigo-600',
     },
 };
 

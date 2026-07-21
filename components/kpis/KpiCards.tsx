@@ -17,7 +17,7 @@ function iconColorToTextClass(iconColor: string): string {
         case 'pink': case 'red': case 'rose': return 'text-rose-600 dark:text-rose-400';
         case 'orange': case 'amber': return 'text-amber-600 dark:text-amber-400';
         case 'purple': case 'violet': case 'slate': return 'text-slate-600 dark:text-slate-400';
-        case 'indigo': return 'text-indigo-600 dark:text-indigo-400';
+        case 'indigo': return 'text-indigo-700 dark:text-indigo-400';
         default: return 'text-slate-800 dark:text-slate-200';
     }
 }
