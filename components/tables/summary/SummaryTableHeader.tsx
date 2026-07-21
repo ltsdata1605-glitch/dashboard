@@ -8,6 +8,7 @@ import type { FilterState } from '../../../types';
 interface SummaryTableHeaderProps {
     displayTitle: string;
     displayDescription: string;
+    reportSubTitle?: string;
     filterState: FilterState;
     tableMode: string;
     setTableMode: (mode: 'standard' | 'comparison' | 'cross_selling') => void;
@@ -29,7 +30,7 @@ interface SummaryTableHeaderProps {
 }
 
 export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
-    displayTitle, displayDescription, filterState, tableMode, setTableMode,
+    displayTitle, displayDescription, reportSubTitle, filterState, tableMode, setTableMode,
     isCrossSellingMode, userRole, setIsBuilderOpen, isComparisonMode, compMode,
     handleExport, isExporting, activeFilterKey, setActiveFilterKey, visibleColumns,
     setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen, dateDisplay
@@ -77,13 +78,19 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             <h1 className="hidden sm:block text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
                                 {displayTitle}
                             </h1>
-                            <p className="hidden sm:block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
-                                {displayDescription}
-                            </p>
+                            {displayDescription && (
+                                <p className="hidden sm:block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+                                    {displayDescription}
+                                </p>
+                            )}
+                            {/* Dùng chung đúng processedData.reportSubTitle (services/filterService.ts) —
+                                cùng nguồn với dòng phụ đề "TỔNG QUAN DOANH THU" (Kho/Xuất), tránh 2 nơi tự
+                                viết lại logic khác nhau. Ghép thêm khoảng ngày riêng cho bảng này (bảng
+                                Tổng Quan Doanh Thu không cần hiện khoảng ngày, nhưng bảng này cần giữ). */}
                             <p className="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                                {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
-                                {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
-                                {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
+                                {reportSubTitle} | {filterState.dateRange !== 'all'
+                                    ? `Từ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} đến ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
+                                    : 'Tất cả thời gian'}
                             </p>
                         </div>
                     </div>

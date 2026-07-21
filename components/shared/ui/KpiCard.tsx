@@ -63,6 +63,18 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
         glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
         borderHover: 'hover:border-rose-300 dark:hover:border-rose-600',
     },
+    // Màu thứ 6 được CLAUDE.md xác nhận hợp lệ ngoài 5 màu semantic chính (dùng cho
+    // ramp/phân biệt) — dùng cho thẻ HQQĐ vì cả 5 màu chính đã bị 4 thẻ KPI khác dùng hết,
+    // cần 1 màu tươi/nổi bật hơn "slate" (trước đây HQQĐ dùng alias purple→slate, nhìn xám xịt).
+    indigo: {
+        gradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
+        iconBg: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-500/15 dark:to-indigo-500/10',
+        iconText: 'text-indigo-600 dark:text-indigo-400',
+        progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
+        progressFill: 'bg-gradient-to-r from-indigo-500 to-indigo-300',
+        glowColor: 'shadow-indigo-200/50 dark:shadow-indigo-500/20',
+        borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-600',
+    },
 };
 
 // Alias tên màu cũ (dùng ở nhiều nơi gọi KpiCard) trỏ về đúng màu semantic tĩnh ở trên.

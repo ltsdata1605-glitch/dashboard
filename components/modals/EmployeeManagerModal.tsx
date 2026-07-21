@@ -187,7 +187,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             onClose={handleClose}
             title="Quản Lý Danh Sách Nhân Viên"
             subTitle={`Tổng số: ${Object.keys(localMap).length} nhân viên`}
-            maxWidth="4xl"
+            maxWidth="2xl"
             titleColorClass="text-indigo-600 dark:text-indigo-400"
             footer={
                 <div className="flex justify-between gap-2 sm:gap-3">
@@ -211,7 +211,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 </div>
             }
         >
-            <div className="-m-5 flex flex-col h-[70vh]">
+            <div className="-m-5 flex flex-col max-h-[70vh]">
                 {/* Toolbar */}
                 <div className="p-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
                     <div className="relative w-48 sm:w-64">
@@ -238,7 +238,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                 <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[13%] sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[47%] sm:w-auto">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[47%] sm:w-56">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
                                 <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[27%] sm:w-64">

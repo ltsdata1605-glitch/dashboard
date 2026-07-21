@@ -515,3 +515,140 @@ User yêu cầu trực tiếp qua ảnh chụp: 2 thẻ **DT THỰC** và **DTQ�
 `npm run check` xanh. Không đụng `calculateRowMetrics`/logic tính toán — chỉ đổi JSX hiển thị dựa trên giá trị đã có sẵn, rủi ro thấp.
 
 **Cập nhật 2026-07-20 (sau khi test, user phản hồi)**: dòng chênh lệch ban đầu hiện % ("Còn thiếu 46%") — user muốn hiện SỐ TIỀN thay vì %, đúng bản chất 2 thẻ này là tiền tệ (khác HQQĐ/TRẢ CHẬM vốn là %). Đã sửa: `gapPct` (%) → `gapValue = rawValue - activeTarget` (tiền), hiện qua `formatCurrency()` — "Còn thiếu 369 Tr" / "Đã vượt +X Tr" thay vì "%". `npm run check` xanh.
+
+---
+
+## 18. Chế độ "So sánh" ở bảng Chi Tiết Ngành Hàng tự set bộ lọc toàn cục (2026-07-20)
+
+User yêu cầu: khi bật chế độ "So sánh" (`components/tables/summary/SummaryTableHeader.tsx`, icon `columns-2`) ở bảng "CHI TIẾT NGÀNH HÀNG", tự động set 2 bộ lọc trong modal "TUỲ CHỈNH" (`components/filters/FilterSection.tsx`): **Trạng thái xuất = "Đã"** và **Trạng thái hồ sơ = ["1 - Mới"]**.
+
+**Điều tra trước khi sửa xác nhận**: 2 field này (`filterState.xuat`, `filterState.trangThai`) là **bộ lọc TOÀN CỤC** (`hooks/useFilterState.ts`), không phải filter cục bộ riêng cho bảng — áp dụng cho MỌI widget trên trang (KPI cards, TrendChart, IndustryGrid, phân tích nhân viên...) qua 1 lần xử lý duy nhất trong Worker (`services/filterService.ts:applyFiltersAndProcess`). Đã hỏi user xác nhận trước khi làm: **chấp nhận đổi cho toàn trang** (không cần thêm hạ tầng filter cục bộ mới).
+
+**Đã sửa** `components/tables/summary/useSummaryTableLogic.ts` — `setTableMode('comparison')` giờ gọi thêm `onFilterChange({ xuat: 'Đã', trangThai: ['1 - Mới'] })` ngay khi chuyển mode. Giá trị `'1 - Mới'` lấy đúng theo `initialFilterState.trangThai` mặc định của app (`hooks/useDataManagement.ts`) — khớp định dạng dữ liệu thực tế cột "Trạng thái hồ sơ".
+
+**Hành vi đã xác nhận với user, cần lưu ý**: đây là set 1 lần khi BẤM vào "So sánh" — nếu sau đó user tắt so sánh (chuyển về `'standard'`) rồi tự đổi lại filter, KHÔNG có cơ chế tự khôi phục bộ lọc cũ trước khi bật so sánh (không lưu snapshot). Đây là thiết kế đơn giản nhất, user đã chọn ("Đổi cho toàn trang, đơn giản hơn").
+
+`npm run check` xanh. Không đụng logic tính toán (`calculateRowMetrics`) — chỉ set giá trị filter có sẵn. **Chưa test tay trên trình duyệt** — cần user xác nhận bấm "So sánh" thấy 2 filter tự đổi đúng, và số liệu toàn trang cập nhật theo.
+
+---
+
+## 19. Bỏ "Cài đặt" và "Giới thiệu" khỏi menu Sidebar desktop (2026-07-20)
+
+User yêu cầu qua ảnh chụp: xoá 2 mục "Cài đặt"/"Giới thiệu" ở mục "Hệ Thống" cuối sidebar desktop — lý do nêu ra cho "Cài đặt": bấm Avatar (đáy sidebar) đã dẫn thẳng tới `SettingsView` rồi, trùng lặp.
+
+**Đã điều tra + xác nhận trước khi sửa** (`components/layout/Sidebar.tsx`): Avatar (`onClick` dòng ~351) gọi `setActiveTab('settings')` y hệt nút "Cài đặt" — xoá "Cài đặt" AN TOÀN, không mất chức năng. Nhưng "Giới thiệu" (`activeTab='help'`) **không có đường vào nào khác** trên desktop (đã grep toàn repo, chỉ chính nút này set `activeTab='help'` ở phía desktop) — đã hỏi lại user trước khi xoá, **user xác nhận vẫn muốn xoá luôn, chấp nhận mất đường vào `AboutView` trên desktop** (vẫn vào được qua gõ tay `?tab=help` trên URL nếu cần).
+
+**Đã sửa** `components/layout/Sidebar.tsx`:
+- `secondaryItems` bỏ 2 entry `settings`/`help`, chỉ còn giữ điều kiện `pending-approval` (hiện khi `userRole==='pending'`).
+- Bọc thêm `{secondaryItems.length > 0 && (...)}` quanh khối "Hệ Thống" — tránh hiện tiêu đề + đường viền trống không cho user thường (không phải `pending`), vì giờ mảng này có thể rỗng.
+- Bỏ import `Settings`/`HelpCircle` không còn dùng (tránh lỗi ESLint unused-import).
+
+**Ngoài phạm vi, CHƯA đụng** (chỉ ảnh chụp gửi là sidebar desktop): `components/layout/MobileBottomNav.tsx` vẫn giữ nguyên 2 mục "Cài đặt"/"Giới thiệu" trong sheet "Thêm" — đây hiện là đường vào DUY NHẤT tới `AboutView` trên mobile, không đổi gì ở đây trừ khi user yêu cầu thêm.
+
+`npm run check` xanh. **Chưa test tay trên trình duyệt** — cần user xác nhận: sidebar desktop hết 2 mục, Avatar vẫn vào được Cài đặt bình thường, không còn khoảng trống/tiêu đề "Hệ Thống" thừa khi không phải user `pending`.
+
+**Cập nhật 2026-07-20 (sau khi test, user chụp ảnh chỉ ra 1 vạch xám mồ côi)**: khối "Bottom Section" chứa Avatar (`Sidebar.tsx` dòng ~348) có sẵn `border-t` để ngăn cách với mục "Hệ Thống" phía trên — nay mục đó ẩn (rỗng với user thường) nên border này còn trơ lại thành 1 vạch xám không còn tác dụng phân cách gì. Đã bỏ hẳn `border-t border-slate-100 dark:border-slate-800/50` khỏi div này. `npm run check` xanh.
+
+**Cập nhật 2026-07-21 — 2 phát hiện phụ khi user test lại (không liên quan mục 19 gốc)**:
+1. **Tiêu đề logo bị cắt chữ** ("Phân Tích Yêu Cầu Xu" thay vì "...Xuất"): không phải thiếu chữ trong code (string đầy đủ vẫn ở `Sidebar.tsx:300`) — do cỡ chữ `text-[15px]` bold quá lớn so với khoảng trống còn lại trong sidebar (260px - padding - icon - gap), bị cắt cứng bởi `overflow-hidden` của khung cha, không có ellipsis. Đã giảm xuống `text-[13px]`.
+2. **Màu nền mục đang chọn (nav item active) quá đậm** — user muốn "đơn giản hơn". Đổi từ `bg-sky-600 text-white shadow-lg...` (nền xanh đậm, chữ trắng, có shadow) sang `bg-sky-50 dark:bg-sky-900/30 text-sky-600 font-semibold` — khớp ĐÚNG kiểu đã dùng sẵn cho mục con trong "Công cụ" (dòng ~182, cùng file), đồng nhất thiết kế thay vì tự chế màu mới. Icon active đổi từ `text-white` sang `text-sky-600` cho khớp nền sáng.
+
+`npm run check` xanh. Cả 2 chỉ đổi Tailwind class, không đụng logic. **Chưa test tay** — cần user xác nhận tiêu đề hiện đủ chữ và màu nền nhạt hơn đúng ý.
+
+**Cập nhật tiếp (user phản hồi nền hơi nhạt quá)**: chỉ tăng đậm mục nav CHÍNH (không đụng mục con trong "Công cụ", vẫn giữ `bg-sky-50`) — `bg-sky-50→bg-sky-100`, `text-sky-600→text-sky-700`, hover `bg-sky-100→bg-sky-200`. `npm run check` xanh.
+
+---
+
+## 20. Modal "Quản Lý Danh Sách Nhân Viên" — cột Họ Tên giãn rộng bất thường (2026-07-21)
+
+User chụp ảnh chỉ ra 2 vấn đề + 1 cột lạ hiện chữ "Dư".
+
+**Điều tra xác nhận**: `components/modals/EmployeeManagerModal.tsx` chỉ có ĐÚNG 4 cột (Mã NV, Họ và Tên, Bộ phận, Thao tác) — grep toàn repo + bundle build hiện tại **không tìm thấy chữ "Dư" ở đâu liên quan bảng này**. Khả năng cao user đang xem bản cache/production cũ (chưa deploy các thay đổi gần đây) — đã báo lại nhưng vẫn xử lý 2 vấn đề thật đã xác nhận được:
+- Bảng dùng `table-fixed`, 3 cột (Mã NV/Bộ phận/Thao tác) có width cố định px ở `sm:`, riêng "Họ và Tên" dùng `sm:w-auto` → chiếm TOÀN BỘ phần rộng còn lại của bảng bất kể tên ngắn hay dài, gây khoảng trắng lớn như ảnh.
+- Modal `maxWidth="4xl"` (896px) rộng hơn nhiều so với tổng nhu cầu thực của 4 cột (~650-700px).
+
+**Đã sửa** `components/modals/EmployeeManagerModal.tsx`:
+- `maxWidth`: `4xl` → `2xl` (672px, khớp sát tổng độ rộng cột thực tế).
+- Cột "Họ và Tên": `sm:w-auto` → `sm:w-56` (cố định, cùng đơn vị px với 3 cột còn lại thay vì để trống lấp đầy).
+- Chiều cao khung bảng: `h-[70vh]` (cố định luôn 70% viewport dù ít hay nhiều dòng) → `max-h-[70vh]` (co theo nội dung, chỉ chạm mức trần khi đủ nhiều dòng).
+
+`npm run check` xanh. **Chưa test tay** — cần user xác nhận đã hết khoảng trắng thừa, và xác nhận lại xem cột "Dư" còn xuất hiện không sau khi tải lại trang/xoá cache (nếu còn, cần thêm thông tin để tìm tiếp vì không tồn tại trong source).
+
+## 21. Modal "Danh Sách YCX Luỹ Kế" — thiết kế gọn lại (2026-07-21)
+
+User yêu cầu (nhắn giữa lúc đang xử lý mục 20): "Thiết kế form nhỏ gọn lại" cho modal `components/modals/FileHistoryModal.tsx` (+ `components/upload/FileHistoryManager.tsx` render bên trong, chế độ `compact`).
+
+**Đã sửa**, chỉ giảm padding/kích thước, không đổi bố cục/chức năng:
+- `FileHistoryModal.tsx`: header `px-5 py-4→px-4 py-3`, icon box `w-10 h-10→w-8 h-8`, tiêu đề `text-base/lg→text-sm/base`; nội dung `p-5 space-y-4→p-4 space-y-3`; màn rỗng `py-8→py-6`; 2 nút cuối giảm padding (`px-4 py-2→px-3 py-1.5`, `px-5 py-2.5→px-4 py-2`).
+- `FileHistoryManager.tsx` — CHỈ áp dụng khi `compact=true` (giữ nguyên hoàn toàn khi dùng ở `components/views/LandingPageView.tsx`, nơi khác đang dùng non-compact): khoảng cách header `mb-4→mb-2`, ẩn hẳn dòng mô tả phụ (đã trùng lặp với mô tả ở header modal), mỗi dòng file `p-3→p-2`, khung danh sách `max-h-[220px]→max-h-[160px]`, thanh tổng kết cuối `py-2→py-1.5`.
+
+`npm run check` xanh. **Chưa test tay** — cần user xác nhận độ gọn đã vừa ý.
+
+---
+
+## 22. Modal "TUỲ CHỈNH" — đồng bộ cỡ chữ + đổi tên nhãn; màu HQQĐ (2026-07-21)
+
+**Việc 1 — `components/filters/FilterSection.tsx`**:
+- Cỡ chữ nhãn "Hiển Thị Các Khu Vực" (`ModernSwitch`, dòng ~59) trước là `font-bold text-xs sm:text-sm` — to hơn hẳn nút "Khoảng Thời Gian Nhanh" (`text-[9px] xs:text-[10px] sm:text-xs`). Đã đổi để khớp đúng 3 mốc breakpoint của nút thời gian, giữ nguyên `font-bold`.
+- Đổi tên 4 nhãn `visibilityOptions` (dòng ~189-194): "Xu hướng doanh thu"→**"Xu hướng"**, "Tỷ trọng ngành hàng"→**"Ngành hàng"**, "Phân tích nhân viên"→**"Nhân viên"**, "Chi tiết ngành hàng"→**"Chi tiết"**. (User gõ "Xu hướn" — hiểu là lỗi gõ thiếu chữ "g", theo đúng pattern rút gọn của 3 nhãn còn lại.)
+
+**Việc 2 — màu thẻ KPI "HQQĐ" nổi bật hơn**: 5 màu semantic chính (`sky/slate/emerald/amber/rose`) đã bị 4 thẻ KPI khác dùng hết, HQQĐ đang dùng alias `purple→slate` (xám xịt). Theo đúng CLAUDE.md (chỉ định `indigo` là màu thứ 6 hợp lệ cho trường hợp cần phân biệt/nổi bật thêm ngoài 5 màu chính), đã:
+- Thêm entry `indigo` tĩnh (literal, không dựng qua template string — theo đúng comment cảnh báo có sẵn trong `KpiCard.tsx`) vào `COLOR_STYLES` (`components/shared/ui/KpiCard.tsx`).
+- Thêm case `indigo` vào `iconColorToTextClass()` (`components/kpis/KpiCards.tsx`) để đồng bộ màu chữ số to.
+- Đổi `iconColor: 'purple'` → `'indigo'` ở `constants.ts` (`DEFAULT_KPI_CARDS`, thẻ `kpi-hieuqua`).
+- **Quan trọng**: phát hiện thêm 1 đoạn migration ở `hooks/useDataManagement.ts` (`coreCardUpdates`, dòng ~142) ép cứng lại `iconColor: 'purple'` cho `kpi-hieuqua` MỖI LẦN tải app (đè lên `constants.ts` cho user ĐÃ có `kpiCardsConfig` lưu sẵn trong IndexedDB — tức gần như mọi user hiện tại). Nếu không sửa luôn chỗ này, đổi màu ở `constants.ts` sẽ vô tác dụng với user cũ. Đã đổi luôn thành `'indigo'`.
+
+**`lint-ratchet` phát hiện vi phạm mới** (đúng dự kiến — `indigo` không nằm trong danh sách màu semantic chính mà ratchet công nhận): đã cập nhật `violations-baseline.json` thêm 2 entry mới (`components/kpis/KpiCards.tsx`: 2, `components/shared/ui/KpiCard.tsx`: 17) theo đúng hướng dẫn của chính script khi đây là ngoại lệ có chủ đích (đã có tiền lệ giữ `indigo` không quy về `sky` ở nhiều nơi khác trong dự án, xem mục "Rà soát tổng thể 07/2026" trong memory).
+
+`npm run check` xanh hoàn toàn (bao gồm lint-ratchet). **Chưa test tay** — cần user xác nhận cỡ chữ đã đồng bộ, tên nhãn đúng ý, và thẻ HQQĐ đã chuyển sang tông indigo (xanh tím) nổi bật hơn xám.
+
+---
+
+## 23. Card "Xu Hướng Doanh Thu" — đồng bộ dòng phụ đề + gọn nút Ca/Ngày/Tuần/Tháng (2026-07-21)
+
+User chụp ảnh so sánh với card "Tỷ Trọng Ngành Hàng" làm chuẩn ("Chuẩn" — chỉ hiện "TẤT CẢ THỜI GIAN" xám nhạt đơn giản).
+
+**Đã sửa** `components/charts/TrendChart.tsx`:
+1. Dòng phụ đề (dòng ~394-422): span cha đổi cỡ chữ responsive `text-[10px] lg:text-[11px]` → cố định `text-[11px]` khớp đúng IndustryGrid. Bỏ màu `indigo-600` + `font-extrabold` nổi bật ở "DT THỰC"/"DTQĐ"/"TỔNG: [giá trị]" (vốn không cùng tông màu xám nhạt của "chuẩn") — đổi sang tông slate cùng họ: đang chọn = `text-slate-700 dark:text-slate-200 font-bold`, chưa chọn = `text-slate-400 dark:text-slate-500 font-medium`. **Vẫn giữ nguyên `onClick`** (DT THỰC/DTQĐ vẫn bấm chuyển được metric hiển thị) — chỉ đổi màu sắc cho đồng bộ "chuẩn", không bỏ chức năng.
+2. Nhóm nút "Ca/Ngày/Tuần/Tháng" (dòng ~513-528, bản desktop): giảm padding nút con `py-1 px-2 lg:px-2.5` → `py-0.5 px-1.5 lg:px-2` cho gọn hơn.
+
+`npm run check` xanh — lint-ratchet còn tự hạ baseline `TrendChart.tsx` (34→31) vì giảm bớt class màu non-semantic (bỏ `indigo` ở phần vừa sửa), không cần tự tay chỉnh. **Chưa test tay** — cần user xác nhận màu đã đồng bộ, và nút Ca/Ngày/Tuần/Tháng đã đủ gọn.
+
+---
+
+## 24. Card "Tỷ Trọng Ngành Hàng" — bỏ giới hạn top-8 (2026-07-21)
+
+`components/charts/IndustryGrid.tsx:90-105` — `currentView` (useMemo) trước đây cắt cứng `sorted.slice(0, 8)` rồi tính `totalRevenue`/`totalQuantity` (dùng để ra %DT từng thẻ) CHỈ trên 8 phần tử đó — nghĩa là nếu bỏ giới hạn mà không sửa luôn phần tổng, %DT sẽ vẫn tính sai (tính trên top-8 thay vì toàn bộ). Đã sửa: bỏ `.slice(0,8)`, tổng `totalRevenue`/`totalQuantity` tính trên TOÀN BỘ mảng đã sort. Grid layout (`grid-cols-2 lg:grid-cols-4`, dòng 349) không có `grid-rows`/`max-height` cố định nên tự xuống hàng bình thường, không vỡ layout khi nhiều hơn 8 mục — đã xác nhận qua đọc code trước khi sửa.
+
+Không đụng biểu đồ tròn bên cạnh (`pieChartData`, top10 + gộp "Khác") — đây là logic khác, phục vụ mục đích khác (tránh pie chart quá nhiều lát mỏng khó đọc), user không yêu cầu đổi phần này.
+
+`npm run check` xanh.
+
+## 25. Popup lọc theo cột (FilterPopover) — 3 lỗi trong bảng Chi Tiết Ngành Hàng (2026-07-21)
+
+`components/tables/summary/FilterPopover.tsx` — user chụp ảnh chỉ 2 lỗi + yêu cầu gọn giao diện:
+
+1. **"Bộ lọc cách xa nút lọc"**: nguyên nhân xác nhận qua đọc code — effect đo vị trí nút trigger (`getBoundingClientRect`) dùng `useEffect` (chạy SAU khi trình duyệt paint khung đầu tiên), nên lần mở đầu tiên của mỗi pill lọc, popup portal vào `body` mà chưa có `top/left` gì cả → hiện sai vị trí (cuối trang) rồi mới "nhảy" về đúng chỗ. Đã đổi `useEffect` → `useLayoutEffect` (chạy đồng bộ TRƯỚC khi paint) — cắt hẳn hiện tượng nhảy vị trí.
+2. **"Khi bật lên không hiển thị màu xanh, chỉ hiển thị màu trắng"**: toggle switch dùng class `peer-checked:bg-primary-600`, nhưng token `--color-primary-600` **không tồn tại** trong `styles.css` (chỉ có `--color-primary` dạng scalar, không có dải số 50-900) — class này không sinh CSS, toggle luôn giữ màu nền mặc định. Lỗi mang tính hệ thống, xuất hiện ở NHIỀU chỗ khác trong cùng file (nút "Chọn tất cả", icon phễu khi có filter active, focus ring ô tìm kiếm) — đã đổi TOÀN BỘ `primary-*` → `sky-*` (màu primary thật của dự án theo `styles.css`) ở cả bản mobile lẫn desktop, không chỉ riêng toggle.
+3. **"fix các chữ và nút gọn lại"**: bản desktop (vốn rộng rãi hơn hẳn bản mobile cùng file) đã thu nhỏ khớp gần với bản mobile — input `px-3 py-2 text-sm→px-2.5 py-1.5 text-xs`, hàng "Chọn tất cả/Bỏ chọn" `pb-2 mb-2→pb-1.5 mb-1.5`, mỗi dòng toggle `p-2 text-sm→p-1.5 text-xs`, track toggle `w-9 h-5→w-8 h-[18px]` (khớp cỡ mobile), popup container `p-3→p-2.5`.
+
+`npm run check` xanh. **Chưa test tay** — cần user xác nhận: dropdown mở đúng ngay dưới nút lọc (không còn nhảy vị trí), toggle chuyển xanh khi bật, giao diện đã gọn hơn.
+
+---
+
+## 26. Đồng bộ dòng phụ đề "CHI TIẾT NGÀNH HÀNG" với "TỔNG QUAN DOANH THU" (2026-07-21)
+
+User yêu cầu: (a) bỏ hẳn dòng mô tả tĩnh "Thống kê chi tiết theo ngành hàng và nhóm hàng."; (b) dòng phụ đề còn lại (thông tin filter) phải "giống" định dạng dòng phụ đề của card "Tổng Quan Doanh Thu" ("Lọc theo: Xuất: Đã").
+
+**Điều tra xác nhận**: dòng phụ đề "Tổng Quan Doanh Thu" ("LỌC THEO: XUẤT: ĐÃ") lấy từ `processedData.reportSubTitle` — 1 chuỗi tính SẴN trong `services/filterService.ts:316-327` (chỉ xét Kho + Xuất, KHÔNG có khoảng ngày, format `"Lọc theo: {parts.join(' | ')}"` hoặc fallback `"Lọc theo kho: Tất cả"`). Trong khi bảng "CHI TIẾT NGÀNH HÀNG" (`SummaryTableHeader.tsx:83-87`) lại TỰ VIẾT logic riêng (xét thêm cả khoảng ngày, nối chuỗi thủ công khác định dạng) — đây chính là 2 nơi lệch nhau user muốn đồng bộ.
+
+**Đã sửa** — thay vì viết lại logic ở `SummaryTableHeader.tsx` cho "giống", chọn cách **dùng chung đúng 1 nguồn** (`processedData.reportSubTitle`) để đảm bảo không bao giờ lệch nhau về sau:
+- `components/tables/summary/useSummaryTableLogic.ts:272` — `displayDescription` (dòng mô tả) đổi từ chuỗi tĩnh mặc định sang `''` (rỗng) khi KHÔNG ở chế độ so sánh — chỉ còn hiện khi đang so sánh (lấy `compTree.description`, vẫn hữu ích, không phải thứ user phàn nàn).
+- `components/tables/SummaryTable.tsx` — lấy thêm `processedData` từ `useDashboardContext()`, truyền `reportSubTitle={processedData?.reportSubTitle}` xuống `SummaryTableHeader`.
+- `components/tables/summary/SummaryTableHeader.tsx` — thêm prop `reportSubTitle`, bọc dòng mô tả trong điều kiện `{displayDescription && (...)}` (ẩn hẳn khi rỗng), thay toàn bộ logic tự viết ở dòng phụ đề filter bằng `{reportSubTitle}`. Dọn luôn prop `filterState` không còn dùng tới (cùng import `FilterState` không dùng) sau khi bỏ logic cũ.
+
+**Đánh đổi đã chấp nhận**: dòng phụ đề mới của "Chi Tiết Ngành Hàng" **không còn hiện khoảng ngày** (trước đây có "TẤT CẢ THỜI GIAN"/"TỪ...ĐẾN...") vì `reportSubTitle` (nguồn chuẩn) không có thông tin này — đúng theo yêu cầu "giống" 100% với card Tổng Quan Doanh Thu (card đó cũng không hiện khoảng ngày). Báo lại nếu user vẫn muốn giữ hiển thị khoảng ngày riêng ở bảng này.
+
+`npm run check` xanh. **Chưa test tay** — cần user xác nhận dòng mô tả tĩnh đã biến mất và dòng filter khớp đúng định dạng "Lọc theo: ..." như card Tổng Quan Doanh Thu.
+
+**Cập nhật (user muốn giữ khoảng ngày riêng cho bảng này)**: thêm lại `filterState` prop cho `SummaryTableHeader.tsx`, ghép nối `{reportSubTitle} | {khoảng ngày}` — khoảng ngày viết thường ("Tất cả thời gian"/"Từ ... đến ...", CSS `uppercase` tự viết hoa) để đồng bộ phong cách chữ với phần `reportSubTitle` dùng chung. Card "Tổng Quan Doanh Thu" giữ nguyên KHÔNG có khoảng ngày (đúng thiết kế gốc của nó) — chỉ bảng "Chi Tiết Ngành Hàng" có thêm phần này. `npm run check` xanh.

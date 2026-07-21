@@ -56,7 +56,7 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
                     <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
                     <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-bold text-xs sm:text-sm transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-bold text-[9px] xs:text-[10px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
@@ -187,10 +187,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     const [isGtdhModalOpen, setGtdhModalOpen] = useState(false);
 
     const visibilityOptions = [
-        { key: 'trendChart', label: 'Xu hướng doanh thu', icon: 'area-chart', color: 'sky' },
-        { key: 'industryGrid', label: 'Tỷ trọng ngành hàng', icon: 'layout-grid', color: 'emerald' },
-        { key: 'employeeAnalysis', label: 'Phân tích nhân viên', icon: 'users-round', color: 'rose' },
-        { key: 'summaryTable', label: 'Chi tiết ngành hàng', icon: 'table', color: 'amber' },
+        { key: 'trendChart', label: 'Xu hướng', icon: 'area-chart', color: 'sky' },
+        { key: 'industryGrid', label: 'Ngành hàng', icon: 'layout-grid', color: 'emerald' },
+        { key: 'employeeAnalysis', label: 'Nhân viên', icon: 'users-round', color: 'rose' },
+        { key: 'summaryTable', label: 'Chi tiết', icon: 'table', color: 'amber' },
     ];
 
     const handleSubmit = () => {

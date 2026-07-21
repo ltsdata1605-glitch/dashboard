@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Icon } from '../../common/Icon';
 import { Button } from '../../shared/ui/Button';
@@ -37,7 +37,12 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen, onClose]);
 
-    useEffect(() => {
+    // useLayoutEffect (không phải useEffect) — đo vị trí nút trigger TRƯỚC khi trình
+    // duyệt paint khung hình đầu tiên. Trước đây dùng useEffect chạy SAU paint, nên lần
+    // mở đầu tiên của mỗi pill lọc, popup portal thẳng vào body không có position/top/left
+    // gì cả (triggerRect vẫn null) → hiện ở cuối trang rồi mới "nhảy" về đúng chỗ ngay khi
+    // effect chạy xong — đúng hiện tượng "dropdown lệch xa nút lọc" đã gặp.
+    useLayoutEffect(() => {
         if (isOpen) {
             setSearchTerm('');
             if (triggerRef.current) {
@@ -91,7 +96,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                 ref={triggerRef}
                 onClick={(e) => { e.stopPropagation(); onToggle(); }}
                 onMouseDown={stopPropagation}
-                className={`p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-primary-600 dark:text-primary-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
+                className={`p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-sky-600 dark:text-sky-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
                 title={`Lọc ${label}`}
             >
                 <Icon name="filter" size={3} className={`sm:hidden ${hasFilters ? "fill-current" : ""}`} />
@@ -126,11 +131,11 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                 placeholder="Tìm kiếm..." 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
                             />
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
-                            <Button variant="unstyled" size="none" onClick={handleSelectAll} className="text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</Button>
+                            <Button variant="unstyled" size="none" onClick={handleSelectAll} className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Chọn tất cả</Button>
                             <span className="text-[10px] text-slate-400 font-semibold">{selected.length} / {options.length}</span>
                             <Button variant="unstyled" size="none" onClick={handleDeselectAll} className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</Button>
                         </div>
@@ -147,7 +152,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                                     onChange={() => toggleOption(option)} 
                                                     className="sr-only peer" 
                                                 />
-                                                <div className="w-8 h-[18px] bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-[14px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all dark:border-slate-600 peer-checked:bg-primary-600"></div>
+                                                <div className="w-8 h-[18px] bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-[14px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
                                             </div>
                                         </label>
                                     ))}
@@ -167,20 +172,20 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                     <div 
                         onClick={stopPropagation}
                         onMouseDown={stopPropagation}
-                        className="hidden sm:block rounded-lg shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-3 cursor-default text-left"
+                        className="hidden sm:block rounded-lg shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-2.5 cursor-default text-left"
                         style={desktopStyle}
                     >
-                        <div className="mb-3">
-                            <input 
-                                type="text" 
-                                placeholder="Tìm kiếm..." 
+                        <div className="mb-2">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
                             />
                         </div>
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
-                            <Button variant="unstyled" size="none" onClick={handleSelectAll} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</Button>
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
+                            <Button variant="unstyled" size="none" onClick={handleSelectAll} className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline">Chọn tất cả</Button>
                             <span className="text-xs text-slate-400 font-semibold">{selected.length} / {options.length}</span>
                             <Button variant="unstyled" size="none" onClick={handleDeselectAll} className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</Button>
                         </div>
@@ -188,8 +193,8 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                             {filteredOptions.length > 0 ? (
                                 <>
                                     {filteredOptions.slice(0, 200).map(option => (
-                                        <label key={option} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
-                                            <span className="text-sm text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
+                                        <label key={option} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
+                                            <span className="text-xs text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
                                             <div className="relative inline-flex items-center cursor-pointer shrink-0">
                                                 <input 
                                                     type="checkbox" 
@@ -197,7 +202,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                                     onChange={() => toggleOption(option)} 
                                                     className="sr-only peer" 
                                                 />
-                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-primary-600"></div>
+                                                <div className="w-8 h-[18px] bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-[14px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
                                             </div>
                                         </label>
                                     ))}

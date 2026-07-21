@@ -88,17 +88,19 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     } = useIndustryGridLogic({ industryData, allSalesData: allSales, productConfig });
 
     const currentView = useMemo(() => {
+        // Hiển thị TẤT CẢ ngành hàng (không giới hạn top 8 như trước) — tổng doanh
+        // thu/số lượng dùng để tính %DT của từng thẻ vẫn phải tính trên TOÀN BỘ danh
+        // sách đã sort, không phải chỉ trên phần cắt, để không sai lệch tỷ trọng.
         const sorted = [...rawCurrentView.data].sort((a, b) => {
             const valA = metricToDisplay === 'revenue' ? a.revenue : a.quantity;
             const valB = metricToDisplay === 'revenue' ? b.revenue : b.quantity;
             return valB - valA;
         });
-        const top8 = sorted.slice(0, 8);
-        const totalRevenue = top8.reduce((sum, item) => sum + item.revenue, 0);
-        const totalQuantity = top8.reduce((sum, item) => sum + item.quantity, 0);
+        const totalRevenue = sorted.reduce((sum, item) => sum + item.revenue, 0);
+        const totalQuantity = sorted.reduce((sum, item) => sum + item.quantity, 0);
         return {
             ...rawCurrentView,
-            data: top8,
+            data: sorted,
             totalRevenue,
             totalQuantity
         };

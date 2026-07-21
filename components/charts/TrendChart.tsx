@@ -391,27 +391,27 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                 <div className="flex items-center gap-3">
                     <span className="text-slate-800 dark:text-slate-100 uppercase">XU HƯỚNG DOANH THU</span>
                 </div>
-                <span className="text-[10px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
                     {displayMode !== 'calendar' && (
                         <>
                             <span
                                 onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-                                className={`cursor-pointer transition-colors font-extrabold ${
+                                className={`cursor-pointer transition-colors ${
                                     trendState.metric === 'thuc'
-                                        ? 'text-indigo-600 dark:text-indigo-400'
-                                        : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500'
+                                        ? 'text-slate-700 dark:text-slate-200 font-bold'
+                                        : 'text-slate-400 dark:text-slate-500 font-medium hover:text-slate-600'
                                 }`}
                             >DT THỰC</span>
                             <span
                                 onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-                                className={`cursor-pointer transition-colors font-extrabold ${
+                                className={`cursor-pointer transition-colors ${
                                     trendState.metric === 'qd'
-                                        ? 'text-indigo-600 dark:text-indigo-400'
-                                        : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500'
+                                        ? 'text-slate-700 dark:text-slate-200 font-bold'
+                                        : 'text-slate-400 dark:text-slate-500 font-medium hover:text-slate-600'
                                 }`}
                             >DTQĐ</span>
                             {totalValue > 0 && (
-                                <span className="text-slate-400 dark:text-slate-500 font-extrabold">TỔNG: <span className="text-indigo-600 dark:text-indigo-400">{formatCurrency(totalValue)}</span></span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">TỔNG: <span className="text-slate-700 dark:text-slate-200 font-bold">{formatCurrency(totalValue)}</span></span>
                             )}
                             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
                         </>
@@ -516,7 +516,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         variant="unstyled" size="none"
                         key={v}
                         onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
+                        className={`py-0.5 px-1.5 lg:px-2 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
                           trendState.view === v
                           ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20'
                           : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-slate-700/50'

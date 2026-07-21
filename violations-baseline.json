@@ -16,7 +16,7 @@
     "missingMobileToolbar": 0
   },
   "components/charts/TrendChart.tsx": {
-    "nonSemanticColor": 39,
+    "nonSemanticColor": 31,
     "missingMobileToolbar": 0
   },
   "components/common/DebugPanel.tsx": {
@@ -131,6 +131,10 @@
     "nonSemanticColor": 13,
     "missingMobileToolbar": 0
   },
+  "components/kpis/KpiCards.tsx": {
+    "nonSemanticColor": 2,
+    "missingMobileToolbar": 0
+  },
   "components/kpis/modals/KpiCardConfigModal.tsx": {
     "nonSemanticColor": 15,
     "missingMobileToolbar": 0
@@ -189,6 +193,10 @@
   },
   "components/shared/ui/Input.tsx": {
     "nonSemanticColor": 2,
+    "missingMobileToolbar": 0
+  },
+  "components/shared/ui/KpiCard.tsx": {
+    "nonSemanticColor": 17,
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSettingsModal.tsx": {

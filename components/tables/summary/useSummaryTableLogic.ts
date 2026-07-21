@@ -37,7 +37,14 @@ export const useSummaryTableLogic = () => {
 
     const setTableMode = useCallback((mode: 'standard' | 'comparison' | 'cross_selling') => {
         _setTableMode(mode);
-    }, []);
+        if (mode === 'comparison') {
+            // Chế độ "So sánh" luôn cần dữ liệu đơn hàng đã xuất + hồ sơ mới để số liệu
+            // đối chiếu chính xác — set cứng 2 bộ lọc toàn cục này theo yêu cầu người dùng.
+            // Đây là filterState CHUNG cho cả trang (KPI, biểu đồ, các bảng khác cũng đổi
+            // theo), không phải filter cục bộ riêng cho bảng này — có chủ đích.
+            onFilterChange({ xuat: 'Đã', trangThai: ['1 - Mới'] });
+        }
+    }, [onFilterChange]);
 
     const {
         compMode, setCompMode,
@@ -262,7 +269,9 @@ export const useSummaryTableLogic = () => {
     }
 
     const displayTitle = isComparisonMode && compTree ? compTree.title : "CHI TIẾT NGÀNH HÀNG";
-    const displayDescription = isComparisonMode && compTree ? compTree.description : "Thống kê chi tiết theo ngành hàng và nhóm hàng.";
+    // Chỉ hiện dòng mô tả khi ở chế độ so sánh (có compTree.description thật sự khác biệt
+    // theo mốc thời gian đang chọn) — bỏ hẳn dòng mô tả tĩnh mặc định theo yêu cầu.
+    const displayDescription = isComparisonMode && compTree ? compTree.description : '';
     const traGopDisplayTotal = grandTotal.traGopPercent === 0 ? '-' : `${grandTotal.traGopPercent.toFixed(0)}%`;
 
     const getFilterProps = (key: string) => {

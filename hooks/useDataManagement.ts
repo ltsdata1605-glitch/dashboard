@@ -139,7 +139,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     const coreCardUpdates: Record<string, { order: number, iconColor: string }> = {
                         'kpi-dtthuc': { order: 1, iconColor: 'emerald' },
                         'kpi-dtqd': { order: 2, iconColor: 'blue' },
-                        'kpi-hieuqua': { order: 3, iconColor: 'purple' },
+                        'kpi-hieuqua': { order: 3, iconColor: 'indigo' },
                         'kpi-tragop': { order: 4, iconColor: 'amber' },
                         'kpi-dtchuaxuat': { order: 5, iconColor: 'rose' },
                     };

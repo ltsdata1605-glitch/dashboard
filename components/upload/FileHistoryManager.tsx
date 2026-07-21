@@ -37,15 +37,17 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
 
     return (
         <div className={`flex flex-col text-left ${compact ? 'p-0' : 'mt-6 pt-6 border-t border-slate-200 dark:border-slate-800'}`}>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className={`flex items-center justify-between flex-wrap gap-2 ${compact ? 'mb-2' : 'mb-4'}`}>
                 <div>
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <Icon name="database" size={4} className="text-indigo-500" />
                         <span>Kho Dữ Liệu Tích Lũy ({registry.length})</span>
                     </h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                        Chọn các tệp tin để gộp số liệu. Dữ liệu được lưu trữ trực tiếp trên trình duyệt của bạn.
-                    </p>
+                    {!compact && (
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                            Chọn các tệp tin để gộp số liệu. Dữ liệu được lưu trữ trực tiếp trên trình duyệt của bạn.
+                        </p>
+                    )}
                 </div>
                 {!compact && onViewReport && activeCount > 0 && (
                     <Button
@@ -61,12 +63,12 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
             </div>
 
             <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-inner">
-                <div className="max-h-[220px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-thin">
+                <div className={`overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-thin ${compact ? 'max-h-[160px]' : 'max-h-[220px]'}`}>
                     {registry.map((file) => (
-                        <div 
-                            key={file.id} 
-                            className={`flex items-center justify-between p-3 transition-colors ${
-                                file.isActive 
+                        <div
+                            key={file.id}
+                            className={`flex items-center justify-between transition-colors ${compact ? 'p-2' : 'p-3'} ${
+                                file.isActive
                                     ? 'bg-sky-50/20 dark:bg-sky-950/15'
                                     : 'hover:bg-slate-100/30 dark:hover:bg-slate-800/20'
                             }`}
@@ -127,7 +129,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 </div>
 
                 {/* Footer summary bar */}
-                <div className="bg-slate-100/40 dark:bg-slate-900/80 px-3.5 py-2 border-t border-slate-200/50 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <div className={`bg-slate-100/40 dark:bg-slate-900/80 border-t border-slate-200/50 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 ${compact ? 'px-3 py-1.5' : 'px-3.5 py-2'}`}>
                     <span className="flex items-center gap-1">
                         <Icon name="file-check" size={3.5} className="text-emerald-500" />
                         Đang gộp: <strong className="text-slate-700 dark:text-slate-300 font-extrabold">{activeCount}</strong> tệp

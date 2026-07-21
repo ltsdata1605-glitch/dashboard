@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-    LayoutDashboard, 
-    BarChart3, 
-    Users, 
-    Settings, 
-    ChevronLeft, 
-    ChevronRight, 
-    Search, 
-    Bell, 
-    Moon, 
-    Sun, 
+    LayoutDashboard,
+    BarChart3,
+    Users,
+    ChevronLeft,
+    ChevronRight,
+    Search,
+    Bell,
+    Moon,
+    Sun,
     LogOut,
     Package,
     FileText,
     MessageSquare,
-    HelpCircle,
     Menu,
     X,
     ChevronDown,
@@ -102,13 +100,13 @@ const NavItem = React.memo(({
                 className={`
                     flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
                     ${isActive
-                        ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/20 dark:shadow-sky-500/20 hover:bg-sky-700'
+                        ? 'bg-sky-100 dark:bg-sky-900/40 text-sky-700 font-semibold hover:bg-sky-200 dark:hover:bg-sky-900/60'
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-500'
                     }
                 `}
             >
                 <div className={`flex items-center justify-center min-w-[22px] transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
-                    <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-300'} />
+                    <item.icon size={22} className={isActive ? 'text-sky-700' : 'group-hover:scale-110 transition-transform duration-300'} />
                 </div>
                 
                 <motion.div 
@@ -231,10 +229,11 @@ export default function Sidebar() {
         },
     ];
 
+    // "Cài đặt" và "Giới thiệu" đã bỏ khỏi menu chính — Avatar ở cuối sidebar (dòng
+    // ~350) đã dẫn thẳng tới Cài đặt, không cần trùng lặp. "Giới thiệu" bỏ hẳn theo
+    // yêu cầu người dùng, chấp nhận không còn đường vào trên desktop.
     const secondaryItems = [
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
-        { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
-        { id: 'help', label: 'Giới thiệu', icon: HelpCircle, path: '/help' },
     ];
 
     useEffect(() => {
@@ -298,7 +297,7 @@ export default function Sidebar() {
                             transition={{ duration: 0.2 }}
                             className="flex flex-col whitespace-nowrap"
                         >
-                            <span className="font-bold text-slate-800 dark:text-white text-[15px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
+                            <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
                             <span className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Vibe Dashboard</span>
                         </motion.div>
                     </div>
@@ -324,27 +323,29 @@ export default function Sidebar() {
                         ))}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50 space-y-1">
-                        {!effectiveCollapsed && (
-                            <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
-                        )}
-                        {secondaryItems.map(item => (
-                            <NavItem 
-                                key={item.id} 
-                                item={item} 
-                                isCollapsed={effectiveCollapsed}
-                                activeTab={activeTab}
-                                expandedMenus={expandedMenus}
-                                setExpandedMenus={setExpandedMenus}
-                                setActiveTab={setActiveTab}
-                                setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-                            />
-                        ))}
-                    </div>
+                    {secondaryItems.length > 0 && (
+                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50 space-y-1">
+                            {!effectiveCollapsed && (
+                                <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
+                            )}
+                            {secondaryItems.map(item => (
+                                <NavItem
+                                    key={item.id}
+                                    item={item}
+                                    isCollapsed={effectiveCollapsed}
+                                    activeTab={activeTab}
+                                    expandedMenus={expandedMenus}
+                                    setExpandedMenus={setExpandedMenus}
+                                    setActiveTab={setActiveTab}
+                                    setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Bottom Section */}
-                <div className="p-4 border-t border-slate-100 dark:border-slate-800/50 flex flex-col gap-3">
+                <div className="p-4 flex flex-col gap-3">
                     <Button
                         variant="unstyled"
                         size="none"

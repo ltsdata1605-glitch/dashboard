@@ -34,7 +34,7 @@ type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'we
 
 const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
     const { userRole } = useAuth();
-    const { filterState, kpiTargets } = useDashboardContext();
+    const { filterState, kpiTargets, processedData } = useDashboardContext();
     const state = useSummaryTableLogic();
     const [isBuilderOpen, setIsBuilderOpen] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
@@ -131,6 +131,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                 <SummaryTableHeader
                     displayTitle={displayTitle}
                     displayDescription={displayDescription}
+                    reportSubTitle={processedData?.reportSubTitle}
                     filterState={filterState}
                     tableMode={tableMode}
                     setTableMode={setTableMode}

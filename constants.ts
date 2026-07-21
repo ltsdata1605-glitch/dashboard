@@ -188,7 +188,7 @@ export const DEFAULT_KPI_CARDS: import('./types').KpiCardConfig[] = [
         isVisible: true,
         title: 'HQQĐ',
         icon: 'activity',
-        iconColor: 'purple',
+        iconColor: 'indigo',
         type: 'metric',
         metric: 'hieuQuaQD',
         format: 'percentage',
