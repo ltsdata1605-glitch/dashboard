@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { db } from '../../services/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
-import { adminUpdateUser, AdminRole } from '../../services/adminUserService';
+import { adminUpdateUser, listManagedUsers, AdminRole } from '../../services/adminUserService';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -16,6 +14,15 @@ interface TimestampLike {
     toMillis?: () => number;
     toDate?: () => Date;
 }
+
+// listManagedUsers (Cloud Function) trả ISO string cho các field Timestamp cũ (server không
+// gửi được Timestamp thật qua RPC) — bọc lại thành TimestampLike để không phải sửa các chỗ
+// đang gọi .toDate()/.toMillis() bên dưới (giữ đúng shape với dữ liệu mock isDemoMode).
+const toTimestampLike = (iso?: string | null): TimestampLike | undefined => {
+    if (!iso) return undefined;
+    const ms = new Date(iso).getTime();
+    return { toMillis: () => ms, toDate: () => new Date(ms) };
+};
 
 interface AccessRequest {
     id: string;
@@ -156,39 +163,31 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 return;
             }
 
-            const usersRef = collection(db, 'users');
-            let q;
-            
-            // Admin scoped by status/listMode (tránh tải toàn bộ collection users mỗi lần mount/toggle).
-            // Manager fetches strictly to their scope.
-            if (userRole === 'manager' && departmentId) {
-                if (listMode === 'pending') {
-                    q = query(usersRef, where('status', '==', 'pending'));
-                } else {
-                    q = query(usersRef, where('role', '==', 'employee'));
-                }
-            } else if (listMode === 'pending') {
-                q = query(usersRef, where('status', 'in', ['pending', 'new']));
-            } else {
-                q = query(usersRef, where('status', '==', 'approved'));
-            }
-
-            const querySnapshot = await getDocs(q);
+            // Đọc qua Cloud Function listManagedUsers (functions/src/admin.ts) thay vì query
+            // thẳng collection('users') — trước đây firestore.rules isManager() cho manager
+            // list/get TOÀN BỘ collection (không giới hạn Kho), lọc theo allowedKhos chỉ nằm
+            // ở client nên không phải bảo mật thật. Server giờ tự lọc theo Kho cho manager.
+            const rawUsers = await listManagedUsers(listMode);
             const data: AccessRequest[] = [];
             const newExpiry: Record<string, string> = {};
             const newDept: Record<string, string> = {};
             const newNames: Record<string, string> = {};
             const newRoles: Record<string, string> = {};
 
-            querySnapshot.forEach((doc) => {
-                const docData = doc.data() as AccessRequest;
-                data.push({ id: doc.id, ...docData });
+            rawUsers.forEach((docData) => {
+                data.push({
+                    ...docData,
+                    id: docData.id,
+                    createdAt: toTimestampLike(docData.createdAt) as TimestampLike,
+                    requestDate: toTimestampLike(docData.requestDate) as TimestampLike,
+                    expiresAt: toTimestampLike(docData.expiresAt),
+                } as AccessRequest);
                 if (docData.expiresAt) {
-                    newExpiry[doc.id] = docData.expiresAt.toDate().toISOString().split('T')[0];
+                    newExpiry[docData.id] = docData.expiresAt.split('T')[0];
                 }
-                newDept[doc.id] = docData.departmentId || '';
-                newNames[doc.id] = docData.employeeName || '';
-                newRoles[doc.id] = docData.role || docData.requestedRole || 'pending';
+                newDept[docData.id] = docData.departmentId || '';
+                newNames[docData.id] = docData.employeeName || '';
+                newRoles[docData.id] = docData.role || docData.requestedRole || 'pending';
             });
 
             setExpiryDates(newExpiry);

@@ -1,13 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
+import { listManagedUsers } from '../../services/adminUserService';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import toast from 'react-hot-toast';
 import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
 import { Button } from '../shared/ui/Button';
+
+// listManagedUsers (Cloud Function) trả ISO string cho ngày tháng (Timestamp Firestore
+// không "sống sót" qua RPC) — bọc lại có .toMillis()/.toDate() để khớp shape AppNotification
+// hiện có (dùng ở dòng sort + render bên dưới).
+const toTimestampLike = (iso?: string | null) => {
+    const ms = iso ? new Date(iso).getTime() : 0;
+    return { toMillis: () => ms, toDate: () => new Date(ms) };
+};
+
+// Khoảng polling khi tab đang mở — thay cho onSnapshot trực tiếp trên collection('users')
+// (trước đây dựa vào firestore.rules isManager() cho manager list toàn bộ collection,
+// không giới hạn Kho — lọc allowedKhos chỉ ở client không phải bảo mật thật). Đánh đổi
+// chấp nhận được: mất tính tức thời, đổi lại chặn được manager đọc thẳng Kho khác. Xem
+// implementation_plan.md mục 29.
+const ACCESS_POLL_INTERVAL_MS = 45000;
 
 interface NotificationDropdownProps {
     buttonClassName?: string;
@@ -36,7 +52,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
         }
 
         const unsubPersonalRef = { current: null as (() => void) | null };
-        const unsubAccessRequestsRef = { current: null as (() => void) | null };
+        const accessPollRef = { current: null as ReturnType<typeof setInterval> | null };
 
         let personalNotifs: AppNotification[] = [];
         let accessNotifs: AppNotification[] = [];
@@ -93,48 +109,39 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             updateCombinedNotifications();
         };
 
-        // 2. Access requests (if admin or manager)
-        const allowedKhos = departmentId ? departmentId.split(',').map(s => s.trim()).filter(Boolean) : [];
+        // 2. Access requests (if admin or manager) — đọc qua Cloud Function listManagedUsers
+        // (functions/src/admin.ts) thay vì query thẳng collection('users'): trước đây
+        // firestore.rules isManager() cho manager list toàn bộ collection (không giới hạn
+        // Kho), lọc allowedKhos chỉ ở client không phải bảo mật thật. Server giờ tự lọc
+        // theo Kho cho manager — không còn realtime, thay bằng polling (xem hằng số phía trên).
         const isReviewer = userRole === 'admin' || userRole === 'manager';
-        const accessQuery = isReviewer
-            ? query(collection(db, 'users'), where('status', 'in', ['pending', 'new']))
-            : null;
 
-        const processAccessSnapshot = (snapshot: QuerySnapshot<DocumentData>) => {
-            accessNotifs = [];
-            snapshot.forEach((docSnap) => {
-                const docData = docSnap.data();
-                if (docSnap.id === user.uid) return;
-
-                let shouldAdd = false;
-                if (userRole === 'admin') {
-                    shouldAdd = true;
-                } else if (userRole === 'manager') {
-                    if ((docData.requestedRole === 'employee' || docData.role === 'pending') && allowedKhos.includes(docData.departmentId)) {
-                        shouldAdd = true;
-                    }
-                }
-
-                if (shouldAdd) {
-                    accessNotifs.push({
-                        id: `pending-${docSnap.id}`,
+        const fetchAccessNotifs = async () => {
+            if (!isReviewer) { accessNotifs = []; updateCombinedNotifications(); return; }
+            try {
+                const users = await listManagedUsers('pending');
+                accessNotifs = users
+                    .filter((u) => u.id !== user.uid)
+                    .map((u) => ({
+                        id: `pending-${u.id}`,
                         title: 'Yêu cầu cấp quyền mới',
-                        message: `${docData.displayName || docData.email} đăng ký vai trò ${docData.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${docData.departmentId}`,
+                        message: `${u.displayName || u.email} đăng ký vai trò ${u.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${u.departmentId}`,
                         type: 'info',
                         read: false,
-                        createdAt: docData.requestDate || docData.createdAt || null
-                    } as AppNotification);
-                }
-            });
-            updateCombinedNotifications();
+                        createdAt: toTimestampLike(u.requestDate || u.createdAt)
+                    } as AppNotification));
+                updateCombinedNotifications();
+            } catch (error) {
+                console.error("Access requests fetch error:", error);
+            }
         };
 
-        // FIX: Tắt 2 Firestore WebSocket listener khi tab ẩn, mở lại (kèm fetch bù 1 lần)
-        // khi tab visible trở lại — tránh giữ kết nối realtime chạy nền vô thời hạn
+        // FIX: Tắt Firestore WebSocket listener + polling khi tab ẩn, mở lại (kèm fetch bù
+        // 1 lần) khi tab visible trở lại — tránh giữ kết nối/polling chạy nền vô thời hạn
         // (khớp pattern đã áp dụng ở usePendingApprovalCount.ts / useSystemTraffic.ts).
         const stopListeners = () => {
             if (unsubPersonalRef.current) { unsubPersonalRef.current(); unsubPersonalRef.current = null; }
-            if (unsubAccessRequestsRef.current) { unsubAccessRequestsRef.current(); unsubAccessRequestsRef.current = null; }
+            if (accessPollRef.current) { clearInterval(accessPollRef.current); accessPollRef.current = null; }
         };
 
         const startListeners = () => {
@@ -143,17 +150,15 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                     console.error("Personal notifications realtime error: ", error);
                 });
             }
-            if (accessQuery && !unsubAccessRequestsRef.current) {
-                unsubAccessRequestsRef.current = onSnapshot(accessQuery, processAccessSnapshot, (error) => {
-                    console.error("Access requests realtime error: ", error);
-                });
+            if (isReviewer && !accessPollRef.current) {
+                fetchAccessNotifs();
+                accessPollRef.current = setInterval(fetchAccessNotifs, ACCESS_POLL_INTERVAL_MS);
             }
         };
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 getDocs(personalQuery).then(processPersonalSnapshot).catch(console.error);
-                if (accessQuery) getDocs(accessQuery).then(processAccessSnapshot).catch(console.error);
                 startListeners();
             } else {
                 stopListeners();

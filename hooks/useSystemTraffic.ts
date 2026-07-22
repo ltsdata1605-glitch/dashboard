@@ -9,7 +9,7 @@ export interface TrafficStats {
 }
 
 export const useSystemTraffic = () => {
-    const { user } = useAuth();
+    const { user, userRole } = useAuth();
     const [stats, setStats] = useState<TrafficStats>({ totalVisits: 0, onlineUsers: 0 });
     const isVisibleRef = useRef(document.visibilityState === 'visible');
     const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -60,8 +60,11 @@ export const useSystemTraffic = () => {
             updateDoc(doc(db, 'users', user.uid), { lastActive: serverTimestamp() }).catch(console.error);
         };
 
+        // Chỉ admin mới có quyền list toàn bộ collection users (firestore.rules —
+        // xem implementation_plan.md mục 29). Manager/employee bỏ qua hẳn, tránh gọi
+        // 1 query chắc chắn permission-denied mỗi 10 phút.
         const fetchOnlineUsers = async () => {
-            if (!isVisibleRef.current) return;
+            if (!isVisibleRef.current || userRole !== 'admin') return;
             try {
                 const activeTime = new Date(Date.now() - 15 * 60 * 1000);
                 const q = query(collection(db, 'users'), where('lastActive', '>=', activeTime));
@@ -104,7 +107,7 @@ export const useSystemTraffic = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             stopIntervals();
         };
-    }, [user]);
+    }, [user, userRole]);
 
     // 3. GA4 visit — lazy load, chỉ 1 lần
     useEffect(() => {

@@ -654,3 +654,71 @@ User yêu cầu: (a) bỏ hẳn dòng mô tả tĩnh "Thống kê chi tiết the
 **Cập nhật (user muốn giữ khoảng ngày riêng cho bảng này)**: thêm lại `filterState` prop cho `SummaryTableHeader.tsx`, ghép nối `{reportSubTitle} | {khoảng ngày}` — khoảng ngày viết thường ("Tất cả thời gian"/"Từ ... đến ...", CSS `uppercase` tự viết hoa) để đồng bộ phong cách chữ với phần `reportSubTitle` dùng chung. Card "Tổng Quan Doanh Thu" giữ nguyên KHÔNG có khoảng ngày (đúng thiết kế gốc của nó) — chỉ bảng "Chi Tiết Ngành Hàng" có thêm phần này. `npm run check` xanh.
 
 **Cập nhật 2026-07-21 (màu HQQĐ vẫn "trùng" DTQĐ sau khi test local `npm run dev`)**: đã xác nhận với user KHÔNG phải lỗi chưa deploy (test local, HMR phản ánh đúng code) — mà tông `indigo` mặc định (500/400/300, cùng bậc sắc độ với 4 thẻ kia) đọc gần giống `sky` khi nhìn nhanh (cả 2 đều là "màu xanh"). Đã đậm hoá 1 bậc: `COLOR_STYLES.indigo` (`components/shared/ui/KpiCard.tsx`) đổi 500/400/300 → 700/600/500 cho gradient/progressFill, icon text/value text đổi `indigo-600`→`indigo-700` (đồng bộ luôn `iconColorToTextClass` ở `KpiCards.tsx`) — ngả tím rõ hơn, tách biệt hẳn khỏi tông cyan-xanh của sky. Vẫn dùng đúng tên màu `indigo` đã CLAUDE.md cho phép, chỉ đổi sắc độ, không phá quy tắc bảng màu semantic. `npm run check` xanh.
+
+---
+
+## 27. Modal "Tải lên tệp doanh số" (UploadTypeSelectionModal) — gọn lại (2026-07-21)
+
+User chụp ảnh modal chọn chế độ upload (Realtime/Lũy kế) yêu cầu "fix thông báo này nhỏ gọn lại", sau đó thêm "Chiều ngang nhỏ lại".
+
+**Đã sửa** `components/modals/UploadTypeSelectionModal.tsx`:
+- `maxWidth`: `"md"` (560px) → `"sm"` (420px).
+- Icon tròn đầu modal: `w-12 h-12` → `w-9 h-9`, icon size 6→4.5; tiêu đề `text-base`→`text-sm`; khoảng cách dưới `mb-6`→`mb-4`.
+- 2 nút lựa chọn (Realtime/Lũy kế): padding `p-4`→`p-2.5`, icon box `w-8 h-8`→`w-7 h-7` (icon size 4→3.5), tiêu đề `text-[13px]`→`text-xs`, mô tả `text-[11px]`→`text-[10.5px]`, khoảng cách giữa 2 nút `space-y-3`→`space-y-2`.
+- Footer/nút Hủy bỏ: `mt-5 pt-3`→`mt-3 pt-2`, padding nút `px-4 py-2`→`px-3 py-1.5`.
+
+Không đổi bố cục/chức năng — cả 2 `onClick={() => onSelect(...)}` và `onClose` giữ nguyên, màu emerald (Realtime)/indigo (Lũy kế) giữ nguyên theo bảng màu đã duyệt. `npm run check` xanh.
+
+---
+
+## 28. Lỗ hổng bảo mật: Manager sửa được hồ sơ user ở Kho khác qua `adminUpdateUser` (2026-07-21)
+
+**Phát hiện khi user hỏi "Tính năng bảo mật đăng nhập hiện tại đã đủ mạnh chưa"** — rà lại toàn bộ luồng auth Root + sticker-event.
+
+**Lỗ hổng**: `functions/src/admin.ts` (`adminUpdateUser`) chỉ chặn manager cấp quyền `admin`/`manager` cho người khác, nhưng **không kiểm tra targetUid có thuộc đúng (các) Kho của manager gọi hàm hay không**. Việc "manager chỉ thấy/sửa Kho của mình" trước đây chỉ được lọc ở client (`UserManagementView.tsx` — biến `allowedKhos = departmentId.split(',')`, dòng ~211), hoàn toàn không có gì chặn ở tầng server. Một manager gọi thẳng Cloud Function (bỏ qua UI, vd qua DevTools) vẫn có thể sửa `status/departmentId/employeeName/expiresAt` của bất kỳ user nào ở **Kho khác** với Kho họ quản lý.
+
+**Đã sửa** `functions/src/admin.ts` — thêm chặn khi `callerRole === 'manager'`:
+1. Đọc `departmentId` từ custom claim của caller (`request.auth.token.departmentId` — đã được set sẵn bởi `resolveSession`/chính `adminUpdateUser`), tách theo dấu phẩy thành `allowedKhos` (khớp đúng cách UI đang tách chuỗi).
+2. Nếu `targetDept` (đọc từ `snap.get('departmentId')` — dữ liệu Firestore hiện tại của target, không tin dữ liệu client gửi lên) không nằm trong `allowedKhos` → `permission-denied`.
+3. Nếu payload có gửi `departmentId` khác với `targetDept` hiện tại → chặn luôn (`permission-denied`) — manager không được đổi Kho của user, khớp đúng UI (ô Kho chỉ editable với admin, dòng ~466-474 `UserManagementView.tsx`).
+
+Đã kiểm tra không phá luồng hợp lệ hiện tại: `handleApproval`/`autoSave` khi manager gọi luôn gửi `departmentId` trùng với giá trị đang có (vì UI không cho manager sửa ô này) — nên check #3 không chặn nhầm thao tác bình thường.
+
+**Chưa xử lý (rủi ro thấp hơn, để riêng)**: `firestore.rules` hiện cho `isManager()` quyền `get`/`list` trên **toàn bộ** collection `users`, không giới hạn theo Kho (chỉ là info-disclosure — xem được hồ sơ Kho khác, không sửa được vì đã chặn ở Cloud Function trên). Muốn khoá luôn phần đọc này cần đổi song song: (a) rule kiểm `resource.data.departmentId in <Kho của caller>`, và (b) query ở `UserManagementView.tsx` phải tự thêm `where('departmentId', 'in', allowedKhos)` để Firestore "chứng minh" được toàn bộ kết quả hợp lệ (nếu không, Firestore sẽ từ chối toàn bộ query thay vì lọc bớt) — nhiều khả năng cần tạo thêm composite index (`firestore.indexes.json` + deploy), không thể làm mù mà không test tay. Để dành làm riêng nếu user yêu cầu.
+
+**Đã chạy**: `cd functions && npm run typecheck && npm run build` — cả 2 xanh (functions/ là project TS riêng, không nằm trong `npm run check` ở gốc theo mục 1.1 CLAUDE.md). **Chưa deploy** — cần `npm run deploy:functions` (yêu cầu `firebase login` thủ công), không tự động hoá theo quy tắc dự án.
+
+---
+
+## 29. Xử lý phần đọc (get/list) — manager hết quyền xem hồ sơ user Kho khác (2026-07-21)
+
+Tiếp nối mục 28: user yêu cầu xử lý luôn phần "chưa xử lý" — `firestore.rules` cho `isManager()` quyền `get`/`list` **toàn bộ** collection `users`, không giới hạn theo Kho.
+
+**Điều tra mở rộng trước khi sửa**: rà lại toàn bộ nơi client query trực tiếp `collection('users')`, phát hiện đây **không chỉ là vấn đề của `UserManagementView.tsx`** — 2 nơi khác cũng dựa vào đúng lỗ hổng này:
+- `hooks/usePendingApprovalCount.ts` — badge số lượng yêu cầu chờ duyệt (dùng `onSnapshot` realtime).
+- `components/layout/NotificationDropdown.tsx` — dropdown "Yêu cầu cấp quyền mới" (cũng `onSnapshot` realtime).
+
+Cả 2 đều query `where('status','in',['pending','new'])` trên toàn collection rồi tự lọc `allowedKhos` ở **client** — y hệt cách `UserManagementView.tsx` làm trước khi sửa, tức là 1 manager gọi thẳng cùng query (bỏ qua UI) vẫn đọc được tên/email/ngày yêu cầu của user ở Kho khác qua CẢ 3 đường này, không riêng màn Quản Trị.
+
+**Cân nhắc kỹ thuật quan trọng trước khi chọn giải pháp**: có 2 hướng khả dĩ để khoá `get`/`list` theo Kho —
+1. Sửa rule thành `resource.data.departmentId in <Kho của caller>` + client tự thêm `where('departmentId','in',allowedKhos)` (giữ được `onSnapshot` realtime). Đã tra cứu tài liệu Firestore xác nhận cơ chế "in" query được rule chấp nhận nếu SERVER và CLIENT tính đúng cùng 1 tập giá trị — nhưng Firestore chỉ cho phép **1 mệnh đề `in`/`not-in`/`array-contains-any` duy nhất mỗi query**, mà `usePendingApprovalCount.ts`/`NotificationDropdown.tsx` đã dùng `status in [...]` — không thể thêm `departmentId in [...]` vào CÙNG query (phải tách nhiều query con theo từng Kho rồi gộp kết quả, tăng độ phức tạp, và không thể kiểm chứng trực tiếp bằng cách chạy thật ở môi trường này).
+2. **Chuyển hẳn sang Cloud Function** (giống mẫu `adminUpdateUser` ở mục 28) — Admin SDK không bị giới hạn cú pháp query, lọc theo Kho bằng code JS thường ở server, chắc chắn đúng 100% vì không phụ thuộc vào cách Firestore "chứng minh" tính an toàn của 1 query. Đánh đổi: mất khả năng `onSnapshot` realtime cho 2 tính năng dạng "huy hiệu/thông báo" (đổi sang polling).
+
+Đã chọn **hướng 2** — vì đây là thay đổi bảo mật, ưu tiên chắc chắn đúng hơn là tối ưu UX, và rủi ro sai ở hướng 1 (âm thầm rò rỉ tiếp dữ liệu Kho khác nếu tính "in" sai) nặng hơn nhiều so với đánh đổi ở hướng 2 (chỉ chậm cập nhật vài chục giây).
+
+**Đã sửa**:
+- `functions/src/admin.ts` — thêm hàm `listManagedUsers({mode: 'pending'|'active'})`: chạy bằng Admin SDK, giữ nguyên đúng 2 cặp query cũ (admin: `status in [pending,new]` / `status==approved`; manager: `status==pending` / `role==employee`, khớp `UserManagementView.tsx` bản cũ dòng ~164-174), sau đó lọc thêm theo `departmentId` cho manager (đọc từ custom claim, không tin client). Timestamp (`createdAt`/`requestDate`/`expiresAt`/`lastLogin`) được serialize sẵn về chuỗi ISO vì không "sống sót" qua callable RPC.
+- `functions/src/index.ts` — export `listManagedUsers`.
+- `services/adminUserService.ts` — thêm wrapper `listManagedUsers(mode)` + type `ManagedUserDoc`.
+- `components/views/UserManagementView.tsx` — bỏ hẳn `collection/query/where/getDocs` trực tiếp, gọi `listManagedUsers(listMode)`. Thêm helper `toTimestampLike()` bọc chuỗi ISO trả về thành object có `.toMillis()/.toDate()` để KHÔNG phải sửa 4 chỗ đang gọi 2 hàm này (dòng sort, hiển thị ngày, demo mode) — giữ nguyên toàn bộ logic lọc/sắp xếp client phía sau, chỉ đổi nguồn dữ liệu đầu vào.
+- `hooks/usePendingApprovalCount.ts` — viết lại: bỏ `onSnapshot`, gọi `listManagedUsers('pending')` mỗi 45s khi tab đang mở (dừng khi tab ẩn, fetch lại ngay khi mở lại — giữ đúng pattern tiết kiệm pin đã có).
+- `components/layout/NotificationDropdown.tsx` — chỉ đổi phần "Access requests" (poll 45s qua `listManagedUsers('pending')`, bọc `createdAt` bằng `toTimestampLike()` để khớp kiểu `AppNotification`); phần "Personal notifications" (thông báo cá nhân, đã đúng phạm vi `isSelf`) **giữ nguyên `onSnapshot`**, không đổi.
+- `firestore.rules` — `/users/{uid}`: `allow get/list` đổi từ `isManager()` → `isAdmin()`. Manager không còn đọc trực tiếp Firestore trên collection này nữa (chỉ qua Cloud Function ở trên).
+
+**Tác dụng phụ phát hiện khi rà soát (không phải lỗi mới do sửa gây ra, nhưng bị lộ ra vì siết `list`)**: `hooks/useSystemTraffic.ts` có 1 query đếm "người dùng đang online" (`where('lastActive','>=',...)`) chạy cho **mọi** user đã đăng nhập (không riêng admin/manager) — trước đây `employee` gọi query này ĐÃ bị `permission-denied` âm thầm từ trước (không phải do đợt sửa này), và sau khi siết `list` xuống `isAdmin()`, `manager` cũng sẽ bắt đầu bị vậy (trước đó `isManager()` cho cả manager query được). Đã sửa kèm luôn: gate `fetchOnlineUsers()` chỉ chạy khi `userRole === 'admin'`, tránh gọi 1 query chắc chắn lỗi mỗi 10 phút cho manager/employee — không ảnh hưởng chức năng thật (chỉ 1 con số thống kê phụ trên Dashboard).
+
+**Đánh đổi UX đã chấp nhận**: badge số lượng chờ duyệt + dropdown "Yêu cầu cấp quyền mới" không còn cập nhật tức thời (real-time) — chậm nhất 45s mới thấy request mới, thay vì thấy ngay lập tức. Chấp nhận được vì đây là tính năng "huy hiệu thông báo", không phải luồng nghiệp vụ chính; đổi lại không còn cách nào để manager đọc thẳng dữ liệu Kho khác qua 3 đường trên.
+
+**Đã chạy**: `npm run check` (root) xanh, `cd functions && npm run typecheck && npm run build` xanh.
+
+**Chưa deploy** (cả `firestore.rules` lẫn `functions` — 2 phần này phải deploy CÙNG LÚC, nếu chỉ deploy rules mà chưa deploy function `listManagedUsers` thì client mới gọi hàm sẽ lỗi "function không tồn tại"; ngược lại nếu chỉ deploy function mà chưa deploy rules thì lỗ hổng vẫn còn nguyên trên production). **Chưa test tay** — cần đăng nhập bằng tài khoản `manager` thật sau khi deploy để xác nhận: màn Quản Trị vẫn thấy đúng danh sách Kho của mình, badge/dropdown vẫn hiện đúng số/thông báo (chỉ chậm hơn), và KHÔNG còn thấy được request/hồ sơ ở Kho khác.

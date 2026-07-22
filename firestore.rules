@@ -11,8 +11,14 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow get:    if isSelf(uid) || isManager();
-      allow list:   if isManager(); // UserManagementView query where(role in [...])
+      // Manager KHÔNG còn quyền get/list trực tiếp ở đây (trước đây isManager() cho manager
+      // đọc TOÀN BỘ collection, không giới hạn Kho — lọc theo Kho chỉ nằm ở client nên không
+      // phải bảo mật thật, 1 manager gọi thẳng query vẫn đọc được hồ sơ Kho khác). Manager giờ
+      // đọc qua Cloud Function listManagedUsers (functions/src/admin.ts, Admin SDK bypass rules,
+      // tự lọc theo Kho ở server). UserManagementView.tsx/usePendingApprovalCount.ts/
+      // NotificationDropdown.tsx đã chuyển sang gọi hàm này thay vì query thẳng.
+      allow get:    if isSelf(uid) || isAdmin();
+      allow list:   if isAdmin();
       allow create: if isSelf(uid)
                     && !request.resource.data.keys().hasAny(protectedKeys());
       allow update: if isSelf(uid)
