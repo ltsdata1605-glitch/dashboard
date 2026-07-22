@@ -63,6 +63,13 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
 
             {/* Content */}
             <div className="p-4 space-y-3">
+                <div className="flex items-start gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 rounded-lg">
+                    <Icon name="alert-triangle" size={4} className="shrink-0 mt-0.5" />
+                    <p className="text-[11px] font-semibold leading-relaxed">
+                        Lưu ý: chỉ nên tải lên dữ liệu theo từng <span className="underline">Quý</span> (3 tháng/lần), không dồn quá nhiều tháng vào 1 tệp. Tệp quá lớn (nhiều dữ liệu dồn 1 lúc) hệ thống sẽ không xử lý được.
+                    </p>
+                </div>
+
                 {registry.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-6 text-center text-slate-400 dark:text-slate-500">
                         <div className="w-10 h-10 mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">

@@ -722,3 +722,29 @@ Cả 2 đều query `where('status','in',['pending','new'])` trên toàn collect
 **Đã chạy**: `npm run check` (root) xanh, `cd functions && npm run typecheck && npm run build` xanh.
 
 **Chưa deploy** (cả `firestore.rules` lẫn `functions` — 2 phần này phải deploy CÙNG LÚC, nếu chỉ deploy rules mà chưa deploy function `listManagedUsers` thì client mới gọi hàm sẽ lỗi "function không tồn tại"; ngược lại nếu chỉ deploy function mà chưa deploy rules thì lỗ hổng vẫn còn nguyên trên production). **Chưa test tay** — cần đăng nhập bằng tài khoản `manager` thật sau khi deploy để xác nhận: màn Quản Trị vẫn thấy đúng danh sách Kho của mình, badge/dropdown vẫn hiện đúng số/thông báo (chỉ chậm hơn), và KHÔNG còn thấy được request/hồ sơ ở Kho khác.
+
+---
+
+## 30. Upload file doanh số 60MB báo lỗi "Không tìm thấy dữ liệu hợp lệ" (2026-07-22)
+
+User báo: file 60MB (chế độ "Lũy kế/Quá khứ") tải lên báo lỗi "Không tìm thấy dữ liệu hợp lệ (Chưa hủy, Chưa trả, Đã thu) hoặc lỗi định dạng ngày tháng." — file nhỏ hơn thì đọc bình thường không lỗi.
+
+**Điều tra (thêm nhiều vòng debug log tạm vào `services/worker.ts`, đã dọn sạch sau khi xong)**:
+1. Vòng 1: `combinedJson` rỗng hoàn toàn (0 dòng) — loại trừ khả năng "đọc được dữ liệu nhưng sai tên cột trạng thái".
+2. Vòng 2: nghi ngờ file nhiều sheet (code hardcode chỉ đọc `workbook.SheetNames[0]`) — sai, file chỉ có đúng 1 sheet `'Sheet1'`, nhưng `worksheet['!ref']` (vùng dữ liệu) là `null`.
+3. Vòng 3: nghi ngờ thiếu `!ref` do file không ghi thẻ `<dimension>` (kiểm tra thẳng mã nguồn `node_modules/xlsx/xlsx.js` — xác nhận thư viện CÓ cơ chế tự tính lại `!ref` từ dữ liệu ô thực tế nếu thiếu `<dimension>`) — nhưng log cho thấy `worksheet` **chính nó là `null`**, không phải object rỗng.
+4. **Nguyên nhân gốc xác nhận qua đọc mã nguồn thư viện `xlsx` (0.18.5)**: hàm nội bộ `safe_parse_sheet()` (đọc từng sheet trong file zip .xlsx) bọc toàn bộ logic đọc trong `try { ... } catch(e) { if(opts.WTF) throw e; }` — nghĩa là **mọi lỗi khi đọc 1 sheet cụ thể (hết bộ nhớ khi giải nén XML quá lớn, sheet lỗi định dạng...) đều bị nuốt âm thầm theo mặc định**, để lại `workbook.Sheets[tên]` là `undefined` trong khi `workbook.SheetNames` (đọc từ `workbook.xml`, tách biệt, luôn nhẹ) vẫn liệt kê đúng tên sheet — gây hiểu nhầm thành "không có dữ liệu hợp lệ" dù lỗi thật là "không đọc được sheet". User xác nhận thêm: file nhỏ hơn từ cùng nguồn đọc bình thường → khớp giả thuyết đây là giới hạn bộ nhớ khi giải nén XML của sheet quá lớn (file XLSX là zip nén XML, tỉ lệ giải nén cho dữ liệu bảng tính thường phình to nhiều lần).
+
+**Đã sửa** `services/worker.ts`:
+1. Thêm `WTF: true` vào `XLSX.read(data, { type: 'array', cellDates: true, dense: true, WTF: true })` — ép thư viện ném lỗi thật ra ngoài thay vì tự nuốt. Không ảnh hưởng file đọc thành công bình thường (chỉ đổi hành vi ở nhánh lỗi).
+2. Thêm chặn tường minh ngay sau khi lấy `worksheet`: nếu vẫn `null`/`undefined` (trường hợp lỗi bị nuốt ở đâu đó khác ngoài `safe_parse_sheet`, hoặc `WTF` không phủ hết mọi nhánh lỗi), ném lỗi rõ ràng: `"Không đọc được nội dung sheet ... — có thể file quá lớn (vượt giới hạn bộ nhớ khi giải nén) hoặc file bị lỗi định dạng. Thử tách file thành các phần nhỏ hơn."` — thay cho thông báo gây hiểu nhầm cũ.
+
+**Chưa xử lý (cần user xác nhận thêm)**: đây là giới hạn của việc xử lý Excel hoàn toàn phía client (trình duyệt) — không có cách nào tăng bộ nhớ khả dụng cho Worker từ code. Nếu lỗi vẫn tái diễn với file 60MB sau khi sửa (chỉ đổi từ thông báo sai sang thông báo đúng, KHÔNG giải quyết được giới hạn bộ nhớ), hướng xử lý tiếp theo cần bàn thêm: (a) yêu cầu user tách file lớn thành nhiều file nhỏ trước khi tải (giải pháp ngay, không cần sửa code), hoặc (b) đổi cách đọc file sang dạng streaming/đọc từng phần thay vì load toàn bộ vào bộ nhớ 1 lần (đổi lớn, cần thiết kế lại `worker.ts`), hoặc (c) khuyến khích xuất dữ liệu dạng CSV thay vì XLSX cho các đợt dữ liệu lớn (CSV không cần giải nén ZIP/XML, nhẹ hơn nhiều).
+
+`npm run check` xanh. **Chưa test tay** — cần user thử lại đúng file 60MB để xem thông báo lỗi mới có xuất hiện đúng và rõ ràng hơn không.
+
+**Cập nhật (user xác nhận thông báo lỗi mới đã hiện đúng như dự đoán)**: đã hỏi hướng tối ưu triệt để (CSV / xử lý server-side qua Cloud Function) — user chọn **giữ nguyên code xử lý hiện tại**, chỉ cần chủ động cảnh báo người dùng trước khi họ gặp lỗi, thay vì đổi kiến trúc.
+
+**Đã sửa** `components/modals/FileHistoryModal.tsx` — modal "DANH SÁCH YCX LŨY KẾ" (nơi tải file doanh số cũ để gộp báo cáo lũy kế): thêm banner cảnh báo màu đỏ (rose, đúng bảng màu semantic — `bg-rose-50 border-rose-200 text-rose-700` + icon `alert-triangle`, khớp pattern cảnh báo đã dùng ở `ErrorBoundary.tsx`/`CouponConverterView.tsx`) ngay đầu phần nội dung, phía trên danh sách file: *"Lưu ý: chỉ nên tải lên dữ liệu theo từng Quý (3 tháng/lần), không dồn quá nhiều tháng vào 1 tệp. Tệp quá lớn (nhiều dữ liệu dồn 1 lúc) hệ thống sẽ không xử lý được."*
+
+`npm run check` xanh.

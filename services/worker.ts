@@ -29,19 +29,30 @@ async function processSingleFileInWorker(file: File) {
         let data: Uint8Array | null = new Uint8Array(arrayBuffer);
         arrayBuffer = null; // Tối ưu GC: Giải phóng ArrayBuffer lập tức
         
-        // OPTIMIZATION 1: Enable 'dense' mode. 
+        // OPTIMIZATION 1: Enable 'dense' mode.
         // This creates dense arrays instead of sparse objects, significantly reducing memory usage for large files.
-        let workbook: XLSX.WorkBook | null = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+        // WTF: true — bắt buộc thư viện NÉM LỖI THẬT ra ngoài thay vì tự nuốt (nội bộ thư viện
+        // có safe_parse_sheet() bọc try/catch quanh việc đọc từng sheet: catch(e) { if(opts.WTF)
+        // throw e; } — nếu không bật WTF, mọi lỗi đọc sheet (vd hết bộ nhớ khi giải nén XML quá
+        // lớn) bị bỏ qua âm thầm, để lại `workbook.Sheets[tên]` là undefined trong khi
+        // `workbook.SheetNames` vẫn liệt kê đúng tên sheet — gây ra đúng triệu chứng "không tìm
+        // thấy dữ liệu hợp lệ" gây hiểu nhầm, dù lỗi thật là không đọc được sheet). Không ảnh
+        // hưởng file đọc thành công bình thường — chỉ đổi hành vi khi có lỗi.
+        let workbook: XLSX.WorkBook | null = XLSX.read(data, { type: 'array', cellDates: true, dense: true, WTF: true });
         data = null; // Tối ưu GC: Giải phóng Uint8Array
-        
+
         const sheetName = workbook.SheetNames[0];
         let worksheet: XLSX.WorkSheet | null = workbook.Sheets[sheetName];
+
+        if (!worksheet) {
+            throw new Error(`Không đọc được nội dung sheet "${sheetName}" trong file — có thể file quá lớn (vượt giới hạn bộ nhớ khi giải nén) hoặc file bị lỗi định dạng. Thử tách file thành các phần nhỏ hơn.`);
+        }
 
         postStatus({ message: `Trích xuất dữ liệu...`, type: 'info', progress: 50 });
         // ÉP CÂN DỮ LIỆU: Chỉ đọc dạng mảng 2 chiều để tránh phình to Object trong RAM với các string keys thừa
         // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
         const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
-        
+
         // Giải phóng workbook và worksheet sớm nhất có thể
         worksheet = null;
         workbook = null;
@@ -68,6 +79,14 @@ async function processSingleFileInWorker(file: File) {
                     reqIndices[j] = reqCols[matchedIdx];
                 }
             }
+
+            // DEBUG TẠM: chẩn đoán lỗi "Không tìm thấy dữ liệu hợp lệ" với file lớn (vd 60MB)
+            // — không rõ nguyên nhân do dữ liệu thật không khớp hay do dòng tiêu đề không nằm ở
+            // hàng 0 (rows[0]). Log ra console (Worker log vẫn hiện trong DevTools) để xem
+            // headers thực tế + số cột khớp được, gỡ bỏ khi đã xác định xong nguyên nhân.
+            console.log('[Worker Debug] Tổng số dòng đọc được (kể cả header):', rows.length);
+            console.log('[Worker Debug] Header hàng đầu tiên (rows[0]):', headers);
+            console.log('[Worker Debug] Số cột khớp được với reqCols:', Object.keys(reqIndices).length, '/', reqCols.length);
 
             // Chunked Array Push
             for (let r = 1; r < rows.length; r++) {
