@@ -1008,3 +1008,27 @@ Toàn bộ tính năng "Chia sẻ dữ liệu doanh số theo Kho qua Firebase" 
 2. Test tay với tài khoản `manager` thật: tải 1 file → xác nhận `khoData/{maKho}/salesFiles/*` xuất hiện đúng trên Firestore Console → mở modal "Danh sách YCX Lũy kế" → xác nhận thấy đúng khối "Dữ liệu Kho dùng chung" với file vừa tải, thử ẩn/xoá thử.
 3. Test tay với tài khoản `employee` thật (trên thiết bị KHÁC/chưa từng tải file gì) → xác nhận Dashboard hiển thị đúng dữ liệu của Kho (chỉ dòng của chính họ, do `rbacData` mục 36 lọc tiếp), không còn thấy nút tải file nào.
 4. Cân nhắc thử nghiệm với 2 tài khoản `manager` cùng 1 mã Kho (test đúng kịch bản "nhiều quản lý cùng Kho" user đã chọn ở bước thiết kế).
+
+---
+
+## Mục 38 — ĐÃ XONG: Bộ test hồi quy tự động cho Firestore Rules (`tests/firestore.rules.test.mjs`)
+
+**Bối cảnh**: Khi hỗ trợ test tính năng Kho (mục 37), người dùng nhờ "tự tạo tài khoản manager/employee để test" — không khả thi thật (root app chỉ đăng nhập Google OAuth, không có form tạo tài khoản email/password), nên đã đề xuất và được chọn phương án dùng **Firebase Emulator + `@firebase/rules-unit-testing`** để giả lập nhiều tài khoản với custom claims khác nhau và kiểm tra `firestore.rules` một cách khách quan, độc lập với việc đọc code bằng mắt. Sau khi chạy thử thành công (21/21 pass), người dùng yêu cầu giữ lại vĩnh viễn làm bộ test hồi quy, phòng khi sửa rules sau này làm hỏng mà không nhận ra.
+
+**Đã thêm**:
+- `tests/firestore.rules.test.mjs` — 21 kịch bản test cho toàn bộ block `khoData/{maKho}/salesFiles` (và `chunks/{n}` con) trong `firestore.rules`:
+  - **Ghi (8 test)**: quản lý ghi được vào đúng Kho của mình (kể cả quản lý quản nhiều Kho `"TESTKHO,OTHERKHO"`), KHÔNG ghi được vào Kho khác; nhân viên không ghi được (chỉ đọc); admin (claim `departmentId` đặc biệt không map Kho thật) không ghi được; chưa đăng nhập không ghi được.
+  - **Đọc — get 1 file (6 test)**: quản lý/nhân viên cùng Kho đọc được cả file lẫn chunk; nhân viên/quản lý Kho khác và người chưa đăng nhập đều bị chặn.
+  - **List (3 test)**: quản lý/nhân viên cùng Kho list được `salesFiles`; nhân viên Kho khác bị chặn.
+  - **Cập nhật/xoá (4 test)**: quản lý tự sửa `isActive`/xoá file của Kho mình; nhân viên không sửa được; quản lý Kho khác không xoá được.
+  - Seed 1 file mẫu qua `testEnv.withSecurityRulesDisabled()` để có sẵn dữ liệu cho các test đọc, không phải test nào cũng tự ghi trước.
+- `package.json` — thêm devDependency `@firebase/rules-unit-testing` + script `npm run test:rules` (chạy `firebase emulators:exec --only firestore "node tests/firestore.rules.test.mjs"`).
+- `boltz_project_rules_md/TESTING.md` — cập nhật câu "không có test runner" (nay không còn đúng tuyệt đối) + thêm mục hướng dẫn riêng cho `npm run test:rules` (bao gồm yêu cầu Java Runtime/Homebrew, phạm vi phủ, khi nào cần chạy lại).
+
+**Yêu cầu môi trường**: cần Java Runtime cho Firestore Emulator (JVM) — máy dev đã cài qua `brew install openjdk` (được người dùng đồng ý trước khi cài), openjdk của Homebrew là "keg-only" nên cần export PATH thủ công trong phiên terminal nếu `java -version` báo không thấy: `export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"`.
+
+**Phạm vi CHƯA phủ (để ngỏ, không phải lỗi)**: bộ test này chỉ kiểm tra block `khoData` (mục 37). Các rule khác đã sửa trong phiên này (`/users/{uid}` — mục 28/29, siết `isManager()` → `isAdmin()` cho get/list) CHƯA có test tự động tương ứng — người dùng đã được hỏi và chọn "giữ + commit test hiện có" thay vì mở rộng thêm test cho phần đó ở thời điểm này; có thể làm sau nếu cần.
+
+**Đã xác nhận chạy lại thành công từ vị trí committed** (`tests/firestore.rules.test.mjs`, dùng path tương đối `resolve(__dirname, '..', 'firestore.rules')` thay vì đường dẫn tuyệt đối hard-code như bản nháp ban đầu, để chạy đúng trên máy khác): **21 pass / 0 fail**.
+
+`npm run check` không chạy phần này (rules là ngôn ngữ riêng, ngoài phạm vi TypeScript/ESLint/Vite) — phải chạy riêng `npm run test:rules` mỗi khi sửa `firestore.rules`.

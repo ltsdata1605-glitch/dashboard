@@ -9,8 +9,8 @@
 ## Lệnh kiểm tra
 
 Package manager: **npm** (có `package-lock.json`, không dùng yarn/pnpm/bun). Lệnh thật
-trong `package.json` (2026-07-05) — **không có test runner** (không Vitest/Jest, chưa có
-unit test tự động trong dự án này):
+trong `package.json` (2026-07-05) — **không có test runner UI/logic** (không Vitest/Jest).
+Từ 2026-07-23 đã có 1 bộ test tự động RIÊNG cho Firestore Security Rules (xem cuối mục này):
 
 ```bash
 npm run lint          # thực chất chạy tsc --noEmit (KHÔNG phải eslint)
@@ -19,12 +19,32 @@ npm run lint:eslint    # eslint . thật sự (tên lệnh dễ nhầm với "li
 npm run lint:ratchet   # kiểm tra không có vi phạm mới so với violations-baseline.json
 npm run build          # vite build
 npm run check          # gộp: typecheck + eslint + build + lint:ratchet (2026-07-05: đã thêm eslint vào check)
+npm run test:rules     # test hồi quy Firestore Rules qua Emulator local (xem chi tiết cuối mục)
 ```
 
-Vì không có test runner, việc "test" trong dự án này chủ yếu là:
+Vì không có test runner cho UI/logic, việc "test" phần đó trong dự án này chủ yếu là:
 1. Chạy `npm run check` để bắt lỗi type/cấu trúc (zone-boundary, raw `<button>`...)/build/design-token-regression trong một lệnh.
 2. Test thủ công qua trình duyệt (`npm run dev`, dùng Playwright nếu cần chụp ảnh/kiểm
    tra tương tác) theo checklist bên dưới — KHÔNG có test tự động thay thế được bước này.
+
+### Test tự động: Firestore Security Rules (`npm run test:rules`)
+
+File: `tests/firestore.rules.test.mjs` — dùng `@firebase/rules-unit-testing` + Firestore
+Emulator LOCAL (không đụng dữ liệu production thật). Hiện chỉ phủ collection
+`khoData/{maKho}/salesFiles` (tính năng chia sẻ dữ liệu doanh số theo Kho — xem
+`implementation_plan.md` mục 37): quản lý ghi/đọc/sửa/xoá đúng Kho của mình, không đụng
+được Kho khác; nhân viên chỉ đọc, không ghi; admin không có Kho cụ thể nên không ghi được
+vào bất kỳ Kho nào qua đường này (quản lý User đi qua Cloud Function riêng).
+
+Yêu cầu: Java Runtime (Firestore Emulator chạy trên JVM). Nếu `java -version` báo không
+tìm thấy: `brew install openjdk`, sau đó thêm vào PATH phiên hiện tại nếu cần
+(`export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"` trên Apple Silicon — openjdk cài qua
+Homebrew là "keg-only", không tự symlink vào PATH hệ thống).
+
+Khi sửa `firestore.rules` (đặc biệt block `khoData` hoặc các hàm `myKhos()`/`isManager()`/
+`isAdmin()`), hãy chạy lại `npm run test:rules` trước khi coi là xong — tránh vô tình mở
+hoặc khoá nhầm quyền mà không nhận ra (rules không được `npm run check` kiểm tra, vì đó là
+ngôn ngữ riêng ngoài phạm vi TypeScript/ESLint/Vite).
 
 ---
 
