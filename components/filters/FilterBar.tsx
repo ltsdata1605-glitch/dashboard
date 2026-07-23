@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useDashboardContext } from '../../contexts/DashboardContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import SingleSelectDropdown from '../common/SingleSelectDropdown';
@@ -16,12 +17,19 @@ interface FilterBarProps {
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOpenHistory }) => {
-    const { 
-        filterState, 
-        handleFilterChange, 
+    const {
+        filterState,
+        handleFilterChange,
         uniqueFilterOptions,
         originalData
     } = useDashboardContext();
+    // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý (implementation_plan.md mục 37) — không
+    // còn tự tải file/quản lý lịch sử tệp riêng nữa. Header.tsx (desktop) đã chặn đúng role
+    // này từ trước; FilterBar.tsx (mobile + 1 bản desktop riêng trong file này) trước đây
+    // CHƯA chặn — chỉ ẩn nút khi prop rỗng, không xét role, nên nhân viên trên mobile vẫn
+    // thấy được nút tải file/lịch sử. Bổ sung điều kiện role cho khớp Header.tsx.
+    const { userRole } = useAuth();
+    const canManageFiles = userRole === 'admin' || userRole === 'manager';
 
     const [selectedWeek, setSelectedWeek] = useState<string>('');
     const [mounted, setMounted] = useState(false);
@@ -189,7 +197,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
             {/* Mobile Actions Portal */}
             {mounted && document.getElementById('mobile-topbar-actions') && createPortal(
                 <div className="flex items-center gap-0.5">
-                    {onNewFile && (
+                    {onNewFile && canManageFiles && (
                         <Button
                             variant="unstyled" size="none"
                             onClick={onNewFile}
@@ -199,7 +207,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <Icon name="upload" size={5} />
                         </Button>
                     )}
-                    {onOpenHistory && (
+                    {onOpenHistory && canManageFiles && (
                         <Button
                             variant="unstyled" size="none"
                             onClick={onOpenHistory}
@@ -403,7 +411,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
-                        {onNewFile && (
+                        {onNewFile && canManageFiles && (
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={onNewFile}
@@ -413,7 +421,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 <Icon name="upload" size={4.5} />
                             </Button>
                         )}
-                        {onOpenHistory && (
+                        {onOpenHistory && canManageFiles && (
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={onOpenHistory}

@@ -28,6 +28,7 @@ import WarehouseSummary from '../summary/WarehouseSummary';
 // static-import dù đa số người dùng không bao giờ mở tới).
 const UnshippedOrdersModal = React.lazy(() => import('../modals/UnshippedOrdersModal'));
 const UncollectedOrdersModal = React.lazy(() => import('../modals/UncollectedOrdersModal'));
+const DebtOrdersModal = React.lazy(() => import('../modals/DebtOrdersModal'));
 const UnconfiguredGroupsModal = React.lazy(() => import('../modals/UnconfiguredGroupsModal'));
 const PerformanceModal = React.lazy(() => import('../modals/PerformanceModal'));
 const ChangelogModal = React.lazy(() => import('../modals/ChangelogModal'));
@@ -181,6 +182,42 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             return false;
         }) || [];
     }, [processedData?.unshippedOrders]);
+
+    const overdueDebtOrders = useMemo(() => {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        return processedData?.debtOrders?.filter(row => {
+            let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row['Thời Gian Hẹn Giao'];
+            if (!scheduledDateRaw) return false;
+            let scheduledDate: Date | null = null;
+            if (scheduledDateRaw instanceof Date) {
+                scheduledDate = scheduledDateRaw;
+            } else {
+                const str = String(scheduledDateRaw).trim();
+                // Fallback check for DD/MM/YYYY
+                if (str.includes('/')) {
+                    const parts = str.split(/[ /:-]/);
+                    if (parts.length >= 3) {
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1;
+                        const year = parseInt(parts[2], 10);
+                        if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+                            scheduledDate = new Date(year, month, day);
+                        }
+                    }
+                }
+                if (!scheduledDate || isNaN(scheduledDate.getTime())) {
+                    scheduledDate = new Date(str);
+                }
+            }
+
+            if (scheduledDate && !isNaN(scheduledDate.getTime())) {
+                const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
+                return todayStart > schedTime;
+            }
+            return false;
+        }) || [];
+    }, [processedData?.debtOrders]);
 
     const handleVisibilityChange = (component: keyof VisibilityState, isVisible: boolean) => {
         setVisibleComponents(prev => {
@@ -515,7 +552,32 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </div>
                                             )}
 
-                                            <div className="relative z-10 pt-1 lg:pt-8">
+                                            {/* Unfinished Debt Warning Banner */}
+                                            {overdueDebtOrders.length > 0 && (
+                                                <div
+                                                    onClick={() => setActiveModal('debt')}
+                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
+                                                >
+                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
+                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                                                        </span>
+                                                        ĐƠN HÀNG CHƯA HOÀN TẤT CÔNG NỢ ({overdueDebtOrders.length})
+                                                    </div>
+                                                    <div className="text-[10px] sm:text-xs font-semibold underline underline-offset-2">
+                                                        Xem danh sách
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className={`relative z-10 pt-1 ${
+                                                ((userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0)
+                                                || overdueUnshippedOrders.length > 0
+                                                || (processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0)
+                                                || overdueDebtOrders.length > 0
+                                                    ? 'lg:pt-3' : 'lg:pt-8'
+                                            }`}>
                                                 <SectionHeader
                                                     title="TỔNG QUAN DOANH THU"
                                                     icon="bar-chart-3"
@@ -554,7 +616,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </SectionHeader>
                                             </div>
 
-                                            <div className={`p-2 lg:p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                            <div className={`p-2 lg:px-4 lg:py-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>
                                                     <KpiCards onUnshippedClick={openUnshippedModal} />
                                                 </div>
@@ -616,6 +678,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                         {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                         {activeModal === 'uncollected' && processedData && <UncollectedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onExportSheet={handleExportUncollectedSheet} />}
+                        {activeModal === 'debt' && processedData && <DebtOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                         <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
                         <UnconfiguredGroupsModal
                             isOpen={isUnconfiguredModalOpen}

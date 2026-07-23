@@ -393,6 +393,7 @@ export interface ProcessedData {
     };
     unshippedOrders: DataRow[];
     uncollectedOrders?: DataRow[];
+    debtOrders?: DataRow[];
     filteredValidSalesData: DataRow[];
     lastUpdated: string;
     reportSubTitle: string;

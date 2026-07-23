@@ -7,7 +7,7 @@ import { processTrendData } from './trendService';
 import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
-import { cleanAndNormalize, calculateRowMetrics } from '../utils/dataUtils';
+import { cleanAndNormalize, calculateRowMetrics, parseNumber } from '../utils/dataUtils';
 
 // Cache variables for warehouse global data and warehouse summary to prevent recalculations on filter changes
 let _lastAllData: DataRow[] | null = null;
@@ -129,6 +129,7 @@ function processDataForPeriod(
     const filteredValidSalesData: DataRow[] = [];
     const unshippedOrders: DataRow[] = [];
     const uncollectedOrders: DataRow[] = [];
+    const debtOrders: DataRow[] = [];
     const standardPeriodData: DataRow[] = [];
 
     const hasHTXConfig = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0;
@@ -162,6 +163,12 @@ function processDataForPeriod(
                     // Check unshipped
                     if (getRowValue(row, COL.XUAT) === 'Chưa xuất') {
                         unshippedOrders.push(row);
+                    }
+
+                    // Check unfinished debt (Còn nợ > 0) — tính trên mọi đơn đủ điều kiện doanh thu,
+                    // không phân biệt Đã xuất/Chưa xuất.
+                    if (parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
+                        debtOrders.push(row);
                     }
                 }
             }
@@ -205,6 +212,7 @@ function processDataForPeriod(
         summaryTable,
         unshippedOrders,
         uncollectedOrders,
+        debtOrders,
         filteredValidSalesData,
     };
 }

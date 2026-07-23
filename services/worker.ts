@@ -67,7 +67,7 @@ async function processSingleFileInWorker(file: File) {
                 'Tên Khách Hàng', 'Tên khách hàng', 'Số Lượng', 'Số lượng', 'Giá bán_1', 'Giá bán',
                 'Mã kho tạo', 'Trạng thái hồ sơ', 'Người tạo', 'Trạng thái xuất', 'Hình thức xuất',
                 'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao', 'Thời gian hẹn giao',
-                'Mã sản phẩm', 'Kho tạo', 'Kho Tạo', 'Trạng thái giao hàng', 'Trạng thái giao'
+                'Mã sản phẩm', 'Kho tạo', 'Kho Tạo', 'Trạng thái giao hàng', 'Trạng thái giao', 'Còn nợ', 'Còn Nợ'
             ];
             
             const normalizedReqCols = reqCols.map(c => cleanAndNormalize(c));

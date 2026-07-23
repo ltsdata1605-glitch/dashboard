@@ -3,6 +3,7 @@ import UploadSection from '../upload/UploadSection';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
 import { Icon } from '../common/Icon';
 import type { UploadedFileRegistryItem } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LandingPageViewProps {
     onProcessFile: (files: File[]) => void;
@@ -14,15 +15,20 @@ interface LandingPageViewProps {
     onViewReport?: () => void;
 }
 
-const LandingPageView: React.FC<LandingPageViewProps> = ({ 
-    onProcessFile, 
-    configUrl, 
+const LandingPageView: React.FC<LandingPageViewProps> = ({
+    onProcessFile,
+    configUrl,
     onConfigUrlChange,
     registry = [],
     onToggleActive = () => {},
     onDelete = () => {},
     onViewReport = () => {}
 }) => {
+    // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý Kho (implementation_plan.md mục 37) —
+    // không còn tự tải file/quản lý lịch sử tệp riêng nữa.
+    const { userRole } = useAuth();
+    const canManageFiles = userRole === 'admin' || userRole === 'manager';
+
     return (
         <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
             
@@ -56,18 +62,32 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                         
                         <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
                             <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
-                                <UploadSection
-                                    onProcessFile={onProcessFile}
-                                    configUrl={configUrl}
-                                    onConfigUrlChange={onConfigUrlChange}
-                                />
-                                {registry.length > 0 && (
-                                    <FileHistoryManager
-                                        registry={registry}
-                                        onToggleActive={onToggleActive}
-                                        onDelete={onDelete}
-                                        onViewReport={onViewReport}
-                                    />
+                                {canManageFiles ? (
+                                    <>
+                                        <UploadSection
+                                            onProcessFile={onProcessFile}
+                                            configUrl={configUrl}
+                                            onConfigUrlChange={onConfigUrlChange}
+                                        />
+                                        {registry.length > 0 && (
+                                            <FileHistoryManager
+                                                registry={registry}
+                                                onToggleActive={onToggleActive}
+                                                onDelete={onDelete}
+                                                onViewReport={onViewReport}
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center text-center py-10 px-4">
+                                        <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
+                                            <Icon name="clock" size={6} />
+                                        </div>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-white">Đang chờ dữ liệu từ Quản lý Kho</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+                                            Dữ liệu doanh số của Kho sẽ tự động hiển thị ngay khi Quản lý cập nhật. Bạn không cần tự tải tệp lên.
+                                        </p>
+                                    </div>
                                 )}
                             </div>
                         </div>

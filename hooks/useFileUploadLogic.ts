@@ -22,6 +22,8 @@ interface FileUploadLogicProps {
     setStatus: (status: Status) => void;
     setFilterState?: (filters: FilterState) => void;
     user?: User | null;
+    userRole?: 'admin' | 'manager' | 'employee' | 'pending' | null;
+    departmentId?: string;
     onRegistryChange?: () => void;
 }
 
@@ -35,6 +37,8 @@ export const useFileUploadLogic = ({
     setStatus,
     setFilterState,
     user,
+    userRole,
+    departmentId,
     onRegistryChange
 }: FileUploadLogicProps) => {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -518,6 +522,8 @@ export const useFileUploadLogic = ({
                             toast('☁️ Đang đồng bộ dữ liệu gộp lên đám mây...', { id: 'cloud-sync-start', duration: 2000 });
                             const { uploadProcessedData } = await import('../services/cloudDataService');
                             await uploadProcessedData(user, merged.data, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime);
+                            const { syncDataToKhoIfManager } = await import('../services/khoDataService');
+                            syncDataToKhoIfManager(user, userRole, departmentId, merged.data, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), !!merged.isRealtime).catch(console.error);
                             toast.success('Đã đồng bộ dữ liệu lên đám mây!', { id: 'cloud-sync-done' });
                         } catch (err) {
                             console.error('Cloud data sync failed:', err);

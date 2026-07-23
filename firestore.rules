@@ -9,6 +9,15 @@ service cloud.firestore {
     function protectedKeys() {
       return ['role', 'status', 'departmentId', 'expiresAt', 'requestedRole'];
     }
+    // Tách chuỗi departmentId (có thể là nhiều mã Kho nối bằng dấu phẩy, vd "58614,12345")
+    // thành danh sách — dùng cho khoData/{maKho} (mục 37 implementation_plan.md). maKho là
+    // path segment (không phải query filter) nên rule "in" ở đây luôn tin cậy, không gặp
+    // vướng mắc kiểu list/query đã gặp với listManagedUsers (mục 29).
+    function myKhos() {
+      return isSignedIn() && request.auth.token.departmentId is string
+        ? request.auth.token.departmentId.replace('\\s+', '').split(',')
+        : [];
+    }
 
     match /users/{uid} {
       // Manager KHÔNG còn quyền get/list trực tiếp ở đây (trước đây isManager() cho manager
@@ -38,6 +47,23 @@ service cloud.firestore {
     match /shared_configs/{id} {
       allow read:  if isSignedIn();
       allow write: if isManager();
+    }
+
+    // Dữ liệu doanh số DÙNG CHUNG theo Mã Kho (mục 37 implementation_plan.md) — khác với
+    // users/{uid}/salesData ở trên (theo UID cá nhân, chỉ đồng bộ cho chính người tải qua
+    // nhiều thiết bị của họ). Quản lý/admin tải lên 1 lần, mọi nhân viên/quản lý khác cùng
+    // Kho đăng nhập trên thiết bị riêng đều đọc được — giải quyết đúng yêu cầu "nhân viên
+    // thừa kế dữ liệu từ quản lý" khi mỗi người dùng thiết bị cá nhân riêng.
+    match /khoData/{maKho} {
+      match /salesFiles/{fileId} {
+        allow read:  if isSignedIn() && maKho in myKhos();
+        allow write: if isSignedIn() && isManager() && maKho in myKhos();
+
+        match /chunks/{n} {
+          allow read:  if isSignedIn() && maKho in myKhos();
+          allow write: if isSignedIn() && isManager() && maKho in myKhos();
+        }
+      }
     }
 
     // Bộ đếm lượt truy cập (hooks/useSystemTraffic.ts) — không phải dữ liệu

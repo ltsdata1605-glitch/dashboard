@@ -21,12 +21,12 @@ const getTodayStr = () => {
 };
 
 export const useDashboardLogic = () => {
-    const { user } = useAuth();
+    const { user, userRole, departmentId } = useAuth();
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=xlsx');
     const [isLuyKe, setIsLuyKe] = useState(false);
-    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'changelog' | null>(null);
+    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'debt' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<{ employeeName: string } | null>(null);
     const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
 
@@ -94,6 +94,8 @@ export const useDashboardLogic = () => {
         setStatus,
         setFilterState,
         user,
+        userRole,
+        departmentId,
         onRegistryChange: refreshRegistry
     });
 

@@ -40,8 +40,11 @@ export interface SalesDataMeta {
  * Cleans a single DataRow for upload:
  * - Strips unnecessary fields
  * - Converts Date objects to ISO strings
+ *
+ * Xuất ra (export) để services/khoDataService.ts dùng chung — tránh viết lại logic
+ * strip-field/convert-date lần 2 cho luồng đồng bộ dữ liệu theo Kho.
  */
-function cleanRow(row: DataRow): DataRow {
+export function cleanRow(row: DataRow): DataRow {
     const clean: DataRow = {};
     for (const [key, value] of Object.entries(row)) {
         if (STRIP_FIELDS.has(key)) continue;
@@ -57,8 +60,10 @@ function cleanRow(row: DataRow): DataRow {
 /**
  * Splits DataRow[] into chunks where each chunk's JSON size ≤ MAX_CHUNK_BYTES.
  * Uses a greedy approach: keep adding rows until size exceeds limit.
+ *
+ * Xuất ra (export) để services/khoDataService.ts dùng chung.
  */
-function chunkData(data: DataRow[]): DataRow[][] {
+export function chunkData(data: DataRow[]): DataRow[][] {
     if (data.length === 0) return [];
 
     const chunks: DataRow[][] = [];

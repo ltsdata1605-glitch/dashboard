@@ -1,9 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { Icon } from '../common/Icon';
 import { Modal } from '../shared/ui/Modal';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
+import { KhoFileManager } from '../upload/KhoFileManager';
 import type { UploadedFileRegistryItem } from '../../types';
 import { Button } from '../shared/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface FileHistoryModalProps {
     isOpen: boolean;
@@ -25,6 +27,18 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
     onViewReport
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý Kho (implementation_plan.md mục 37) —
+    // chặn thêm ở đây (phòng thủ sâu) dù lối vào modal này (FilterBar.tsx) đã ẩn với nhân
+    // viên rồi, phòng trường hợp có lối vào khác sau này.
+    const { userRole, departmentId } = useAuth();
+    const canManageFiles = userRole === 'admin' || userRole === 'manager';
+    // Chỉ manager mới có mã Kho cụ thể để quản lý dữ liệu dùng chung (admin dùng
+    // departmentId đặc biệt "ALL (Super Admin)", không map tới Kho thật nào — xem
+    // implementation_plan.md mục 37 Bước 5).
+    const managedKhos = useMemo(() => {
+        if (userRole !== 'manager') return [];
+        return (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+    }, [userRole, departmentId]);
 
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -87,26 +101,34 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                     />
                 )}
 
-                <div className="pt-1 flex justify-between items-center gap-3 flex-wrap">
-                    <Button
-                        variant="unstyled" size="none"
-                        onClick={handleImportClick}
-                        id="btn-modal-import-files"
-                        className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-semibold rounded-md shadow-none transition-all flex items-center gap-1.5"
-                    >
-                        <Icon name="file-up" size={3.5} />
-                        <span>Tải YCX luỹ kế</span>
-                    </Button>
+                {managedKhos.map(maKho => (
+                    <KhoFileManager key={maKho} maKho={maKho} />
+                ))}
 
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                        multiple
-                        onClick={(e) => (e.currentTarget.value = '')}
-                        onChange={handleFileChange}
-                    />
+                <div className="pt-1 flex justify-between items-center gap-3 flex-wrap">
+                    {canManageFiles ? (
+                        <>
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={handleImportClick}
+                                id="btn-modal-import-files"
+                                className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-semibold rounded-md shadow-none transition-all flex items-center gap-1.5"
+                            >
+                                <Icon name="file-up" size={3.5} />
+                                <span>Tải YCX luỹ kế</span>
+                            </Button>
+
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                                multiple
+                                onClick={(e) => (e.currentTarget.value = '')}
+                                onChange={handleFileChange}
+                            />
+                        </>
+                    ) : <span />}
 
                     <Button
                         variant="unstyled" size="none"

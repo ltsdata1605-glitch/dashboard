@@ -338,7 +338,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     });
                 }
 
-                
                 // 3. Background Sheet Check (Auto-update config once gracefully)
                 if (config) {
                     setTimeout(async () => {
@@ -394,6 +393,45 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         };
         loadInitialData();
     }, [configUrl, setAppState, setStatus, user, isDemoMode]);
+
+    // Kho-shared sales data sync (mục 37 implementation_plan.md) — TÁCH RIÊNG khỏi effect
+    // loadInitialData() ở trên (không gộp chung) vì `userRole`/`departmentId` chỉ có giá trị
+    // thật SAU KHI resolveSession() ở AuthContext.tsx chạy xong — effect loadInitialData()
+    // chỉ phụ thuộc `user` (đổi giá trị NGAY khi onAuthStateChanged bắn, TRƯỚC khi
+    // resolveSession() xong) nên nếu gộp logic Kho vào đó, nó sẽ luôn thấy userRole còn
+    // null/cũ ở lần chạy đó và effect cũng không tự chạy lại khi userRole đổi sau này (không
+    // nằm trong dependency array của effect kia, cố tình — để tránh loadInitialData() chạy
+    // lại 2 lần/mỗi lần đăng nhập gây nháy màn). Effect riêng này CHỜ đúng userRole/departmentId
+    // ổn định rồi mới chạy.
+    //
+    // Nhân viên dùng thiết bị cá nhân riêng, KHÔNG tự tải file (Bước 4) — nguồn dữ liệu DUY
+    // NHẤT của họ là dữ liệu quản lý Kho đã cập nhật, nên luôn ưu tiên dữ liệu Kho dùng chung
+    // khi có. Quản lý cũng được ưu tiên dữ liệu Kho dùng chung (đã gồm cả dữ liệu chính họ
+    // upload — xem Bước 2 — cộng dữ liệu từ quản lý khác cùng Kho nếu có) — chỉ khi Kho CHƯA
+    // có dữ liệu nào (vd vừa deploy tính năng, chưa ai từng tải) thì mới giữ nguyên dữ liệu
+    // local họ tự tải (không đụng `originalData` trong trường hợp đó).
+    useEffect(() => {
+        if (isDemoMode || !user) return;
+        if (userRole !== 'manager' && userRole !== 'employee') return;
+        if (!departmentId) return;
+
+        let cancelled = false;
+        import('../services/khoDataService').then(async ({ fetchAllowedKhoData }) => {
+            try {
+                const khoRows = await fetchAllowedKhoData(departmentId);
+                if (cancelled || khoRows.length === 0) return;
+
+                setStatus({ message: `📊 Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
+                const srcData = normalizeSalesData(khoRows);
+                setOriginalData(srcData);
+                setAppState('processing');
+            } catch (e: unknown) {
+                console.warn("⚠️ Đồng bộ dữ liệu Kho dùng chung thất bại (không ảnh hưởng app):", getErrorMessage(e));
+            }
+        });
+
+        return () => { cancelled = true; };
+    }, [user, userRole, departmentId, isDemoMode, setStatus, setAppState]);
 
     const refreshRegistry = useCallback(async () => {
         try {
@@ -478,12 +516,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
                     uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
+                    const { syncDataToKhoIfManager } = await import('../services/khoDataService');
+                    syncDataToKhoIfManager(user, userRole, departmentId, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), !!merged.isRealtime).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
                 setFileInfo(null);
                 setAppState('upload');
-                
+
                 // Clear cloud data when local data is completely empty
                 if (user && !isDemoMode) {
                     import('../services/cloudDataService').then(({ deleteCloudSalesData }) => {
@@ -520,12 +560,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
                     uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
+                    const { syncDataToKhoIfManager } = await import('../services/khoDataService');
+                    syncDataToKhoIfManager(user, userRole, departmentId, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), !!merged.isRealtime).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
                 setFileInfo(null);
                 setAppState('upload');
-                
+
                 // Clear cloud data when local data is completely empty
                 if (user && !isDemoMode) {
                     import('../services/cloudDataService').then(({ deleteCloudSalesData }) => {
@@ -587,6 +629,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
                     uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
+                    const { syncDataToKhoIfManager } = await import('../services/khoDataService');
+                    syncDataToKhoIfManager(user, userRole, departmentId, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), !!merged.isRealtime).catch(console.error);
                 }
             } else {
                 toast.error('Không có dữ liệu để xem báo cáo!');
@@ -612,8 +656,15 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (!allowedKhos.includes(kho)) return false;
 
                 if (userRole === 'employee') {
-                    const emp = String(row['Người tạo'] || '').trim().toLowerCase();
-                    if (emp !== employeeName?.trim().toLowerCase()) return false;
+                    // "Người tạo" trong Excel có dạng "Mã số - Tên" (vd "107617 - Nguyễn Văn A"),
+                    // trong khi employeeName (nhập lúc đăng ký, PendingApprovalView.tsx) CHỈ là mã
+                    // số thuần (validate /^\d+$/). So khớp toàn bộ chuỗi trước đây sẽ KHÔNG BAO GIỜ
+                    // khớp — nhân viên đăng nhập xong thấy Dashboard trống dù đã được duyệt quyền
+                    // đúng. Trích mã số đứng đầu "Người tạo" rồi so với employeeName thay vì so cả chuỗi.
+                    const nguoiTaoRaw = String(row['Người tạo'] || '').trim();
+                    const empIdMatch = nguoiTaoRaw.match(/^(\d+)/);
+                    const empId = empIdMatch ? empIdMatch[1] : nguoiTaoRaw;
+                    if (empId !== employeeName?.trim()) return false;
                 }
 
                 return true;
@@ -694,28 +745,31 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
     }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState]);
 
-    // Unique filter options
+    // Unique filter options — dùng rbacData (đã lọc theo Kho/Người tạo cho employee/manager),
+    // KHÔNG dùng originalData (dữ liệu thô toàn bộ file, chưa qua RBAC) — nếu không, dropdown
+    // "Kho"/"Người tạo" sẽ lộ ra mã Kho và tên nhân viên khác mà user không có quyền xem, dù
+    // dữ liệu chi tiết (KPI/bảng/biểu đồ) đã được lọc đúng qua rbacData ở nơi khác.
     const uniqueFilterOptions = useMemo(() => {
-        if (originalData.length === 0) return { kho: [], trangThai: [], nguoiTao: [], department: [], hangSX: [] };
-        
+        if (rbacData.length === 0) return { kho: [], trangThai: [], nguoiTao: [], department: [], hangSX: [] };
+
         const khos = new Set<string>();
         const trangThais = new Set<string>();
         const nguoiTaos = new Set<string>();
         const hangSxs = new Set<string>();
 
-        const len = originalData.length;
+        const len = rbacData.length;
         for (let i = 0; i < len; i++) {
-            const r = originalData[i];
-            
+            const r = rbacData[i];
+
             const kho = r['Mã kho tạo'];
             if (kho) khos.add(String(kho));
-            
+
             const tt = r['Trạng thái hồ sơ'];
             if (tt) trangThais.add(String(tt));
-            
+
             const tao = r['Người tạo'];
             if (tao) nguoiTaos.add(String(tao));
-            
+
             const hsx = r['Hãng'] || r['Hãng SX'];
             if (hsx) hangSxs.add(String(hsx));
         }
@@ -727,11 +781,16 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         
         let deptOptions: string[] = [];
         if (departmentMap) {
+            // Chỉ xét phòng ban của các nhân viên THỰC SỰ xuất hiện trong nguoiTaoOptions (đã
+            // scope theo rbacData ở trên) — tránh lộ tên phòng ban của nhân viên Kho khác qua
+            // toàn bộ departmentMap (vốn là bản đồ toàn công ty, không theo Kho).
             const deptsSet = new Set<string>();
             const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
-            const mapValues = Object.values(departmentMap);
-            for (let i = 0, len = mapValues.length; i < len; i++) {
-                const val = mapValues[i] as string;
+            for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
+                const empStr = nguoiTaoOptions[i];
+                const dashIdx = empStr.indexOf(' - ');
+                const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
+                const val = departmentMap[id] as string;
                 if (!val) continue;
                 const sepIdx = val.indexOf(';;');
                 const deptName = sepIdx !== -1 ? val.substring(0, sepIdx) : val;
@@ -768,7 +827,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
 
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
-    }, [originalData, departmentMap]);
+    }, [rbacData, departmentMap]);
 
     const [ignoredGroups, setIgnoredGroups] = useState<string[]>([]);
 

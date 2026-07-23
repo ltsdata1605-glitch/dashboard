@@ -748,3 +748,263 @@ User báo: file 60MB (chế độ "Lũy kế/Quá khứ") tải lên báo lỗi 
 **Đã sửa** `components/modals/FileHistoryModal.tsx` — modal "DANH SÁCH YCX LŨY KẾ" (nơi tải file doanh số cũ để gộp báo cáo lũy kế): thêm banner cảnh báo màu đỏ (rose, đúng bảng màu semantic — `bg-rose-50 border-rose-200 text-rose-700` + icon `alert-triangle`, khớp pattern cảnh báo đã dùng ở `ErrorBoundary.tsx`/`CouponConverterView.tsx`) ngay đầu phần nội dung, phía trên danh sách file: *"Lưu ý: chỉ nên tải lên dữ liệu theo từng Quý (3 tháng/lần), không dồn quá nhiều tháng vào 1 tệp. Tệp quá lớn (nhiều dữ liệu dồn 1 lúc) hệ thống sẽ không xử lý được."*
 
 `npm run check` xanh.
+
+---
+
+## 32. Card "Tổng Quan Doanh Thu" — sửa độ rộng tiêu đề lệch với nội dung (2026-07-22)
+
+User chụp ảnh so sánh với card "Xu Hướng Doanh Thu" (chú thích "Độ rộng chuẩn") — tiêu đề "TỔNG QUAN DOANH THU" trông rộng hơn khối 5 thẻ KPI ngay bên dưới nó.
+
+**Nguyên nhân xác nhận qua đọc code**: `SectionHeader` (dùng chung cho mọi tiêu đề section, kể cả "Xu Hướng Doanh Thu") có padding ngang cố định `px-2 lg:px-4` (16px ở desktop). Khung bọc 5 thẻ KPI ngay dưới tiêu đề (`components/views/DashboardView.tsx:557`) lại dùng `p-2 lg:p-6` (24px ở desktop) — lệch 8px khiến tiêu đề "lấn" ra ngoài so với khối nội dung. Card "Xu Hướng Doanh Thu" (`TrendChart.tsx`) có độ lệch tương tự nhưng nhỏ hơn (`lg:p-5` = 20px so với header 16px, lệch 4px) nên mắt thường không nhận ra — đây là lý do user chọn nó làm chuẩn tham chiếu dù bản thân nó cũng không lệch 100%.
+
+**Đã sửa**: đổi `p-2 lg:p-6` → `p-2 lg:px-4 lg:py-6` — chỉ đổi padding **ngang** ở desktop cho khớp đúng 16px với tiêu đề, giữ nguyên padding dọc (24px) như thiết kế gốc. Mobile không đổi (đã khớp sẵn, `p-2` = `px-2` của header). Chỉ sửa đúng file này (`DashboardView.tsx`), không đụng `TrendChart.tsx` vì user không yêu cầu và độ lệch ở đó không đáng kể.
+
+`npm run check` xanh.
+
+---
+
+## 33. Card "Tổng Quan Doanh Thu" — khoảng trống thừa phía trên tiêu đề khi có banner cảnh báo (2026-07-22)
+
+User chụp ảnh khoanh đỏ 1 khoảng trắng trống lớn giữa banner cảnh báo cuối cùng ("ĐƠN HÀNG CHƯA THU | CHƯA HỦY") và tiêu đề "TỔNG QUAN DOANH THU" ngay bên dưới, trong cùng 1 SectionCard.
+
+**Nguyên nhân**: div bọc `SectionHeader` (`components/views/DashboardView.tsx`, ngay trong `SectionCard` "Tổng Quan Doanh Thu") có `pt-1 lg:pt-8` (32px padding-top ở desktop) — khoảng đệm này được thiết kế cho trường hợp KHÔNG có banner nào phía trên (tạo khoảng thở đẹp giữa mép card và tiêu đề). Nhưng khi có 1-3 banner cảnh báo (nhóm hàng chưa cấu hình / quá hạn xuất / chưa thu) hiển thị phía trên (mỗi banner tự có padding + border riêng), khoảng `lg:pt-8` này CỘNG DỒN thêm vào sau banner cuối, tạo khoảng trắng thừa rất lớn.
+
+**Đã sửa**: đổi `pt-1 lg:pt-8` thành có điều kiện — `pt-1 lg:pt-3` khi có ít nhất 1 trong 3 banner đang hiển thị (dùng lại đúng 3 điều kiện hiển thị banner đã có sẵn), giữ nguyên `lg:pt-8` khi không có banner nào (giữ đúng khoảng thở gốc cho trường hợp bình thường). Không tạo biến/hàm phụ — viết điều kiện trực tiếp trong template literal của className để tránh phải tái cấu trúc lại cây JSX lớn của component này.
+
+`npm run check` xanh.
+
+---
+
+## 34. Thêm cảnh báo "Đơn hàng chưa hoàn tất công nợ" (2026-07-22)
+
+User yêu cầu thêm 1 banner cảnh báo mới, cùng dạng với "ĐƠN HÀNG QUÁ HẠN XUẤT"/"ĐƠN HÀNG CHƯA THU | CHƯA HỦY" đã có, với điều kiện:
+- Đơn hàng đủ điều kiện tính doanh thu (dùng đúng logic đã có, không viết lại công thức mới — vi phạm CLAUDE.md nếu tự chế).
+- Không lọc theo Trạng thái xuất (tính cả Đã xuất lẫn Chưa xuất).
+- Cột "Còn nợ" (cột J trong file Excel) > 0.
+
+**Cột dữ liệu mới**: dự án CHƯA từng đọc cột "Còn nợ" từ file Excel — đã thêm mới hoàn toàn:
+- `constants.ts` — thêm `COL.CON_NO: ['Còn nợ', 'Còn Nợ']`.
+- `services/worker.ts` — thêm `'Còn nợ', 'Còn Nợ'` vào `reqCols` (danh sách cột được phép giữ lại khi parse Excel trong Worker) — **bắt buộc phải làm bước này**, nếu không cột sẽ bị loại bỏ âm thầm dù đã khai báo trong `COL` (đã học từ vụ điều tra file 60MB ở mục 30: cột không nằm trong `reqCols` thì không bao giờ xuất hiện trong dữ liệu đã parse).
+
+**Logic tính toán**: thêm vào đúng vòng lặp classification 1-pass sẵn có trong `services/filterService.ts → processDataForPeriod()` (không tạo vòng lặp riêng, tránh duyệt lại toàn bộ dữ liệu lần 2 — file đã có comment cảnh báo hot-path này với dữ liệu 50k+ dòng). Ngay tại nhánh đã xác định đơn hàng "đủ điều kiện tính doanh thu" (`isRevenueOk`, dùng chung với `filteredValidSalesData`/`unshippedOrders`), thêm nhánh `debtOrders` dựa trên `parseNumber(getRowValue(row, COL.CON_NO)) > 0` — không thêm điều kiện Trạng thái xuất nào (đúng yêu cầu "kể cả chưa xuất hoặc đã xuất"). Trả về `debtOrders` trong kết quả hàm, thêm field `debtOrders?: DataRow[]` vào `ProcessedData` (`types.ts`).
+
+**Giao diện**:
+- `components/views/DashboardView.tsx` — thêm banner màu rose (đỏ, khớp banner "Đơn hàng quá hạn xuất" cũng dùng rose) ngay dưới banner "Chưa thu": *"ĐƠN HÀNG CHƯA HOÀN TẤT CÔNG NỢ (N)"*, bấm vào mở modal mới. Cập nhật luôn điều kiện `hasOverviewBanner` (mục 33) để tính cả banner mới này khi quyết định khoảng đệm trên tiêu đề "Tổng Quan Doanh Thu".
+- `components/modals/DebtOrdersModal.tsx` (file mới) — nhân bản có điều chỉnh từ `UnshippedOrdersModal.tsx` (cùng khuôn mẫu: tỷ trọng theo ngành hàng → nhóm theo Người tạo → nhóm theo Khách hàng → bảng chi tiết đơn hàng, đủ bộ nút xuất Ảnh/Excel/Google Sheet để đồng nhất với 2 modal cảnh báo anh em). Khác biệt: bỏ hẳn khái niệm "quá hạn" (không có ngày hẹn giao liên quan đến công nợ); cột tổng hợp chính đổi từ Doanh Thu/DTQĐ sang **Còn Nợ**; bảng chi tiết đơn hàng thêm cột "Trạng Thái Xuất" (vì đơn ở đây có thể Đã xuất hoặc Chưa xuất, cần phân biệt) và cột "Còn Nợ" bên cạnh Doanh Thu.
+- `hooks/useDashboardLogic.ts` — thêm `'debt'` vào union type của `activeModal`.
+- `violations-baseline.json` — thêm entry `DebtOrdersModal.tsx: nonSemanticColor 14` (bằng đúng số của `UnshippedOrdersModal.tsx`/`UncollectedOrdersModal.tsx` — cùng bảng màu ngành hàng `industryColors` sao chép y nguyên, không phải màu mới tự chế).
+
+**Rủi ro cần user xác nhận bằng dữ liệu thật**: tên cột "Còn nợ" trong file Excel thật của user có thể viết khác 2 biến thể đã thêm (`'Còn nợ'`, `'Còn Nợ'`) — nếu vậy banner sẽ không bao giờ hiện (không lỗi, chỉ im lặng không có dữ liệu). Cần user tải file thật lên và xác nhận banner xuất hiện đúng số lượng mong đợi.
+
+`npm run check` xanh (bao gồm cả `lint:ratchet` sau khi cập nhật baseline). **Chưa test tay với dữ liệu thật.**
+
+**Cập nhật (2026-07-22) — bổ sung điều kiện lọc**: user xác nhận tên cột "Còn nợ" (ảnh chụp Excel) khớp đúng mapping đã thêm — không cần sửa gì. User yêu cầu bổ sung thêm 2 điều kiện:
+1. "Trạng thái thu tiền" = "Đã thu" (cột M) — **đã đúng sẵn từ đầu**, vì nhánh tính `debtOrders` trong `filterService.ts` nằm bên trong `if (thuTien === 'đã thu')`, không cần sửa.
+2. "Ngày giao hàng" < ngày hiện tại (chỉ hiện đơn đã quá hạn giao) — **cột mới cần hỏi rõ**: đã hỏi user và xác nhận đây chính là cột "TG Hẹn Giao"/"Thời gian hẹn giao" đã có sẵn trong dữ liệu (cùng cột đang dùng để tính banner "ĐƠN HÀNG QUÁ HẠN XUẤT"), không phải cột mới.
+
+**Đã sửa**:
+- `components/views/DashboardView.tsx` — thêm `useMemo` mới `overdueDebtOrders` (nhân bản y hệt logic parse+so sánh ngày của `overdueUnshippedOrders` đã có sẵn — cùng xử lý Date object / chuỗi DD/MM/YYYY / fallback `new Date()`), lọc từ `processedData.debtOrders` theo `TG Hẹn Giao/Thời gian hẹn giao < hôm nay`. Banner và điều kiện đệm `pt-3/pt-8` (mục 33) đổi sang dùng `overdueDebtOrders.length` thay vì `processedData.debtOrders.length`.
+- `components/modals/DebtOrdersModal.tsx` — áp cùng bộ lọc quá hạn ngay trong `salesData` useMemo (thay vì đọc thẳng `processedData.debtOrders`), đảm bảo danh sách hiển thị trong modal khớp đúng số lượng banner hiển thị.
+
+Cân nhắc kỹ thuật: đặt phép so sánh "hôm nay" ở tầng View (DashboardView.tsx/Modal), KHÔNG gộp vào `services/filterService.ts` — theo đúng tiền lệ đã có của `overdueUnshippedOrders` (vốn cũng tách riêng khỏi `processDataForPeriod`), tránh "đóng băng" mốc thời gian "hôm nay" vào kết quả tính toán được cache theo bộ lọc.
+
+`npm run check` xanh. **Chưa test tay với dữ liệu thật.**
+
+---
+
+## 36. Rà soát quyền xem dữ liệu của nhân viên (2026-07-22)
+
+User yêu cầu rà soát lại: nhân viên đăng nhập được cấp quyền phải chỉ thấy dữ liệu gắn với chính mình, dù dữ liệu tải về từ Firebase là đầy đủ như admin (đúng thiết kế hiện có — lọc ở tầng hiển thị, không lọc ở tầng tải dữ liệu).
+
+**Xác nhận cơ chế RBAC hiện có hoạt động đúng cho dữ liệu chính (KPI/biểu đồ/bảng)**: `hooks/useDataManagement.ts → rbacData` (dòng ~606) lọc `originalData` theo `allowedKhos` (từ `departmentId`) cho cả `employee`/`manager`, và lọc thêm theo đúng "Người tạo" === `employeeName` cho riêng `employee`. `rbacData` (không phải `originalData` thô) được gửi vào Worker tính `processedData`/`baseFilteredData`/`warehouseFilteredData` — đây là nguồn dữ liệu thật sự hiển thị lên Dashboard, nên phần lõi (KPI, biểu đồ, bảng doanh thu) đã lọc đúng.
+
+**Lỗ hổng phát hiện và đã sửa — dropdown bộ lọc lộ dữ liệu chưa được lọc RBAC**: `uniqueFilterOptions` (danh sách Kho/Trạng thái/Người tạo/Phòng ban/Hãng SX cho các dropdown lọc) trước đây tính từ `originalData` (dữ liệu thô CHƯA lọc RBAC), không phải `rbacData` — nghĩa là 1 nhân viên/quản lý dù không xem được số liệu của Kho khác/nhân viên khác, vẫn thấy được **tên** các mã Kho khác và **tên** các nhân viên khác qua dropdown lọc "Kho"/"Người tạo" — rò rỉ thông tin danh tính dù không rò rỉ số liệu doanh thu. Đã sửa `hooks/useDataManagement.ts`: đổi nguồn tính `uniqueFilterOptions` từ `originalData` → `rbacData`; đồng thời sửa luôn phần tính `deptOptions` (danh sách Phòng ban) — trước đây duyệt toàn bộ `departmentMap` (bản đồ phòng ban TOÀN công ty), giờ chỉ duyệt các nhân viên thực sự có mặt trong `nguoiTaoOptions` đã được scope theo `rbacData`, tránh lộ tên phòng ban của nhân viên Kho khác.
+
+`npm run check` xanh.
+
+**2 điều cần user xác nhận trước khi xử lý tiếp (chưa tự ý sửa)**:
+1. `rbacData` có 1 ngoại lệ hardcode: `user?.email !== 'nguyendangkhoafit2@gmail.com'` — email này được BỎ QUA hoàn toàn cơ chế lọc RBAC (thấy toàn bộ dữ liệu như admin, bất kể role thật là gì). Đây có phải là tài khoản test/đặc biệt cố ý hay không? Nếu không còn cần thiết, nên gỡ bỏ vì đây là 1 lối tắt bảo mật không tài liệu hóa.
+2. **Nghi vấn lỗi chức năng (không phải lỗi bảo mật, mà có thể khiến nhân viên KHÔNG thấy được dữ liệu của chính mình — ngược lại hoàn toàn với mục tiêu user vừa nêu)**: form đăng ký nhân viên (`components/views/PendingApprovalView.tsx`) bắt buộc nhập "User (Mã nhân viên)" — validate CHỈ ĐƯỢC CHỨA CHỮ SỐ (`/^\d+$/`), tức `employeeName` lưu lại chỉ là mã số thuần (vd "107617"). Trong khi đó, việc so khớp ở `rbacData` là so khớp CHÍNH XÁC TOÀN BỘ chuỗi: `String(row['Người tạo']).trim().toLowerCase() !== employeeName.trim().toLowerCase()`. Nếu cột "Người tạo" trong file Excel thật không phải thuần số mà có dạng "107617 - Tên nhân viên" (nghi vấn dựa trên cách nơi khác trong code trích xuất ID bằng regex `/^(\d+)/` từ giá trị "Người tạo"), phép so khớp CHÍNH XÁC này sẽ KHÔNG BAO GIỜ khớp — khiến `rbacData` luôn rỗng cho employee, tức nhân viên đăng nhập xong sẽ thấy Dashboard KHÔNG có dữ liệu gì, dù đã được duyệt quyền đúng.
+   - Bạn xác nhận giúp: cột "Người tạo" trong file Excel thật của bạn có đúng dạng "Mã số - Tên" không, hay chỉ thuần mã số? Và nhân viên đăng nhập thực tế hiện tại có thấy đúng dữ liệu của mình không, hay đang thấy Dashboard trống?
+
+**User xác nhận**: cột "Người tạo" đúng dạng "Mã số - Tên" (vd "107617 - Nguyễn Văn A") — xác nhận bug có thật. Email hardcode là tài khoản test/đặc biệt cố ý — giữ nguyên, không động vào.
+
+**Đã sửa** `hooks/useDataManagement.ts → rbacData`: đổi phép so khớp từ so TOÀN BỘ chuỗi "Người tạo" (chắc chắn không khớp, vì `employeeName` chỉ là mã số) sang trích mã số đứng đầu "Người tạo" bằng regex `/^(\d+)/` (khớp đúng cách các nơi khác trong code đã làm, vd `UnshippedOrdersModal.tsx`) rồi so với `employeeName`. Đây là fix chức năng quan trọng — trước đây MỌI nhân viên đăng nhập xong đều thấy Dashboard trống (0 dòng dữ liệu) dù được duyệt quyền đúng, vì `rbacData` luôn lọc hết sạch.
+
+`npm run check` xanh. **Chưa test tay** — cần đăng nhập bằng 1 tài khoản employee thật để xác nhận Dashboard giờ hiển thị đúng dữ liệu của riêng họ (không trống, không thấy dữ liệu người khác).
+
+---
+
+## 37. [THIẾT KẾ — CHƯA CODE] Chia sẻ dữ liệu doanh số theo Kho qua Firebase (2026-07-23)
+
+**Bối cảnh phát hiện**: user xác nhận mô hình sử dụng thật: mỗi nhân viên đăng nhập trên thiết bị CÁ NHÂN riêng (không dùng chung máy với quản lý). Quản lý là người cập nhật dữ liệu (tải file Excel), nhân viên "thừa kế" lại đúng dữ liệu quản lý đã cập nhật (lọc còn dòng của chính họ). Điều tra xác nhận: hiện KHÔNG có cơ chế này — dữ liệu doanh số trên Firestore lưu theo `users/{uid}/salesData/*` (theo UID CÁ NHÂN từng người, xem `services/cloudDataService.ts`), và nguồn dữ liệu chính hiển thị Dashboard (`getMergedSalesData()`) đọc từ IndexedDB CỤC BỘ của thiết bị. Nhân viên dùng thiết bị riêng, chưa từng tự tải file → cả IndexedDB lẫn Firestore của riêng họ đều rỗng → Dashboard trống, bất kể `rbacData` đã lọc đúng ở mục 36.
+
+**User đã quyết định qua AskUserQuestion**:
+1. Áp dụng cho **cả Realtime lẫn Lũy kế** (không chỉ Realtime).
+2. **Cho phép nhiều quản lý cùng 1 mã Kho** cùng tải dữ liệu lên (không phải 1 Kho = 1 quản lý).
+3. **Nhân viên KHÔNG còn được tự tải file** — chỉ xem dữ liệu thừa kế từ quản lý.
+
+**Kiến trúc đề xuất**:
+
+### 1. Data model Firestore (collection mới, tách biệt hoàn toàn khỏi `users/{uid}/salesData` hiện có)
+```
+khoData/{maKho}/salesFiles/{fileId}          — metadata: filename, uploadedByUid, uploadedByName,
+                                                 uploadedAt, isRealtime, isActive, rowCount, fileLastModified
+khoData/{maKho}/salesFiles/{fileId}/chunks/{n} — dữ liệu dòng thực tế, chia nhỏ (giống pattern
+                                                 users/{uid}/salesData/chunk_N đã có, tránh vượt giới
+                                                 hạn 1MB/document của Firestore)
+```
+Nhiều quản lý cùng Kho → nhiều `fileId` khác nhau cùng nằm dưới 1 `maKho`, y hệt cách hệ thống cục bộ hiện tại đã xử lý "nhiều file lũy kế cùng active" (registry + `isActive` flag) — **tái dùng đúng mô hình đó**, chỉ đổi nơi lưu từ IndexedDB cá nhân → Firestore dùng chung theo Kho. Không cần thêm logic "merge/ưu tiên" phức tạp giữa các quản lý — tất cả file `isActive=true` của Kho được gộp (nối) lại, đúng cách `getMergedSalesData()` cục bộ đang gộp nhiều file lũy kế.
+
+### 2. Firestore Rules (thêm mới, không đụng rules `users/{uid}/*` hiện có)
+```
+match /khoData/{maKho} {
+  match /salesFiles/{fileId} {
+    allow read: if isSignedIn() && maKho in myKhos();
+    allow write: if isSignedIn() && isManager() && maKho in myKhos();
+    match /chunks/{n} {
+      allow read: if isSignedIn() && maKho in myKhos();
+      allow write: if isSignedIn() && isManager() && maKho in myKhos();
+    }
+  }
+}
+```
+`maKho` là path segment (không phải query filter) nên rule đơn giản, đáng tin cậy — không gặp vướng mắc kiểu "in-query" đã gặp ở mục 29 với `listManagedUsers`.
+
+### 3. Luồng tải lên (chỉ `admin`/`manager`, bỏ quyền của `employee`)
+- Sau khi xử lý file (worker parse xong), gom dòng theo "Mã kho tạo", CHỈ đồng bộ lên `khoData/{maKho}` cho các mã Kho nằm trong `allowedKhos` của người tải (phòng trường hợp file lẫn dữ liệu Kho khác ngoài quyền — rules sẽ chặn nếu cố ghi Kho không thuộc quyền).
+- Thêm hàm mới trong `services/cloudDataService.ts`: `uploadKhoSalesData(user, maKho, rows, meta)` — chunk dữ liệu, ghi `salesFiles/{fileId}` + `chunks/{n}`, `fileId` sinh mới mỗi lần tải (không ghi đè) để nhiều quản lý không đụng nhau.
+- Việc dọn file cũ/hết hạn (retention 24 tháng, `isActive` toggle) cần làm tương tự cấp Kho — có thể tái dùng gần như nguyên logic `pruneStaleActiveFiles`/`resetHistoricalFilesToInactive` hiện có, chuyển thao tác từ IndexedDB sang Firestore.
+
+### 4. Luồng tải xuống (áp dụng cho MỌI role khi đăng nhập/mở app)
+- Thêm bước mới trước khi tính `rbacData`: với mỗi mã Kho trong `allowedKhos`, gọi `getKhoFilesMeta(maKho)` lấy danh sách file đang active, so `fileLastModified` với bản cache local (IndexedDB) — chỉ tải lại chunk nào thay đổi (tái dùng đúng pattern "chỉ tải khi có bản mới hơn" đã có ở `getCloudDataMeta`/`downloadProcessedData` cho dữ liệu cá nhân) để tránh tải lại toàn bộ dữ liệu lớn (đặc biệt Lũy kế nhiều tháng) mỗi lần mở app.
+- Dữ liệu gộp từ tất cả Kho được cấp quyền → thay thế vai trò của `originalData` hiện tại (vốn trước đây chỉ đọc IndexedDB cục bộ) → `rbacData` (mục 36) áp lên trên như cũ, không đổi.
+
+### 5. Gỡ quyền tải file của nhân viên
+- Ẩn/khoá nút "Tải file mới" và "Tải YCX luỹ kế" khi `userRole === 'employee'` (`FilterBar.tsx`, `FileHistoryModal.tsx` và các entry point tải file khác) — thay bằng dòng chú thích: dữ liệu do quản lý Kho cập nhật.
+
+**Rủi ro/đánh đổi cần lưu ý**:
+- Đây là thay đổi kiến trúc lớn, cần deploy `firestore.rules` mới (không thể lùi nhanh nếu có vấn đề — nên deploy + test kỹ với 1 tài khoản employee thật trước khi công bố rộng).
+- Chi phí đọc/ghi Firestore tăng (mỗi lần bất kỳ ai trong Kho mở app đều có thể phải tải dữ liệu chung) — đã giảm thiểu bằng cơ chế "chỉ tải khi có bản mới hơn", nhưng lần đầu mỗi thiết bị vẫn phải tải toàn bộ.
+- KHÔNG đụng đến `users/{uid}/salesData` hiện có (vẫn giữ cho admin dùng đồng bộ cá nhân qua nhiều thiết bị của chính họ) — tránh phá vỡ hành vi hiện tại của admin.
+- Đây là ước tính phạm vi ban đầu — sẽ tách thành nhiều bước code + test riêng (data layer → luồng tải lên → luồng tải xuống → gỡ quyền nhân viên → retention), báo cáo sau mỗi bước thay vì làm 1 lần rồi mới test.
+
+**Trạng thái: CHỈ MỚI THIẾT KẾ, CHƯA VIẾT CODE. Đang chờ user xác nhận để bắt đầu.**
+
+**User xác nhận bắt đầu Bước 1 (data layer + Firestore Rules).**
+
+### Bước 1 — ĐÃ XONG: Data layer + Firestore Rules
+
+**File mới `services/khoDataService.ts`**:
+- `uploadKhoSalesData(user, maKho, data, filename, fileLastModified, isRealtime, uploadedByName?)` — chunk dữ liệu (tái dùng `chunkData`/`cleanRow` export từ `cloudDataService.ts`, không viết lại), ghi vào `khoData/{maKho}/salesFiles/{fileId}/chunks/{n}`. `fileId` cố định `realtime_{uid}` cho Realtime (ghi đè đúng slot của người tải, dọn chunk dư nếu lần này ít hơn lần trước), `fileId` tự sinh mới cho Lũy kế (không ghi đè, nhiều quản lý/nhiều giai đoạn cùng tồn tại).
+- `getKhoActiveFilesMeta(maKho)` — liệt kê metadata các file `isActive=true`.
+- `downloadKhoFileRows(maKho, fileId, chunkCount)` — tải + gộp chunk của 1 file.
+- `downloadKhoSalesData(maKho)` — tải + gộp TẤT CẢ file active của 1 Kho, trả kèm metadata.
+- `setKhoSalesFileActive(maKho, fileId, isActive)`, `deleteKhoSalesFile(maKho, fileId)` — quản lý/retention (dùng ở bước 5).
+
+**`services/cloudDataService.ts`**: export thêm `cleanRow`/`chunkData` (trước đây private) để `khoDataService.ts` dùng chung, tránh viết lại logic strip-field/chia-chunk lần 2.
+
+**`firestore.rules`**:
+- Thêm helper `myKhos()` — tách `request.auth.token.departmentId` (chuỗi nhiều mã Kho nối dấu phẩy) thành list, dùng `.replace('\\s+','')` xoá khoảng trắng trước khi `.split(',')`.
+- Thêm `match /khoData/{maKho}/salesFiles/{fileId}` (+ `/chunks/{n}` lồng bên trong): đọc — bất kỳ ai đăng nhập có `maKho` trong quyền; ghi — chỉ `admin`/`manager` có `maKho` trong quyền (`isManager()` đã có sẵn, dùng lại).
+- Về mặt kỹ thuật, `maKho` là **path segment** (không phải giá trị trong `resource.data` hay query filter) nên rule `maKho in myKhos()` áp dụng an toàn cho cả `get` lẫn `list` — không gặp vướng mắc "in-query" đã gặp ở mục 29 (`listManagedUsers`), vì mọi tài liệu có thể trả về từ 1 query đều CHUNG 1 giá trị `maKho` (chính là đường dẫn collection đang truy vấn), không có gì biến thiên theo từng tài liệu để Firestore phải "đoán".
+- KHÔNG đụng rule `users/{uid}/salesData` hiện có.
+
+`npm run check` xanh (typecheck/eslint/build/lint-ratchet — lưu ý: các bước này KHÔNG validate cú pháp `firestore.rules`, vì đó là ngôn ngữ riêng ngoài phạm vi TS/ESLint/Vite). **Chưa deploy, chưa có nơi nào gọi `khoDataService.ts`** (file mới hoàn toàn độc lập, chưa nối vào luồng tải lên/xuống — sẽ làm ở Bước 2/3). Rules cũng chưa deploy nên chưa có tác dụng thật trên production.
+
+**Bước tiếp theo (chưa làm)**: Bước 2 — nối `uploadKhoSalesData` vào luồng xử lý file của `admin`/`manager` (`useFileUploadLogic.ts`/`useDataManagement.ts`), tách dữ liệu theo "Mã kho tạo" trước khi gọi.
+
+### Bước 2 — ĐÃ XONG: Nối luồng tải lên (ghi) vào `khoData`
+
+**Thêm hàm mới `syncDataToKhoIfManager()` trong `services/khoDataService.ts`** — điểm gọi DUY NHẤT cho mọi nơi cần re-sync lên Kho dùng chung, tránh viết lại logic tách-theo-Kho ở từng nơi gọi:
+- Không làm gì nếu `userRole` không phải `admin`/`manager` (chặn sớm ở client, dù Firestore Rules cũng đã chặn — đỡ tốn 1 request `permission-denied` vô ích).
+- Tách `data` (toàn bộ dữ liệu người dùng đang thấy, CHƯA qua `rbacData`) theo cột "Mã kho tạo", CHỈ đồng bộ các mã Kho nằm trong `departmentId` (quyền) của người tải — phòng trường hợp file lỡ lẫn dữ liệu Kho ngoài quyền.
+- Gọi `uploadKhoSalesData()` (mục Bước 1) song song cho từng mã Kho.
+
+**Đã nối vào ĐỦ 4 điểm** hiện có trong code re-sync dữ liệu lên `users/{uid}/salesData` (mỗi nơi thêm đúng 1 dòng gọi `syncDataToKhoIfManager` song song, không đổi hành vi cũ):
+1. `hooks/useFileUploadLogic.ts` — `handleFileProcessing` (luồng tải file MỚI, cả Realtime lẫn Lũy kế).
+2. `hooks/useDataManagement.ts` — `handleDeleteFile` (xoá 1 file khỏi registry, re-sync lại phần còn lại).
+3. `hooks/useDataManagement.ts` — `handleClearRealtimeData` (xoá dữ liệu Realtime, re-sync lại phần Lũy kế còn lại).
+4. `hooks/useDataManagement.ts` — `handleViewReport` (bấm "Xem Báo Cáo" sau khi chọn file trong `FileHistoryModal`).
+
+**Thay đổi phụ trợ để có đủ `userRole`/`departmentId` tại nơi gọi**: `useDataManagement.ts` đã sẵn có 2 biến này (dùng chung với `rbacData`, mục 36) — không cần sửa. `useFileUploadLogic.ts` trước đây chỉ nhận prop `user` — đã thêm 2 prop mới `userRole`/`departmentId`, truyền vào từ `useDashboardLogic.ts` (vốn trước đây chỉ lấy `user` từ `useAuth()`, nay lấy thêm 2 giá trị này để truyền xuống).
+
+`npm run check` xanh — chunk `khoDataService` giờ xuất hiện riêng trong build (trước đây không có, vì chưa ai import) xác nhận đã nối đúng vào cây import thực tế.
+
+**Chưa làm (đúng theo kế hoạch tách bước)**:
+- Bước 3 — luồng TẢI XUỐNG: hiện TẤT CẢ role (kể cả admin/manager) vẫn chỉ đọc dữ liệu từ IndexedDB cục bộ khi mở app — CHƯA có bước nào gọi `downloadKhoSalesData()`/`getKhoActiveFilesMeta()` để kéo dữ liệu Kho dùng chung về máy nhân viên. Việc ghi (Bước 2) đã chạy được, nhưng chưa ai ĐỌC lại — cần Bước 3 mới thực sự khiến nhân viên "thấy" được dữ liệu quản lý vừa cập nhật.
+- Bước 4 — gỡ quyền tải file của nhân viên (vẫn còn nguyên, chưa ẩn nút).
+- Bước 5 — retention/dọn file cũ cấp Kho.
+- **Chưa deploy `firestore.rules`** — nếu chưa deploy, mọi lệnh ghi `syncDataToKhoIfManager` vừa thêm sẽ thất bại với `permission-denied` (đã có `.catch(console.error)` nên không crash app, chỉ log lỗi âm thầm) — cần deploy rules TRƯỚC khi tính năng này có tác dụng thật, dù code đã sẵn sàng.
+
+**Chưa test tay** — cần deploy `firestore.rules` rồi thử tải file bằng tài khoản `manager` thật, kiểm tra Firestore Console xem `khoData/{maKho}/salesFiles/*` có được tạo đúng không.
+
+### Bước 3 — ĐÃ XONG: Luồng tải xuống (đọc) cho manager/employee
+
+**Phát hiện quan trọng khi cài đặt — race condition với `AuthContext`**: Effect `loadInitialData()` hiện có (`useDataManagement.ts`) chỉ phụ thuộc `[configUrl, setAppState, setStatus, user, isDemoMode]` — KHÔNG có `userRole`/`departmentId`. Lý do: `user` đổi giá trị NGAY khi `onAuthStateChanged` bắn (trong `AuthContext.tsx`), nhưng `userRole`/`departmentId` chỉ có giá trị thật SAU KHI `resolveSession()` (gọi Cloud Function) chạy xong — nếu nhét logic đọc Kho vào ngay trong effect đó, nó sẽ luôn thấy `userRole` còn `null`/cũ ở đúng lần chạy đó, và vì effect đó không tự chạy lại khi `userRole` đổi sau này (cố tình không đưa vào dependency, để tránh toàn bộ `loadInitialData()` — vốn rất nặng — chạy lại 2 lần mỗi lần đăng nhập, gây nháy màn giống lỗi đã sửa ở mục "Cập Nhật Mã Kho" trước đây) → logic Kho gần như sẽ KHÔNG BAO GIỜ chạy nếu nhét chung. **Đã sửa bằng cách tách thành 1 `useEffect` HOÀN TOÀN RIÊNG**, với dependency array đúng `[user, userRole, departmentId, isDemoMode, setStatus, setAppState]` — effect này tự chờ đến khi `userRole`/`departmentId` ổn định rồi mới chạy, không đụng vào effect `loadInitialData()` gốc.
+
+**Logic (đặt trong `hooks/useDataManagement.ts`, ngay sau effect `loadInitialData`)**:
+- Bỏ qua nếu demo mode, chưa đăng nhập, không phải `manager`/`employee`, hoặc không có `departmentId`.
+- Gọi `fetchAllowedKhoData(departmentId)` (hàm mới trong `khoDataService.ts`) — tải + gộp dữ liệu từ TẤT CẢ mã Kho user được cấp quyền.
+- Nếu Kho có dữ liệu (`khoRows.length > 0`) → **luôn ưu tiên** ghi đè `originalData` bằng dữ liệu Kho dùng chung (áp dụng cho CẢ `manager` lẫn `employee`, không chỉ employee) — vì dữ liệu Kho dùng chung đã bao gồm cả phần chính quản lý đó tự tải (Bước 2 đồng bộ ngược lên), cộng dữ liệu từ quản lý khác cùng Kho nếu có → là bản đầy đủ hơn dữ liệu local 1 thiết bị.
+- Nếu Kho CHƯA có dữ liệu nào (`khoRows.length === 0` — vd tính năng mới deploy, chưa ai từng tải) → không đụng gì đến `originalData` — giữ nguyên dữ liệu local hiện có (đã được `loadInitialData()` nạp bình thường như trước đây, không có gì thay đổi hành vi cũ trong trường hợp này).
+
+**Thêm vào `services/khoDataService.ts`**:
+- `fetchAllowedKhoData(departmentId)` — tách `departmentId` thành danh sách mã Kho, gọi `fetchKhoDataCached()` song song cho từng Kho, gộp kết quả.
+- `fetchKhoDataCached(maKho)` (nội bộ) — có cache cục bộ qua `dbService.getSetting`/`saveSetting` (key `khoDataCache_{maKho}`, tái dùng đúng cơ chế key-value đã có, không tạo store IndexedDB mới). So sánh "snapshot" (danh sách `{fileId, fileLastModified}` đã sort) của các file active hiện tại với snapshot đã cache — **giống hệt snapshot** thì dùng thẳng dữ liệu cache (bỏ qua tải chunk), khác thì tải lại toàn bộ chunk của Kho đó và cập nhật cache. Tránh phải tải lại dữ liệu lớn (đặc biệt Lũy kế nhiều tháng) mỗi lần mở app nếu quản lý chưa cập nhật gì thêm.
+
+**Đánh đổi đã chấp nhận (ghi rõ để làm tiếp ở Bước 5)**: dữ liệu Kho dùng chung hiện dùng ĐÚNG trạng thái "isActive" tại thời điểm quản lý tải lên (Bước 2 luôn đặt `isActive: true`), CHƯA có cơ chế để 1 quản lý/nhân viên tự ẩn bớt 1 file cụ thể khỏi Kho dùng chung riêng cho mình xem (khác với hệ thống lũy kế cục bộ hiện có, vốn cho phép tự tick/bỏ tick từng file trong `FileHistoryManager`) — việc "ẩn/xoá file khỏi Kho dùng chung" cần dùng `setKhoSalesFileActive()`/`deleteKhoSalesFile()` đã viết sẵn ở Bước 1, nhưng CHƯA có giao diện quản lý nào gọi tới (để ở Bước 5).
+
+`npm run check` xanh.
+
+**Chưa làm**:
+- Bước 4 — gỡ quyền tải file của nhân viên (vẫn còn nguyên, chưa ẩn nút — nhân viên hiện tại NẾU vẫn cố tải file riêng, dữ liệu đó vẫn chỉ lưu local + `users/{uid}/salesData` cá nhân như cũ, sẽ bị ghi đè bởi dữ liệu Kho dùng chung ở lần mở app kế tiếp do effect mới ở Bước 3 luôn ưu tiên Kho — cần làm Bước 4 sớm để tránh nhân viên bối rối tưởng dữ liệu tự tải "biến mất").
+- Bước 5 — retention/dọn file cũ cấp Kho + cho phép quản lý ẩn/xoá 1 file khỏi Kho dùng chung qua giao diện.
+- **Chưa deploy `firestore.rules`/functions** — như Bước 1/2, tính năng đọc này cũng phụ thuộc rules đã deploy để hoạt động thật (nếu chưa deploy, `fetchAllowedKhoData` sẽ gặp lỗi đọc, bị bắt bởi `.catch` và log cảnh báo, không crash app — nhưng nhân viên vẫn sẽ không thấy dữ liệu gì cho tới khi rules được deploy).
+
+**Chưa test tay** — cần deploy rules, sau đó test với tài khoản `employee` thật: đăng nhập trên thiết bị CHƯA từng tải file gì → xác nhận Dashboard hiển thị đúng dữ liệu (không trống, không phải chờ tải file).
+
+### Bước 4 — ĐÃ XONG: Gỡ quyền tải file của nhân viên
+
+**Rà soát toàn bộ lối vào tính năng tải file** trước khi sửa, phát hiện `components/layout/Header.tsx` (nút "File YCX"/"Nhân Viên" trên desktop) **đã được chặn đúng** `(userRole === 'admin' || userRole === 'manager')` từ trước — không cần sửa. Nhưng `components/filters/FilterBar.tsx` (nút tương đương trên mobile, portal riêng + 1 bản khác trong cùng file) **chưa hề chặn theo role** — chỉ ẩn nút khi thiếu prop, khiến nhân viên trên mobile vẫn thấy và bấm được nút tải file/quản lý lịch sử dù desktop đã chặn đúng — 2 nền tảng KHÔNG đồng nhất.
+
+**Đã sửa 3 file**:
+1. `components/filters/FilterBar.tsx` — thêm `useAuth()` lấy `userRole`, thêm biến `canManageFiles = userRole === 'admin' || userRole === 'manager'`, gắn thêm điều kiện này vào cả 4 vị trí render nút `onNewFile`/`onOpenHistory` (portal mobile + bản desktop riêng trong cùng file).
+2. `components/views/LandingPageView.tsx` (màn hình chính khi chưa có dữ liệu) — nếu `canManageFiles` thì hiện `<UploadSection>`/`<FileHistoryManager>` như cũ; nếu không (nhân viên) thì thay bằng thông báo: *"Đang chờ dữ liệu từ Quản lý Kho — Dữ liệu doanh số của Kho sẽ tự động hiển thị ngay khi Quản lý cập nhật. Bạn không cần tự tải tệp lên."*
+3. `components/modals/FileHistoryModal.tsx` — chặn thêm (phòng thủ sâu) nút "Tải YCX luỹ kế" + input file bên trong modal, dù lối vào duy nhất của modal này (nút ở `FilterBar.tsx`) đã bị ẩn với nhân viên rồi — phòng trường hợp có lối vào khác phát sinh sau này.
+
+**Không đụng**: nút "Tải lên báo cáo Phân ca" (`Header.tsx`, dữ liệu ca làm việc/phòng ban — khác với dữ liệu doanh số, đã tự chặn role sẵn từ trước, không thuộc phạm vi yêu cầu); nút "XÓA YCX REALTIME/LŨY KẾ" (xoá dữ liệu LOCAL của chính máy đó — không phải hành vi cần chặn, với nhân viên nút này tự nhiên không hiện vì họ không còn tạo dữ liệu local nào để xoá; nếu máy có dữ liệu local cũ từ trước khi có tính năng này thì cho phép họ tự dọn, không phải vấn đề bảo mật).
+
+`npm run check` xanh.
+
+**Chưa làm**: Bước 5 — retention/dọn file cũ cấp Kho + giao diện cho quản lý ẩn/xoá 1 file khỏi Kho dùng chung (hàm `setKhoSalesFileActive`/`deleteKhoSalesFile` đã viết sẵn ở Bước 1, chưa có UI gọi tới).
+
+**Chưa deploy `firestore.rules`/functions** — toàn bộ Bước 1-4 đã code xong nhưng CHƯA có tác dụng thật trên production cho tới khi deploy rules. **Chưa test tay** — cần test với tài khoản `employee` thật: xác nhận không còn thấy nút tải file nào (cả desktop lẫn mobile), và màn hình "chờ dữ liệu" hiển thị đúng khi chưa có dữ liệu Kho.
+
+### Bước 5 — ĐÃ XONG: Retention + giao diện quản lý file Kho dùng chung
+
+**5a. Retention tự động (24 tháng, giữ đồng bộ với hệ thống lũy kế cục bộ)**:
+- `services/khoDataService.ts` — `uploadKhoSalesData()` giờ tự tính thêm `maxDate` (ngày dữ liệu gần nhất tìm thấy trong file, quét `row.parsedDate` trước khi `cleanRow` chuyển thành chuỗi ISO) và lưu vào metadata mỗi file — mốc thời gian ĐÚNG để tính retention (không phải ngày bấm tải lên).
+- Hàm mới `pruneStaleKhoFiles(maKho)` — nhân bản chính xác logic `pruneStaleActiveFiles` cục bộ (`dbService/salesData.ts`): cắt mốc 24 tháng theo `maxDate ?? uploadedAt`, chỉ ẩn (`isActive: false`) file **Lũy kế** (không đụng Realtime), có lưới an toàn không ẩn hết TOÀN BỘ file Lũy kế đang active của 1 Kho (tránh Kho đột ngột trống không rõ lý do).
+- Gọi tự động ngay sau mỗi lần `syncDataToKhoIfManager()` thành công (mỗi khi quản lý tải/re-sync dữ liệu) — không chạy khi nhân viên fetch dữ liệu (nhân viên không có quyền ghi `isActive`, Firestore Rules sẽ chặn — cố tình chỉ gắn vào đường quản lý ghi để tránh tạo `permission-denied` vô ích ở lượt đọc của nhân viên).
+
+**5b. Giao diện quản lý (ẩn/xoá file khỏi Kho dùng chung)**:
+- Thêm `getKhoAllFilesMeta(maKho)` (trả TẤT CẢ file, kể cả đã ẩn — khác `getKhoActiveFilesMeta` chỉ trả file active dùng để gộp hiển thị).
+- Component mới `components/upload/KhoFileManager.tsx` — tái dùng NGUYÊN `FileHistoryManager.tsx` đã có (không dựng UI mới từ đầu, giữ đồng nhất giao diện) qua 1 hàm chuyển đổi `KhoSalesFileMeta` → đúng shape `UploadedFileRegistryItem` (tên file hiển thị kèm người tải + nhãn "(Realtime)" nếu có, để phân biệt file của quản lý nào). Nút xoá dùng `<ConfirmDialog variant="danger">` (đúng quy tắc cấm `window.confirm`), nút bật/tắt gọi thẳng `setKhoSalesFileActive`.
+- Đã nối vào `components/modals/FileHistoryModal.tsx` — hiện thêm 1 khối "Dữ liệu Kho dùng chung ({mã Kho})" cho MỖI mã Kho mà `manager` đang quản lý (đọc từ `departmentId`, tách theo dấu phẩy) — admin không có khối này (dùng `departmentId` đặc biệt "ALL (Super Admin)" không map tới Kho thật nào, quản lý User qua màn hình riêng, không phải qua đây).
+
+`npm run check` xanh (đã cập nhật `violations-baseline.json` cho `KhoFileManager.tsx` — 1 chỗ dùng màu `indigo`, cùng bảng màu 6-màu CLAUDE.md đã duyệt, không phải màu mới tự chế).
+
+**Không cần sửa `firestore.rules` cho Bước 5** — thao tác ẩn/xoá file đều là ghi lên đúng `khoData/{maKho}/salesFiles/{fileId}` đã có rule từ Bước 1 (`isManager() && maKho in myKhos()`), không cần rule mới.
+
+---
+
+## TỔNG KẾT: Cả 5 bước đã code xong (mục 37)
+
+Toàn bộ tính năng "Chia sẻ dữ liệu doanh số theo Kho qua Firebase" đã hoàn thành về code (data layer, rules, luồng tải lên, luồng tải xuống, gỡ quyền nhân viên, retention + quản lý file). **CHƯA có bước nào được deploy hoặc test tay với tài khoản thật.**
+
+**Việc cần làm trước khi coi là hoàn thành thật sự**:
+1. Deploy `firestore.rules` (`npm run deploy:rules` — cần `firebase login` thủ công, không phải việc agent tự chạy theo CLAUDE.md).
+2. Test tay với tài khoản `manager` thật: tải 1 file → xác nhận `khoData/{maKho}/salesFiles/*` xuất hiện đúng trên Firestore Console → mở modal "Danh sách YCX Lũy kế" → xác nhận thấy đúng khối "Dữ liệu Kho dùng chung" với file vừa tải, thử ẩn/xoá thử.
+3. Test tay với tài khoản `employee` thật (trên thiết bị KHÁC/chưa từng tải file gì) → xác nhận Dashboard hiển thị đúng dữ liệu của Kho (chỉ dòng của chính họ, do `rbacData` mục 36 lọc tiếp), không còn thấy nút tải file nào.
+4. Cân nhắc thử nghiệm với 2 tài khoản `manager` cùng 1 mã Kho (test đúng kịch bản "nhiều quản lý cùng Kho" user đã chọn ở bước thiết kế).
