@@ -416,15 +416,26 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         if (!departmentId) return;
 
         let cancelled = false;
+        // Khoá cache "đã áp dụng lên dashboard" — RIÊNG với cache tải chunk trong
+        // khoDataService.ts (cache đó chỉ tránh tải lại mạng, còn khoá này tránh phải
+        // setOriginalData + chạy lại worker xử lý toàn bộ dữ liệu MỘT LẦN NỮA mỗi lần mở
+        // app khi dữ liệu Kho không hề đổi so với lần trước — trước đây luôn ghi đè vô điều
+        // kiện, khiến mọi lần mở app đều xử lý dữ liệu 2 lần (1 lần cho dữ liệu local, 1 lần
+        // cho dữ liệu Kho giống hệt) và làm màn hình loading hiện lại/kéo dài không cần thiết.
+        const appliedSnapshotKey = `khoDataAppliedSnapshot::${departmentId}`;
         import('../services/khoDataService').then(async ({ fetchAllowedKhoData }) => {
             try {
-                const khoRows = await fetchAllowedKhoData(departmentId);
+                const { data: khoRows, snapshot } = await fetchAllowedKhoData(departmentId);
                 if (cancelled || khoRows.length === 0) return;
+
+                const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
+                if (lastApplied === snapshot) return; // Dữ liệu Kho không đổi — giữ nguyên dashboard hiện tại.
 
                 setStatus({ message: `📊 Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                 const srcData = normalizeSalesData(khoRows);
                 setOriginalData(srcData);
                 setAppState('processing');
+                dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
             } catch (e: unknown) {
                 console.warn("⚠️ Đồng bộ dữ liệu Kho dùng chung thất bại (không ảnh hưởng app):", getErrorMessage(e));
             }

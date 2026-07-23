@@ -23,7 +23,14 @@ interface SessionProfile {
 // contexts/AuthContext.tsx (onAuthStateChanged). Client gọi hàm này 1 lần
 // sau khi Firebase Auth xác nhận đăng nhập, rồi force-refresh ID token để
 // nhận custom claims mới (user.getIdToken(true)).
-export const resolveSession = onCall(async (request) => {
+//
+// minInstances: 1 — hàm này chạy trên MỌI lần mở app (chặn màn hình loading cho tới khi
+// xong), nên cold-start (Cloud Functions v2 mặc định scale-to-zero khi không có traffic,
+// có thể mất thêm 1-5s khởi động instance mới) ảnh hưởng trực tiếp tới cảm nhận "lúc nhanh
+// lúc chậm". Giữ 1 instance luôn chạy sẵn để loại bỏ hẳn cold-start cho hàm quan trọng nhất
+// trong đường găng khởi động (implementation_plan.md mục 40) — đánh đổi lấy chi phí Cloud
+// Run chạy liên tục, đã được người dùng đồng ý.
+export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {
@@ -38,6 +45,7 @@ export const resolveSession = onCall(async (request) => {
   let departmentId: string | null;
   let employeeName: string | null = null;
   let expiresAt: Timestamp | null = null;
+  let writePromise: Promise<FirebaseFirestore.WriteResult>;
 
   if (!snap.exists) {
     const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
@@ -45,7 +53,7 @@ export const resolveSession = onCall(async (request) => {
     status = isSuperAdmin ? 'approved' : 'new';
     departmentId = isSuperAdmin ? 'ALL (Super Admin)' : null;
 
-    await userRef.set({
+    writePromise = userRef.set({
       uid,
       email,
       displayName: request.auth?.token.name ?? null,
@@ -85,10 +93,17 @@ export const resolveSession = onCall(async (request) => {
       updates.status = status;
     }
 
-    await userRef.update(updates);
+    writePromise = userRef.update(updates);
   }
 
-  await auth.setCustomUserClaims(uid, { role, departmentId: departmentId ?? null });
+  // Chạy song song ghi Firestore (lastLogin/loginCount/...) với setCustomUserClaims (Admin
+  // Auth SDK) thay vì tuần tự — 2 thao tác độc lập nhau, gộp lại bớt 1 round-trip trong
+  // đường găng mà CLIENT phải chờ trước khi thấy dashboard (resolveSession chạy trên MỌI
+  // lần mở app, xem implementation_plan.md mục 40).
+  await Promise.all([
+    writePromise,
+    auth.setCustomUserClaims(uid, { role, departmentId: departmentId ?? null }),
+  ]);
 
   const profile: SessionProfile = {
     role,

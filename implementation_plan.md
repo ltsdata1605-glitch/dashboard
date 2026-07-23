@@ -1032,3 +1032,55 @@ Toàn bộ tính năng "Chia sẻ dữ liệu doanh số theo Kho qua Firebase" 
 **Đã xác nhận chạy lại thành công từ vị trí committed** (`tests/firestore.rules.test.mjs`, dùng path tương đối `resolve(__dirname, '..', 'firestore.rules')` thay vì đường dẫn tuyệt đối hard-code như bản nháp ban đầu, để chạy đúng trên máy khác): **21 pass / 0 fail**.
 
 `npm run check` không chạy phần này (rules là ngôn ngữ riêng, ngoài phạm vi TypeScript/ESLint/Vite) — phải chạy riêng `npm run test:rules` mỗi khi sửa `firestore.rules`.
+
+---
+
+## Mục 39 — ĐÃ SỬA: Loading chậm mỗi lần mở app cho manager/employee (xử lý dữ liệu 2 lần)
+
+**Báo cáo từ người dùng**: gửi ảnh chụp màn hình production (dashboard.pro.vn qua trình duyệt/webview trên điện thoại) cho thấy overlay "AI ENGINE PROCESSING" đứng yên ở 25% với thông báo "Nạp dữ liệu đã lưu lên bảng điều khiển..." — cảm giác mở app lần nào cũng chậm.
+
+**Rà soát code phát hiện nguyên nhân chính**: từ khi có tính năng chia sẻ dữ liệu theo Kho (mục 37), effect Kho-fetch riêng trong `hooks/useDataManagement.ts` (dòng ~413) gọi `fetchAllowedKhoData(departmentId)` mỗi lần app mount cho `manager`/`employee`, và **LUÔN ghi đè `originalData` + `setAppState('processing')` một cách vô điều kiện bất cứ khi nào Kho có dữ liệu** (`khoRows.length > 0`) — kể cả khi dữ liệu Kho tải về HỆT như lần trước, không có gì mới. Hệ quả: mỗi lần mở app, dữ liệu bị xử lý qua Web Worker **2 lần liên tiếp** — lần 1 cho dữ liệu local (IndexedDB), lần 2 cho dữ liệu Kho (dù giống hệt lần 1) — mỗi lần xử lý dữ liệu lớn qua worker đều mất vài giây thật, cộng thêm 1 vòng lấy danh sách file (Firestore `getDocs`, cần mạng) trước khi biết có cần tải lại hay không → tổng thời gian chờ nhân đôi một cách không cần thiết, và màn hình loading còn hiện LẠI lần 2 (từ "processing" → "dashboard" → "processing" → "dashboard") dù dữ liệu không đổi.
+
+**Cơ chế cache cũ đã có (`khoDataService.ts` → `fetchKhoDataCached`) chỉ tránh được việc TẢI LẠI CHUNK dữ liệu** (so khớp `snapshot` danh sách file active), **KHÔNG tránh được việc xử lý lại ở tầng `useDataManagement.ts`** — vì hàm `fetchAllowedKhoData` cũ chỉ trả về mảng dữ liệu (`DataRow[]`), không có cách nào để bên gọi biết dữ liệu đó có "mới" hay không so với lần app đã hiển thị gần nhất.
+
+**Đã sửa (2 file, không đổi hành vi khi dữ liệu THẬT SỰ thay đổi)**:
+- `services/khoDataService.ts` — `fetchKhoDataCached()` và `fetchAllowedKhoData()` giờ trả thêm `snapshot` (chuỗi đại diện trạng thái các file active, đã có sẵn cơ chế tính từ trước, chỉ expose ra ngoài) bên cạnh `data`.
+- `hooks/useDataManagement.ts` — effect Kho-fetch giờ so sánh `snapshot` vừa nhận với snapshot đã lưu lần gần nhất (khoá `khoDataAppliedSnapshot::{departmentId}`, lưu qua `dbService.getSetting`/`saveSetting` — cùng cơ chế key-value đã dùng cho cache chunk). **Nếu giống nhau → bỏ qua hoàn toàn** (không gọi `setOriginalData`/`setAppState`/không chạy lại worker, giữ nguyên dashboard đang hiển thị từ dữ liệu local). **Nếu khác → xử lý như cũ** (ghi đè + hiện lại loading + chạy lại worker) và lưu snapshot mới.
+
+**Kết quả kỳ vọng**: từ lần mở app thứ 2 trở đi (khi quản lý Kho chưa cập nhật gì thêm), app chỉ xử lý dữ liệu **1 lần** (dữ liệu local) thay vì 2 lần, không còn hiện loading 2 đợt liên tiếp. Vẫn còn 1 vòng gọi mạng nhẹ (`getKhoActiveFilesMeta` — list metadata, không tải dữ liệu dòng) mỗi lần mở app để biết có gì mới hay không — đây là chi phí cần thiết tối thiểu để phát hiện thay đổi, không thể loại bỏ hoàn toàn nếu vẫn muốn tự động cập nhật khi quản lý tải dữ liệu mới.
+
+**Giới hạn đã biết, CHƯA xử lý (nằm ngoài phạm vi sửa lỗi này)**: nếu trình duyệt/app nhúng trên thiết bị người dùng KHÔNG giữ được IndexedDB giữa các lần mở (một số WebView nhúng trong app khác — vd ảnh chụp màn hình cho thấy đang mở qua khung "MWGWORK" — có thể dùng bộ nhớ tạm, xoá khi đóng ứng dụng cha, giống hiện tượng Safari/iOS tự dọn IndexedDB đã ghi nhận trước đây ở phần cache ProductConfig), thì cả cache chunk lẫn cache "đã áp dụng" mới sửa ở đây đều mất theo, khiến lần mở tiếp theo vẫn phải tải + xử lý lại từ đầu như lần đầu tiên — đây là giới hạn của môi trường trình duyệt/nhúng, không phải lỗi có thể sửa trong code phía app. Nếu người dùng xác nhận vẫn chậm sau bản vá này, bước tiếp theo nên kiểm tra xem họ đang mở bằng Safari/Chrome thật hay qua 1 app nhúng (Zalo/Workplace...).
+
+`npm run check` xanh (typecheck + eslint + build + lint-ratchet, không có lỗi/cảnh báo mới).
+
+**Chưa test tay trên thiết bị thật** — cần người dùng thử mở lại app 2 lần liên tiếp (không có gì mới từ quản lý giữa 2 lần) và xác nhận lần thứ 2 không còn hiện loading 2 đợt / nhanh hơn rõ rệt.
+
+---
+
+## Mục 40 — ĐÃ SỬA: Rà soát thêm toàn bộ đường găng khởi động (auth + Cloud Function)
+
+**Theo yêu cầu tiếp theo của người dùng** ("Kiểm tra lại tìm giải pháp để cải thiện tốc độ load"), rà soát rộng hơn mục 39 (không chỉ riêng lỗi xử lý 2 lần) — tập trung vào `contexts/AuthContext.tsx` và Cloud Function `resolveSession` (`functions/src/session.ts`), vì đây là bước BẮT BUỘC chạy xong trước khi bất kỳ nội dung nào khác được hiển thị (App.tsx chặn toàn bộ UI sau `isLoading` cho tới khi xong) — chạy trên **MỌI lần mở app**, không riêng gì tab Phân Tích.
+
+**Phát hiện**:
+1. `resolveSession` (Cloud Function v2, `onCall`) trước đây ghi Firestore (`userRef.set/update`) rồi MỚI gọi `auth.setCustomUserClaims(...)` — 2 thao tác độc lập nhưng chạy TUẦN TỰ, cộng dồn 2 round-trip thay vì 1.
+2. Cloud Functions v2 mặc định scale-to-zero khi không có traffic — hàm này bị "cold start" (khởi động instance mới, có thể mất thêm 1-5s) bất cứ khi nào không ai mở app trong một khoảng thời gian, đúng kiểu "lúc nhanh lúc chậm" người dùng mô tả.
+3. Phía client, `contexts/AuthContext.tsx` sau khi gọi `resolveSession()` LUÔN gọi `currentUser.getIdToken(true)` (ép làm mới token — luôn là 1 round-trip mạng tới Firebase Auth) để cập nhật custom claims cho `firestore.rules`, kể cả khi claims (role/departmentId) không hề thay đổi so với lần đăng nhập trước — là trường hợp phổ biến nhất (mở lại app trong ngày, quyền/Kho không đổi).
+
+**Đã sửa (3 thay đổi, không đổi hành vi/kết quả cuối cùng, chỉ giảm thời gian chờ)**:
+- `functions/src/session.ts` — gộp `userRef.set()`/`userRef.update()` với `auth.setCustomUserClaims()` chạy song song qua `Promise.all` (thay vì tuần tự) ở cả 2 nhánh user mới/user cũ.
+- `functions/src/session.ts` — thêm `minInstances: 1` cho `resolveSession` (đã hỏi và được người dùng đồng ý đánh đổi chi phí Cloud Run chạy liên tục để loại bỏ cold-start cho đúng hàm chạy trên mọi lần mở app). **Cần deploy lại (`firebase deploy --only functions`, thao tác thủ công của người dùng) thì thay đổi này mới có tác dụng** — cấu hình `minInstances` chỉ áp dụng khi deploy, không tự động.
+- `contexts/AuthContext.tsx` — trước khi gọi `getIdToken(true)`, đọc `currentUser.getIdTokenResult(false)` (đọc token đã cache cục bộ, KHÔNG cần mạng nếu token còn hạn — thường 1 giờ) để so `claims.role`/`claims.departmentId` với `profile` vừa nhận từ `resolveSession()`. Nếu khớp (không đổi gì) → bỏ qua `getIdToken(true)`, tiết kiệm 1 round-trip mạng. Nếu khác (đăng nhập lần đầu, hoặc quyền/Kho vừa đổi) → vẫn ép làm mới như cũ (bắt buộc, nếu không `firestore.rules` sẽ chặn nhầm do token cũ thiếu/sai claims).
+
+**Không đổi** (đã cân nhắc nhưng KHÔNG áp dụng): không rút ngắn thời điểm tắt `isLoading` (không render app sớm hơn resolveSession xong) — mã nguồn hiện tại có comment ghi rõ đây là bug ĐÃ TỪNG GẶP và sửa (nháy màn "Cập Nhật Mã Kho" khi F5, commit `4daadf6`) khi thử tắt loading sớm dựa trên giá trị cache — không lặp lại thử nghiệm đó trong đợt này.
+
+**Các hướng khác đã rà soát nhưng KHÔNG thấy vấn đề/KHÔNG sửa** (để tránh mở rộng phạm vi ngoài yêu cầu):
+- `services/dbService/salesData.ts` (`getMergedSalesData`, `pruneStaleActiveFiles`) — đã tối ưu tốt từ trước (song song hoá `Promise.all`, không có vòng lặp await tuần tự).
+- `utils/dataUtils.ts` (`normalizeSalesData`) — đã có "fast path" tránh spread object không cần thiết.
+- `services/analytics.worker.ts`/`filterService.ts` (worker xử lý trung tâm) — đã chạy trên Web Worker riêng (không chặn main thread), thời gian xử lý tỉ lệ thuận với khối lượng dữ liệu thật (không phải bug, không tự ý viết lại công thức tính theo CLAUDE.md).
+- Kích thước bundle JS (`DashboardView` ~1MB sau minify, thấy trong output build) — ảnh hưởng tốc độ tải lần đầu trên mạng yếu, nhưng tách nhỏ thêm là refactor lớn hơn phạm vi yêu cầu hiện tại (CLAUDE.md: chỉ tách god-file khi có yêu cầu cụ thể) — nêu ra để người dùng cân nhắc làm riêng nếu muốn.
+
+`npm run check` (root) xanh + `cd functions && npm run typecheck && npm run build` xanh (functions/ là project TypeScript riêng, không chạy qua `npm run check`).
+
+**Chưa deploy `functions`** — 3 thay đổi trong `session.ts` (song song hoá + `minInstances`) chỉ có tác dụng thật SAU KHI `firebase deploy --only functions` (thao tác thủ công, không phải việc agent tự chạy theo CLAUDE.md). Thay đổi ở `AuthContext.tsx` có tác dụng ngay khi build/deploy web (không qua Cloud Functions).
+
+**Chưa test tay** — cần deploy functions rồi thử mở app vài lần (đặc biệt sau một khoảng không ai dùng, để kiểm tra cold-start đã hết chưa) để xác nhận cảm giác nhanh hơn rõ rệt.

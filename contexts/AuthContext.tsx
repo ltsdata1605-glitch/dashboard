@@ -98,9 +98,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Admin, tự demote khi hết hạn) giờ chạy ở server — functions/src/session.ts.
                     // Client không còn tự updateDoc() field nhạy cảm (bị firestore.rules chặn).
                     const profile = await resolveSession();
-                    // Force-refresh ID token để nhận custom claims (role/departmentId) mới nhất
-                    // mà resolveSession vừa set — cần cho firestore.rules dùng request.auth.token.role.
-                    await currentUser.getIdToken(true);
+                    // Chỉ force-refresh ID token khi claims HIỆN TẠI (role/departmentId) khác với
+                    // profile vừa nhận — getIdTokenResult(false) đọc token đã cache cục bộ (KHÔNG
+                    // gọi mạng nếu token còn hạn, thường 1 giờ), rẻ hơn hẳn getIdToken(true) (luôn
+                    // là 1 round-trip mạng tới Firebase Auth). Trường hợp phổ biến nhất — mở lại
+                    // app trong vòng vài giờ, quyền/Kho không đổi gì so với lần đăng nhập trước —
+                    // nhờ vậy bớt được 1 round-trip mạng nữa trong đường găng trước khi thấy
+                    // dashboard (implementation_plan.md mục 40). Vẫn phải force-refresh thật khi
+                    // claims khác (mới đăng nhập lần đầu, hoặc admin/quản lý vừa đổi quyền/Kho) vì
+                    // firestore.rules dùng request.auth.token.role — token cũ sẽ bị permission-denied.
+                    const currentTokenResult = await currentUser.getIdTokenResult(false).catch(() => null);
+                    const claimsMatchProfile = currentTokenResult
+                        && currentTokenResult.claims.role === profile.role
+                        && (currentTokenResult.claims.departmentId ?? null) === profile.departmentId;
+                    if (!claimsMatchProfile) {
+                        await currentUser.getIdToken(true);
+                    }
 
                     setUserRole(profile.role);
                     setStatus(profile.status);

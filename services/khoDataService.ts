@@ -297,14 +297,14 @@ function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
  * dbService) — chỉ tải lại chunk khi metadata các file active đã đổi so với lần trước,
  * tránh tải lại toàn bộ dữ liệu lớn (đặc biệt Lũy kế nhiều tháng) mỗi lần mở app.
  */
-async function fetchKhoDataCached(maKho: string): Promise<DataRow[]> {
+async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; snapshot: string }> {
     const files = await getKhoActiveFilesMeta(maKho);
     const snapshot = computeFilesSnapshot(files);
     const cacheKey = khoCacheKey(maKho);
 
     const cached = await dbService.getSetting<KhoCacheEntry>(cacheKey).catch(() => null);
     if (cached && cached.snapshot === snapshot) {
-        return cached.data;
+        return { data: cached.data, snapshot };
     }
 
     const rowsByFile = await Promise.all(files.map(f => downloadKhoFileRows(maKho, f.fileId, f.chunkCount)));
@@ -312,7 +312,7 @@ async function fetchKhoDataCached(maKho: string): Promise<DataRow[]> {
     dbService.saveSetting(cacheKey, { data, snapshot } as KhoCacheEntry).catch(err =>
         console.warn(`[KhoData] Không lưu được cache cục bộ cho Kho ${maKho}:`, err)
     );
-    return data;
+    return { data, snapshot };
 }
 
 /**
@@ -320,11 +320,20 @@ async function fetchKhoDataCached(maKho: string): Promise<DataRow[]> {
  * Kho nối dấu phẩy) — dùng khi mở app cho manager/employee thay vì chỉ đọc IndexedDB cục
  * bộ (vốn trống với nhân viên dùng thiết bị cá nhân riêng, chưa từng tự tải file — xem
  * implementation_plan.md mục 37).
+ *
+ * Trả kèm `snapshot` gộp (nối các snapshot từng Kho) — để tầng gọi (useDataManagement.ts)
+ * so sánh với lần áp dụng gần nhất và BỎ QUA việc ghi đè `originalData`/chạy lại worker xử
+ * lý nếu dữ liệu Kho không đổi so với lần trước — tránh xử lý lại 2 lần (1 lần cho dữ liệu
+ * local, 1 lần cho dữ liệu Kho giống hệt) mỗi lần mở app, vốn là nguyên nhân chính khiến màn
+ * hình loading kéo dài không cần thiết (mục 39 implementation_plan.md).
  */
-export async function fetchAllowedKhoData(departmentId: string | undefined): Promise<DataRow[]> {
+export async function fetchAllowedKhoData(departmentId: string | undefined): Promise<{ data: DataRow[]; snapshot: string }> {
     const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
-    if (allowedKhos.length === 0) return [];
+    if (allowedKhos.length === 0) return { data: [], snapshot: '' };
 
-    const rowsByKho = await Promise.all(allowedKhos.map(maKho => fetchKhoDataCached(maKho)));
-    return rowsByKho.flat();
+    const results = await Promise.all(allowedKhos.map(maKho => fetchKhoDataCached(maKho)));
+    return {
+        data: results.flatMap(r => r.data),
+        snapshot: results.map(r => r.snapshot).join('|'),
+    };
 }
