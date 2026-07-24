@@ -73,37 +73,59 @@ export function useBonusViewData({
                 Object.keys(metrics.dailyData).forEach(d => datesSet.add(d));
             }
         });
-        return Array.from(datesSet).sort((a, b) => {
+        const sorted = Array.from(datesSet).sort((a, b) => {
             const [da, ma, ya] = a.split('/').map(Number);
             const [db, mb, yb] = b.split('/').map(Number);
             return new Date(ya, ma - 1, da).getTime() - new Date(yb, mb - 1, db).getTime();
+        });
+
+        if (sorted.length === 0) return [];
+
+        // Lấy tháng và năm của ngày gần nhất có dữ liệu để đại diện cho kỳ hiện tại
+        const lastDateStr = sorted[sorted.length - 1];
+        const [, targetMonth, targetYear] = lastDateStr.split('/').map(Number);
+
+        // Chỉ giữ lại các ngày thuộc tháng/năm này để tránh lẫn lộn dữ liệu các tháng cũ
+        return sorted.filter(dateStr => {
+            const [, m, y] = dateStr.split('/').map(Number);
+            return m === targetMonth && y === targetYear;
         });
     }, [bonusData, isActive]);
 
     const weeks = useMemo(() => {
         if (isActive === false) return [];
-        // Group allDates by their week's Monday
-        const groups: Record<string, string[]> = {};
+        // Nhóm các ngày theo tuần của tháng
+        const groups: Record<string, { name: string; dates: string[] }> = {};
         allDates.forEach(dateStr => {
-            const mondayStr = getMondayOfDate(dateStr);
-            if (!groups[mondayStr]) {
-                groups[mondayStr] = [];
+            const [d, m, y] = dateStr.split('/').map(Number);
+            const dateOf1st = new Date(y, m - 1, 1);
+            const dayOf1st = dateOf1st.getDay(); // 0: CN, 1: T2, ...
+            const firstSunday = dayOf1st === 0 ? 1 : 8 - dayOf1st;
+
+            let weekNum = 1;
+            if (d > firstSunday) {
+                const diff = d - firstSunday;
+                weekNum = 1 + Math.ceil(diff / 7);
             }
-            groups[mondayStr].push(dateStr);
+
+            const weekKey = `${y}-${String(m).padStart(2, '0')}-W${weekNum}`;
+            if (!groups[weekKey]) {
+                groups[weekKey] = {
+                    name: `Tuần ${weekNum}`,
+                    dates: []
+                };
+            }
+            groups[weekKey].dates.push(dateStr);
         });
 
-        // Sort the mondays chronologically
-        const sortedMondays = Object.keys(groups).sort((a, b) => {
-            const [da, ma, ya] = a.split('/').map(Number);
-            const [db, mb, yb] = b.split('/').map(Number);
-            return new Date(ya, ma - 1, da).getTime() - new Date(yb, mb - 1, db).getTime();
-        });
+        // Sắp xếp các tuần theo thứ tự thời gian tăng dần
+        const sortedKeys = Object.keys(groups).sort();
 
-        // Create week objects: { id: string, name: string, dates: string[] }
-        return sortedMondays.map((mondayStr, index) => ({
-            id: mondayStr,
-            name: `Tuần ${index + 1}`,
-            dates: groups[mondayStr]
+        // Tạo mảng tuần: { id: string, name: string, dates: string[] }
+        return sortedKeys.map(key => ({
+            id: key,
+            name: groups[key].name,
+            dates: groups[key].dates
         }));
     }, [allDates, isActive]);
 
@@ -239,8 +261,9 @@ export function useBonusViewData({
                     vA = bA?.dailyData?.[dStr] || 0;
                     vB = bB?.dailyData?.[dStr] || 0;
                 } else if (sortField.startsWith('week:')) {
-                    const mStr = sortField.substring(5);
-                    const weekDates = getWeekDates(mStr);
+                    const wId = sortField.substring(5);
+                    const targetWeek = weeks.find(w => w.id === wId);
+                    const weekDates = targetWeek ? targetWeek.dates : [];
                     vA = weekDates.reduce((sum, dStr) => sum + (bA?.dailyData?.[dStr] || 0), 0);
                     vB = weekDates.reduce((sum, dStr) => sum + (bB?.dailyData?.[dStr] || 0), 0);
                 } else { vA = (bA as unknown as Record<string, unknown>)?.[sortField] as number || 0; vB = (bB as unknown as Record<string, unknown>)?.[sortField] as number || 0; }
@@ -297,8 +320,9 @@ export function useBonusViewData({
                     vA = bA?.dailyData?.[dStr] || 0;
                     vB = bB?.dailyData?.[dStr] || 0;
                 } else if (sortField.startsWith('week:')) {
-                    const mStr = sortField.substring(5);
-                    const weekDates = getWeekDates(mStr);
+                    const wId = sortField.substring(5);
+                    const targetWeek = weeks.find(w => w.id === wId);
+                    const weekDates = targetWeek ? targetWeek.dates : [];
                     vA = weekDates.reduce((sum, dStr) => sum + (bA?.dailyData?.[dStr] || 0), 0);
                     vB = weekDates.reduce((sum, dStr) => sum + (bB?.dailyData?.[dStr] || 0), 0);
                 } else { vA = (bA as unknown as Record<string, unknown>)?.[sortField] as number || 0; vB = (bB as unknown as Record<string, unknown>)?.[sortField] as number || 0; }
@@ -339,8 +363,9 @@ export function useBonusViewData({
                 const dStr = sortField.substring(5);
                 sortValue = dailySums[dStr] || 0;
             } else if (sortField.startsWith('week:')) {
-                const mStr = sortField.substring(5);
-                const weekDates = getWeekDates(mStr);
+                const wId = sortField.substring(5);
+                const targetWeek = weeks.find(w => w.id === wId);
+                const weekDates = targetWeek ? targetWeek.dates : [];
                 sortValue = weekDates.reduce((sum, dStr) => sum + (dailySums[dStr] || 0), 0);
             } else {
                 sortValue = sumDkien;

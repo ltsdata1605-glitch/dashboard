@@ -3,7 +3,7 @@ import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { onActivateKey } from '../../../../../components/shared/ui';
 import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
 import AvatarDisplay from '../shared/AvatarDisplay';
-import { MedalBadge, getWeekDates, getWeekdayAbbr, isUpdatedToday } from './bonusTableHelpers';
+import { MedalBadge, getWeekdayAbbr, isUpdatedToday } from './bonusTableHelpers';
 import { BonusDisplayRow } from './BonusDisplayRow';
 
 interface Week { id: string; name: string; dates: string[] }
@@ -137,7 +137,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                     {weeks.map(week => {
                         const isExpanded = expandedWeeks[week.id];
                         if (!isExpanded) return null;
-                        const weekDates = getWeekDates(week.id);
+                        const weekDates = week.dates;
                         return weekDates.map(dateStr => {
                             const [d, m, y] = dateStr.split('/').map(Number);
                             const dateObj = new Date(y, m - 1, d);
@@ -187,7 +187,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         </td>
                                         {weeks.map(week => {
                                             const isExpanded = expandedWeeks[week.id];
-                                            const weekDates = getWeekDates(week.id);
+                                            const weekDates = week.dates;
                                             if (!isExpanded) {
                                                 const weekAvg = weekAverages[week.id] || 0;
                                                 return (
@@ -223,7 +223,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
                                         {weeks.map(week => {
                                             const isExpanded = expandedWeeks[week.id];
-                                            const weekDates = getWeekDates(week.id);
+                                            const weekDates = week.dates;
                                             if (!isExpanded) {
                                                 const weekTotal = getWeekGrandTotal(weekDates);
                                                 return (
@@ -262,7 +262,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                 <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
                                 {weeks.map(week => {
                                     const isExpanded = expandedWeeks[week.id];
-                                    const weekDates = getWeekDates(week.id);
+                                    const weekDates = week.dates;
                                     if (!isExpanded) {
                                         const weekTotal = getWeekDeptTotal(employees.filter(e => e.department === item.name), weekDates);
                                         return (
@@ -321,7 +321,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             </td>
                             {weeks.map(week => {
                                 const isExpanded = expandedWeeks[week.id];
-                                const weekDates = getWeekDates(week.id);
+                                const weekDates = week.dates;
                                 if (!isExpanded) {
                                     const weekTotal = getWeekTotalForEmployee(item.originalName, weekDates);
                                     const weekAvg = weekAverages[week.id] || 0;
