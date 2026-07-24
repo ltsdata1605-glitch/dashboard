@@ -118,7 +118,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             return (
                                 <th
                                     key={week.id}
-                                    colSpan={7}
+                                    colSpan={week.dates.length}
                                     className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
                                 >
                                     <span
