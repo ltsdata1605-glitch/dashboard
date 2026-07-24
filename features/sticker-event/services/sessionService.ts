@@ -7,6 +7,7 @@ export interface StickerSessionProfile {
     role: StickerRole;
     storeId: string | null;
     username: string | null;
+    storeHasAdmin: boolean;
 }
 
 interface RegisterInput {

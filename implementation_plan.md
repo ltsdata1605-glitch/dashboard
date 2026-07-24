@@ -1084,3 +1084,29 @@ Toàn bộ tính năng "Chia sẻ dữ liệu doanh số theo Kho qua Firebase" 
 **Chưa deploy `functions`** — 3 thay đổi trong `session.ts` (song song hoá + `minInstances`) chỉ có tác dụng thật SAU KHI `firebase deploy --only functions` (thao tác thủ công, không phải việc agent tự chạy theo CLAUDE.md). Thay đổi ở `AuthContext.tsx` có tác dụng ngay khi build/deploy web (không qua Cloud Functions).
 
 **Chưa test tay** — cần deploy functions rồi thử mở app vài lần (đặc biệt sau một khoảng không ai dùng, để kiểm tra cold-start đã hết chưa) để xác nhận cảm giác nhanh hơn rõ rệt.
+
+---
+
+## Mục 41 — ĐÃ SỬA: sticker-event báo "Missing or insufficient permissions" (đăng ký + đăng nhập)
+
+**Báo cáo từ người dùng**: 2 ảnh chụp màn hình — (1) đăng ký tài khoản Admin mới (`features/sticker-event`) báo lỗi "Missing or insufficient permissions" ngay khi bấm Đăng Ký; (2) tài khoản Admin đã đăng nhập thành công (Kho 1550) vẫn gặp đúng lỗi này khi app tải dữ liệu tồn kho/bảng giá, kèm nút "Thử lại".
+
+**Điều tra**: dùng `firebase functions:list`/`firebase functions:log` (chỉ đọc, CLI đã sẵn đăng nhập từ trước) xác nhận 3 Cloud Function `stickerRegister`/`stickerResolveSession`/`stickerAdminUpdateUser` ĐÃ deploy và chạy được (log cũ từ lúc test 2026-07-18/20 không có lỗi) — loại trừ khả năng "chưa deploy function". Rà lại toàn bộ `features/sticker-event` tìm nơi vẫn gọi Firestore trực tiếp từ client (không qua Cloud Function), phát hiện bug thật ở `hooks/useStickerEventDb.ts` (dòng ~99): mỗi khi tài khoản **staff** mở app, code tự query trực tiếp `collection(db, 'users').where('storeId','==',...).where('role','==','admin')` để kiểm tra "kho này đã có Admin chưa" — nhưng `firestore.stickerevent.rules` (đã siết lại ở đợt rà soát RBAC trước, xem mục ~29-30) chỉ cho phép `list` trên `users` nếu là `admin`/`superadmin`, **staff gọi luôn luôn bị chặn** — đây là lỗi thật 100% tái hiện được cho MỌI tài khoản staff, không phải ngẫu nhiên.
+
+**Đã sửa (bỏ hẳn query trực tiếp, chuyển tính toán sang server đã có sẵn)**:
+- `functions/src/stickerEvent.ts` — cả `stickerRegister` và `stickerResolveSession` giờ tính sẵn `storeHasAdmin: boolean` (dùng Admin SDK, không qua Rules — cùng logic kiểm tra "kho đã có admin chưa" vốn `stickerRegister` đã tự làm cho luồng đăng ký) và trả về cùng lúc đăng nhập/đăng ký.
+- `features/sticker-event/services/sessionService.ts` — thêm `storeHasAdmin` vào `StickerSessionProfile`.
+- `features/sticker-event/types.ts` — thêm `storeHasAdmin?: boolean` vào `StickerEventUserData`.
+- `features/sticker-event/Login.tsx` — truyền `profile.storeHasAdmin` vào `userData` lúc đăng nhập.
+- `features/sticker-event/hooks/useStickerEventDb.ts` — bỏ hẳn khối query Firestore trực tiếp (và cache `sessionStorage` đi kèm), thay bằng kiểm tra thẳng `userData.storeHasAdmin === false` (đã có sẵn từ lúc đăng nhập, không tốn thêm round-trip mạng nào — còn NHANH hơn code cũ).
+
+**Phát hiện thêm (rủi ro tiềm ẩn, đã sửa luôn vì cùng chủ đề deploy rules)**: `package.json` → script `deploy:rules` dùng `firebase deploy --only firestore:rules` — ĐÚNG NGUYÊN VĂN lệnh đã bị ghi nhận có bug với cấu hình multi-database dạng mảng (xem mục ghi chú cũ trong file này: CLI báo "Deploy complete!" nhưng KHÔNG thực sự deploy gì, xác nhận qua GitHub issue firebase-tools#10447) — nghĩa là mỗi lần chạy `npm run deploy:rules` trước đây CÓ THỂ đã âm thầm KHÔNG cập nhật rules cho database `ai-studio-...` của sticker-event dù báo thành công, dù CLI đã sẵn đăng nhập. Đã sửa script thành `firebase deploy --only firestore` (không chỉ định sub-target — đúng theo khuyến nghị đã ghi trong file này từ trước) để deploy an toàn cho cả 2 database.
+
+**Chưa xác định chắc chắn 100% nguyên nhân của ảnh chụp màn hình (2)** (tài khoản Admin ĐÃ đăng nhập vẫn lỗi khi đọc `stores/{storeId}/metadata/sync`) — bug staff ở trên không áp dụng cho admin (code có điều kiện `role === 'staff'`). 2 khả năng, cần người dùng test lại sau khi deploy để phân biệt: (a) hệ quả của CHÍNH bug `deploy:rules` nói trên — nếu rules cho database `ai-studio-...` chưa từng thực sự lên production đúng bản, MỌI thao tác Firestore phía client (kể cả admin) đều có thể bị chặn sai; (b) claims `stickerStoreId` của tài khoản đó chưa đồng bộ đúng — thử đăng xuất/đăng nhập lại để `stickerResolveSession()` chạy lại từ đầu.
+
+`npm run check` (root) xanh + `cd functions && npm run typecheck && npm run build` xanh.
+
+**Cần deploy để có tác dụng thật** (thao tác thủ công của người dùng theo CLAUDE.md, KHÔNG tự chạy dù CLI đang sẵn đăng nhập trong môi trường này):
+1. `npm run deploy:functions` — để `stickerRegister`/`stickerResolveSession` bản mới (có `storeHasAdmin`) lên production.
+2. `npm run deploy:rules` (bản đã sửa, dùng `firebase deploy --only firestore`) — **sau khi deploy, tự vào Firebase Console → Firestore → chọn database `ai-studio-16672ec9-...` → tab Rules để xác nhận nội dung khớp với `firestore.stickerevent.rules`**, không tin tưởng hoàn toàn output CLI (đúng khuyến cáo đã ghi từ trước).
+3. Test lại: (a) đăng ký tài khoản STAFF mới ở 1 kho CHƯA có Admin → phải thấy đúng thông báo "chưa có Quản trị viên" (không phải lỗi permission); (b) đăng ký/đăng nhập STAFF ở kho ĐÃ có Admin → phải xem được dữ liệu bình thường; (c) tài khoản Admin "18930"/Kho 1550 từ ảnh chụp màn hình (2) — đăng xuất/đăng nhập lại, thử "Thử lại" — báo lại kết quả để xác định là nguyên nhân (a) hay (b) ở trên nếu vẫn còn lỗi.

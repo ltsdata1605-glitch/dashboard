@@ -84,6 +84,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               email: user.email ?? undefined,
               role: profile.role,
               storeId: profile.storeId ?? undefined,
+              storeHasAdmin: profile.storeHasAdmin,
             };
             sessionStorage.setItem(cacheKey, JSON.stringify(data));
             onLoginSuccess(user, data);

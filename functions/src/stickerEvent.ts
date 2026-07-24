@@ -88,7 +88,9 @@ export const stickerRegister = onCall(async (request) => {
   const claimRole: StickerClaimRole = isSuperAdminIdentity(username, email) ? 'superadmin' : requestedRole;
   await setStickerClaims(uid, claimRole, cleanStoreId);
 
-  return { role: requestedRole, storeId: cleanStoreId, username };
+  // storeHasAdmin: đăng ký admin vừa tạo ra admin (true); đăng ký staff chỉ tới được đây khi
+  // adminSnap đã KHÔNG rỗng ở trên (else throw failed-precondition) — nên cũng luôn là true.
+  return { role: requestedRole, storeId: cleanStoreId, username, storeHasAdmin: true };
 });
 
 // Thay việc Login.tsx đọc thẳng users/{uid} trong onAuthStateChanged — gọi mỗi
@@ -114,7 +116,22 @@ export const stickerResolveSession = onCall(async (request) => {
   const claimRole: StickerClaimRole = isSuperAdminIdentity(username, email) ? 'superadmin' : role;
   await setStickerClaims(uid, claimRole, storeId);
 
-  return { role, storeId, username: username ?? null };
+  // storeHasAdmin: trước đây client (useStickerEventDb.ts) tự query trực tiếp
+  // collection('users') để kiểm tra "kho này đã có admin chưa" cho tài khoản staff — nhưng
+  // firestore.stickerevent.rules chỉ cho phép admin/superadmin `list` trên users, nên staff
+  // gọi thẳng luôn bị chặn "Missing or insufficient permissions". Tính sẵn ở đây (Admin SDK,
+  // không qua Rules) và trả về cùng lúc đăng nhập, client không cần tự query nữa.
+  let storeHasAdmin = true;
+  if (role === 'staff' && storeId) {
+    const adminSnap = await stickerDb.collection('users')
+      .where('storeId', '==', storeId)
+      .where('role', '==', 'admin')
+      .limit(1)
+      .get();
+    storeHasAdmin = !adminSnap.empty;
+  }
+
+  return { role, storeId, username: username ?? null, storeHasAdmin };
 });
 
 interface StickerAdminUpdateInput {

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { User } from 'firebase/auth';
 import { getErrorMessage } from '../../../utils/dataUtils';
-import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Product, InventoryItem, StickerEventUserData } from '../types';
 import { ManualProductWithId } from '../ManualInputModal';
@@ -90,39 +90,20 @@ export function useStickerEventDb({
 
       // Bọc toàn bộ các hoạt động Firestore bằng timeout
       await runWithTimeout((async () => {
-        // Verify store has an admin (for Staff users) — cached in sessionStorage
-        if (userData?.role === 'staff') {
-          const adminCacheKey = `adminCheck_${storeId}`;
-          const cachedAdminCheck = sessionStorage.getItem(adminCacheKey);
-          
-          if (!cachedAdminCheck) {
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('storeId', '==', storeId), where('role', '==', 'admin'), limit(1));
-            
-            let adminCheckSnapshot;
-            let retries = 3;
-            while (retries > 0) {
-                try {
-                    adminCheckSnapshot = await getDocs(q);
-                    break;
-                } catch (err: unknown) {
-                    console.warn(`Lỗi kiểm tra admin (còn ${retries - 1} lần thử):`, err);
-                    retries--;
-                    if (retries === 0) throw err;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
-            
-            if (adminCheckSnapshot!.empty) {
-              setError(`Mã kho "${storeId}" hiện không có Quản trị viên quản lý. Bạn không thể xem dữ liệu.`);
-              setAllProducts([]);
-              setInventory([]);
-              setIsLoading(false);
-              setIsInitializing(false);
-              return;
-            }
-            sessionStorage.setItem(adminCacheKey, 'true');
-          }
+        // Verify store has an admin (for Staff users) — TRƯỚC ĐÂY tự query trực tiếp
+        // collection(db, 'users') từ client, nhưng firestore.stickerevent.rules (đã siết lại
+        // để chặn leo thang quyền) chỉ cho phép admin/superadmin `list` trên users — staff gọi
+        // thẳng LUÔN bị "Missing or insufficient permissions" (bug thật, không phải giả
+        // thuyết). Giờ dùng thẳng `storeHasAdmin` do stickerResolveSession()/stickerRegister()
+        // (Cloud Function, Admin SDK — không qua Rules) tính sẵn và trả về ngay lúc đăng nhập,
+        // không cần tự query Firestore nữa (implementation_plan.md mục 41).
+        if (userData?.role === 'staff' && userData.storeHasAdmin === false) {
+          setError(`Mã kho "${storeId}" hiện không có Quản trị viên quản lý. Bạn không thể xem dữ liệu.`);
+          setAllProducts([]);
+          setInventory([]);
+          setIsLoading(false);
+          setIsInitializing(false);
+          return;
         }
 
         // Smart Sync: Check single merged metadata doc

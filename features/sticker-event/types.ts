@@ -36,6 +36,9 @@ export interface StickerEventUserData {
   role?: 'admin' | 'staff';
   storeId?: string;
   createdAt?: unknown;
+  /** Kho hiện có Admin quản lý hay không (tính sẵn ở server — stickerResolveSession/stickerRegister)
+   * — chỉ có ý nghĩa với staff, dùng để chặn xem dữ liệu khi kho chưa/không còn Admin. */
+  storeHasAdmin?: boolean;
 }
 
 // Dùng cho danh sách user lấy từ Firestore (fetchAllUsers/SuperAdminModal) — uid luôn có
