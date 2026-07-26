@@ -1379,3 +1379,29 @@ Bi-dashboard trước đó tự chọn màu tuỳ tiện, không khớp Phân T�
 
 ### Kiểm thử
 `npm run check` sạch (đã cập nhật baseline hợp lệ cho 2 chỗ `indigo`). Playwright xác nhận trực quan: 8 card hiện đúng dạng "premium" (viền gradient trên đầu, icon chip glow, progress bar 2 màu, dòng mục tiêu ở chân) giống hệt bố cục `KpiCard.tsx` — khớp với ảnh chụp module Phân Tích người dùng tham chiếu.
+
+---
+
+## Mục 50 — Nâng cấp giao diện tab "Cập nhật" (DataUpdater.tsx) — 2026-07-26
+
+### Bối cảnh
+Người dùng gửi lại đúng ảnh chụp màn "Cập nhật" (đã xem ở Mục 44/46) và nói rõ "giao diện tab cập nhật chưa được nâng cấp — hãy kiểm tra thật kỹ". Ở Mục 44, tôi mới chỉ audit MÀU SẮC (indigo) của màn này và kết luận "không cần sửa" — nhưng chưa rà cấu trúc/bo góc/component dùng chung như đã làm ở Tổng quan (Mục 43) và Nhân viên (Mục 44-45). Đợt này rà lại đầy đủ.
+
+### Phát hiện (đối chiếu CLAUDE.md §2 + "chuẩn vàng" DashboardHeader.tsx/NhanVien.tsx đã sửa)
+1. **Bo góc sai chuẩn — `rounded-full` cho nút bấm**: CLAUDE.md quy định nút bấm dùng `rounded-md`, chỉ card/modal mới `rounded-xl`. `DataUpdater.tsx` dùng `rounded-full` cho: nút "LÀM MỚI TẤT CẢ", 2 nút "HUỶ"/"XÁC NHẬN XOÁ DỮ LIỆU", và toàn bộ dải pill chọn siêu thị ("99 Hùng Vương"...).
+2. **Cấm `window.confirm`, bắt buộc `<ConfirmDialog />`**: hành vi xoá "tất cả dữ liệu" hiện làm kiểu tự chế — 1 state `isConfirmingClear` đổi hẳn nút "LÀM MỚI TẤT CẢ" thành cặp nút "HUỶ/XÁC NHẬN" ngay tại chỗ, không qua modal — không sai kỹ thuật (không gọi `window.confirm` thật) nhưng đi ngược tinh thần "mọi xác nhận nguy hiểm phải qua ConfirmDialog" mà `NhanVien.tsx` (xoá phiên bản thi đua) đã áp dụng đúng ngay trong cùng khu vực Nhân viên.
+3. **Không dùng `Card`/`SectionCard`/`SectionHeader` dùng chung**: 2 khối "Báo cáo Tổng hợp" / "Thi đua Cụm" và khối "Cấu hình siêu thị chi tiết" đều tự dựng `<div className="bg-white border rounded-sm p-4 shadow-sm">` + tự ghép icon+tiêu đề bằng tay — thay vì dùng `Card` (đã có sẵn trong chính `features/bi-dashboard/components/Card.tsx`, các tab khác của Nhân viên đều dùng). `rounded-sm` cũng lệch chuẩn (CLAUDE.md: card dùng `rounded-xl`, bảng biểu mới `rounded-none`).
+4. **Trạng thái rỗng tự chế** ("Vui lòng cập nhật Luỹ kế phía trên...") thay vì dùng `EmptyState` dùng chung đã có sẵn (đang dùng ở `CompetitionView.tsx` cùng khu vực).
+
+### File sẽ sửa
+| File | Thay đổi |
+|---|---|
+| `features/bi-dashboard/components/DataUpdater.tsx` | (a) 2 khối "Báo cáo Tổng hợp"/"Thi đua Cụm" chuyển sang dùng `Card` dùng chung; (b) khối "Cấu hình siêu thị chi tiết" chuyển sang `Card` với dải pill chọn siêu thị đặt trong `actionButton`; (c) trạng thái rỗng chuyển sang `EmptyState`; (d) nút "LÀM MỚI TẤT CẢ" đổi `rounded-full`→`rounded-md`, thay cơ chế xác nhận tại-chỗ bằng `<ConfirmDialog variant="danger">`; (e) dải pill chọn siêu thị đổi `rounded-full`→`rounded-md` |
+
+### Ngoài phạm vi
+- `SupermarketConfig.tsx` (nội dung bên trong, đã sửa màu ở Mục 46): rà lại thấy hầu hết `rounded-full` ở đây là chấm nhỏ trang trí/chip kéo-thả/thumb slider — dùng đúng, không phải bug. Chỉ có 2 nút "Lưu cập nhật"/"Mặc định" trong modal đổi tên dùng `rounded-xl` (lẽ ra `rounded-md`) — mức độ nhẹ, nằm trong 1 modal phụ ít dùng, để đợt sau nếu cần.
+- `Icons.tsx` riêng của bi-dashboard (đã ghi nhận từ Mục 43, vẫn ngoài phạm vi).
+- Không đổi bất kỳ logic validate/parse/lưu dữ liệu nào.
+
+### Kiểm thử
+`npm run check` + Playwright chụp lại đúng màn "Cập nhật" (cả khi chưa chọn siêu thị và khi đã chọn), xác nhận bo góc/Card/ConfirmDialog/EmptyState hiển thị đúng, không lỗi console.
