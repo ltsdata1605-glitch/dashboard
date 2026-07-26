@@ -295,10 +295,6 @@
     "nonSemanticColor": 12,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/BiWrapper.tsx": {
-    "nonSemanticColor": 5,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/Dashboard.tsx": {
     "nonSemanticColor": 13,
     "missingMobileToolbar": 0
@@ -321,10 +317,6 @@
   },
   "features/bi-dashboard/components/DataUpdater.tsx": {
     "nonSemanticColor": 12,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/NhanVien.tsx": {
-    "nonSemanticColor": 14,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/bonus/BonusDailyTable.tsx": {
@@ -368,10 +360,6 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx": {
-    "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/RevenueTab.tsx": {
     "nonSemanticColor": 4,
     "missingMobileToolbar": 0
   },

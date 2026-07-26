@@ -1183,3 +1183,37 @@ Người dùng gửi ảnh chụp màn "Tổng quan Siêu thị" > tab "Thi đua
 - `npm run check` chạy sạch (typecheck + eslint + build + lint-ratchet, lint-ratchet còn hạ baseline nhờ giảm vi phạm).
 - Không có Playwright sẵn trong repo — cài tạm `playwright` qua `npm install --no-save` **trong thư mục scratchpad** (không đụng `package.json`/lockfile của dự án), dùng kỹ thuật seed dữ liệu giả qua IndexedDB trực tiếp (`BI_HUB_DATABASE_V2/settings`, key `bi_summary-realtime`/`bi_summary-luy-ke`/`bi_competition-realtime`/`bi_competition-luy-ke`) + Demo Mode (nút "Kích hoạt Chế độ Dùng Thử" ở LoginView) để vào được màn không cần Excel/Firebase thật.
 - Đã chụp 4 màn hình xác nhận bằng mắt: Thi đua Realtime (List), Thi đua Realtime (Grid), Thi đua Luỹ kế (List), Doanh thu Realtime (kiểm tra DashboardHeader không vỡ tab Doanh thu dù ngoài phạm vi yêu cầu). Cả 4: không lỗi console, màu sky nhất quán, banner nhóm tiêu chí phẳng (nền nhạt + viền trái), không còn lặp tên siêu thị, tiêu đề gộp gọn "CẬP NHẬT ĐẾN NGÀY x/x".
+
+---
+
+## Mục 44 — Tiếp tục rà soát bi-dashboard: shell "Nhân viên" + thanh điều hướng BiWrapper — 2026-07-26
+
+### Bối cảnh
+Người dùng gửi ảnh chụp màn hình sau khi xác nhận kết quả Mục 43 (khớp đúng thiết kế), khoanh đỏ 2 pill "Nhân viên"/"Cập nhật" ở header nội bộ `BiWrapper` + icon sidebar "Nhân viên", yêu cầu tiếp tục rà soát nâng cấp các chức năng còn lại của module BI.
+
+### Khảo sát nhanh toàn module (grep `indigo`/`text-primary-*`/`bg-gradient-to-r`)
+23 file còn dùng `indigo`, 12 file còn dính bug `text-primary-*` chết, 4 file còn banner gradient nặng — rải khắp `Dashboard`(đã xong Mục 43)/`NhanVien`/`DataUpdater`/`Settings`/`SupermarketConfig`/`TargetHero` và toàn bộ 6 sub-tab con của Nhân viên (Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết). Phạm vi đầy đủ quá lớn cho 1 đợt — chọn làm theo đúng "độ sâu" đã làm ở Mục 43 (phần **shell/khung** của từng khu vực, không đi sâu vào từng bảng dữ liệu con) rồi báo lại tiến độ, để nhất quán cách tiếp cận tăng dần thay vì sửa tràn lan 1 lần rủi ro cao.
+
+**Quyết định phạm vi đợt này**: chỉ `BiWrapper.tsx` (thanh điều hướng nội bộ 3 pill + spinner) + `NhanVien.tsx` (header/toolbar + 6 tab con — cấu trúc y hệt `DashboardHeader.tsx` bản cũ trước khi sửa) + 2 chỗ màu lạc ở `RevenueTab.tsx` (tàn dư từ đợt Mục 42, chỉ đổi màu không đổi cấu trúc).
+
+**Đã rà, KHÔNG cần sửa**: `DataUpdater.tsx` dùng `indigo` như 1 trong 6 `colorTheme` hợp lệ của `StatusTile` (emerald/sky/rose/amber/slate/indigo) — đúng đúng quy tắc CLAUDE.md §2 "6 họ semantic khi cần phân biệt >5 hạng mục", không phải lỗi.
+
+### File sẽ sửa
+| File | Thay đổi |
+|---|---|
+| `features/bi-dashboard/components/BiWrapper.tsx` | Đổi `indigo` → `sky` cho pill active trong thanh điều hướng nội bộ (dòng ~157-158) và viền spinner `TabSpinner` (dòng ~30) |
+| `features/bi-dashboard/components/NhanVien.tsx` | Thay `NavTabButton` tự dựng (6 tab: Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết) bằng component `Tabs` dùng chung (`variant="underline"`), giống cách đã làm ở `DashboardHeader.tsx`; đổi `indigo` → `sky` ở bộ lọc siêu thị (icon, badge số lượng, viền hover, dropdown "Chọn tất cả") |
+| `features/bi-dashboard/components/nhanvien/RevenueTab.tsx` | Đổi 2 icon toggle Grid/List (dòng 258-259) từ `text-indigo-700` → `text-sky-600` cho khớp `CompetitionControlBar.tsx` đã sửa ở Mục 43 |
+
+### Ngoài phạm vi đợt này (còn lại cho đợt sau, sẽ báo lại)
+- Nội dung 6 sub-tab con của Nhân viên (bảng Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết — nhiều file, riêng `CompetitionTab` còn kéo theo `CompetitionGroupView`/`CompetitionSummaryView`/`CompetitionCompareView`/`IndividualCompetitionView`/thư mục `bonus/*`).
+- `Settings.tsx`, `SupermarketConfig.tsx`, `TargetHero.tsx` — màn cấu hình/admin, ưu tiên thấp hơn màn nghiệp vụ chính.
+- 12 file còn bug `text-primary-*` chết ngoài phạm vi 2 file đã sửa ở Mục 43 — cùng loại lỗi, có thể dọn hàng loạt riêng 1 đợt an toàn (chỉ đổi tên class, không đổi logic).
+- Không đổi công thức tính toán, không đổi cấu trúc dữ liệu bất kỳ file nào — chỉ đổi phần trình bày.
+
+### Kiểm thử
+`npm run check` + Playwright seed dữ liệu giả (kỹ thuật đã dùng ở Mục 43) xem trực quan: pill điều hướng Tổng quan/Nhân viên/Cập nhật, 6 tab con của Nhân viên (ít nhất tab đang active + click qua 1-2 tab khác), bộ lọc siêu thị/bộ phận.
+
+### Kết quả xác minh (2026-07-26) — ĐÃ XONG
+- `npm run check` sạch (typecheck + eslint + build + lint-ratchet).
+- Playwright: pill "Nhân viên" active màu sky đúng chuẩn; 6 tab "Tiêu chí đánh giá hiệu quả" (Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết) chuyển tab mượt, underline sky nhất quán với DashboardHeader đã sửa ở Mục 43; bộ lọc "Tất cả siêu thị"/"Tất cả bộ phận" hiển thị badge sky; 3 màn hình chụp (shell mặc định, tab Bán kèm rỗng, tab Thi đua rỗng) đều không lỗi console, empty-state hiển thị sạch.

@@ -21,23 +21,17 @@ import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienH
 import * as db from '../utils/db';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Button } from '../../../components/shared/ui/Button';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 import { onActivateKey } from '../../../components/shared/ui';
-const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
-    <Button
-        variant="ghost"
-        onClick={() => setActiveTab(tab)}
-        className={`
-            bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
-            flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
-            ${activeTab === tab
-                ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-                : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
-            }
-        `}
-    >
-        {children}
-    </Button>
-));
+
+const NAV_TABS: { tab: Tab; label: string }[] = [
+    { tab: 'revenue', label: 'Doanh thu' },
+    { tab: 'crossSelling', label: 'Bán kèm' },
+    { tab: 'installment', label: 'Trả góp' },
+    { tab: 'competition', label: 'Thi đua' },
+    { tab: 'bonus', label: 'Thưởng' },
+    { tab: 'detail', label: 'Chi tiết' },
+];
 
 // Hằng số ổn định — tránh tạo reference mới mỗi render gây re-render child thừa
 const EMPTY_MAP = new Map();
@@ -327,21 +321,21 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                     {/* Supermarket Filter */}
                     <div className="relative w-full sm:w-auto min-w-0" ref={smRef}>
-                        <Button variant="ghost" onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
+                        <Button variant="ghost" onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-sky-400 dark:hover:border-sky-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                                <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
                                 <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
+                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </Button>
                         {isSmFilterOpen && (
                             <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="space-y-0.5">
-                                    <div role="button" tabIndex={0} onClick={() => toggleSupermarket('all')} onKeyDown={onActivateKey(() => toggleSupermarket('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
+                                    <div role="button" tabIndex={0} onClick={() => toggleSupermarket('all')} onKeyDown={onActivateKey(() => toggleSupermarket('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <span className="text-xs font-black text-sky-600 dark:text-sky-400">Chọn tất cả</span>
                                         <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
                                     </div>
                                     {Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => (
@@ -391,16 +385,14 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
             {/* 3. Tab Switcher — minimal bottom-border style */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
-                <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3">
+                <div className="px-4 sm:px-5 pt-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
-                    <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
-                        <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab}>Doanh thu</NavTabButton>
-                        <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab}>Bán kèm</NavTabButton>
-                        <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab}>Trả góp</NavTabButton>
-                        <NavTabButton tab="competition" activeTab={activeTab} setActiveTab={setActiveTab}>Thi đua</NavTabButton>
-                        <NavTabButton tab="bonus" activeTab={activeTab} setActiveTab={setActiveTab}>Thưởng</NavTabButton>
-                        <NavTabButton tab="detail" activeTab={activeTab} setActiveTab={setActiveTab}>Chi tiết</NavTabButton>
-                    </nav>
+                    <Tabs
+                        items={NAV_TABS.map(({ tab, label }) => ({ id: tab, label }))}
+                        activeId={activeTab}
+                        onChange={(id) => setActiveTab(id as Tab)}
+                        variant="underline"
+                    />
                 </div>
                 
                 {/* Embedded Module Content */}

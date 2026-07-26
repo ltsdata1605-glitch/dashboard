@@ -255,8 +255,8 @@ const RevenueView: React.FC<{
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
                         variant="ghost"

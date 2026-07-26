@@ -27,7 +27,7 @@ const getTabColorClasses = (color: string, isActive: boolean) => {
 const TabSpinner = () => (
     <div className="flex items-center justify-center min-h-[30vh]">
         <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-3 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-xs font-medium text-slate-400 animate-pulse">Đang tải module...</p>
         </div>
     </div>
@@ -154,8 +154,8 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center ${isMobile ? 'gap-1 py-1 px-1.5' : 'gap-2 py-1.5 ' + (tab.label ? 'px-4' : 'px-2 w-[32px]')} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-[13px]'} transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                     isActive
                                         ? isMobile
-                                            ? 'text-indigo-600 dark:text-indigo-400'
-                                            : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
+                                            ? 'text-sky-600 dark:text-sky-400'
+                                            : 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
                                         : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
                                 title={tab.label || tab.id}
