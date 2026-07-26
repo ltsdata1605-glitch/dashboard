@@ -243,7 +243,7 @@ const Settings: React.FC = () => {
         <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-6">
             {/* Header */}
             <header className="flex items-center gap-3 pb-4 border-b-2 border-slate-200 dark:border-slate-700">
-                <div className="w-1.5 h-8 bg-indigo-600"></div>
+                <div className="w-1.5 h-8 bg-sky-600"></div>
                 <div>
                     <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Cài đặt & Quản lý</h1>
                     <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Sao lưu · Khôi phục · Quản lý dữ liệu</p>
@@ -253,7 +253,7 @@ const Settings: React.FC = () => {
             {/* Section 1: Sao lưu & Khôi phục */}
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <SaveIcon className="h-4 w-4 text-indigo-500" />
+                    <SaveIcon className="h-4 w-4 text-sky-500" />
                     <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Sao lưu & Khôi phục (Chuyển thiết bị)</h2>
                 </div>
                 <div className="p-5">

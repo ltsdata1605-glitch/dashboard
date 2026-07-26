@@ -197,7 +197,7 @@ const CompactTargetItem: React.FC<{
     ratio: number;
     onChange: (val: number) => void;
     onReset: () => void;
-    colorTheme?: 'sky' | 'purple' | 'amber' | 'slate';
+    colorTheme?: 'sky' | 'emerald' | 'amber' | 'slate';
     perPerson?: number;
 }> = ({ label, baseValue, adjValue, unit, ratio, onChange, onReset, colorTheme = 'slate', perPerson }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
@@ -205,7 +205,7 @@ const CompactTargetItem: React.FC<{
     // Theme mapping
     const themes = {
         sky: { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', shadow: 'shadow-sm', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-        purple: { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', shadow: 'shadow-sm', label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500' },
+        emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', shadow: 'shadow-sm', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
         amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', shadow: 'shadow-sm', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
         slate: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-200 dark:border-slate-700', shadow: 'shadow-sm', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-600', ring: 'focus-within:ring-slate-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-500' }
     };
@@ -326,7 +326,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                 <div className="space-y-3">
                     <div className="flex justify-between items-center mb-1 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-3 bg-primary-600 rounded-full"></div>
+                            <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                         </div>
                         <Button variant="ghost" onClick={() => {
@@ -347,7 +347,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         </Button>
                     </div>
                     <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => setTotalTarget(v)} onReset={() => setTotalTarget(100)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
-                    <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => setTraGop(v)} onReset={() => setTraGop(45)} colorTheme="purple" />
+                    <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => setTraGop(v)} onReset={() => setTraGop(45)} colorTheme="emerald" />
                     <CompactTargetItem label="Target Quy đổi" baseValue={40} adjValue={quyDoi} unit="%" ratio={quyDoi} onChange={v => setQuyDoi(v)} onReset={() => setQuyDoi(40)} colorTheme="amber" />
                 </div>
 
@@ -399,7 +399,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             {combinedDepts.map((d, idx) => {
                                 const w = effectiveWeights[d.name] || 0;
                                 if (w <= 0) return null;
-                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-indigo-500', 'bg-rose-500', 'bg-indigo-500'];
+                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-indigo-500', 'bg-rose-500', 'bg-slate-500'];
                                 return <div key={d.name} style={{ width: `${Math.max(w, 100)}%` }} className={`${colors[idx % colors.length]} h-full opacity-90 transition-all`} title={`${d.name}: ${w.toFixed(1)}%`} />
                             })}
                         </div>

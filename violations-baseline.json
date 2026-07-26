@@ -331,16 +331,12 @@
     "nonSemanticColor": 5,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/Settings.tsx": {
-    "nonSemanticColor": 2,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
-    "nonSemanticColor": 52,
+    "nonSemanticColor": 32,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/TargetHero.tsx": {
-    "nonSemanticColor": 32,
+    "nonSemanticColor": 16,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/hooks/useCompetitionData.ts": {

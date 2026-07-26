@@ -90,13 +90,13 @@ const BulkRenameModal: React.FC<{
                                 />
                             </div>
                             <div className="flex-1">
-                                <p className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
+                                <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
                                 <input 
                                     list="group-list"
                                     value={tempGroup[comp.name] ?? ''}
                                     onChange={e => setTempGroup({...tempGroup, [comp.name]: e.target.value})}
                                     placeholder={comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all placeholder:text-slate-300"
                                 />
                             </div>
                         </div>
@@ -118,7 +118,7 @@ const StatusTile: React.FC<{
     onClear: (title: string) => void;
     error?: string | null;
     icon?: React.ReactNode;
-    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo' | 'purple';
+    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'purple';
     downloadUrl?: string;
 }> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl }) => {
     const [isPasting, setIsPasting] = useState(false);
@@ -148,12 +148,6 @@ const StatusTile: React.FC<{
             text: 'text-amber-800 dark:text-amber-200',
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700 shadow-sm',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
-        },
-        indigo: {
-            wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
-            text: 'text-indigo-800 dark:text-indigo-200',
-            iconActive: 'text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 shadow-sm',
-            ring: 'border-indigo-500 ring-2 ring-indigo-500/20'
         },
         purple: {
             wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
@@ -222,7 +216,7 @@ const StatusTile: React.FC<{
                     onClick={(e) => { 
                         e.stopPropagation(); 
                     }} 
-                    className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10 ${hasData ? 'right-10' : 'right-2'}`} 
+                    className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10 ${hasData ? 'right-10' : 'right-2'}`} 
                     title="Mở link tải báo cáo từ BI"
                 >
                     <DownloadIcon className="h-3.5 w-3.5" />
@@ -640,7 +634,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         {/* NHÓM 3: TRẢ GÓP & CHI TIẾT NHÂN VIÊN */}
                         <div>
                             <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-sm"></div>
+                                <div className="w-1.5 h-1.5 bg-rose-500 rounded-sm"></div>
                                 Trả góp & CHI TIẾT NH
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">

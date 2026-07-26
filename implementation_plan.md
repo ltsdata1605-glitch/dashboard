@@ -1249,3 +1249,33 @@ Người dùng yêu cầu "tiếp tục đào sâu" sau Mục 44 (shell Nhân vi
 
 ### Kiểm thử
 `npm run check` sạch (typecheck/eslint/build/lint-ratchet). Playwright: xác nhận `grep indigo` toàn bộ khu vực đã sửa chỉ còn đúng 1 dòng (PALETTE hợp lệ); chụp màn hình tab Thưởng (có dữ liệu thật, hiển thị đúng sky/emerald/amber) và tab Thi đua (Nhóm — trạng thái rỗng vì chưa tái tạo được định dạng `thiDuaData` phức tạp, xem ghi chú cũ trong memory `reference_bi_dashboard_seed_data_testing.md`) — cả 2 không lỗi console, không vỡ layout.
+
+---
+
+## Mục 46 — Nốt 3 màn cấu hình: Settings/SupermarketConfig/TargetHero — 2026-07-26
+
+### Bối cảnh
+Người dùng yêu cầu tiếp tục sau Mục 45. Đây là 3 file cấu hình/admin cuối cùng còn `indigo`/bug `text-primary-*` trong toàn bộ `features/bi-dashboard/` (đã khảo sát ở Mục 44).
+
+### Phát hiện quan trọng — 2 bug thật ngoài dự kiến ban đầu
+1. **`SupermarketConfig.tsx`**: `themeColors` (kiểu StatusTile giống `DataUpdater.tsx`) có 2 key `indigo` và `purple` với **class Tailwind giống hệt nhau** (cả 2 đều render màu indigo). Grep xác nhận `colorTheme="indigo"` **không được gọi ở đâu cả** — key `indigo` là dead code thật sự (không phải chỉ trùng lặp giá trị). Đã xoá key `indigo` chết, giữ nguyên `purple` (đang dùng sống ở 1 StatusTile, màu indigo hợp lệ theo đúng tinh thần Mục 44 đã duyệt cho `DataUpdater.tsx`).
+2. **`TargetHero.tsx`**: object `themes` chỉ có đúng 3 category thật sự cần phân biệt (`sky`/`purple`(=indigo)/`amber`, dùng cho 3 thanh trượt Target DTQĐ/Trả góp/Quy đổi) — **không đạt ngưỡi ">5 hạng mục"** mà CLAUDE.md §2 yêu cầu để được dùng indigo, trong khi `emerald` và `rose` (2 trong 5 màu chuẩn) chưa hề được dùng ở đây. Khác với `CompetitionTab.tsx` (Mục 45, cần tới 6 màu thật) hay `DataUpdater.tsx`/`SupermarketConfig.tsx` (đã dùng đủ 5-6 category), trường hợp này indigo **không có căn cứ** để là ngoại lệ. Đã đổi hẳn tên `purple` → `emerald` (đổi cả type union, key object, và nơi gọi `colorTheme="purple"`), không chỉ đổi màu mà đổi luôn tên cho khớp màu thật render ra.
+3. Bug phụ (cùng dạng Mục 45): mảng `colors` xoay vòng cho thanh phân bổ ngân sách bộ phận (dòng 402) có `indigo` bị lặp 2 lần (index 3 và 5) — sửa index 5 thành `slate` cho đủ 6 màu phân biệt.
+4. Bug `bg-primary-600` (class chết, không tồn tại trong Tailwind config dự án) ở heading "Cấu hình Target" trong `TargetHero.tsx` — sửa thành `sky-600`.
+
+### File đã sửa
+| File | Thay đổi |
+|---|---|
+| `Settings.tsx` | Thanh accent header + icon Save: indigo → sky |
+| `SupermarketConfig.tsx` | Label "Nhóm Tiêu Chí" + input focus ring + icon hover trong modal đổi tên: indigo → sky; chấm đánh dấu nhóm "Trả góp & Chi tiết NH" (1 trong 3 nhóm, chưa cần đủ 6 màu): indigo → rose; xoá key `indigo` chết trong `themeColors` (giữ `purple`, đang sống, màu indigo hợp lệ) |
+| `TargetHero.tsx` | Đổi tên theme `purple` → `emerald` (type + object key + nơi gọi) vì chỉ cần phân biệt 3 hạng mục, không đủ điều kiện dùng indigo; fix bug `bg-primary-600` → `bg-sky-600`; fix mảng `colors` bị lặp indigo (index 5 → `slate`) |
+
+### Giữ nguyên (hợp lệ, không đổi)
+- `SupermarketConfig.tsx` dòng 359 (`dThemes` — mảng 5 màu emerald/sky/amber/rose/indigo xoay vòng cho từng chương trình thi đua, số lượng có thể vượt 4).
+- `TargetHero.tsx` dòng 423 (`dThemes` — mảng tương tự cho từng bộ phận, số bộ phận có thể vượt 4).
+- `SupermarketConfig.tsx` key `purple` (đang render indigo, dùng sống cho 1 StatusTile trong 6 category — cùng pattern đã duyệt ở `DataUpdater.tsx` Mục 44).
+
+### Kiểm thử
+`npm run check` sạch. Playwright: chụp màn "Cập nhật" → chọn siêu thị → tab "Dữ liệu" (chấm nhóm sky/emerald/rose, không còn indigo), tab "Target Doanh thu" (TargetHero: 3 thanh trượt sky/emerald/amber, heading marker sky đã hiện đúng thay vì mất màu do bug cũ), và màn "Cài đặt & Quản lý" (Settings, gear icon) — cả 3 không lỗi console, không vỡ layout, màu đúng chuẩn.
+
+**Xác nhận phạm vi indigo còn lại toàn bộ `features/bi-dashboard/`**: chỉ còn trong các mảng xoay vòng hợp lệ (`PALETTE`/`dThemes`/`colorTheme` 5-6 category thật) — không còn chỗ nào dùng indigo làm màu chrome UI đơn lẻ sai chuẩn.
