@@ -347,7 +347,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         type="text" 
                         value={tempName} 
                         onChange={(e) => setTempName(e.target.value)} 
-                        className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded focus:ring-1 focus:ring-indigo-500 w-48 text-slate-800 dark:text-slate-100"
+                        className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded focus:ring-1 focus:ring-sky-500 w-48 text-slate-800 dark:text-slate-100"
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
@@ -376,7 +376,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 >
                     <FilterIcon className="h-5 w-5" />
                     {selectedTitles.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white font-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
                             {selectedTitles.length}
                         </span>
                     )}
@@ -389,7 +389,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                 value={filterSearch} 
                                 onChange={(e) => setFilterSearch(e.target.value)} 
                                 placeholder="Tìm tiêu chí..."
-                                className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
                                 autoFocus
                             />
                         </div>
@@ -436,7 +436,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="ghost"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
@@ -465,7 +465,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-between">
                                                 <span>Nhân viên</span>
-                                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">{getSortIndicator('employee')}</span>
+                                                <span className="text-sky-600 dark:text-sky-400 font-bold">{getSortIndicator('employee')}</span>
                                             </div>
                                         </th>
                                         {(() => {
@@ -482,7 +482,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         onDrop={(e) => handleDrop(e, index)}
                                                         onDragEnd={() => setDraggedIndex(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex items-center justify-center gap-1">
@@ -604,9 +604,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             })()}
                                         </td>
                                     </tr>
-                                    {/* Grand Total — indigo accent */}
-                                    <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-extrabold text-indigo-800 dark:text-indigo-300 border-t-2 border-indigo-200 dark:border-indigo-800">
-                                         <td className="sticky left-0 z-10 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                    {/* Grand Total — sky accent */}
+                                    <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
+                                         <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-sky-200 dark:border-sky-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                              TỔNG
                                          </td>
                                          {visibleHeaders.map(header => {
@@ -615,12 +615,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                              const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
                                              
                                              return (
-                                                 <td key={header.title} className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                                 <td key={header.title} className="px-1.5 py-1 text-center text-[13px] border-r border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
                                                      {showPercent ? (
                                                          totalActual > 0 && totalTarget > 0 ? (
                                                              <span>{roundUp(totalHt).toFixed(0)}%</span>
                                                          ) : (
-                                                             <span className="text-indigo-300 dark:text-indigo-700">-</span>
+                                                             <span className="text-sky-300 dark:text-sky-700">-</span>
                                                          )
                                                      ) : (
                                                          <span>{totalActual > 0 ? formatter.format(roundUp(totalActual)) : '-'}</span>
@@ -628,13 +628,13 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                  </td>
                                              );
                                          })}
-                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
                                              {(() => {
                                                  const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
                                                  return totalBotSum > 0 ? formatter.format(totalBotSum) : '-';
                                              })()}
                                          </td>
-                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
                                              {(() => {
                                                  const totalNoSaleSum = employees.reduce((sum, emp) => sum + getEmployeeNoSale(emp.name), 0);
                                                  return totalNoSaleSum > 0 ? formatter.format(totalNoSaleSum) : '-';

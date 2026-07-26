@@ -63,7 +63,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             setSortField('tong');
                             setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                         }}
-                        className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-sky-600 dark:bg-slate-800 dark:text-sky-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                     >
                         Tổng {sortField === 'tong' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                     </th>
@@ -100,14 +100,14 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         setSortField(`week:${week.id}`);
                                         setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                     }}
-                                    className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50/5 dark:bg-indigo-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 select-none"
+                                    className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50/5 dark:bg-sky-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-sky-100/50 dark:hover:bg-sky-900/30 select-none"
                                 >
                                     <span
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             toggleWeek(week.id);
                                         }}
-                                        className="cursor-pointer hover:underline border-b border-dashed border-indigo-400"
+                                        className="cursor-pointer hover:underline border-b border-dashed border-sky-400"
                                         title={`Click chữ để mở rộng ${week.name}, click bên ngoài để sắp xếp`}
                                     >
                                         {week.name}
@@ -119,11 +119,11 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                 <th
                                     key={week.id}
                                     colSpan={week.dates.length}
-                                    className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
+                                    className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
                                 >
                                     <span
                                         onClick={() => toggleWeek(week.id)}
-                                        className="cursor-pointer hover:underline border-b border-dashed border-indigo-400"
+                                        className="cursor-pointer hover:underline border-b border-dashed border-sky-400"
                                         title="Click chữ để thu gọn tuần"
                                     >
                                         {week.name}
@@ -176,7 +176,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     {/* TRUNG BÌNH row */}
                                     <tr key="average-row" className="bg-sky-50 dark:bg-sky-950/40 font-bold text-sky-800 dark:text-sky-200 border-t-2 border-slate-200 dark:border-slate-700">
                                         <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">TRUNG BÌNH</td>
-                                        <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400">
+                                        <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400">
                                             {f.format(Math.ceil(avgTong / 1000))}
                                         </td>
                                         <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400">
@@ -191,7 +191,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                             if (!isExpanded) {
                                                 const weekAvg = weekAverages[week.id] || 0;
                                                 return (
-                                                    <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-indigo-50/10 dark:bg-indigo-950/5 text-indigo-700 dark:text-indigo-300">
+                                                    <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-sky-50/10 dark:bg-sky-950/5 text-sky-700 dark:text-sky-300">
                                                         {weekAvg > 0 ? f.format(Math.ceil(weekAvg / 1000)) : '-'}
                                                     </td>
                                                 );
@@ -216,7 +216,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     {/* TỔNG CỘNG row */}
                                     <tr key="total-row" className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800 border-b border-slate-200 dark:border-slate-700">
                                         <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 text-left">{item.name}</td>
-                                        <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-300">
+                                        <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-300">
                                             {f.format(Math.ceil(item.sumTong / 1000))}
                                         </td>
                                         <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
@@ -227,7 +227,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                             if (!isExpanded) {
                                                 const weekTotal = getWeekGrandTotal(weekDates);
                                                 return (
-                                                    <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-indigo-50/10 dark:bg-indigo-950/5 text-indigo-700 dark:text-indigo-300">
+                                                    <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-sky-50/10 dark:bg-sky-950/5 text-sky-700 dark:text-sky-300">
                                                         {weekTotal > 0 ? f.format(Math.ceil(weekTotal / 1000)) : '-'}
                                                     </td>
                                                 );
@@ -255,7 +255,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         return (
                             <tr key={`${item.type}-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-extrabold text-slate-800 dark:text-slate-200 border-t border-slate-200 dark:border-slate-700">
                                 <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">{item.name}</td>
-                                <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400">
+                                <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400">
                                     {f.format(Math.ceil(item.sumTong / 1000))}
                                 </td>
                                 <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
@@ -266,7 +266,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     if (!isExpanded) {
                                         const weekTotal = getWeekDeptTotal(employees.filter(e => e.department === item.name), weekDates);
                                         return (
-                                            <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-indigo-50/10 dark:bg-indigo-950/5 text-indigo-700 dark:text-indigo-300">
+                                            <td key={week.id} className="px-2 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 bg-sky-50/10 dark:bg-sky-950/5 text-sky-700 dark:text-sky-300">
                                                 {weekTotal > 0 ? f.format(Math.ceil(weekTotal / 1000)) : '-'}
                                             </td>
                                         );
@@ -310,7 +310,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     <span className={`text-[13px] font-bold truncate ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>{item.name}</span>
                                 </div>
                             </td>
-                            <td className="px-2 py-1 text-center tabular-nums text-[13px] font-bold border-r border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400">
+                            <td className="px-2 py-1 text-center tabular-nums text-[13px] font-bold border-r border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400">
                                 {bonus?.tong ? f.format(Math.ceil(bonus.tong / 1000)) : '-'}
                             </td>
                             <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400">
@@ -332,12 +332,12 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         if (weekTotal >= weekTop3) {
                                             cellClass += "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-black";
                                         } else if (weekTotal < weekAvg) {
-                                            cellClass += "bg-indigo-50/5 dark:bg-indigo-950/5 text-rose-600 dark:text-rose-400 font-extrabold";
+                                            cellClass += "bg-sky-50/5 dark:bg-sky-950/5 text-rose-600 dark:text-rose-400 font-extrabold";
                                         } else {
-                                            cellClass += "bg-indigo-50/5 dark:bg-indigo-950/5 text-indigo-600 dark:text-indigo-400 font-bold";
+                                            cellClass += "bg-sky-50/5 dark:bg-sky-950/5 text-sky-600 dark:text-sky-400 font-bold";
                                         }
                                     } else {
-                                        cellClass += "bg-indigo-50/5 dark:bg-indigo-950/5 text-slate-400 dark:text-slate-600";
+                                        cellClass += "bg-sky-50/5 dark:bg-sky-950/5 text-slate-400 dark:text-slate-600";
                                     }
 
                                     return (

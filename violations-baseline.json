@@ -319,48 +319,16 @@
     "nonSemanticColor": 12,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/nhanvien/bonus/BonusDailyTable.tsx": {
-    "nonSemanticColor": 42,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/bonus/BonusDataModal.tsx": {
-    "nonSemanticColor": 6,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/nhanvien/bonus/BonusMobileCard.tsx": {
     "nonSemanticColor": 12,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
-    "nonSemanticColor": 10,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
-    "nonSemanticColor": 18,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx": {
-    "nonSemanticColor": 17,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
-    "nonSemanticColor": 26,
+    "nonSemanticColor": 4,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 49,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/CrossSellingTab.tsx": {
-    "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
-    "nonSemanticColor": 19,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx": {
-    "nonSemanticColor": 4,
+    "nonSemanticColor": 5,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/Settings.tsx": {

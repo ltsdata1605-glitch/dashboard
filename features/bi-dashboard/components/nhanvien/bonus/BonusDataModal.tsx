@@ -54,7 +54,7 @@ export const BonusDataModal: React.FC<{
             title={
                 <span className="flex items-center gap-3 uppercase">
                     <span className="text-slate-500 dark:text-slate-400">Cập nhật:</span>
-                    <span className="text-indigo-600 dark:text-indigo-400">{employee.name}</span>
+                    <span className="text-sky-600 dark:text-sky-400">{employee.name}</span>
                     {remainingInBatch && remainingInBatch > 0 ? (
                         <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold rounded-lg uppercase whitespace-nowrap">Batch Mode</span>
                     ) : null}
@@ -93,7 +93,7 @@ export const BonusDataModal: React.FC<{
                         <Button
                             variant="ghost"
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-sky-600 border border-transparent rounded-xl hover:bg-sky-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
                         </Button>
@@ -130,7 +130,7 @@ export const BonusDataModal: React.FC<{
                             }
                         }}
                         placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..."
-                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors resize-none placeholder-slate-400"
+                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-colors resize-none placeholder-slate-400"
                     />
                     {error && <p className="mt-2 text-xs font-semibold text-rose-500">{error}</p>}
             </div>

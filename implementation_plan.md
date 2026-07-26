@@ -1217,3 +1217,35 @@ Người dùng gửi ảnh chụp màn hình sau khi xác nhận kết quả M�
 ### Kết quả xác minh (2026-07-26) — ĐÃ XONG
 - `npm run check` sạch (typecheck + eslint + build + lint-ratchet).
 - Playwright: pill "Nhân viên" active màu sky đúng chuẩn; 6 tab "Tiêu chí đánh giá hiệu quả" (Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết) chuyển tab mượt, underline sky nhất quán với DashboardHeader đã sửa ở Mục 43; bộ lọc "Tất cả siêu thị"/"Tất cả bộ phận" hiển thị badge sky; 3 màn hình chụp (shell mặc định, tab Bán kèm rỗng, tab Thi đua rỗng) đều không lỗi console, empty-state hiển thị sạch.
+
+---
+
+## Mục 45 — Đào sâu: toàn bộ hệ sinh thái "Thi đua" + "Thưởng" trong Nhân viên — 2026-07-26
+
+### Bối cảnh
+Người dùng yêu cầu "tiếp tục đào sâu" sau Mục 44 (shell Nhân viên). Đợt này xử lý toàn bộ 9 file còn lại có `indigo`/bug `text-primary-*` trong khu vực Nhân viên: `CrossSellingTab.tsx`, `InstallmentTab.tsx`, `BonusTab.tsx` + `bonus/BonusDailyTable.tsx` + `bonus/BonusDataModal.tsx`, `CompetitionTab.tsx` + 4 view con (`CompetitionGroupView`, `CompetitionSummaryView`, `CompetitionCompareView`, `IndividualCompetitionView`).
+
+### Phát hiện quan trọng khi đọc kỹ — KHÔNG đổi màu tràn lan
+`CompetitionTab.tsx` có mảng `PALETTE` (6 màu: sky/emerald/rose/amber/**indigo**/rose) dùng `PALETTE[index % PALETTE.length]` để tô màu xoay vòng cho từng nhóm hàng thi đua — đây **chính là** pattern "6 họ semantic x 2 tầng sắc độ" mà CLAUDE.md §2 quy định (indigo hợp lệ làm màu thứ 6). Đã **giữ nguyên** `bg-indigo-600` trong mảng này, chỉ đổi các chỗ `indigo` dùng làm màu chrome UI thường (tab active, nút, dropdown lọc, banner, focus ring...) sang `sky`.
+
+**Bug phụ phát hiện & đã sửa luôn** (cùng chỗ, rủi ro thấp): phần tử thứ 6 của `PALETTE` bị trùng y hệt phần tử thứ 3 (`bg-rose-600` lặp lại) — nghĩa là 2 nhóm hàng thi đua khác nhau sẽ nhận CÙNG 1 màu, mất tác dụng phân biệt. Đã đổi phần tử thứ 6 thành `bg-slate-600` (đúng theo đúng công thức "5 màu chuẩn + indigo" của CLAUDE.md — bổ sung `slate` còn thiếu).
+
+### File đã sửa
+| File | Thay đổi |
+|---|---|
+| `CrossSellingTab.tsx`, `InstallmentTab.tsx` | 2 icon toggle Grid/List indigo→sky; fix bug `text-primary-*` (class chết) |
+| `BonusTab.tsx` | 3 icon toggle (Bộ phận/Danh sách/Xem theo ngày) indigo→sky |
+| `bonus/BonusDailyTable.tsx`, `bonus/BonusDataModal.tsx` | Toàn bộ indigo→sky (accent tuần/tháng, nút lưu, focus ring) — cả 2 đều live (không phải dead code) |
+| `bonus/BonusMobileCard.tsx` | **Không sửa** — xác nhận dead code (`isMobile = false` hard-code trong `BonusTab.tsx`, không bao giờ render) |
+| `CompetitionTab.tsx` | Giữ nguyên `PALETTE` (trừ sửa bug trùng màu ở trên); đổi toàn bộ chrome UI còn lại (tab tổng/nhóm/cá nhân/so sánh, version chip, filter lọc nhóm + highlight nhân viên, view toggle) indigo→sky; banner "NHÓM HÀNG THI ĐUA ĐẾN NGÀY x/x" đổi từ gradient `indigo→indigo→sky` thành phẳng `bg-sky-600 shadow-sm` |
+| `CompetitionGroupView.tsx`, `CompetitionSummaryView.tsx` | Hàng "Grand Total" + comment liên quan indigo→sky |
+| `CompetitionCompareView.tsx`, `IndividualCompetitionView.tsx` | Toàn bộ filter/dropdown/KPI accent/thanh so sánh (TugOfWar) indigo→sky |
+
+### Ngoài phạm vi
+- `bonus/BonusMobileCard.tsx` (dead code, không đụng).
+- Dòng `text-indigo-700/600` trong nhánh `isMobile` chết của `BonusTab.tsx` (dòng 137) — cùng lý do dead code, không có tác dụng hiển thị.
+- `Settings.tsx`, `SupermarketConfig.tsx`, `TargetHero.tsx` — vẫn để đợt sau.
+- Không đổi bất kỳ logic tính toán/parse dữ liệu nào — chỉ đổi class Tailwind màu sắc.
+
+### Kiểm thử
+`npm run check` sạch (typecheck/eslint/build/lint-ratchet). Playwright: xác nhận `grep indigo` toàn bộ khu vực đã sửa chỉ còn đúng 1 dòng (PALETTE hợp lệ); chụp màn hình tab Thưởng (có dữ liệu thật, hiển thị đúng sky/emerald/amber) và tab Thi đua (Nhóm — trạng thái rỗng vì chưa tái tạo được định dạng `thiDuaData` phức tạp, xem ghi chú cũ trong memory `reference_bi_dashboard_seed_data_testing.md`) — cả 2 không lỗi console, không vỡ layout.

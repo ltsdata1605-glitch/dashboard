@@ -109,11 +109,11 @@ const EmployeeSelector: React.FC<{
             {isOpen && (
                 <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
-                        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
+                        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
                     </div>
                     <div className="overflow-y-auto flex-1">
                         {filtered.length > 0 ? filtered.map(emp => (
-                            <Button variant="ghost" key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <Button variant="ghost" key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                 {emp.name}
                             </Button>
                         )) : <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>}
@@ -324,8 +324,8 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                 onClick={() => { setEmpA(pair.a); setEmpB(pair.b); }}
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors border ${
                                     (empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName)
-                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:text-indigo-600'
+                                        ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400 hover:text-sky-600'
                                 }`}
                             >
                                 {pair.label}
@@ -348,11 +348,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded border border-slate-200 dark:border-slate-700">
-                        <Button variant="ghost" onClick={() => setDisplayMode('pct')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
-                        <Button variant="ghost" onClick={() => setDisplayMode('actual')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
+                        <Button variant="ghost" onClick={() => setDisplayMode('pct')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
+                        <Button variant="ghost" onClick={() => setDisplayMode('actual')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
                     <Button variant="ghost" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
-                        <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-indigo-500' : ''}`} />
+                        <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-sky-500' : ''}`} />
                     </Button>
                     <Button variant="ghost" onClick={() => handleExportPNG()} title="Xuất ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <CameraIcon className="w-4 h-4" />
@@ -404,7 +404,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="px-2 sm:px-6 py-6 bg-slate-50 dark:bg-[#151515] border-b border-slate-200 dark:border-slate-800 space-y-2">
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
                         <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} colorA="bg-emerald-500" textA="text-emerald-600 dark:text-emerald-400" colorB="bg-amber-500" textB="text-amber-600 dark:text-amber-400" />
-                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-indigo-500" textA="text-indigo-600 dark:text-indigo-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
+                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-sky-500" textA="text-sky-600 dark:text-sky-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
                         <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} colorA="bg-sky-500" textA="text-sky-600 dark:text-sky-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
                     </div>
 
@@ -412,7 +412,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-indigo-600">{statsA.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtDat}</span></div>
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
                             <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
                         </div>

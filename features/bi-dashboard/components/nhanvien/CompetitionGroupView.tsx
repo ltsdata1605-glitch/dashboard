@@ -256,7 +256,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             {/* Title bar — flat, professional */}
             <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex justify-center items-center relative">
-                    <h4 className="text-[14px] font-black uppercase text-indigo-700 dark:text-indigo-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
+                    <h4 className="text-[14px] font-black uppercase text-sky-700 dark:text-sky-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -264,7 +264,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                             type="button"
                             variant="ghost"
                             onClick={handleExportPNG}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-1 text-slate-400 hover:text-sky-600 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <CameraIcon className="h-4 w-4" />
@@ -361,12 +361,12 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 );
                             }
                         })}
-                        {/* Grand Total — indigo accent */}
-                        <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-extrabold text-indigo-800 dark:text-indigo-300 border-t-2 border-indigo-200 dark:border-indigo-800">
-                             <td className="px-2 py-1 text-center uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50">TỔNG</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
+                        {/* Grand Total — sky accent */}
+                        <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
+                             <td className="px-2 py-1 text-center uppercase text-[13px] tracking-wider border-r border-sky-200 dark:border-sky-800/50">TỔNG</td>
+                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
+                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
+                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
                              <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(grandTotalRemaining))}</td>
                         </tr>
                     </tbody>
