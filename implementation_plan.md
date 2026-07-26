@@ -1343,3 +1343,39 @@ Người dùng yêu cầu "thực hiện các tồn đọng còn lại" — tứ
 
 ### Kiểm thử
 `npm run check` sạch. Playwright re-run xác nhận cả 2 fix hoạt động đúng với dữ liệu thật (bảng Tổng quan → Doanh thu hiện đủ nhãn phân biệt; bảng Trả góp hiện dòng TỔNG CỘNG với số liệu đúng).
+
+---
+
+## Mục 49 — Đồng bộ thẻ KPI "Tổng quan > Doanh thu" theo đúng chuẩn module Phân Tích — 2026-07-26
+
+### Bối cảnh
+Người dùng gửi ảnh chụp khoanh đỏ 8 thẻ KPI ở Report BI > Tổng quan > Doanh thu, yêu cầu sửa lại giống hệt thẻ KPI ở module "Phân Tích" (chuẩn vàng).
+
+### Phát hiện
+`KpiOverview.tsx` (bi-dashboard) tự viết riêng 1 hàm `renderCard()` (card trắng viền mỏng, không có gradient/glow) — HOÀN TOÀN khác với `components/shared/ui/KpiCard.tsx`, component "premium" (icon chip glow, dải gradient accent trên đầu card, progress bar 2 tầng màu, footer mục tiêu) mà module Phân Tích thật sự dùng (`components/kpis/KpiCards.tsx`). Đây đúng dạng lỗi CLAUDE.md cảnh báo: có component dùng chung sẵn (`KpiCard` — chú thích ngay trong code là "dùng được ở cả 4 khu vực") nhưng bi-dashboard lại tự dựng lại từ đầu.
+
+Đọc `constants.ts:158-227` (`DEFAULT_KPI_CARDS`, cấu hình mặc định 5 thẻ KPI thật của Phân Tích) để lấy đúng bộ icon/màu chuẩn cho 4 thẻ trùng khái niệm:
+
+| Thẻ | icon (Phân Tích) | iconColor (Phân Tích) |
+|---|---|---|
+| DT Thực | `dollar-sign` | `emerald` |
+| DTQĐ | `trending-up` | `blue` (alias → `sky`) |
+| HQQĐ | `activity` | `indigo` (màu thứ 6, có code-comment giải thích lý do) |
+| Trả Chậm | `credit-card` | `amber` |
+
+Bi-dashboard trước đó tự chọn màu tuỳ tiện, không khớp Phân Tích và **không nhất quán icon-màu với giá-trị-màu trong chính nó** (vd DT THỰC icon nền emerald nhưng số hiển thị amber; DTQĐ icon nền amber nhưng đây lại là chỉ số Phân Tích dùng sky). Đã sửa cả 4 thẻ dùng đúng bộ icon/màu ở bảng trên, số liệu tô theo đúng quy tắc Phân Tích: đạt mục tiêu → emerald, chưa đạt → giữ màu định danh riêng của thẻ (không dùng chung 1 màu cảnh báo).
+
+4 thẻ phụ (L.KHÁCH/TLPVTC/BILL BÁN/BILL T.HỘ) không tồn tại trong `DEFAULT_KPI_CARDS` gốc (Phân Tích chỉ có đúng 5 thẻ) — giữ nguyên bộ màu sky/amber/emerald/rose đã hợp lý sẵn có trong bi-dashboard, chỉ đổi sang dùng chung component `KpiCard`.
+
+### File đã sửa
+| File | Thay đổi |
+|---|---|
+| `features/bi-dashboard/components/dashboard/KpiOverview.tsx` | Viết lại hoàn toàn: bỏ hàm `renderCard()` tự chế + import chết (`GaugeChart`, `KpiCard` cũ từ `DashboardWidgets.tsx`, 3 icon JSX không dùng nữa), thay bằng `<KpiCard>` từ `components/shared/ui/KpiCard.tsx` cho cả 8 thẻ. Giữ nguyên 100% công thức tính toán/giá trị hiển thị — chỉ đổi phần trình bày + màu icon/giá trị cho khớp Phân Tích |
+| `violations-baseline.json` | Cập nhật thủ công cho phép `KpiOverview.tsx` có 2 chỗ dùng `indigo` (ngoại lệ có chủ đích, đúng theo hướng dẫn của chính script `lint-ratchet.cjs` khi báo vi phạm) — khớp đúng cách `components/shared/ui/KpiCard.tsx` (baseline sẵn có 17) đã định nghĩa màu thứ 6 cho thẻ HQQĐ |
+
+### Ngoài phạm vi (giữ nguyên, không đụng)
+- Công thức tính `hqqd`, `secondaryPct`, `dtThucProgress`... — giữ y hệt logic cũ.
+- 1 chỗ dữ liệu có vẻ trùng lặp có sẵn từ trước (thẻ "Bill Bán" ở chế độ Luỹ kế hiển thị lại `tyTrongTraGop%` giống hệt thẻ "Trả Chậm" phía trên) — không phải do đợt sửa này, giữ nguyên vì không thuộc yêu cầu (chỉ đổi giao diện, không đổi số liệu).
+
+### Kiểm thử
+`npm run check` sạch (đã cập nhật baseline hợp lệ cho 2 chỗ `indigo`). Playwright xác nhận trực quan: 8 card hiện đúng dạng "premium" (viền gradient trên đầu, icon chip glow, progress bar 2 màu, dòng mục tiêu ở chân) giống hệt bố cục `KpiCard.tsx` — khớp với ảnh chụp module Phân Tích người dùng tham chiếu.

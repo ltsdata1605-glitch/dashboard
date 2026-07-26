@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { UsersIcon, DocumentReportIcon, FileTextIcon, ChevronUpIcon, ChevronDownIcon } from '../Icons';
-import { GaugeChart, KpiCard } from './DashboardWidgets';
+import { ChevronUpIcon, ChevronDownIcon } from '../Icons';
 import { parseNumber, roundUp } from '../../utils/dashboardHelpers';
+import { KpiCard } from '../../../../components/shared/ui/KpiCard';
 
 interface KpiOverviewProps {
     isRealtime: boolean;
@@ -20,10 +20,10 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const dtDuKien = parseNumber(kpiData.dtDuKien);
     const dtDuKienQD = parseNumber(kpiData.dtDuKienQD);
     const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
+    const tyTrongTraGop = parseNumber(kpiData.tyTrongTraGop);
 
     let totalVuotTroi = 0;
     let htTargetVuotTroi = 0;
-    let htVuotTroiColorClass = 'text-rose-600 dark:text-rose-400';
 
     if (isRealtime) {
         totalVuotTroi = supermarketDailyTargets[activeSupermarket];
@@ -31,12 +31,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
             totalVuotTroi = Object.values(supermarketDailyTargets).reduce<number>((sum, value) => sum + Number(value), 0);
         }
         htTargetVuotTroi = totalVuotTroi > 0 ? (dtqd / totalVuotTroi) * 100 : 0;
-
-        if (htTargetVuotTroi >= 120) htVuotTroiColorClass = 'text-emerald-600 dark:text-emerald-400';
-        else if (htTargetVuotTroi >= 100) htVuotTroiColorClass = 'text-sky-600 dark:text-sky-400';
     }
-
-    const htTargetDuKienQD_c = parseNumber(kpiData.htTargetDuKienQD);
 
     const renderGrowth = (val: string | undefined) => {
         if (!val || val === 'N/A' || val === '0%') return null;
@@ -63,202 +58,110 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const htTargetVuotTroiMonthly = totalVuotTroiMonthly > 0 ? (dtDuKienQD / totalVuotTroiMonthly) * 100 : parseNumber(kpiData.htTargetDuKienQD);
 
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
-    const secondaryLabel = isRealtime ? 'MỤC TIÊU NGÀY' : 'MỤC TIÊU THÁNG';
+    const secondaryLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
+    const secondaryTargetStr = isRealtime
+        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined)
+        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
 
-    // Helper for rendering the native-style KPI Card
-    const renderCard = (props: {
-        title: string; icon: React.ReactNode; iconBg: string; titleColor: string; 
-        value: string; valueColor: string; 
-        progressPct?: number; progressColor?: string;
-        targetStr?: string; targetLabel?: string;
-        rightEl?: React.ReactNode;
-    }) => {
-        const hasTarget = !!props.targetStr;
-        return (
-            <div className="bg-white dark:bg-slate-800 rounded-lg lg:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden premium-card-shadow">
-                {/* Top styling bar like in image */}
-                <div className={`absolute top-0 left-0 w-full h-[3px] ${props.iconBg.split(' ')[0]} opacity-80`}></div>
-                
-                {/* Desktop view (sm trở lên) */}
-                <div className="hidden sm:flex flex-col justify-between h-full p-3 flex-1">
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                            <div className={`p-1.5 rounded-lg shrink-0 flex items-center justify-center ${props.iconBg}`}>
-                                {props.icon}
-                            </div>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${props.titleColor}`}>
-                                {props.title}
-                            </span>
-                        </div>
-                        {props.rightEl && <div className="shrink-0 ml-1">{props.rightEl}</div>}
-                    </div>
-
-                    <div className="flex justify-between items-end mb-2 gap-1 overflow-hidden">
-                        <span className={`text-2xl font-black tracking-tight leading-none truncate ${props.valueColor}`} title={props.value}>
-                            {props.value}
-                        </span>
-                        {props.progressPct !== undefined && (
-                            <span className={`text-sm font-bold tabular-nums shrink-0 leading-none ${props.valueColor}`}>
-                                {props.progressPct}%
-                            </span>
-                        )}
-                    </div>
-
-                    {props.progressPct !== undefined && props.progressColor && (
-                        <div className="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-1 sm:h-1.5 mb-1.5 sm:mb-2 mt-0.5 overflow-hidden">
-                            <div className={`h-full rounded-full ${props.progressColor}`} style={{ width: `${Math.min(props.progressPct, 100)}%` }} />
-                        </div>
-                    )}
-
-                    {props.targetLabel && (
-                        <div className="flex justify-between items-center text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto gap-1">
-                            <span className="truncate">{props.targetLabel}</span>
-                            {props.targetStr && <span className="text-slate-600 dark:text-slate-300 font-bold shrink-0 truncate">{props.targetStr}</span>}
-                        </div>
-                    )}
-                </div>
-
-                {/* Mobile view (dưới sm) - dạng đứng căn giữa cực gọn */}
-                <div className="sm:hidden flex flex-col items-center justify-between flex-1 px-1 py-2 text-center h-full">
-                    {/* Hàng 1: Icon */}
-                    <div className={`p-1 rounded-md shrink-0 flex items-center justify-center ${props.iconBg} mb-1 w-6 h-6`}>
-                        {props.icon}
-                    </div>
-                    
-                    {/* Hàng 2: Title */}
-                    <span className={`text-[9px] font-extrabold uppercase tracking-wide truncate ${props.titleColor} leading-tight mb-0.5`}>
-                        {props.title}
-                    </span>
-                    
-                    {/* Hàng 3: Value */}
-                    <span className={`text-xs font-black tracking-tight leading-none truncate ${props.valueColor} my-0.5 w-full`} title={props.value}>
-                        {props.value}
-                    </span>
-                    
-                    {/* Hàng 4: Label phụ */}
-                    {props.rightEl ? (
-                        <div className="text-[9px] font-bold text-slate-400 shrink-0 leading-none h-3 flex items-center justify-center">
-                            {props.rightEl}
-                        </div>
-                    ) : hasTarget ? (
-                        <span className="text-[9px] font-bold text-slate-400 leading-none h-3 truncate w-full flex items-center justify-center">
-                            {props.targetStr}
-                        </span>
-                    ) : (
-                        <span className="text-[9px] font-bold text-slate-400 leading-none h-3 flex items-center justify-center">-</span>
-                    )}
-                </div>
-            </div>
-        );
-    };
+    // --- Trạng thái đạt/chưa đạt mục tiêu — quyết định màu số liệu, đồng bộ đúng cách
+    // KpiCards.tsx (module Phân Tích, chuẩn vàng) đang làm: đạt mục tiêu -> emerald,
+    // chưa đạt -> giữ màu định danh riêng của từng thẻ (không dùng chung 1 màu "cảnh báo").
+    const dtThucProgress = (!isRealtime && dtDuKien > 0) ? Math.ceil((dtlk / dtDuKien) * 100) : undefined;
+    const dtqdIsGood = secondaryPct >= 100;
+    const hqqdIsGood = hqqd >= targets.quyDoi;
+    const traGopIsGood = tyTrongTraGop >= targets.traGop;
 
     return (
-        <div className="js-kpi-overview-container space-y-2 sm:space-y-4">
-            {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
-            <div className="grid grid-cols-4 gap-1 sm:gap-4">
-                
-                {/* Card 1: DT THỰC */}
-                {renderCard({
-                    title: 'DT THỰC',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">$</span>,
-                    iconBg: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
-                    titleColor: 'text-slate-500 dark:text-slate-400',
-                    value: `${roundUp(dtlk).toLocaleString('vi-VN')} Tr`,
-                    valueColor: 'text-amber-500 dark:text-amber-400',
-                    rightEl: !isRealtime ? renderGrowth(kpiData.dtckThang) : null,
-                    progressPct: (!isRealtime && dtDuKien > 0) ? Math.ceil((dtlk / dtDuKien) * 100) : undefined,
-                    progressColor: 'bg-emerald-400',
-                    targetLabel: !isRealtime ? 'DỰ KIẾN THÁNG' : undefined,
-                    targetStr: !isRealtime && dtDuKien > 0 ? `${roundUp(dtDuKien).toLocaleString('vi-VN')} Tr` : undefined
-                })}
+        <div className="js-kpi-overview-container space-y-1.5 sm:space-y-2.5 lg:space-y-4">
+            {/* ROW 1: DOANH THU & CHỈ SỐ LỚN — cùng bộ icon/màu với module Phân Tích (constants.ts DEFAULT_KPI_CARDS) */}
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 lg:gap-4">
+                <KpiCard
+                    icon="dollar-sign"
+                    iconColor="emerald"
+                    title="DT Thực"
+                    progressPercent={dtThucProgress}
+                    isGood={dtThucProgress === undefined || dtThucProgress >= 100}
+                    trendLabel={!isRealtime ? 'Dự kiến tháng' : undefined}
+                    trendValue={!isRealtime ? (
+                        <span className="flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span>{dtDuKien > 0 ? `${roundUp(dtDuKien).toLocaleString('vi-VN')} Tr` : '-'}</span>
+                            {renderGrowth(kpiData.dtckThang)}
+                        </span>
+                    ) : undefined}
+                >
+                    <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {roundUp(dtlk).toLocaleString('vi-VN')} Tr
+                    </div>
+                </KpiCard>
 
-                {/* Card 2: DOANH THU Q.ĐỔI */}
-                {renderCard({
-                    title: 'DTQĐ',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">~</span>,
-                    iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-                    titleColor: 'text-slate-500 dark:text-slate-400',
-                    value: `${roundUp(dtqd).toLocaleString('vi-VN')} Tr`,
-                    valueColor: 'text-amber-600 dark:text-amber-400',
-                    progressPct: Math.ceil(secondaryPct),
-                    progressColor: 'bg-amber-400',
-                    targetLabel: secondaryLabel,
-                    targetStr: isRealtime 
-                        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined)
-                        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined)
-                })}
+                <KpiCard
+                    icon="trending-up"
+                    iconColor="sky"
+                    title="DTQĐ"
+                    progressPercent={Math.ceil(secondaryPct)}
+                    isGood={dtqdIsGood}
+                    trendLabel={secondaryLabel}
+                    trendValue={secondaryTargetStr || '-'}
+                >
+                    <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
+                        {roundUp(dtqd).toLocaleString('vi-VN')} Tr
+                    </div>
+                </KpiCard>
 
-                {/* Card 3: HIỆU QUẢ Q.ĐỔI */}
-                {renderCard({
-                    title: 'HQQĐ',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">⚡</span>,
-                    iconBg: 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400',
-                    titleColor: 'text-slate-500 dark:text-slate-400',
-                    value: `${Math.ceil(hqqd)}%`,
-                    valueColor: 'text-amber-500 dark:text-amber-400',
-                    progressPct: hqqd > 0 ? Math.ceil((hqqd / targets.quyDoi) * 100) : 0,
-                    progressColor: 'bg-sky-400',
-                    targetLabel: 'MỤC TIÊU',
-                    targetStr: `${targets.quyDoi}%`
-                })}
+                <KpiCard
+                    icon="activity"
+                    iconColor="indigo"
+                    title="HQQĐ"
+                    progressPercent={hqqd > 0 ? Math.ceil((hqqd / targets.quyDoi) * 100) : 0}
+                    isGood={hqqdIsGood}
+                    trendLabel="Mục tiêu"
+                    trendValue={`${targets.quyDoi}%`}
+                >
+                    <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'}`}>
+                        {Math.ceil(hqqd)}%
+                    </div>
+                </KpiCard>
 
-                {/* Card 4: TỶ LỆ TRẢ GÓP */}
-                {renderCard({
-                    title: 'TRẢ CHẬM',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">%</span>,
-                    iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-                    titleColor: 'text-slate-500 dark:text-slate-400',
-                    value: `${Math.ceil(parseNumber(kpiData.tyTrongTraGop))}%`,
-                    valueColor: 'text-emerald-500 dark:text-emerald-400',
-                    progressPct: Math.ceil(parseNumber(kpiData.tyTrongTraGop)) > 0 ? Math.ceil((parseNumber(kpiData.tyTrongTraGop) / targets.traGop) * 100) : 0,
-                    progressColor: 'bg-amber-400',
-                    targetLabel: 'MỤC TIÊU',
-                    targetStr: `${targets.traGop}%`
-                })}
-
+                <KpiCard
+                    icon="credit-card"
+                    iconColor="amber"
+                    title="Trả Chậm"
+                    progressPercent={tyTrongTraGop > 0 ? Math.ceil((tyTrongTraGop / targets.traGop) * 100) : 0}
+                    isGood={traGopIsGood}
+                    trendLabel="Mục tiêu"
+                    trendValue={`${targets.traGop}%`}
+                >
+                    <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {Math.ceil(tyTrongTraGop)}%
+                    </div>
+                </KpiCard>
             </div>
 
-            {/* ROW 2: EXTRA METRICS — mỗi thẻ 1 màu pastel riêng */}
-            <div className="grid grid-cols-4 gap-1 sm:gap-4">
-                {/* Extra 1: Lượt Khách — Sky Pastel */}
-                {renderCard({
-                    title: 'L.KHÁCH',
-                    icon: <UsersIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400',
-                    titleColor: 'text-sky-600 dark:text-sky-400',
-                    value: roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN'),
-                    valueColor: 'text-sky-700 dark:text-sky-300',
-                    rightEl: renderGrowth(kpiData.luotKhachChange)
-                })}
-                {/* Extra 2: TLPV — Amber Pastel */}
-                {renderCard({
-                    title: 'TLPVTC',
-                    icon: <DocumentReportIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-                    titleColor: 'text-amber-600 dark:text-amber-400',
-                    value: `${Math.ceil(parseNumber(kpiData.tlpv))}%`,
-                    valueColor: 'text-amber-700 dark:text-amber-300',
-                    rightEl: renderGrowth(kpiData.tlpvChange)
-                })}
-                {/* Extra 3: Bill Bán Hàng — Emerald Pastel */}
-                {renderCard({
-                    title: 'BILL BÁN',
-                    icon: <FileTextIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
-                    titleColor: 'text-emerald-600 dark:text-emerald-400',
-                    value: isRealtime ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : `${Math.ceil(parseNumber(kpiData.tyTrongTraGop))}%`,
-                    valueColor: 'text-emerald-700 dark:text-emerald-300',
-                    rightEl: !isRealtime ? renderGrowth(kpiData.traGopChange) : null
-                })}
-                {/* Extra 4: Bill Thu Hộ — Rose Pastel */}
-                {renderCard({
-                    title: 'BILL T.HỘ',
-                    icon: <FileTextIcon className="h-3 w-3 sm:h-4 sm:w-4" />,
-                    iconBg: 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400',
-                    titleColor: 'text-rose-600 dark:text-rose-400',
-                    value: kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0',
-                    valueColor: 'text-rose-700 dark:text-rose-300',
-                })}
+            {/* ROW 2: CHỈ SỐ PHỤ — không có mục tiêu/tiến độ, chỉ badge tăng/giảm so với kỳ trước */}
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 lg:gap-4">
+                <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
+                    <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-sky-600 dark:text-sky-400">
+                        {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
+                    </div>
+                </KpiCard>
+
+                <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
+                    <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-amber-600 dark:text-amber-400">
+                        {Math.ceil(parseNumber(kpiData.tlpv))}%
+                    </div>
+                </KpiCard>
+
+                <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán" trendValue={!isRealtime ? renderGrowth(kpiData.traGopChange) : undefined}>
+                    <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {isRealtime ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : `${Math.ceil(tyTrongTraGop)}%`}
+                    </div>
+                </KpiCard>
+
+                <KpiCard icon="wallet" iconColor="rose" title="Bill T.Hộ">
+                    <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
+                        {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
+                    </div>
+                </KpiCard>
             </div>
         </div>
     );

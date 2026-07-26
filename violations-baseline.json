@@ -307,6 +307,10 @@
     "nonSemanticColor": 33,
     "missingMobileToolbar": 0
   },
+  "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
+    "nonSemanticColor": 2,
+    "missingMobileToolbar": 0
+  },
   "features/bi-dashboard/components/dashboard/ReportView.tsx": {
     "nonSemanticColor": 7,
     "missingMobileToolbar": 0
