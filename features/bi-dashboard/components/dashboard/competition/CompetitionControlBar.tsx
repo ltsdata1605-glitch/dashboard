@@ -23,7 +23,7 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
                 onClick={() => setViewMode('grid')}
                 variant="ghost"
                 size="icon"
-                className={`transition-colors h-7 w-7 ${viewMode === 'grid' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`transition-colors h-7 w-7 ${viewMode === 'grid' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                 title="Chế độ lưới"
             >
                 <ViewGridIcon className="h-4 w-4"/>
@@ -32,7 +32,7 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
                 onClick={() => setViewMode('list')}
                 variant="ghost"
                 size="icon"
-                className={`transition-colors h-7 w-7 ${viewMode === 'list' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`transition-colors h-7 w-7 ${viewMode === 'list' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                 title="Chế độ danh sách"
             >
                 <ViewListIcon className="h-4 w-4"/>

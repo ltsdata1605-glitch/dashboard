@@ -4,6 +4,7 @@ import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ChevronDownIcon, Image
 import { Icon } from '../../../../components/common/Icon';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Tabs } from '../../../../components/shared/ui/Tabs';
 
 interface DashboardHeaderProps {
     title: string;
@@ -55,14 +56,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
 
+    // Chỉ hiển thị mốc ngày cập nhật — chế độ Realtime/Luỹ kế và Doanh thu/Thi đua
+    // đã được thể hiện rõ qua các tab đang active phía trên, không cần nhắc lại.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
         const isReport = activeMainTab === 'report';
-        const typePart = activeSubTab === 'revenue' ? 'DOANH THU' : 'THI ĐUA';
-        const modePart = isRealtime ? 'REALTIME' : isReport ? 'BÁO CÁO' : 'LUỸ KẾ';
-
-        return `${modePart} ${typePart} ĐẾN NGÀY ${getDateLabel(isRealtime || isReport)}`;
-    }, [activeSubTab, activeMainTab, activeSupermarket]);
+        return `CẬP NHẬT ĐẾN NGÀY ${getDateLabel(isRealtime || isReport)}`;
+    }, [activeMainTab]);
 
     return (
         <div className="space-y-0">
@@ -89,15 +89,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
                             ))}
                         </select>
-                        <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
+                        <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-sky-400 dark:hover:border-sky-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                                <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
                                 <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px]">
                                     {activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
+                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
                                 <ChevronDownIcon className="h-4 w-4 text-slate-400" />
                             </div>
                         </div>
@@ -108,69 +108,30 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
                 {/* Sub-tabs row */}
-                <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3 hide-on-export">
+                <div className="px-4 sm:px-5 pt-3 hide-on-export">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
-                    <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
-                        {SUB_TABS.map(({ tab, label }) => {
-                            const isActive = activeSubTab === tab;
-                            return (
-                                <Button
-                                    variant="ghost"
-                                    key={tab}
-                                    onClick={() => setActiveSubTab(tab)}
-                                    className={`
-                                        bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
-                                        flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
-                                        ${isActive
-                                            ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-                                            : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
-                                        }
-                                    `}
-                                >
-                                    {label}
-                                </Button>
-                            );
-                        })}
-                    </nav>
+                    <Tabs
+                        items={SUB_TABS.map(({ tab, label }) => ({ id: tab, label }))}
+                        activeId={activeSubTab}
+                        onChange={(id) => setActiveSubTab(id as SubTab)}
+                        variant="underline"
+                    />
                 </div>
 
                 {/* Action bar — matching NhanVien toolbar */}
                 <div className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 relative z-50">
                     {/* Left: Realtime / Luỹ kế toggle */}
-                    <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
-                        <Button
-                            variant="ghost"
-                            onClick={() => setActiveMainTab('realtime')}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${activeMainTab === 'realtime'
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                }`}
-                        >
-                            Realtime
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={() => setActiveMainTab('cumulative')}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'cumulative'
-                                ? 'bg-indigo-600 text-white border-transparent'
-                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                }`}
-                        >
-                            Luỹ kế
-                        </Button>
-                        {activeSubTab === 'revenue' && (
-                            <Button
-                                variant="ghost"
-                                onClick={() => setActiveMainTab('report')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'report'
-                                    ? 'bg-indigo-600 text-white border-transparent'
-                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                    }`}
-                            >
-                                Báo cáo
-                            </Button>
-                        )}
-                    </div>
+                    <Tabs
+                        items={[
+                            { id: 'realtime', label: 'Realtime' },
+                            { id: 'cumulative', label: 'Luỹ kế' },
+                            ...(activeSubTab === 'revenue' ? [{ id: 'report', label: 'Báo cáo' }] : []),
+                        ]}
+                        activeId={activeMainTab}
+                        onChange={(id) => setActiveMainTab(id as MainTab)}
+                        variant="segment"
+                        size="sm"
+                    />
 
                     {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}
                     <div className="flex items-center gap-1">

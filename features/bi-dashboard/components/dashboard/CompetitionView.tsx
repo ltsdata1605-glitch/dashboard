@@ -171,19 +171,20 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 viewMode={viewMode} 
                 setViewMode={setViewMode} 
             />
-            {/* Title bar — outside overflow container so dropdowns aren't clipped */}
-            <div className="py-3 px-4 mx-4 mt-4 flex justify-center items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg relative z-50">
-                <h3 className="text-lg sm:text-2xl font-black uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
-                    {activeSupermarket === 'Tổng' ? 'TỔNG CỤM' : activeSupermarket.toUpperCase()}
+            {/* Title bar — phẳng, không lặp tên siêu thị (đã hiển thị ở ô chọn trong DashboardHeader) */}
+            <div className="py-2.5 px-4 mx-4 mt-4 flex justify-between items-center bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 relative z-50">
+                <h3 className="text-[11px] sm:text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+                    Chương trình thi đua
                 </h3>
                 {/* Filter + Column settings — in title bar */}
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 hide-on-export flex items-center gap-1">
+                <div className="hide-on-export flex items-center gap-1">
                     {/* Program filter */}
                     <div className="relative" ref={programFilterRef}>
                         <Button
                             variant="ghost"
+                            size="icon"
                             onClick={() => setIsProgramFilterOpen(p => !p)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 rounded transition-colors relative ${isProgramFilterOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            className={`h-7 w-7 relative ${isProgramFilterOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             title="Lọc chương trình thi đua"
                         >
                             <FilterIcon className="h-4 w-4" />
@@ -202,17 +203,17 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                         value={programFilterSearch}
                                         onChange={(e) => setProgramFilterSearch(e.target.value)}
                                         placeholder="Tìm kiếm chương trình..."
-                                        className="w-full px-3 py-1.5 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                                        className="w-full px-3 py-1.5 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
                                     />
                                 </div>
                                 <div className="flex justify-between items-center mb-2 px-1">
-                                    <Button variant="ghost" onClick={() => setSelectedPrograms(allProgramNames)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-wider">Chọn tất cả</Button>
+                                    <Button variant="ghost" onClick={() => setSelectedPrograms(allProgramNames)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-sky-600 hover:underline uppercase tracking-wider">Chọn tất cả</Button>
                                     <Button variant="ghost" onClick={() => setSelectedPrograms([])} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</Button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                                     {allProgramNames.filter(name => !programFilterSearch || name.toLowerCase().includes(programFilterSearch.toLowerCase())).map(name => (
                                         <div key={name} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span role="button" tabIndex={0} className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })} onKeyDown={onActivateKey(() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); }))}>
+                                            <span role="button" tabIndex={0} className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-sky-600 dark:text-sky-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })} onKeyDown={onActivateKey(() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); }))}>
                                                 {shortenName(name)}
                                             </span>
                                             <Switch 
@@ -229,8 +230,9 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     <div className="relative" ref={columnSelectorRef}>
                         <Button
                             variant="ghost"
+                            size="icon"
                             onClick={() => setIsColumnSelectorOpen(p => !p)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 rounded transition-colors ${isColumnSelectorOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            className={`h-7 w-7 ${isColumnSelectorOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             title="Cột hiển thị"
                         >
                             <CogIcon className="h-4 w-4" />

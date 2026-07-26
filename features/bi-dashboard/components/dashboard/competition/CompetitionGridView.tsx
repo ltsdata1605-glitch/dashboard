@@ -19,10 +19,10 @@ const CRITERIA_CARD_THEMES = {
     text: 'text-sky-700 dark:text-sky-400' 
   },
   'DTQĐ': {
-    border: 'border-amber-100 dark:border-amber-900',
-    header: 'bg-amber-600',
-    progress: 'bg-amber-500',
-    text: 'text-amber-700 dark:text-amber-400'
+    border: 'border-emerald-100 dark:border-emerald-900',
+    header: 'bg-emerald-600',
+    progress: 'bg-emerald-500',
+    text: 'text-emerald-700 dark:text-emerald-400'
   },
   'SLLK': { 
     border: 'border-rose-100 dark:border-rose-900', 
@@ -106,7 +106,7 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
                                             </div>
                                             <div className="flex flex-col min-w-0 border-l border-r border-slate-100 dark:border-slate-700">
                                                 <span className="text-[8px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-0.5 truncate">T.HIỆN</span>
-                                                <span className="font-bold text-primary-600 dark:text-primary-400 text-[10px] sm:text-xs truncate tabular-nums">{formatNumber(actual)}</span>
+                                                <span className="font-bold text-sky-600 dark:text-sky-400 text-[10px] sm:text-xs truncate tabular-nums">{formatNumber(actual)}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[8px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-0.5 truncate">C.LẠI</span>

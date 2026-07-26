@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { ProgressBar } from '../../../../../components/shared/ui/ProgressBar';
 
 interface TimeProgressBarProps {
     className?: string;
@@ -30,20 +31,7 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({ className = '' }) => 
                     {Math.round(percentage)}%
                 </span>
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 relative overflow-hidden">
-                <div 
-                    className="h-full rounded-full transition-all duration-700 ease-out"
-                    style={{ 
-                        width: `${percentage}%`,
-                        background: 'linear-gradient(90deg, #0ea5e9, #6366f1)'
-                    }}
-                />
-                {/* Marker line at current position */}
-                <div 
-                    className="absolute top-[-2px] h-[6px] w-[2px] bg-sky-600 dark:bg-sky-400 rounded-full"
-                    style={{ left: `${percentage}%`, transform: 'translateX(-50%)' }}
-                />
-            </div>
+            <ProgressBar value={percentage} variant="brand" size="xs" />
         </div>
     );
 };

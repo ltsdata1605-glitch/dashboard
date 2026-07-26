@@ -1178,3 +1178,8 @@ Người dùng gửi ảnh chụp màn "Tổng quan Siêu thị" > tab "Thi đua
 
 ### Kiểm thử
 `npm run check` (typecheck + eslint + build + lint-ratchet, CLAUDE.md §0.7) + mở `npm run dev` xem trực quan tab Nhân viên → Tổng quan → Thi đua (cả Realtime/Luỹ kế, cả Grid/List) trước khi báo hoàn tất.
+
+### Kết quả xác minh (2026-07-26) — ĐÃ XONG
+- `npm run check` chạy sạch (typecheck + eslint + build + lint-ratchet, lint-ratchet còn hạ baseline nhờ giảm vi phạm).
+- Không có Playwright sẵn trong repo — cài tạm `playwright` qua `npm install --no-save` **trong thư mục scratchpad** (không đụng `package.json`/lockfile của dự án), dùng kỹ thuật seed dữ liệu giả qua IndexedDB trực tiếp (`BI_HUB_DATABASE_V2/settings`, key `bi_summary-realtime`/`bi_summary-luy-ke`/`bi_competition-realtime`/`bi_competition-luy-ke`) + Demo Mode (nút "Kích hoạt Chế độ Dùng Thử" ở LoginView) để vào được màn không cần Excel/Firebase thật.
+- Đã chụp 4 màn hình xác nhận bằng mắt: Thi đua Realtime (List), Thi đua Realtime (Grid), Thi đua Luỹ kế (List), Doanh thu Realtime (kiểm tra DashboardHeader không vỡ tab Doanh thu dù ngoài phạm vi yêu cầu). Cả 4: không lỗi console, màu sky nhất quán, banner nhóm tiêu chí phẳng (nền nhạt + viền trái), không còn lặp tên siêu thị, tiêu đề gộp gọn "CẬP NHẬT ĐẾN NGÀY x/x".

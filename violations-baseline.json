@@ -303,22 +303,6 @@
     "nonSemanticColor": 13,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/dashboard/competition/CompetitionControlBar.tsx": {
-    "nonSemanticColor": 8,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
-    "nonSemanticColor": 2,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/dashboard/CompetitionView.tsx": {
-    "nonSemanticColor": 5,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/dashboard/DashboardHeader.tsx": {
-    "nonSemanticColor": 14,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/dashboard/DashboardWidgets.tsx": {
     "nonSemanticColor": 9,
     "missingMobileToolbar": 0
