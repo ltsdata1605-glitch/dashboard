@@ -1111,3 +1111,70 @@ Toàn bộ tính năng "Chia sẻ dữ liệu doanh số theo Kho qua Firebase" 
 2. `firebase deploy --only functions --force` — cần `--force` vì `minInstances` (mục 40) tăng chi phí tối thiểu, đã được người dùng đồng ý từ trước. Cả 9 hàm deploy thành công, bao gồm `stickerRegister`/`stickerResolveSession` bản mới (có `storeHasAdmin`). **Phát hiện phụ**: `listManagedUsers` (mục 29, tính năng quản lý user) báo "Successful **create** operation" (không phải update) — xác nhận hàm này **CHƯA TỪNG được deploy trước đó** kể từ khi thêm ở mục 29 — nay đã lên production lần đầu tiên cùng đợt deploy này.
 
 **Còn lại cần test tay**: (a) đăng ký tài khoản STAFF mới ở 1 kho CHƯA có Admin → phải thấy đúng thông báo "chưa có Quản trị viên" (không phải lỗi permission); (b) đăng ký/đăng nhập STAFF ở kho ĐÃ có Admin → phải xem được dữ liệu bình thường; (c) tài khoản Admin "18930"/Kho 1550 từ ảnh chụp màn hình (2) — đăng xuất/đăng nhập lại, thử "Thử lại" — vì đã loại trừ nguyên nhân rules, nếu vẫn còn lỗi thì trọng tâm điều tra tiếp theo là claims propagation phía client (`getIdToken(true)` sau `stickerResolveSession()`); (d) màn "Quản lý User" (mục 29) — kiểm tra `listManagedUsers` giờ đã hoạt động thật (trước đây luôn lỗi ngầm do chưa deploy).
+
+## Mục 42 — [ĐANG LÀM] Nâng cấp giao diện tab Nhân Viên (bi-dashboard) — 2026-07-24
+
+### Bối cảnh
+Người dùng gửi ảnh chụp tab "Nhân viên" (sub-tab "Doanh thu") kèm yêu cầu dọn giao diện thừa + làm bảng số liệu to rõ hơn. Đã điều phối qua BI Director (`retail-revenue-dashboard-expert`) xác định ưu tiên KPI, và UI Director (`ui-system-master`) ra spec — đóng gói thành artifact mockup trước/sau, người dùng duyệt ("Hãy bắt đầu giúp tôi"). Phạm vi: chỉ trình bày (typography/spacing/gộp cột hiển thị), **không đổi công thức tính** (`calculateRowMetrics()`/`useRevenueData`), không đổi dữ liệu nguồn.
+
+### Phát hiện quan trọng khi đọc code thật (khác dự đoán ban đầu)
+`Card.tsx` (bi-dashboard) đã có sẵn prop `actionButton` render cùng hàng với `title` trong `SectionHeader` — và **đã được dùng đúng kiểu này** ở `IndustryView.tsx:185-...` và `CompetitionSummaryView.tsx:451`. Đối chiếu `SectionCard.tsx` xác nhận nó tự cấp `bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm overflow-hidden` — **trùng y hệt** class ở div bọc ngoài `RevenueTab.tsx:227`. Vậy đây đúng là khung lồng khung thật (2 lớp border/shadow giống hệt nhau), và cách sửa đúng chuẩn "vàng" không phải tự nghĩ layout mới mà là **dùng lại `actionButton` đã có sẵn trong chính feature này** — ít rủi ro nhất, nhất quán với 2 view khác cùng thư mục.
+
+### File sẽ sửa
+| File | Thay đổi |
+|---|---|
+| `features/bi-dashboard/components/NhanVien.tsx` | Xoá import chết `LineChartIcon`, `FilterIcon`, `CreditCardIcon`, `SparklesIcon` (dòng 2) |
+| `features/bi-dashboard/components/shared/Badges.tsx` | Thêm prop `floating` cho `DeltaBadge` — khi bật, render dạng badge nổi tuyệt đối `opacity-0 group-hover:opacity-100`, không chiếm chỗ tĩnh trong ô nữa |
+| `features/bi-dashboard/components/nhanvien/RevenueTab.tsx` | (a) Gộp toolbar "Cùng kỳ/Còn lại/view/xuất" vào `actionButton` của `<Card>`, bỏ div bọc ngoài trùng class với `SectionCard`; (b) tái cấu trúc header 2 tầng: nhóm "Doanh thu" colSpan 3→2 (gộp Thực+M.Tiêu), nhóm "Hiệu suất" colSpan 5→3 (gộp %HT+HQQĐ, gộp %T.Góp+%B.Kèm) qua header 2 dòng nhãn dùng chung 1 `<th>`; (c) áp dụng cùng cấu trúc cột mới cho 2 dòng tổng (department/grand-total) trong cùng file |
+| `features/bi-dashboard/components/nhanvien/revenue/RevenueDesktopRow.tsx` | Áp cấu trúc cột mới cho dòng nhân viên: DTQĐ phóng to `text-[18px] font-black` + viền tách nhóm; %HT phóng to `text-[16px]` kèm HQQĐ làm caption phụ bên dưới; Thực/M.Tiêu gộp 1 ô mờ; %T.Góp/%B.Kèm gộp 2 chip nhỏ; Thưởng giữ `font-bold` (không `font-black`) ở tier mặc định; DeltaBadge chuyển sang `floating` (hiện khi hover) |
+
+### Ngoài phạm vi (giữ nguyên, không đụng)
+- `RevenueMobileCard.tsx` — biến `isMobile` đang hard-code `false` (`RevenueTab.tsx:224`) nên nhánh mobile card hiện là dead code, không tự ý bật lại hay xoá vì không thuộc yêu cầu này.
+- Công thức `calculateRowMetrics()`, `useRevenueData`, mọi field dữ liệu — không đổi.
+- 6 tab tiêu chí và 2 dropdown lọc siêu thị/bộ phận ở `NhanVien.tsx` — xác nhận không dư thừa (2 trục lọc khác nhau), giữ nguyên.
+- Prop `rounded` (không dùng trong `Card.tsx`) — dead prop nhưng thuộc component dùng chung nhiều nơi, ngoài phạm vi đợt này.
+
+### Kiểm thử
+`npm run check` (typecheck + eslint + build + lint-ratchet) theo CLAUDE.md mục 0.7, sau đó `npm run dev` mở tab Nhân Viên → Doanh thu để xác nhận trực quan trên trình duyệt trước khi báo hoàn tất.
+
+---
+
+## Mục 43 — Nâng cấp giao diện màn "Tổng quan Siêu thị" (bi-dashboard, tab Nhân viên → Tổng quan → Thi đua) — 2026-07-26
+
+### Bối cảnh
+Người dùng gửi ảnh chụp màn "Tổng quan Siêu thị" > tab "Thi đua" > Realtime (bảng ĐML_STR_STR), yêu cầu đọc kỹ, phân tích, dọn giao diện thừa và nâng cấp hiện đại. Đã hỏi mức độ dọn dẹp qua `AskUserQuestion`, người dùng chọn **"Dọn triệt để"**.
+
+### Phát hiện qua đọc code (đối chiếu CLAUDE.md §2 + module Phân Tích "chuẩn vàng")
+
+**Giao diện thừa/lặp:**
+1. Tên siêu thị hiển thị 2 lần: ô chọn `Hùng Vương` ở `DashboardHeader.tsx:81-104` **và** banner gradient to `ĐML_STR_STR - 99 HÙNG VƯƠNG` ở `CompetitionView.tsx:175-178` (xác nhận `CompetitionView` chỉ render đúng 1 bảng của `activeSupermarket` đang chọn — banner này 100% trùng lặp thông tin, không phải danh sách nhiều kho).
+2. Trạng thái Realtime/Thi đua lặp 3 lần: tab "Thi đua" active (`DashboardHeader.tsx:114-134`) → toggle "Realtime" active (`:141-150`) → tiêu đề to `REALTIME THI ĐUA ĐẾN NGÀY x/x` nhắc lại y hệt (`:213-215`).
+3. `DashboardHeader.tsx` và `CompetitionView.tsx` tự dựng tab/toggle bằng `<Button variant="ghost">` + class ternary thủ công thay vì dùng `components/shared/ui/Tabs.tsx` (đã có sẵn variant `underline`/`segment` đúng nhu cầu).
+4. `TimeProgressBar.tsx` tự vẽ thanh tiến trình bằng inline gradient style thay vì dùng `components/shared/ui/ProgressBar.tsx` đã có sẵn.
+
+**Lệch chuẩn màu (CLAUDE.md §2: chỉ `sky` là primary, `indigo` chỉ dùng làm màu phụ thứ 6):**
+5. `DashboardHeader.tsx` dùng `indigo` làm màu chủ đạo cho tab active, toggle active, icon building, badge số lượng kho (đối chiếu `SectionHeader.tsx` — chuẩn vàng dùng `sky-600` cho icon chip).
+6. `CompetitionView.tsx` banner gradient `from-indigo-600 via-indigo-700 to-sky-600`, tên chương trình trong bảng `text-indigo-600` (`CompetitionListView.tsx:178`), icon active ở `CompetitionControlBar.tsx` cũng dùng indigo.
+7. Banner nhóm "TIÊU CHÍ" trong bảng (`CompetitionListView.tsx:165-169`) tô nền đặc bão hoà cao (rose/sky/emerald `-600` + chữ trắng full-width) — nặng hơn hẳn phong cách bảng phẳng viền mỏng của chuẩn vàng.
+8. Bug: `CompetitionGridView.tsx:109` dùng `text-primary-600 dark:text-primary-400` — class `primary` không được định nghĩa trong Tailwind của dự án (chỉ có sky/slate/emerald/amber/rose) → chữ "T.HIỆN" ở Grid view mất màu định.
+9. Bug nhất quán: cùng tiêu chí `DTQĐ` nhưng `CompetitionListView.tsx` tô `emerald` còn `CompetitionGridView.tsx` tô `amber` — 2 view của cùng 1 dữ liệu lại khác màu semantic.
+
+**Ngoài phạm vi, chỉ ghi nhận không sửa (ảnh hưởng >40 file, vượt màn hình đang xét):** `Icons.tsx` (~390 dòng) tự vẽ lại icon SVG thay vì dùng `lucide-react` đã có sẵn trong `components/shared/ui/`; class `text-primary-*` chết lặp lại ở ~13 file khác trong bi-dashboard ngoài `CompetitionGridView.tsx`.
+
+### File sẽ sửa
+| File | Thay đổi |
+|---|---|
+| `features/bi-dashboard/components/dashboard/DashboardHeader.tsx` | Đổi indigo→sky toàn bộ; thay 2 nhóm tab tự dựng bằng `Tabs` (`variant="underline"` cho Doanh thu/Thi đua, `variant="segment"` cho Realtime/Luỹ kế/Báo cáo); gộp dòng tiêu đề to (bỏ phần lặp MODE+TYPE, chỉ giữ ngày cập nhật) vào chung dòng với quote để giảm chiều cao |
+| `features/bi-dashboard/components/dashboard/CompetitionView.tsx` | Bỏ banner gradient to lặp tên siêu thị; thay bằng thanh tiện ích phẳng (nền trung tính, border-b mỏng) chỉ giữ 2 nút Lọc chương trình + Cột hiển thị; đổi indigo→sky |
+| `features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx` | Banner nhóm "TIÊU CHÍ" chuyển từ nền đặc sang nền nhạt (`theme.light`) + viền trái đậm màu, chữ màu (không còn nền trắng-trên-đặc); đổi `text-indigo-600` tên chương trình → `text-sky-600` |
+| `features/bi-dashboard/components/dashboard/competition/CompetitionGridView.tsx` | Fix `text-primary-*` → `text-sky-*`; đổi theme `DTQĐ` từ amber → emerald để khớp `CompetitionListView.tsx` |
+| `features/bi-dashboard/components/dashboard/competition/CompetitionControlBar.tsx` | Đổi indigo→sky cho icon Grid/List active |
+| `features/bi-dashboard/components/nhanvien/shared/TimeProgressBar.tsx` | Thay phần vẽ thanh bằng `components/shared/ui/ProgressBar.tsx` (`variant="brand"`, tương đương sky), giữ nguyên dòng nhãn "Quỹ thời gian" + số ngày (nội dung riêng, không có sẵn trong component dùng chung) |
+
+### Ngoài phạm vi (giữ nguyên, không đụng)
+- `KpiOverview.tsx`, `SummaryTableView.tsx`, `IndustryView.tsx` — thuộc sub-tab "Doanh thu", không xuất hiện trong ảnh chụp màn hình gốc, không đổi công thức/dữ liệu.
+- `Icons.tsx` và các `text-primary-*` chết ở file khác — ghi nhận riêng, để đợt sau nếu người dùng yêu cầu.
+- Không đổi bất kỳ logic tính toán (`ProcessedProgram`, `conLai`, sort/filter) — chỉ đổi phần trình bày (class Tailwind, cấu trúc JSX hiển thị).
+
+### Kiểm thử
+`npm run check` (typecheck + eslint + build + lint-ratchet, CLAUDE.md §0.7) + mở `npm run dev` xem trực quan tab Nhân viên → Tổng quan → Thi đua (cả Realtime/Luỹ kế, cả Grid/List) trước khi báo hoàn tất.
