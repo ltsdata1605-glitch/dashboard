@@ -12,6 +12,7 @@ import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
@@ -534,24 +535,21 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     return (
-        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-6">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
-                <nav className="flex space-x-6 min-w-max" aria-label="Tabs">
-                    {[
-                        { id: 'data', label: 'Dữ liệu' },
-                        { id: 'revenueTarget', label: 'Target Doanh thu' },
-                        { id: 'competitionTarget', label: 'Target Thi đua' }
-                    ].map(t => (
-                        <Button
-                            variant="ghost"
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id as ConfigTab)}
-                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-sky-600 text-sky-600 dark:border-sky-500 dark:text-sky-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
-                        >
-                            {t.label}
-                        </Button>
-                    ))}
-                </nav>
+        <div className="space-y-4">
+            <div className="flex items-start justify-between gap-3 mb-2 overflow-x-auto scrollbar-hide">
+                <div className="min-w-max flex-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nội dung cấu hình</p>
+                    <Tabs
+                        items={[
+                            { id: 'data', label: 'Dữ liệu' },
+                            { id: 'revenueTarget', label: 'Target Doanh thu' },
+                            { id: 'competitionTarget', label: 'Target Thi đua' }
+                        ]}
+                        activeId={activeTab}
+                        onChange={(id) => setActiveTab(id as ConfigTab)}
+                        variant="underline"
+                    />
+                </div>
                 <div className="shrink-0 pb-1 flex items-center pr-2">
                     <a
                         ref={bookmarkletRef}

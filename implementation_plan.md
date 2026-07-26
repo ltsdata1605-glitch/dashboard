@@ -1408,3 +1408,25 @@ Người dùng gửi lại đúng ảnh chụp màn "Cập nhật" (đã xem ở
 
 ### Kết quả xác minh (2026-07-26) — ĐÃ XONG
 `npm run check` sạch. Playwright xác nhận cả 3 trạng thái: (1) chưa có siêu thị (EmptyState đúng chuẩn), (2) đã chọn siêu thị (Card + actionButton chứa dải pill siêu thị tích hợp gọn vào đúng 1 hàng với tiêu đề, thay vì tách riêng như trước), (3) mở `ConfirmDialog` xoá dữ liệu (modal thật, nền mờ, icon rose, 2 nút Hủy/Xoá) — không còn kiểu "đổi nút tại chỗ" cũ. Không lỗi console ở cả 3 trạng thái.
+
+---
+
+## Mục 51 — Đồng bộ tab nội bộ SupermarketConfig.tsx theo đúng "chuẩn" — 2026-07-26
+
+### Bối cảnh
+Sau Mục 50, người dùng gửi 2 ảnh so sánh: tab "DỮ LIỆU/TARGET DOANH THU/TARGET THI ĐUA" trong `SupermarketConfig.tsx` (khoanh đỏ) và tab "Doanh thu/Bán kèm/.../Chi tiết" ở Nhân viên (khoanh đỏ, ghi chú "Chuẩn"), yêu cầu "thiết kế toàn bộ và các tab giống như tab chuẩn".
+
+### Phát hiện
+`SupermarketConfig.tsx` (render bên trong Card của `DataUpdater.tsx` từ Mục 50) vẫn còn 2 vấn đề:
+1. **Khung đôi lồng nhau (double-card)**: root div của `SupermarketConfig.tsx` tự có `bg-white/95 backdrop-blur-xl border shadow-xl rounded-2xl p-6` — trong khi `DataUpdater.tsx` đã bọc nó trong `<Card>` (SectionCard) ở Mục 50. Giống hệt lỗi đã sửa ở Mục 42 (RevenueTab.tsx) nhưng lần này tự tái diễn ở đúng chỗ tôi vừa động tới.
+2. **Tab tự dựng khác "chuẩn"**: nav 3 tab (Dữ liệu/Target Doanh thu/Target Thi đua) tự vẽ bằng `<Button className="border-b-2 ...">`, không có nhãn nhỏ phía trên, không dùng component `Tabs` dùng chung như `DashboardHeader.tsx`/`NhanVien.tsx` đã áp dụng.
+
+### Đã sửa
+- Bỏ toàn bộ style khung ngoài của root div (`bg-white/95 backdrop-blur-xl border shadow-xl rounded-2xl p-6` → chỉ còn `space-y-4`), vì `Card` ở `DataUpdater.tsx` đã cấp đủ.
+- Thay nav tự dựng bằng `<Tabs variant="underline">` dùng chung, thêm nhãn nhỏ "Nội dung cấu hình" phía trên (tương đương "Tiêu chí đánh giá hiệu quả" ở màn chuẩn) — giữ nguyên nút "Auto Click+" cạnh bên (không đổi, đã xác nhận ở Mục 50 đây là chip kéo-thả hợp lệ, không phải nút bấm sai chuẩn).
+
+### File đã sửa
+`features/bi-dashboard/components/SupermarketConfig.tsx` — chỉ đổi phần khung bao ngoài + thanh tab, không đổi bất kỳ logic đọc/ghi/validate dữ liệu nào.
+
+### Kiểm thử
+`npm run check` sạch. Playwright xác nhận: nhãn "NỘI DUNG CẤU HÌNH" + tab gạch chân sky hiển thị đúng như "chuẩn"; chuyển giữa 3 tab (Dữ liệu/Target Doanh thu/Target Thi đua) mượt, không còn khung lồng đôi; không lỗi console.
