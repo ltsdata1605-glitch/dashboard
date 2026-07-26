@@ -1279,3 +1279,44 @@ Người dùng yêu cầu tiếp tục sau Mục 45. Đây là 3 file cấu hìn
 `npm run check` sạch. Playwright: chụp màn "Cập nhật" → chọn siêu thị → tab "Dữ liệu" (chấm nhóm sky/emerald/rose, không còn indigo), tab "Target Doanh thu" (TargetHero: 3 thanh trượt sky/emerald/amber, heading marker sky đã hiện đúng thay vì mất màu do bug cũ), và màn "Cài đặt & Quản lý" (Settings, gear icon) — cả 3 không lỗi console, không vỡ layout, màu đúng chuẩn.
 
 **Xác nhận phạm vi indigo còn lại toàn bộ `features/bi-dashboard/`**: chỉ còn trong các mảng xoay vòng hợp lệ (`PALETTE`/`dThemes`/`colorTheme` 5-6 category thật) — không còn chỗ nào dùng indigo làm màu chrome UI đơn lẻ sai chuẩn.
+
+---
+
+## Mục 47 — QA toàn diện: bảng dữ liệu thật (Doanh thu/Bán kèm/Trả góp/Chi tiết) + dọn nốt bug primary-* — 2026-07-26
+
+### Bối cảnh
+Người dùng gửi ảnh chụp màn "Cập nhật" (dữ liệu thật, không phải test) và yêu cầu "kiểm tra kỹ lại giao diện các chức năng này, từ giao diện bên ngoài đến các bảng" — tức rà cả phần khung (đã làm Mục 43-46) lẫn nội dung BẢNG DỮ LIỆU thật, thứ mà các đợt test trước chủ yếu chỉ thấy trạng thái rỗng (do dữ liệu giả chưa đúng định dạng).
+
+### Sự cố kỹ thuật khi dựng dữ liệu test — bài học cho lần sau
+Ban đầu seed `bi_config-99 Hùng Vương-danhsach` (dùng đúng nhãn hiển thị trên pill DataUpdater) nhưng bảng vẫn rỗng ("Tất cả bộ phận: 0"). Nguyên nhân: `shortenSupermarketName()` (`utils/dataUtils.ts:467-472`) không chỉ cắt phần sau " - " mà còn **xoá tiếp số ở đầu** bằng regex `/^(Thửa\s*)?\d+\s*/` — nên "ĐML_STR_STR - 99 Hùng Vương" → khoá thật là `config-Hùng Vương-danhsach` (KHÔNG có "99"), dù pill UI trong `DataUpdater.tsx` hiển thị "99 Hùng Vương" (dùng `.split(' - ').pop()` thô, không qua `shortenSupermarketName`). Đây là 1 điểm KHÔNG nhất quán giữa tên hiển thị và khoá lưu trữ thật trong chính code — không phải bug cần sửa (không ảnh hưởng người dùng thật, chỉ gây nhầm khi tự tạo dữ liệu test), nhưng đáng ghi nhớ cho các lần test sau.
+
+### Đã sửa: 9 file còn sót bug `text-primary-*`/`bg-primary-*` (class Tailwind không tồn tại)
+Grep lại toàn bộ `features/bi-dashboard` sau khi rà bảng thật, phát hiện bug này (đã sửa 1 phần ở Mục 43/45) còn sót ở nhiều nơi hơn dự kiến — trong đó có **2 nút "Lưu" chính trong modal** (`CrossSellingTab.tsx` modal dán dữ liệu, `ColorSettingsModal.tsx` "Lưu cấu hình") lẽ ra mất hẳn màu nền vì `bg-primary-600` không map ra màu nào.
+
+| File | Vị trí sửa |
+|---|---|
+| `Slider.tsx` | border/text focus + hover icon (dùng chung cho TargetHero/SupermarketConfig) |
+| `dashboard/KpiOverview.tsx` | màu chữ khi vượt trội target |
+| `dashboard/SummaryTableView.tsx` | focus ring ô tìm kiếm |
+| `dashboard/IndustryView.tsx` | focus ring ô tìm kiếm (2 nơi) + tiêu đề Card — **giữ nguyên** 2 chỗ khác (dòng 539, 573) vì nằm trong nhánh `isMobile` chết (`isMobile = false` hard-code, không bao giờ render) |
+| `nhanvien/shared/AvatarDisplay.tsx` | icon upload avatar |
+| `nhanvien/revenue/ColorSettingsModal.tsx` | label + nút "Lưu cấu hình" (nền + shadow) |
+| `nhanvien/revenue/ImportPrevMonthModal.tsx` | nút "Lưu dữ liệu" + focus ring textarea |
+| `nhanvien/CrossSellingTab.tsx` | nút "Lưu dữ liệu" + focus ring modal dán dữ liệu — **giữ nguyên** dòng 488 (nhánh `isMobile` chết) |
+| `nhanvien/RevenueTab.tsx` | icon spinner khi đang tải |
+
+`dashboard/DashboardWidgets.tsx` (2 chỗ, `MainTabButton`/`SubTabButton`) — **không sửa**: grep xác nhận 2 component này export ra nhưng **không được import/dùng ở bất kỳ đâu khác trong repo** — dead code thật sự, không có tác dụng hiển thị.
+
+### Đã xác minh bằng Playwright với dữ liệu THẬT (không còn trạng thái rỗng)
+Dựng seed data đúng định dạng cho `danhSachData`/`banKemData`/`traGopData` (3 nhân viên, 2 phòng ban) dựa trên đọc kỹ `parseRevenueData`/`parseCrossSellingData`/`parseInstallmentData` trong `nhanVienHelpers.ts`. Chụp màn hình xác nhận bảng hiển thị đúng dữ liệu, đúng màu, không lỗi console:
+- Tổng quan → Doanh thu (bảng tổng hợp + 8 KPI card) và Thi đua (như Mục 43).
+- Nhân viên → Doanh thu (bảng nhóm theo phòng ban, đúng layout Mục 42), Bán kèm, Trả góp, Chi tiết (cây phân cấp Bộ phận→NV→Ngành hàng).
+
+### Phát hiện — CHƯA sửa, cần người dùng xác nhận có muốn xử lý không
+**`dashboard/SummaryTableView.tsx:80`** — bảng tổng hợp doanh thu ở tab "Tổng quan → Doanh thu" có 2 cột dùng chung 1 nhãn rút gọn: cả `'DTLK'` và `'DTQĐ'` đều map thành `'L.KẾ'` (dòng 80: `'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ'`); tương tự `'Target (QĐ)'` map thành `'TAR'` và có khả năng trùng với header TAR khác trong nhóm "HIỆU QUẢ". Thấy rõ trên ảnh chụp: 2 cột cạnh nhau đều ghi "L.KẾ" dù số liệu khác nhau (Doanh thu Lũy kế thô vs. Doanh thu Quy đổi) — dễ gây nhầm cho người xem. Đây là quyết định đặt tên/nhãn có sẵn trong code sản phẩm (không liên quan các đợt sửa màu/giao diện trước), ngoài phạm vi đã thống nhất ở Mục 43 (lúc đó xác định `SummaryTableView.tsx` không xuất hiện trong ảnh chụp gốc) — chưa tự ý đổi nhãn, chờ người dùng xác nhận.
+
+### Ngoài phạm vi / chưa chắc chắn
+- `InstallmentTab.tsx` (Trả góp) không thấy dòng "TỔNG CỘNG" trong ảnh chụp test dù `RevenueTab`/`CrossSellingTab` đều có — code có logic `totalRow` (dòng 171, 190-191, 257-258) nhưng bị ẩn khi `exportDeptFilter` hoặc đang lọc; **chưa xác định chắc chắn** đây là hành vi đúng theo trạng thái filter mặc định lúc test hay là bug thật — cần xem lại với dữ liệu/thao tác thật trước khi kết luận.
+
+### Kiểm thử
+`npm run check` sạch (typecheck/eslint/build/lint-ratchet). Playwright re-run xác nhận không có regression sau khi sửa 9 file trên.

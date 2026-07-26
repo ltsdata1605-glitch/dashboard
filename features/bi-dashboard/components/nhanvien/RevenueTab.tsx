@@ -219,7 +219,7 @@ const RevenueView: React.FC<{
     }
 
     if (!supermarketName) return <Card title="Phân tích Nhân viên" icon="users"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
-    if (isLoading) return <Card title={cardTitle} icon="trending-up"><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-primary-500 animate-spin" /></div></Card>;
+    if (isLoading) return <Card title={cardTitle} icon="trending-up"><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-sky-500 animate-spin" /></div></Card>;
 
     const isMobile = false; // Always show table view, even on mobile
 

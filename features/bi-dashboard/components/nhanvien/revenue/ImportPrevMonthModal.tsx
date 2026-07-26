@@ -18,7 +18,7 @@ export const ImportPrevMonthModal: React.FC<{
             footer={
                 <div className="flex gap-3">
                     <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Huỷ</Button>
-                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-primary-700 active:scale-95 transition-all">Lưu dữ liệu</Button>
+                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-sky-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-sky-700 active:scale-95 transition-all">Lưu dữ liệu</Button>
                 </div>
             }
         >
@@ -28,7 +28,7 @@ export const ImportPrevMonthModal: React.FC<{
                 value={pastedData}
                 onChange={e => setPastedData(e.target.value)}
                 placeholder="Nhấn Ctrl + V để dán..."
-                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-sky-500 outline-none"
             />
         </Modal>
     );

@@ -319,7 +319,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         value={supermarketFilterSearch}
                         onChange={(e) => setSupermarketFilterSearch(e.target.value)}
                         placeholder="Tìm kiếm..."
-                        className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                        className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
                     />
                     <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                         {allSupermarketNames

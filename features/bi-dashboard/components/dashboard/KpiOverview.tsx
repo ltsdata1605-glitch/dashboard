@@ -33,7 +33,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         htTargetVuotTroi = totalVuotTroi > 0 ? (dtqd / totalVuotTroi) * 100 : 0;
 
         if (htTargetVuotTroi >= 120) htVuotTroiColorClass = 'text-emerald-600 dark:text-emerald-400';
-        else if (htTargetVuotTroi >= 100) htVuotTroiColorClass = 'text-primary-600 dark:text-primary-400';
+        else if (htTargetVuotTroi >= 100) htVuotTroiColorClass = 'text-sky-600 dark:text-sky-400';
     }
 
     const htTargetDuKienQD_c = parseNumber(kpiData.htTargetDuKienQD);

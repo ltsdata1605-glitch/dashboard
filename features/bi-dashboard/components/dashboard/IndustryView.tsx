@@ -232,7 +232,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             value={industryFilterSearch}
                             onChange={(e) => setIndustryFilterSearch(e.target.value)}
                             placeholder="Tìm kiếm..."
-                            className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                            className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
                         />
                         <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                             {allIndustries.filter(n => n.toLowerCase().includes(industryFilterSearch.toLowerCase())).map(industry => (
@@ -280,7 +280,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                 value={subIndustryFilterSearch}
                                 onChange={(e) => setSubIndustryFilterSearch(e.target.value)}
                                 placeholder="Tìm kiếm..."
-                                className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                                className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
                             />
                             <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                                 {allSubIndustries.filter(n => n.toLowerCase().includes(subIndustryFilterSearch.toLowerCase())).map(sub => (
@@ -515,7 +515,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding icon="bar-chart-2">
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding icon="bar-chart-2">
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                         {isMobile ? (

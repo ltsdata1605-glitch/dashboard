@@ -41,7 +41,7 @@ const Slider: React.FC<SliderProps> = ({
                     {displayValue !== undefined ? (
                         <div className="text-right">{displayValue}</div>
                     ) : (
-                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 focus-within:border-primary-500 transition-colors">
+                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 focus-within:border-sky-500 transition-colors">
                             <input 
                                 type="number"
                                 value={value}
@@ -49,7 +49,7 @@ const Slider: React.FC<SliderProps> = ({
                                     const val = parseFloat(e.target.value);
                                     if (!isNaN(val)) onChange(val);
                                 }}
-                                className="w-12 bg-transparent text-right text-xs font-black text-primary-600 dark:text-primary-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-12 bg-transparent text-right text-xs font-black text-sky-600 dark:text-sky-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-[10px] font-bold text-slate-400">{unit}</span>
                         </div>
@@ -60,7 +60,7 @@ const Slider: React.FC<SliderProps> = ({
                             type="button"
                             variant="ghost"
                             onClick={onReset}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-primary-500 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all opacity-100 lg:opacity-0 lg:group-hover/slider:opacity-100"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-sky-500 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all opacity-100 lg:opacity-0 lg:group-hover/slider:opacity-100"
                             title="Reset về mặc định"
                         >
                             <ResetIcon className="h-3.5 w-3.5" />
@@ -77,7 +77,7 @@ const Slider: React.FC<SliderProps> = ({
                     step={step}
                     value={value}
                     onChange={(e) => onChange(parseFloat(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-primary-500 hover:accent-primary-600 transition-all"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-sky-500 hover:accent-sky-600 transition-all"
                 />
             </div>
         </div>
