@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CheckCircleIcon, DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, UsersIcon, DocumentReportIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
+import { DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, UsersIcon, DocumentReportIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
 import SupermarketConfig from './SupermarketConfig';
+import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
 import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -224,7 +227,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         toast('Đang xoá dữ liệu...', { icon: 'ℹ️' });
         await db.clearStore();
         toast.success('Đã xoá thành công! Các thiết lập đã được đặt về mặc định.');
-        
+
         // Broadcast that everything is gone so all listeners drop their cache
         window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
         setIsConfirmingClear(false);
@@ -240,44 +243,21 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     </p>
                 </div>
                 <div className="flex items-center gap-2 pb-2">
-                    {isConfirmingClear ? (
-                        <div className="flex items-center gap-1.5">
-                            <Button
-                                variant="ghost"
-                                onClick={() => setIsConfirmingClear(false)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent"
-                            >
-                                HUỶ
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                onClick={handleClearAllData}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full hover:bg-rose-600 transition-all shadow-md shadow-rose-500/20"
-                            >
-                                XÁC NHẬN XOÁ DỮ LIỆU
-                            </Button>
-                        </div>
-                    ) : (
-                        <Button
-                            variant="ghost"
-                            onClick={() => setIsConfirmingClear(true)}
-                            title="Xoá tất cả dữ liệu"
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase rounded-full border border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-all shadow-sm"
-                        >
-                            <TrashIcon className="h-3.5 w-3.5" />
-                            <span>LÀM MỚI TẤT CẢ</span>
-                        </Button>
-                    )}
+                    <Button
+                        variant="ghost"
+                        onClick={() => setIsConfirmingClear(true)}
+                        title="Xoá tất cả dữ liệu"
+                        className="bg-transparent hover:bg-transparent border-0 h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase rounded-md border border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-all shadow-sm"
+                    >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                        <span>LÀM MỚI TẤT CẢ</span>
+                    </Button>
                 </div>
             </header>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 relative z-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 relative z-10">
                 {/* NHÓM BÁO CÁO TỔNG HỢP */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-sm p-4 shadow-sm">
-                    <div className="flex items-center gap-2 mb-4">
-                        <UploadIcon className="w-4 h-4 text-sky-600" />
-                        <h2 className="text-[12px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Báo cáo Tổng hợp</h2>
-                    </div>
+                <Card title="Báo cáo Tổng hợp" icon="upload-cloud">
                     <div className="grid grid-cols-1 gap-2">
                         <StatusTile 
                             title="Realtime"
@@ -328,14 +308,10 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             }}
                         />
                     </div>
-                </div>
+                </Card>
 
                 {/* NHÓM BÁO CÁO THI ĐUA */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-sm p-4 shadow-sm">
-                    <div className="flex items-center gap-2 mb-4">
-                        <CheckCircleIcon className="w-4 h-4 text-sky-600" />
-                        <h2 className="text-[12px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Thi đua Cụm</h2>
-                    </div>
+                <Card title="Thi đua Cụm" icon="check-circle-2">
                     <div className="grid grid-cols-1 gap-2">
                         <StatusTile 
                             title="Realtime"
@@ -386,38 +362,34 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             }}
                         />
                     </div>
-                </div>
+                </Card>
             </div>
 
             {/* PHẦN CẤU HÌNH CHI TIẾT SIÊU THỊ */}
             <div className="pt-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-4 bg-sky-600 rounded-[1px]"></div>
-                        <h2 className="text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình siêu thị chi tiết</h2>
-                    </div>
-                    {supermarkets.length > 0 && (
-                        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-                            {supermarkets.map((sm) => (
-                                <Button
-                                    variant="ghost"
-                                    key={sm}
-                                    onClick={() => setActiveSupermarket(sm)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
-                                        activeSupermarket === sm
-                                            ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
-                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
-                                    }`}
-                                >
-                                    {sm.split(' - ').pop()}
-                                </Button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                
                 {activeSupermarket ? (
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-sm p-4 shadow-sm">
+                    <Card
+                        title="Cấu hình siêu thị chi tiết"
+                        icon="settings-2"
+                        actionButton={
+                            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                                {supermarkets.map((sm) => (
+                                    <Button
+                                        variant="ghost"
+                                        key={sm}
+                                        onClick={() => setActiveSupermarket(sm)}
+                                        className={`bg-transparent hover:bg-transparent border-0 h-auto w-auto p-0 text-inherit shrink-0 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border ${
+                                            activeSupermarket === sm
+                                                ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
+                                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        {sm.split(' - ').pop()}
+                                    </Button>
+                                ))}
+                            </div>
+                        }
+                    >
                         <SupermarketConfig
                             supermarketName={activeSupermarket}
                             addUpdate={addUpdate}
@@ -426,14 +398,27 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             summaryLuyKeData={summaryLuyKe}
                             onThiDuaDataChange={handleThiDuaDataChange}
                         />
-                    </div>
+                    </Card>
                 ) : (
-                    <div className="py-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-sm">
-                        <UploadIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-[12px] text-slate-500">Vui lòng cập nhật Luỹ kế phía trên để tải danh sách siêu thị.</p>
+                    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <EmptyState
+                            icon={<UploadIcon className="h-6 w-6" />}
+                            title="Chưa có danh sách siêu thị"
+                            description="Vui lòng cập nhật Luỹ kế phía trên để tải danh sách siêu thị."
+                        />
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={isConfirmingClear}
+                onClose={() => setIsConfirmingClear(false)}
+                onConfirm={handleClearAllData}
+                title="Xoá tất cả dữ liệu?"
+                message="Toàn bộ báo cáo đã dán (Realtime, Luỹ kế, Thi đua, cấu hình từng siêu thị...) sẽ bị xoá khỏi thiết bị này và đưa về mặc định. Hành động này không thể hoàn tác."
+                confirmText="Xoá tất cả dữ liệu"
+                variant="danger"
+            />
         </div>
     );
 };

@@ -1405,3 +1405,6 @@ Người dùng gửi lại đúng ảnh chụp màn "Cập nhật" (đã xem ở
 
 ### Kiểm thử
 `npm run check` + Playwright chụp lại đúng màn "Cập nhật" (cả khi chưa chọn siêu thị và khi đã chọn), xác nhận bo góc/Card/ConfirmDialog/EmptyState hiển thị đúng, không lỗi console.
+
+### Kết quả xác minh (2026-07-26) — ĐÃ XONG
+`npm run check` sạch. Playwright xác nhận cả 3 trạng thái: (1) chưa có siêu thị (EmptyState đúng chuẩn), (2) đã chọn siêu thị (Card + actionButton chứa dải pill siêu thị tích hợp gọn vào đúng 1 hàng với tiêu đề, thay vì tách riêng như trước), (3) mở `ConfirmDialog` xoá dữ liệu (modal thật, nền mờ, icon rose, 2 nút Hủy/Xoá) — không còn kiểu "đổi nút tại chỗ" cũ. Không lỗi console ở cả 3 trạng thái.
