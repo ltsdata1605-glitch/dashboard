@@ -1320,3 +1320,26 @@ Dựng seed data đúng định dạng cho `danhSachData`/`banKemData`/`traGopDa
 
 ### Kiểm thử
 `npm run check` sạch (typecheck/eslint/build/lint-ratchet). Playwright re-run xác nhận không có regression sau khi sửa 9 file trên.
+
+---
+
+## Mục 48 — Xử lý 2 tồn đọng của Mục 47 — 2026-07-26
+
+### Bối cảnh
+Người dùng yêu cầu "thực hiện các tồn đọng còn lại" — tức 2 phát hiện chưa xử lý ở Mục 47: nhãn cột trùng trong `SummaryTableView.tsx` và nghi vấn thiếu dòng TỔNG CỘNG ở `InstallmentTab.tsx`.
+
+### 1. `SummaryTableView.tsx` — nhãn cột trùng (ĐÃ XÁC NHẬN LÀ BUG THẬT, đã sửa)
+- Dòng 80: `'DTQĐ': 'L.KẾ'` trùng với `'DTLK': 'L.KẾ'` → đổi thành `'DTQĐ': 'L.KẾ<br/>QĐ'` (khớp quy ước 2 dòng đã dùng sẵn trong cùng file, vd `'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI'`).
+- Dòng 467 (đã xoá): regex `.replace(/((<br\/?>)?V\.TRỘI)/gi, '').trim()` áp cho TOÀN BỘ header tier-2 của bảng desktop, xoá sạch hậu tố "V.TRỘI" — khiến `'Target(QĐ) V.Trội'` (TAR V.TRỘI) và `'%HT V.Trội'` đều bị rút gọn về trùng y hệt cột gốc ("TAR"/"%HT"). Soát git blame: regex này vốn dùng cho **card mobile** (label mini 8px ngay trên giá trị riêng, đứng một mình nên trùng tên không gây nhầm) rồi bị copy nhầm sang header bảng desktop (nơi các cột nằm cạnh nhau, trùng tên gây nhầm thật). Đã bỏ hẳn regex này ở header desktop, dùng thẳng `headerMapping[h] || h` (giống cách dòng 437 xử lý cột đơn) để hiển thị đúng label 2 dòng đã có sẵn.
+- **Kết quả**: bảng giờ hiện đủ 5 cột phân biệt rõ: `L.KẾ` / `L.KẾ QĐ` / `TAR` / `TAR V.TRỘI` / `%HT` / `%HT V.TRỘI` / `%QĐ` (đã xác minh bằng ảnh chụp Playwright).
+
+### 2. `InstallmentTab.tsx` — thiếu dòng TỔNG CỘNG (ĐÃ XÁC NHẬN LÀ BUG THẬT, khác dự đoán ban đầu ở Mục 47, đã sửa)
+Đọc kỹ code phát hiện đây **không phải** do trạng thái filter lúc test như nghi ngờ ban đầu, mà là **bug logic thật, luôn xảy ra với mọi người dùng**:
+- `activeDepartments` truyền vào từ `NhanVien.tsx` là `effectiveActiveDepartments` (`hooks/useNhanVienData.ts:247-250`) — hook này đã **tự quy đổi `'all'` thành danh sách phòng ban cụ thể** trước khi truyền xuống. Vì vậy điều kiện `!activeDepartments.includes('all')` (dòng 161 cũ) **không bao giờ đúng là false** — `isFiltering` luôn = `true` dù người dùng chưa lọc gì.
+- Dòng 257 (grand total ở view nhóm theo phòng ban) có thêm điều kiện `&& !isFiltering` — do `isFiltering` luôn `true`, dòng TỔNG CỘNG **không bao giờ hiển thị**, với mọi siêu thị, mọi người dùng.
+- So sánh: `RevenueTab.tsx`/`CrossSellingTab.tsx` có cùng lỗi tính `isFiltering` (cùng pattern `.includes('all')`) nhưng **không bị lộ** vì 2 file này tự tính lại tổng từ dữ liệu đang hiển thị (không phụ thuộc `isFiltering`) — nên **không sửa 2 file này** (đang chạy đúng, sửa "cho đẹp" khi không có triệu chứng là rủi ro thừa, ngoài phạm vi yêu cầu).
+- **Đã sửa**: tính lại `isFiltering` có so sánh thêm với `allDepts` (danh sách phòng ban rút ra từ chính dữ liệu) — chỉ coi là "đang lọc" khi tập phòng ban active KHÔNG phủ hết `allDepts`. Giữ nguyên toàn bộ logic tổng hợp/tính toán khác, chỉ sửa đúng 1 biểu thức boolean.
+- **Kết quả**: dòng "TỔNG CỘNG" hiển thị đúng lại (đã xác minh bằng ảnh chụp, số liệu khớp tổng các dòng phía trên).
+
+### Kiểm thử
+`npm run check` sạch. Playwright re-run xác nhận cả 2 fix hoạt động đúng với dữ liệu thật (bảng Tổng quan → Doanh thu hiện đủ nhãn phân biệt; bảng Trả góp hiện dòng TỔNG CỘNG với số liệu đúng).

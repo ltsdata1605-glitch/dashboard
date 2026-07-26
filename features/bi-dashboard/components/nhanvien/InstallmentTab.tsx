@@ -158,9 +158,12 @@ const InstallmentTab: React.FC<{
     const displayList = useMemo(() => {
         if (isActive === false) return [];
         if (rows.length === 0) return [];
-        const isFiltering = !activeDepartments.includes('all');
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
-        
+        // activeDepartments đến từ effectiveActiveDepartments (NhanVien.tsx) — đã quy đổi 'all' thành
+        // danh sách phòng ban cụ thể trước khi truyền xuống, nên .includes('all') không bao giờ đúng.
+        // Phải so thêm với allDepts để biết người dùng có thật sự đang lọc hay không (ảnh hưởng dòng TỔNG CỘNG bên dưới).
+        const isFiltering = !activeDepartments.includes('all') && !(allDepts.length > 0 && allDepts.every(d => activeDepartments.includes(d)));
+
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
         
         const calculateRowWithComparison = (row: InstallmentRow): InstallmentDisplayRow => {

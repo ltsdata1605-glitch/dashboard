@@ -77,7 +77,7 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ<br/>QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -464,7 +464,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 key={h}
                                                 className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
-                                                dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/((<br\/?>)?V\.TRỘI)/gi, '').trim() }}
+                                                dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                             />
                                         );
                                     })}
