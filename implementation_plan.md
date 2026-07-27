@@ -1570,6 +1570,23 @@ Chuyển khu vực làm việc: từ `features/bi-dashboard` sang `features/stic
 - Bỏ `+ window.scrollY` / `+ window.scrollX` khỏi công thức tính `toolbarPos` (vì phần tử dùng `position: fixed`, toạ độ từ `getClientRects()` đã là toạ độ viewport, không cần cộng thêm độ cuộn).
 - Thêm cùng giới hạn `Math.max(0.5, Math.min(8, val))` vào `handleFontSizeInputChange`, đồng nhất với `adjustFontSize`, để ô gõ tay không thể tạo ra giá trị vượt tầm kiểm soát như nút +/-.
 
-### Kiểm thử
+### Kiểm thử (vòng 1)
 - `npm run check`: chạy sau khi sửa.
 - Playwright: đăng nhập admin test, vào "Phiếu Rút Thăm", bôi đen chữ trong ô nội dung, dùng nút +/- và gõ tay giá trị lớn — xác nhận vị trí toolbar bám đúng theo vùng chọn (không còn lệch theo scrollY) và giá trị nhập tay bị giới hạn về tối đa 8 thay vì chạy tự do.
+
+### Bổ sung (vòng 2) — người dùng phản hồi bug vẫn còn sau vòng 1
+Người dùng gửi 2 ảnh chụp (trước/sau khi bấm giảm size) cho thấy: cỡ chữ cũ đã lỡ bị đẩy lên **13.0** (dữ liệu tồn đọng từ trước khi có giới hạn — giới hạn ở vòng 1 chỉ chặn giá trị MỚI, không hồi tố giá trị đã lưu), và toolbar vẫn hiện sai chỗ (dính sát mép trên cùng của trang, cách xa hẳn ô đang sửa).
+
+**Điều tra sâu hơn bằng Playwright**: mô phỏng lại đúng trạng thái cỡ chữ tồn đọng 13cqw trên ô `input-content-top-left`, đo được `range.getClientRects()[0].top ≈ 48px` (rất gần mép trên trang) trong khi khung ô đang sửa (`editableEl`) thực tế nằm ở `top ≈ 150px`. Nguyên nhân gốc: ô nội dung ticket có `overflow: hidden` + kích thước cố định theo % chiều cao ticket (để khớp khổ in). Khi cỡ chữ vượt quá sức chứa của ô, phần chữ tràn bị **cắt khỏi màn hình**, nhưng `Range.getClientRects()` vẫn trả toạ độ "lý thuyết" của dòng chữ (coi như không bị cắt, và do `justify-content: center` dòng chữ tràn quá khổ sẽ đẩy toạ độ lên rất cao) — khác xa vị trí thực sự nhìn thấy. Vòng 1 chỉ sửa đúng công thức toạ độ (bỏ cộng scrollY) nhưng vẫn tin tưởng hoàn toàn vào toạ độ (có thể sai) của `getClientRects()`, nên khi nội dung tràn khung, toolbar vẫn "bay" theo toạ độ sai đó.
+
+**Đã sửa thêm**: Giữ lại tham chiếu đến chính phần tử `contenteditable` (`editableEl`) đang được thao tác, lấy `getBoundingClientRect()` của nó (luôn ổn định vì kích thước cố định, không phụ thuộc nội dung bên trong), rồi **kẹp (clamp)** toạ độ mốc định vị toolbar trong phạm vi khung ô đó trước khi trừ 50px:
+```js
+const containerRect = editableEl.getBoundingClientRect();
+const anchorTop = Math.min(Math.max(rect.top, containerRect.top), containerRect.bottom);
+const anchorLeft = Math.min(Math.max(rect.left + rect.width / 2, containerRect.left), containerRect.right);
+```
+Nhờ vậy dù nội dung bên trong tràn/cắt thế nào, toolbar luôn bám sát ô đang sửa, không còn "bay" đến vị trí không liên quan.
+
+### Kiểm thử (vòng 2)
+- `npm run check`: PASS, không lỗi/vi phạm mới (chỉ còn 3 warning "Unused eslint-disable directive" từ các file WIP khác đã checkpoint trước đó, không liên quan đến sửa lần này).
+- Playwright: tái hiện đúng trạng thái cỡ chữ tồn đọng 13cqw — trước khi sửa vòng 2, toolbar đo được ở `top ≈ -2px` (dính mép trên/bị cắt khỏi màn hình); sau khi sửa, toolbar neo đúng tại `containerRect.top - 50 ≈ 99.9px`, nằm gọn trong vùng nhìn thấy, bám sát ô đang sửa.

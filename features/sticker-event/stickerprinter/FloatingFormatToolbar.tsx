@@ -23,20 +23,21 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
             const range = selection.getRangeAt(0);
             
-            // Kiểm tra xem selection có nằm trong phần tử có contenteditable="true" không
+            // Kiểm tra xem selection có nằm trong phần tử có contenteditable="true" không,
+            // đồng thời giữ lại chính phần tử đó để dùng làm mốc kẹp toạ độ bên dưới.
             let parent = range.commonAncestorContainer;
             if (parent.nodeType === 3) parent = parent.parentNode || parent;
             let current: Node | null = parent;
-            let isInsideEditable = false;
+            let editableEl: HTMLElement | null = null;
             while (current) {
                 if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
-                    isInsideEditable = true;
+                    editableEl = current as HTMLElement;
                     break;
                 }
                 current = current.parentNode;
             }
 
-            if (!isInsideEditable) {
+            if (!editableEl) {
                 setToolbarPos(null);
                 setActiveMenu(null);
                 return;
@@ -48,13 +49,23 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             const rects = range.getClientRects();
             if (rects.length > 0) {
                 const rect = rects[0];
+                // Ô nội dung ticket có overflow: hidden + kích thước cố định (theo % chiều
+                // cao ticket) để khớp khổ in. Khi cỡ chữ vượt sức chứa của ô, phần chữ tràn
+                // bị CẮT khỏi màn hình, nhưng Range.getClientRects() vẫn trả toạ độ "lý
+                // thuyết" bỏ qua phần bị cắt đó — khiến toolbar tính lệch xa khỏi nơi thực
+                // sự nhìn thấy. Kẹp toạ độ mốc trong phạm vi khung ô đang sửa (editableEl,
+                // vốn luôn ổn định vì có kích thước cố định) để toolbar luôn bám sát ô đang
+                // thao tác, không "bay" đến vị trí không liên quan.
                 // Toolbar dùng position: fixed (toạ độ viewport) — getClientRects() đã trả
                 // toạ độ viewport sẵn, KHÔNG được cộng thêm window.scrollX/scrollY (đó là
                 // công thức cho position: absolute), nếu không toolbar sẽ lệch đúng bằng
                 // độ cuộn trang hiện tại so với vùng chọn thật.
+                const containerRect = editableEl.getBoundingClientRect();
+                const anchorTop = Math.min(Math.max(rect.top, containerRect.top), containerRect.bottom);
+                const anchorLeft = Math.min(Math.max(rect.left + rect.width / 2, containerRect.left), containerRect.right);
                 setToolbarPos({
-                    top: rect.top - 50,
-                    left: rect.left + rect.width / 2,
+                    top: anchorTop - 50,
+                    left: anchorLeft,
                 });
             } else {
                 setToolbarPos(null);
