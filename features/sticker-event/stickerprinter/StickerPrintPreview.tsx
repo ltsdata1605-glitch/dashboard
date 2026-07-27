@@ -224,28 +224,25 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             <div id="print-section" className="w-full">
                 {stickerType === 'draw' ? (
                     (() => {
-                        const pages: TicketDrawData[][] = [];
-                        for (let i = 0; i < drawTickets.length; i += 4) {
-                            pages.push(drawTickets.slice(i, i + 4));
-                        }
-                        return pages.map((pageTickets, pageIndex) => (
-                            <div 
-                                key={pageIndex} 
-                                className={`sticker-container draw-page ${pageIndex === activeDrawPage ? 'active-preview-page' : ''}`}
-                                data-type="draw" 
-                                style={{ 
+                        /* Chỉ render 1 trang đang xem (4 phiếu) thay vì toàn bộ 250 trang.
+                           Giảm DOM từ 1000 DrawTicketBlock xuống còn 4 → loại bỏ đơ treo. */
+                        const startIdx = activeDrawPage * 4;
+                        const currentPageTickets = drawTickets.slice(startIdx, startIdx + 4);
+                        return (
+                            <div
+                                className="sticker-container draw-page active-preview-page"
+                                data-type="draw"
+                                style={{
                                     backgroundImage: `url(${bgImage})`,
-                                    pageBreakAfter: pageIndex < pages.length - 1 ? 'always' : 'auto',
-                                    marginBottom: pageIndex < pages.length - 1 ? '20px' : '0'
                                 }}
                             >
-                                {pageTickets.map((ticket, index) => {
-                                    const totalIndex = pageIndex * 4 + index;
+                                {currentPageTickets.map((ticket, index) => {
+                                    const totalIndex = activeDrawPage * 4 + index;
                                     return (
-                                        <DrawTicketBlock 
-                                            key={ticket.id || totalIndex} 
-                                            index={index} 
-                                            ticket={ticket} 
+                                        <DrawTicketBlock
+                                            key={totalIndex}
+                                            index={index}
+                                            ticket={ticket}
                                             firstTicket={drawTickets[0]}
                                             isAutoIncrement={drawAutoIncrement}
                                             drawContentTopLeftSize={drawContentTopLeftSize}
@@ -263,7 +260,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     );
                                 })}
                             </div>
-                        ));
+                        );
                     })()
                 ) : batchItems.length > 0 ? (
                     <>

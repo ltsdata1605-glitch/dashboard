@@ -269,9 +269,11 @@ export function getStickerPreviewStyles({
                      width: 100%;
                      height: 25%;
                      left: 0;
+                     overflow: hidden;
                  }
                  .draw-ticket-block > div {
                      overflow: hidden;
+                     word-break: break-all;
                  }
                  .draw-ticket-block[data-index="0"] { top: 0%; }
                  .draw-ticket-block[data-index="1"] { top: 25%; }
@@ -280,10 +282,10 @@ export function getStickerPreviewStyles({
 
                  .draw-ticket-block .input-title-single {
                        position: absolute;
-                       left: 2.2%;
-                       top: 2.0%;
-                       width: 95.6%;
-                       height: 18.0%;
+                       left: 0%;
+                       top: 0%;
+                       width: 100%;
+                       height: 20.0%;
                        display: flex;
                        align-items: center;
                        justify-content: center;
@@ -469,10 +471,10 @@ export function getStickerPreviewStyles({
 
                   .draw-ticket-block .display-title-single {
                        position: absolute;
-                       left: 2.2%;
-                       top: 2.0%;
-                       width: 95.6%;
-                       height: 18.0%;
+                       left: 0%;
+                       top: 0%;
+                       width: 100%;
+                       height: 20.0%;
                        display: flex;
                        align-items: center;
                        justify-content: center;

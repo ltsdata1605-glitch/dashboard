@@ -1,6 +1,64 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
-import { StickerPage, PrintHistoryEntry } from './types';
+import { StickerPage, PrintHistoryEntry, TicketDrawData } from './types';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
+import { sanitizeTicketHtml } from './ticketSanitize';
+
+/**
+ * Sinh HTML in cho tất cả trang phiếu rút thăm từ data (không phụ thuộc DOM).
+ * Dùng khi preview chỉ render 1 trang nhưng cần in đầy đủ tất cả.
+ */
+export interface DrawPrintOptions {
+    drawTickets: TicketDrawData[];
+    bgImage: string;
+    drawTitleSize?: number;
+    drawCodeSize?: number;
+    drawFooterSize?: number;
+    drawContentTopLeftSize?: number;
+    drawContentTopRightSize?: number;
+    drawContentBottomLeftSize?: number;
+    drawContentBottomRightSize?: number;
+    isAutoIncrement?: boolean;
+}
+
+export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
+    const {
+        drawTickets, bgImage,
+        drawTitleSize = 2.5, drawCodeSize = 3.8, drawFooterSize = 3.8,
+        drawContentTopLeftSize = 3.5, drawContentTopRightSize = 3.5,
+        drawContentBottomLeftSize = 2.2, drawContentBottomRightSize = 2.2,
+        isAutoIncrement = true,
+    } = opts;
+
+    if (!drawTickets.length) return '';
+
+    const firstTicket = drawTickets[0];
+    const pages: string[] = [];
+
+    for (let pageIdx = 0; pageIdx < Math.ceil(drawTickets.length / 4); pageIdx++) {
+        const pageTickets = drawTickets.slice(pageIdx * 4, pageIdx * 4 + 4);
+        const ticketBlocks = pageTickets.map((ticket, index) => {
+            const totalIndex = pageIdx * 4 + index;
+            const isFirst = totalIndex === 0;
+            const src = isFirst ? ticket : firstTicket;
+
+            const titleHtml = `<div class="${isFirst ? 'input-title-single' : 'display-title-single'}" style="font-size:${Math.min(drawTitleSize, 3.0)}cqw">${sanitizeTicketHtml(src.title)}</div>`;
+            const contentTopLeftHtml = `<div class="${isFirst ? 'input-content-top-left' : 'display-content-top-left'}" style="font-size:${drawContentTopLeftSize}cqw">${sanitizeTicketHtml(src.contentTop)}</div>`;
+            const contentTopRightHtml = `<div class="${isFirst ? 'input-content-top-right' : 'display-content-top-right'}" style="font-size:${drawContentTopRightSize}cqw">${sanitizeTicketHtml(src.contentTopRight)}</div>`;
+            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}cqw">${ticket.code}</div>`;
+            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}cqw">${ticket.code}</div>`;
+            const contentBottomLeftHtml = `<div class="${isFirst ? 'input-content-bottom-left' : 'display-content-bottom-left'}" style="font-size:${drawContentBottomLeftSize}cqw">${sanitizeTicketHtml(src.contentBottom)}</div>`;
+            const contentBottomRightHtml = `<div class="${isFirst ? 'input-content-bottom-right' : 'display-content-bottom-right'}" style="font-size:${drawContentBottomRightSize}cqw">${sanitizeTicketHtml(src.contentBottomRight)}</div>`;
+            const footerHtml = `<div class="${isFirst ? 'input-footer-left' : 'display-footer-left'}" style="font-size:${drawFooterSize}cqw">${sanitizeTicketHtml(src.footer)}</div>`;
+
+            return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${footerHtml}</div>`;
+        }).join('');
+
+        const isLast = pageIdx === Math.ceil(drawTickets.length / 4) - 1;
+        pages.push(`<div class="sticker-container draw-page active-preview-page" data-type="draw" style="background-image:url('${bgImage}');page-break-after:${isLast ? 'auto' : 'always'};margin-bottom:${isLast ? '0' : '20px'}">${ticketBlocks}</div>`);
+    }
+
+    return pages.join('');
+};
 
 export const cleanWaterPurifierName = (nameStr: string): string => {
     if (!nameStr) return '';

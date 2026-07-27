@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Printer, Settings, CheckCircle2, Upload, Plus, Trash2,
     RotateCcw, Download, FileSpreadsheet, Package, History
@@ -115,6 +115,31 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    // --- Debounce input: giữ local state cho 2 ô nhập liệu để tránh tạo mới
+    // toàn bộ mảng drawTickets (có thể lên tới 1000 phần tử) mỗi phím bấm.
+    // Chỉ cập nhật parent state sau khi ngừng gõ 400ms. ---
+    const [localStartNumber, setLocalStartNumber] = useState(drawStartNumber);
+    const [localTotalTickets, setLocalTotalTickets] = useState(drawTotalTickets);
+
+    // Sync từ parent khi có thay đổi bên ngoài (ví dụ: restore history)
+    useEffect(() => { setLocalStartNumber(drawStartNumber); }, [drawStartNumber]);
+    useEffect(() => { setLocalTotalTickets(drawTotalTickets); }, [drawTotalTickets]);
+
+    // Debounce: chỉ lan truyền giá trị mới lên parent sau 400ms ngừng gõ
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localStartNumber !== drawStartNumber) setDrawStartNumber(localStartNumber);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localStartNumber]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localTotalTickets !== drawTotalTickets) setDrawTotalTickets(localTotalTickets);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [localTotalTickets]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const filteredHistory = useMemo(() => {
         return printHistory.filter(entry => entry.stickerType === stickerType);
     }, [printHistory, stickerType]);
@@ -177,8 +202,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Input
                                             type="number"
                                             min="1"
-                                            value={drawStartNumber}
-                                            onChange={(e) => setDrawStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
+                                            value={localStartNumber}
+                                            onChange={(e) => setLocalStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
                                             className="text-xs font-semibold"
                                         />
                                     </div>
@@ -189,8 +214,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Input
                                             type="number"
                                             min="1"
-                                            value={drawTotalTickets}
-                                            onChange={(e) => setDrawTotalTickets(Math.max(1, parseInt(e.target.value) || 1))}
+                                            value={localTotalTickets}
+                                            onChange={(e) => setLocalTotalTickets(Math.max(1, parseInt(e.target.value) || 1))}
                                             className="text-xs font-semibold"
                                         />
                                     </div>
@@ -209,7 +234,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 </label>
                                 
                                 <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    <span className="font-bold text-indigo-600 dark:text-indigo-400">Gợi ý in:</span> {drawTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(drawTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{drawStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{drawStartNumber + drawTotalTickets - 1}</span>.
+                                    <span className="font-bold text-indigo-600 dark:text-indigo-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
                                 </div>
                             </div>
                         ) : (

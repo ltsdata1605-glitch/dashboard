@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { saveSetting, getSetting } from '../services/dbService';
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from '../stickerprinter/types';
-import { resolvePagePrices, generatePageHtml, isHistoryDuplicate } from '../stickerprinter/pageHtmlUtils';
+import { resolvePagePrices, generatePageHtml, isHistoryDuplicate, generateDrawPagesHtml } from '../stickerprinter/pageHtmlUtils';
 import { parsePercentValue, parseBatchItemsFromExcelRows, downloadStickerTemplate, parseTemplateExcelData, parseErpPriceExcelData } from '../stickerprinter/excelParsers';
 import { getStickerPreviewStyles } from '../stickerprinter/stickerPreviewStyles';
 
@@ -273,6 +273,20 @@ export function useStickerPrinterData() {
             return newTickets;
         });
     }, [drawStartNumber, drawTotalTickets, drawAutoIncrement, stickerType, isLoaded]);
+
+    // Lắng nghe event từ FloatingFormatToolbar khi người dùng điều chỉnh size chữ
+    // qua popup (bôi đen text → nhấn +/−). Cập nhật React state tương ứng để
+    // ticket #2-#4 (dùng style từ state) cũng thay đổi size đồng bộ.
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const size = (e as CustomEvent).detail?.size;
+            if (typeof size === 'number' && stickerType === 'draw') {
+                setDrawActiveFontSize(size);
+            }
+        };
+        document.addEventListener('draw-font-size-change', handler);
+        return () => document.removeEventListener('draw-font-size-change', handler);
+    }, [stickerType, activeField]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         const match = previewName.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
@@ -941,10 +955,20 @@ export function useStickerPrinterData() {
                 </style>
             `;
 
-            const printSection = document.getElementById('print-section');
-            if (printSection) {
-                printHost.insertAdjacentHTML('beforeend', printSection.innerHTML);
-            }
+            // Sinh HTML cho tất cả trang từ data (preview chỉ render 1 trang)
+            const allPagesHtml = generateDrawPagesHtml({
+                drawTickets,
+                bgImage,
+                drawTitleSize: drawTitleSize,
+                drawCodeSize: drawCodeSize,
+                drawFooterSize: drawFooterSize,
+                drawContentTopLeftSize: drawContentTopLeftSize,
+                drawContentTopRightSize: drawContentTopRightSize,
+                drawContentBottomLeftSize: drawContentBottomLeftSize,
+                drawContentBottomRightSize: drawContentBottomRightSize,
+                isAutoIncrement: drawAutoIncrement,
+            });
+            printHost.insertAdjacentHTML('beforeend', allPagesHtml);
 
             document.body.appendChild(printHost);
 

@@ -196,8 +196,12 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
     const adjustFontSize = (amount: number) => {
         const current = getSelectedFontSize();
-        const newVal = Math.max(0.5, Math.min(20, parseFloat((current + amount).toFixed(1))));
+        const newVal = Math.max(0.5, Math.min(8, parseFloat((current + amount).toFixed(1))));
         applyStyleToSelection('fontSize', `${newVal}cqw`);
+
+        // Thông báo cho React state (drawContentTopLeftSize v.v.) cập nhật
+        // để các ticket #2-#4 (dùng style từ state) cũng thay đổi size.
+        document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: newVal } }));
         
         if (savedRangeRef.current) {
             const selection = window.getSelection();
@@ -212,6 +216,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         const val = parseFloat(valStr);
         if (!isNaN(val) && val > 0) {
             applyStyleToSelection('fontSize', `${val}cqw`);
+            document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: val } }));
         }
     };
 
