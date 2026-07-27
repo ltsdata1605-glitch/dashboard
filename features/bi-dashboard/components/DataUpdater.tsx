@@ -264,7 +264,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
                                 Báo cáo Tổng hợp
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={summaryRealtimeTs}
@@ -322,7 +322,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
                                 Thi đua Cụm
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={competitionRealtimeTs}

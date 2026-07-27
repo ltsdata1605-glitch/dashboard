@@ -1448,3 +1448,18 @@ Không đổi bất kỳ logic đọc/ghi/validate dữ liệu nào — chỉ g�
 
 ### Kết quả xác minh (2026-07-27) — ĐÃ XONG
 `npm run check` sạch. Playwright xác nhận: 1 card duy nhất "DỮ LIỆU BÁO CÁO CỤM" với 2 nhóm con (chấm sky "Báo cáo Tổng hợp" / chấm emerald "Thi đua Cụm") hiển thị đúng, tiết kiệm rõ rệt so với 2 card riêng trước đó, không lỗi console.
+
+---
+
+## Mục 53 — Xếp ngang Realtime/Luỹ kế trong "Dữ Liệu Báo Cáo Cụm" — 2026-07-27
+
+### Bối cảnh
+Tiếp nối Mục 52, người dùng đề xuất xếp 2 ô Realtime/Luỹ kế nằm cạnh nhau (1 hàng) thay vì xếp chồng. Đã đưa 3 phương án qua AskUserQuestion, người dùng chọn đúng phương án này.
+
+### Thay đổi
+`features/bi-dashboard/components/DataUpdater.tsx`: trong card "Dữ Liệu Báo Cáo Cụm" (2 nhóm, đủ rộng), đổi `grid grid-cols-1 gap-2` → `grid grid-cols-2 gap-2` cho cả 2 nhóm con ("Báo cáo Tổng hợp" và "Thi đua Cụm") — Realtime/Luỹ kế nằm ngang hàng.
+
+**Cố ý KHÔNG áp dụng** cho khung "Cấu hình siêu thị chi tiết" (`SupermarketConfig.tsx`, 3 cột hẹp hơn) — như đã nêu rõ trong phương án lúc hỏi, ép thêm 2 cột ngang ở đó sẽ quá chật (icon+tiêu đề+giờ+2 nút hành động dồn vào ~130px).
+
+### Kiểm thử
+`npm run check` sạch. Playwright xác nhận: 2 ô Realtime/Luỹ kế trong "Dữ Liệu Báo Cáo Cụm" nằm ngang hàng, không bị tràn/chật chữ, nút thao tác (link/xoá) vẫn hiển thị đủ; chiều cao card giảm rõ rệt; không lỗi console.
