@@ -1492,3 +1492,21 @@ Cả 6 file: bỏ `rounded-none lg:rounded-2xl border-y lg:border border-slate-2
 - Playwright (dán dữ liệu qua ClipboardEvent theo kỹ thuật ở `reference_bi_dashboard_seed_data_testing`, seed đủ Realtime/Luỹ kế tổng hợp + Doanh thu + Thi đua NV + Bán kèm + Trả góp cho 1 siêu thị test "Hùng Vương"): chụp ảnh lần lượt cả 6 tab con Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết — xác nhận CẢ 6 TAB chỉ còn 1 lớp khung/viền duy nhất (do `NhanVien.tsx` cấp ở tầng ngoài), mép phải/dưới phẳng liền mạch, không còn hiện tượng viền/bóng xếp chồng như ảnh gốc người dùng gửi.
 - Riêng tab Thi đua: mở thêm bộ lọc "Lọc nhóm" để xác nhận dữ liệu Thi đua NV được parse đúng (hiện đủ 3 nhóm CT DTLK/CT DTQĐ/CT SLLK) — không phát sinh lỗi JS khi thao tác.
 - Console không phát sinh lỗi mới do thay đổi này (chỉ còn các lỗi Firebase "Missing or insufficient permissions" đã biết từ trước, do chạy ở Demo Mode không có quyền Firestore thật, không liên quan đến bug khung đôi).
+
+---
+
+## Mục 55 — Rà nội dung/bảng biểu 6 tab con + xoá "Temporary Debug Block" ở tab Chi tiết — 2026-07-27
+
+### Bối cảnh
+Tiếp tục yêu cầu "kiểm tra lại toàn bộ thiết kế... từ viền đến bảng" (Mục 54) sau khi đã xử lý xong phần khung/viền — rà thêm phần nội dung/màu sắc bảng biểu bên trong cả 6 tab.
+
+### Kết quả rà soát
+- Màu sắc + kiểu header bảng (`text-[11px] font-black/font-bold uppercase tracking-wider`, họ màu sky/amber/emerald theo nhóm cột, viền `border-slate-200`) đã ĐỒNG BỘ tốt xuyên suốt cả 6 tab và các bảng con (`bonus/BonusGroupListTable.tsx`, `bonus/MonthlyBonusTable.tsx`, `bonus/BonusDailyTable.tsx`) — không phát hiện thêm lệch chuẩn màu mới. 2 chỗ indigo còn lại (`CompetitionTab.tsx` PALETTE, `bonus/BonusMobileCard.tsx` + đoạn `isMobile ? (...)` trong `BonusTab.tsx`) đã xác nhận lại là dead code/rotation hợp lệ như các mục trước — không đụng vào.
+- Phát hiện mới: `DetailTab.tsx` (dòng 634-664, tab "Chi tiết") có 1 khối code tự chú thích **"Temporary Debug Block"** — luôn hiển thị với MỌI người dùng cuối (không phân quyền), nền đỏ/rose kiểu cảnh báo lỗi, tiêu đề "DEBUG: KIỂM TRA DỮ LIỆU DÁN VÀO THÔ (RAW DATA)", dump toàn bộ dữ liệu thô đã dán vào textarea + nút tải file .txt. Dùng `rounded` trơn và nút tự chế thay vì `<Button>`/bo góc chuẩn — phá vỡ đồng bộ thị giác với phần còn lại của module.
+
+### Đã hỏi & xử lý
+Hỏi người dùng cách xử lý (xoá hẳn / giữ nhưng đổi giao diện / giữ nguyên) — người dùng chọn **xoá hẳn**. Đã xoá toàn bộ khối (dòng 634-664), giữ nguyên state `rawData` vì vẫn được dùng cho logic parse chính (`parseDetailDataV2` dòng 284-285) và `EmptyState` (dòng 485).
+
+### Kiểm thử
+- `npm run check`: PASS, không lỗi mới.
+- Playwright chụp lại tab Chi tiết sau khi xoá: khối debug đã biến mất hoàn toàn, bảng "Chi tiết doanh thu theo ngành hàng" hiển thị sạch, không lỗi console mới.

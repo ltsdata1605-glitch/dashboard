@@ -631,37 +631,6 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         </table>
                     </div>
                 </Card>
-                {/* Temporary Debug Block */}
-                <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded no-print">
-                    <h3 className="font-extrabold text-sm text-rose-700 dark:text-rose-400 mb-1">
-                        DEBUG: KIỂM TRA DỮ LIỆU DÁN VÀO THÔ (RAW DATA)
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                        Tổng số dòng: {rawData.split('\n').length} dòng. Hãy xem trong ô dưới đây có chứa các dòng của Hãng (ví dụ Dell, Asus, Apple...) không.
-                    </p>
-                    <textarea 
-                        readOnly 
-                        value={rawData} 
-                        className="w-full h-48 text-[10px] font-mono p-2 border rounded bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-350 outline-none"
-                    />
-                    <div className="mt-2.5">
-                        <Button
-                            type="button"
-                            onClick={() => {
-                                const blob = new Blob([rawData], { type: 'text/plain;charset=utf-8' });
-                                const url = URL.createObjectURL(blob);
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.download = 'raw_danhsach_doanhthu.txt';
-                                link.click();
-                                URL.revokeObjectURL(url);
-                            }}
-                            className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600 text-white text-xs font-bold py-1.5 px-3 rounded shadow"
-                        >
-                            Tải xuống file text dữ liệu thô (.txt)
-                        </Button>
-                    </div>
-                </div>
             </div>
         </div>
     );
