@@ -1487,5 +1487,8 @@ space-y-0 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:b
 ### Đã sửa
 Cả 6 file: bỏ `rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden` ở div gốc, chỉ giữ lại phần class layout thật sự cần (`space-y-0`), vì khung/viền/bóng đã do `NhanVien.tsx` cấp đủ ở tầng ngoài.
 
-### Kiểm thử
-`npm run check` + Playwright chụp lại cả 6 tab con (Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết) với dữ liệu thật, xác nhận không còn viền/bóng xếp chồng, mép phải/dưới phẳng liền mạch với khung ngoài NhanVien.tsx, không lỗi console.
+### Kiểm thử — ĐÃ XÁC MINH XONG
+- `npm run check`: PASS (typecheck + eslint + build + lint-ratchet, không có vi phạm mới so với baseline).
+- Playwright (dán dữ liệu qua ClipboardEvent theo kỹ thuật ở `reference_bi_dashboard_seed_data_testing`, seed đủ Realtime/Luỹ kế tổng hợp + Doanh thu + Thi đua NV + Bán kèm + Trả góp cho 1 siêu thị test "Hùng Vương"): chụp ảnh lần lượt cả 6 tab con Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết — xác nhận CẢ 6 TAB chỉ còn 1 lớp khung/viền duy nhất (do `NhanVien.tsx` cấp ở tầng ngoài), mép phải/dưới phẳng liền mạch, không còn hiện tượng viền/bóng xếp chồng như ảnh gốc người dùng gửi.
+- Riêng tab Thi đua: mở thêm bộ lọc "Lọc nhóm" để xác nhận dữ liệu Thi đua NV được parse đúng (hiện đủ 3 nhóm CT DTLK/CT DTQĐ/CT SLLK) — không phát sinh lỗi JS khi thao tác.
+- Console không phát sinh lỗi mới do thay đổi này (chỉ còn các lỗi Firebase "Missing or insufficient permissions" đã biết từ trước, do chạy ở Demo Mode không có quyền Firestore thật, không liên quan đến bug khung đôi).
