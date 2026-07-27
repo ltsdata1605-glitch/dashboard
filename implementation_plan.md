@@ -1510,3 +1510,25 @@ Hỏi người dùng cách xử lý (xoá hẳn / giữ nhưng đổi giao diệ
 ### Kiểm thử
 - `npm run check`: PASS, không lỗi mới.
 - Playwright chụp lại tab Chi tiết sau khi xoá: khối debug đã biến mất hoàn toàn, bảng "Chi tiết doanh thu theo ngành hàng" hiển thị sạch, không lỗi console mới.
+
+---
+
+## Mục 56 — Sửa bug bảng Doanh thu bị cắt cột trên mobile (RevenueTab.tsx) — 2026-07-27
+
+### Bối cảnh
+Người dùng xác nhận muốn tiếp tục rà responsive mobile (`lg:hidden`) cho 6 tab con. Kiểm tra bằng Playwright ở viewport 390px (iPhone) phát hiện bug thật: tab "Doanh thu" trên mobile chỉ hiện được 4/8 cột số liệu (nhóm "Doanh thu": Thực/DTQĐ/M.Tiêu/%HT) — nhóm "Hiệu suất" (HQQĐ/%T.Góp/%B.Kèm/Thưởng) bị cắt mất hoàn toàn, không cách nào cuộn/xem được.
+
+### Nguyên nhân gốc
+`RevenueTab.tsx` dòng 310 có `<div className="border ... overflow-hidden">` bọc trực tiếp quanh `<table>`, và div này lại nằm LỒNG BÊN TRONG div cuộn ngang `overflow-x-auto scrollbar-hide` (dòng 276). Vì bảng (574px) rộng hơn khung hiển thị (356px trên mobile), lẽ ra div `overflow-x-auto` ở ngoài phải cuộn được — nhưng div `overflow-hidden` ở giữa đã tự CẮT nội dung bảng ngay tại ranh giới của chính nó trước khi kích thước thật (scrollWidth) kịp lan lên div cha để kích hoạt thanh cuộn. Kết quả: 4 cột cuối biến mất, không hiện, không cuộn được — lỗi chỉ xảy ra khi bảng rộng hơn khung nhìn (mobile), trên desktop bảng vừa đủ chỗ nên không phát hiện ra.
+
+Xác nhận qua `isMobile = false` (dòng 224, hardcode) nên bảng desktop luôn được render kể cả trên mobile — đúng chủ đích (không có card rút gọn riêng cho mobile), nhưng bug nằm ở khả năng cuộn ngang bị chặn.
+
+Đã rà toàn bộ `features/bi-dashboard/components/nhanvien/` (cả 6 file tab + `bonus/*.tsx`): đây là bug DUY NHẤT, chỉ xảy ra ở `RevenueTab.tsx` — 5 tab còn lại đặt border trực tiếp trên `<table>` (`CrossSellingTab.tsx`, `InstallmentTab.tsx`) hoặc dùng đúng 1 lớp `overflow-x-auto` duy nhất (`DetailTab.tsx`), không mắc lỗi tương tự.
+
+### Đã sửa
+Bỏ class `overflow-hidden` khỏi div bọc bảng (dòng 310), chỉ giữ `border border-slate-200 dark:border-slate-700` — để `scrollWidth` thật của bảng lan đúng lên div `overflow-x-auto` cha, khôi phục khả năng cuộn ngang.
+
+### Kiểm thử
+- `npm run check`: PASS, không lỗi/vi phạm mới.
+- Playwright mobile (390×844): trước khi sửa, container cuộn báo `scrollWidth === clientWidth` (không nhận diện overflow) dù bảng thật rộng 574px; sau khi sửa, `scrollWidth: 575 > clientWidth: 356` — cuộn ngang thành công, lộ đủ nhóm "Hiệu suất" (HQQĐ/%T.Góp/%B.Kèm/Thưởng) trước đó bị cắt.
+- Playwright desktop (1440px): chụp lại tab Doanh thu sau khi sửa — hiển thị đủ 8 cột như cũ, không lỗi console, không thay đổi giao diện desktop.

@@ -307,7 +307,7 @@ const RevenueView: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <div className="border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <div className="border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
