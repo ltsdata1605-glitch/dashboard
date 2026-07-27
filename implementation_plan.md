@@ -1463,3 +1463,29 @@ Tiếp nối Mục 52, người dùng đề xuất xếp 2 ô Realtime/Luỹ k�
 
 ### Kiểm thử
 `npm run check` sạch. Playwright xác nhận: 2 ô Realtime/Luỹ kế trong "Dữ Liệu Báo Cáo Cụm" nằm ngang hàng, không bị tràn/chật chữ, nút thao tác (link/xoá) vẫn hiển thị đủ; chiều cao card giảm rõ rệt; không lỗi console.
+
+---
+
+## Mục 54 — Sửa bug khung đôi (double-card) ở CẢ 6 tab con của Nhân viên — 2026-07-27
+
+### Bối cảnh
+Người dùng gửi ảnh chụp tab "Nhân viên → Doanh thu" (dữ liệu thật), khoanh đỏ nhiều vị trí cho thấy có đường viền/bóng đổ xếp chồng lệch nhau ở mép phải và dưới bảng — yêu cầu kiểm tra lại toàn bộ thiết kế Nhân viên (viền, bảng, cả 6 tab con: Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết).
+
+### Phát hiện — bug thật, hệ thống, lặp lại ở TẤT CẢ 6 file
+`NhanVien.tsx` (dòng 387) đã bọc TOÀN BỘ thanh Tabs + nội dung mọi tab con trong 1 khung card DUY NHẤT:
+```
+bg-white border rounded-none lg:rounded-2xl shadow-sm overflow-hidden
+```
+Nhưng CẢ 6 file tab con (`RevenueTab.tsx`, `CrossSellingTab.tsx`, `InstallmentTab.tsx`, `BonusTab.tsx`, `DetailTab.tsx`, `CompetitionTab.tsx`) đều TỰ bọc thêm 1 lớp khung y hệt ở div gốc của chính nó:
+```
+space-y-0 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden
+```
+→ 2 lớp card lồng nhau (border+shadow+bo góc trùng nhau ở 2 tầng), gây hiệu ứng "xếp chồng lệch" nhìn thấy rõ ở mép phải/dưới trong ảnh chụp — đúng bản chất bug đã sửa 1 lần ở `RevenueTab.tsx` tại Mục 42 (khi đó chỉ gộp toolbar vào `actionButton`, chưa gỡ hẳn khung ngoài dư — nay xác nhận khung đôi vẫn còn, và lặp y hệt ở cả 5 file còn lại chưa từng được rà).
+
+Đã xác nhận grep: cả 6 file **chỉ được `NhanVien.tsx` import/dùng**, không nơi nào khác — an toàn để bỏ khung ngoài của từng file mà không ảnh hưởng nơi dùng khác.
+
+### Đã sửa
+Cả 6 file: bỏ `rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden` ở div gốc, chỉ giữ lại phần class layout thật sự cần (`space-y-0`), vì khung/viền/bóng đã do `NhanVien.tsx` cấp đủ ở tầng ngoài.
+
+### Kiểm thử
+`npm run check` + Playwright chụp lại cả 6 tab con (Doanh thu/Bán kèm/Trả góp/Thi đua/Thưởng/Chi tiết) với dữ liệu thật, xác nhận không còn viền/bóng xếp chồng, mép phải/dưới phẳng liền mạch với khung ngoài NhanVien.tsx, không lỗi console.
