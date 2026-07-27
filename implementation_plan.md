@@ -1532,3 +1532,44 @@ Bỏ class `overflow-hidden` khỏi div bọc bảng (dòng 310), chỉ giữ `b
 - `npm run check`: PASS, không lỗi/vi phạm mới.
 - Playwright mobile (390×844): trước khi sửa, container cuộn báo `scrollWidth === clientWidth` (không nhận diện overflow) dù bảng thật rộng 574px; sau khi sửa, `scrollWidth: 575 > clientWidth: 356` — cuộn ngang thành công, lộ đủ nhóm "Hiệu suất" (HQQĐ/%T.Góp/%B.Kèm/Thưởng) trước đó bị cắt.
 - Playwright desktop (1440px): chụp lại tab Doanh thu sau khi sửa — hiển thị đủ 8 cột như cũ, không lỗi console, không thay đổi giao diện desktop.
+
+---
+
+## Mục 57 — Sửa bug thanh công cụ nổi chỉnh cỡ chữ bị "nhảy" vị trí (features/sticker-event — Phiếu Rút Thăm) — 2026-07-27
+
+### Bối cảnh
+Chuyển khu vực làm việc: từ `features/bi-dashboard` sang `features/sticker-event` (khu vực hoàn toàn tách biệt theo CLAUDE.md mục 1). Người dùng gửi ảnh chụp màn hình "IN STICKER" → chế độ "Phiếu Rút Thăm", báo lỗi: khi bôi đen chữ trong 1 ô nội dung ticket rồi dùng thanh công cụ nổi (`FloatingFormatToolbar.tsx`) để tăng/giảm cỡ chữ, (1) bản thân thanh công cụ bị dịch chuyển sang vị trí khác (ảnh chụp cho thấy nó nằm tuốt trên đầu trang, cạnh khu chọn "Giá Sốc/Giờ Vàng", trong khi chữ đang chọn nằm sâu trong bảng ticket phía dưới); (2) cỡ chữ hiển thị trong ô input của toolbar lên tới **30.6** — vượt xa giới hạn tối đa cho phép.
+
+**Phát hiện quan trọng trước khi sửa**: `git status` cho thấy 6 file trong `features/sticker-event/` đã có thay đổi CHƯA COMMIT từ trước (không phải do tôi tạo ra trong phiên này) — gồm tối ưu hiệu năng preview (chỉ render 1/250 trang), debounce input, đồng bộ font-size giữa các ticket qua `CustomEvent('draw-font-size-change')`, tách `generateDrawPagesHtml` cho in đầy đủ. Đã commit riêng các thay đổi này làm checkpoint (`d39423a`) trước khi động vào, đúng quy tắc AGENT_RULES.
+
+### Điều tra qua Playwright (đăng nhập tài khoản test `admin_test_claude_qa2`/kho `TESTCLAUDEQA`)
+Đọc `FloatingFormatToolbar.tsx`, phát hiện 2 lỗi độc lập, cả 2 đều góp phần vào triệu chứng người dùng thấy:
+
+1. **Lỗi công thức định vị (dòng ~51-54)**: Toolbar dùng `className="fixed z-[9999] ..."` (CSS `position: fixed` — định vị theo viewport, KHÔNG phụ thuộc scroll), nhưng công thức tính vị trí lại cộng thêm `window.scrollY`/`window.scrollX`:
+   ```js
+   setToolbarPos({
+       top: rect.top + window.scrollY - 50,
+       left: rect.left + window.scrollX + rect.width / 2,
+   });
+   ```
+   Đây là công thức dành cho `position: absolute` (định vị theo tài liệu), áp dụng nhầm cho phần tử `fixed`. Đã đo trực tiếp bằng Playwright: khi `window.scrollY = 25`, vị trí toolbar thực tế lệch đúng 25px so với vị trí đúng lẽ ra phải có (`rect.top - 50`, không cộng scrollY) — xác nhận bug có thật bằng số đo, mức độ lệch tỉ lệ thuận với độ cuộn trang thực tế của người dùng.
+
+2. **Thiếu giới hạn (clamp) khi gõ tay cỡ chữ (`handleFontSizeInputChange`, dòng ~215-221)**: Nút "+"/"-" (`adjustFontSize`) đã giới hạn `Math.max(0.5, Math.min(8, ...))` (giới hạn 8 vốn được siết lại từ 20 trong chính bản WIP chưa commit ở trên), nhưng hàm xử lý khi gõ trực tiếp vào ô input số **không có giới hạn nào**:
+   ```js
+   const handleFontSizeInputChange = (valStr: string) => {
+       const val = parseFloat(valStr);
+       if (!isNaN(val) && val > 0) {
+           applyStyleToSelection('fontSize', `${val}cqw`);
+           ...
+       }
+   };
+   ```
+   Đây chính là đường duy nhất có thể tạo ra giá trị **30.6** thấy trong ảnh chụp (nút +/- không bao giờ vượt quá 8). Cỡ chữ khổng lồ (30.6cqw so với ô chứa chỉ rộng vài % container) kết hợp với layout `flex; justify-content:center` + `overflow:hidden` khiến `Range.getClientRects()` của vùng chọn trả về toạ độ méo mó/khác xa vị trí hiển thị thực tế đã bị cắt — giải thích vì sao toolbar (vốn định vị theo toạ độ này) "nhảy" đến chỗ không liên quan.
+
+### Đã sửa
+- Bỏ `+ window.scrollY` / `+ window.scrollX` khỏi công thức tính `toolbarPos` (vì phần tử dùng `position: fixed`, toạ độ từ `getClientRects()` đã là toạ độ viewport, không cần cộng thêm độ cuộn).
+- Thêm cùng giới hạn `Math.max(0.5, Math.min(8, val))` vào `handleFontSizeInputChange`, đồng nhất với `adjustFontSize`, để ô gõ tay không thể tạo ra giá trị vượt tầm kiểm soát như nút +/-.
+
+### Kiểm thử
+- `npm run check`: chạy sau khi sửa.
+- Playwright: đăng nhập admin test, vào "Phiếu Rút Thăm", bôi đen chữ trong ô nội dung, dùng nút +/- và gõ tay giá trị lớn — xác nhận vị trí toolbar bám đúng theo vùng chọn (không còn lệch theo scrollY) và giá trị nhập tay bị giới hạn về tối đa 8 thay vì chạy tự do.

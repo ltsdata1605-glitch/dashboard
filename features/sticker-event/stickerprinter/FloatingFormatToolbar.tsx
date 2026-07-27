@@ -48,9 +48,13 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             const rects = range.getClientRects();
             if (rects.length > 0) {
                 const rect = rects[0];
+                // Toolbar dùng position: fixed (toạ độ viewport) — getClientRects() đã trả
+                // toạ độ viewport sẵn, KHÔNG được cộng thêm window.scrollX/scrollY (đó là
+                // công thức cho position: absolute), nếu không toolbar sẽ lệch đúng bằng
+                // độ cuộn trang hiện tại so với vùng chọn thật.
                 setToolbarPos({
-                    top: rect.top + window.scrollY - 50,
-                    left: rect.left + window.scrollX + rect.width / 2,
+                    top: rect.top - 50,
+                    left: rect.left + rect.width / 2,
                 });
             } else {
                 setToolbarPos(null);
@@ -215,8 +219,11 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
     const handleFontSizeInputChange = (valStr: string) => {
         const val = parseFloat(valStr);
         if (!isNaN(val) && val > 0) {
-            applyStyleToSelection('fontSize', `${val}cqw`);
-            document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: val } }));
+            // Giới hạn giống hệt adjustFontSize (nút +/-) để gõ tay không thể tạo ra
+            // cỡ chữ vượt tầm kiểm soát (vd. gõ nhầm "30.6" thay vì "3.6").
+            const clampedVal = Math.max(0.5, Math.min(8, val));
+            applyStyleToSelection('fontSize', `${clampedVal}cqw`);
+            document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: clampedVal } }));
         }
     };
 
