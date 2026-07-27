@@ -1590,3 +1590,25 @@ Nhờ vậy dù nội dung bên trong tràn/cắt thế nào, toolbar luôn bám
 ### Kiểm thử (vòng 2)
 - `npm run check`: PASS, không lỗi/vi phạm mới (chỉ còn 3 warning "Unused eslint-disable directive" từ các file WIP khác đã checkpoint trước đó, không liên quan đến sửa lần này).
 - Playwright: tái hiện đúng trạng thái cỡ chữ tồn đọng 13cqw — trước khi sửa vòng 2, toolbar đo được ở `top ≈ -2px` (dính mép trên/bị cắt khỏi màn hình); sau khi sửa, toolbar neo đúng tại `containerRect.top - 50 ≈ 99.9px`, nằm gọn trong vùng nhìn thấy, bám sát ô đang sửa.
+
+### Bổ sung (vòng 3) — người dùng phản hồi bug MỚI: "KHI GIẢM SIZE CHỮ, ĐỘ RỘNG GIỮA 2 DÒNG RẤT LỚN"
+Ảnh chụp cho thấy sau khi giảm cỡ chữ 1 dòng, xuất hiện khoảng trống rất lớn giữa dòng đó và dòng phía trên, dù chữ hiển thị đã nhỏ lại.
+
+**Nguyên nhân gốc (tìm bằng cách dump `innerHTML` qua Playwright)**: `applyStyleToSelection` (khi vùng chọn không rỗng) LUÔN tạo một `<span>` MỚI bọc quanh nội dung bằng `range.extractContents()` + `range.insertNode(span)`, kể cả khi vùng chọn đó đã nằm trong 1 `<span style="font-size:...">` từ lần chỉnh trước. Mỗi lần bấm "+"/"-" liên tiếp → lồng thêm 1 lớp `<span>` mới, ví dụ sau 5 lần bấm "-":
+```html
+<span style="font-size: 3.3cqw;"><span style="font-size: 3.1cqw;"><span style="font-size: 2.9cqw;">
+  <span style="font-size: 2.7cqw;"><span style="font-size: 2.5cqw;">+ 10 Suất nồi inox giá 50k</span></span>
+</span></span></span>
+```
+Chữ HIỂN THỊ đúng bằng size trong cùng (2.5cqw, vì CSS kế thừa từ trong ra ngoài), nhưng CHIỀU CAO DÒNG (line box) của dòng đó lại bị trình duyệt tính dựa trên `line-height` của TẤT CẢ các `<span>` lồng nhau (kể cả span rỗng nội dung, chỉ bọc nhau) — tức bị kéo giãn theo font-size LỚN NHẤT (3.3cqw) từng áp dụng trong lịch sử, không phải giá trị cuối cùng. Đây chính là "khoảng trống rất lớn giữa 2 dòng".
+
+### Đã sửa (vòng 3)
+Trong `applyStyleToSelection`: trước khi tạo span mới, kiểm tra nếu vùng chọn hiện tại nằm gọn trong 1 `<span>` đã có sẵn thuộc tính style này (`innerMatch`, tìm qua `.closest()` + so khớp `textContent === range.toString()`) — nếu có:
+- Cập nhật TRỰC TIẾP `innerMatch.style[styleName]` (không tạo span mới).
+- Gỡ (unwrap) mọi `<span>` cha lồng bên ngoài cùng thuộc tính + cùng đúng nội dung (dọn rác tồn đọng từ các lần bấm trước khi có sửa này), giữ lại đúng 1 lớp span duy nhất.
+
+Nếu không tìm thấy span khớp (lần chỉnh đầu tiên) → giữ nguyên logic bọc span cũ như trước (không đổi hành vi).
+
+### Kiểm thử (vòng 3)
+- `npm run check`: PASS, không lỗi/vi phạm mới.
+- Playwright: chọn 1 dòng, bấm "-" 5 lần liên tiếp → `innerHTML` chỉ còn ĐÚNG 1 `<span style="font-size: 2.5cqw;">` (không còn lồng 5 lớp như trước khi sửa); bấm thêm "+" 3 lần → vẫn chỉ 1 span, cập nhật đúng thành `3.1cqw`. Chụp ảnh xác nhận không còn khoảng trống bất thường giữa các dòng, toolbar vẫn bám đúng vị trí.

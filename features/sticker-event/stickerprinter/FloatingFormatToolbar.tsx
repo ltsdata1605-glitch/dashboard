@@ -133,6 +133,50 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             }
         }
 
+        // Nếu vùng chọn hiện tại nằm gọn trong 1 <span> đã có sẵn thuộc tính này (trường hợp
+        // bấm +/- liên tiếp để chỉnh cỡ chữ đã set trước đó) — cập nhật TRỰC TIẾP span đó
+        // và gỡ (unwrap) mọi span cha lồng bên ngoài cùng thuộc tính + cùng đúng nội dung,
+        // thay vì luôn bọc thêm 1 lớp span mới. Nếu không, mỗi lần bấm sẽ lồng thêm 1 <span>
+        // quanh span cũ — DOM phình to dần theo số lần bấm, và line-height của dòng chữ bị
+        // tính theo font-size LỚN NHẤT trong chuỗi lồng đó (không phải giá trị mới nhất),
+        // gây khoảng trống bất thường giữa các dòng dù chữ hiển thị đã nhỏ lại.
+        const styleProp = styleName === 'fontFamily' ? 'font-family' : 'font-size';
+        const selectedText = range.toString();
+        let startEl: HTMLElement | null = range.commonAncestorContainer.nodeType === 3
+            ? range.commonAncestorContainer.parentElement
+            : range.commonAncestorContainer as HTMLElement;
+        const innerMatch = startEl?.closest(`span[style*="${styleProp}"]`) as HTMLElement | null;
+
+        if (innerMatch && editableContainer.contains(innerMatch) && innerMatch.textContent === selectedText) {
+            innerMatch.style[styleName] = cleanValue;
+
+            let ancestor = innerMatch.parentElement;
+            while (
+                ancestor && ancestor !== editableContainer && ancestor.tagName === 'SPAN' &&
+                ancestor.style.getPropertyValue(styleProp) && ancestor.textContent === selectedText
+            ) {
+                const toRemove = ancestor;
+                ancestor = ancestor.parentElement;
+                const p = toRemove.parentNode;
+                if (p) {
+                    while (toRemove.firstChild) p.insertBefore(toRemove.firstChild, toRemove);
+                    p.removeChild(toRemove);
+                }
+            }
+
+            const flatRange = document.createRange();
+            flatRange.selectNodeContents(innerMatch);
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(flatRange);
+            }
+            savedRangeRef.current = flatRange;
+
+            const flatEvent = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(flatEvent);
+            return;
+        }
+
         if (selection) {
             selection.removeAllRanges();
             selection.addRange(range);
@@ -140,7 +184,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
         const span = document.createElement('span');
         span.style[styleName] = cleanValue;
-        
+
         try {
             span.appendChild(range.extractContents());
             range.insertNode(span);
