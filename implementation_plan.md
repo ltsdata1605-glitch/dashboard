@@ -1430,3 +1430,18 @@ Sau Mục 50, người dùng gửi 2 ảnh so sánh: tab "DỮ LIỆU/TARGET DOA
 
 ### Kiểm thử
 `npm run check` sạch. Playwright xác nhận: nhãn "NỘI DUNG CẤU HÌNH" + tab gạch chân sky hiển thị đúng như "chuẩn"; chuyển giữa 3 tab (Dữ liệu/Target Doanh thu/Target Thi đua) mượt, không còn khung lồng đôi; không lỗi console.
+
+---
+
+## Mục 52 — Gộp "Báo cáo Tổng hợp" + "Thi đua Cụm" thành 1 card (tiết kiệm không gian) — 2026-07-27
+
+### Bối cảnh
+Người dùng yêu cầu gợi ý hướng nâng cấp "hiện đại + tiết kiệm không gian hơn" cho khu vực đầu trang "Cập nhật". Đã đưa 3 phương án qua AskUserQuestion, người dùng chọn **"Gộp thành 1 card, 2 nhóm con"** — đúng theo pattern "NHÓM 1/2/3" đã có sẵn trong chính khung "Cấu hình siêu thị chi tiết" ngay bên dưới.
+
+### Thay đổi
+`features/bi-dashboard/components/DataUpdater.tsx`: gộp 2 `<Card title="Báo cáo Tổng hợp">` + `<Card title="Thi đua Cụm">` (mỗi card 1 SectionHeader riêng, 2 StatusTile) thành **1 `<Card>` duy nhất** (tiêu đề "Dữ Liệu Báo Cáo Cụm"), bên trong chia `grid grid-cols-1 sm:grid-cols-2` với 2 nhóm con — mỗi nhóm có nhãn nhỏ (chấm màu + label, style giống hệt "BC D.THU NGÀNH HÀNG"/"BC D.THU THEO NV" trong `SupermarketConfig.tsx`): "Báo cáo Tổng hợp" (chấm sky) và "Thi đua Cụm" (chấm emerald). Tiết kiệm 1 SectionHeader + 1 bộ viền/bóng/khoảng cách giữa 2 card.
+
+Không đổi bất kỳ logic đọc/ghi/validate dữ liệu nào — chỉ gộp khung trình bày.
+
+### Kiểm thử
+`npm run check` + Playwright chụp lại xác nhận layout mới hiển thị đúng, không lỗi console.
