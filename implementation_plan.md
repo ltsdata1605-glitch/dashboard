@@ -1445,3 +1445,6 @@ Không đổi bất kỳ logic đọc/ghi/validate dữ liệu nào — chỉ g�
 
 ### Kiểm thử
 `npm run check` + Playwright chụp lại xác nhận layout mới hiển thị đúng, không lỗi console.
+
+### Kết quả xác minh (2026-07-27) — ĐÃ XONG
+`npm run check` sạch. Playwright xác nhận: 1 card duy nhất "DỮ LIỆU BÁO CÁO CỤM" với 2 nhóm con (chấm sky "Báo cáo Tổng hợp" / chấm emerald "Thi đua Cụm") hiển thị đúng, tiết kiệm rõ rệt so với 2 card riêng trước đó, không lỗi console.

@@ -255,112 +255,124 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 relative z-10">
-                {/* NHÓM BÁO CÁO TỔNG HỢP */}
-                <Card title="Báo cáo Tổng hợp" icon="upload-cloud">
-                    <div className="grid grid-cols-1 gap-2">
-                        <StatusTile 
-                            title="Realtime"
-                            lastUpdated={summaryRealtimeTs}
-                            value={summaryRealtime}
-                            error={errors.summaryRealtime}
-                            downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
-                            icon={<ClockIcon className="h-4 w-4" />}
-                            colorTheme="amber"
-                            onChange={(val) => {
-                                if (validateSummaryRealtimeReport(val)) {
-                                    setErrors(p => ({...p, summaryRealtime: null}));
-                                    setSummaryRealtime(val);
-                                    setSummaryRealtimeTs(getDetailedTimestamp());
-                                    addUpdate('summary-realtime', 'Realtime Doanh Thu', 'BC Tổng hợp');
-                                } else setErrors(p => ({...p, summaryRealtime: 'Sai định dạng báo cáo Realtime.'}));
-                            }}
-                            onClear={(title) => { 
-                                setSummaryRealtime(''); 
-                                setSummaryRealtimeTs(null); 
-                                removeUpdate('summary-realtime');
-                                toast.success(`Đã xoá dữ liệu ${title}`);
-                                
-                            }}
-                        />
-                        <StatusTile 
-                            title="Luỹ kế"
-                            lastUpdated={summaryLuyKeTs}
-                            value={summaryLuyKe}
-                            error={errors.summaryLuyKe}
-                            downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
-                            icon={<ChartPieIcon className="h-4 w-4" />}
-                            colorTheme="emerald"
-                            onChange={(val) => {
-                                if (validateSummaryLuyKeReport(val)) {
-                                    setErrors(p => ({...p, summaryLuyKe: null}));
-                                    setSummaryLuyKe(val);
-                                    setSummaryLuyKeTs(getDetailedTimestamp());
-                                    addUpdate('summary-luy-ke', 'Luỹ kế tháng', 'BC Tổng hợp');
-                                } else setErrors(p => ({...p, summaryLuyKe: 'Sai định dạng báo cáo Luỹ kế.'}));
-                            }}
-                            onClear={(title) => { 
-                                setSummaryLuyKe(''); 
-                                setSummaryLuyKeTs(null); 
-                                removeUpdate('summary-luy-ke'); 
-                                toast.success(`Đã xoá dữ liệu ${title}`);
-                                
-                            }}
-                        />
-                    </div>
-                </Card>
+            <div className="relative z-10">
+                <Card title="Dữ Liệu Báo Cáo Cụm" icon="upload-cloud">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        {/* NHÓM BÁO CÁO TỔNG HỢP */}
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
+                                Báo cáo Tổng hợp
+                            </h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                <StatusTile
+                                    title="Realtime"
+                                    lastUpdated={summaryRealtimeTs}
+                                    value={summaryRealtime}
+                                    error={errors.summaryRealtime}
+                                    downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
+                                    icon={<ClockIcon className="h-4 w-4" />}
+                                    colorTheme="amber"
+                                    onChange={(val) => {
+                                        if (validateSummaryRealtimeReport(val)) {
+                                            setErrors(p => ({...p, summaryRealtime: null}));
+                                            setSummaryRealtime(val);
+                                            setSummaryRealtimeTs(getDetailedTimestamp());
+                                            addUpdate('summary-realtime', 'Realtime Doanh Thu', 'BC Tổng hợp');
+                                        } else setErrors(p => ({...p, summaryRealtime: 'Sai định dạng báo cáo Realtime.'}));
+                                    }}
+                                    onClear={(title) => {
+                                        setSummaryRealtime('');
+                                        setSummaryRealtimeTs(null);
+                                        removeUpdate('summary-realtime');
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
 
-                {/* NHÓM BÁO CÁO THI ĐUA */}
-                <Card title="Thi đua Cụm" icon="check-circle-2">
-                    <div className="grid grid-cols-1 gap-2">
-                        <StatusTile 
-                            title="Realtime"
-                            lastUpdated={competitionRealtimeTs}
-                            value={competitionRealtime}
-                            error={errors.competitionRealtime}
-                            downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=1&dm=2&mt=2"
-                            icon={<SparklesIcon className="h-4 w-4" />}
-                            colorTheme="amber"
-                            onChange={(val) => {
-                                if (validateCompetitionRealtimeReport(val)) {
-                                    setErrors(p => ({...p, competitionRealtime: null}));
-                                    setCompetitionRealtime(val);
-                                    setCompetitionRealtimeTs(getDetailedTimestamp());
-                                    addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
-                                } else setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
-                            }}
-                            onClear={(title) => { 
-                                setCompetitionRealtime(''); 
-                                setCompetitionRealtimeTs(null); 
-                                removeUpdate('competition-realtime'); 
-                                toast.success(`Đã xoá dữ liệu ${title}`);
-                                
-                            }}
-                        />
-                        <StatusTile 
-                            title="Luỹ kế"
-                            lastUpdated={competitionLuyKeTs}
-                            value={competitionLuyKe}
-                            error={errors.competitionLuyKe}
-                            downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=2&dm=2&mt=2"
-                            icon={<ChartBarIcon className="h-4 w-4" />}
-                            colorTheme="emerald"
-                            onChange={(val) => {
-                                if (validateCompetitionLuyKeReport(val)) {
-                                    setErrors(p => ({...p, competitionLuyKe: null}));
-                                    setCompetitionLuyKe(val);
-                                    setCompetitionLuyKeTs(getDetailedTimestamp());
-                                    addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
-                                } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
-                            }}
-                            onClear={(title) => { 
-                                setCompetitionLuyKe(''); 
-                                setCompetitionLuyKeTs(null); 
-                                removeUpdate('competition-luy-ke'); 
-                                toast.success(`Đã xoá dữ liệu ${title}`);
-                                
-                            }}
-                        />
+                                    }}
+                                />
+                                <StatusTile
+                                    title="Luỹ kế"
+                                    lastUpdated={summaryLuyKeTs}
+                                    value={summaryLuyKe}
+                                    error={errors.summaryLuyKe}
+                                    downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
+                                    icon={<ChartPieIcon className="h-4 w-4" />}
+                                    colorTheme="emerald"
+                                    onChange={(val) => {
+                                        if (validateSummaryLuyKeReport(val)) {
+                                            setErrors(p => ({...p, summaryLuyKe: null}));
+                                            setSummaryLuyKe(val);
+                                            setSummaryLuyKeTs(getDetailedTimestamp());
+                                            addUpdate('summary-luy-ke', 'Luỹ kế tháng', 'BC Tổng hợp');
+                                        } else setErrors(p => ({...p, summaryLuyKe: 'Sai định dạng báo cáo Luỹ kế.'}));
+                                    }}
+                                    onClear={(title) => {
+                                        setSummaryLuyKe('');
+                                        setSummaryLuyKeTs(null);
+                                        removeUpdate('summary-luy-ke');
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
+
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* NHÓM BÁO CÁO THI ĐUA */}
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
+                                Thi đua Cụm
+                            </h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                <StatusTile
+                                    title="Realtime"
+                                    lastUpdated={competitionRealtimeTs}
+                                    value={competitionRealtime}
+                                    error={errors.competitionRealtime}
+                                    downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=1&dm=2&mt=2"
+                                    icon={<SparklesIcon className="h-4 w-4" />}
+                                    colorTheme="amber"
+                                    onChange={(val) => {
+                                        if (validateCompetitionRealtimeReport(val)) {
+                                            setErrors(p => ({...p, competitionRealtime: null}));
+                                            setCompetitionRealtime(val);
+                                            setCompetitionRealtimeTs(getDetailedTimestamp());
+                                            addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
+                                        } else setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
+                                    }}
+                                    onClear={(title) => {
+                                        setCompetitionRealtime('');
+                                        setCompetitionRealtimeTs(null);
+                                        removeUpdate('competition-realtime');
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
+
+                                    }}
+                                />
+                                <StatusTile
+                                    title="Luỹ kế"
+                                    lastUpdated={competitionLuyKeTs}
+                                    value={competitionLuyKe}
+                                    error={errors.competitionLuyKe}
+                                    downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=2&dm=2&mt=2"
+                                    icon={<ChartBarIcon className="h-4 w-4" />}
+                                    colorTheme="emerald"
+                                    onChange={(val) => {
+                                        if (validateCompetitionLuyKeReport(val)) {
+                                            setErrors(p => ({...p, competitionLuyKe: null}));
+                                            setCompetitionLuyKe(val);
+                                            setCompetitionLuyKeTs(getDetailedTimestamp());
+                                            addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
+                                        } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
+                                    }}
+                                    onClear={(title) => {
+                                        setCompetitionLuyKe('');
+                                        setCompetitionLuyKeTs(null);
+                                        removeUpdate('competition-luy-ke');
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
+
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </Card>
             </div>
