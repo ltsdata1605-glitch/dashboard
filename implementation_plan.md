@@ -1612,3 +1612,26 @@ Nếu không tìm thấy span khớp (lần chỉnh đầu tiên) → giữ nguy
 ### Kiểm thử (vòng 3)
 - `npm run check`: PASS, không lỗi/vi phạm mới.
 - Playwright: chọn 1 dòng, bấm "-" 5 lần liên tiếp → `innerHTML` chỉ còn ĐÚNG 1 `<span style="font-size: 2.5cqw;">` (không còn lồng 5 lớp như trước khi sửa); bấm thêm "+" 3 lần → vẫn chỉ 1 span, cập nhật đúng thành `3.1cqw`. Chụp ảnh xác nhận không còn khoảng trống bất thường giữa các dòng, toolbar vẫn bám đúng vị trí.
+
+---
+
+## Mục 58 (ĐANG ĐIỀU TRA, chưa có fix) — "Phiếu 2,3,4 chưa được đồng bộ giống phiếu 1"
+
+### Bối cảnh
+Người dùng gửi ảnh chụp: dòng "Giá sốc 18h mỗi ngày" + "20 Suất Chảo 10.000đ" hiển thị CHỒNG LÊN NHAU (chữ đè lên chữ, không đọc được) ở phiếu #2, #3, #4 (bản sao `display-content-top-left`, dùng `dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTop) }}`), trong khi phiếu #1 (bản đang sửa, `contentEditable` trực tiếp, KHÔNG qua `sanitizeTicketHtml`) hiển thị đúng, không chồng.
+
+### Đã loại trừ được (qua hỏi người dùng + Playwright)
+- **KHÔNG phải do F5/reload**: người dùng xác nhận tải lại trang thì lỗi vẫn còn — loại trừ giả thuyết "chỉ là độ trễ render tạm thời giữa 2 lần cập nhật state".
+- **KHÔNG phải do dữ liệu cũ tồn đọng**: người dùng xác nhận đã xoá hẳn dòng đó và gõ lại HOÀN TOÀN MỚI (không copy-paste) — lỗi vẫn còn. Loại trừ giả thuyết "rác span lồng nhau từ trước khi có fix Mục 57 vòng 3".
+- **KHÔNG phải khác trình duyệt**: người dùng xác nhận dùng Chrome trên máy tính (Windows/Mac) — giống môi trường test Playwright/Chromium của tôi.
+
+### Đã thử tái hiện nhưng KHÔNG THÀNH CÔNG (mọi lần đều cho kết quả đồng bộ hoàn hảo giữa cả 4 phiếu)
+1. Gán nội dung 5 dòng giống hệt ảnh chụp qua `el.innerHTML = ...` + dispatch `input` — cả 4 phiếu giống hệt nhau (byte-identical `innerHTML`, cùng `getBoundingClientRect().height`).
+2. Mô phỏng dữ liệu tồn đọng có `<span>` lồng 3 lớp cỡ chữ khác nhau (giả lập rác từ trước khi có fix vòng 3) — cả 4 phiếu vẫn đồng bộ, `sanitizeTicketHtml` không làm thay đổi cấu trúc lồng đó.
+3. Bấm nút "-" 8 lần liên tục KHÔNG chờ giữa các lần, đo NGAY LẬP TỨC (không `waitForTimeout`) để bắt lệch pha giữa cập nhật DOM trực tiếp (phiếu #1) và re-render qua React state (phiếu #2-4, qua `CustomEvent('draw-font-size-change')`) — vẫn đồng bộ hoàn hảo ở mọi thời điểm đo.
+4. Test thật với `page.reload()` (không phải chỉ SPA re-render) sau khi gõ nội dung dùng `<br>` thay vì `<div>` để ngắt dòng — vẫn đồng bộ sau khi tải lại.
+5. Gõ bằng bàn phím thật (`page.keyboard.type` + phím Enter, không gán `innerHTML` bằng script) — vẫn đồng bộ.
+6. Kiểm tra `container-type: inline-size` (đơn vị `cqw`) — xác nhận CHỈ đặt 1 lần ở `.sticker-container` cấp ngoài cùng, dùng CHUNG cho cả 4 khối ticket, không có khác biệt ngữ cảnh container giữa phiếu #1 và #2-4.
+
+### Đang chờ
+Đã đề nghị người dùng mở DevTools (F12) → Inspect vào đúng dòng chữ bị chồng ở phiếu #2 → copy HTML thật để so sánh chính xác với những gì tôi đoán, thay vì tiếp tục đoán mò. Người dùng đồng ý thử. **CHƯA CÓ FIX cho Mục 58 — cần dữ liệu debug thật từ người dùng trước khi sửa.**
