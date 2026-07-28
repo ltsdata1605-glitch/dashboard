@@ -1633,5 +1633,14 @@ Người dùng gửi ảnh chụp: dòng "Giá sốc 18h mỗi ngày" + "20 Su�
 5. Gõ bằng bàn phím thật (`page.keyboard.type` + phím Enter, không gán `innerHTML` bằng script) — vẫn đồng bộ.
 6. Kiểm tra `container-type: inline-size` (đơn vị `cqw`) — xác nhận CHỈ đặt 1 lần ở `.sticker-container` cấp ngoài cùng, dùng CHUNG cho cả 4 khối ticket, không có khác biệt ngữ cảnh container giữa phiếu #1 và #2-4.
 
-### Đang chờ
-Đã đề nghị người dùng mở DevTools (F12) → Inspect vào đúng dòng chữ bị chồng ở phiếu #2 → copy HTML thật để so sánh chính xác với những gì tôi đoán, thay vì tiếp tục đoán mò. Người dùng đồng ý thử. **CHƯA CÓ FIX cho Mục 58 — cần dữ liệu debug thật từ người dùng trước khi sửa.**
+### Đã nhận HTML thật từ DevTools — tìm ra nguyên nhân chính xác
+Người dùng gửi đúng HTML từ Inspect (F12) của phiếu #2 bị lỗi. Đếm kỹ các thẻ mở/đóng (nội dung lồng ~20 lớp `<span>` cỡ chữ khác nhau, tích luỹ từ RẤT NHIỀU lần bấm +/- trước khi có fix Mục 57 vòng 3) phát hiện: dòng "Giá sốc 18h mõi ngày" — dù trông như đã tách dòng riêng bằng ký tự xuống dòng `\n` — thực ra **vẫn nằm lồng bên trong 4 lớp `<span>` cỡ chữ (3.7cqw > 3.5cqw > 3.3cqw > 3.5cqw) DÙNG CHUNG với dòng "RÚT THĂM 19H"** phía trên. Về CSS, khi 1 `<span>` bọc nội dung trải dài qua NHIỀU dòng (do bị ngắt dòng ở giữa), trình duyệt phải "chẻ" span đó thành nhiều đoạn trên từng dòng — nhưng MỖI dòng vẫn bị ảnh hưởng bởi `line-height` của TẤT CẢ span tổ tiên bao quanh nó, kể cả span chỉ bao dòng KHÁC. Đây là vùng CSS có sự khác biệt tính toán nhỏ giữa các phiên bản/máy trình duyệt (giải thích vì sao không tái hiện được bằng dữ liệu tự tạo ở máy tôi dù cùng Chrome, cùng HTML thật, đủ mọi độ rộng khung nhìn 1280-2560px — đã kiểm tra cả font tuỳ chỉnh 'UTM Avo' load thành công, không phải do fallback font).
+
+**Vì sao "xoá gõ lại từ đầu" không hết lỗi**: Khi người dùng đặt con trỏ vào GIỮA các lớp `<span>` cũ rồi gõ chữ mới, trình duyệt tự động cho chữ mới "kế thừa" định dạng của vị trí con trỏ đang đứng (hành vi mặc định của mọi trình duyệt) — tức chữ gõ mới vẫn bị nhét vào bên trong đúng những lớp span rỗng còn sót lại, không thực sự bắt đầu sạch từ text thường.
+
+### Đã sửa (vòng 4) — thêm nút "Xoá định dạng"
+Thêm nút **Xoá định dạng** (icon Eraser, cuối thanh công cụ nổi) vào `FloatingFormatToolbar.tsx`. Khi bôi đen 1 đoạn rồi bấm nút này: lấy `range.toString()` (chữ thuần, bỏ hết mọi thẻ), `range.deleteContents()` rồi chèn lại đúng 1 `TextNode` thuần — xoá sạch TRIỆT ĐỂ mọi lớp `<span>` (font-size/font-family/bold/italic) trong vùng chọn, kể cả các span tổ tiên trải dài qua nhiều dòng như trường hợp lỗi này, mà thao tác gõ lại thông thường không dọn được.
+
+### Kiểm thử (vòng 4)
+- `npm run check`: PASS, không lỗi/vi phạm mới.
+- Playwright: nạp ĐÚNG HTML thật (1940 ký tự, ~20 lớp span lồng) người dùng gửi vào phiếu #1, bôi đen toàn bộ nội dung ô (qua Selection API `range.selectNodeContents`), bấm nút Xoá định dạng → `innerHTML` rút gọn còn đúng text thuần `"RÚT THĂM 19H \nGiá sốc 18h mõi ngày\n"` (không còn span nào). Chụp ảnh xác nhận cả 4 phiếu hiển thị đồng nhất, sạch, không còn chồng chữ.
