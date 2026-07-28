@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { TicketDrawData } from './types';
 import { useContentEditable } from './useContentEditable';
-import { sanitizeTicketHtml } from './ticketSanitize';
+import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay } from './ticketSanitize';
 
 interface DrawTicketBlockProps {
     ticket: TicketDrawData;
@@ -93,8 +93,8 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-title-single"
-                    style={{ fontSize: `${Math.min(drawTitleSize || 2.5, 3.0)}cqw` }}
+                    className="input-title-single"
+                    style={{ fontSize: `${Math.min(drawTitleSize || 2.5, 3.0)}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.title) }}
                 />
             )}
@@ -113,8 +113,8 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-content-top-left"
-                    style={{ fontSize: `${drawContentTopLeftSize || 3.5}cqw` }}
+                    className="input-content-top-left"
+                    style={{ fontSize: `${drawContentTopLeftSize || 3.5}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTop) }}
                 />
             )}
@@ -132,31 +132,49 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-content-top-right"
-                    style={{ fontSize: `${drawContentTopRightSize || 3.5}cqw` }}
+                    className="input-content-top-right"
+                    style={{ fontSize: `${drawContentTopRightSize || 3.5}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTopRight) }}
                 />
             )}
 
             {/* Code Left */}
-            {isAutoIncrement ? (
-                <div
-                    className="display-code-left"
-                    style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
-                >
-                    {ticket.code}
-                </div>
+            {isFirst ? (
+                isAutoIncrement ? (
+                    <div
+                        className="display-code-left"
+                        style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
+                    >
+                        {ticket.code}
+                    </div>
+                ) : (
+                    <div
+                        ref={codeEditable.ref}
+                        onInput={codeEditable.handleInput}
+                        onClick={() => setActiveField?.('drawCode')}
+                        contentEditable
+                        suppressContentEditableWarning
+                        className={`input-code-left ${activeField === 'drawCode' ? 'active-field' : ''}`}
+                        style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
+                        data-placeholder="Số"
+                    />
+                )
             ) : (
-                <div
-                    ref={codeEditable.ref}
-                    onInput={codeEditable.handleInput}
-                    onClick={() => setActiveField?.('drawCode')}
-                    contentEditable
-                    suppressContentEditableWarning
-                    className={`input-code-left ${activeField === 'drawCode' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
-                    data-placeholder="Số"
-                />
+                isAutoIncrement ? (
+                    <div
+                        className="display-code-left"
+                        style={{ fontSize: `${drawCodeSize || 3.8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    >
+                        {ticket.code}
+                    </div>
+                ) : (
+                    <div
+                        className="input-code-left"
+                        style={{ fontSize: `${drawCodeSize || 3.8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    >
+                        {ticket.code}
+                    </div>
+                )
             )}
             {/* Code Right (Syncs automatically) */}
             <div
@@ -180,8 +198,8 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-content-bottom-left"
-                    style={{ fontSize: `${drawContentBottomLeftSize || 2.2}cqw` }}
+                    className="input-content-bottom-left"
+                    style={{ fontSize: `${drawContentBottomLeftSize || 2.2}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottom) }}
                 />
             )}
@@ -199,8 +217,8 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-content-bottom-right"
-                    style={{ fontSize: `${drawContentBottomRightSize || 2.2}cqw` }}
+                    className="input-content-bottom-right"
+                    style={{ fontSize: `${drawContentBottomRightSize || 2.2}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRight) }}
                 />
             )}
@@ -219,8 +237,8 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 />
             ) : (
                 <div
-                    className="display-footer-left"
-                    style={{ fontSize: `${drawFooterSize || 3.8}cqw` }}
+                    className="input-footer-left"
+                    style={{ fontSize: `${drawFooterSize || 3.8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.footer) }}
                 />
             )}

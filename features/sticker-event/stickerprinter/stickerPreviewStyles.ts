@@ -271,10 +271,6 @@ export function getStickerPreviewStyles({
                      left: 0;
                      overflow: hidden;
                  }
-                 .draw-ticket-block > div {
-                     overflow: hidden;
-                     word-break: break-all;
-                 }
                  .draw-ticket-block[data-index="0"] { top: 0%; }
                  .draw-ticket-block[data-index="1"] { top: 25%; }
                  .draw-ticket-block[data-index="2"] { top: 50%; }
@@ -307,12 +303,12 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-top-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 21.0%;
+                      top: 22.5%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: 23.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: center;
+                      justify-content: flex-start;
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
@@ -331,9 +327,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-top-right {
                       position: absolute;
                       left: 52.4%;
-                      top: 21.0%;
+                      top: 22.5%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: 23.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -352,12 +348,12 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 50.0%;
+                      top: 49.0%;
                       width: 47.0%;
-                      height: 32.0%;
+                      height: 29.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: center;
+                      justify-content: flex-start;
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
@@ -370,19 +366,20 @@ export function getStickerPreviewStyles({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
+                      line-height: 1.35;
                   }
  
                   .draw-ticket-block .input-content-bottom-right {
-                      position: absolute;
-                      left: 52.4%;
-                      top: 50.0%;
-                      width: 45.4%;
-                      height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                       position: absolute;
+                       left: 52.4%;
+                       top: 49.0%;
+                       width: 45.4%;
+                       height: 29.0%;
+                       display: flex;
+                       flex-direction: column;
+                       justify-content: center;
+                       align-items: flex-start;
+                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -498,29 +495,31 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-top-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 21.0%;
+                      top: 22.5%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: 23.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: center;
+                      justify-content: flex-start;
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
+                      font-size: 2.2cqw;
                       color: #000;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
                       line-height: 1.15;
+                      overflow: hidden;
                   }
 
                   .draw-ticket-block .display-content-top-right {
                       position: absolute;
                       left: 52.4%;
-                      top: 21.0%;
+                      top: 22.5%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: 23.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -531,17 +530,18 @@ export function getStickerPreviewStyles({
                       white-space: nowrap;
                       word-break: normal;
                       padding: 0.5cqw 1cqw;
+                      overflow: hidden;
                   }
 
-                  .draw-ticket-block .display-content-bottom-left {
+                   .draw-ticket-block .display-content-bottom-left {
                        position: absolute;
                        left: 2.2%;
-                       top: 50.0%;
+                       top: 49.0%;
                        width: 47.0%;
-                       height: 32.0%;
+                       height: 29.0%;
                        display: flex;
                        flex-direction: column;
-                       justify-content: center;
+                       justify-content: flex-start;
                        align-items: flex-start;
                        text-align: left;
                        font-family: 'UTM Avo', sans-serif;
@@ -551,19 +551,21 @@ export function getStickerPreviewStyles({
                        white-space: pre-wrap;
                        word-break: break-word;
                        padding: 0.5cqw 1cqw;
+                       line-height: 1.35;
+                       overflow: hidden;
                    }
 
                   .draw-ticket-block .display-content-bottom-right {
-                      position: absolute;
-                      left: 52.4%;
-                      top: 50.0%;
-                      width: 45.4%;
-                      height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                       position: absolute;
+                       left: 52.4%;
+                       top: 49.0%;
+                       width: 45.4%;
+                       height: 29.0%;
+                       display: flex;
+                       flex-direction: column;
+                       justify-content: center;
+                       align-items: flex-start;
+                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -571,6 +573,7 @@ export function getStickerPreviewStyles({
                       white-space: nowrap;
                       word-break: normal;
                       padding: 0.5cqw 1cqw;
+                      overflow: hidden;
                   }
 
                   .draw-ticket-block .display-footer-left {
@@ -609,41 +612,20 @@ export function getStickerPreviewStyles({
                  }
 
                  @media print {
+                     .sticker-container.draw-page {
+                         display: block !important;
+                         width: 210mm !important;
+                         height: 297mm !important;
+                         position: relative !important;
+                         margin: 0 auto !important;
+                         page-break-after: always !important;
+                     }
                      .draw-ticket-block [contenteditable="true"] {
                          outline: none !important;
                      }
-                     .draw-ticket-block [contenteditable="true"]:empty::before {
-                         content: "" !important;
-                     }
-
-                     /* Khống chế font-size tuyệt đối khi in để tránh Chrome Print Engine phóng to sai lệch */
-                     .draw-ticket-block .input-title-single,
-                      .draw-ticket-block .display-title-single {
-                          font-size: 13pt !important;
-                          line-height: 1.4 !important;
-                          white-space: nowrap !important;
-                     }
-                     .draw-ticket-block .input-content-top-left,
-                     .draw-ticket-block .display-content-top-left {
-                         font-size: 9.5pt !important;
-                          line-height: 1.15 !important;
-                     }
-                     .draw-ticket-block .input-content-bottom-left,
-                     .draw-ticket-block .display-content-bottom-left {
-                         font-size: 8.5pt !important;
-                         line-height: 1.3 !important;
-                     }
-                     .draw-ticket-block .input-code-left,
-                     .draw-ticket-block .display-code-left,
-                     .draw-ticket-block .display-code-right {
-                         font-size: 23pt !important;
-                         line-height: 1.1 !important;
-                     }
-                     .draw-ticket-block .input-footer-left,
-                     .draw-ticket-block .display-footer-left {
-                         font-size: 13pt !important;
-                         line-height: 1.2 !important;
-                     }
-                 }
+                      .draw-ticket-block [contenteditable="true"]:empty::before {
+                          content: "" !important;
+                      }
+                  }
     `;
 }

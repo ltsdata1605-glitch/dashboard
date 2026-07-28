@@ -1,7 +1,7 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
 import { StickerPage, PrintHistoryEntry, TicketDrawData } from './types';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
-import { sanitizeTicketHtml } from './ticketSanitize';
+import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay } from './ticketSanitize';
 
 /**
  * Sinh HTML in cho tất cả trang phiếu rút thăm từ data (không phụ thuộc DOM).
@@ -41,20 +41,28 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const isFirst = totalIndex === 0;
             const src = isFirst ? ticket : firstTicket;
 
-            const titleHtml = `<div class="${isFirst ? 'input-title-single' : 'display-title-single'}" style="font-size:${Math.min(drawTitleSize, 3.0)}cqw">${sanitizeTicketHtml(src.title)}</div>`;
-            const contentTopLeftHtml = `<div class="${isFirst ? 'input-content-top-left' : 'display-content-top-left'}" style="font-size:${drawContentTopLeftSize}cqw">${sanitizeTicketHtml(src.contentTop)}</div>`;
-            const contentTopRightHtml = `<div class="${isFirst ? 'input-content-top-right' : 'display-content-top-right'}" style="font-size:${drawContentTopRightSize}cqw">${sanitizeTicketHtml(src.contentTopRight)}</div>`;
-            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}cqw">${ticket.code}</div>`;
-            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}cqw">${ticket.code}</div>`;
-            const contentBottomLeftHtml = `<div class="${isFirst ? 'input-content-bottom-left' : 'display-content-bottom-left'}" style="font-size:${drawContentBottomLeftSize}cqw">${sanitizeTicketHtml(src.contentBottom)}</div>`;
-            const contentBottomRightHtml = `<div class="${isFirst ? 'input-content-bottom-right' : 'display-content-bottom-right'}" style="font-size:${drawContentBottomRightSize}cqw">${sanitizeTicketHtml(src.contentBottomRight)}</div>`;
-            const footerHtml = `<div class="${isFirst ? 'input-footer-left' : 'display-footer-left'}" style="font-size:${drawFooterSize}cqw">${sanitizeTicketHtml(src.footer)}</div>`;
+            const sanitize = sanitizeTicketHtml;
+            const noInteract = isFirst ? '' : 'pointer-events:none;user-select:none;';
+            const titleCls = 'input-title-single';
+            const topLeftCls = 'input-content-top-left';
+            const topRightCls = 'input-content-top-right';
+            const bottomLeftCls = 'input-content-bottom-left';
+            const bottomRightCls = 'input-content-bottom-right';
+            const footerCls = 'input-footer-left';
+            const titleHtml = `<div class="${titleCls}" style="font-size:${Math.min(drawTitleSize, 3.0)}vw;${noInteract}">${sanitize(src.title)}</div>`;
+            const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${drawContentTopLeftSize}vw;${noInteract}">${sanitize(src.contentTop)}</div>`;
+            const contentTopRightHtml = `<div class="${topRightCls}" style="font-size:${drawContentTopRightSize}vw;${noInteract}">${sanitize(src.contentTopRight)}</div>`;
+            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}vw;${noInteract}">${ticket.code}</div>`;
+            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}vw;${noInteract}">${ticket.code}</div>`;
+            const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${drawContentBottomLeftSize}vw;${noInteract}">${sanitize(src.contentBottom)}</div>`;
+            const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${drawContentBottomRightSize}vw;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
+            const footerHtml = `<div class="${footerCls}" style="font-size:${drawFooterSize}vw;${noInteract}">${sanitize(src.footer)}</div>`;
 
             return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${footerHtml}</div>`;
         }).join('');
 
         const isLast = pageIdx === Math.ceil(drawTickets.length / 4) - 1;
-        pages.push(`<div class="sticker-container draw-page active-preview-page" data-type="draw" style="background-image:url('${bgImage}');page-break-after:${isLast ? 'auto' : 'always'};margin-bottom:${isLast ? '0' : '20px'}">${ticketBlocks}</div>`);
+        pages.push(`<div class="sticker-container draw-page active-preview-page" data-type="draw" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:2482/3512;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;page-break-after:${isLast ? 'auto' : 'always'};margin-bottom:${isLast ? '0' : '20px'}">${ticketBlocks}</div>`);
     }
 
     return pages.join('');

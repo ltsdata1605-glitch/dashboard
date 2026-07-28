@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bold, Italic, Underline, Eraser } from 'lucide-react';
+import { Bold, Italic, Underline } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface FloatingFormatToolbarProps {
@@ -235,62 +235,6 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         }
     };
 
-    // Gỡ TOÀN BỘ định dạng (mọi <span> cỡ chữ/font lồng nhau, bold/italic/underline) của vùng
-    // chọn, trả về chữ thường thuần tuý. Dùng để dọn sạch dữ liệu cũ đã lỡ bị lồng quá nhiều
-    // lớp span từ trước (xem Mục 57-58 trong implementation_plan.md) mà việc gõ lại từ đầu
-    // không dọn được — vì con trỏ đặt vào giữa các span rỗng còn sót lại sẽ khiến chữ gõ MỚI
-    // bị "kế thừa" luôn phần vỏ định dạng cũ đó, không thực sự bắt đầu sạch.
-    const clearFormatting = () => {
-        let range = savedRangeRef.current;
-        const selection = window.getSelection();
-
-        if (!range && selection && selection.rangeCount > 0) {
-            range = selection.getRangeAt(0);
-        }
-
-        if (!range || range.collapsed) return;
-
-        let parent = range.commonAncestorContainer;
-        if (parent.nodeType === 3) parent = parent.parentNode || parent;
-        let current: Node | null = parent;
-        let editableContainer: HTMLElement | null = null;
-        while (current) {
-            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
-                editableContainer = current as HTMLElement;
-                break;
-            }
-            current = current.parentNode;
-        }
-
-        if (!editableContainer) return;
-
-        editableContainer.focus();
-        if (selection) {
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-
-        const plainText = range.toString();
-        try {
-            range.deleteContents();
-            const textNode = document.createTextNode(plainText);
-            range.insertNode(textNode);
-
-            const newRange = document.createRange();
-            newRange.selectNode(textNode);
-            if (selection) {
-                selection.removeAllRanges();
-                selection.addRange(newRange);
-            }
-            savedRangeRef.current = newRange;
-
-            const event = new Event('input', { bubbles: true });
-            editableContainer.dispatchEvent(event);
-        } catch (e) {
-            console.error('Error clearing formatting:', e);
-        }
-    };
-
     const getSelectedFontSize = (): number => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return 3.5;
@@ -439,6 +383,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             {/* Bold button */}
             <Button
                 variant="ghost"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('bold')}
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="In đậm (Bold)"
@@ -449,6 +394,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             {/* Italic button */}
             <Button
                 variant="ghost"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('italic')}
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="In nghiêng (Italic)"
@@ -459,22 +405,12 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             {/* Underline button */}
             <Button
                 variant="ghost"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('underline')}
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="Gạch chân (Underline)"
             >
                 <Underline size={13} className="stroke-[2.5]" />
-            </Button>
-
-            {/* Xoá định dạng — gỡ sạch mọi span cỡ chữ/font lồng nhau, trả về chữ thường */}
-            <Button
-                variant="ghost"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={clearFormatting}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors border-l border-slate-700/80 ml-0.5 pl-1.5"
-                title="Xoá định dạng (gỡ hết cỡ chữ/font đã lồng, trả về chữ thường)"
-            >
-                <Eraser size={13} className="stroke-[2.5]" />
             </Button>
 
             {/* Tooltip arrow */}
