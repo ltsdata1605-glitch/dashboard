@@ -1612,3 +1612,35 @@ Nếu không tìm thấy span khớp (lần chỉnh đầu tiên) → giữ nguy
 ### Kiểm thử (vòng 3)
 - `npm run check`: PASS, không lỗi/vi phạm mới.
 - Playwright: chọn 1 dòng, bấm "-" 5 lần liên tiếp → `innerHTML` chỉ còn ĐÚNG 1 `<span style="font-size: 2.5cqw;">` (không còn lồng 5 lớp như trước khi sửa); bấm thêm "+" 3 lần → vẫn chỉ 1 span, cập nhật đúng thành `3.1cqw`. Chụp ảnh xác nhận không còn khoảng trống bất thường giữa các dòng, toolbar vẫn bám đúng vị trí.
+
+---
+
+## Mục 58 — Bug in Phiếu Rút Thăm: "Chế độ xem trước đúng, bấm In thì cỡ chữ bị sai/phóng to" (2026-07-28)
+
+### Trạng thái kế thừa khi bắt đầu phiên này
+`git status` cho thấy 6 file `features/sticker-event/stickerprinter/*` đã có thay đổi CHƯA COMMIT từ phiên trước (không phải do tôi tạo). Đã commit checkpoint (`fde630f`) trước khi sửa tiếp, đúng CLAUDE.md mục 0.1. Trạng thái kế thừa gồm 2 phần:
+1. **Đồng bộ cấu trúc DOM phiếu #1 và #2-4** (`DrawTicketBlock.tsx`, `pageHtmlUtils.ts`): cả 4 phiếu giờ dùng chung nhóm class `input-*` (chỉ khác `pointer-events:none; user-select:none` cho phiếu #2-4) thay vì phiếu #2-4 dùng riêng nhóm `display-*` như trước — hướng đi thay thế cho nút "Xoá định dạng" đã gỡ bỏ khỏi `FloatingFormatToolbar.tsx` trong cùng đợt (nút này vừa được thêm ở commit `14f6d4d`). Phần này **không đụng tới** trong phiên này — giữ nguyên vì không liên quan bug đang sửa.
+2. Hàm `sanitizeTicketHtmlForDisplay()` (`ticketSanitize.ts`) được thêm để lọc `font-size` khỏi span lồng khi hiển thị phiếu #2-4, nhưng **import rồi không gọi ở đâu cả** (dead import) ở cả `pageHtmlUtils.ts` lẫn `DrawTicketBlock.tsx`. `npm run check` hiện không báo lỗi/warning cho việc này (eslint/tsconfig dự án không bật rule chặn unused import ở mức error), nên không bắt buộc phải dọn để qua CI, nhưng đây là code chưa hoàn thiện — để nguyên, ngoài phạm vi bug đang sửa, cần quay lại sau nếu muốn tiếp tục hướng "đồng bộ phiếu 2-4" này.
+3. `implementation_plan.md`: mục 58 bản cũ (mô tả bug "chồng chữ phiếu 2,3,4", đã sửa bằng nút "Xoá định dạng") bị xoá dở dang khi phiên trước đổi hướng sang cách (1) ở trên. Nội dung cũ đã lỗi thời (nút đó không còn tồn tại) nên không khôi phục lại — thay bằng mục này.
+
+### Bug được báo cáo (ảnh chụp màn hình người dùng gửi)
+- Ảnh 1 (chế độ xem trước trong app): hiển thị đúng chuẩn, 4 phiếu cỡ chữ đồng đều, đúng bố cục.
+- Ảnh 2 (hộp thoại in của Chrome sau khi bấm "BẤM ĐỂ IN"): chữ bị phóng to sai lệch nghiêm trọng, tràn lệch khỏi khung ô ("MIỄN PHÍ", số "5", v.v. to bất thường, chữ "PHIẾU RÚT THĂM" bị cắt mất phần đầu).
+
+### Điều tra & tái hiện bằng Playwright
+Không đoán mò — dựng lại đúng luồng `handlePrint()` (`hooks/useStickerPrinterData.ts:921`) bằng Playwright thật (đăng nhập `admin_test_claude_qa2`/kho `TESTCLAUDEQA`), chặn `Element.prototype.removeChild` cho riêng `#print-host` + no-op hoá `window.print` để giữ lại DOM `#print-host` sau khi "in" thay vì bị code tự dọn sau 200ms. Sau đó dùng `page.emulateMedia({media:'print'})` + `page.pdf()` (dùng đúng pipeline in thật của Chromium, không phải chỉ chụp màn hình) để xem chính xác nội dung sẽ được in ra.
+
+**Tái hiện thành công**: với code kế thừa (font-size trong `generateDrawPagesHtml()` dùng đơn vị `vw`), bản PDF/print-media render ra chữ khổng lồ, tràn khung — giống hệt ảnh người dùng gửi.
+
+### Nguyên nhân gốc
+`pageHtmlUtils.ts → generateDrawPagesHtml()` (dùng riêng cho HTML in, khác với `DrawTicketBlock.tsx` dùng cho preview on-screen) đặt `font-size` bằng đơn vị `vw` (% theo bề rộng **toàn viewport**), trong khi preview on-screen luôn dùng `cqw` (% theo bề rộng **của chính `.sticker-container`**, nhờ `container-type: inline-size` đặt trên nó). `#print-host` được `appendChild` thẳng vào `document.body` (rộng gần bằng toàn màn hình, ví dụ ~1600-2500px), còn `.sticker-container.draw-page` bên trong nó chỉ chiếm một phần bề rộng đó (bị ép về đúng khổ A4 210mm ≈ 794px khi vào `@media print`). Vì `vw` không quan tâm bề rộng container thực tế, cỡ chữ bị tính theo bề rộng viewport (rất lớn) thay vì bề rộng thật của khung ticket (nhỏ hơn nhiều) → chữ phóng to sai lệch đúng như ảnh chụp.
+
+Đây là quy hồi từ chính thay đổi (chưa commit) ở trên: đối chiếu `git show 14f6d4d:...pageHtmlUtils.ts` (bản gốc trước khi có thay đổi kế thừa) cho thấy code gốc dùng `cqw` y hệt preview, kèm 1 khối `@media print` ghi đè cứng bằng `pt !important` cho từng field cụ thể (comment cũ: "Khống chế font-size tuyệt đối khi in để tránh Chrome Print Engine phóng to sai lệch") — tức đây là bug **đã từng được biết và có workaround**, nhưng phiên trước đã gỡ bỏ toàn bộ khối `@media print` đó và đổi hẳn sang `vw` (không rõ lý do, có thể đang thử hướng khác) — vô tình gây ra đúng bug này.
+
+### Đã sửa
+`pageHtmlUtils.ts`: đổi lại toàn bộ 7 chỗ `font-size:...vw` (title, content-top-left/right, code-left/right, content-bottom-left/right, footer) về lại `cqw`, khớp với `DrawTicketBlock.tsx` (preview) và khớp với `container-type: inline-size` đã đặt trên `.sticker-container`. **Không** khôi phục lại khối `pt !important` cũ — xem phần Kiểm thử bên dưới, chỉ cần đổi lại `cqw` là đã render đúng qua PDF thật, không cần thêm lớp ghi đè tuyệt đối.
+
+### Kiểm thử
+- Playwright + `page.pdf({format:'A4', printBackground:true})` (pipeline in thật của Chromium): 4 phiếu render đúng kích thước, đúng bố cục, khớp hoàn toàn với ảnh preview chuẩn — xác nhận bằng ảnh chụp trước/sau (trước: chữ khổng lồ tràn khung; sau: đúng như thiết kế).
+- `npm run check`: PASS (0 lỗi; các warning hiện có đều có từ trước, không liên quan thay đổi này: `Button.tsx` no-restricted-syntax, 2 chỗ "Unused eslint-disable directive" ở `useStickerPrinterData.ts`/`StickerPrintControls.tsx`).
+- **Chưa tự test bằng máy in vật lý thật** — chỉ xác minh qua PDF sinh bởi Chromium (là đúng pipeline in dùng chung với hộp thoại "In" của Chrome), khuyến nghị người dùng tự bấm in thử lại 1 lần để xác nhận trên máy thật.

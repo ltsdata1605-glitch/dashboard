@@ -49,14 +49,14 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const bottomLeftCls = 'input-content-bottom-left';
             const bottomRightCls = 'input-content-bottom-right';
             const footerCls = 'input-footer-left';
-            const titleHtml = `<div class="${titleCls}" style="font-size:${Math.min(drawTitleSize, 3.0)}vw;${noInteract}">${sanitize(src.title)}</div>`;
-            const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${drawContentTopLeftSize}vw;${noInteract}">${sanitize(src.contentTop)}</div>`;
-            const contentTopRightHtml = `<div class="${topRightCls}" style="font-size:${drawContentTopRightSize}vw;${noInteract}">${sanitize(src.contentTopRight)}</div>`;
-            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}vw;${noInteract}">${ticket.code}</div>`;
-            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}vw;${noInteract}">${ticket.code}</div>`;
-            const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${drawContentBottomLeftSize}vw;${noInteract}">${sanitize(src.contentBottom)}</div>`;
-            const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${drawContentBottomRightSize}vw;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
-            const footerHtml = `<div class="${footerCls}" style="font-size:${drawFooterSize}vw;${noInteract}">${sanitize(src.footer)}</div>`;
+            const titleHtml = `<div class="${titleCls}" style="font-size:${Math.min(drawTitleSize, 3.0)}cqw;${noInteract}">${sanitize(src.title)}</div>`;
+            const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${drawContentTopLeftSize}cqw;${noInteract}">${sanitize(src.contentTop)}</div>`;
+            const contentTopRightHtml = `<div class="${topRightCls}" style="font-size:${drawContentTopRightSize}cqw;${noInteract}">${sanitize(src.contentTopRight)}</div>`;
+            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}cqw;${noInteract}">${ticket.code}</div>`;
+            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}cqw;${noInteract}">${ticket.code}</div>`;
+            const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${drawContentBottomLeftSize}cqw;${noInteract}">${sanitize(src.contentBottom)}</div>`;
+            const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${drawContentBottomRightSize}cqw;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
+            const footerHtml = `<div class="${footerCls}" style="font-size:${drawFooterSize}cqw;${noInteract}">${sanitize(src.footer)}</div>`;
 
             return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${footerHtml}</div>`;
         }).join('');
