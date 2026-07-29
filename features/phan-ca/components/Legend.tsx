@@ -115,7 +115,7 @@ const Legend: React.FC<LegendProps> = ({
                                         onChange={(e) => onAutoAddWeekendShiftsChange(e.target.checked)}
                                         className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
                                     />
-                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 2,5 T6-CN</span>
+                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 2,5 T7-CN</span>
                                 </label>
                             )}
                             {onAutoAddWeekendShift1Change && (
@@ -126,7 +126,7 @@ const Legend: React.FC<LegendProps> = ({
                                         onChange={(e) => onAutoAddWeekendShift1Change(e.target.checked)}
                                         className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
                                     />
-                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 1 T6-CN</span>
+                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 1 T7-CN</span>
                                 </label>
                             )}
                             <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">

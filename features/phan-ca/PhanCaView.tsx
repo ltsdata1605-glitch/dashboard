@@ -244,12 +244,12 @@ const App: React.FC = () => {
   };
   const handleAutoAddWeekendShiftsChange = useCallback((checked: boolean) => {
     setAutoAddWeekendShifts(checked);
-    logHistory(checked ? "Tự động tăng ca 2,5 T6-CN" : "Gỡ tự động tăng ca 2,5 T6-CN");
+    logHistory(checked ? "Tự động tăng ca 2,5 T7-CN" : "Gỡ tự động tăng ca 2,5 T7-CN");
     generateNewSchedule({ autoAddWeekendShiftsOverride: checked });
   }, [generateNewSchedule, logHistory]);
   const handleAutoAddWeekendShift1Change = useCallback((checked: boolean) => {
     setAutoAddWeekendShift1(checked);
-    logHistory(checked ? "Tự động tăng ca 1 T6-CN" : "Gỡ tự động tăng ca 1 T6-CN");
+    logHistory(checked ? "Tự động tăng ca 1 T7-CN" : "Gỡ tự động tăng ca 1 T7-CN");
     generateNewSchedule({ autoAddWeekendShift1Override: checked });
   }, [generateNewSchedule, logHistory]);
   // --- XUẤT ẢNH ---

@@ -131,11 +131,6 @@ const isWeekend = (year: number, month: number, startDay: number, dayIndex: numb
     return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
 };
 
-const isFriday = (year: number, month: number, startDay: number, dayIndex: number) => {
-    const date = new Date(year, month - 1, startDay + dayIndex - 1);
-    return date.getDay() === 5; // Friday
-};
-
 /**
  * Thuật toán Cân bằng SBH Đa tầng (Refined version)
  * Cập nhật mới: Ưu tiên cân bằng công bằng vào cuối tuần (Sales Protection)
@@ -1061,10 +1056,10 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 let added = "";
                 let newShift = info.shift;
 
-                const isFriSatSun = isWeekend(year, month, startDay, d) || isFriday(year, month, startDay, d);
+                const isSatSun = isWeekend(year, month, startDay, d);
 
-                // 1. Overtime Ca 2,5 on Fri, Sat, Sun (T6-CN)
-                if (config.autoAddWeekendShifts && isFriSatSun) {
+                // 1. Overtime Ca 2,5 on Sat, Sun (T7-CN)
+                if (config.autoAddWeekendShifts && isSatSun) {
                     if (!newShift.includes('2')) {
                         newShift += '2';
                         added += '2';
@@ -1075,8 +1070,8 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     }
                 }
 
-                // 2. Overtime Ca 1 on Fri, Sat, Sun (T6-CN)
-                if (config.autoAddWeekendShift1 && isFriSatSun) {
+                // 2. Overtime Ca 1 on Sat, Sun (T7-CN)
+                if (config.autoAddWeekendShift1 && isSatSun) {
                     if (!newShift.includes('1')) {
                         newShift += '1';
                         added += '1';
