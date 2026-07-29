@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useInventoryData } from './hooks/useInventoryData';
+import { useQRScan } from './hooks/useQRScan';
 import { InventoryUpload } from './components/InventoryUpload';
 import { InventoryFilters } from './components/InventoryFilters';
 import { InventoryTable } from './components/InventoryTable';
 import { InventoryStats } from './components/InventoryStats';
+import { QRScannerInput } from './components/QRScannerInput';
 import { Button } from '@/components/shared/ui/Button';
 import { ConfirmDialog } from '@/components/shared/ui/ConfirmDialog';
 import { ExternalLink, Trash2 } from 'lucide-react';
@@ -15,6 +17,20 @@ export const InventoryView: React.FC = () => {
     type: 'success' | 'error' | 'warning';
     message: string;
   } | null>(null);
+
+  // QR Scan hook
+  const qrScan = useQRScan({
+    items: inventory.items,
+    onScanSuccess: (itemId) => {
+      inventory.scanIMEI(
+        inventory.items.find((i) => i.id === itemId)?.imei || ''
+      );
+      showToast('success', `✅ Scan thành công`);
+    },
+    onScanError: (message) => {
+      showToast('error', `⚠️ ${message}`);
+    },
+  });
 
   const showToast = (type: 'success' | 'error' | 'warning', message: string) => {
     setToastMessage({ type, message });
@@ -93,6 +109,12 @@ export const InventoryView: React.FC = () => {
         <>
           {/* Stats */}
           <InventoryStats stats={inventory.stats} />
+
+          {/* QR Scanner */}
+          <QRScannerInput
+            onScan={qrScan.scan}
+            isLoading={inventory.isLoading}
+          />
 
           {/* Filters */}
           <InventoryFilters

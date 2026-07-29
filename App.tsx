@@ -4,10 +4,10 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
-import { 
-    BarChart3, 
-    LayoutDashboard, 
-    Users, 
+import {
+    BarChart3,
+    LayoutDashboard,
+    Users,
     Printer,
     Calendar,
     Ticket,
@@ -17,7 +17,8 @@ import {
     HelpCircle,
     Shield,
     FileText,
-    Wrench
+    Wrench,
+    Package
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -28,7 +29,7 @@ const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
-
+const InventoryView = lazy(() => import('./features/kho-hang/InventoryView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
@@ -74,6 +75,7 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
+        { id: 'kho-hang', className: 'w-full', component: <InventoryView /> },
     ], []);
 
     return (
@@ -118,6 +120,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'check-thuong': { main: 'Check', highlight: 'Thưởng' },
     'employees': { main: 'Report', highlight: 'BI' },
     'inventory': { main: 'Kho', highlight: 'Hàng' },
+    'kho-hang': { main: 'Kiểm Kê', highlight: 'Kho' },
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
@@ -158,6 +161,7 @@ function AppContent() {
             case 'check-thuong': return <LayoutDashboard size={18} color="white" strokeWidth={2.5} />;
             case 'employees': return <Users size={18} color="white" strokeWidth={2.5} />;
             case 'inventory': return <FileText size={18} color="white" strokeWidth={2.5} />;
+            case 'kho-hang': return <Package size={18} color="white" strokeWidth={2.5} />;
             case 'tools-print-sticker': return <Printer size={18} color="white" strokeWidth={2.5} />;
             case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
