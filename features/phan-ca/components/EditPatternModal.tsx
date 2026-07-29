@@ -47,7 +47,9 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
             }
             const savedReqs = await idb.loadData<{ [key: string]: DailyRequirements }>('departmentPatternRequirements');
             if (savedReqs) {
-                setDepartmentRequirements(savedReqs);
+                // Merge thay vì ghi đè toàn bộ: tránh xoá mất giá trị bộ phận đang chọn
+                // nếu nó vừa được khởi tạo từ dailyRequirements trước khi promise này resolve.
+                setDepartmentRequirements(prev => ({ ...savedReqs, ...prev }));
             }
         } catch (error) {
             console.error("Failed to load initial data for pattern modal:", error);
@@ -72,33 +74,19 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
   }, [selectedDept, currentPatterns]);
 
 
-  // Sync IN: When dailyRequirements prop (from App state, changed by DailyStatsTable) changes,
-  // update the internal state of this modal for the currently selected department.
+  // Khởi tạo (một lần) "Yêu Cầu" của bộ phận đang chọn từ dailyRequirements dùng chung,
+  // nếu bộ phận đó chưa có dữ liệu cục bộ trong modal. Cố ý CHỈ chạy một lần cho mỗi
+  // bộ phận (guard bằng !departmentRequirements[selectedDept]) — không đồng bộ liên tục
+  // theo dailyRequirements nữa, vì trước đây việc này tạo vòng lặp 2 chiều với effect
+  // "đẩy ra ngoài" cũ, khiến số ở ô Yêu Cầu nhảy liên tục khi gõ/đổi bộ phận.
   useEffect(() => {
-    if (selectedDept && dailyRequirements) {
-        const currentInternalReqs = departmentRequirements[selectedDept];
-        // Only update if the external data is different to prevent re-render loops.
-        if (JSON.stringify(currentInternalReqs) !== JSON.stringify(dailyRequirements)) {
-            setDepartmentRequirements(prev => ({
-                ...prev,
-                [selectedDept]: dailyRequirements
-            }));
-        }
+    if (selectedDept && dailyRequirements && !departmentRequirements[selectedDept]) {
+        setDepartmentRequirements(prev => ({
+            ...prev,
+            [selectedDept]: dailyRequirements
+        }));
     }
   }, [dailyRequirements, selectedDept, departmentRequirements]);
-
-
-  // Sync OUT: When the user changes department in this modal,
-  // push the requirements for that department out to the App state.
-  useEffect(() => {
-    if (selectedDept) {
-      const reqsForSelectedDept = departmentRequirements[selectedDept] || dailyRequirements;
-      if (reqsForSelectedDept) {
-        onRequirementsUpdate(reqsForSelectedDept);
-      }
-    }
-     
-  }, [selectedDept, departmentRequirements]);
 
 
   useEffect(() => {
@@ -206,23 +194,24 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
             [slot]: cleanValue
         };
 
-        // Update internal state first
+        // Chỉ cập nhật state cục bộ của modal khi gõ. Việc đẩy ra App state (dùng chung
+        // với DailyStatsTable) chỉ xảy ra khi bấm "Lưu Thay Đổi" (xem handleSave) — tránh
+        // ghi đè dailyRequirements liên tục theo từng phím gõ / mỗi lần đổi bộ phận.
         setDepartmentRequirements(prev => ({
             ...prev,
             [selectedDept]: newDeptReqs
         }));
-
-        // Then, push the update to the parent (App state)
-        onRequirementsUpdate(newDeptReqs);
     }
   };
 
 
-  const handleSave = async () => {
-    if (showHelp) {
-        await idb.saveData('hasSeenPatternHelp', true);
+  const handleSave = () => {
+    // Đẩy "Yêu Cầu" của bộ phận đang chọn ra App state (dùng chung với DailyStatsTable)
+    // đúng lúc bấm Lưu, thay vì liên tục theo từng phím gõ như trước.
+    if (selectedDept && departmentRequirements[selectedDept]) {
+        onRequirementsUpdate(departmentRequirements[selectedDept]);
     }
-    await idb.saveData('departmentPatternRequirements', departmentRequirements);
+
     const validatedPatterns: { [key: string]: string[] } = {};
     for (const dept in patternsByDept) {
         const patterns = patternsByDept[dept].map(p => p.trim()).filter(Boolean);
@@ -230,14 +219,21 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
             validatedPatterns[dept] = patterns;
         }
     }
+    // Hành động chính (đóng modal + lưu mẫu ca) phải chạy ngay, không chờ IndexedDB —
+    // trước đây await idb.saveData() không có try/catch khiến nút bấm "im re" nếu ghi lỗi/kẹt.
     onSave(validatedPatterns);
+
+    if (showHelp) {
+        idb.saveData('hasSeenPatternHelp', true).catch(err => console.error('Lỗi khi lưu hasSeenPatternHelp:', err));
+    }
+    idb.saveData('departmentPatternRequirements', departmentRequirements).catch(err => console.error('Lỗi khi lưu departmentPatternRequirements:', err));
   };
 
-  const handleClose = async () => {
+  const handleClose = () => {
     if (showHelp) {
-        await idb.saveData('hasSeenPatternHelp', true);
+        idb.saveData('hasSeenPatternHelp', true).catch(err => console.error('Lỗi khi lưu hasSeenPatternHelp:', err));
     }
-    await idb.saveData('departmentPatternRequirements', departmentRequirements);
+    idb.saveData('departmentPatternRequirements', departmentRequirements).catch(err => console.error('Lỗi khi lưu departmentPatternRequirements:', err));
     onClose();
   };
 
