@@ -355,8 +355,8 @@ export const useInventoryData = () => {
           state.items
             .filter(
               (item) =>
-                filters.selectedNganh.length === 0 ||
-                filters.selectedNganh.includes(item.nganhHang)
+                state.filters.selectedNganh.length === 0 ||
+                state.filters.selectedNganh.includes(item.nganhHang)
             )
             .map((item) => item.nhomHang)
         )
@@ -368,7 +368,7 @@ export const useInventoryData = () => {
         new Set(state.items.map((item) => item.trangThaiSanPham || 'N/A'))
       ).sort(),
     };
-  }, [state.items, filters.selectedNganh]);
+  }, [state.items, state.filters.selectedNganh]);
 
   // Calculate stats
   const stats = useMemo<InventoryStats>(() => {
