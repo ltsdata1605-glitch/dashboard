@@ -34,7 +34,13 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
         for (let d = 1; d <= duration; d++) {
             const count = staffList.filter(staff => {
                 const daySchedule = staff.schedule[d];
-                return daySchedule && daySchedule.shift && daySchedule.shift.includes(slot);
+                if (!daySchedule || !daySchedule.shift) return false;
+                // Không tính vào thống kê nếu mã ca này CHỈ có mặt do "Tăng ca T7-CN" tự động
+                // thêm vào (addedWeekendShifts) — nếu không, bật cả 2 tùy chọn tăng ca sẽ khiến
+                // hầu hết nhân viên đều "dính" ca 1/2/5 vào cuối tuần, làm số liệu tăng vọt sai
+                // lệch (VD: hiện cả 26/26 người dù thực tế chỉ vài người làm ca đó).
+                if (daySchedule.addedWeekendShifts && daySchedule.addedWeekendShifts.includes(slot)) return false;
+                return daySchedule.shift.includes(slot);
             }).length;
             row.push(count);
         }
