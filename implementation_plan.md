@@ -1763,3 +1763,72 @@ match /inventoryItems/{itemId} {
 4. **Deploy**: `npx firebase deploy --only firestore:rules` (sau khi test OK)
 
 ---
+
+---
+
+## 17. Sprint 2 Hoàn Thành (2026-07-29) — UI Components ✅
+
+**Commit**: `6853c0e` (901 lines thêm)
+**Trạng thái**: Hoàn thành + verify (npm run check PASS)
+
+### 17.1. Components Tạo Được
+
+1. **InventoryUpload.tsx** (80 dòng)
+   - Input file .xlsx/.xls (max 50MB)
+   - Show filename after upload
+   - Graceful error handling
+   - Loading spinner khi phân tích
+
+2. **InventoryFilters.tsx** (250 dòng)
+   - 7 filter sections (collapsible)
+   - Filter by: kho, ngành, nhóm, nhà CC, trạng thái SP, trạng thái kiểm
+   - Multi-select checkboxes
+   - Clear all filters button
+   - Show active status (badge)
+   - Max-height scroll cho long lists
+
+3. **InventoryTable.tsx** (200 dòng)
+   - Sticky header table
+   - Columns: mã SKU, tên SP, IMEI, tồn KK, kiểm, chênh, ghi chú
+   - Editable: số lượng kiểm kê, ghi chú
+   - Copy IMEI button
+   - Color-coded chênh lệch: 
+     - Xanh (emerald) = 0 (hoàn thành)
+     - Đỏ (rose) = âm (thiếu)
+     - Vàng (amber) = dương (thừa)
+   - Pagination: 50 items/page
+   - Prev/next buttons + page numbers
+   - Empty state khi không có dữ liệu
+
+4. **InventoryStats.tsx** (60 dòng)
+   - 4 KPI cards (grid 2x2 lg:4x1)
+   - Tổng SKU, Tổng SL, Đã Kiểm %, Chênh Lệch
+   - Color-coded by status
+   - Icon + label + value + subtext
+
+5. **InventoryView.tsx** (170 dòng)
+   - Main container
+   - Toolbar: upload, delete, open report link
+   - Toast notifications (success/error/warning, auto-dismiss 3s)
+   - Confirm dialog for data deletion
+   - Empty state placeholder
+   - Data flow: upload → stats → filters → table
+
+### 17.2. Verification
+
+✅ **All checks PASS**:
+- `npm run typecheck`: 0 errors
+- `npm run eslint`: 4 warnings (từ trước, không liên quan)
+- `npm run build`: ✓ built in 8.55s
+- `npm run lint:ratchet`: OK — no new violations
+
+### 17.3. Tiếp Theo (Sprint 3)
+
+Còn cần:
+1. **QRScannerInput.tsx** — input quét IMEI (copy-paste qua keyboard hoặc QR scanner app)
+2. **useQRScan.ts** hook — xử lý logic quét (find item, +1 kiểm kê, highlight, toast)
+3. Hook up App.tsx — thêm tab "kho-hang" trong TabContent
+4. Responsive design — mobile/tablet/desktop
+5. Styling refinement + verify dark mode OFF
+6. Testing edge cases + bug fixes
+
