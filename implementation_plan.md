@@ -1832,3 +1832,90 @@ Còn cần:
 5. Styling refinement + verify dark mode OFF
 6. Testing edge cases + bug fixes
 
+
+---
+
+## 18. Sprint 3 Hoàn Thành (2026-07-29) — QR Scanner + App Integration ✅
+
+**Commit**: `e2713dc` (300 lines, 4 files)
+**Trạng thái**: Hoàn thành + verify (npm run check PASS)
+
+### 18.1. Components & Hooks Tạo
+
+1. **QRScannerInput.tsx** (90 dòng)
+   - 🔐 Input field để quét QR code
+   - ✅ Support hybrid formats: IMEI-only, SKU|IMEI
+   - ⌨️ Enter key trigger scan
+   - 🎯 Auto-focus sau mỗi scan
+   - 🎨 Success (xanh, bounce) / Error (đỏ, pulse)
+   - 📊 Scan counter + reset button
+   - ⏱️ Auto-hide message (1.5s success, 2s error)
+
+2. **useQRScan.ts hook** (50 dòng)
+   - 📋 Extract IMEI từ multi-format data (Format 1/2/3)
+   - 🔍 Find item by IMEI (case-insensitive)
+   - ↩️ Return boolean (found/not found)
+   - 🎯 Separation of concerns (logic từ UI)
+   - Error handling callback
+
+### 18.2. App.tsx Integration
+
+- ✅ Lazy import `InventoryView` 
+- ✅ Thêm `Package` icon từ lucide-react
+- ✅ Thêm vào `persistentViews` array (tab `kho-hang`)
+- ✅ Thêm vào `TAB_TITLES` (`'kho-hang': { main: 'Kiểm Kê', highlight: 'Kho' }`)
+- ✅ Thêm icon case trong `getTabIcon()` function
+
+### 18.3. InventoryView Integration
+
+- ✅ Import `useQRScan` hook
+- ✅ Call hook với items + callbacks (onScanSuccess, onScanError)
+- ✅ Render `QRScannerInput` component sau stats
+- ✅ Hook scan callback → `inventory.scanIMEI()`
+- ✅ Toast notification (success/error)
+
+### 18.4. Verification
+
+✅ **All checks PASS**:
+- `npm run typecheck`: 0 errors (sửa Button size "xs" → "sm")
+- `npm run eslint`: 4 warnings (từ trước)
+- `npm run build`: ✓ built in 8.16s
+- `npm run lint:ratchet`: OK — no new violations
+
+### 18.5. Feature Complete Status
+
+**MVP Phase 1 — FULLY COMPLETE** ✅
+
+Tất cả core features đã implement:
+- ✅ Upload Excel file (parseExcelFile + validate)
+- ✅ State management (useInventoryData hook)
+- ✅ Filter 7 chiều (AND logic + fuzzy search)
+- ✅ Display table (50 rows/page, editable cells)
+- ✅ KPI stats (real-time calculation)
+- ✅ Quét QR code / IMEI (hybrid format support)
+- ✅ Thông báo (toast, success/error/warning)
+- ✅ Xóa dữ liệu (confirm dialog)
+- ✅ Responsive layout (grid-based, basic mobile support)
+- ✅ Hooked vào App.tsx (tab "Kiểm Kê Kho" visible)
+- ✅ LocalStorage persistence (auto-save/load)
+
+**Chỉ còn (Phase 2 - Backend)**:
+- [ ] Firestore integration (inventoryChecking collection)
+- [ ] Cloud Function untuk save checking data
+- [ ] Update firestore.rules
+- [ ] Sync session data lên Firestore
+- [ ] Multi-user support (share session)
+- [ ] Export CSV/PDF (kiểm kê report)
+- [ ] Responsive fine-tuning (mobile optimization)
+
+### 18.6. Sprint Timeline
+
+| Sprint | Ngày | Công Việc | Trạng Thái |
+|--------|------|----------|-----------|
+| Sprint 1 | 07/29 | Setup + Types + Parser | ✅ Done |
+| Sprint 2 | 07/29 | UI Components (5 cái) | ✅ Done |
+| Sprint 3 | 07/29 | QR Scanner + App Hook | ✅ Done |
+| **Total** | **7h** | **3 Sprint MVP** | ✅ **COMPLETE** |
+
+---
+
