@@ -1,7 +1,7 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
 import { StickerPage, PrintHistoryEntry, TicketDrawData } from './types';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
-import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay } from './ticketSanitize';
+import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay, sanitizeTicketHtmlForPrint } from './ticketSanitize';
 
 /**
  * Sinh HTML in cho tất cả trang phiếu rút thăm từ data (không phụ thuộc DOM).
@@ -34,20 +34,11 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
     const firstTicket = drawTickets[0];
     const pages: string[] = [];
 
-    // Chuyển đổi cqw → mm tuyệt đối cho in ấn.
-    // Công thức: mm = (cqw / 100) * 210mm (chiều rộng A4).
-    // Lý do: Chrome print engine không giải quyết cqw/cqi nhất quán khi
-    // container bị ép cứng cả width lẫn height (ghi đè aspect-ratio).
-    const A4_WIDTH_MM = 210;
-    const toMm = (cqw: number) => ((cqw / 100) * A4_WIDTH_MM).toFixed(2);
-
-    const titleMm = toMm(Math.min(drawTitleSize, 3.0));
-    const topLeftMm = toMm(drawContentTopLeftSize);
-    const topRightMm = toMm(drawContentTopRightSize);
-    const codeMm = toMm(drawCodeSize);
-    const bottomLeftMm = toMm(drawContentBottomLeftSize);
-    const bottomRightMm = toMm(drawContentBottomRightSize);
-    const footerMm = toMm(drawFooterSize);
+    // GIỮ cqw thay vì chuyển sang mm.
+    // Container in dùng container-type: inline-size + width: 210mm + aspect-ratio
+    // (không ép height cứng) → Chrome print engine giải quyết cqw tự nhiên,
+    // giữ tỷ lệ chính xác như preview trên màn hình.
+    const titleCqw = Math.min(drawTitleSize, 3.0);
 
     for (let pageIdx = 0; pageIdx < Math.ceil(drawTickets.length / 4); pageIdx++) {
         const pageTickets = drawTickets.slice(pageIdx * 4, pageIdx * 4 + 4);
@@ -56,7 +47,7 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const isFirst = totalIndex === 0;
             const src = isFirst ? ticket : firstTicket;
 
-            const sanitize = sanitizeTicketHtml;
+            const sanitize = sanitizeTicketHtmlForPrint;
             const noInteract = isFirst ? '' : 'pointer-events:none;user-select:none;';
             const titleCls = 'input-title-single';
             const topLeftCls = 'input-content-top-left';
@@ -64,20 +55,23 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const bottomLeftCls = 'input-content-bottom-left';
             const bottomRightCls = 'input-content-bottom-right';
             const footerCls = 'input-footer-left';
-            const titleHtml = `<div class="${titleCls}" style="font-size:${titleMm}mm;${noInteract}">${sanitize(src.title)}</div>`;
-            const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${topLeftMm}mm;${noInteract}">${sanitize(src.contentTop)}</div>`;
-            const contentTopRightHtml = `<div class="${topRightCls}" style="font-size:${topRightMm}mm;${noInteract}">${sanitize(src.contentTopRight)}</div>`;
-            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${codeMm}mm;${noInteract}">${ticket.code}</div>`;
-            const codeRightHtml = `<div class="display-code-right" style="font-size:${codeMm}mm;${noInteract}">${ticket.code}</div>`;
-            const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${bottomLeftMm}mm;${noInteract}">${sanitize(src.contentBottom)}</div>`;
-            const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${bottomRightMm}mm;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
-            const footerHtml = `<div class="${footerCls}" style="font-size:${footerMm}mm;${noInteract}">${sanitize(src.footer)}</div>`;
+            const titleHtml = `<div class="${titleCls}" style="font-size:${titleCqw}cqw;${noInteract}">${sanitize(src.title)}</div>`;
+            const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${drawContentTopLeftSize}cqw;${noInteract}">${sanitize(src.contentTop)}</div>`;
+            const contentTopRightHtml = `<div class="${topRightCls}" style="font-size:${drawContentTopRightSize}cqw;${noInteract}">${sanitize(src.contentTopRight)}</div>`;
+            const codeLeftHtml = `<div class="${isAutoIncrement ? 'display-code-left' : 'input-code-left'}" style="font-size:${drawCodeSize}cqw;${noInteract}">${ticket.code}</div>`;
+            const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}cqw;${noInteract}">${ticket.code}</div>`;
+            const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${drawContentBottomLeftSize}cqw;${noInteract}">${sanitize(src.contentBottom)}</div>`;
+            const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${drawContentBottomRightSize}cqw;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
+            const footerHtml = `<div class="${footerCls}" style="font-size:${drawFooterSize}cqw;${noInteract}">${sanitize(src.footer)}</div>`;
 
             return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${footerHtml}</div>`;
         }).join('');
 
         const isLast = pageIdx === Math.ceil(drawTickets.length / 4) - 1;
-        pages.push(`<div class="sticker-container draw-page active-preview-page" data-type="draw" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:210mm;height:297mm;position:relative;overflow:hidden;font-family:Arial,sans-serif;page-break-after:${isLast ? 'auto' : 'always'}">${ticketBlocks}</div>`);
+        // Dùng container-type: inline-size + aspect-ratio thay vì height cứng.
+        // Chrome print engine gặp lỗi với cqw khi CẢ width LẪN height đều
+        // bị ép cứng. Dùng aspect-ratio để height tự tính → cqw hoạt động đúng.
+        pages.push(`<div class="sticker-container draw-page active-preview-page" data-type="draw" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:210mm;aspect-ratio:2482/3512;container-type:inline-size;position:relative;overflow:hidden;font-family:Arial,sans-serif;page-break-after:${isLast ? 'auto' : 'always'}">${ticketBlocks}</div>`);
     }
 
     return pages.join('');

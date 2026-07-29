@@ -615,42 +615,31 @@ export function getStickerPreviewStyles({
                      .sticker-container.draw-page {
                          display: block !important;
                          width: 210mm !important;
-                         height: 297mm !important;
+                         /* Dùng aspect-ratio thay vì height cứng →
+                            container-type: inline-size hoạt động,
+                            cqw units giải quyết đúng tỷ lệ trên A4. */
+                         aspect-ratio: 2482 / 3512 !important;
+                         container-type: inline-size !important;
                          position: relative !important;
                          margin: 0 auto !important;
                          page-break-after: always !important;
-                         container-type: normal !important;
                      }
-                     /* TẮT container-type trên .sticker-container gốc cho draw */
+                     /* Đảm bảo container cho draw giữ inline-size (không tắt) */
                      .sticker-container[data-type="draw"] {
-                         container-type: normal !important;
+                         container-type: inline-size !important;
                      }
-                     /* Padding/line-height tuyệt đối theo mm khi in (cqw không đáng tin cậy
-                        trong Chrome print engine). KHÔNG override font-size ở đây —
-                        font-size mm đã được set inline theo đúng cỡ chữ người dùng cấu hình
-                        (xem generateDrawPagesHtml() trong pageHtmlUtils.ts), override cứng
-                        ở đây sẽ đè mất cấu hình đó và gây sai lệch giữa preview và bản in. */
-                     .draw-ticket-block .input-title-single,
-                     .draw-ticket-block .display-title-single {
-                         line-height: 1.4 !important;
-                     }
+                     /* Bù trừ khác biệt font metrics screen→print.
+                        Chrome print engine render text ~1-2% rộng hơn screen
+                        do khác DPI/font-hinting → text vừa fit trong preview
+                        nhưng tràn/xuống dòng khi in. letter-spacing -0.01em
+                        siết chặt ~1%, đủ để giữ layout nhất quán. */
                      .draw-ticket-block .input-content-top-left,
-                     .draw-ticket-block .display-content-top-left {
-                         padding: 1.05mm 2.1mm !important;
-                         line-height: 1.15 !important;
-                     }
                      .draw-ticket-block .input-content-top-right,
-                     .draw-ticket-block .display-content-top-right {
-                         padding: 1.05mm 2.1mm !important;
-                     }
                      .draw-ticket-block .input-content-bottom-left,
-                     .draw-ticket-block .display-content-bottom-left {
-                         padding: 1.05mm 2.1mm !important;
-                         line-height: 1.35 !important;
-                     }
                      .draw-ticket-block .input-content-bottom-right,
-                     .draw-ticket-block .display-content-bottom-right {
-                         padding: 1.05mm 2.1mm !important;
+                     .draw-ticket-block .input-title-single,
+                     .draw-ticket-block .input-footer-left {
+                         letter-spacing: -0.01em !important;
                      }
                      .draw-ticket-block [contenteditable="true"] {
                          outline: none !important;

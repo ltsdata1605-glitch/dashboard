@@ -31,3 +31,57 @@ export const sanitizeTicketHtmlForDisplay = (html?: string): string => {
     // Xóa font-size property khỏi inline style, giữ nguyên các property khác
     return clean.replace(/font-size\s*:\s*[^;]+;?/gi, '');
 };
+
+/**
+ * Sanitize + chuyển đổi font-size inline (px, pt) → cqw cho bản in.
+ *
+ * Bản in giữ container-type: inline-size (width=210mm + aspect-ratio)
+ * nên cqw hoạt động tự nhiên. Tuy nhiên, Chrome preview đôi khi resolve
+ * cqw thành px tuyệt đối (dựa trên kích thước preview panel ~384px),
+ * lưu vào innerHTML. Các px values không scale theo container khi in →
+ * cần convert px → cqw dựa trên preview container width.
+ *
+ * @param html - nội dung HTML từ contentEditable
+ * @param previewWidthPx - chiều rộng thực tế của preview container (px).
+ *                         Mặc định 384 (max-w-sm = 24rem ≈ 384px).
+ */
+export const sanitizeTicketHtmlForPrint = (
+    html?: string,
+    previewWidthPx = 384
+): string => {
+    let clean = sanitizeTicketHtml(html);
+
+    // 1. Loại bỏ <span> rỗng chồng chất (artifact từ toolbar tăng/giảm font-size)
+    //    GIỮ LẠI whitespace bên trong span ($1) — tránh nuốt khoảng trắng
+    //    giữa các từ khiến "Chảo 10.000đ" → "Chảo10.000đ"
+    let prev = '';
+    while (prev !== clean) {
+        prev = clean;
+        clean = clean.replace(/<span[^>]*>(\s*)<\/span>/gi, '$1');
+    }
+
+    // 2. Chuyển font-size: Xpx → Xcqw (px / previewWidth * 100 = cqw)
+    clean = clean.replace(
+        /font-size\s*:\s*([\d.]+)\s*px/gi,
+        (_match, val) => {
+            const px = parseFloat(val);
+            const cqw = ((px / previewWidthPx) * 100).toFixed(2);
+            return `font-size:${cqw}cqw`;
+        }
+    );
+
+    // 3. Chuyển font-size: Xpt → Xcqw (1pt = 1.3333px at 96dpi)
+    clean = clean.replace(
+        /font-size\s*:\s*([\d.]+)\s*pt/gi,
+        (_match, val) => {
+            const pt = parseFloat(val);
+            const px = pt * (96 / 72); // pt → px at 96dpi
+            const cqw = ((px / previewWidthPx) * 100).toFixed(2);
+            return `font-size:${cqw}cqw`;
+        }
+    );
+
+    // cqw giữ nguyên — container-type: inline-size cho phép cqw hoạt động
+    return clean;
+};
+
