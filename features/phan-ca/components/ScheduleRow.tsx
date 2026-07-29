@@ -139,7 +139,7 @@ export const ScheduleRow = memo<ScheduleRowProps>(({
                         onDrop={(e) => handleDrop(e, staff.id, dayIndex)}
                         onDragEnd={handleDragEnd}
                         onClick={() => onEditShift(staff.id, dayIndex)}>
-                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                        <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
                             <span className="leading-tight">{info.role === "OFF" ? "OFF" : info.shift}</span>
                             {rolePill}
                         </div>
