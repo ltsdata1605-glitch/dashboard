@@ -1,5 +1,5 @@
 
-import { StaffMember, StaffStats, Solution, ScheduleConfig, ScheduleTargets, BusySchedule, EditShiftModalInfo, ScheduleInfo, SolutionAction, BalancingFeedback, MonthlyStats } from '../types';
+import { StaffMember, StaffStats, ScheduleConfig, ScheduleTargets, BusySchedule, EditShiftModalInfo, ScheduleInfo, SolutionAction, BalancingFeedback, MonthlyStats } from '../types';
 import { HOURS_CONFIG, KHO_TN_MIN_GAP_DAYS, GH_MIN_GAP_DAYS } from '../constants';
 
 export const calculateTotalHours = (staff: StaffMember): number => {
@@ -124,13 +124,6 @@ export const recalculateStatsForStaff = (staff: StaffMember): StaffStats => {
   return newStats;
 };
 
-// Helper xác định ngày cuối tuần
-const isWeekend = (year: number, month: number, startDay: number, dayIndex: number) => {
-    const date = new Date(year, month - 1, startDay + dayIndex - 1);
-    const day = date.getDay();
-    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
-};
-
 /**
  * Thuật toán Cân bằng SBH Đa tầng (Refined version)
  * Cập nhật mới: Ưu tiên cân bằng công bằng vào cuối tuần (Sales Protection)
@@ -151,6 +144,15 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     if (allInOneStaff.length < 2) return refinedList;
 
     const { year, month, startDay, duration } = config;
+
+    // Cache thứ-trong-tuần (0=CN...6=T7) cho toàn bộ chu kỳ — tính 1 lần duy nhất thay vì
+    // gọi lại `new Date(...).getDay()` hàng chục nghìn lần rải rác trong các vòng lặp lồng
+    // nhau bên dưới (mỗi pass × mỗi cặp nhân viên × mỗi ngày).
+    const dayOfWeekCache: number[] = [];
+    for (let d = 1; d <= duration; d++) {
+        dayOfWeekCache[d] = new Date(year, month - 1, startDay + d - 1).getDay();
+    }
+    const isWeekendDay = (d: number) => dayOfWeekCache[d] === 0 || dayOfWeekCache[d] === 6;
 
     const refreshAllStats = () => {
         refinedList.forEach((s: StaffMember) => { s.stats = recalculateStatsForStaff(s); });
@@ -193,7 +195,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
     const hasWeekendGh = (s: StaffMember) => {
         for (let d = 1; d <= duration; d++) {
-            if (isWeekend(year, month, startDay, d) && s.schedule[d]?.role.includes('(GH)')) {
+            if (isWeekendDay(d) && s.schedule[d]?.role.includes('(GH)')) {
                 return true;
             }
         }
@@ -206,8 +208,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
         if (dayIdx - 1 >= 1 && dayIdx - 1 !== ignoreDayIdx && staff.schedule[dayIdx - 1]?.role.includes('(GH)')) return false;
 
         // Ràng buộc tuyệt đối: Nam có ca GH cuối tuần thì không được làm Kho cuối tuần
-        const date = new Date(year, month - 1, startDay + dayIdx - 1);
-        const day = date.getDay();
+        const day = dayOfWeekCache[dayIdx];
         if (staff.gender === 'Nam' && (day === 0 || day === 6)) {
             if (hasWeekendGh(staff)) return false;
         }
@@ -235,11 +236,15 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
      * BƯỚC 1 & 2: CÂN BẰNG SỐ LƯỢNG (QUANTITY BALANCING)
      * Đảm bảo tổng số ca GH/Kho/TN của mọi người là ngang nhau.
      */
-    const balanceSpecificRole = (roleTag: 'GH' | 'Kho' | 'TN', targetGender: 'Nam' | 'Nu' | 'All') => {
+    // Trả về true nếu có ít nhất 1 lần đổi ca xảy ra — dùng để biết bước "chốt hạ" ở cuối có
+    // thực sự làm thay đổi gì không, tránh chạy lại cân bằng SBH (tốn kém) một cách vô ích.
+    const balanceSpecificRole = (roleTag: 'GH' | 'Kho' | 'TN', targetGender: 'Nam' | 'Nu' | 'All'): boolean => {
         const statKey = roleTag.toLowerCase() as keyof StaffStats;
         const candidates = allInOneStaff.filter((s: StaffMember) => targetGender === 'All' || s.gender === targetGender);
-        
-        if (candidates.length < 2) return;
+
+        if (candidates.length < 2) return false;
+
+        let anySwapped = false;
 
         // Tăng số vòng lặp để tìm kiếm sâu hơn
         for (let pass = 0; pass < 30; pass++) {
@@ -325,8 +330,11 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 }
             }
 
+            if (swapped) anySwapped = true;
             if (!swapped) break;
         }
+
+        return anySwapped;
     };
 
     /**
@@ -338,7 +346,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
         const countWeekendSpecial = (staff: StaffMember) => {
             let count = 0;
             for (let d = 1; d <= duration; d++) {
-                if (isWeekend(year, month, startDay, d)) {
+                if (isWeekendDay(d)) {
                     if (staff.schedule[d]?.role.includes('(')) count++;
                 }
             }
@@ -355,7 +363,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
             let swapped = false;
             // Tìm một ngày cuối tuần mà SufferingStaff đang làm Support, còn LuckyStaff làm thường
             for (let d = 1; d <= duration; d++) {
-                if (!isWeekend(year, month, startDay, d)) continue;
+                if (!isWeekendDay(d)) continue;
 
                 const sSched = sufferingStaff.schedule[d];
                 const lSched = luckyStaff.schedule[d];
@@ -396,7 +404,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
      */
     const balanceDayOfWeekDistribution = () => {
         // Helper lấy thứ trong tuần (0: CN, 1: T2, ..., 6: T7)
-        const getDayOfWeek = (d: number) => new Date(year, month - 1, startDay + d - 1).getDay();
+        const getDayOfWeek = (d: number) => dayOfWeekCache[d];
 
         // Duyệt qua từng thứ trong tuần (0 -> 6)
         for (let dayOfWeek = 0; dayOfWeek <= 6; dayOfWeek++) {
@@ -628,8 +636,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 for (let i = 0; i < 7; i++) {
                     const d = currentWeekStart + i;
                     if (d > duration) break;
-                    const date = new Date(year, month - 1, startDay + d - 1);
-                    const day = date.getDay();
+                    const day = dayOfWeekCache[d];
                     if (day === 5) friday = d;
                     if (day === 6) saturday = d;
                     if (day === 0) sunday = d;
@@ -686,7 +693,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
         const countWeekendKho = (staff: StaffMember) => {
             let count = 0;
             for (let d = 1; d <= duration; d++) {
-                if (isWeekend(year, month, startDay, d)) {
+                if (isWeekendDay(d)) {
                     if (staff.schedule[d]?.role.includes('(Kho)')) count++;
                 }
             }
@@ -702,7 +709,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
             let swapped = false;
             for (let d = 1; d <= duration; d++) {
-                if (!isWeekend(year, month, startDay, d)) continue;
+                if (!isWeekendDay(d)) continue;
 
                 const sSched = suffering.schedule[d];
                 const lSched = lucky.schedule[d];
@@ -799,8 +806,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                             const roleTag = sSched.role.match(/\(([^)]+)\)/)?.[1];
                             
                             // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
-                            const date = new Date(year, month - 1, startDay + d - 1);
-                            const dayOfWeek = date.getDay();
+                            const dayOfWeek = dayOfWeekCache[d];
                             if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4)) continue;
 
                             const isSafe = roleTag === 'Kho' ? isSafeForKho(targetStaff, d) : isSafeForSpecial(targetStaff, d, undefined, roleTag);
@@ -842,8 +848,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     }
 
                     // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
-                    const date = new Date(year, month - 1, startDay + d - 1);
-                    const dayOfWeek = date.getDay();
+                    const dayOfWeek = dayOfWeekCache[d];
                     if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && high.gender !== low.gender) continue;
 
                     const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
@@ -876,13 +881,6 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
      * Cập nhật: Ưu tiên giảm chênh lệch cực đại (Max - Min) xuống dưới 3h.
      */
     const greedyPolish = () => {
-        // Thứ-trong-tuần của từng ngày trong tháng không đổi giữa các pass/cặp (i,j) —
-        // trước đây tạo `new Date(...)` lại cho MỖI cặp (i,j,d), tính 1 lần duy nhất ở đây.
-        const dayOfWeekCache: number[] = [];
-        for (let d = 1; d <= duration; d++) {
-            dayOfWeekCache[d] = new Date(year, month - 1, startDay + d - 1).getDay();
-        }
-
         for (let pass = 0; pass < 20; pass++) {
             let improved = false;
             refreshAllStats();
@@ -958,19 +956,21 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
     // CHỐT HẠ THEO ƯU TIÊN TUYỆT ĐỐI CỦA NGƯỜI DÙNG:
     // 1. LUÔN LUÔN ƯU TIÊN SỐ NGÀY GIAO HÀNG (GH) CỦA NAM PHẢI BẰNG NHAU HẾT MỨC CÓ THỂ
-    balanceSpecificRole('GH', 'Nam');
+    const ghChangedAtFinalLock = balanceSpecificRole('GH', 'Nam');
     // 2. Số ngày làm kho của nữ với nữ tương đương với nhau
-    balanceSpecificRole('Kho', 'Nu');
+    const khoChangedAtFinalLock = balanceSpecificRole('Kho', 'Nu');
 
     // BƯỚC CUỐI: CÂN BẰNG LẠI GIỜ CÔNG SBH (không phân biệt Nam/Nữ) SAU KHI CHỐT SỐ LƯỢNG
     // Bước "chốt hạ" ở trên chỉ tối ưu SỐ LƯỢNG ca GH/Kho — khi phải đổi chéo 2 mã ca khác
     // giờ để cân bằng số lượng, nó có thể vô tình làm giờ công SBH lệch lại so với những gì
-    // balanceTotalSpecialLoad/greedyPolish vừa cân bằng trước đó. Chạy lại 2 bước cân bằng
-    // giờ công này lần cuối để giờ công SBH có "tiếng nói cuối cùng" — cả 2 hàm đều đã có sẵn
-    // điều kiện bảo vệ không làm lệch lại số ca GH của Nam (chỉ đổi khi stats.gh không bị lố),
-    // và ca Kho luôn đổi 1-đổi-1 nên không đổi số lượng, nên không phá lại kết quả vừa chốt.
-    balanceTotalSpecialLoad();
-    greedyPolish();
+    // balanceTotalSpecialLoad/greedyPolish vừa cân bằng trước đó. CHỈ chạy lại 2 bước cân bằng
+    // giờ công này (khá tốn kém) NẾU bước chốt hạ thực sự có đổi ca gì — nếu không đổi gì (số
+    // lượng GH/Kho đã cân bằng sẵn từ trước) thì giờ công SBH cũng không bị ảnh hưởng, chạy lại
+    // sẽ chỉ tốn thời gian vô ích.
+    if (ghChangedAtFinalLock || khoChangedAtFinalLock) {
+        balanceTotalSpecialLoad();
+        greedyPolish();
+    }
 
     /**
      * BƯỚC MỚI: CÂN BẰNG TỔNG GIỜ CÔNG (giờ thường + giờ đặc biệt)
@@ -1056,7 +1056,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 let added = "";
                 let newShift = info.shift;
 
-                const isSatSun = isWeekend(year, month, startDay, d);
+                const isSatSun = isWeekendDay(d);
 
                 // 1. Overtime Ca 2,5 on Sat, Sun (T7-CN)
                 if (config.autoAddWeekendShifts && isSatSun) {
@@ -1101,30 +1101,6 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     refreshAllStats();
     return refinedList;
 };
-
-export const findBestSolution = (dayIndex: number, roleType: 'gh' | 'kho' | 'tn' | null, allStaff: StaffMember[], excludeEmployeeId: string, includeTn: boolean = true): Solution => {
-  let replacementCandidates = allStaff.filter(s => {
-    // Không tìm người thay thế trong bộ phận Quản lý hoặc Tiếp đón
-    const isManagerOrReception = s.department.toLowerCase().includes('quản lý') || s.department.toLowerCase().includes('tiếp đón');
-    if (isManagerOrReception || s.id === excludeEmployeeId) return false;
-    const schedule = s.schedule[dayIndex];
-    return schedule && schedule.role !== 'OFF' && !schedule.role.includes('(') && !schedule.isManual;
-  });
-
-  if (roleType === 'gh') replacementCandidates = replacementCandidates.filter(s => s.gender === 'Nam');
-  if (replacementCandidates.length === 0) return null;
-
-  replacementCandidates.sort((a, b) => {
-    if (roleType) {
-        const statDiff = a.stats[roleType] - b.stats[roleType];
-        if (statDiff !== 0) return statDiff;
-    }
-    return calculateSpecialHours(a, includeTn) - calculateSpecialHours(b, includeTn);
-  });
-  
-  return { type: 'replace', staff: replacementCandidates[0] };
-};
-
 
 
 export const calculateTotalHoursForWeek = (staff: StaffMember, startDay: number, endDay: number): number => {

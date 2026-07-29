@@ -1,7 +1,15 @@
 
 import { StaffMember, ScheduleConfig, ScheduleTargets, SchedulingRules, StaffInitialData, BusySchedule, MonthlyStats } from '../types';
 import { HOURS_CONFIG } from '../constants';
-import { calculateSpecialHours } from '../utils/scheduleUtils';
+import { calculateSpecialHours, calculateGhHours, calculateKhoHours, calculateTnHours } from '../utils/scheduleUtils';
+
+// Gộp về 1 hàm dùng chung thay vì định nghĩa lại `getHours(staff, tag)` giống hệt nhau ở
+// nhiều nơi trong file — tái sử dụng các hàm tính giờ theo vai trò đã có sẵn ở scheduleUtils.ts.
+const getSpecialRoleHours = (staff: StaffMember, roleTag: string): number => {
+    if (roleTag === 'GH') return calculateGhHours(staff);
+    if (roleTag === 'Kho') return calculateKhoHours(staff);
+    return calculateTnHours(staff);
+};
 
 // Hàm xoay mảng
 function rotateArray<T,>(arr: T[], count: number): T[] {
@@ -69,6 +77,13 @@ function generateSchedule(
     const morningRegex = /[123]/;
     const afternoonRegex = /[456]/;
 
+    // Cache thứ-trong-tuần (0=CN...6=T7) cho toàn bộ chu kỳ — tính 1 lần duy nhất thay vì
+    // gọi lại `new Date(...).getDay()` rải rác trong các vòng lặp lồng nhau bên dưới.
+    const dayOfWeekCache: number[] = [];
+    for (let d = 1; d <= duration; d++) {
+        dayOfWeekCache[d] = new Date(year, month - 1, startDay + d - 1).getDay();
+    }
+
     // B1: Gán ca cơ bản theo Pattern
     staffList.forEach((staff: StaffMember, staffIndex: number) => {
         const staffPattern = departmentPatterns[staff.department] || [];
@@ -108,8 +123,7 @@ function generateSchedule(
 
     // Helper: Xác định ngày cuối tuần
     const isWeekendDay = (dayIdx: number) => {
-        const date = new Date(year, month - 1, startDay + dayIdx - 1);
-        const day = date.getDay();
+        const day = dayOfWeekCache[dayIdx];
         return day === 0 || day === 6; // Sunday or Saturday
     };
 
@@ -151,21 +165,8 @@ function generateSchedule(
 
             // Sort candidates
             candidates.sort((a, b) => {
-                const getHours = (staff: StaffMember, tag: string) => {
-                    let total = 0;
-                    staff.schedule.forEach(info => {
-                        if (info?.role.includes(`(${tag})`)) {
-                            const cleanStr = info.shift.replace(/[^0-9]/g, '');
-                            for (const char of cleanStr) {
-                                if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
-                            }
-                        }
-                    });
-                    return total;
-                };
-
-                const currentHoursA = getHours(a, 'GH');
-                const currentHoursB = getHours(b, 'GH');
+                const currentHoursA = getSpecialRoleHours(a, 'GH');
+                const currentHoursB = getSpecialRoleHours(b, 'GH');
 
                 if (Math.abs(currentHoursA - currentHoursB) >= 4) {
                     return currentHoursA - currentHoursB;
@@ -269,8 +270,7 @@ function generateSchedule(
                 }
 
                 // Cân bằng Nam-Nữ cho ca Kho ngày Thứ 2 và Thứ 5 (luôn có 1 Nam và 1 Nữ nếu yêu cầu = 2)
-                const date = new Date(year, month - 1, startDay + d - 1);
-                const dayOfWeek = date.getDay(); // 1 là thứ 2, 4 là thứ 5
+                const dayOfWeek = dayOfWeekCache[d]; // 1 là thứ 2, 4 là thứ 5
                 const isMonThu = dayOfWeek === 1 || dayOfWeek === 4;
 
                 if (roleType === 'kho' && isMonThu && requiredCount === 2) {
@@ -280,21 +280,8 @@ function generateSchedule(
                     if (candidatesNam.length >= 1 && candidatesNu.length >= 1) {
                         const sortCandidates = (list: StaffMember[]) => {
                             list.sort((a, b) => {
-                                const getHours = (staff: StaffMember, tag: string) => {
-                                    let total = 0;
-                                    staff.schedule.forEach(info => {
-                                        if (info?.role.includes(`(${tag})`)) {
-                                            const cleanStr = info.shift.replace(/[^0-9]/g, '');
-                                            for (const char of cleanStr) {
-                                                if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
-                                            }
-                                        }
-                                    });
-                                    return total;
-                                };
-
-                                const currentHoursA = getHours(a, 'Kho');
-                                const currentHoursB = getHours(b, 'Kho');
+                                const currentHoursA = getSpecialRoleHours(a, 'Kho');
+                                const currentHoursB = getSpecialRoleHours(b, 'Kho');
                                 
                                 if (Math.abs(currentHoursA - currentHoursB) >= 4) {
                                     return currentHoursA - currentHoursB;
@@ -343,11 +330,10 @@ function generateSchedule(
                 if (roleType === 'kho') {
                     // Filter preferred candidates (at least 2 days gap and not consecutive on weekend)
                     let preferredCandidates = candidates.filter(s => {
-                        const hasRecentKho = [d - 1, d - 2].some(prevDay => 
+                        const hasRecentKho = [d - 1, d - 2].some(prevDay =>
                             prevDay >= 1 && s.schedule[prevDay]?.role.includes('(Kho)')
                         );
-                        const date = new Date(year, month - 1, startDay + d - 1);
-                        const isSunday = date.getDay() === 0;
+                        const isSunday = dayOfWeekCache[d] === 0;
                         const hadKhoYesterday = d - 1 >= 1 && s.schedule[d - 1]?.role.includes('(Kho)');
                         return !hasRecentKho && (!isSunday || !hadKhoYesterday);
                     });
@@ -369,15 +355,13 @@ function generateSchedule(
                 // Sắp xếp candidates
                 candidates.sort((a, b) => {
                     // CÂN BẰNG CA KHO CUỐI TUẦN (SAT/SUN): Ưu tiên người làm ít ca Kho cuối tuần hơn
-                    const date = new Date(year, month - 1, startDay + d - 1);
-                    const isWeekend = date.getDay() === 6 || date.getDay() === 0;
+                    const isWeekend = dayOfWeekCache[d] === 6 || dayOfWeekCache[d] === 0;
                     if (roleType === 'kho' && isWeekend) {
                         const getWeekendKhoCount = (staff: StaffMember) => {
                             let count = 0;
                             for (let k = 1; k < d; k++) {
                                 if (staff.schedule[k]?.role.includes('(Kho)')) {
-                                    const kDate = new Date(year, month - 1, startDay + k - 1);
-                                    const kDay = kDate.getDay();
+                                    const kDay = dayOfWeekCache[k];
                                     if (kDay === 6 || kDay === 0) {
                                         count++;
                                     }
@@ -391,22 +375,9 @@ function generateSchedule(
                     }
 
                     // 1. Ưu tiên số lượng giờ công: Người có ít giờ công đặc biệt loại này hơn được ưu tiên
-                    const getHours = (staff: StaffMember, tag: string) => {
-                        let total = 0;
-                        staff.schedule.forEach(info => {
-                            if (info?.role.includes(`(${tag})`)) {
-                                const cleanStr = info.shift.replace(/[^0-9]/g, '');
-                                for (const char of cleanStr) {
-                                    if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
-                                }
-                            }
-                        });
-                        return total;
-                    };
-
                     const tag = roleType === 'gh' ? 'GH' : (roleType === 'kho' ? 'Kho' : 'TN');
-                    const currentHoursA = getHours(a, tag);
-                    const currentHoursB = getHours(b, tag);
+                    const currentHoursA = getSpecialRoleHours(a, tag);
+                    const currentHoursB = getSpecialRoleHours(b, tag);
                     
                     if (Math.abs(currentHoursA - currentHoursB) >= 4) {
                         return currentHoursA - currentHoursB;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
-import { recalculateStatsForStaff, findBestSolution, calculateTotalHours, calculateSpecialHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
+import { recalculateStatsForStaff, calculateTotalHours, calculateSpecialHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
 import { parseStaffFromExcelBuffer } from './utils/excelImport';
 import * as idb from './db/idb';
 import Controls from './components/Controls';
