@@ -730,7 +730,17 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     captureContainer.style.position = 'absolute';
     captureContainer.style.left = '-9999px';
     captureContainer.style.top = '0';
-    
+
+    // captureContainer được gắn thẳng vào document.body (ngoài .phanca-root) để render off-screen
+    // trước khi chụp — nếu element gốc nằm trong .phanca-root, phải mang theo class đó thì các CSS
+    // custom property định nghĩa scoped tới .phanca-root (--cell-kho-bg, --cell-gh-bg, --cell-tn-bg...)
+    // mới resolve được, nếu không màu nền các ô GH/Kho/TN sẽ biến mất khi xuất ảnh (dù hiện đúng trên
+    // giao diện, vì giao diện vẫn nằm trong .phanca-root).
+    if (element.closest('.phanca-root')) {
+        captureContainer.classList.add('phanca-root');
+    }
+
+
     if (forcedWidth) {
         captureContainer.style.width = `${forcedWidth}px`;
         captureContainer.style.height = 'auto';
