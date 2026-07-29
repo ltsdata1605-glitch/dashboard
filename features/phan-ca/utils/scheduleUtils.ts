@@ -286,8 +286,13 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 }
             }
 
-            // 2. Nếu không được, chấp nhận đổi chéo shift để đạt được sự cân bằng
+            // 2. Nếu không được, chấp nhận đổi chéo shift để đạt được sự cân bằng — chọn ngày có
+            // CHÊNH LỆCH GIỜ GIỮA 2 MÃ CA NHỎ NHẤT (thay vì ngày đầu tiên tìm được) để hạn chế
+            // tối đa việc làm xáo trộn cân bằng tổng giờ công (SBH) đã đạt được ở bước khác.
             if (!swapped) {
+                let bestDay = -1;
+                let bestHourDelta = Infinity;
+
                 for (const d of days) {
                     const hSched = high.schedule[d];
                     const lSched = low.schedule[d];
@@ -303,14 +308,25 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                         if (roleTag === 'Kho' && !isSafe) continue;
                         if (roleTag !== 'Kho' && !isForced && !isSafe) continue;
 
-                        const hShift = hSched.shift;
-                        const lShift = lSched.shift;
-
-                        high.schedule[d] = { shift: lShift, role: lShift, isManual: true };
-                        low.schedule[d] = { shift: hShift, role: `${hShift} (${roleTag})`, isManual: true };
-                        swapped = true;
-                        break; 
+                        const hHours = hSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+                        const lHours = lSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+                        const hourDelta = Math.abs(hHours - lHours);
+                        if (hourDelta < bestHourDelta) {
+                            bestHourDelta = hourDelta;
+                            bestDay = d;
+                        }
                     }
+                }
+
+                if (bestDay !== -1) {
+                    const hSched = high.schedule[bestDay]!;
+                    const lSched = low.schedule[bestDay]!;
+                    const hShift = hSched.shift;
+                    const lShift = lSched.shift;
+
+                    high.schedule[bestDay] = { shift: lShift, role: lShift, isManual: true };
+                    low.schedule[bestDay] = { shift: hShift, role: `${hShift} (${roleTag})`, isManual: true };
+                    swapped = true;
                 }
             }
 
@@ -950,6 +966,16 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     balanceSpecificRole('GH', 'Nam');
     // 2. Số ngày làm kho của nữ với nữ tương đương với nhau
     balanceSpecificRole('Kho', 'Nu');
+
+    // BƯỚC CUỐI: CÂN BẰNG LẠI GIỜ CÔNG SBH (không phân biệt Nam/Nữ) SAU KHI CHỐT SỐ LƯỢNG
+    // Bước "chốt hạ" ở trên chỉ tối ưu SỐ LƯỢNG ca GH/Kho — khi phải đổi chéo 2 mã ca khác
+    // giờ để cân bằng số lượng, nó có thể vô tình làm giờ công SBH lệch lại so với những gì
+    // balanceTotalSpecialLoad/greedyPolish vừa cân bằng trước đó. Chạy lại 2 bước cân bằng
+    // giờ công này lần cuối để giờ công SBH có "tiếng nói cuối cùng" — cả 2 hàm đều đã có sẵn
+    // điều kiện bảo vệ không làm lệch lại số ca GH của Nam (chỉ đổi khi stats.gh không bị lố),
+    // và ca Kho luôn đổi 1-đổi-1 nên không đổi số lượng, nên không phá lại kết quả vừa chốt.
+    balanceTotalSpecialLoad();
+    greedyPolish();
 
     /**
      * BƯỚC MỚI: CÂN BẰNG TỔNG GIỜ CÔNG (giờ thường + giờ đặc biệt)
