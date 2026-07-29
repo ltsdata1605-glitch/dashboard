@@ -5,7 +5,7 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { getErrorMessage } from '../../../utils/dataUtils';
 import { useAuth } from '../../../contexts/AuthContext';
-import { HOURS_CONFIG } from '../constants';
+import { HOURS_CONFIG, KHO_TN_MIN_GAP_DAYS, GH_MIN_GAP_DAYS } from '../constants';
 import { suggestShiftPattern } from '../services/geminiService';
 
 interface AiSuggestPatternModalProps {
@@ -58,8 +58,86 @@ const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, 
 
     const [isLoading, setIsLoading] = useState(false);
     const [suggestion, setSuggestion] = useState<string[] | null>(null);
+    const [feasibilityWarnings, setFeasibilityWarnings] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+    // Ước lượng nhanh xem mẫu ca AI trả về có đủ "nguyên liệu" (số lượng nhân sự, độ phủ ca)
+    // để thuật toán phân ca thật (scheduleService.ts/scheduleUtils.ts) đáp ứng các ràng buộc
+    // công bằng hiện có hay không — CHỈ là ước lượng tham khảo dựa trên toán học đơn giản
+    // (giả định xoay vòng đều), không mô phỏng chính xác từng ngày. Từ khi có bước "luôn đảm
+    // bảo có người" trong scheduleService.ts, ca sẽ không còn bị bỏ trống, nhưng nếu thiếu
+    // nhân sự so với ước lượng ở đây, hệ thống có thể phải phá vỡ giãn cách công bằng để bù.
+    const checkFeasibility = useCallback((pattern: string[]): string[] => {
+        const warnings: string[] = [];
+        const totalStaff = numNam + numNu;
+        if (totalStaff === 0 || pattern.length === 0) return warnings;
+
+        // 1. Độ dài mẫu ca có đúng 1/2 tổng nhân sự như yêu cầu không
+        const idealLength = Math.ceil(totalStaff / 2);
+        if (pattern.length !== idealLength) {
+            warnings.push(`Độ dài mẫu ca (${pattern.length}) khác 1/2 tổng nhân sự lý tưởng (${idealLength}) — vòng xoay có thể không đều.`);
+        }
+
+        // 2. Yêu cầu nhân sự tối thiểu/ca (theo tỉ lệ mã ca xuất hiện trong mẫu)
+        const slotCounts: { [key: string]: number } = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 };
+        pattern.forEach(code => {
+            for (const ch of code) {
+                if (slotCounts[ch] !== undefined) slotCounts[ch]++;
+            }
+        });
+        (['1', '2', '3', '4', '5', '6'] as const).forEach(slot => {
+            const required = slotRequirements[slot] || 0;
+            if (required <= 0) return;
+            const avgCount = Math.round((slotCounts[slot] / pattern.length) * totalStaff);
+            if (avgCount < required) {
+                warnings.push(`Ca ${slot}: mẫu ca cho trung bình ~${avgCount} người/ngày, thấp hơn yêu cầu tối thiểu ${required} người.`);
+            }
+        });
+
+        // 3. Giao Hàng: đủ Nam để giãn cách GH_MIN_GAP_DAYS ngày/lần (giả định xoay vòng đều)
+        const ghPerDay = specialShifts.gh.shifts.reduce((sum, s) => sum + (s.count || 0), 0);
+        if (ghPerDay > 0) {
+            const ghPool = specialShifts.gh.gender === 'Nu' ? numNu : specialShifts.gh.gender === 'Nam' ? numNam : totalStaff;
+            const neededForGap = ghPerDay * (GH_MIN_GAP_DAYS + 1);
+            if (ghPool < neededForGap) {
+                warnings.push(`Giao Hàng: cần tối thiểu ~${neededForGap} người phù hợp (hiện có ${ghPool}) để giãn cách ${GH_MIN_GAP_DAYS} ngày/lần cho mỗi người — nếu thiếu, hệ thống vẫn đảm bảo luôn có người làm GH nhưng có thể phải rút ngắn giãn cách.`);
+            }
+        }
+
+        // 4. Kho: đủ người (theo giới tính áp dụng) để giãn cách 2 ngày/lần VÀ không quá 1 lần
+        // trong khối Thứ 6-7-CN (ước lượng riêng theo từng giới vì Kho cân bằng Nam-Nam, Nữ-Nữ)
+        const khoPerDay = specialShifts.kho.shifts.reduce((sum, s) => sum + (s.count || 0), 0);
+        if (khoPerDay > 0) {
+            const checkKhoPool = (poolSize: number, share: number, label: string) => {
+                if (share <= 0) return;
+                const needed = Math.max(share * (KHO_TN_MIN_GAP_DAYS + 1), share * 3);
+                if (poolSize < needed) {
+                    warnings.push(`Kho (${label}): cần tối thiểu ~${needed} người (hiện có ${poolSize}) để đáp ứng giãn cách ${KHO_TN_MIN_GAP_DAYS} ngày/lần và không quá 1 lần trong khối Thứ 6-7-CN.`);
+                }
+            };
+            if (specialShifts.kho.gender === 'All') {
+                checkKhoPool(numNam, Math.ceil(khoPerDay / 2), 'Nam');
+                checkKhoPool(numNu, Math.ceil(khoPerDay / 2), 'Nữ');
+            } else if (specialShifts.kho.gender === 'Nam') {
+                checkKhoPool(numNam, khoPerDay, 'Nam');
+            } else {
+                checkKhoPool(numNu, khoPerDay, 'Nữ');
+            }
+        }
+
+        // 5. Thu Ngân: đủ người để giãn cách 2 ngày/lần
+        const tnPerDay = specialShifts.tn.shifts.reduce((sum, s) => sum + (s.count || 0), 0);
+        if (tnPerDay > 0) {
+            const tnPool = specialShifts.tn.gender === 'Nu' ? numNu : specialShifts.tn.gender === 'Nam' ? numNam : totalStaff;
+            const needed = tnPerDay * (KHO_TN_MIN_GAP_DAYS + 1);
+            if (tnPool < needed) {
+                warnings.push(`Thu Ngân: cần tối thiểu ~${needed} người (hiện có ${tnPool}) để giãn cách ${KHO_TN_MIN_GAP_DAYS} ngày/lần.`);
+            }
+        }
+
+        return warnings;
+    }, [numNam, numNu, specialShifts, slotRequirements]);
 
     const handleSpecialShiftChange = (role: SpecialShiftRole, index: number, field: 'code' | 'count', value: string) => {
         const updatedRole = { ...specialShifts[role] };
@@ -133,6 +211,7 @@ const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, 
         setIsLoading(true);
         setError(null);
         setSuggestion(null);
+        setFeasibilityWarnings([]);
 
         // Tính độ dài pattern lý tưởng: 1/2 tổng nhân sự
         const totalStaff = numNam + numNu;
@@ -187,13 +266,14 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
         try {
             const caXoay = await suggestShiftPattern(functions, prompt);
             setSuggestion(caXoay);
+            setFeasibilityWarnings(checkFeasibility(caXoay));
         } catch (e: unknown) {
             console.error(e);
             setError(`Đã có lỗi xảy ra: ${getErrorMessage(e) || 'Không thể tạo gợi ý.'}`);
         } finally {
             setIsLoading(false);
         }
-    }, [functions, departmentName, numNam, numNu, maxHours, commonShifts, slotRequirements, specialShifts, hourConfig]);
+    }, [functions, departmentName, numNam, numNu, maxHours, commonShifts, slotRequirements, specialShifts, hourConfig, checkFeasibility]);
 
     const renderSpecialShiftConfig = (role: SpecialShiftRole, title: string) => (
         <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -360,6 +440,21 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                     ))}
                                 </div>
                                 <div className="text-center mt-2 text-xs text-slate-500 dark:text-slate-400 italic">Mẹo: Kéo thả các ô màu xanh để thay đổi thứ tự</div>
+
+                                {feasibilityWarnings.length > 0 ? (
+                                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                        <h4 className="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
+                                            Cảnh báo khả thi (ước lượng)
+                                        </h4>
+                                        <ul className="list-disc list-inside space-y-1 text-xs text-amber-800 dark:text-amber-300">
+                                            {feasibilityWarnings.map((w, i) => <li key={i}>{w}</li>)}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <div className="mt-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-center text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                        Đủ điều kiện theo ước lượng nhân sự/ca hiện tại.
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

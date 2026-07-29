@@ -133,6 +133,22 @@ function generateSchedule(
                 return true;
             });
 
+            // BẢO ĐẢM LUÔN CÓ NGƯỜI: nếu ứng viên hợp lệ theo ràng buộc mềm (không làm GH
+            // ngày liền sau GH) không đủ số lượng yêu cầu, nới lỏng ràng buộc mềm đó để
+            // không bỏ trống ca — chỉ giữ ràng buộc cứng (không OFF, không đã có ca đặc biệt
+            // khác trong ngày, đúng giới tính yêu cầu).
+            if (candidates.length < requiredCount) {
+                const hardOnlyCandidates = targetStaff.filter(s => {
+                    const sched = s.schedule[d];
+                    if (!sched || sched.role === 'OFF' || sched.role.includes('(')) return false;
+                    if (targetGender === 'Nam' && s.gender !== 'Nam') return false;
+                    if (targetGender === 'Nu' && s.gender !== 'Nu') return false;
+                    return true;
+                });
+                const extraCandidates = hardOnlyCandidates.filter(s => !candidates.includes(s));
+                candidates = [...candidates, ...extraCandidates];
+            }
+
             // Sort candidates
             candidates.sort((a, b) => {
                 const getHours = (staff: StaffMember, tag: string) => {
@@ -150,7 +166,7 @@ function generateSchedule(
 
                 const currentHoursA = getHours(a, 'GH');
                 const currentHoursB = getHours(b, 'GH');
-                
+
                 if (Math.abs(currentHoursA - currentHoursB) >= 4) {
                     return currentHoursA - currentHoursB;
                 }
@@ -172,7 +188,7 @@ function generateSchedule(
                 const totalHoursA = calculateSpecialHours(a, true);
                 const totalHoursB = calculateSpecialHours(b, true);
                 if (Math.abs(totalHoursA - totalHoursB) >= 4) return totalHoursA - totalHoursB;
-                
+
                 return 0;
             });
 
@@ -234,6 +250,23 @@ function generateSchedule(
 
                     return true;
                 });
+
+                // BẢO ĐẢM LUÔN CÓ NGƯỜI: Thu Ngân/Kho/Giao Hàng không được để trống ca. Nếu ứng
+                // viên hợp lệ theo ràng buộc mềm (không làm GH ngày liền sau GH, Nam có GH cuối
+                // tuần không làm Kho cuối tuần) không đủ số lượng yêu cầu, nới lỏng các ràng buộc
+                // mềm đó — chỉ giữ ràng buộc cứng (không OFF, không đã có ca đặc biệt khác trong
+                // ngày, đúng giới tính yêu cầu).
+                if (candidates.length < requiredCount) {
+                    const hardOnlyCandidates = targetStaff.filter(s => {
+                        const sched = s.schedule[d];
+                        if (!sched || sched.role === 'OFF' || sched.role.includes('(')) return false;
+                        if (targetGender === 'Nam' && s.gender !== 'Nam') return false;
+                        if (targetGender === 'Nu' && s.gender !== 'Nu') return false;
+                        return true;
+                    });
+                    const extraCandidates = hardOnlyCandidates.filter(s => !candidates.includes(s));
+                    candidates = [...candidates, ...extraCandidates];
+                }
 
                 // Cân bằng Nam-Nữ cho ca Kho ngày Thứ 2 và Thứ 5 (luôn có 1 Nam và 1 Nữ nếu yêu cầu = 2)
                 const date = new Date(year, month - 1, startDay + d - 1);

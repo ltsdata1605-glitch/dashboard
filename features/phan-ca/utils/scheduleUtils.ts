@@ -1,6 +1,6 @@
 
 import { StaffMember, StaffStats, Solution, ScheduleConfig, ScheduleTargets, BusySchedule, EditShiftModalInfo, ScheduleInfo, SolutionAction, BalancingFeedback, MonthlyStats } from '../types';
-import { HOURS_CONFIG } from '../constants';
+import { HOURS_CONFIG, KHO_TN_MIN_GAP_DAYS, GH_MIN_GAP_DAYS } from '../constants';
 
 export const calculateTotalHours = (staff: StaffMember): number => {
     let total = 0;
@@ -163,8 +163,8 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
     // Helper: Kiểm tra xem ca làm việc có phải là ca đặc biệt (SBH) không
     const isSpecial = (s: ScheduleInfo | null) => s && (s.role.includes('(GH)') || s.role.includes('(Kho)') || s.role.includes('(TN)'));
-    const MIN_GAP = 2; // Kho/TN: yêu cầu cách ít nhất 2 ngày
-    const GH_MIN_GAP = 6; // Giao Hàng: cách ít nhất 6 ngày kể từ lần GH gần nhất (~1 tuần/lần, tính rolling để không dồn cục ở ranh giới tuần lịch)
+    const MIN_GAP = KHO_TN_MIN_GAP_DAYS; // Kho/TN: yêu cầu cách ít nhất 2 ngày
+    const GH_MIN_GAP = GH_MIN_GAP_DAYS; // Giao Hàng: cách ít nhất 6 ngày kể từ lần GH gần nhất (~1 tuần/lần, tính rolling để không dồn cục ở ranh giới tuần lịch)
 
     // Helper: Kiểm tra xem nếu đặt một ca Special vào ngày dayIdx thì có an toàn không (có vi phạm khoảng cách không)
     // ignoreDayIdx: Bỏ qua ngày này khi kiểm tra (dùng khi chúng ta đang định di chuyển ca từ ignoreDayIdx sang dayIdx)

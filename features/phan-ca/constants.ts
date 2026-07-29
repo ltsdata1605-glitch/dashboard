@@ -46,6 +46,13 @@ export const DEFAULT_PATTERNS_HUNG_VUONG_910_99 = {
 
 export const HOURS_CONFIG: { [key: string]: number } = { '1': 1, '2': 3, '3': 3, '4': 3, '5': 3, '6': 0.5 };
 
+// Khoảng cách tối thiểu (số ngày) giữa 2 lần làm cùng 1 loại ca đặc biệt của 1 người.
+// Dùng chung bởi thuật toán tinh chỉnh (scheduleUtils.ts::autoRefineSchedule) và bước
+// ước lượng khả thi mẫu ca AI (AiSuggestPatternModal.tsx) — giữ 1 nguồn duy nhất để
+// không bị lệch số nếu sau này chỉnh sửa quy tắc.
+export const KHO_TN_MIN_GAP_DAYS = 2;
+export const GH_MIN_GAP_DAYS = 6; // Giao Hàng: ~1 tuần/lần (rolling, không tính theo tuần lịch)
+
 export const DEFAULT_SHIFT_DEFINITIONS = {
   '1': { startTime: '08:00', endTime: '09:00' },
   '2': { startTime: '09:00', endTime: '12:00' },
