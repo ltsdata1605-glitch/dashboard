@@ -55,10 +55,10 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
     onFiltersChange({ searchText: text });
   };
 
-  const toggleMultiSelect = (
+  const toggleMultiSelect = <T,>(
     key: keyof FilterState,
-    value: any,
-    currentList: any[]
+    value: T,
+    currentList: T[]
   ) => {
     const newList = currentList.includes(value)
       ? currentList.filter((v) => v !== value)
@@ -104,12 +104,15 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
               className="pl-8"
             />
             {filters.searchText && (
-              <button
+              <Button
+                type="button"
+                variant="unstyled"
+                size="none"
                 onClick={() => handleSearchChange('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -307,7 +310,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 }) => {
   return (
     <div className="space-y-1 rounded border border-slate-200 bg-slate-50 p-2">
-      <button
+      <Button
+        type="button"
+        variant="unstyled"
+        size="none"
         onClick={onToggle}
         className={`flex w-full items-center justify-between text-xs font-medium ${
           isActive ? 'text-sky-600' : 'text-slate-700'
@@ -315,7 +321,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
       >
         {label}
         <span>{expanded ? '▼' : '▶'}</span>
-      </button>
+      </Button>
       {expanded && <div className="text-xs">{children}</div>}
     </div>
   );

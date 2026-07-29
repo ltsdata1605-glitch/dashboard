@@ -82,7 +82,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           <tbody>
             {items.map((item, idx) => {
               const checking = checkingData[item.id];
-              const diff = checking?.chieuThayCo || 0 - item.soLuongTonKho;
+              const diff = checking?.chieuThayCo ?? -item.soLuongTonKho;
 
               return (
                 <tr
@@ -110,13 +110,16 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                       <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
                         {item.imei.substring(0, 10)}...
                       </code>
-                      <button
+                      <Button
+                        type="button"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => handleCopyIMEI(item.imei)}
                         className="text-slate-400 hover:text-slate-600"
                         title="Copy IMEI"
                       >
                         <Copy className="h-3 w-3" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
 
@@ -160,13 +163,16 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   {/* Hành Động */}
                   <td className="px-3 py-2 text-center">
                     {onDeleteRow && (
-                      <button
+                      <Button
+                        type="button"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => onDeleteRow(item.id)}
                         className="text-rose-400 hover:text-rose-600"
                         title="Xóa"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -199,8 +205,11 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
               const page = Math.max(1, currentPage - 2) + i;
               if (page > totalPages) return null;
               return (
-                <button
+                <Button
                   key={page}
+                  type="button"
+                  variant="unstyled"
+                  size="none"
                   onClick={() => onPageChange(page)}
                   className={`h-8 w-8 rounded text-xs font-medium ${
                     currentPage === page
@@ -210,7 +219,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   disabled={isLoading}
                 >
                   {page}
-                </button>
+                </Button>
               );
             })}
           </div>

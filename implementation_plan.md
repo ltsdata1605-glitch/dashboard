@@ -1919,3 +1919,18 @@ Tất cả core features đã implement:
 
 ---
 
+## 19. QA Fix Pass (2026-07-29) — Sau Sprint 3, trước khi bàn giao
+
+Tiếp tục phiên trước (context đã bị nén), rà lại toàn bộ `features/kho-hang/` trước khi báo hoàn tất. Phát hiện + sửa các lỗi sau, tất cả đã qua lại `npm run check` (typecheck + eslint + build + lint-ratchet) PASS:
+
+1. **Bug nghiêm trọng — tab không thể truy cập được**: `App.tsx` gắn `InventoryView` vào tab id `'kho-hang'`, nhưng menu điều hướng có sẵn từ trước (`Sidebar.tsx` dòng 215, `MobileBottomNav.tsx` dòng 41 — mục "Kho hàng") luôn set `activeTab` thành `'inventory'`. Do 2 chuỗi id không khớp nhau (không có type chung ràng buộc), `npm run check` không bắt được lỗi này — bấm vào menu "Kho hàng" trước đó sẽ ra màn hình fallback "Tính năng đang được phát triển", **toàn bộ tính năng vừa build không bấm vào được từ giao diện**. Đã sửa: đổi id tab trong `App.tsx` (`persistentViews`, `TAB_TITLES`, `getTabIcon()`) từ `'kho-hang'` → `'inventory'` để khớp với menu có sẵn, xoá icon/tiêu đề trùng lặp, bỏ import `FileText` không còn dùng.
+2. **Bug tính toán chênh lệch**: `InventoryTable.tsx` — `const diff = checking?.chieuThayCo || 0 - item.soLuongTonKho` sai độ ưu tiên toán tử: khi 1 sản phẩm đã kiểm kê khớp đúng tồn kho (`chieuThayCo === 0`, giá trị falsy), biểu thức rơi về nhánh `0 - soLuongTonKho` thay vì hiển thị đúng `0` — đúng lúc quan trọng nhất (hàng đã kiểm khớp) lại hiện sai thành số âm lớn. Sửa thành `checking?.chieuThayCo ?? -item.soLuongTonKho` (dùng `??` thay `||`).
+3. **Vi phạm quy tắc UI dùng component chung** (CLAUDE.md mục 2 — cấm `<button>` thô): thay toàn bộ `<button>` thô trong `InventoryFilters.tsx` (nút xoá search, toggle FilterSection) và `InventoryTable.tsx` (copy IMEI, xoá dòng, phân trang) bằng `<Button variant="unstyled" size="none">` từ `components/shared/ui/Button`.
+4. **Trùng lặp component**: `InventoryStats.tsx` tự dựng lại 1 `StatCard` cục bộ y hệt `components/shared/ui/StatCard.tsx` đã có sẵn (chưa nơi nào dùng tới) — thay bằng import component dùng chung.
+5. **`any` không cần thiết**: `InventoryView.tsx` (`handleUpload`) và `InventoryFilters.tsx` (`toggleMultiSelect`) dùng `any` dù không phải parse Excel thô — đổi sang `InventoryItem[]` cụ thể và generic `<T,>`.
+6. Thêm `QRScannerInput` vào `components/index.ts` (barrel export thiếu, các component khác đều có).
+
+**Chưa kiểm bằng trình duyệt thật**: môi trường hiện tại không có `chromium-cli`/Playwright cài sẵn (đã kiểm tra, không có sẵn để cài nhanh không cần tải file lớn) nên chỉ xác minh tĩnh qua đọc code + `npm run check`. Khuyến nghị người dùng tự bấm thử tab "Kho hàng" trên trình duyệt thật (đặc biệt bug #1 — trước đây hoàn toàn không bấm vào được) trước khi coi là xong.
+
+**Phase 2 (Backend Firestore)** ở mục 18.5 vẫn đang để ngỏ, chưa có code nào đụng tới Firestore trong `features/kho-hang/` — đúng như kế hoạch, chưa phải thiếu sót.
+

@@ -9,6 +9,7 @@ import { QRScannerInput } from './components/QRScannerInput';
 import { Button } from '@/components/shared/ui/Button';
 import { ConfirmDialog } from '@/components/shared/ui/ConfirmDialog';
 import { ExternalLink, Trash2 } from 'lucide-react';
+import type { InventoryItem } from './types/inventory';
 
 export const InventoryView: React.FC = () => {
   const inventory = useInventoryData();
@@ -37,7 +38,7 @@ export const InventoryView: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleUpload = (items: any[], maKho: number) => {
+  const handleUpload = (items: InventoryItem[], maKho: number) => {
     inventory.uploadItems(items, maKho);
     showToast('success', `✅ Đã tải ${items.length} sản phẩm`);
   };
