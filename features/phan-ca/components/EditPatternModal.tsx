@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Trash2, Zap } from 'lucide-react';
 import { HOURS_CONFIG } from '../constants';
 import * as idb from '../db/idb';
-import { DailyRequirements, ShiftDefinitions, StaffInitialData } from '../types';
+import { DailyRequirements, SchedulingRules, ShiftDefinitions, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
@@ -20,6 +20,7 @@ interface EditPatternModalProps {
   onShiftDefinitionsUpdate: (sd: ShiftDefinitions) => void;
   nams: StaffInitialData[];
   nus: StaffInitialData[];
+  rules: SchedulingRules;
 }
 
 interface PreviewStats {
@@ -28,7 +29,7 @@ interface PreviewStats {
 }
 
 
-const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, allDepartments, onClose, onSave, staffCountByDept, dailyRequirements, onRequirementsUpdate, shiftDefinitions, onShiftDefinitionsUpdate, nams, nus }) => {
+const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, allDepartments, onClose, onSave, staffCountByDept, dailyRequirements, onRequirementsUpdate, shiftDefinitions, onShiftDefinitionsUpdate, nams, nus, rules }) => {
   const [patternsByDept, setPatternsByDept] = useState(currentPatterns);
   const [selectedDept, setSelectedDept] = useState<string>(allDepartments[0] || '');
   const [previewStats, setPreviewStats] = useState<PreviewStats | null>(null);
@@ -485,6 +486,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
             nams={nams}
             nus={nus}
             dailyRequirements={reqsForAi}
+            rules={rules}
         />
     )}
     </>

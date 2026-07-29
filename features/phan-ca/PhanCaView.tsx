@@ -179,7 +179,7 @@ const App: React.FC = () => {
         }
         if (namsToSchedule.length === 0 && nusToSchedule.length === 0) return;
         const { staffList: newStaffListForDept, targets: newTargets } = createFullSchedule({ config, nams: namsToSchedule, nus: nusToSchedule, rules: effectiveRules, departmentPatterns: effectivePatterns, busySchedule: effectiveBusySchedule, previousMonthStats });
-        const refinedStaffListForDept = autoRefineSchedule(newStaffListForDept, config, newTargets);
+        const refinedStaffListForDept = autoRefineSchedule(newStaffListForDept, config, newTargets, effectiveBusySchedule);
         let finalStaffList;
         if (targetDepartment && staffList.length > 0) {
             const otherDeptsStaff = staffList.filter(s => s.department !== targetDepartment);
@@ -710,6 +710,7 @@ const App: React.FC = () => {
         }}
         nams={nams}
         nus={nus}
+        rules={rules}
       />}
       {isImportModalOpen && <ImportStaffModal staffList={importedStaff} onClose={() => setImportModalOpen(false)} onConfirm={handleConfirmImport} existingSupermarkets={supermarkets} />}
       {isEditShiftModalOpen && editingCellInfo && <EditShiftModal info={editingCellInfo} onClose={() => setEditShiftModalOpen(false)} onSave={handleSaveShift} onFindSolution={() => null} onConfirmReplacement={() => {}} onConfirmDaySwap={() => {}} onFindSolutionForDemotion={() => null} onConfirmSwapAndChange={() => {}} rules={rules} allStaff={staffList} dailyRequirements={dailyRequirements} busySchedule={busySchedule} onConfirmCutShift={()=>{}} onConfirmNormalSwap={handleSwapShifts} onConfirmCutAndSwap={()=>{}} onConfirmMultipleChanges={(a) => {

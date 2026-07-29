@@ -140,7 +140,7 @@ const isFriday = (year: number, month: number, startDay: number, dayIndex: numbe
  * Thuật toán Cân bằng SBH Đa tầng (Refined version)
  * Cập nhật mới: Ưu tiên cân bằng công bằng vào cuối tuần (Sales Protection)
  */
-export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleConfig, targets?: ScheduleTargets): StaffMember[] => {
+export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleConfig, targets?: ScheduleTargets, busySchedule: BusySchedule = {}): StaffMember[] => {
     let refinedList = structuredClone(staffList);
     const includeTn = config.includeTn !== undefined ? config.includeTn : true;
     
@@ -163,18 +163,32 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
     // Helper: Kiểm tra xem ca làm việc có phải là ca đặc biệt (SBH) không
     const isSpecial = (s: ScheduleInfo | null) => s && (s.role.includes('(GH)') || s.role.includes('(Kho)') || s.role.includes('(TN)'));
-    const MIN_GAP = 2; // Yêu cầu cách ít nhất 2 ngày
+    const MIN_GAP = 2; // Kho/TN: yêu cầu cách ít nhất 2 ngày
+    const GH_MIN_GAP = 6; // Giao Hàng: cách ít nhất 6 ngày kể từ lần GH gần nhất (~1 tuần/lần, tính rolling để không dồn cục ở ranh giới tuần lịch)
 
     // Helper: Kiểm tra xem nếu đặt một ca Special vào ngày dayIdx thì có an toàn không (có vi phạm khoảng cách không)
     // ignoreDayIdx: Bỏ qua ngày này khi kiểm tra (dùng khi chúng ta đang định di chuyển ca từ ignoreDayIdx sang dayIdx)
-    const isSafeForSpecial = (staff: StaffMember, dayIdx: number, ignoreDayIdx?: number) => {
+    // roleTag: loại ca đặc biệt SẼ được đặt vào dayIdx ('GH'|'Kho'|'TN') — dùng để áp riêng khoảng cách 6 ngày cho GH
+    const isSafeForSpecial = (staff: StaffMember, dayIdx: number, ignoreDayIdx?: number, roleTag?: string) => {
         // Ràng buộc tuyệt đối: Ngày hôm trước đã làm ca GH thì hôm nay không làm ca đặc biệt
         if (dayIdx - 1 >= 1 && dayIdx - 1 !== ignoreDayIdx && staff.schedule[dayIdx - 1]?.role.includes('(GH)')) return false;
+
+        if (roleTag === 'GH') {
+            // Giao Hàng: chỉ cần cách lần GH gần nhất của CHÍNH người đó >= 6 ngày
+            // (không tính các ca đặc biệt khác như Kho/TN — chúng có khoảng cách riêng)
+            for (let k = 1; k <= GH_MIN_GAP; k++) {
+                const prev = staff.schedule[dayIdx - k];
+                const next = staff.schedule[dayIdx + k];
+                if (dayIdx - k !== ignoreDayIdx && prev?.role.includes('(GH)')) return false;
+                if (dayIdx + k !== ignoreDayIdx && next?.role.includes('(GH)')) return false;
+            }
+            return true;
+        }
 
         for (let k = 1; k <= MIN_GAP; k++) {
             const prev = staff.schedule[dayIdx - k];
             const next = staff.schedule[dayIdx + k];
-            
+
             // Nếu ngày kiểm tra trùng với ignoreDayIdx (ngày đang chứa ca special mà ta định chuyển đi), thì coi như ngày đó trống/an toàn
             if (dayIdx - k !== ignoreDayIdx && isSpecial(prev)) return false;
             if (dayIdx + k !== ignoreDayIdx && isSpecial(next)) return false;
@@ -261,7 +275,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     const maxAllowed = targets ? (targets[statKey as keyof ScheduleTargets] as number || Infinity) : Infinity;
                     const isForced = high.stats[statKey] > maxAllowed;
                     
-                    const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d);
+                    const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
                     if (roleTag === 'Kho' && !isSafe) continue;
                     if (roleTag !== 'Kho' && !isForced && !isSafe) continue;
 
@@ -285,7 +299,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                         const maxAllowed = targets ? (targets[statKey as keyof ScheduleTargets] as number || Infinity) : Infinity;
                         const isForced = high.stats[statKey] > maxAllowed;
 
-                        const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d);
+                        const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
                         if (roleTag === 'Kho' && !isSafe) continue;
                         if (roleTag !== 'Kho' && !isForced && !isSafe) continue;
 
@@ -350,7 +364,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     if (roleTag === 'Kho' && sufferingStaff.gender !== luckyStaff.gender) continue;
 
                     // Kiểm tra an toàn khoảng cách cho người nhận (luckyStaff)
-                    const isSafe = roleTag === 'Kho' ? isSafeForKho(luckyStaff, d) : isSafeForSpecial(luckyStaff, d);
+                    const isSafe = roleTag === 'Kho' ? isSafeForKho(luckyStaff, d) : isSafeForSpecial(luckyStaff, d, undefined, roleTag);
                     if (!isSafe) continue;
 
                     // Swap role
@@ -415,7 +429,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                         if (roleTag === 'Kho' && overloaded.gender !== underloaded.gender) continue;
 
                         // Kiểm tra an toàn khoảng cách cho người nhận (underloaded)
-                        const isSafe = roleTag === 'Kho' ? isSafeForKho(underloaded, d) : isSafeForSpecial(underloaded, d);
+                        const isSafe = roleTag === 'Kho' ? isSafeForKho(underloaded, d) : isSafeForSpecial(underloaded, d, undefined, roleTag);
                         if (!isSafe) continue;
 
                         overloaded.schedule[d]!.role = oSched.shift;
@@ -444,8 +458,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     if (!isSpecial(staff.schedule[d])) continue;
 
                     // Nếu ngày hiện tại vi phạm khoảng cách (quá gần ca special khác)
-                    const isKho = staff.schedule[d]!.role.includes('(Kho)');
-                    const currentSafe = isKho ? isSafeForKho(staff, d) : isSafeForSpecial(staff, d);
+                    const roleTag = staff.schedule[d]!.role.match(/\(([^)]+)\)/)?.[1];
+                    const isKho = roleTag === 'Kho';
+                    const currentSafe = isKho ? isSafeForKho(staff, d) : isSafeForSpecial(staff, d, undefined, roleTag);
                     if (!currentSafe) {
                         let fixed = false;
 
@@ -453,15 +468,14 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                         // Tìm người khác có thể nhận ca Special này vào ngày d
                         for (const partner of shuffledStaff) {
                             if (partner.id === staff.id) continue;
-                            
+
                             const pSched = partner.schedule[d];
                             // Partner phải đang làm ca thường
                             if (pSched && !pSched.role.includes('(') && pSched.role !== 'OFF') {
                                 // Kiểm tra xem Partner nhận Special vào ngày d có an toàn không
-                                const partnerSafe = isKho ? isSafeForKho(partner, d) : isSafeForSpecial(partner, d);
+                                const partnerSafe = isKho ? isSafeForKho(partner, d) : isSafeForSpecial(partner, d, undefined, roleTag);
                                 if (partnerSafe) {
                                     // Check giới tính nếu là GH
-                                    const roleTag = staff.schedule[d].role.match(/\(([^)]+)\)/)?.[1];
                                     if (roleTag === 'GH' && partner.gender !== 'Nam') continue;
 
                                     // Nếu là Kho, chỉ đổi cùng giới tính
@@ -565,7 +579,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     // Hoặc nếu độ lệch mới vẫn nằm trong ngưỡng an toàn
                     if (newPartnerImbalance < currentPartnerImbalance || newPartnerImbalance <= THRESHOLD) {
                         // Kiểm tra an toàn khoảng cách cho người nhận (partner)
-                        const isSafe = roleTag === 'Kho' ? isSafeForKho(partner, d) : isSafeForSpecial(partner, d);
+                        const isSafe = roleTag === 'Kho' ? isSafeForKho(partner, d) : isSafeForSpecial(partner, d, undefined, roleTag);
                         if (!isSafe) continue;
 
                         // Thực hiện đổi
@@ -583,72 +597,74 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     };
 
     /**
-     * BƯỚC MỚI: NGĂN CHẶN LÀM CA ĐẶC BIỆT CẢ T7 VÀ CN TRONG CÙNG 1 TUẦN
-     * Mục tiêu: Mỗi nhân viên chỉ nên làm tối đa 1 ca đặc biệt (GH/Kho/TN) vào cuối tuần.
-     * Nếu đã làm T7 thì CN nên nghỉ hoặc làm ca thường, và ngược lại.
+     * BƯỚC MỚI: NGĂN CHẶN LÀM KHO/GH NHIỀU HƠN 1 LẦN TRONG KHỐI THỨ 6 - THỨ 7 - CN
+     * Mục tiêu: Mỗi nhân viên chỉ nên làm tối đa 1 ca Kho hoặc Giao Hàng trong cả 3 ngày
+     * Thứ 6, Thứ 7, Chủ Nhật của cùng 1 tuần (không tính Thu Ngân — TN không bị ràng buộc này).
      */
+    const isKhoOrGh = (s: ScheduleInfo | null) => !!s && (s.role.includes('(Kho)') || s.role.includes('(GH)'));
+
     const preventWeekendDoubleShift = () => {
         // Duyệt qua từng nhân viên
         for (const staff of allInOneStaff) {
             // Duyệt qua từng tuần
             let currentWeekStart = 1;
             while (currentWeekStart <= duration) {
-                // Xác định ngày T7 và CN của tuần này
+                // Xác định ngày Thứ 6, Thứ 7, CN của tuần này
+                let friday = -1;
                 let saturday = -1;
                 let sunday = -1;
-                
+
                 for (let i = 0; i < 7; i++) {
                     const d = currentWeekStart + i;
                     if (d > duration) break;
                     const date = new Date(year, month - 1, startDay + d - 1);
                     const day = date.getDay();
+                    if (day === 5) friday = d;
                     if (day === 6) saturday = d;
                     if (day === 0) sunday = d;
                 }
-                
-                // Nếu tuần này có cả T7 và CN nằm trong tháng
-                if (saturday !== -1 && sunday !== -1) {
-                    const satShift = staff.schedule[saturday];
-                    const sunShift = staff.schedule[sunday];
-                    
-                    // Kiểm tra xem nhân viên có làm ca đặc biệt cả 2 ngày không
-                    if (isSpecial(satShift) && isSpecial(sunShift)) {
-                        // Cần đổi bớt 1 ngày đi (ưu tiên đổi ngày CN)
-                        const dayToSwap = sunday;
-                        const shiftToSwap = sunShift!;
-                        const roleTag = shiftToSwap.role.match(/\(([^)]+)\)/)?.[1]; // GH, Kho, TN
-                        
-                        // Tìm người thay thế hợp lệ
-                        let swapped = false;
-                        for (const partner of allInOneStaff) {
-                            if (partner.id === staff.id) continue;
-                            
-                            // Partner phải:
-                            // 1. Không làm ca đặc biệt vào ngày này (đang làm ca thường)
-                            // 2. Không làm ca đặc biệt vào ngày còn lại của cuối tuần (để tránh đẩy cái khó cho người khác)
-                            const pDayShift = partner.schedule[dayToSwap];
-                            const pOtherWeekendShift = partner.schedule[dayToSwap === sunday ? saturday : sunday];
-                            
-                            if (pDayShift && !isSpecial(pDayShift) && pDayShift.role !== 'OFF' && 
-                                (!pOtherWeekendShift || !isSpecial(pOtherWeekendShift))) {
-                                
-                                // Check các ràng buộc khác
-                                if (roleTag === 'GH' && partner.gender !== 'Nam') continue;
-                                if (roleTag === 'Kho' && staff.gender !== partner.gender) continue;
-                                const isSafe = roleTag === 'Kho' ? isSafeForKho(partner, dayToSwap) : isSafeForSpecial(partner, dayToSwap);
-                                if (!isSafe) continue;
-                                
-                                // Thực hiện đổi
-                                staff.schedule[dayToSwap]!.role = shiftToSwap.shift; // Về ca thường
-                                partner.schedule[dayToSwap]!.role = `${pDayShift.shift} (${roleTag})`; // Nhận ca đặc biệt
-                                
-                                swapped = true;
-                                break;
-                            }
+
+                const weekendBlock = [friday, saturday, sunday].filter(d => d !== -1);
+                // Các ngày trong khối T6-7-CN mà nhân viên này đang làm Kho/GH — giữ ngày sớm nhất, đổi bớt các ngày còn lại
+                let specialDays = weekendBlock.filter(d => isKhoOrGh(staff.schedule[d]));
+
+                while (specialDays.length > 1) {
+                    const dayToSwap = specialDays[specialDays.length - 1];
+                    const shiftToSwap = staff.schedule[dayToSwap]!;
+                    const roleTag = shiftToSwap.role.match(/\(([^)]+)\)/)?.[1]; // GH hoặc Kho
+
+                    // Tìm người thay thế hợp lệ
+                    let swapped = false;
+                    for (const partner of allInOneStaff) {
+                        if (partner.id === staff.id) continue;
+
+                        // Partner phải:
+                        // 1. Không làm ca đặc biệt vào ngày này (đang làm ca thường)
+                        // 2. Không đang làm Kho/GH vào bất kỳ ngày nào khác trong khối T6-7-CN này
+                        //    (để tránh đẩy vi phạm sang người khác)
+                        const pDayShift = partner.schedule[dayToSwap];
+                        const partnerHasOtherWeekendSpecial = weekendBlock.some(d => d !== dayToSwap && isKhoOrGh(partner.schedule[d]));
+
+                        if (pDayShift && !isSpecial(pDayShift) && pDayShift.role !== 'OFF' && !partnerHasOtherWeekendSpecial) {
+                            // Check các ràng buộc khác
+                            if (roleTag === 'GH' && partner.gender !== 'Nam') continue;
+                            if (roleTag === 'Kho' && staff.gender !== partner.gender) continue;
+                            const isSafe = roleTag === 'Kho' ? isSafeForKho(partner, dayToSwap) : isSafeForSpecial(partner, dayToSwap, undefined, roleTag);
+                            if (!isSafe) continue;
+
+                            // Thực hiện đổi
+                            staff.schedule[dayToSwap]!.role = shiftToSwap.shift; // Về ca thường
+                            partner.schedule[dayToSwap]!.role = `${pDayShift.shift} (${roleTag})`; // Nhận ca đặc biệt
+
+                            swapped = true;
+                            break;
                         }
                     }
+
+                    if (!swapped) break; // Không tìm được người thay — dừng để tránh lặp vô ích
+                    specialDays = weekendBlock.filter(d => isKhoOrGh(staff.schedule[d]));
                 }
-                
+
                 currentWeekStart += 7;
             }
         }
@@ -776,7 +792,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                             const dayOfWeek = date.getDay();
                             if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4)) continue;
 
-                            const isSafe = roleTag === 'Kho' ? isSafeForKho(targetStaff, d) : isSafeForSpecial(targetStaff, d);
+                            const isSafe = roleTag === 'Kho' ? isSafeForKho(targetStaff, d) : isSafeForSpecial(targetStaff, d, undefined, roleTag);
                             if (!isSafe) continue;
                             
                             sourceStaff.schedule[d] = { shift: tSched.shift, role: tSched.shift, isManual: true };
@@ -819,7 +835,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                     const dayOfWeek = date.getDay();
                     if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && high.gender !== low.gender) continue;
 
-                    const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d);
+                    const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
                     if (!isSafe) continue;
 
                     const hHours = hSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
@@ -901,7 +917,7 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                             const dayOfWeek = dayOfWeekCache[d];
                             if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && sHigh.gender !== sLow.gender) continue;
 
-                            const isSafe = roleTag === 'Kho' ? isSafeForKho(sLow, d) : isSafeForSpecial(sLow, d);
+                            const isSafe = roleTag === 'Kho' ? isSafeForKho(sLow, d) : isSafeForSpecial(sLow, d, undefined, roleTag);
                             if (!isSafe) continue;
 
                             const shiftHours = (schedHigh!.shift.match(/[1-6]/g) || ([] as string[])).reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
@@ -934,6 +950,64 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     balanceSpecificRole('GH', 'Nam');
     // 2. Số ngày làm kho của nữ với nữ tương đương với nhau
     balanceSpecificRole('Kho', 'Nu');
+
+    /**
+     * BƯỚC MỚI: CÂN BẰNG TỔNG GIỜ CÔNG (giờ thường + giờ đặc biệt)
+     * Các bước trên chỉ cân bằng GIỜ SBH và SỐ CA GH/Kho — tổng giờ công thực tế
+     * (bao gồm cả ca thường) trước đây không được chủ động cân bằng, nên khi ai đó
+     * có busySchedule (báo bận/nghỉ) làm mất một số ca thường thành OFF không được
+     * bù, tổng giờ công của họ sẽ thấp hơn hẳn đồng nghiệp mà không có cơ chế sửa.
+     * Chỉ hoán đổi MÃ CA THƯỜNG (không có nhãn GH/Kho/TN) giữa 2 người trong cùng
+     * 1 ngày — không đụng tới số liệu GH/Kho/TN/SBH đã cân bằng ở các bước trên.
+     */
+    const balanceTotalWorkHours = () => {
+        const morningRegex = /[123]/;
+        const afternoonRegex = /[456]/;
+        const isShiftBlockedByBusy = (staff: StaffMember, d: number, shiftCode: string) => {
+            const busyStatus = busySchedule[staff.id]?.[d];
+            if (!busyStatus || busyStatus === 'off') return busyStatus === 'off';
+            const isMorningShift = morningRegex.test(shiftCode);
+            const isAfternoonShift = afternoonRegex.test(shiftCode);
+            return (busyStatus === 'morning' && isMorningShift) || (busyStatus === 'afternoon' && isAfternoonShift);
+        };
+        const shiftHours = (shiftCode: string) => shiftCode.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+
+        for (let pass = 0; pass < 30; pass++) {
+            allInOneStaff.sort((a, b) => calculateTotalHours(b) - calculateTotalHours(a));
+            const high = allInOneStaff[0];
+            const low = allInOneStaff[allInOneStaff.length - 1];
+            const currentDiff = calculateTotalHours(high) - calculateTotalHours(low);
+
+            if (currentDiff <= 2) break; // Chấp nhận chênh lệch tối đa 2 giờ
+
+            let swapped = false;
+            for (let d = 1; d <= duration; d++) {
+                const hSched = high.schedule[d];
+                const lSched = low.schedule[d];
+                if (!hSched || !lSched) continue;
+                if (hSched.role === 'OFF' || lSched.role === 'OFF') continue;
+                // Chỉ đổi ca thường — không đụng ca đã gán GH/Kho/TN
+                if (hSched.role.includes('(') || lSched.role.includes('(')) continue;
+                if (hSched.shift === lSched.shift) continue;
+
+                if (isShiftBlockedByBusy(low, d, hSched.shift)) continue;
+                if (isShiftBlockedByBusy(high, d, lSched.shift)) continue;
+
+                const hHours = shiftHours(hSched.shift);
+                const lHours = shiftHours(lSched.shift);
+                const newDiff = Math.abs((calculateTotalHours(high) - hHours + lHours) - (calculateTotalHours(low) - lHours + hHours));
+
+                if (newDiff < currentDiff) {
+                    high.schedule[d] = { shift: lSched.shift, role: lSched.shift, isManual: true };
+                    low.schedule[d] = { shift: hSched.shift, role: hSched.shift, isManual: true };
+                    swapped = true;
+                    break;
+                }
+            }
+            if (!swapped) break;
+        }
+    };
+    balanceTotalWorkHours();
 
     // APPLY NEXT-DAY 56/456 RULE FOR GIAO HÀNG (GH) SHIFTS
     refinedList.forEach((staff: StaffMember) => {

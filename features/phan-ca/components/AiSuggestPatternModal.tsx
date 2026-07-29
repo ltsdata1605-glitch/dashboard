@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { DailyRequirements, StaffInitialData } from '../types';
+import { DailyRequirements, SchedulingRules, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { getErrorMessage } from '../../../utils/dataUtils';
@@ -15,11 +15,19 @@ interface AiSuggestPatternModalProps {
   nams: StaffInitialData[];
   nus: StaffInitialData[];
   dailyRequirements: DailyRequirements;
+  rules: SchedulingRules;
 }
 
 type SpecialShiftRole = 'kho' | 'tn' | 'gh';
 
-const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, onApply, departmentName, nams, nus, dailyRequirements }) => {
+// Chuyển { "123": 2, "456": 2 } (SchedulingRules.kho/tn/gh) sang dạng danh sách
+// { code, count }[] mà UI của modal này dùng để hiển thị/chỉnh sửa.
+const rulesToShiftList = (roleRules: { [shiftCode: string]: number }): { code: string; count: number }[] => {
+    const entries = Object.entries(roleRules);
+    return entries.length > 0 ? entries.map(([code, count]) => ({ code, count })) : [{ code: '', count: 1 }];
+};
+
+const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, onApply, departmentName, nams, nus, dailyRequirements, rules }) => {
     const { functions } = useAuth();
     const initialStaffInDept = useMemo(() => {
         const namCount = nams.filter(n => n.department === departmentName).length;
@@ -27,10 +35,13 @@ const AiSuggestPatternModal: React.FC<AiSuggestPatternModalProps> = ({ onClose, 
         return { namCount, nuCount };
     }, [nams, nus, departmentName]);
 
+    // Khởi tạo từ SchedulingRules thật (cấu hình ở "Chỉnh Sửa Quy Tắc") thay vì hard-code,
+    // để gợi ý AI không bị lệch pha với cấu hình GH/Kho/TN đang thực sự áp dụng cho thuật
+    // toán phân ca. Người dùng vẫn có thể chỉnh sửa tự do trong modal như trước.
     const [specialShifts, setSpecialShifts] = useState<{ [key in SpecialShiftRole]: { gender: 'Nam' | 'Nu' | 'All', shifts: { code: string; count: number }[] } }>({
-        kho: { gender: 'All', shifts: [{ code: '123', count: 2 }, { code: '456', count: 2 }] },
-        tn: { gender: 'All', shifts: [{ code: '123', count: 1 }, { code: '456', count: 1 }] },
-        gh: { gender: 'Nam', shifts: [{ code: '2345', count: 1 }] },
+        kho: { gender: rules.khoGender, shifts: rulesToShiftList(rules.kho) },
+        tn: { gender: rules.tnGender, shifts: rulesToShiftList(rules.tn) },
+        gh: { gender: rules.ghGender, shifts: rulesToShiftList(rules.gh) },
     });
 
     // Cập nhật mặc định theo yêu cầu: 208 giờ
@@ -234,6 +245,9 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
             }
         >
             <div className="-m-5 p-5 bg-slate-50 dark:bg-slate-900/40">
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-3">
+                    AI chỉ tạo <strong>mẫu ca xoay</strong> (chuỗi mã ca) — sau khi bấm "Áp Dụng" và "Lưu Thay Đổi", việc gán cụ thể ai làm Giao Hàng/Kho/Thu Ngân ngày nào vẫn do thuật toán phân ca tự động xử lý khi tạo lại lịch, không phải AI.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Column 1: Special Shifts */}
                     <div className="space-y-4">
