@@ -1644,3 +1644,122 @@ Không đoán mò — dựng lại đúng luồng `handlePrint()` (`hooks/useSti
 - Playwright + `page.pdf({format:'A4', printBackground:true})` (pipeline in thật của Chromium): 4 phiếu render đúng kích thước, đúng bố cục, khớp hoàn toàn với ảnh preview chuẩn — xác nhận bằng ảnh chụp trước/sau (trước: chữ khổng lồ tràn khung; sau: đúng như thiết kế).
 - `npm run check`: PASS (0 lỗi; các warning hiện có đều có từ trước, không liên quan thay đổi này: `Button.tsx` no-restricted-syntax, 2 chỗ "Unused eslint-disable directive" ở `useStickerPrinterData.ts`/`StickerPrintControls.tsx`).
 - **Chưa tự test bằng máy in vật lý thật** — chỉ xác minh qua PDF sinh bởi Chromium (là đúng pipeline in dùng chung với hộp thoại "In" của Chrome), khuyến nghị người dùng tự bấm in thử lại 1 lần để xác nhận trên máy thật.
+
+---
+
+## 16. Công Cụ Kiểm Kê Kho Hàng (2026-07-29) — MỚI, TRONG TIẾN TRÌNH
+
+> **Trạng thái**: Phase 1 (MVP) vừa được approve plan, chuẩn bị bắt đầu Sprint 1.
+> **Phạm vi**: Tab mới "kho-hang" trong App.tsx, dùng chung Firebase project `dashboa-7e20b`, Firestore riêng (collections `inventoryChecking` + `inventoryItems`).
+
+### 16.1. Tổng quan Feature
+
+Công cụ kiểm kê kho hàng dành cho nhân viên kho. Chức năng:
+- Nhập file tồn kho Excel (8,114 hàng)
+- Lọc dữ liệu theo 7-8 chiều (kho, ngành hàng, nhóm hàng, nhà cung cấp, v.v.)
+- Tìm kiếm fuzzy (sản phẩm, IMEI)
+- Quét QR code / nhập IMEI để kiểm kê (+1 số lượng)
+- Tính chênh lệch = Kiểm kê - Tồn kho (thừa/thiếu)
+- Thống kê KPI real-time
+- Xóa dữ liệu + liên kết report
+
+**File spec chi tiết**: `PROMPT_KHO_HANG_KIEM_KE.md` (~500 dòng, UI/UX/công thức/acceptance criteria)
+
+### 16.2. Kiến trúc & File cần tạo
+
+```
+features/kho-hang/
+├── components/
+│   ├── InventoryUpload.tsx         (nhập file Excel)
+│   ├── InventoryFilters.tsx        (7-8 bộ lọc)
+│   ├── InventoryTable.tsx          (bảng dữ liệu, 50 rows/page)
+│   ├── QRScannerInput.tsx          (input quét QR/IMEI)
+│   ├── InventoryStats.tsx          (thống kê KPI)
+│   └── index.tsx                   (export all)
+├── hooks/
+│   ├── useInventoryData.ts         (state management)
+│   └── useQRScan.ts                (QR scan logic)
+├── utils/
+│   ├── excelParser.ts              (XLSX parse + validate)
+│   ├── filterLogic.ts              (AND logic filters)
+│   └── calculations.ts             (chênh lệch, KPI)
+├── types/
+│   └── inventory.ts                (interfaces)
+├── services/
+│   ├── firestoreInventoryService.ts (Firestore write)
+│   └── index.ts
+└── InventoryView.tsx               (main container)
+```
+
+### 16.3. Firestore Schema (Đã Xác Nhận)
+
+**Project**: `dashboa-7e20b` (chung root)
+
+**Collections**:
+```firestore
+/inventoryChecking/{sessionId}
+  ├── id: string
+  ├── userId: string
+  ├── storeName: string
+  ├── startDate: timestamp
+  ├── endDate: timestamp (nullable)
+  ├── status: 'in_progress' | 'completed'
+  └── items: {[itemId]: {soLuongKiemKe, ghiChu, lastScannedAt}}
+
+/inventoryItems/{itemId}
+  └── (cache từ file Excel)
+```
+
+**Firestore Rules** (cần thêm vào `firestore.rules`):
+```firestore
+match /inventoryChecking/{sessionId} {
+  allow create: if request.auth != null && request.auth.token.role in ['warehouse_staff', 'manager', 'admin'];
+  allow read, update: if request.auth != null && request.resource.data.userId == request.auth.uid;
+  allow delete: if request.auth != null && request.auth.token.role in ['manager', 'admin'];
+}
+
+match /inventoryItems/{itemId} {
+  allow read: if request.auth != null;
+  allow write: if false;
+}
+```
+
+### 16.4. Quyết Định & Confirm
+
+✅ **CONFIRMED**:
+- Tab mới `kho-hang` trong App.tsx (như `employees`, `tools-phanca`)
+- Backend bắt buộc Phase 1 (sync Firestore ngay, không localStorage-only)
+- Multi-store: 1 file 8,114 items (toàn quốc), user chọn kho để kiểm kê
+- QR Code: hybrid (IMEI hoặc SKU|IMEI)
+- Dùng `dashboa-7e20b` (chung root)
+
+### 16.5. Lộ Trình Sprint
+
+**Sprint 1 (Tuần 1)**:
+- [ ] Setup folder `features/kho-hang/`, types
+- [ ] `useInventoryData` hook (state management)
+- [ ] `excelParser.ts` (XLSX parse + validate)
+- [ ] Commit sau Sprint 1
+
+**Sprint 2 (Tuần 2)**:
+- [ ] `InventoryUpload`, `InventoryFilters`, `InventoryTable` components
+- [ ] Filtering logic (AND, fuzzy search)
+- [ ] Pagination
+
+**Sprint 3 (Tuần 3)**:
+- [ ] `QRScannerInput` + `useQRScan` hook
+- [ ] `InventoryStats` KPI
+- [ ] Styling + Responsive
+- [ ] Testing + Bug fixes
+
+### 16.6. Cần Làm Khi Deploy
+
+1. **Cập nhật `firestore.rules`**: Thêm 2 khối rule ở mục 16.3 (trước khi deploy web)
+2. **Cloud Function** (tùy chọn, có thể Phase 2):
+   - `syncInventoryItem()`: Sync dữ liệu từ file Excel vào Firestore
+   - `updateInventoryChecking()`: Update số lượng kiểm kê từ client
+
+3. **Test qua Emulator** trước khi deploy lên production
+4. **Deploy**: `npx firebase deploy --only firestore:rules` (sau khi test OK)
+
+---
