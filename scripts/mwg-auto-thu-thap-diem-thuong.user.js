@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.5
+// @version      1.6
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -55,6 +55,20 @@
  * - Chế độ Tự động bên Dashboard YCX (popup Hiện tại/Tháng/Năm/Khoảng thời gian) đã đủ
  *   dùng, không còn kịch bản người dùng tự bấm nút trên trang MWG nữa — bỏ hẳn nút nổi
  *   "⚡ Thu thập điểm thưởng" để đỡ rối trang. checkForAutoJob() vẫn chạy như cũ.
+ *
+ * BẢN 1.6 — SỬA AUTOCLICK+ (TRANG BI) MỞ THIẾU/TỰ ĐÓNG LẠI DỮ LIỆU:
+ * - Bảng nhiều cấp lồng nhau (NNH → nhóm hàng → hãng): trước đây chỉ quét nút dấu-cộng
+ *   MỘT LẦN rồi bấm hết, nên các nút dấu-cộng cấp con mới lộ ra sau khi mở cấp cha
+ *   không bao giờ được bấm → thiếu dữ liệu dòng sâu nhất dù báo "Hoàn tất". Sửa: bấm
+ *   nhiều lượt, mỗi lượt quét lại DOM để bắt nút mới lộ ra, dừng khi không còn nút nào.
+ * - Một số bảng (vd BC theo nhân viên): icon dòng không đổi từ dấu-cộng sang dấu-trừ
+ *   kịp lúc do tải dữ liệu bất đồng bộ → lượt quét sau bấm trùng lần 2 khiến dòng vừa
+ *   mở tự đóng lại. Sửa: nhớ mọi hàng đã bấm trong một Set xuyên suốt các lượt, không
+ *   bao giờ bấm lại một hàng bất kể icon hiển thị gì.
+ * - Một số bảng khác còn không giữ nhiều dòng mở cùng lúc (mở dòng mới tự đóng dòng cũ)
+ *   nên đọc DOM ở bước cuối vẫn có thể mất dữ liệu các dòng đã đóng lại. Sửa tận gốc:
+ *   dùng MutationObserver chụp đúng phần nội dung mới lộ ra ngay sau TỪNG cú click và
+ *   cộng dồn lại, thay vì chỉ đọc DOM một lần ở bước cuối cùng.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -882,7 +896,6 @@
     const ACP_BATCH_SIZE = 6;
     const ACP_BATCH_PAUSE = 220;
     const ACP_UI_THROTTLE = 140;
-    const ACP_WAIT_BEFORE_COPY = 500;
 
     let acpRunning = false;
     let acpLastUiUpdate = 0;
@@ -891,6 +904,44 @@
       new Promise(resolve => {
         requestAnimationFrame(() => setTimeout(resolve, 0));
       });
+
+    // Chờ DOM "ổn định" sau một hành động (vd click mở hàng): gom các node được thêm mới,
+    // dừng khi không còn mutation nào trong `quietMs`, hoặc tối đa `maxMs` (phòng trường hợp
+    // trang tải bất đồng bộ chậm/không bao giờ dừng mutate).
+    function waitForDomSettle(triggerFn, { quietMs = 120, maxMs = 900 } = {}) {
+      return new Promise(resolve => {
+        const addedNodes = [];
+        let quietTimer = null;
+        let maxTimer = null;
+        let done = false;
+
+        const finish = () => {
+          if (done) return;
+          done = true;
+          observer.disconnect();
+          clearTimeout(quietTimer);
+          clearTimeout(maxTimer);
+          resolve(addedNodes);
+        };
+
+        const scheduleQuiet = () => {
+          clearTimeout(quietTimer);
+          quietTimer = setTimeout(finish, quietMs);
+        };
+
+        const observer = new MutationObserver(mutations => {
+          for (const m of mutations) {
+            m.addedNodes.forEach(n => addedNodes.push(n));
+          }
+          scheduleQuiet();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        maxTimer = setTimeout(finish, maxMs);
+        scheduleQuiet(); // trường hợp click không gây mutation nào (hàng trống, đã mở sẵn, v.v.)
+        triggerFn();
+      });
+    }
 
     // --- Tìm nút dấu cộng (quét cả iframe cùng nguồn) ---
     function isPlusButton(el) {
@@ -925,7 +976,7 @@
       return el.parentElement;
     }
 
-    function getPlusButtons() {
+    function getPlusButtons(excludeRows) {
       const allButtons = [];
       
       // 1. Quét document chính
@@ -961,14 +1012,17 @@
         return !hasDescendant;
       });
 
-      // Bước B: Đảm bảo chỉ click tối đa một lần trên mỗi hàng (row container) để tránh trigger click đúp do nổi bọt sự kiện
+      // Bước B: Đảm bảo chỉ click tối đa một lần trên mỗi hàng (row container) để tránh trigger click đúp do nổi bọt sự kiện.
+      // Đồng thời loại bỏ các hàng đã click ở lượt trước (excludeRows) — icon một số bảng (vd BC theo nhân viên)
+      // không đổi từ fa-plus sang fa-minus ngay lập tức do tải dữ liệu bất đồng bộ, nếu không loại trừ sẽ bị bấm
+      // trùng lần 2 khiến hàng vừa mở tự đóng lại (toggle).
       const finalButtons = [];
       const seenRows = new Set();
 
       for (const btn of deepestButtons) {
         const row = getRowContainer(btn);
         if (row) {
-          if (seenRows.has(row)) {
+          if (seenRows.has(row) || (excludeRows && excludeRows.has(row))) {
             continue;
           }
           seenRows.add(row);
@@ -977,6 +1031,32 @@
       }
 
       return finalButtons;
+    }
+
+    // Lấy nội dung text của các node vừa được thêm vào DOM bởi một click (dùng chung với waitForDomSettle).
+    // Loại bỏ node thuộc UI của chính AutoClick+ (nút, khung tiến trình) và node con nếu node cha của nó
+    // cũng nằm trong danh sách (tránh lặp nội dung do cha lẫn con cùng được ghi nhận là "mới thêm").
+    function extractAddedText(nodes) {
+      const isOwnUi = (el) => (
+        el.id === ACP_BTN_ID || el.id === ACP_MSG_ID ||
+        Boolean(el.closest?.(`#${ACP_BTN_ID}, #${ACP_MSG_ID}`))
+      );
+
+      const candidates = nodes.filter(n => {
+        if (!n || !n.isConnected) return false;
+        if (n.nodeType !== 1 && n.nodeType !== 3) return false;
+        const el = n.nodeType === 1 ? n : n.parentElement;
+        return Boolean(el) && !isOwnUi(el);
+      });
+
+      const topLevel = candidates.filter(nodeA => (
+        !candidates.some(nodeB => nodeB !== nodeA && nodeB.nodeType === 1 && nodeB.contains(nodeA))
+      ));
+
+      return topLevel
+        .map(n => ((n.nodeType === 1 ? n.innerText : n.textContent) || '').trim())
+        .filter(Boolean)
+        .join('\n');
     }
 
     // --- Giao diện ---
@@ -1014,7 +1094,7 @@
       refreshAcpButtonLabel();
     }
 
-    function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true }) {
+    function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true, copyText = null }) {
       closeAcpMessage();
       const box = document.createElement('div');
       box.id = ACP_MSG_ID;
@@ -1054,7 +1134,7 @@
         copyBtn.onclick = async () => {
           copyBtn.disabled = true;
           copyBtn.textContent = 'Đang copy...';
-          const copied = await copyBiPageText();
+          const copied = copyText != null ? await copyTextToClipboard(copyText) : await copyBiPageText();
           if (copied) {
             box.style.background = '#f0fdf4';
             box.style.color = '#166534';
@@ -1162,9 +1242,7 @@
       return copied;
     }
 
-    async function copyBiPageText() {
-      await yieldToBrowser();
-      const text = getBiPageText();
+    async function copyTextToClipboard(text) {
       if (!text) return false;
 
       // 1. Ưu tiên tuyệt đối GM_setClipboard (Đặc quyền Tampermonkey - KHÔNG BAO GIỜ bị chặn)
@@ -1185,6 +1263,11 @@
       return copyUsingTextarea(text);
     }
 
+    async function copyBiPageText() {
+      await yieldToBrowser();
+      return copyTextToClipboard(getBiPageText());
+    }
+
     // --- Chạy AutoClick ---
     async function runAutoClick() {
       if (acpRunning) {
@@ -1202,54 +1285,78 @@
         showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
       };
 
-      const pending = getPlusButtons();
-      let estimatedTotal = pending.length;
+      const ACP_MAX_ROUNDS = 60; // an toàn: chặn vòng lặp vô hạn nếu trang lỗi cấu trúc
+      const ACP_ROUND_SETTLE = 180; // chờ DOM lộ ra các nút dấu cộng cấp con mới sau khi mở cấp cha
+
       const startedAt = performance.now();
-      let processed = 0;
       let clicked = 0;
-      const ui = showAcpProgress(estimatedTotal, onUserCancel);
+      let seenTotal = 0;
+      let round = 0;
+      const clickedRows = new Set(); // nhớ các hàng đã click để hạn chế bấm trùng (tối ưu, không phải điều kiện an toàn dữ liệu)
+
+      // Một số bảng (vd BC Doanh thu theo nhân viên) KHÔNG giữ nhiều hàng mở cùng lúc — mở hàng mới sẽ tự
+      // đóng hàng vừa mở trước đó. Vì vậy không thể chỉ đọc DOM ở bước cuối (sẽ mất dữ liệu các hàng đã bị
+      // đóng lại). Giải pháp: chụp đúng phần nội dung MỚI xuất hiện ngay sau từng cú click rồi cộng dồn lại,
+      // độc lập với việc DOM cuối cùng còn giữ hàng đó mở hay không.
+      const baseText = getBiPageText();
+      const accumulatedChunks = [];
+
+      let pending = getPlusButtons(clickedRows);
+      const ui = showAcpProgress(pending.length, onUserCancel);
 
       try {
-        if (estimatedTotal > 0) {
-          // Chỉ click một lượt các nút dấu cộng đang hiển thị tại thời điểm bấm, không đệ quy mở thêm cấp con
+        // Mở nhiều lượt: mỗi lượt click hết các nút dấu cộng đang thấy, rồi quét lại
+        // để bắt các nút dấu cộng cấp con mới lộ ra (bảng có nhiều cấp lồng nhau:
+        // NNH → nhóm hàng → hãng). Dừng khi quét không còn nút nào hoặc đạt giới hạn an toàn.
+        while (!userStop && pending.length && round < ACP_MAX_ROUNDS) {
+          round++;
+          seenTotal += pending.length;
+
           for (const pb of pending) {
             if (userStop) break;
 
-            processed++;
+            const row = getRowContainer(pb);
+            if (row) clickedRows.add(row); // đánh dấu trước khi click để lượt quét kế tiếp không bấm trùng
+
             try {
-              pb.click();
+              // Chờ DOM ổn định sau click rồi chụp lại đúng phần nội dung mới lộ ra do click này gây ra
+              const addedNodes = await waitForDomSettle(() => pb.click());
+              const chunkText = extractAddedText(addedNodes);
+              if (chunkText) accumulatedChunks.push(chunkText);
               clicked++;
             } catch (err) {
               console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
             }
 
-            updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt);
-
-            // Giãn cách click an toàn: 55ms để tránh treo trình duyệt
-            await sleep(55);
+            updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt);
             await yieldToBrowser();
           }
+
+          if (userStop) break;
+          await sleep(ACP_ROUND_SETTLE);
+          pending = getPlusButtons(clickedRows);
         }
 
-        updateAcpProgress(ui, processed, estimatedTotal, clicked, startedAt, true);
+        updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt, true);
         ui.title.textContent = userStop ? 'Đang chuẩn bị copy (Dừng bởi user)...' : 'Đang chuẩn bị copy...';
         if (btn) btn.textContent = 'Đang copy...';
-        await sleep(ACP_WAIT_BEFORE_COPY);
         await yieldToBrowser();
-        const copied = await copyBiPageText();
+
+        const finalText = [baseText, ...accumulatedChunks].filter(Boolean).join('\n\n');
+        const copied = await copyTextToClipboard(finalText);
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
             title: userStop ? '⏹ Đã dừng lại' : '✅ Hoàn tất',
-            message: `Đã mở <b>${clicked}/${estimatedTotal}</b> mục.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
+            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục qua ${round} cấp.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
             success: !userStop,
           });
           if (btn) btn.textContent = userStop ? '⏹ Đã dừng' : '✅ Đã copy';
         } else {
           showAcpMessage({
             title: '⚠️ Trình duyệt chặn tự copy',
-            message: `Đã mở <b>${clicked}/${estimatedTotal}</b> mục.<br>Bấm nút bên dưới để copy.`,
-            success: false, showCopyButton: true, autoClose: false,
+            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục.<br>Bấm nút bên dưới để copy.`,
+            success: false, showCopyButton: true, autoClose: false, copyText: finalText,
           });
           if (btn) btn.textContent = '📋 Copy thủ công';
         }
