@@ -315,12 +315,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         variant="unstyled"
         size="none"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between text-xs font-medium ${
+        className={`flex w-full items-center justify-between gap-1 text-xs font-medium ${
           isActive ? 'text-sky-600' : 'text-slate-700'
         } hover:text-slate-900`}
       >
-        {label}
-        <span>{expanded ? '▼' : '▶'}</span>
+        <span className="min-w-0 truncate text-left">{label}</span>
+        <span className="shrink-0">{expanded ? '▼' : '▶'}</span>
       </Button>
       {expanded && <div className="text-xs">{children}</div>}
     </div>

@@ -2,14 +2,14 @@ import React from 'react';
 import { InventoryItem, CheckingItem } from '../types/inventory';
 import { Button } from '@/components/shared/ui/Button';
 import { Input } from '@/components/shared/ui/Input';
-import { ChevronLeft, ChevronRight, Trash2, Copy } from 'lucide-react';
+import { DataTable, type DataTableColumn } from '@/components/shared/ui/DataTable';
+import { ChevronLeft, ChevronRight, Copy, PackageSearch } from 'lucide-react';
 
 interface InventoryTableProps {
   items: InventoryItem[];
   checkingData: Record<string, CheckingItem>;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   onUpdateNote: (itemId: string, note: string) => void;
-  onDeleteRow?: (itemId: string) => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -21,7 +21,6 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   checkingData,
   onUpdateQuantity,
   onUpdateNote,
-  onDeleteRow,
   currentPage,
   totalPages,
   onPageChange,
@@ -37,158 +36,115 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     return 'text-amber-600 bg-amber-50';
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 py-12 text-center">
-        <p className="text-lg font-medium text-slate-700">📦 Chưa có dữ liệu kiểm kê</p>
-        <p className="mt-1 text-sm text-slate-500">Nhập file tồn kho Excel để bắt đầu</p>
-      </div>
-    );
-  }
+  const columns: DataTableColumn<InventoryItem>[] = [
+    {
+      id: 'sku',
+      header: 'Mã SKU',
+      cell: (item) => <span className="font-mono text-xs text-slate-600">{item.maSanPham}</span>,
+    },
+    {
+      id: 'ten',
+      header: 'Tên Sản Phẩm',
+      minWidth: '180px',
+      cell: (item) => (
+        <div className="max-w-xs truncate" title={item.tenSanPham}>
+          {item.tenSanPham}
+        </div>
+      ),
+    },
+    {
+      id: 'imei',
+      header: 'IMEI',
+      hideMobile: true,
+      cell: (item) => (
+        <div className="flex items-center gap-2">
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
+            {item.imei.substring(0, 10)}...
+          </code>
+          <Button
+            type="button"
+            variant="unstyled"
+            size="none"
+            onClick={() => handleCopyIMEI(item.imei)}
+            className="text-slate-400 hover:text-slate-600"
+            title="Copy IMEI"
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+        </div>
+      ),
+    },
+    {
+      id: 'ton',
+      header: 'Tồn KK',
+      align: 'right',
+      cell: (item) => <span className="text-slate-600">{item.soLuongTonKho}</span>,
+    },
+    {
+      id: 'kiem',
+      header: 'Kiểm',
+      align: 'right',
+      cell: (item) => (
+        <Input
+          type="number"
+          min="0"
+          max="999999"
+          value={checkingData[item.id]?.soLuongKiemKe || 0}
+          onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value) || 0)}
+          disabled={isLoading}
+          className="w-16 text-right text-sm"
+        />
+      ),
+    },
+    {
+      id: 'chenh',
+      header: 'Chênh',
+      align: 'right',
+      cell: (item) => {
+        const diff = checkingData[item.id]?.chieuThayCo ?? -item.soLuongTonKho;
+        return (
+          <span className={`inline-block rounded px-1.5 py-0.5 font-bold ${getChenhDiffColor(diff)}`}>
+            {diff > 0 ? '+' : ''}{diff}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'ghichu',
+      header: 'Ghi Chú',
+      hideMobile: true,
+      minWidth: '140px',
+      cell: (item) => (
+        <Input
+          type="text"
+          placeholder="VD: Hư hỏng"
+          value={checkingData[item.id]?.ghiChu || ''}
+          onChange={(e) => onUpdateNote(item.id, e.target.value)}
+          disabled={isLoading}
+          className="text-xs"
+        />
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-4">
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-slate-100">
-            <tr>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-left font-bold text-slate-700">
-                Mã SKU
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-left font-bold text-slate-700">
-                Tên Sản Phẩm
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-left font-bold text-slate-700">
-                IMEI
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-right font-bold text-slate-700">
-                Tồn KK
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-right font-bold text-slate-700">
-                Kiểm
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-right font-bold text-slate-700">
-                Chênh
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-left font-bold text-slate-700">
-                Ghi Chú
-              </th>
-              <th className="border-b border-slate-200 bg-slate-100 px-3 py-2 text-center font-bold text-slate-700">
-                Hành Động
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, idx) => {
-              const checking = checkingData[item.id];
-              const diff = checking?.chieuThayCo ?? -item.soLuongTonKho;
-
-              return (
-                <tr
-                  key={item.id}
-                  className={`border-b border-slate-200 hover:bg-slate-50 ${
-                    idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                  }`}
-                >
-                  {/* Mã SKU */}
-                  <td className="px-3 py-2 font-mono text-xs text-slate-600">
-                    {item.maSanPham.substring(0, 13)}
-                  </td>
-
-                  {/* Tên SP */}
-                  <td className="px-3 py-2">
-                    <div className="max-w-xs truncate text-slate-700" title={item.tenSanPham}>
-                      {item.tenSanPham.substring(0, 50)}
-                      {item.tenSanPham.length > 50 ? '...' : ''}
-                    </div>
-                  </td>
-
-                  {/* IMEI */}
-                  <td className="px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
-                        {item.imei.substring(0, 10)}...
-                      </code>
-                      <Button
-                        type="button"
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => handleCopyIMEI(item.imei)}
-                        className="text-slate-400 hover:text-slate-600"
-                        title="Copy IMEI"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </td>
-
-                  {/* Tồn KK */}
-                  <td className="px-3 py-2 text-right text-slate-600">
-                    {item.soLuongTonKho}
-                  </td>
-
-                  {/* Kiểm */}
-                  <td className="px-3 py-2">
-                    <Input
-                      type="number"
-                      min="0"
-                      max="999999"
-                      value={checking?.soLuongKiemKe || 0}
-                      onChange={(e) =>
-                        onUpdateQuantity(item.id, parseInt(e.target.value) || 0)
-                      }
-                      disabled={isLoading}
-                      className="w-16 text-right text-sm"
-                    />
-                  </td>
-
-                  {/* Chênh */}
-                  <td className={`px-3 py-2 text-right font-bold ${getChenhDiffColor(diff)}`}>
-                    {diff > 0 ? '+' : ''}{diff}
-                  </td>
-
-                  {/* Ghi Chú */}
-                  <td className="px-3 py-2">
-                    <Input
-                      type="text"
-                      placeholder="VD: Hư hỏng"
-                      value={checking?.ghiChu || ''}
-                      onChange={(e) => onUpdateNote(item.id, e.target.value)}
-                      disabled={isLoading}
-                      className="text-xs"
-                    />
-                  </td>
-
-                  {/* Hành Động */}
-                  <td className="px-3 py-2 text-center">
-                    {onDeleteRow && (
-                      <Button
-                        type="button"
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => onDeleteRow(item.id)}
-                        className="text-rose-400 hover:text-rose-600"
-                        title="Xóa"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    <div className="space-y-3">
+      <DataTable
+        columns={columns}
+        data={items}
+        rowKey={(item) => item.id}
+        isLoading={isLoading}
+        emptyMessage="Không có sản phẩm nào khớp bộ lọc hiện tại"
+        emptyIcon={<PackageSearch className="h-8 w-8" />}
+      />
 
       {/* Pagination */}
-      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-sm text-slate-600">
-          Hiển thị trang {currentPage} của {totalPages} ({items.length} items)
+          Trang {currentPage}/{totalPages || 1} ({items.length} sản phẩm)
         </span>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1 || isLoading}
@@ -196,10 +152,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
             size="sm"
           >
             <ChevronLeft className="h-4 w-4" />
-            Trước
+            <span className="hidden sm:inline">Trước</span>
           </Button>
 
-          {/* Page numbers */}
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const page = Math.max(1, currentPage - 2) + i;
@@ -230,7 +185,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
             variant="outline"
             size="sm"
           >
-            Sau
+            <span className="hidden sm:inline">Sau</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

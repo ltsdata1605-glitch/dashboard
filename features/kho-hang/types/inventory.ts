@@ -38,7 +38,13 @@ export interface InventorySession {
   endDate?: Date;
   status: 'in_progress' | 'completed';
   items: Record<string, CheckingItem>;
+  /** Mã Kho dùng làm path Firestore (`inventoryChecking/{cloudMaKho}`) — chỉ có khi đồng bộ Cloud thành công. */
+  cloudMaKho?: string;
+  /** id phiên trên Firestore (`inventoryChecking/{cloudMaKho}/sessions/{cloudSessionId}`). */
+  cloudSessionId?: string;
 }
+
+export type SyncStatus = 'offline' | 'connecting' | 'synced' | 'error';
 
 export interface FilterState {
   searchText: string;

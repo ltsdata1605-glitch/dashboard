@@ -1934,3 +1934,83 @@ Tiếp tục phiên trước (context đã bị nén), rà lại toàn bộ `fea
 
 **Phase 2 (Backend Firestore)** ở mục 18.5 vẫn đang để ngỏ, chưa có code nào đụng tới Firestore trong `features/kho-hang/` — đúng như kế hoạch, chưa phải thiếu sót.
 
+---
+
+## 20. Phase 2 — Firestore Backend + Responsive (2026-07-30) — THIẾT KẾ
+
+User yêu cầu làm tiếp cả 2 việc còn lại: (A) đồng bộ Firestore cho dữ liệu kiểm kê, (B) responsive mobile. Trước khi code, rà lại schema nháp cũ ở mục 16.3 — phát hiện 2 vấn đề khiến schema đó không dùng được nguyên xi:
+
+**Vấn đề 1 — file thật đa Kho, không phải 1 Kho/lần tải.** Theo A3 đã confirm ("nhiều siêu thị cùng 1 file toàn quốc"), 1 lần tải chứa NHIỀU `maKho` khác nhau — nhưng code hiện tại (`InventoryUpload.tsx` → `result.data[0]?.maKho`) chỉ lấy Kho của DÒNG ĐẦU TIÊN làm "session.maKho" chung cho cả phiên, sai lệch với dữ liệu thật (đã có từ MVP, chưa ai để ý vì chưa đụng Firestore). Nếu giữ nguyên rồi gắn 1 session Firestore theo đúng 1 `maKho` đó, sẽ đồng bộ nhầm chủ sở hữu Kho.
+→ **Quyết định**: KHÔNG dùng `maKho` của dòng đầu tiên. Đồng bộ Cloud lấy theo **Kho của chính người đăng nhập** (`departmentId` từ `AuthContext`, có thể nhiều mã cách nhau dấu phẩy — parse giống hệt `syncDataToKhoIfManager()` ở `services/khoDataService.ts`). Tìm Kho nào vừa nằm trong `departmentId` của user vừa xuất hiện trong file vừa tải → đó là Kho đồng bộ. Nếu không có Kho nào khớp (vd tài khoản demo, hoặc admin không gắn Kho cụ thể) → chỉ chạy local (localStorage), không đồng bộ, hiện badge "Chỉ máy này".
+
+**Vấn đề 2 — draft rules cũ dùng vai trò `warehouse_staff` không tồn tại.** Hệ thống thật chỉ có `admin`/`manager`/`employee`/`pending` (`AuthContext.tsx`). Không tạo vai trò mới — dùng đúng khung đã có.
+
+**Quyết định kiến trúc — tái dùng nguyên mẫu `khoData/{maKho}` đã chạy thật (mục 37, `services/khoDataService.ts`)** thay vì thiết kế lại từ đầu: dữ liệu chia sẻ theo Kho, rule kiểm `maKho in myKhos()` (đã có sẵn hàm `myKhos()` trong `firestore.rules`), không cần Cloud Function (khoData cũng không dùng Cloud Function cho phần này, chỉ dựa vào Rules) — khác biệt duy nhất: kiểm kê là việc nhân viên thường làm (không chỉ quản lý), nên `write` ở cấp item cho phép mọi thành viên Kho, không giới hạn `isManager()` như khoData/salesFiles (salesData do quản lý toàn quyền nạp, kiểm kê do nhân viên trực tiếp quét).
+
+### 20.1. Schema (thay thế mục 16.3)
+
+```
+/inventoryChecking/{maKho}/sessions/{sessionId}
+  - maKho: string (khớp path, dùng string để so myKhos())
+  - storeName: string
+  - createdBy: string (uid)
+  - createdByName: string
+  - startDate: number (ms epoch)
+  - endDate: number | null
+  - status: 'in_progress' | 'completed'
+  - totalItems: number
+
+  /items/{itemId}          ← THƯA (sparse): chỉ tạo doc khi item ĐÃ được quét/sửa,
+                              KHÔNG pre-populate toàn bộ 8,114 dòng (tránh limit 1MB/doc
+                              nếu gộp chung 1 document, và tránh 8,114 write vô ích mỗi
+                              lần tải file — đa số item không ai đụng tới trong 1 phiên)
+    - soLuongKiemKe: number
+    - ghiChu: string
+    - lastScannedAt: number (ms epoch)
+    - scannedByUid: string
+```
+
+### 20.2. Firestore Rules (thêm vào `firestore.rules`, cạnh khối `khoData`)
+
+```firestore
+match /inventoryChecking/{maKho} {
+  match /sessions/{sessionId} {
+    allow read:   if isSignedIn() && maKho in myKhos();
+    allow create: if isSignedIn() && maKho in myKhos()
+                  && request.resource.data.createdBy == request.auth.uid;
+    allow update: if isSignedIn() && isManager() && maKho in myKhos();
+    allow delete: if isSignedIn() && isManager() && maKho in myKhos();
+
+    match /items/{itemId} {
+      allow read, write: if isSignedIn() && maKho in myKhos();
+    }
+  }
+}
+```
+
+(Đã siết `update` doc phiên về `isManager()` sau khi viết test `tests/firestore.rules.test.mjs` phát hiện bản nháp đầu để mở cho mọi nhân viên — không cần thiết vì nhân viên quét chỉ ghi `items/{itemId}`, không bao giờ đụng doc phiên; siết lại để nhân viên không thể tự đánh dấu `completed` qua API trực tiếp.)
+
+### 20.3. Luồng client
+
+- `features/kho-hang/services/firestoreInventoryService.ts` (mới) — theo đúng phong cách `khoDataService.ts`: `findActiveSession`, `createSession`, `findOrCreateSession`, `subscribeSessionItems` (onSnapshot, emit ngay lần đầu nên không cần hàm get() riêng), `upsertCheckingItem`, `completeSession`. Không thêm `deleteSession`/`getSession` — chưa có UI nào gọi tới (tránh code chết).
+- `useInventoryData.ts`: gọi `useAuth()` lấy `user`/`departmentId`/`isDemoMode`. Khi `uploadItems`: tính Kho đồng bộ (giao giữa `departmentId` và Kho có trong file) → tìm phiên `in_progress` có sẵn của Kho đó hoặc tạo mới → merge dữ liệu kiểm kê đã có sẵn trên Cloud vào state cục bộ (đồng đội đã quét trước) → subscribe realtime. Mọi thao tác quét/sửa vẫn cập nhật state cục bộ NGAY (optimistic, không đổi hành vi cũ), sau đó bắn kèm 1 lần ghi Firestore (best-effort, không chặn UI, lỗi mạng không làm hỏng thao tác local — localStorage vẫn là nguồn dữ liệu chính khi offline).
+- Nút "Xóa Dữ Liệu" hiện tại **chỉ xoá state/localStorage cục bộ của máy đang dùng**, KHÔNG đụng tới phiên Cloud (dữ liệu đồng đội đang dùng chung) — tránh 1 người bấm xoá làm mất công sức quét của cả nhóm. Thêm riêng nút "Hoàn thành phiên" (chỉ `admin`/`manager`) để đánh dấu `status: 'completed'` khi kiểm kê xong, phiên tiếp theo tải file sẽ tạo mới thay vì nối vào phiên cũ.
+- UI: thêm badge trạng thái đồng bộ (Đang đồng bộ / Đã đồng bộ / Chỉ máy này) để người dùng biết dữ liệu có lên Cloud hay không.
+
+### 20.4. Không cần Cloud Function / index mới
+
+Theo đúng tiền lệ `khoData` (không dùng Cloud Function): mọi kiểm tra quyền nằm gọn trong Rules (`maKho in myKhos()`), không có logic nào cần Admin SDK bypass. Query duy nhất (`where('status','==','in_progress')`) là lọc 1 trường, không cần composite index.
+
+### 20.5. Hoàn thành + Kiểm chứng (2026-07-30)
+
+**Firestore Rules**: viết thêm 13 test case vào `tests/firestore.rules.test.mjs` (chạy qua Firestore Emulator, `npm run test:rules`) cho riêng `inventoryChecking` — tổng cộng **34/34 pass** (21 test cũ của `khoData` + 13 test mới), xác nhận không phá vỡ rule cũ. Test mới phát hiện 1 lỗ hổng thật trong bản nháp đầu: `allow update` ở doc phiên (`sessions/{sessionId}`) từng mở cho MỌI thành viên Kho — nghĩa là 1 nhân viên thường có thể tự gọi API đánh dấu phiên `completed` (bỏ qua nút "chỉ admin/manager" ở UI, vì UI không phải lớp bảo mật thật). Đã siết lại `isManager()` — xác nhận không ảnh hưởng luồng quét bình thường vì nhân viên chỉ ghi `items/{itemId}` (rule riêng, vẫn mở), không bao giờ đụng doc phiên.
+
+**Responsive**: `InventoryTable.tsx` được viết lại để dùng `components/shared/ui/DataTable` (component bảng dùng chung, trước đó dùng `<table>` tự viết tay) — tự động có `hideMobile` (ẩn cột IMEI + Ghi Chú trên màn hình nhỏ, giữ lại SKU/Tên/Tồn/Kiểm/Chênh), sticky header, loading skeleton, empty state sẵn có, không cần tự viết lại. Nhân tiện bỏ cột "Hành Động" (nút xoá dòng) — chưa từng có nơi nào truyền `onDeleteRow` nên cột này luôn rỗng từ lúc tạo, giữ lại là code chết chiếm chỗ trên di động. `InventoryFilters.tsx`/`QRScannerInput.tsx`: thêm `flex-wrap`/`truncate`/`min-w-0` ở các hàng dễ vỡ bố cục khi thu nhỏ (label filter dài, thông báo quét dài + nút Reset).
+
+**`npm run check`** (typecheck + eslint + build + lint-ratchet) PASS sạch sau tất cả thay đổi trên.
+
+**Chưa kiểm bằng trình duyệt thật** (môi trường không có sẵn Playwright/chromium-cli) — đã bù bằng test Firestore Rules Emulator thật (34/34 pass, xác nhận đúng logic phân quyền) thay vì chỉ đọc code suông như đợt trước. Khuyến nghị người dùng tự bấm thử luồng: tải file → thấy badge "Đang kết nối..." rồi "Đã đồng bộ" (nếu tài khoản có Kho khớp file) hoặc "Chỉ máy này" (nếu không khớp) → quét vài IMEI → mở tài khoản khác cùng Kho trên máy khác xem có thấy chung tiến độ không.
+
+**Còn để ngỏ (không phải thiếu sót, chỉ chưa được yêu cầu)**: Export CSV/PDF, và deploy `firestore.rules` lên production (`npm run deploy:rules` — cần `firebase login` thủ công, không tự động hoá theo AGENT_RULES.md).
+
+

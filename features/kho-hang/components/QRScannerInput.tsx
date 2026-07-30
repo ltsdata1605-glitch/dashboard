@@ -141,28 +141,28 @@ export const QRScannerInput: React.FC<QRScannerInputProps> = ({
       </div>
 
       {/* Message & Stats */}
-      <div className="flex items-center justify-between text-xs">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="min-w-0 flex-1">
           {lastScanResult.message && (
             <p
-              className={
+              className={`truncate ${
                 lastScanResult.status === 'success'
                   ? 'text-emerald-600'
                   : 'text-rose-600'
-              }
+              }`}
             >
               {lastScanResult.message}
             </p>
           )}
           {!lastScanResult.message && (
-            <p className="text-sky-600">
+            <p className="truncate text-sky-600">
               💡 Quét QR code hoặc gõ IMEI để kiểm kê
             </p>
           )}
         </div>
 
         {scanCount > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <span className="font-medium text-slate-700">
               Đã scan: <span className="text-sky-600">{scanCount}</span>
             </span>
