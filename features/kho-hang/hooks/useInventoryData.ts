@@ -1,21 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   InventoryItem,
   InventorySession,
   CheckingItem,
   FilterState,
   InventoryStats,
-  SyncStatus,
 } from '../types/inventory';
-import { useAuth } from '../../../contexts/AuthContext';
-import {
-  findOrCreateSession,
-  subscribeSessionItems,
-  upsertCheckingItem,
-  completeSession as completeCloudSession,
-  type RemoteCheckingItem,
-} from '../services/firestoreInventoryService';
-import type { Unsubscribe } from 'firebase/firestore';
 
 interface UseInventoryDataState {
   items: InventoryItem[];
@@ -26,7 +16,6 @@ interface UseInventoryDataState {
   error: string | null;
   currentPage: number;
   itemsPerPage: number;
-  syncStatus: SyncStatus;
 }
 
 const DEFAULT_FILTERS: FilterState = {
@@ -46,7 +35,6 @@ const STORAGE_KEY_CHECKING = 'kho_hang_checking';
 const STORAGE_KEY_SESSION = 'kho_hang_session';
 
 export const useInventoryData = () => {
-  const { user, departmentId } = useAuth();
   const [state, setState] = useState<UseInventoryDataState>({
     items: [],
     checkingData: {},
@@ -56,11 +44,31 @@ export const useInventoryData = () => {
     error: null,
     currentPage: 1,
     itemsPerPage: 50,
-    syncStatus: 'offline',
   });
 
-  const cloudUnsubscribeRef = useRef<Unsubscribe | null>(null);
-  const pushDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  // Load data từ localStorage khi mount
+  useEffect(() => {
+    const loadFromStorage = () => {
+      try {
+        const storedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+        const storedChecking = localStorage.getItem(STORAGE_KEY_CHECKING);
+        const storedSession = localStorage.getItem(STORAGE_KEY_SESSION);
+
+        if (storedItems && storedChecking && storedSession) {
+          setState((prev) => ({
+            ...prev,
+            items: JSON.parse(storedItems),
+            checkingData: JSON.parse(storedChecking),
+            session: JSON.parse(storedSession),
+          }));
+        }
+      } catch (error) {
+        console.warn('Lỗi load từ localStorage:', error);
+      }
+    };
+
+    loadFromStorage();
+  }, []);
 
   // Save items to localStorage
   const saveToStorage = useCallback((
@@ -79,142 +87,13 @@ export const useInventoryData = () => {
     }
   }, []);
 
-  // Gộp tiến độ kiểm kê từ Cloud (của chính mình hoặc đồng đội) vào state cục bộ.
-  // Last-write-wins đơn giản theo lastScannedAt — đủ dùng cho quy mô 1 phiên kiểm kê.
-  const mergeRemoteItems = useCallback((remoteItems: Record<string, RemoteCheckingItem>) => {
-    setState((prev) => {
-      const merged = { ...prev.checkingData };
-      let changed = false;
-
-      for (const [itemId, remote] of Object.entries(remoteItems)) {
-        const localItem = prev.items.find((i) => i.id === itemId);
-        if (!localItem) continue;
-
-        const existing = merged[itemId];
-        const existingTime = existing?.lastScannedAt ? new Date(existing.lastScannedAt).getTime() : 0;
-        if (existingTime > remote.lastScannedAt) continue;
-
-        merged[itemId] = {
-          itemId,
-          soLuongKiemKe: remote.soLuongKiemKe,
-          ghiChu: remote.ghiChu,
-          chieuThayCo: remote.soLuongKiemKe - localItem.soLuongTonKho,
-          lastScannedAt: new Date(remote.lastScannedAt),
-        };
-        changed = true;
-      }
-
-      if (!changed) return prev;
-      saveToStorage(prev.items, merged, prev.session);
-      return { ...prev, checkingData: merged };
-    });
-  }, [saveToStorage]);
-
-  const stopCloudSync = useCallback(() => {
-    cloudUnsubscribeRef.current?.();
-    cloudUnsubscribeRef.current = null;
-  }, []);
-
-  const attachCloudSync = useCallback((maKho: string, sessionId: string) => {
-    stopCloudSync();
-    cloudUnsubscribeRef.current = subscribeSessionItems(
-      maKho,
-      sessionId,
-      mergeRemoteItems,
-      () => setState((prev) => ({ ...prev, syncStatus: 'error' }))
-    );
-  }, [mergeRemoteItems, stopCloudSync]);
-
-  // Load data từ localStorage khi mount — nếu phiên cũ có kèm thông tin Cloud, tự nối lại
-  // realtime listener luôn (không cần đăng nhập lại luồng tìm phiên từ đầu).
-  useEffect(() => {
-    try {
-      const storedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
-      const storedChecking = localStorage.getItem(STORAGE_KEY_CHECKING);
-      const storedSession = localStorage.getItem(STORAGE_KEY_SESSION);
-
-      if (storedItems && storedChecking && storedSession) {
-        const parsedSession: InventorySession = JSON.parse(storedSession);
-        setState((prev) => ({
-          ...prev,
-          items: JSON.parse(storedItems),
-          checkingData: JSON.parse(storedChecking),
-          session: parsedSession,
-        }));
-
-        if (parsedSession.cloudMaKho && parsedSession.cloudSessionId) {
-          setState((prev) => ({ ...prev, syncStatus: 'connecting' }));
-          attachCloudSync(parsedSession.cloudMaKho, parsedSession.cloudSessionId);
-          setState((prev) => ({ ...prev, syncStatus: 'synced' }));
-        }
-      }
-    } catch (error) {
-      console.warn('Lỗi load từ localStorage:', error);
-    }
-
-    return () => stopCloudSync();
-  }, [attachCloudSync, stopCloudSync]);
-
-  // Best-effort đồng bộ Cloud khi tải file mới — không chặn UI cục bộ nếu lỗi/offline.
-  // Kho đồng bộ = giao giữa Kho của người dùng (departmentId) và các Kho có trong file vừa
-  // tải (KHÔNG dùng maKho dòng đầu tiên — file thật chứa nhiều Kho, xem implementation_plan.md mục 20).
-  const trySyncToCloud = useCallback(async (items: InventoryItem[], storeNameHint: string) => {
-    if (!user || !departmentId) {
-      setState((prev) => ({ ...prev, syncStatus: 'offline' }));
-      return;
-    }
-
-    const allowedKhos = departmentId.split(',').map((k) => k.trim()).filter(Boolean);
-    const khoInFile = new Set(items.map((i) => String(i.maKho)));
-    const targetMaKho = allowedKhos.find((k) => khoInFile.has(k));
-
-    if (!targetMaKho) {
-      setState((prev) => ({ ...prev, syncStatus: 'offline' }));
-      return;
-    }
-
-    setState((prev) => ({ ...prev, syncStatus: 'connecting' }));
-    try {
-      const cloudSession = await findOrCreateSession(targetMaKho, storeNameHint, user, items.length);
-
-      setState((prev) => {
-        const updatedSession = prev.session
-          ? { ...prev.session, cloudMaKho: targetMaKho, cloudSessionId: cloudSession.id }
-          : prev.session;
-        saveToStorage(prev.items, prev.checkingData, updatedSession);
-        return { ...prev, syncStatus: 'synced', session: updatedSession };
-      });
-
-      attachCloudSync(targetMaKho, cloudSession.id);
-    } catch (error) {
-      console.warn('[Inventory] Không đồng bộ được lên Cloud:', error);
-      setState((prev) => ({ ...prev, syncStatus: 'error' }));
-    }
-  }, [user, departmentId, attachCloudSync, saveToStorage]);
-
-  // Ghi tiến độ 1 item lên Cloud, debounce theo itemId — gọi sau mỗi lần quét/sửa số
-  // lượng/ghi chú, không chặn thao tác cục bộ nếu mạng chậm/lỗi.
-  const pushToCloud = useCallback((session: InventorySession | null, itemId: string, soLuongKiemKe: number, ghiChu: string) => {
-    if (!user || !session?.cloudMaKho || !session?.cloudSessionId) return;
-    const { cloudMaKho, cloudSessionId } = session;
-
-    if (pushDebounceRef.current[itemId]) clearTimeout(pushDebounceRef.current[itemId]);
-    pushDebounceRef.current[itemId] = setTimeout(() => {
-      upsertCheckingItem(cloudMaKho, cloudSessionId, itemId, {
-        soLuongKiemKe,
-        ghiChu,
-        scannedByUid: user.uid,
-      }).catch((err) => console.warn('[Inventory] Ghi Cloud thất bại:', err));
-    }, 500);
-  }, [user]);
-
   // Upload items
   const uploadItems = useCallback((items: InventoryItem[], maKho: number) => {
     const tenKho = items[0]?.tenKho || `Kho ${maKho}`;
 
     const newSession: InventorySession = {
       id: `session_${Date.now()}_${maKho}`,
-      userId: user?.uid || '',
+      userId: '', // Will be set later with auth
       storeName: tenKho,
       maKho,
       startDate: new Date(),
@@ -240,17 +119,13 @@ export const useInventoryData = () => {
       filters: DEFAULT_FILTERS,
       currentPage: 1,
       error: null,
-      syncStatus: 'offline',
     }));
 
     saveToStorage(items, initCheckingData, newSession);
-    trySyncToCloud(items, tenKho);
-  }, [saveToStorage, trySyncToCloud, user]);
+  }, [saveToStorage]);
 
-  // Clear data — CHỈ xoá state/localStorage của máy đang dùng, không đụng phiên Cloud
-  // (dữ liệu đồng đội đang dùng chung). Muốn kết thúc hẳn phiên Cloud, dùng completeCurrentSession().
+  // Clear data
   const clearData = useCallback(() => {
-    stopCloudSync();
     setState((prev) => ({
       ...prev,
       items: [],
@@ -259,24 +134,12 @@ export const useInventoryData = () => {
       filters: DEFAULT_FILTERS,
       currentPage: 1,
       error: null,
-      syncStatus: 'offline',
     }));
 
     localStorage.removeItem(STORAGE_KEY_ITEMS);
     localStorage.removeItem(STORAGE_KEY_CHECKING);
     localStorage.removeItem(STORAGE_KEY_SESSION);
-  }, [stopCloudSync]);
-
-  // Đánh dấu phiên Cloud hiện tại đã hoàn thành (chỉ nên gọi bởi quản lý/admin — ràng buộc ở
-  // UI gọi hàm này, Firestore Rules cũng đã chặn xoá/hoàn thành phiên cho nhân viên thường).
-  const completeCurrentSession = useCallback(async () => {
-    const { cloudMaKho, cloudSessionId } = state.session || {};
-    if (!cloudMaKho || !cloudSessionId) return;
-
-    await completeCloudSession(cloudMaKho, cloudSessionId);
-    stopCloudSync();
-    setState((prev) => ({ ...prev, syncStatus: 'offline' }));
-  }, [state.session, stopCloudSync]);
+  }, []);
 
   // Update filters
   const updateFilters = useCallback((newFilters: Partial<FilterState>) => {
@@ -323,7 +186,6 @@ export const useInventoryData = () => {
       };
 
       saveToStorage(prev.items, updatedChecking, prev.session);
-      pushToCloud(prev.session, itemId, newSoLuongKiemKe, currentChecking.ghiChu || '');
 
       return {
         ...prev,
@@ -331,29 +193,27 @@ export const useInventoryData = () => {
         error: null,
       };
     });
-  }, [saveToStorage, pushToCloud]);
+  }, [saveToStorage]);
 
   // Update checking note
   const updateCheckingNote = useCallback((itemId: string, ghiChu: string) => {
     setState((prev) => {
-      const currentChecking = prev.checkingData[itemId];
       const updatedChecking = {
         ...prev.checkingData,
         [itemId]: {
-          ...currentChecking,
+          ...prev.checkingData[itemId],
           ghiChu,
         },
       };
 
       saveToStorage(prev.items, updatedChecking, prev.session);
-      pushToCloud(prev.session, itemId, currentChecking?.soLuongKiemKe || 0, ghiChu);
 
       return {
         ...prev,
         checkingData: updatedChecking,
       };
     });
-  }, [saveToStorage, pushToCloud]);
+  }, [saveToStorage]);
 
   // Update quantity
   const updateQuantity = useCallback((itemId: string, quantity: number) => {
@@ -373,14 +233,13 @@ export const useInventoryData = () => {
       };
 
       saveToStorage(prev.items, updatedChecking, prev.session);
-      pushToCloud(prev.session, itemId, quantity, prev.checkingData[itemId]?.ghiChu || '');
 
       return {
         ...prev,
         checkingData: updatedChecking,
       };
     });
-  }, [saveToStorage, pushToCloud]);
+  }, [saveToStorage]);
 
   // Filter items
   const filteredItems = useMemo(() => {
@@ -562,7 +421,6 @@ export const useInventoryData = () => {
     scanIMEI,
     updateCheckingNote,
     updateQuantity,
-    completeCurrentSession,
     setCurrentPage: (page: number) =>
       setState((prev) => ({ ...prev, currentPage: page })),
   };

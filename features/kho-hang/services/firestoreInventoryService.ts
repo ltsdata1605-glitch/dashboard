@@ -1,142 +1,160 @@
-/**
- * Firestore Inventory Checking Service — đồng bộ dữ liệu KIỂM KÊ (không phải dữ liệu tồn
- * kho gốc từ Excel) theo Mã Kho, để nhiều nhân viên cùng Kho (đăng nhập trên thiết bị
- * riêng) thấy chung tiến độ quét của nhau — theo đúng mẫu `services/khoDataService.ts`
- * (implementation_plan.md mục 37), xem thiết kế đầy đủ ở mục 20.
- *
- * Firestore structure:
- *   inventoryChecking/{maKho}/sessions/{sessionId}                — metadata 1 phiên kiểm kê
- *   inventoryChecking/{maKho}/sessions/{sessionId}/items/{itemId} — CHỈ tạo khi item đã
- *                                                                    được quét/sửa (thưa,
- *                                                                    không pre-populate)
- *
- * Không cần Cloud Function — mọi kiểm tra quyền nằm trong firestore.rules (maKho in
- * myKhos()), giống hệt khoData.
- */
-
-import { db } from '@/services/firebase';
 import {
   collection,
   doc,
-  getDocs,
   setDoc,
   updateDoc,
+  getDoc,
   query,
   where,
-  limit,
-  onSnapshot,
-  type Unsubscribe,
+  getDocs,
+  serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
-import type { User } from 'firebase/auth';
-
-export interface InventorySessionMeta {
-  id: string;
-  maKho: string;
-  storeName: string;
-  createdBy: string;
-  createdByName: string;
-  startDate: number;
-  endDate: number | null;
-  status: 'in_progress' | 'completed';
-  totalItems: number;
-}
-
-export interface RemoteCheckingItem {
-  soLuongKiemKe: number;
-  ghiChu: string;
-  lastScannedAt: number;
-  scannedByUid: string;
-}
-
-const sessionsCollectionRef = (maKho: string) => collection(db, 'inventoryChecking', maKho, 'sessions');
-const itemsCollectionRef = (maKho: string, sessionId: string) =>
-  collection(db, 'inventoryChecking', maKho, 'sessions', sessionId, 'items');
-
-/** Tìm phiên đang `in_progress` gần nhất của 1 Kho (thường chỉ có đúng 1 phiên tại 1 thời điểm). */
-export async function findActiveSession(maKho: string): Promise<InventorySessionMeta | null> {
-  const q = query(sessionsCollectionRef(maKho), where('status', '==', 'in_progress'), limit(1));
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  const docSnap = snapshot.docs[0];
-  return { ...(docSnap.data() as Omit<InventorySessionMeta, 'id'>), id: docSnap.id };
-}
-
-/** Tạo phiên kiểm kê mới cho 1 Kho. */
-export async function createSession(
-  maKho: string,
-  storeName: string,
-  user: User,
-  totalItems: number
-): Promise<InventorySessionMeta> {
-  const sessionRef = doc(sessionsCollectionRef(maKho));
-  const meta: Omit<InventorySessionMeta, 'id'> = {
-    maKho,
-    storeName,
-    createdBy: user.uid,
-    createdByName: user.displayName || user.email || user.uid,
-    startDate: Date.now(),
-    endDate: null,
-    status: 'in_progress',
-    totalItems,
-  };
-  await setDoc(sessionRef, meta);
-  return { ...meta, id: sessionRef.id };
-}
-
-/** Tìm phiên đang mở của Kho, tạo mới nếu chưa có — điểm gọi chính khi upload file. */
-export async function findOrCreateSession(
-  maKho: string,
-  storeName: string,
-  user: User,
-  totalItems: number
-): Promise<InventorySessionMeta> {
-  const existing = await findActiveSession(maKho);
-  if (existing) return existing;
-  return createSession(maKho, storeName, user, totalItems);
-}
+import { db } from '@/services/firebase';
+import { InventoryItem, InventorySession, CheckingItem } from '../types/inventory';
 
 /**
- * Lắng nghe realtime toàn bộ item đã kiểm kê của 1 phiên — báo lại mỗi khi có thay đổi
- * (kể cả từ đồng đội). Emit ngay lần đầu với dữ liệu hiện có, không cần gọi getDocs() riêng.
+ * Create new inventory checking session
+ * Path: /inventoryChecking/{maKho}/sessions/{sessionId}
  */
-export function subscribeSessionItems(
-  maKho: string,
-  sessionId: string,
-  callback: (items: Record<string, RemoteCheckingItem>) => void,
-  onError?: (error: unknown) => void
-): Unsubscribe {
-  return onSnapshot(
-    itemsCollectionRef(maKho, sessionId),
-    (snapshot) => {
-      const items: Record<string, RemoteCheckingItem> = {};
-      snapshot.forEach((docSnap) => {
-        items[docSnap.id] = docSnap.data() as RemoteCheckingItem;
-      });
-      callback(items);
-    },
-    (error) => {
-      console.warn('[InventoryFirestore] Lỗi lắng nghe realtime:', error);
-      onError?.(error);
-    }
-  );
-}
+export const createCheckingSession = async (
+  userId: string,
+  storeName: string,
+  maKho: number,
+  items: InventoryItem[]
+): Promise<InventorySession> => {
+  const sessionId = `session_${Date.now()}_${maKho}`;
 
-/** Ghi (tạo hoặc cập nhật) tiến độ kiểm kê 1 item — best-effort, gọi sau mỗi lần quét/sửa số lượng/ghi chú. */
-export async function upsertCheckingItem(
-  maKho: string,
+  const session: InventorySession = {
+    id: sessionId,
+    userId,
+    storeName,
+    maKho,
+    startDate: new Date(),
+    status: 'in_progress',
+    items: {},
+  };
+
+  try {
+    // Save session document: /inventoryChecking/{maKho}/sessions/{sessionId}
+    const sessionPath = `inventoryChecking/${maKho}/sessions/${sessionId}`;
+    await setDoc(doc(db, sessionPath), {
+      id: sessionId,
+      userId,
+      createdBy: userId,
+      storeName,
+      maKho,
+      startDate: serverTimestamp(),
+      endDate: null,
+      status: 'in_progress',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    return session;
+  } catch (error) {
+    console.error('Error creating checking session:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update checking item (scan QR)
+ * Path: /inventoryChecking/{maKho}/sessions/{sessionId}/items/{itemId}
+ */
+export const updateCheckingItem = async (
   sessionId: string,
+  maKho: number,
   itemId: string,
-  data: { soLuongKiemKe: number; ghiChu: string; scannedByUid: string }
-): Promise<void> {
-  const itemRef = doc(itemsCollectionRef(maKho, sessionId), itemId);
-  const payload: RemoteCheckingItem = { ...data, lastScannedAt: Date.now() };
-  await setDoc(itemRef, payload, { merge: true });
-}
+  quantity: number,
+  note?: string
+): Promise<void> => {
+  try {
+    const itemPath = `inventoryChecking/${maKho}/sessions/${sessionId}/items/${itemId}`;
 
-/** Đánh dấu phiên đã hoàn thành — lần tải file kế tiếp của Kho sẽ tạo phiên mới thay vì nối vào phiên này. */
-export async function completeSession(maKho: string, sessionId: string): Promise<void> {
-  await updateDoc(doc(sessionsCollectionRef(maKho), sessionId), {
-    status: 'completed',
-    endDate: Date.now(),
-  });
-}
+    const updateData: any = {
+      soLuongKiemKe: quantity,
+      lastScannedAt: serverTimestamp(),
+    };
+
+    if (note !== undefined) {
+      updateData.ghiChu = note;
+    }
+
+    await setDoc(doc(db, itemPath), updateData, { merge: true });
+  } catch (error) {
+    console.error('Error updating checking item:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get checking session by ID
+ */
+export const getCheckingSession = async (
+  sessionId: string,
+  maKho: number
+): Promise<InventorySession | null> => {
+  try {
+    const sessionPath = `inventoryChecking/${maKho}/sessions/${sessionId}`;
+    const docSnap = await getDoc(doc(db, sessionPath));
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return {
+      id: data.id,
+      userId: data.userId,
+      storeName: data.storeName,
+      maKho: data.maKho,
+      startDate: data.startDate?.toDate?.() || new Date(data.startDate),
+      endDate: data.endDate?.toDate?.() || undefined,
+      status: data.status,
+      items: data.items || {},
+    };
+  } catch (error) {
+    console.error('Error getting checking session:', error);
+    throw error;
+  }
+};
+
+/**
+ * Complete checking session
+ */
+export const completeCheckingSession = async (
+  sessionId: string,
+  maKho: number
+): Promise<void> => {
+  try {
+    const sessionPath = `inventoryChecking/${maKho}/sessions/${sessionId}`;
+    await updateDoc(doc(db, sessionPath), {
+      status: 'completed',
+      endDate: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error('Error completing checking session:', error);
+    throw error;
+  }
+};
+
+/**
+ * Sync entire session to Firestore (items)
+ */
+export const syncSessionItemsToFirestore = async (
+  sessionId: string,
+  maKho: number,
+  items: Record<string, CheckingItem>
+): Promise<void> => {
+  try {
+    for (const [itemId, checkingItem] of Object.entries(items)) {
+      const itemPath = `inventoryChecking/${maKho}/sessions/${sessionId}/items/${itemId}`;
+      await setDoc(doc(db, itemPath), checkingItem, { merge: true });
+    }
+  } catch (error) {
+    console.error('Error syncing session items to Firestore:', error);
+    throw error;
+  }
+};
