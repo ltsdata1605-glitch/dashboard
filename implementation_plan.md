@@ -2013,4 +2013,84 @@ Theo đúng tiền lệ `khoData` (không dùng Cloud Function): mọi kiểm tr
 
 **Còn để ngỏ (không phải thiếu sót, chỉ chưa được yêu cầu)**: Export CSV/PDF, và deploy `firestore.rules` lên production (`npm run deploy:rules` — cần `firebase login` thủ công, không tự động hoá theo AGENT_RULES.md).
 
+---
+
+## 21. Phase 2 + Phase 3 — HOÀN THÀNH (2026-07-30)
+
+### 21.1. Backend Integration (Phase 2 - commit 618087b4)
+
+✅ **Hoàn thành toàn bộ Firestore integration:**
+
+1. **firestoreInventoryService.ts** (140 lines)
+   - `createCheckingSession()`: Tạo doc session tại `/inventoryChecking/{maKho}/sessions/{sessionId}`
+   - `updateCheckingItem()`: Update item khi scan (incremental)
+   - `getCheckingSession()`, `syncSessionItemsToFirestore()`, `completeCheckingSession()`
+   - Firestore rules đã có sẵn tại `firestore.rules` (lines 76-96, đủ permission)
+
+2. **useFirestoreSync.ts hook** (80 lines)
+   - `initializeSession(userId, storeName, maKho, items)`: Tạo session trên Firestore
+   - `syncToFirestore(sessionId, maKho, items, checkingData)`: Đồng bộ dữ liệu quét
+   - Track sync status: `isSyncing`, `syncError`, `lastSyncTime`
+   - Fire & forget pattern để UI responsive
+
+3. **InventoryView integration**
+   - ☁️ **"Đồng Bộ Firestore" button** với status badge
+     * Sky: Đang đồng bộ
+     * Emerald: Đã đồng bộ
+     * Rose: Lỗi đồng bộ
+     * Slate: Chưa đồng bộ
+   - **Auto-sync on upload**: Firestore init khi file load, fire & forget
+   - **Manual sync**: User có thể retry anytime
+   - Status badge show real-time sync state
+
+4. **Multi-user support ready**
+   - Tất cả team members trong 1 Kho thấy shared session
+   - Ready cho realtime subscriptions (Phase 2 continuation)
+
+**All checks PASS** (typecheck, eslint, build, lint-ratchet)
+
+### 21.2. Responsive Polish (Phase 3)
+
+✅ **Tested & Verified responsive layouts:**
+
+1. **Mobile (375px)** ✅
+   - Toolbar stack vertically (Nhập File + Mở Report)
+   - Empty state centered & readable
+   - Sync badge & button scale down
+   - Layout flexible, no horizontal overflow
+
+2. **Tablet (768px)** ✅
+   - Toolbar horizontal (file input left, buttons right)
+   - Filters collapse by default (save space)
+   - Table has proper horizontal scroll
+
+3. **Desktop (1280px)** ✅
+   - Full layout with sidebar
+   - All buttons & badges visible
+   - Table has plenty of space
+
+**Responsive features preserved**:
+- `lg:flex-row` on toolbar (stack mobile, row desktop)
+- `lg:justify-between` on sync section (right-align on large screens)
+- Proper padding/gap handling across breakpoints
+- Icon sizes scale: `h-3 w-3` (badge) → `h-4 w-4` (button)
+
+### 21.3. Next Steps (Phase 3 + 4)
+
+**Phase 3 Polish** (completed):
+- ✅ Responsive design tested (mobile, tablet, desktop)
+- ✅ Firestore sync integrated
+- ✅ Status badges + manual sync button
+- ✅ All checks passing
+
+**Phase 4 — Export & Reporting** (to implement):
+- CSV export (checking results)
+- PDF report generation
+- Email export option
+
+**Ongoing (if needed)**:
+- Real-time subscriptions for multi-device sync
+- QR scanner on actual mobile device
+- Performance optimization with large datasets
+
 
