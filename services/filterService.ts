@@ -165,9 +165,10 @@ function processDataForPeriod(
                         unshippedOrders.push(row);
                     }
 
-                    // Check unfinished debt (Còn nợ > 0) — tính trên mọi đơn đủ điều kiện doanh thu,
-                    // không phân biệt Đã xuất/Chưa xuất.
-                    if (parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
+                    // Check unfinished debt (Còn nợ > 0) — chỉ tính đơn ĐÃ XUẤT: đơn chưa xuất
+                    // thì chưa thể coi là "chưa hoàn tất công nợ" (chưa giao hàng thì chưa phát sinh
+                    // nghĩa vụ thu nợ).
+                    if (isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
                         debtOrders.push(row);
                     }
                 }

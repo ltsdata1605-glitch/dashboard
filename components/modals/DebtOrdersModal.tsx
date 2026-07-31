@@ -49,7 +49,7 @@ const industryColors: { [key: string]: string } = {
 const DebtOrdersModal: React.FC<DebtOrdersModalProps> = ({ isOpen, onClose, onExport }) => {
     const { processedData, productConfig } = useDashboardContext();
 
-    // Đơn hàng đủ điều kiện tính doanh thu (kể cả Đã xuất/Chưa xuất) còn "Còn nợ" > 0
+    // Đơn hàng đủ điều kiện tính doanh thu, ĐÃ XUẤT, còn "Còn nợ" > 0
     // — đã lọc sẵn ở services/filterService.ts (processedData.debtOrders). Lọc thêm ở đây:
     // chỉ giữ đơn có ngày hẹn giao (TG Hẹn Giao/Thời gian hẹn giao) đã qua so với hôm nay —
     // khớp đúng điều kiện banner (và cùng logic "quá hạn" đã dùng cho unshippedOrders).
