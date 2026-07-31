@@ -120,7 +120,7 @@ export const BonusView: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding rounded={false} title={cardTitle} icon="award">
+                <Card noPadding bordered={false} rounded={false} title={cardTitle} icon="award">
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
                         {isMobile ? (

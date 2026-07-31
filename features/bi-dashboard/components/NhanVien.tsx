@@ -383,7 +383,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
 
 
-            {/* 3. Tab Switcher — minimal bottom-border style */}
+            {/* 3. Tab Switcher — MỘT khung viền duy nhất bọc chung tab switcher + nội dung.
+                Card/SectionCard bên trong mỗi tab con (RevenueTab/CrossSellingTab/InstallmentTab/
+                CompetitionTab/BonusTab/DetailTab) truyền bordered={false} để không tự vẽ thêm viền
+                riêng nữa — tránh viền lồng viền. */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
                 <div className="px-4 sm:px-5 pt-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
@@ -394,70 +397,66 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         variant="underline"
                     />
                 </div>
-                
-                {/* Embedded Module Content */}
-                <div className="p-0">
-                    <div className="bg-white dark:bg-slate-800">
-                        {visitedTabs.has('revenue') && (
-                            <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
-                                <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
-                            </div>
-                        )}
-                        {visitedTabs.has('crossSelling') && (
-                            <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
-                                <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'crossSelling'} />
-                            </div>
-                        )}
-                        {visitedTabs.has('installment') && (
-                            <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
-                                <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'installment'} />
-                            </div>
-                        )}
-                        {visitedTabs.has('competition') && (
-                            <div className={activeTab === 'competition' ? 'block' : 'hidden'}>
-                                <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={EMPTY_MAP} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} revenueRows={revenueRows} installmentRows={installmentRows} banKemRows={banKemRows} bonusData={aggregatedData.bonusData} isActive={isActive && activeTab === 'competition'} />
-                            </div>
-                        )}
-                        {visitedTabs.has('bonus') && (
-                            <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
-                                <BonusView
-                                    employees={allEmployees}
-                                    bonusData={aggregatedData.bonusData}
-                                    revenueRows={revenueRows}
-                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'}
-                                    activeSupermarkets={activeSupermarkets}
-                                    onEmployeeClick={setEditingBonusEmployee}
-                                    onBatchUpdate={startBatchBonusUpdate}
-                                    autoBridge={bonusAutoBridge}
-                                    multiMonthRun={bonusMultiMonthRun}
-                                    bonusPeriodLabel={aggregatedData.bonusPeriodLabel}
-                                    onSetBonusPeriodLabel={setBonusPeriodLabel}
-                                    highlightedEmployees={highlightedEmployees}
-                                    activeDepartments={effectiveActiveDepartments}
-                                    isActive={isActive && activeTab === 'bonus'}
-                                />
-                            </div>
-                        )}
-                        {visitedTabs.has('detail') && (
-                            <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
-                                <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} isActive={isActive && activeTab === 'detail'} />
-                            </div>
-                        )}
+
+                {visitedTabs.has('revenue') && (
+                    <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
+                        <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
                     </div>
-                </div>
-                {/* BonusDataModal — giữ conditional vì là modal overlay */}
-                {editingBonusEmployee && (
-                    <BonusDataModal 
-                        employee={editingBonusEmployee} 
-                        nextEmployee={isBatchBonusMode ? allEmployees[allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) + 1] || null : null}
-                        supermarketName={activeSupermarkets[0]} 
-                        remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
-                        onClose={handleBonusModalClose}
-                        onSave={handleSaveBonus}
-                    />
+                )}
+                {visitedTabs.has('crossSelling') && (
+                    <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
+                        <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'crossSelling'} />
+                    </div>
+                )}
+                {visitedTabs.has('installment') && (
+                    <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
+                        <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'installment'} />
+                    </div>
+                )}
+                {visitedTabs.has('competition') && (
+                    <div className={activeTab === 'competition' ? 'block' : 'hidden'}>
+                        <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={EMPTY_MAP} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} revenueRows={revenueRows} installmentRows={installmentRows} banKemRows={banKemRows} bonusData={aggregatedData.bonusData} isActive={isActive && activeTab === 'competition'} />
+                    </div>
+                )}
+                {visitedTabs.has('bonus') && (
+                    <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
+                        <BonusView
+                            employees={allEmployees}
+                            bonusData={aggregatedData.bonusData}
+                            revenueRows={revenueRows}
+                            supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'}
+                            activeSupermarkets={activeSupermarkets}
+                            onEmployeeClick={setEditingBonusEmployee}
+                            onBatchUpdate={startBatchBonusUpdate}
+                            autoBridge={bonusAutoBridge}
+                            multiMonthRun={bonusMultiMonthRun}
+                            bonusPeriodLabel={aggregatedData.bonusPeriodLabel}
+                            onSetBonusPeriodLabel={setBonusPeriodLabel}
+                            highlightedEmployees={highlightedEmployees}
+                            activeDepartments={effectiveActiveDepartments}
+                            isActive={isActive && activeTab === 'bonus'}
+                        />
+                    </div>
+                )}
+                {visitedTabs.has('detail') && (
+                    <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
+                        <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} isActive={isActive && activeTab === 'detail'} />
+                    </div>
                 )}
             </div>
-            
+
+            {/* BonusDataModal — giữ conditional vì là modal overlay */}
+            {editingBonusEmployee && (
+                <BonusDataModal
+                    employee={editingBonusEmployee}
+                    nextEmployee={isBatchBonusMode ? allEmployees[allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) + 1] || null : null}
+                    supermarketName={activeSupermarkets[0]}
+                    remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
+                    onClose={handleBonusModalClose}
+                    onSave={handleSaveBonus}
+                />
+            )}
+
             <ExportOptionsModal
                 isOpen={!!exportOptions.pendingExport}
                 onClose={exportOptions.handleClose}

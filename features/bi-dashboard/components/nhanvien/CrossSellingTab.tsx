@@ -436,7 +436,7 @@ const CrossSellingTab: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card title="Hiệu quả Bán kèm" icon="refresh-cw"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
+    if (rows.length === 0) return <Card bordered={false} title="Hiệu quả Bán kèm" icon="refresh-cw"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
@@ -475,7 +475,7 @@ const CrossSellingTab: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle} rounded={false} icon="refresh-cw">
+                <Card noPadding bordered={false} title={cardTitle} rounded={false} icon="refresh-cw">
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide">
                             {isMobile ? (

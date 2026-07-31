@@ -347,7 +347,7 @@ const InstallmentTab: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card title="Phân tích Trả góp" icon="credit-card"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
+    if (rows.length === 0) return <Card bordered={false} title="Phân tích Trả góp" icon="credit-card"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
     
     const providers = rows.find(r => r.providers.length > 0)?.providers || [];
 
@@ -379,7 +379,7 @@ const InstallmentTab: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle} rounded={false} icon="credit-card">
+                <Card noPadding bordered={false} title={cardTitle} rounded={false} icon="credit-card">
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {isMobile ? (
