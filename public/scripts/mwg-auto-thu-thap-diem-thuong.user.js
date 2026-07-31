@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.6
+// @version      1.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -69,6 +69,13 @@
  *   nên đọc DOM ở bước cuối vẫn có thể mất dữ liệu các dòng đã đóng lại. Sửa tận gốc:
  *   dùng MutationObserver chụp đúng phần nội dung mới lộ ra ngay sau TỪNG cú click và
  *   cộng dồn lại, thay vì chỉ đọc DOM một lần ở bước cuối cùng.
+ *
+ * BẢN 1.7 — TỐI ƯU TỐC ĐỘ AUTOCLICK+ (bảng vài nghìn nút bị chậm sau bản 1.6):
+ * - Bản 1.6 chờ DOM ổn định (MutationObserver) riêng cho TỪNG cú click để không mất dữ liệu,
+ *   nhưng với bảng lớn (vd ~2.262 nút dấu-cộng) thì chờ riêng lẻ từng nút cộng dồn lại thành
+ *   rất chậm (có thể tới vài phút). Sửa: click theo LÔ (20 nút/lô), chỉ chờ DOM ổn định
+ *   MỘT LẦN cho cả lô — MutationObserver vẫn bắt đủ mọi nội dung mới lộ ra do bất kỳ click
+ *   nào trong lô gây ra nên không đánh đổi độ chính xác, chỉ giảm số lần chờ.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1287,6 +1294,10 @@
 
       const ACP_MAX_ROUNDS = 60; // an toàn: chặn vòng lặp vô hạn nếu trang lỗi cấu trúc
       const ACP_ROUND_SETTLE = 180; // chờ DOM lộ ra các nút dấu cộng cấp con mới sau khi mở cấp cha
+      const ACP_CLICK_BATCH_SIZE = 20; // click theo lô thay vì từng nút một — bảng lớn (vài nghìn nút) mà
+                                        // chờ DOM ổn định riêng lẻ từng click sẽ mất hàng phút; gộp lô vẫn
+                                        // chụp đủ dữ liệu (MutationObserver bắt mọi mutation trong cả lô)
+      const ACP_BATCH_YIELD = 60; // nghỉ ngắn giữa các lô để trình duyệt không bị treo khi có hàng nghìn nút
 
       const startedAt = performance.now();
       let clicked = 0;
@@ -1312,23 +1323,32 @@
           round++;
           seenTotal += pending.length;
 
-          for (const pb of pending) {
-            if (userStop) break;
-
-            const row = getRowContainer(pb);
-            if (row) clickedRows.add(row); // đánh dấu trước khi click để lượt quét kế tiếp không bấm trùng
+          for (let i = 0; i < pending.length && !userStop; i += ACP_CLICK_BATCH_SIZE) {
+            const batch = pending.slice(i, i + ACP_CLICK_BATCH_SIZE);
 
             try {
-              // Chờ DOM ổn định sau click rồi chụp lại đúng phần nội dung mới lộ ra do click này gây ra
-              const addedNodes = await waitForDomSettle(() => pb.click());
+              // Click cả lô rồi chờ DOM ổn định MỘT LẦN cho cả lô (thay vì từng nút) — MutationObserver
+              // vẫn bắt được toàn bộ nội dung mới lộ ra do bất kỳ click nào trong lô gây ra, không mất dữ liệu.
+              const addedNodes = await waitForDomSettle(() => {
+                for (const pb of batch) {
+                  const row = getRowContainer(pb);
+                  if (row) clickedRows.add(row); // đánh dấu trước khi click để lượt quét kế tiếp không bấm trùng
+                  try {
+                    pb.click();
+                    clicked++;
+                  } catch (err) {
+                    console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+                  }
+                }
+              }, { quietMs: 150, maxMs: 1500 });
               const chunkText = extractAddedText(addedNodes);
               if (chunkText) accumulatedChunks.push(chunkText);
-              clicked++;
             } catch (err) {
-              console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
+              console.warn('AutoClick+ bỏ qua một lô lỗi:', err);
             }
 
             updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt);
+            await sleep(ACP_BATCH_YIELD);
             await yieldToBrowser();
           }
 
