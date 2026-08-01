@@ -5,6 +5,9 @@ import { SectionHeader } from '../../../components/shared/ui/SectionHeader';
 interface CardProps {
   title: React.ReactNode;
   icon?: string;
+  /** Dòng phụ nhỏ dưới tiêu đề (vd tagline/mô tả ngắn) — dùng đúng cỡ chữ nhỏ gọn có sẵn của
+   *  SectionHeader thay vì nhồi vào `title` khiến tiêu đề bị to/nặng bất thường. */
+  subtitle?: React.ReactNode;
   actionButton?: React.ReactNode;
   children: React.ReactNode;
   noPadding?: boolean;
@@ -15,10 +18,10 @@ interface CardProps {
   bordered?: boolean;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon = 'bar-chart-3', actionButton, children, noPadding = false, rounded = true, bordered = true }, ref) => {
+const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon = 'bar-chart-3', subtitle, actionButton, children, noPadding = false, rounded = true, bordered = true }, ref) => {
   const body = (
     <>
-      <SectionHeader title={title} icon={icon}>
+      <SectionHeader title={title} icon={icon} subtitle={subtitle}>
         {actionButton}
       </SectionHeader>
       <div className={`${noPadding ? '' : 'p-3 lg:p-6'} relative flex-grow`}>

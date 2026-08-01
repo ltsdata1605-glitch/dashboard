@@ -201,9 +201,10 @@ const SearchableSelect: React.FC<{
         <div className={`relative ${widthClass} z-40`} ref={ref}>
             <Button
                 type="button"
-                variant="ghost"
+                variant="secondary"
+                size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left"
+                className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-[11px] text-left"
             >
                 <span className="truncate">{displayValue}</span>
                 <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -572,22 +573,24 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     {/* Expand all button */}
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="secondary"
+                        size="icon"
                         onClick={handleExpandAll}
                         title="Mở rộng tất cả"
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
+                        className="text-slate-500"
                     >
-                        <ChevronsUpDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                        <ChevronsUpDown className="h-3.5 w-3.5" />
                     </Button>
                     {/* Collapse all button */}
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="secondary"
+                        size="icon"
                         onClick={handleCollapseAll}
                         title="Thu gọn tất cả"
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
+                        className="text-slate-500"
                     >
-                        <ChevronsDownUp className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                        <ChevronsDownUp className="h-3.5 w-3.5" />
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
@@ -595,12 +598,14 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding bordered={false} rounded={false} icon="list-todo" title={
-                    <div className="flex flex-col">
-                        <span className="text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
-                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1">Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
-                    </div>
-                }>
+                <Card
+                    noPadding
+                    bordered={false}
+                    rounded={false}
+                    icon="list-todo"
+                    title="Chi tiết doanh thu theo ngành hàng"
+                    subtitle="Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng"
+                >
                     <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                         <table className="w-full border-collapse min-w-[700px]">
                             <thead className="sticky top-0 z-20">

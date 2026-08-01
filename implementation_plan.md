@@ -2093,4 +2093,31 @@ Theo đúng tiền lệ `khoData` (không dùng Cloud Function): mọi kiểm tr
 - QR scanner on actual mobile device
 - Performance optimization with large datasets
 
+---
+
+## Mục 59 — Nâng cấp giao diện đồng bộ cả 6 tab con của Nhân viên (title/toolbar/bảng) — 2026-07-31
+
+### Bối cảnh
+Sau khi nâng cấp riêng tab "Doanh thu" (title/subtitle gọn qua SectionHeader, đồng bộ nút bấm theo `Button` chuẩn, tinh giản màu header bảng, phân cấp độ đậm chữ, huy hiệu vàng/bạc/đồng, zebra-stripe — xem lịch sử hội thoại phiên này, chưa kịp ghi vào file trước đó), người dùng yêu cầu áp dụng đồng bộ "một giao diện hoàn toàn mới" cho cả 5 tab còn lại: Bán kèm, Trả góp, Thi đua, Thưởng, Chi tiết — từ tiêu đề bảng, thanh công cụ, đến dữ liệu bảng.
+
+### Đã sửa — áp dụng cùng 1 bộ mẫu đã xác lập cho cả 6 tab
+1. **Tiêu đề card**: `Card.tsx` (bi-dashboard) được thêm prop `subtitle` (forward xuống `SectionHeader`). Tất cả 6 tab (`RevenueTab`, `CrossSellingTab`, `InstallmentTab`, `CompetitionTab`, `BonusTab`, `DetailTab`) đổi từ khối `<span className="text-2xl font-black uppercase">` tự dựng (to bất thường, không theo chuẩn `text-sm lg:text-xl font-bold` của `SectionHeader`) sang dùng đúng prop `title`/`subtitle`. Vẫn giữ class `js-report-title` (ép font UTM Avo, xem `styles.css`) trên cả title lẫn subtitle vì không còn là sibling liền kề. `TimeProgressBar` ("Quỹ thời gian") tách khỏi khối tiêu đề, chuyển xuống thành 1 dải riêng ở đầu phần thân card.
+2. **Nút bấm toolbar**: thay toàn bộ `<Button variant="ghost">` bị ghi đè trắng style (`bg-transparent border-0 h-auto p-0...`) bằng biến thể chuẩn — `variant="secondary" size="sm"` cho nút dạng pill có nhãn (Cùng kỳ/Còn lại/Thủ công/chế độ xem Nhóm-Danh sách dạng segment), `variant="ghost" size="icon"` cho nút icon-only (export/view-mode/expand-collapse). Áp dụng ở cả `CompetitionTab.tsx` (4 nút chuyển chế độ Cá nhân/Nhóm/Tổng/So sánh + cụm nút export bên phải) và `DetailTab.tsx` (`SearchableSelect` dropdown trigger + nút Mở rộng/Thu gọn tất cả).
+3. **Header bảng**: bảng 2 tầng (group header + column header) — tầng 1 giữ màu accent nhẹ để phân nhóm, tầng 2 (nhãn từng cột) đổi từ nhiều màu xen kẽ (sky/amber/emerald lặp lại ở cả 2 tầng) về nền `slate-50` trung tính đồng nhất. Áp dụng cho `RevenueTab.tsx`, `CrossSellingTab.tsx`, `InstallmentTab.tsx`.
+4. **Phân cấp độ đậm chữ trong bảng**: đối chiếu bảng gốc `WarehouseSummary.tsx` (chuẩn) thấy độ đậm có phân cấp (`font-medium` cho giá trị tham chiếu/mờ, `font-semibold` cho số liệu thường, `font-black` chỉ dành cho trường hợp nổi bật) — trong khi `RevenueDesktopRow.tsx`/`CrossSellingTab.tsx` (row component) dùng `font-black` đồng loạt mọi ô. Sửa: cột chỉ số chính (DTQĐ, %HT, %B.Kèm hiệu quả bill) giữ `font-bold`; cột phụ đổi `font-semibold`; cột tham chiếu (M.Tiêu) đổi `font-medium`.
+5. **Huy hiệu xếp hạng**: `Badges.tsx` (`MedalBadge`, component dùng chung cho tất cả bảng nhân viên) đổi từ số màu phẳng rời rạc sang huy hiệu tròn vàng/bạc/đồng (nền + viền, chỉ dùng amber/slate trong bảng màu đã duyệt) cho top 3, giữ dạng số xám đơn giản cho hạng #4 trở đi.
+6. **Zebra-stripe**: thêm `odd:bg-slate-50/60` cho các dòng nhân viên trong `RevenueDesktopRow.tsx`, `CrossSellingTab.tsx` (`CrossSellingDesktopRow`), `InstallmentTab.tsx` (`InstallmentDesktopRow`) — hover cũng tăng từ `hover:bg-slate-50` lên `hover:bg-slate-100` để rõ hơn khi có zebra nền.
+7. **Dọn kèm**: xoá 1 bug màu `bg-primary-600` (class không tồn tại trong bảng màu dự án) còn sót trong nhánh mobile chết (`isMobile` hardcode `false`) của `CrossSellingTab.tsx`, đổi thành `bg-emerald-600`. Bỏ import `onActivateKey` không còn dùng trong `InstallmentTab.tsx` sau khi đổi `role="button"` div thành `<Button>` thật cho nút "Cùng kỳ".
+8. Fix riêng `CompetitionSummaryView.tsx` (bảng con trong sub-tab "Tổng" của Thi đua): bỏ `text-2xl font-black` khỏi title tự dựng (giữ nguyên phần UI đổi tên inline, không đụng logic).
+
+### Phạm vi cố ý KHÔNG làm
+- Không đào sâu vào 4 sub-view của tab Thi đua (`CompetitionGroupView.tsx`, `IndividualCompetitionView.tsx`, `CompetitionCompareView.tsx` — ngoại trừ `CompetitionSummaryView.tsx` đã fix title) — chỉ sửa title/toolbar ở tầng `CompetitionTab.tsx` bao ngoài, do khối lượng + độ phức tạp riêng từng sub-view vượt phạm vi 1 lượt nâng cấp.
+- Không đụng 3 bảng con của tab Thưởng (`BonusGroupListTable.tsx`, `BonusDailyTable.tsx`, `MonthlyBonusTable.tsx`) vì Mục 55 (2026-07-27) đã xác nhận màu sắc các bảng này đồng bộ tốt, không có gì cần sửa thêm.
+- Không đụng `DetailRow` (component dòng trong tab Chi tiết) — `LEVEL_STYLES` ở đó đã có sẵn phân cấp độ đậm hợp lý theo độ sâu cây (total/department/employee/nnh/nhomHang/hang), không cần sửa.
+
+### Kiểm thử
+- `npm run check`: PASS sau mỗi file sửa (typecheck + eslint + build + lint-ratchet, không có vi phạm mới so với baseline).
+- Playwright (dán dữ liệu giả qua ClipboardEvent theo kỹ thuật `reference_bi_dashboard_seed_data_testing`, seed Luỹ kế + Doanh thu (8 NV, 2 bộ phận) + Bán kèm + Trả góp cho 1 siêu thị test): chụp ảnh lần lượt Doanh thu/Bán kèm/Trả góp/Thưởng — cả 4 tab hiển thị đúng: tiêu đề gọn, toolbar đúng style, header bảng 2 màu (tier 1 accent/tier 2 trung tính), huy hiệu vàng/bạc/đồng, zebra-stripe. Tab Thi đua và Chi tiết chỉ xác nhận được qua trạng thái rỗng (định dạng dữ liệu cần cho 2 tab này phức tạp hơn nhiều, không tái tạo kịp trong phạm vi phiên này) — nhưng tiêu đề ở trạng thái rỗng vẫn đúng kích thước, không lỗi console, không vỡ layout.
+- Test thêm mobile (390px) cho tab Bán kèm: không tràn ngang, huy hiệu + zebra-stripe hiển thị đúng, tiêu đề bị cắt (`truncate`) đúng như thiết kế `SectionHeader`.
+
 

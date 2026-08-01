@@ -440,13 +440,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         );
     }
 
-    const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ THI ĐUA NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
-            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Thi đua là động lực, hiệu quả là mục tiêu - Vượt qua giới hạn, khẳng định bản thân.</span>
-            <TimeProgressBar className="mt-2.5" />
-        </div>
-    );
+    const cardTitle = <span className="js-report-title">Hiệu quả thi đua nhân viên đến ngày {getYesterdayDateString()}</span>;
+    const cardSubtitle = <span className="js-report-title">Thi đua là động lực, hiệu quả là mục tiêu - Vượt qua giới hạn, khẳng định bản thân.</span>;
 
     return (
         <div className="space-y-0">
@@ -454,7 +449,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-2 items-center">
                     {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
-                        <Button variant="ghost" key={key} onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</Button>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            key={key}
+                            onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
+                            className={activeVersionName === null && activeCompetitionTab === key ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'text-slate-500'}
+                        >
+                            {label}
+                        </Button>
                     ))}
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
@@ -477,31 +480,34 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 <div className="flex items-center gap-1">
                     {activeCompetitionTab === 'nhom' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'group' ? 'text-sky-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
-                            <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'list' ? 'text-sky-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-700' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                            <Button variant="ghost" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
-                            <Button variant="ghost" onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</Button>
+                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
+                            <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="text-slate-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</Button>
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
-                            <Button variant="ghost" onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all"><CameraIcon className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="text-slate-400"><CameraIcon className="h-4 w-4" /></Button>
                         </>
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="text-slate-400">
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
                         </>
                     )}
                 </div>
             </div>
-            <Card noPadding bordered={false} title={cardTitle} rounded={false} icon="trophy">
+            <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false} icon="trophy">
+                <div className="px-4 pt-3 pb-1">
+                    <TimeProgressBar />
+                </div>
                 <div className="w-full overflow-visible px-4 pb-4">
                     <div className="pt-2">
                         {activeCompetitionTab === 'nhom' && (

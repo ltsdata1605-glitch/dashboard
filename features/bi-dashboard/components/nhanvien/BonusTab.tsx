@@ -81,13 +81,8 @@ export const BonusView: React.FC<{
     // Nhãn kỳ hiện tại — thay đổi theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian của
     // chế độ Tự động; chưa từng chạy Tự động (hoặc chỉ dùng Thủ công) -> fallback mặc định.
     const reportTitleSuffix = bonusPeriodLabel || `ĐẾN NGÀY ${getYesterdayDateString()}`;
-    const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC {reportTitleSuffix}</span>
-            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
-            <TimeProgressBar className="mt-2.5" />
-        </div>
-    );
+    const cardTitle = <span className="js-report-title">Hiệu suất làm việc {reportTitleSuffix}</span>;
+    const cardSubtitle = <span className="js-report-title">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>;
 
     const isMobile = false; // Always show table view, even on mobile
 
@@ -100,9 +95,10 @@ export const BonusView: React.FC<{
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
                     <Button
-                        variant="ghost"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
+                        className="gap-1.5 bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Thủ công</span>
@@ -110,17 +106,20 @@ export const BonusView: React.FC<{
                     <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} />
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-600' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-600' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isDaily ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" onClick={() => { setIsMonthly(prev => !prev); setIsDaily(false); }} title="Luỹ kế tháng" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isMonthly ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarRange className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={isDaily ? 'text-sky-600' : 'text-slate-400'}><CalendarIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setIsMonthly(prev => !prev); setIsDaily(false); }} title="Luỹ kế tháng" className={isMonthly ? 'text-sky-700' : 'text-slate-400'}><CalendarRange className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding bordered={false} rounded={false} title={cardTitle} icon="award">
+                <Card noPadding bordered={false} rounded={false} title={cardTitle} subtitle={cardSubtitle} icon="award">
+                    <div className="px-4 pt-3 pb-1">
+                        <TimeProgressBar />
+                    </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
                         {isMobile ? (
