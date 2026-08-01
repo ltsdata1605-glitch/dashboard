@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.7
+// @version      1.8
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -76,6 +76,17 @@
  *   rất chậm (có thể tới vài phút). Sửa: click theo LÔ (20 nút/lô), chỉ chờ DOM ổn định
  *   MỘT LẦN cho cả lô — MutationObserver vẫn bắt đủ mọi nội dung mới lộ ra do bất kỳ click
  *   nào trong lô gây ra nên không đánh đổi độ chính xác, chỉ giảm số lần chờ.
+ *
+ * BẢN 1.8 — SỬA COPY THIẾU DỮ LIỆU Ở BẢNG PHẲNG/RỘNG (không có nút dấu-cộng nào):
+ * - Khi trang không có nút dấu-cộng nào để mở (bảng đã phẳng sẵn, hoặc quá nhiều cột/dòng
+ *   phải cuộn ngang/dọc mới thấy hết), script chỉ đọc `document.body.innerText` một lần —
+ *   cách đọc này có thể bỏ sót dữ liệu nằm ngoài vùng nhìn thấy hiện tại dù đã có trong DOM.
+ * - Sửa: thêm `copyEverythingNatively()` — bôi đen (Range/Selection) toàn bộ nội dung trang
+ *   rồi để trình duyệt tự thực hiện lệnh copy gốc (`execCommand('copy')`), lấy đúng mọi thứ
+ *   đã render bất kể đang cuộn tới đâu. Chỉ dùng cách này khi KHÔNG có dữ liệu tích luỹ từ
+ *   việc mở rộng nhiều lượt (accumulatedChunks rỗng) — nếu CÓ (bảng dạng cây cần click mở),
+ *   vẫn giữ nguyên cách copy chuỗi đã gộp của bản 1.6/1.7 vì bôi-đen-lúc-cuối chỉ chụp được
+ *   đúng thời điểm gọi, không gộp lại được các hàng đã tự đóng ở những lượt trước.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1225,6 +1236,41 @@
       return text.trim();
     }
 
+    // Copy bằng cách BÔI ĐEN (Range/Selection) toàn trang rồi để trình duyệt tự thực hiện lệnh copy
+    // gốc — khác với getBiPageText() (đọc document.body.innerText): innerText có thể bỏ sót dữ liệu
+    // nằm ngoài vùng nhìn thấy khi bảng cuộn ngang/dọc (nhiều cột/nhiều dòng như bảng BI), trong khi
+    // chọn toàn bộ nội dung DOM rồi copy bằng execCommand lấy đúng mọi thứ đã render bất kể đang cuộn
+    // tới đâu. Chỉ dùng khi KHÔNG có dữ liệu tích luỹ theo từng lượt click (bảng phẳng, không cần mở
+    // rộng) — vì cách này chỉ chụp được đúng thời điểm gọi, không gộp được các lần mở rộng trước đó.
+    async function copyEverythingNatively() {
+      const btn = getAcpButton();
+      const msg = document.getElementById(ACP_MSG_ID);
+      const oldBtnDisplay = btn?.style.display;
+      const oldMsgDisplay = msg?.style.display;
+      if (btn) btn.style.display = 'none';
+      if (msg) msg.style.display = 'none';
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(document.body);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        await sleep(150); // để trình duyệt kịp dựng vùng chọn trên toàn bộ nội dung trước khi copy
+        let copied = false;
+        try {
+          copied = document.execCommand('copy');
+        } catch (e) {
+          console.warn('AutoClick+ copyEverythingNatively error:', e);
+          copied = false;
+        }
+        selection.removeAllRanges();
+        return copied;
+      } finally {
+        if (btn) btn.style.display = oldBtnDisplay || '';
+        if (msg) msg.style.display = oldMsgDisplay || '';
+      }
+    }
+
     async function copyUsingClipboardApi(text) {
       if (!navigator.clipboard || !window.isSecureContext) return false;
       try {
@@ -1362,8 +1408,23 @@
         if (btn) btn.textContent = 'Đang copy...';
         await yieldToBrowser();
 
-        const finalText = [baseText, ...accumulatedChunks].filter(Boolean).join('\n\n');
-        const copied = await copyTextToClipboard(finalText);
+        // Không có dữ liệu tích luỹ theo từng lượt click (không có nút dấu-cộng nào, hoặc bảng phẳng
+        // không cần mở rộng) → copy bằng cách bôi đen toàn trang (copyEverythingNatively) thay vì đọc
+        // lại innerText, để không bỏ sót cột/dòng đang cuộn ngoài vùng nhìn thấy. Ngược lại (CÓ tích
+        // luỹ từ việc mở rộng nhiều lượt) → giữ cách copy chuỗi đã gộp như cũ, vì bôi-đen-lúc-này chỉ
+        // chụp được đúng thời điểm hiện tại, không gộp được các hàng đã tự đóng lại trước đó.
+        let finalText = '';
+        let copied;
+        if (accumulatedChunks.length === 0) {
+          copied = await copyEverythingNatively();
+          if (!copied) {
+            finalText = getBiPageText();
+            copied = await copyTextToClipboard(finalText);
+          }
+        } else {
+          finalText = [baseText, ...accumulatedChunks].filter(Boolean).join('\n\n');
+          copied = await copyTextToClipboard(finalText);
+        }
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
