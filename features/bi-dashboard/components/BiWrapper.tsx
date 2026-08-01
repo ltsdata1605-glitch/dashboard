@@ -143,35 +143,67 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 }
             `}</style>
             {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
-                <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm'} animate-in fade-in zoom-in duration-300`}>
-                    {navigationLinks.map(tab => {
-                        const isActive = activeView === tab.id;
-                        return (
-                            <Button
-                                variant="ghost"
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center ${isMobile ? 'gap-1 py-1 px-1.5' : 'gap-2 py-1.5 ' + (tab.label ? 'px-4' : 'px-2 w-[32px]')} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-[13px]'} transition-all whitespace-nowrap shrink-0 focus:outline-none ${
-                                    isActive
-                                        ? isMobile
-                                            ? 'text-sky-600 dark:text-sky-400'
-                                            : 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
-                                        : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
-                                }`}
-                                title={tab.label || tab.id}
-                            >
-                                <Icon name={tab.icon} size={isMobile ? 4.5 : 4} />
-                                {(!isMobile && tab.label) && <span>{tab.label}</span>}
-                            </Button>
-                        );
-                    })}
-                    
-                    <div className={`flex shrink-0 items-center ${isMobile ? 'pl-0.5 ml-0.5' : 'pl-1 border-l border-slate-200 dark:border-slate-700 ml-1'}`}>
-                        <div className={`rounded-xl overflow-hidden ${isMobile ? 'scale-90 origin-right' : 'shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
-                            <FontSelector />
+                isMobile ? (
+                    <div className="flex items-center gap-0.5 animate-in fade-in zoom-in duration-300">
+                        {navigationLinks.map(tab => {
+                            const isActive = activeView === tab.id;
+                            return (
+                                <Button
+                                    variant="ghost"
+                                    key={tab.id}
+                                    onClick={() => handleTabChange(tab.id)}
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center gap-1 py-1 px-1.5 rounded-full font-semibold text-[10px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                        isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                    }`}
+                                    title={tab.label || tab.id}
+                                >
+                                    <Icon name={tab.icon} size={4.5} />
+                                </Button>
+                            );
+                        })}
+                        <div className="flex shrink-0 items-center pl-0.5 ml-0.5">
+                            <div className="rounded-xl overflow-hidden scale-90 origin-right">
+                                <FontSelector />
+                            </div>
                         </div>
                     </div>
-                </div>,
+                ) : (
+                    // Nhóm thành các "pill" trắng viền riêng biệt (đúng chuẩn components/layout/Header.tsx):
+                    // nhóm điều hướng (Tổng quan/Nhân viên/Cập nhật) trong 1 pill, nhóm tiện ích (Cài đặt/Font) trong pill khác.
+                    <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                            {navigationLinks.filter(tab => tab.id !== 'settings').map((tab, idx) => {
+                                const isActive = activeView === tab.id;
+                                return (
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        key={tab.id}
+                                        onClick={() => handleTabChange(tab.id)}
+                                        className={`flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-semibold transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                        title={tab.label}
+                                    >
+                                        <Icon name={tab.icon} size={4} />
+                                        <span>{tab.label}</span>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={() => handleTabChange('settings')}
+                                className={`flex items-center justify-center p-2 transition-colors focus:outline-none ${activeView === 'settings' ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30' : 'text-slate-500 hover:text-rose-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50'}`}
+                                title="Cài đặt"
+                            >
+                                <Icon name="settings" size={4} />
+                            </Button>
+                            <div className="border-l border-slate-100 dark:border-slate-700">
+                                <FontSelector />
+                            </div>
+                        </div>
+                    </div>
+                ),
                 document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
             )}
 

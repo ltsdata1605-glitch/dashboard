@@ -127,31 +127,33 @@ export const CheckThuongView: React.FC = () => {
     };
 
     const renderSearchBar = (isMobile: boolean) => (
-        <div className={`flex items-center ${isMobile ? 'gap-1' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
-            <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-2 px-2'}`}>
+        <div className={`flex items-center ${isMobile ? 'gap-1' : 'hidden lg:flex gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+            {/* Nhóm ô nhập mã kho — 1 pill trắng viền chung, phân cách bằng đường kẻ dọc (đúng chuẩn components/layout/Header.tsx) */}
+            <div className={isMobile ? 'flex items-center gap-1' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
                 <input
                     type="text"
                     placeholder="Kho 1"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-40 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-36 px-4 py-2 text-sm'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                     value={codes.code1}
                     onChange={(e) => handleCodeChange('code1', e.target.value)}
                 />
                 <input
                     type="text"
                     placeholder="Kho 2"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px]' : 'w-36 px-4 py-1.5 text-sm'} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-32 px-4 py-2 text-sm border-l border-slate-100 dark:border-slate-700'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                     value={codes.code2}
                     onChange={(e) => handleCodeChange('code2', e.target.value)}
                 />
             </div>
-            <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 border-l border-slate-200 dark:border-slate-700 pl-2'}`}>
+            {/* Nhóm nút hành động (Xoá/Tải file) — pill trắng viền chung thứ 2 */}
+            <div className={isMobile ? 'flex items-center gap-0.5' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => {
                         setCodes(prev => ({ ...prev, code2: '' }));
                         iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
                     }}
-                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
+                    className={`${isMobile ? 'w-6 h-6 rounded-full' : 'p-2.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
                     title="Xoá mã kho đang so sánh"
                 >
                     <Icon name="rotate-ccw" size={isMobile ? 3 : 3.5} />
@@ -159,7 +161,7 @@ export const CheckThuongView: React.FC = () => {
                 <Button
                     variant="unstyled" size="none"
                     onClick={handleChangeFile}
-                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                    className={`${isMobile ? 'w-6 h-6 rounded-full ml-0.5' : 'p-2.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                     title="Tải file khác"
                 >
                     <Icon name="upload" size={isMobile ? 3 : 3.5} />
