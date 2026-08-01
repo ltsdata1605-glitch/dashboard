@@ -286,7 +286,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             const nameToUse = customFilename || tableName || 'BaoCao';
             const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, filename, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -456,7 +456,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 ) : (
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            <table className="min-w-max w-full table-auto border-collapse compact-export-table">
+                            <table className="min-w-max w-full table-auto border-collapse">
                                 <thead>
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th 

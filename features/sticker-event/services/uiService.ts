@@ -816,6 +816,10 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     try {
         await document.fonts.ready;
         await waitForImages(clone);
+
+        // FIX: Convert oklch() → rgb() inline trước khi capture
+        fixOklchColors(clone);
+
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -848,8 +852,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 margin: '0',
                 padding: '8px',
             },
-            skipFonts: true, // Bỏ qua nhúng font tự động để tránh treo do tải font chậm qua mạng
-            fontEmbedCSS: '', // Tắt nhúng CSS font để tối ưu hiệu năng
+            // GIỮ font embedding mặc định để text render đúng.
         });
 
         if (!blob) {

@@ -73,7 +73,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
                 mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                fitAllColumns: true,
+                fitAllColumns: true, isCompactTable: true,
             });
             if (blob) showExportOptions(blob, filename);
         } catch (err) {
@@ -290,7 +290,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             </div>
             {/* Table — Thưởng design */}
             <div className="flex-1">
-                <table className="w-full border-collapse compact-export-table table-fixed">
+                <table className="w-full border-collapse table-fixed">
                     <colgroup>
                         <col className="w-[30%]" />
                         <col className="w-[17%]" />

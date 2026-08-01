@@ -162,7 +162,7 @@ const RevenueView: React.FC<{
         try {
             const safeName = customFilename || `DT_NhanVien_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -313,7 +313,7 @@ const RevenueView: React.FC<{
                             </div>
                         ) : (
                             <div className="border border-slate-200 dark:border-slate-700">
-                                <table className="w-full border-collapse compact-export-table">
+                                <table className="w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
                                         <tr>

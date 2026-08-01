@@ -53,7 +53,7 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
                 )
             })}
             <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{row.totalPercent.toFixed(2)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{Math.round(row.totalPercent)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
         </tr>
     );
 });
@@ -77,7 +77,7 @@ const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
                     <div className="flex justify-between items-start">
                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
                         <div className="flex flex-col items-end">
-                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{row.totalPercent.toFixed(2)}% TG</span>
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{Math.round(row.totalPercent)}% TG</span>
                             <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
                         </div>
                     </div>
@@ -271,7 +271,7 @@ const InstallmentTab: React.FC<{
         try {
             const safeName = customFilename || `Installment_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -401,7 +401,7 @@ const InstallmentTab: React.FC<{
                                             <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
                                                 <span className="uppercase tracking-wider text-xs">{row.name}</span>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-sky-600 dark:text-sky-400">{row.totalPercent.toFixed(2)}% TG</span>
+                                                    <span className="text-sky-600 dark:text-sky-400">{Math.round(row.totalPercent)}% TG</span>
                                                     <span className="text-[10px] opacity-60">{f.format(Math.ceil(row.totalDtSieuThi))} Tr</span>
                                                 </div>
                                             </div>
@@ -424,7 +424,7 @@ const InstallmentTab: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
+                            <table className="w-full border-collapse border border-slate-200 dark:border-slate-700">
                                 <thead className="sticky top-0 z-10">
                                     {/* Tier 1: Group Headers */}
                                     <tr>
@@ -451,7 +451,7 @@ const InstallmentTab: React.FC<{
                                                         </React.Fragment>
                                                     ))}
                                                     <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-600' : 'text-amber-600'}`}>{row.totalPercent.toFixed(2)}%</td>
+                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-600' : 'text-amber-600'}`}>{Math.round(row.totalPercent)}%</td>
                                                 </tr>
                                             );
                                         }

@@ -913,6 +913,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     try {
         await document.fonts.ready;
         await waitForImages(clone);
+
+        // FIX: Tailwind CSS v4 dùng oklch() cho toàn bộ color palette.
+        // html-to-image dùng SVG foreignObject để render → oklch() không được
+        // SVG renderer hỗ trợ đầy đủ → text/colors biến mất.
+        // Convert oklch() → rgb() inline trước khi capture.
+        fixOklchColors(clone);
+
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -945,8 +952,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 margin: '0',
                 padding: '8px',
             },
-            skipFonts: true, // Bỏ qua nhúng font tự động để tránh treo do tải font chậm qua mạng
-            fontEmbedCSS: '', // Tắt nhúng CSS font để tối ưu hiệu năng
+            // GIỮ font embedding mặc định (skipFonts: false) để text render đúng.
+            // Trước đây tắt font để "tránh treo" nhưng điều này khiến text mất hoàn toàn.
         });
 
         if (!blob) {

@@ -606,34 +606,36 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     title="Chi tiết doanh thu theo ngành hàng"
                     subtitle="Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng"
                 >
-                    <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <table className="w-full border-collapse min-w-[700px]">
-                            <thead className="sticky top-0 z-20">
-                                <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                    <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
-                                        Danh mục
-                                    </th>
-                                    <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
-                                        SL
-                                    </th>
-                                    <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
-                                        DTLK
-                                    </th>
-                                    <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
-                                        DTQĐ
-                                    </th>
-                                    <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
-                                        HQ QĐ
-                                    </th>
-                                    <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
-                                        Đơn giá
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-slate-900">
-                                {renderRows(displayTree.tree, 'root')}
-                            </tbody>
-                        </table>
+                    <div className="w-full overflow-hidden px-4 pt-3 pb-4">
+                        <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            <table className="w-full border-collapse min-w-[700px]">
+                                <thead className="sticky top-0 z-20">
+                                    <tr className="text-[11px] font-bold uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
+                                            Danh mục
+                                        </th>
+                                        <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
+                                            SL
+                                        </th>
+                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                            DTLK
+                                        </th>
+                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                            DTQĐ
+                                        </th>
+                                        <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
+                                            HQ QĐ
+                                        </th>
+                                        <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
+                                            Đơn giá
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-slate-900">
+                                    {renderRows(displayTree.tree, 'root')}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </Card>
             </div>
