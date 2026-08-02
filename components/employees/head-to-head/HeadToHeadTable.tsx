@@ -160,7 +160,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                 return (
                                     <th key={date.toISOString()} onClick={() => handleSort(dateKey)} className={`px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold ${tableColorTheme.header} uppercase tracking-wider cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 ${isSorted ? '!brightness-90 dark:!brightness-125' : ''} hover:brightness-95 transition-all`}>
                                         <div className="flex flex-col items-center justify-center gap-0">
-                                            <span>{date.toLocaleDateString('vi-VN', { weekday: 'short' })}</span>
+                                            <span>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</span>
                                             <span className="text-[8px] sm:text-[10px] font-bold opacity-70 tracking-normal">{date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
                                         </div>
                                     </th>
