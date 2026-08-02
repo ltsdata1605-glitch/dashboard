@@ -10,12 +10,18 @@
  */
 
 import { db } from './firebase';
-import { doc, setDoc, getDoc, getDocs, deleteDoc, collection, writeBatch, serverTimestamp, FieldValue } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, writeBatch, serverTimestamp, FieldValue } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
 
 // Firestore document limit is 1MB. We target 800KB per chunk for safety.
 const MAX_CHUNK_BYTES = 800 * 1024;
+
+// Số document tối đa gộp vào 1 writeBatch — 10 chunk × 800KB ≈ 8MB, an toàn dưới giới hạn
+// kích thước 1 lần commit của Firestore (giảm số lượt ghi ĐỘC LẬP, tránh cạn hàng đợi write
+// stream khi file có nhiều chunk, xem services/firestoreService.ts áp dụng cùng nguyên tắc).
+// Xuất ra để services/khoDataService.ts dùng chung — tránh khai báo trùng ngưỡng lần 2.
+export const BATCH_GROUP_SIZE = 10;
 
 // Fields to strip from DataRow before uploading (save bandwidth)
 const STRIP_FIELDS = new Set([
@@ -119,15 +125,13 @@ export async function uploadProcessedData(
 
     console.warn(`[CloudData] Split into ${chunks.length} chunks`);
 
-    // 2. Upload all chunks in parallel using batched writes
+    // 2. Upload chunks + meta theo NHÓM writeBatch (không còn Promise.all(setDoc...) rời rạc
+    // từng document — với file Lũy kế nhiều tháng, hàng chục chunk bắn setDoc() độc lập cùng
+    // lúc từng gây Firestore SDK báo "Write stream exhausted maximum allowed queued writes",
+    // nhất là khi trùng thời điểm với các lượt ghi khác (heavy-sync config, khoData...). Gộp
+    // thành writeBatch giảm số lượt ghi ĐỘC LẬP từ N xuống ceil(N/BATCH_GROUP_SIZE).
     const salesDataRef = collection(db, 'users', user.uid, 'salesData');
-    
-    const uploadPromises = chunks.map((chunk, index) => {
-        const chunkRef = doc(salesDataRef, `chunk_${index}`);
-        return setDoc(chunkRef, { rows: chunk });
-    });
 
-    // 3. Upload meta document
     const meta: SalesDataMeta = {
         filename,
         savedAt: customSavedAt || Date.now(),
@@ -139,30 +143,40 @@ export async function uploadProcessedData(
         isRealtime: !!isRealtime
     };
 
-    const metaRef = doc(salesDataRef, 'meta');
-    uploadPromises.push(
-        setDoc(metaRef, { ...meta, updatedAt: serverTimestamp() })
-    );
+    const docsToWrite: { ref: ReturnType<typeof doc>; data: Record<string, unknown> }[] = chunks.map((chunk, index) => ({
+        ref: doc(salesDataRef, `chunk_${index}`),
+        data: { rows: chunk }
+    }));
+    docsToWrite.push({ ref: doc(salesDataRef, 'meta'), data: { ...meta, updatedAt: serverTimestamp() } });
 
-    await Promise.all(uploadPromises);
+    for (let i = 0; i < docsToWrite.length; i += BATCH_GROUP_SIZE) {
+        const group = docsToWrite.slice(i, i + BATCH_GROUP_SIZE);
+        const batch = writeBatch(db);
+        group.forEach(({ ref, data: docData }) => batch.set(ref, docData));
+        await batch.commit();
+    }
 
-    // 4. Clean up old chunks that are no longer needed
+    // 3. Clean up old chunks that are no longer needed
     //    (e.g., if previous upload had 5 chunks but this one only has 3)
     try {
         const snapshot = await getDocs(salesDataRef);
-        const deletePromises: Promise<void>[] = [];
-        snapshot.forEach(docSnap => {
-            const id = docSnap.id;
-            if (id.startsWith('chunk_')) {
+        const staleRefs = snapshot.docs
+            .filter(docSnap => {
+                const id = docSnap.id;
+                if (!id.startsWith('chunk_')) return false;
                 const chunkIndex = parseInt(id.replace('chunk_', ''), 10);
-                if (chunkIndex >= chunks.length) {
-                    deletePromises.push(deleteDoc(doc(salesDataRef, id)));
-                }
-            }
-        });
-        if (deletePromises.length > 0) {
-            await Promise.all(deletePromises);
-            console.warn(`[CloudData] Cleaned up ${deletePromises.length} stale chunks`);
+                return chunkIndex >= chunks.length;
+            })
+            .map(docSnap => docSnap.ref);
+
+        for (let i = 0; i < staleRefs.length; i += BATCH_GROUP_SIZE) {
+            const group = staleRefs.slice(i, i + BATCH_GROUP_SIZE);
+            const batch = writeBatch(db);
+            group.forEach(ref => batch.delete(ref));
+            await batch.commit();
+        }
+        if (staleRefs.length > 0) {
+            console.warn(`[CloudData] Cleaned up ${staleRefs.length} stale chunks`);
         }
     } catch (e) {
         console.warn('[CloudData] Failed to cleanup old chunks:', e);

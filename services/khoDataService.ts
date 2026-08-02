@@ -18,11 +18,11 @@
 
 import { db } from './firebase';
 import {
-    doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, collection, writeBatch, serverTimestamp
+    doc, getDoc, getDocs, updateDoc, collection, writeBatch, serverTimestamp
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
-import { cleanRow, chunkData } from './cloudDataService';
+import { cleanRow, chunkData, BATCH_GROUP_SIZE } from './cloudDataService';
 import * as dbService from './dbService';
 
 export interface KhoSalesFileMeta {
@@ -88,10 +88,6 @@ export async function uploadKhoSalesData(
     const fileId = fileRef.id;
     const chunksRef = chunksCollectionRef(maKho, fileId);
 
-    const uploadPromises = chunks.map((chunk, index) =>
-        setDoc(doc(chunksRef, `chunk_${index}`), { rows: chunk })
-    );
-
     const meta: Omit<KhoSalesFileMeta, 'fileId'> = {
         maKho,
         filename,
@@ -107,24 +103,43 @@ export async function uploadKhoSalesData(
         ...(maxDate !== undefined ? { maxDate } : {}),
     };
 
-    uploadPromises.push(setDoc(fileRef, { ...meta, updatedAt: serverTimestamp() }));
+    // Gộp chunk + meta thành các nhóm writeBatch (không còn Promise.all(setDoc...) rời rạc
+    // từng document) — cùng nguyên tắc đã áp dụng ở cloudDataService.ts: giảm số lượt ghi ĐỘC
+    // LẬP bắn song song, tránh cạn hàng đợi write stream của Firestore SDK khi Kho có file
+    // nhiều chunk (xem implementation_plan.md mục 60).
+    const docsToWrite: { ref: ReturnType<typeof doc>; data: Record<string, unknown> }[] = chunks.map((chunk, index) => ({
+        ref: doc(chunksRef, `chunk_${index}`),
+        data: { rows: chunk }
+    }));
+    docsToWrite.push({ ref: fileRef, data: { ...meta, updatedAt: serverTimestamp() } });
 
-    await Promise.all(uploadPromises);
+    for (let i = 0; i < docsToWrite.length; i += BATCH_GROUP_SIZE) {
+        const group = docsToWrite.slice(i, i + BATCH_GROUP_SIZE);
+        const batch = writeBatch(db);
+        group.forEach(({ ref, data: docData }) => batch.set(ref, docData));
+        await batch.commit();
+    }
 
     // Dọn chunk cũ dư ra nếu lần tải này ít chunk hơn lần trước (chỉ áp dụng cho slot
     // Realtime bị ghi đè — file lũy kế luôn là fileId mới nên không có chunk cũ để dọn).
     if (isRealtime) {
         try {
             const snapshot = await getDocs(chunksRef);
-            const deletePromises: Promise<void>[] = [];
-            snapshot.forEach(docSnap => {
-                const id = docSnap.id;
-                if (id.startsWith('chunk_')) {
+            const staleRefs = snapshot.docs
+                .filter(docSnap => {
+                    const id = docSnap.id;
+                    if (!id.startsWith('chunk_')) return false;
                     const idx = parseInt(id.replace('chunk_', ''), 10);
-                    if (idx >= chunks.length) deletePromises.push(deleteDoc(docSnap.ref));
-                }
-            });
-            if (deletePromises.length > 0) await Promise.all(deletePromises);
+                    return idx >= chunks.length;
+                })
+                .map(docSnap => docSnap.ref);
+
+            for (let i = 0; i < staleRefs.length; i += BATCH_GROUP_SIZE) {
+                const group = staleRefs.slice(i, i + BATCH_GROUP_SIZE);
+                const batch = writeBatch(db);
+                group.forEach(ref => batch.delete(ref));
+                await batch.commit();
+            }
         } catch (e) {
             console.warn('[KhoData] Failed to cleanup stale realtime chunks:', e);
         }

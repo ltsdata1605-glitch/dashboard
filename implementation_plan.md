@@ -2120,4 +2120,38 @@ Sau khi nâng cấp riêng tab "Doanh thu" (title/subtitle gọn qua SectionHead
 - Playwright (dán dữ liệu giả qua ClipboardEvent theo kỹ thuật `reference_bi_dashboard_seed_data_testing`, seed Luỹ kế + Doanh thu (8 NV, 2 bộ phận) + Bán kèm + Trả góp cho 1 siêu thị test): chụp ảnh lần lượt Doanh thu/Bán kèm/Trả góp/Thưởng — cả 4 tab hiển thị đúng: tiêu đề gọn, toolbar đúng style, header bảng 2 màu (tier 1 accent/tier 2 trung tính), huy hiệu vàng/bạc/đồng, zebra-stripe. Tab Thi đua và Chi tiết chỉ xác nhận được qua trạng thái rỗng (định dạng dữ liệu cần cho 2 tab này phức tạp hơn nhiều, không tái tạo kịp trong phạm vi phiên này) — nhưng tiêu đề ở trạng thái rỗng vẫn đúng kích thước, không lỗi console, không vỡ layout.
 - Test thêm mobile (390px) cho tab Bán kèm: không tràn ngang, huy hiệu + zebra-stripe hiển thị đúng, tiêu đề bị cắt (`truncate`) đúng như thiết kế `SectionHeader`.
 
+---
+
+## Mục 60 — Chuỗi sự cố đồng bộ Cloud (checkthuong_data) + kế hoạch tối ưu tốc độ upload — 2026-08-02
+
+### Bối cảnh
+User báo tab Phân Tích load chậm mỗi lần mở app → điều tra ra `services/khoDataService.ts` cache theo 1 khoá gộp cho cả Kho, hễ 1 file đổi là tải lại TẤT CẢ chunk. Trong lúc test fix, phát hiện chuỗi lỗi liên hoàn khi đồng bộ `checkthuong_data` (payload check-thuong.html, có thể ~4MB do "so sánh nhiều Kho/nhiều tháng"):
+
+1. **Nested arrays are not supported** — `competitionData` từ `XLSX.utils.sheet_to_json(sheet, {header:1})` là row[][] (mảng lồng mảng), Firestore cấm ghi thẳng.
+2. **exceeds the maximum allowed size (4.1MB > 1MiB)** — sau khi sửa (1), lộ ra giới hạn cứng 1 document/1MiB của Firestore.
+3. **Write stream exhausted maximum allowed queued writes** — sau khi chunk được (2), nhiều lượt ghi CÙNG 1 khoá (`checkthuong_data` đổi liên tục khi thao tác) xếp chồng lên nhau.
+4. **Write stream exhausted (biến thể 2)** — khi tải file Excel mới, nhiều khoá KHÁC NHAU (`customTabs`, `industryAnalysisCustomTabs`, `customExploitationTabs`, `efficiencyExploitationTabs`) đổi cùng lúc, hết debounce 2s cùng lúc, bắn nhiều lượt ghi song song.
+
+### Đã sửa (commit `79e41210`, `3f49f5e2`, `b152279c`, `fa9c5b79` — đã deploy `gh-pages` + `firestore.rules`)
+- `services/khoDataService.ts`: cache theo TỪNG FILE (khoá `khoDataCache_{maKho}_{fileId}`) thay vì 1 khoá gộp cho cả Kho.
+- `services/firestoreService.ts`: `sanitizeNestedArraysForFirestore`/`restoreNestedArraysFromFirestore` (bọc `{__fsArr: [...]}`) + chunk chuỗi JSON vượt ngưỡng thành nhiều document con `configs/{key}/chunks/{n}` (`assembleChunkedHeavyValue` để ghép lại lúc đọc).
+- `firestore.rules`: thêm rule cho subcollection `configs/{doc}/chunks/{n}` (match cha không tự áp dụng cho con).
+- `hooks/useCloudSync.ts`: `heavyInFlightRef`/`heavyPendingRef` (chặn 1 khoá ghi chồng lên chính nó, coalesce thành đúng 1 lượt cuối) + `heavyWriteQueueRef` (nối tiếp các khoá KHÁC nhau thành hàng đợi chung, không cho chạy song song).
+
+User xác nhận: tốc độ cải thiện, dữ liệu đúng.
+
+### Kế hoạch tiếp theo — vẫn còn 1 nguồn gây nghẽn write-stream chưa xử lý
+
+**Phát hiện khi rà thêm `services/cloudDataService.ts` và `services/khoDataService.ts`:** cả 2 hàm upload chunk (`uploadProcessedData`, `uploadKhoSalesData`) đang dùng `Promise.all(chunks.map(chunk => setDoc(...)))` — N lượt `setDoc()` ĐỘC LẬP bắn song song, thay vì gộp thành `writeBatch()` (1 lượt commit) như `firestoreService.ts` đã áp dụng ở Mục sửa lần này. Với file Lũy kế nhiều tháng (nhiều chunk hơn hẳn file Realtime 380 dòng/1 chunk vừa test), đây là chính xác cùng 1 lớp nguyên nhân gây "Write stream exhausted" đã gặp — chỉ là chưa bộc lộ vì file test còn nhỏ.
+
+**Đề xuất (đã lên kế hoạch, sẽ triển khai ngay sau khi ghi mục này):**
+1. `services/cloudDataService.ts::uploadProcessedData` — gộp toàn bộ doc cần ghi (N chunk + 1 meta) thành các nhóm `writeBatch()` (10 doc/batch — với `MAX_CHUNK_BYTES=800KB` thì 10 chunk ≈ 8MB, an toàn dưới giới hạn kích thước 1 lần commit của Firestore), commit TUẦN TỰ từng batch thay vì bắn tất cả `setDoc` cùng lúc. Áp dụng tương tự cho phần "dọn chunk cũ dư ra" (đang `Promise.all(deleteDoc...)` rời rạc → gộp `batch.delete()`).
+2. `services/khoDataService.ts::uploadKhoSalesData` — cùng cách xử lý (gộp `writeBatch`, giữ nguyên logic dọn chunk Realtime cũ nhưng đổi sang batch delete).
+3. Không đụng `downloadProcessedData`/`downloadKhoFileRows` (đọc — `getDoc` không tính vào giới hạn "queued writes" của write stream, không phải nguồn gây nghẽn).
+4. **Ranh giới cố ý chưa làm** (nếu sau khi (1)+(2) vẫn còn nghẽn mới cần tới): hợp nhất CẢ 3 hệ thống ghi Firestore độc lập hiện có (`cloudDataService`, `khoDataService`, hàng đợi heavy-sync ở `useCloudSync.ts`) vào 1 hàng đợi ghi DÙNG CHUNG toàn app — việc kiến trúc lớn hơn hẳn, cần thiết kế riêng, không làm trong lượt này trừ khi (1)+(2) không đủ.
+
+### Rủi ro & cách kiểm tra
+- Đụng vào luồng upload dùng cho MỌI lần tải file (cả dữ liệu cá nhân lẫn dữ liệu Kho dùng chung) — rủi ro trung bình, cần test kỹ trước khi coi là xong.
+- Kiểm tra: `npm run check` sau khi sửa; test tải 1 file nhỏ (như file 380 dòng vừa test) xác nhận vẫn tải lên đúng; nếu có điều kiện, test thêm 1 file Lũy kế nhiều tháng (nhiều chunk hơn) để xác nhận hết cảnh báo "Write stream exhausted" khi có > 10 chunk.
+
 
