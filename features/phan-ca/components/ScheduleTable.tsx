@@ -213,14 +213,14 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
             {weekHeaders}
           </tr>
           <tr className="text-[15px] font-black uppercase tracking-tighter">
-            <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">SBH</th>
-            <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">TV</th>
-            <th className="px-1 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-400">TỔNG</th>
-            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">GH</th>
-            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">KH</th>
-            <th className="px-1 border-r-2 border-slate-400 bg-emerald-50 text-emerald-800 border-b-[3px] !border-b-slate-400">TN</th>
-            <th className="px-1 border-r border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">ĐỔI</th>
-            <th className="px-1 border-r-2 border-slate-400 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">OFF</th>
+            <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-sky-400">SBH</th>
+            <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-sky-400">TV</th>
+            <th className="px-1 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-sky-400">TỔNG</th>
+            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-emerald-400">GH</th>
+            <th className="px-1 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-emerald-400">KH</th>
+            <th className="px-1 border-r-2 border-slate-400 bg-emerald-50 text-emerald-800 border-b-[3px] !border-b-emerald-400">TN</th>
+            <th className="px-1 border-r border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-amber-400">ĐỔI</th>
+            <th className="px-1 border-r-2 border-slate-400 bg-amber-50 text-amber-700 border-b-[3px] !border-b-amber-400">OFF</th>
             {Array.from({ length: duration }).map((_, i) => {
                 const dayIndex = i + 1;
                 if (weekRange && (dayIndex < weekRange.start || dayIndex > weekRange.end)) return null;

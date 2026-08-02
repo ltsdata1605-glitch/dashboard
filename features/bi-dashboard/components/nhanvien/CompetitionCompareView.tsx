@@ -429,11 +429,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700 w-10 text-center">#</th>
-                                    <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700">Chương trình thi đua</th>
-                                    <th className="px-2 py-3 border-b-2 border-sky-400 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
-                                    <th className="px-2 py-3 border-b-2 border-slate-300 dark:border-slate-600 text-center w-28">Chênh Lệch</th>
-                                    <th className="px-2 py-3 border-b-2 border-rose-400 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400 w-10 text-center">#</th>
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400">Chương trình thi đua</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-sky-400 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-400 text-center w-28">Chênh Lệch</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-rose-400 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
                                 </tr>
                             </thead>
                             <tbody>

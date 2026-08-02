@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
@@ -461,7 +461,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[cIdx % colorConfigs.length];
                                     return (
-                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !${getBorderAccentFromColorClass(config.bg)} dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -489,7 +489,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !${getBorderAccentFromColorClass(config.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (

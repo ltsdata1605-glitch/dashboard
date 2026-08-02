@@ -611,22 +611,22 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             <table className="w-full border-collapse min-w-[700px]">
                                 <thead className="sticky top-0 z-20">
                                     <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                        <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
+                                        <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
                                             Danh mục
                                         </th>
-                                        <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
+                                        <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-amber-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
                                             SL
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-sky-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
                                             DTLK
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-sky-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
                                             DTQĐ
                                         </th>
-                                        <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
+                                        <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-emerald-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
                                             HQ QĐ
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
+                                        <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-amber-400 dark:border-b-slate-600 min-w-[80px]">
                                             Đơn giá
                                         </th>
                                     </tr>

@@ -59,7 +59,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                             <th 
                                 key={`${h.key}-${m.id}`} 
                                 scope="col" 
-                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 ${h.colorClass}`}
+                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase border-b-[3px] !border-b-${h.borderColor}-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 ${h.colorClass}`}
                             >
                                 {`${parseInt(m.id.split('-')[1], 10)}.${m.id.split('-')[0]}`}
                             </th>

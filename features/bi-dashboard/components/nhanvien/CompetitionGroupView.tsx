@@ -300,19 +300,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     </colgroup>
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider">
-                            <th className="text-center px-2 py-1.5 border-b-2 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            <th className="text-center px-2 py-1.5 border-b-[3px] !border-b-slate-400 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 <Button variant="ghost" onClick={() => handleCardSort('name')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-sky-400 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
                                 <Button variant="ghost" onClick={() => handleCardSort('target')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-sky-400 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
                                 <Button variant="ghost" onClick={() => handleCardSort('actual')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-emerald-400 border-r border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                                 <Button variant="ghost" onClick={() => handleCardSort('completion')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-amber-400 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
                                 <Button variant="ghost" onClick={() => handleCardSort('remaining')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>

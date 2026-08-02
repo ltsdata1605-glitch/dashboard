@@ -2154,4 +2154,50 @@ User xác nhận: tốc độ cải thiện, dữ liệu đúng.
 - Đụng vào luồng upload dùng cho MỌI lần tải file (cả dữ liệu cá nhân lẫn dữ liệu Kho dùng chung) — rủi ro trung bình, cần test kỹ trước khi coi là xong.
 - Kiểm tra: `npm run check` sau khi sửa; test tải 1 file nhỏ (như file 380 dòng vừa test) xác nhận vẫn tải lên đúng; nếu có điều kiện, test thêm 1 file Lũy kế nhiều tháng (nhiều chunk hơn) để xác nhận hết cảnh báo "Write stream exhausted" khi có > 10 chunk.
 
+---
+
+## Mục 61 — Đồng bộ viền header 3px màu theo nhóm cột cho TẤT CẢ bảng dữ liệu — 2026-08-02
+
+### Bối cảnh
+User khen "đường kẻ highlight" ở header bảng "Chương trình thi đua" (Tổng quan siêu thị, `features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx`) — cụ thể là viền dưới (`border-bottom`) dày **3px**, đổi màu theo nhóm cột ngữ nghĩa (không phải trang trí ngẫu nhiên): M.TIÊU/T.HIỆN/L.KẾ → **sky**, %HT → **emerald**, C.LẠI → **amber**, %HTDK (cảnh báo) → **rose**. Yêu cầu: áp dụng đồng bộ cho TẤT CẢ bảng dữ liệu ở TẤT CẢ 4 khu vực.
+
+**Xác nhận qua hỏi lại:**
+1. Đúng là viền màu 3px đó (không phải chi tiết khác).
+2. Áp dụng CẢ cho 6 tab Nhân viên — dù đợt nâng cấp Mục 59 (31/7) đã chủ ý đổi tier-2 header của các tab đó sang nền trung tính để bớt rối mắt. User chọn ưu tiên viền màu hơn quyết định cũ đó. **Diễn giải cụ thể**: chỉ thêm viền màu 3px (đúng thứ được khen), KHÔNG phục hồi lại nền màu đầy cho tier-2 (nền trung tính `bg-slate-50` vẫn giữ — viền mỏng không gây rối mắt lại như nền màu đặc, không thực sự "đảo ngược" tinh thần Mục 59 là giảm rối mắt).
+
+### Quy ước màu chuẩn (dựa theo bảng màu semantic đã duyệt trong CLAUDE.md + pattern gốc)
+- Mục tiêu / Thực hiện / Doanh thu / T.HIỆN / L.KẾ / Số lượng / DT THỰC (số liệu chính, target-actual) → **sky**
+- %HT / Hiệu quả / %Hiệu quả (tỷ lệ hoàn thành, hiệu suất) → **emerald**
+- Còn lại / C.LẠI / Dự kiến (phần còn thiếu/dự kiến) → **amber**
+- Cảnh báo / Trả chậm / NoSale / dưới trung bình / %HTDK (điều kiện xấu) → **rose**
+- Tổng hợp / Trung bình / TỔNG (số liệu tổng hợp phụ) → **indigo**
+- Cột định danh (tên NV, nhóm, danh mục, ngày/tuần không mang nghĩa KPI) → giữ **slate** trung tính
+- Class cụ thể: `border-b-[3px] border-b-{color}-400` (light mode only — dự án đã tắt dark mode toàn bộ, KHÔNG thêm class `dark:` mới theo CLAUDE.md).
+
+### Khảo sát toàn bộ (qua Explore agent) — phân loại theo mức độ cần sửa
+
+**Nhóm A — Quick win** (nền `<th>` đã đúng màu nhóm sẵn, chỉ cần đổi border từ trung tính/mỏng → màu 3px, KHÔNG đổi mapping màu):
+`components/tables/SummaryTable.tsx`, `components/tables/MonthlyTrendTable.tsx`, `components/employees/IndustryAnalysisTab.tsx`, `components/employees/performance/PerformanceSingleTable.tsx`, `features/bi-dashboard/components/dashboard/IndustryView.tsx`, `features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx`, `features/bi-dashboard/components/nhanvien/DetailTab.tsx`, `features/phan-ca/components/ScheduleTable.tsx`, `features/phan-ca/components/VerticalIndividualSchedule.tsx` (chỉ bảng tổng hợp giờ công).
+
+**Nhóm B — Đã có màu nhưng nhạt/mỏng (-100/1-2px), chỉ cần "đậm hóa" lên -400/3px, giữ nguyên mapping**:
+`features/bi-dashboard/components/nhanvien/CrossSellingTab.tsx` (tier-1), `features/bi-dashboard/components/nhanvien/InstallmentTab.tsx` (tier-1), `features/bi-dashboard/components/nhanvien/bonus/BonusGroupListTable.tsx`, `features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx` (màu theo người A/B, giữ nguyên ý nghĩa, chỉ đậm hóa).
+
+**Nhóm C — Màu đang lệch convention, cần remap trước khi thêm viền**:
+`features/bi-dashboard/components/dashboard/ReportView.tsx` (MỤC TIÊU+THỰC HIỆN nên gộp sky thay vì slate/emerald riêng lẻ; HOÀN THÀNH/%HT nên emerald thay vì amber), `features/bi-dashboard/components/dashboard/SummaryTableView.tsx` (nhóm HIỆU QUẢ đang indigo, nên đổi emerald cho khớp %HT).
+
+**Nhóm D — Màu gán cycling theo thứ tự xuất hiện (không theo tên cột thật), cần sửa logic gán màu trước khi thêm viền**:
+`components/employees/ContestTable.tsx`, `components/summary/WarehouseSummary.tsx` (`groupColorMap` cycling), `features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx` (cycling theo cột thi đua — đây là instance-based hợp lý, chỉ cần đảm bảo cột BOT/NoSale luôn rose, các cột khác thêm viền theo đúng màu cycling hiện có của chính nó, không cần đổi sang cố định).
+
+**Nhóm E — Nhân viên: tier-2 đang cố ý neutral (Mục 59) — theo xác nhận của user, thêm viền màu 3px (giữ nguyên nền trung tính)**:
+`features/bi-dashboard/components/nhanvien/RevenueTab.tsx`, `features/bi-dashboard/components/nhanvien/CrossSellingTab.tsx` (tier-2), `features/bi-dashboard/components/nhanvien/InstallmentTab.tsx` (tier-2).
+
+**Nhóm F — KHÔNG áp dụng** (không có cấu trúc nhóm cột KPI phù hợp, ghi rõ lý do để không phải hỏi lại):
+`components/tables/summary/CrossSellingTable.tsx` (cột cấu hình động — có thể xét sau nếu cần), `components/employees/head-to-head/HeadToHeadTable.tsx` (cột theo ngày, đã có màu theo metric ở nền, viền không bắt buộc), `features/phan-ca/components/DailyStatsTable.tsx` (heatmap số người, không phải target/actual), `features/bi-dashboard/components/nhanvien/bonus/MonthlyBonusTable.tsx` và `BonusDailyTable.tsx` (cột theo tháng/ngày, không phải nhóm KPI ngang), `VerticalIndividualSchedule.tsx` (bảng lịch chi tiết theo ngày, không có nhóm), `components/shared/ui/DataTable.tsx` (component generic — để nguyên vì chưa nơi nào đang dùng nó cho bảng KPI thật; sẽ bổ sung prop border màu nếu có nhu cầu cụ thể sau, tránh sửa "phòng khi cần" không có use case).
+
+**Đã đúng chuẩn sẵn** (dùng làm mẫu tham chiếu, không cần sửa): `features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx`, `features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx`.
+
+### Rủi ro & kiểm tra
+- Thay đổi thuần CSS class (border color/width), không đụng logic tính toán hay cấu trúc dữ liệu — rủi ro thấp, nhưng số lượng file nhiều (~19 file cần sửa thật) nên làm tuần tự theo nhóm, chạy `npm run check` sau mỗi nhóm.
+- Nhóm C/D cần đọc kỹ logic gán màu hiện tại trước khi đổi (tránh gãy các nơi khác đang dùng chung biến màu đó cho mục đích khác, vd `groupColorMap` ở WarehouseSummary có thể được dùng lại cho cả nền lẫn text).
+
 

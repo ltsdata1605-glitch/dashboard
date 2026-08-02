@@ -5,7 +5,7 @@ import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
 import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
-import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix, getBorderAccentFromColorClass } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
@@ -483,7 +483,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
@@ -497,7 +497,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         return colsInGroup.map((col, idx) => {
                                             const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                             return (
-                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                         {sortConfig.key === col.id && (
@@ -525,7 +525,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     }
                                     const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                 {sortConfig.key === col.id && (

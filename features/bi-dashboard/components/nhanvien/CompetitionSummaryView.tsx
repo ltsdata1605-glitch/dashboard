@@ -482,7 +482,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         onDrop={(e) => handleDrop(e, index)}
                                                         onDragEnd={() => setDraggedIndex(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-[3px] border-b-${color}-400 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex items-center justify-center gap-1">
@@ -496,7 +496,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         })()}
                                         <th 
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 min-w-[55px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-[3px] border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 min-w-[55px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
@@ -505,7 +505,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th 
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-200 dark:hover:bg-rose-900/60 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-[3px] border-b-rose-400 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-200 dark:hover:bg-rose-900/60 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>

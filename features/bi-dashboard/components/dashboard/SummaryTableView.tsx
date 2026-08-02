@@ -6,6 +6,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
@@ -23,15 +24,15 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
     
-    // HIỆU QUẢ
-    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
-    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    // HIỆU QUẢ (đổi indigo → emerald cho khớp quy ước %HT/hiệu quả toàn dự án, implementation_plan.md mục 61)
+    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
     
     // TRAFFIC
     'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
@@ -421,7 +422,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     {visibleColumns.has('Tên miền') && (
                                         <th
                                             rowSpan={2}
-                                            className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
+                                            className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
                                         >
                                             SIÊU THỊ
                                         </th>
@@ -433,7 +434,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
                                                 />
                                             );

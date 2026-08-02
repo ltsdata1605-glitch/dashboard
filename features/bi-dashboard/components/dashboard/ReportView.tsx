@@ -59,16 +59,16 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
                     <table className="w-full border-collapse min-w-max compact-export-table">
                         <thead>
                             <tr className="text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                                <th className="px-3 py-2 border-b-2 border-r border-slate-200 dark:border-slate-700 text-left sticky left-0 z-20 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
+                                <th className="px-3 py-2 border-b-[3px] border-b-indigo-400 border-r border-slate-200 dark:border-slate-700 text-left sticky left-0 z-20 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
                                     CHỈ TIÊU
                                 </th>
-                                <th className="px-3 py-2 border-b-2 border-r border-slate-200 dark:border-slate-700 text-right bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                <th className="px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 text-right bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300">
                                     MỤC TIÊU
                                 </th>
-                                <th className="px-3 py-2 border-b-2 border-r border-slate-200 dark:border-slate-700 text-right bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                                <th className="px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 text-right bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-300">
                                     THỰC HIỆN
                                 </th>
-                                <th className="px-3 py-2 border-b-2 border-slate-200 dark:border-slate-700 text-center bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
+                                <th className="px-3 py-2 border-b-[3px] border-b-emerald-400 border-slate-200 dark:border-slate-700 text-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
                                     HOÀN THÀNH
                                 </th>
                             </tr>

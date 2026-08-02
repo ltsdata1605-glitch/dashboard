@@ -28,13 +28,13 @@ export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
 };
 
 // Data structure for detail view headers
-export const detailHeaderGroups: Record<string, { label: string; colSpan: number; bg: string; text: string; subHeaders: { label: string; key: SortConfig['key'] }[] }> = {
-    doanhThu: { label: 'D.THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', subHeaders: [
+export const detailHeaderGroups: Record<string, { label: string; colSpan: number; bg: string; text: string; border: string; subHeaders: { label: string; key: SortConfig['key'] }[] }> = {
+    doanhThu: { label: 'D.THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', border: 'border-b-sky-400', subHeaders: [
         { label: 'DT Thực', key: 'doanhThuThuc' },
         { label: 'DTQĐ', key: 'doanhThuQD' },
         { label: 'HQQĐ', key: 'hieuQuaQD' }
     ]},
-    spChinh: { label: 'SP CHÍNH', colSpan: 4, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', subHeaders: [
+    spChinh: { label: 'SP CHÍNH', colSpan: 4, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-b-emerald-400', subHeaders: [
         { label: 'ICT', key: 'slICT' },
         { label: 'CE', key: 'slCE_main' },
         { label: 'ĐGD', key: 'slGiaDung_main' },
@@ -48,16 +48,19 @@ export const HeaderCell: React.FC<{
     className?: string;
     onSort: (key: SortConfig['key']) => void;
     sortConfig: SortConfig;
-    colorConfig?: { bg: string; text: string };
+    colorConfig?: { bg: string; text: string; border?: string };
 }> = ({ label, sortKey, onSort, sortConfig, className, colorConfig }) => {
     const isActive = sortConfig.key === sortKey;
     const bgClass = colorConfig ? colorConfig.bg : (isActive ? 'bg-indigo-50/80 dark:bg-indigo-900/20' : 'bg-transparent');
     const textClass = colorConfig ? colorConfig.text : (isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-[#46505e] dark:text-slate-300');
-    
+    // Viền dưới 3px đổi màu theo nhóm cột (implementation_plan.md mục 61) — mặc định slate nếu
+    // nhóm không truyền border (vd trạng thái active tạm thời không gắn với 1 nhóm cụ thể).
+    const borderClass = colorConfig?.border || 'border-b-slate-400';
+
     return (
         <th
             onClick={() => onSort(sortKey)}
-            className={`px-1.5 sm:px-3 py-1 sm:py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
+            className={`px-1.5 sm:px-3 py-1 sm:py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !${borderClass} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
         >
             <div className="flex items-center justify-center gap-1">
                 {label}

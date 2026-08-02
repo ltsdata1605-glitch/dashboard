@@ -410,7 +410,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                 sortKey={subHeader.key} 
                                                 onSort={handleSort} 
                                                 sortConfig={sortConfig}
-                                                colorConfig={{ bg: dynamicHeaderGroups[f.key].bg, text: dynamicHeaderGroups[f.key].text }}
+                                                colorConfig={{ bg: dynamicHeaderGroups[f.key].bg, text: dynamicHeaderGroups[f.key].text, border: dynamicHeaderGroups[f.key].border }}
                                             />
                                         ));
                                     })}

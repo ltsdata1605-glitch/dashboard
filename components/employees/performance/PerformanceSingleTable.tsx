@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Employee } from '../../../types';
-import { abbreviateName, formatCurrency, formatQuantity } from '../../../utils/dataUtils';
+import { abbreviateName, formatCurrency, formatQuantity, getBorderAccentFromColorClass } from '../../../utils/dataUtils';
 import { Icon } from '../../common/Icon';
 import {
     GroupType, SortDirection, TAB_THEMES, DEPT_COLORS,
@@ -261,7 +261,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 </div>
                             </th>
                             {groupedHeaders.map((group, i) => (
-                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-1 sm:px-2 py-1 sm:py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
+                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-1 sm:px-2 py-1 sm:py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? `border-b-[3px] !${getBorderAccentFromColorClass(group.bg)} dark:!border-b-slate-600` : 'border-b'}`}
                                     style={{ maxWidth: group.colSpan === 1 ? '60px' : undefined }}
                                     onClick={() => {
                                         if (group.noSubHeader) {
@@ -293,7 +293,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             ? (setTempTarget(new Intl.NumberFormat('vi-VN').format(Math.round(targetPerEmployee / 1_000_000))), setIsEditingTarget(true))
                                             : onSort(h.key)
                                         }
-                                        className={`relative px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity group/th
+                                        className={`relative px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(h.colorClass)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity group/th
                                             ${h.colorClass} ${h.textColor} ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'} h-px`}
                                     >
                                         {isTarget && isEditingTarget ? (

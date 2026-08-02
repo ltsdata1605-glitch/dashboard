@@ -232,7 +232,7 @@
     "missingMobileToolbar": 0
   },
   "components/tables/summary/SummaryTableUtils.ts": {
-    "nonSemanticColor": 24,
+    "nonSemanticColor": 18,
     "missingMobileToolbar": 0
   },
   "components/tables/SummaryTable.tsx": {
@@ -316,7 +316,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
-    "nonSemanticColor": 54,
+    "nonSemanticColor": 22,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/DataUpdater.tsx": {

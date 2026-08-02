@@ -3,6 +3,7 @@ import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp } from '../../utils/dashboardHelpers';
+import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -685,7 +686,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             px-1.5 py-1 text-[11px] font-bold uppercase
                                                             tracking-wider border-r border-slate-200 dark:border-slate-700
-                                                            border-b-2
+                                                            border-b-[3px] !${getBorderAccentFromColorClass(g.bg)}
                                                             text-center align-middle whitespace-nowrap
                                                             cursor-pointer hover:opacity-80 transition-opacity select-none
                                                             ${g.bg} ${g.text}

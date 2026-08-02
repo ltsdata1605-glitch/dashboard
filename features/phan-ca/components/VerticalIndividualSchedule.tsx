@@ -32,14 +32,14 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
             <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-amber-50 text-amber-700 font-black text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
           </tr>
           <tr className="text-[11px] font-black uppercase tracking-wider">
-            <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">SBH</th>
-            <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">TV</th>
-            <th className="py-2 px-3 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-400">TỔNG</th>
-            <th className="py-2 px-3 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">GH</th>
-            <th className="py-2 px-3 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-slate-400">KH</th>
-            <th className="py-2 px-3 border-r-2 border-slate-400 bg-emerald-50 text-emerald-800 border-b-[3px] !border-b-slate-400">TN</th>
-            <th className="py-2 px-3 border-r border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">ĐỔI</th>
-            <th className="py-2 px-3 border-r-2 border-slate-400 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-400">OFF</th>
+            <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-sky-400">SBH</th>
+            <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-sky-400">TV</th>
+            <th className="py-2 px-3 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-sky-400">TỔNG</th>
+            <th className="py-2 px-3 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-emerald-400">GH</th>
+            <th className="py-2 px-3 border-r border-slate-300 bg-emerald-50 text-emerald-700 border-b-[3px] !border-b-emerald-400">KH</th>
+            <th className="py-2 px-3 border-r-2 border-slate-400 bg-emerald-50 text-emerald-800 border-b-[3px] !border-b-emerald-400">TN</th>
+            <th className="py-2 px-3 border-r border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-amber-400">ĐỔI</th>
+            <th className="py-2 px-3 border-r-2 border-slate-400 bg-amber-50 text-amber-700 border-b-[3px] !border-b-amber-400">OFF</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">

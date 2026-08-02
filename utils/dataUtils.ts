@@ -2,6 +2,30 @@
 import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
 
+// Tailwind safelist (implementation_plan.md mục 61) — viền dưới 3px đổi màu theo nhóm cột ở
+// nhiều bảng biểu khắp dự án được ghép ĐỘNG qua template literal (vd `border-b-${colorName}-400`)
+// thay vì viết literal đầy đủ ở từng nơi. Tailwind v4 quét TEXT TĨNH trong source để sinh CSS —
+// không chạy JS nên không tự suy luận được giá trị biến runtime. File này (utils/dataUtils.ts)
+// là 1 trong số ít file dùng chung CẢ 4 khu vực nên chắc chắn luôn nằm trong phạm vi quét, đảm
+// bảo các class dưới đây LUÔN được sinh CSS dù nơi dùng ghép chuỗi động không có literal đầy đủ:
+// border-b-sky-400 border-b-emerald-400 border-b-amber-400 border-b-rose-400 border-b-indigo-400 border-b-slate-400
+// !border-b-sky-400 !border-b-emerald-400 !border-b-amber-400 !border-b-rose-400 !border-b-indigo-400 !border-b-slate-400
+
+
+const BORDER_ACCENT_FAMILIES = ['sky', 'emerald', 'amber', 'rose', 'indigo', 'slate'] as const;
+
+/**
+ * Suy ra viền dưới 3px đổi màu theo nhóm cột (implementation_plan.md mục 61) từ 1 class Tailwind
+ * bg-{màu}-... hoặc text-{màu}-... đã có sẵn ở component — dùng khi nơi gọi chưa lưu riêng field
+ * `border` song song với bg/text. Chỉ nhận diện đúng 6 họ màu semantic đã duyệt (CLAUDE.md), mặc
+ * định `slate` (trung tính) nếu không khớp — không tự suy ra màu ngoài bảng màu chuẩn.
+ */
+export function getBorderAccentFromColorClass(colorClass: string): string {
+    for (const family of BORDER_ACCENT_FAMILIES) {
+        if (colorClass.includes(`-${family}-`)) return `border-b-${family}-400`;
+    }
+    return 'border-b-slate-400';
+}
 
 const columnCache = new Map<string, string>();
 const normalizeCache = new Map<string, string>();
