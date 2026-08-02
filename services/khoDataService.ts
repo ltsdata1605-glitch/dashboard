@@ -277,15 +277,16 @@ export async function syncDataToKhoIfManager(
     );
 }
 
-interface KhoCacheEntry {
+interface KhoFileCacheEntry {
     data: DataRow[];
-    snapshot: string;
+    fileLastModified: number;
 }
 
-const khoCacheKey = (maKho: string) => `khoDataCache_${maKho}`;
+const khoFileCacheKey = (maKho: string, fileId: string) => `khoDataCache_${maKho}_${fileId}`;
 
-/** Chuỗi đại diện trạng thái hiện tại của các file active trong Kho — dùng để biết có cần
- * tải lại chunk hay không mà không phải tải cả dữ liệu về so sánh. */
+/** Chuỗi đại diện trạng thái hiện tại của các file active trong Kho — dùng để trả về cho
+ * tầng gọi (useDataManagement.ts) so sánh, quyết định có cần ghi đè `originalData`/chạy lại
+ * worker xử lý hay không. */
 function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
     return JSON.stringify(
         files.map(f => ({ id: f.fileId, t: f.fileLastModified })).sort((a, b) => a.id.localeCompare(b.id))
@@ -293,25 +294,34 @@ function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
 }
 
 /**
- * Tải dữ liệu 1 Kho, có cache cục bộ (IndexedDB, dùng chung cơ chế key-value của
- * dbService) — chỉ tải lại chunk khi metadata các file active đã đổi so với lần trước,
- * tránh tải lại toàn bộ dữ liệu lớn (đặc biệt Lũy kế nhiều tháng) mỗi lần mở app.
+ * Tải dữ liệu 1 Kho, có cache cục bộ theo TỪNG FILE (IndexedDB, dùng chung cơ chế key-value
+ * của dbService) — chỉ file nào có `fileLastModified` đổi so với lần trước mới tải lại chunk
+ * của riêng file đó, các file còn lại (vd nhiều tháng Lũy kế cũ không đổi) dùng thẳng cache.
+ *
+ * Trước đây cache theo 1 khoá gộp cho CẢ Kho (snapshot nối tất cả file) — hễ có 1 file đổi
+ * (vd quản lý ghi đè bản Realtime của họ, việc này xảy ra thường xuyên) là toàn bộ Kho bị coi
+ * là "cũ" và tải lại TẤT CẢ chunk của TẤT CẢ file kể cả những file không hề đổi, khiến tab
+ * Phân Tích chậm dần theo thời gian khi Kho tích luỹ nhiều tháng dữ liệu Lũy kế (mục 39b).
  */
 async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; snapshot: string }> {
     const files = await getKhoActiveFilesMeta(maKho);
     const snapshot = computeFilesSnapshot(files);
-    const cacheKey = khoCacheKey(maKho);
 
-    const cached = await dbService.getSetting<KhoCacheEntry>(cacheKey).catch(() => null);
-    if (cached && cached.snapshot === snapshot) {
-        return { data: cached.data, snapshot };
-    }
+    const rowsByFile = await Promise.all(files.map(async (f) => {
+        const cacheKey = khoFileCacheKey(maKho, f.fileId);
+        const cached = await dbService.getSetting<KhoFileCacheEntry>(cacheKey).catch(() => null);
+        if (cached && cached.fileLastModified === f.fileLastModified) {
+            return cached.data;
+        }
 
-    const rowsByFile = await Promise.all(files.map(f => downloadKhoFileRows(maKho, f.fileId, f.chunkCount)));
+        const rows = await downloadKhoFileRows(maKho, f.fileId, f.chunkCount);
+        dbService.saveSetting(cacheKey, { data: rows, fileLastModified: f.fileLastModified } as KhoFileCacheEntry).catch(err =>
+            console.warn(`[KhoData] Không lưu được cache cục bộ cho file ${f.fileId} (Kho ${maKho}):`, err)
+        );
+        return rows;
+    }));
+
     const data = rowsByFile.flat();
-    dbService.saveSetting(cacheKey, { data, snapshot } as KhoCacheEntry).catch(err =>
-        console.warn(`[KhoData] Không lưu được cache cục bộ cho Kho ${maKho}:`, err)
-    );
     return { data, snapshot };
 }
 

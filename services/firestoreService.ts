@@ -243,6 +243,47 @@ export const isHeavySyncKey = (key: string): boolean => {
     return false;
 };
 
+// Firestore CẤM mảng lồng mảng trực tiếp (vd competitionData của check-thuong.html — tạo bằng
+// XLSX.utils.sheet_to_json(sheet, {header: 1}) nên là row[][], không phải row đối tượng) — setDoc
+// sẽ ném "Nested arrays are not supported". Bọc mỗi mảng con thành object {__fsArr: [...]} trước
+// khi ghi, và mở lại đúng chỗ khi đọc (fetchHeavySettingsFromCloud + listener realtime ở
+// hooks/useCloudSync.ts) để các khoá heavy-sync khác lỡ có cấu trúc tương tự cũng không bị vỡ.
+const NESTED_ARRAY_MARKER = '__fsArr';
+
+function sanitizeNestedArraysForFirestore(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map(item => Array.isArray(item)
+            ? { [NESTED_ARRAY_MARKER]: sanitizeNestedArraysForFirestore(item) }
+            : sanitizeNestedArraysForFirestore(item));
+    }
+    if (value && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+            out[k] = sanitizeNestedArraysForFirestore(v);
+        }
+        return out;
+    }
+    return value;
+}
+
+export function restoreNestedArraysFromFirestore(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map(restoreNestedArraysFromFirestore);
+    }
+    if (value && typeof value === 'object') {
+        const obj = value as Record<string, unknown>;
+        if (NESTED_ARRAY_MARKER in obj && Array.isArray(obj[NESTED_ARRAY_MARKER])) {
+            return restoreNestedArraysFromFirestore(obj[NESTED_ARRAY_MARKER]);
+        }
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(obj)) {
+            out[k] = restoreNestedArraysFromFirestore(v);
+        }
+        return out;
+    }
+    return value;
+}
+
 export const syncHeavySettingToCloud = async (user: User, key: string, value: unknown) => {
     if (!user) return;
     const docRef = doc(db, 'users', user.uid, 'configs', key);
@@ -265,9 +306,10 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
     }
 
     const cleanValue = JSON.parse(JSON.stringify(safeValue, (k, v) => v === undefined ? null : v));
+    const firestoreSafeValue = sanitizeNestedArraysForFirestore(cleanValue);
 
     await setDoc(docRef, {
-        value: cleanValue,
+        value: firestoreSafeValue,
         updatedAt: serverTimestamp()
     }, { merge: false });
 };
@@ -283,7 +325,7 @@ export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<st
         const key = docSnap.id;
         const data = docSnap.data();
         if (data && data.value !== undefined) {
-            let val = data.value;
+            let val = restoreNestedArraysFromFirestore(data.value);
             const valWithConfig = val as { config?: { groups?: ProductConfigGroups } } | undefined;
             if (key === 'productConfig' && valWithConfig && valWithConfig.config && valWithConfig.config.groups) {
                 const restoredGroups: { [key: string]: Set<string> } = {};

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloud } from '../services/firestoreService';
+import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloud, restoreNestedArraysFromFirestore } from '../services/firestoreService';
 import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -194,7 +194,7 @@ export const useCloudSync = () => {
                     if (localValue === null || cloudTime > localTime) {
                         console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
                         
-                        let val = data.value;
+                        let val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
                         if (key === 'productConfig' && val && val.config && val.config.groups) {
                             const restoredGroups: { [key: string]: Set<string> } = {};
                             for (const [gKey, gVal] of Object.entries(val.config.groups)) {
