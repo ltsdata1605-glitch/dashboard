@@ -513,7 +513,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             // Ép cỡ chữ (11.5px) và line-height vừa đủ, cân đối với nội dung
             th.style.setProperty('font-size', '11.5px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
-            th.style.setProperty('padding', '4px 4px', 'important');
+            th.style.setProperty('padding', '6px 6px', 'important');
 
             if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
                 th.style.setProperty('min-width', '100px', 'important');
@@ -546,15 +546,18 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
         // Xử lý các thẻ td của bảng
         table.querySelectorAll('tbody tr').forEach((tr) => {
+            if (tr instanceof HTMLElement) {
+                tr.style.setProperty('min-height', '34px', 'important');
+            }
             tr.querySelectorAll('td').forEach((td, idx) => {
                 if (!(td instanceof HTMLElement)) return;
                 const isFirstCol = td.previousElementSibling === null;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-                // Ép cỡ chữ chuẩn 13px (chữ to rõ như ảnh 2) và padding 3px 5px vừa vặn
+                // Ép cỡ chữ chuẩn 13px và padding 6px 8px giúp độ rộng dòng đồng nhất với bảng bên trái
                 td.style.setProperty('font-size', '13px', 'important');
                 td.style.setProperty('line-height', '1.25', 'important');
-                td.style.setProperty('padding', '3px 5px', 'important');
+                td.style.setProperty('padding', '6px 8px', 'important');
 
                 // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p) trừ badge siêu nhỏ
                 td.querySelectorAll<HTMLElement>('div, span, button, p, a').forEach(child => {
