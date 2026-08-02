@@ -993,19 +993,25 @@ export function fixOklchColors(root: HTMLElement) {
     function resolveOklch(val: string): string | null {
         if (!val || typeof val !== 'string' || val.indexOf('oklch') === -1) return null;
         try {
+            // Sentinel KHÔNG được là đen — trước đây dùng '#000000' làm mốc rồi coi
+            // "fillStyle không đổi sau khi gán val" là "màu này vốn đen", nhưng nếu canvas
+            // không parse được cú pháp màu (vd biến thể oklch/color-mix mà html-to-image/một
+            // số trình duyệt export không hỗ trợ), gán thất bại cũng khiến fillStyle giữ
+            // nguyên '#000000' — bị hiểu nhầm thành "màu đen thật" và tô nhầm viền/nền/chữ
+            // thành đen khi xuất ảnh. Đổi sang màu không thể trùng màu thiết kế thật để phân
+            // biệt rạch ròi "parse được" vs "không parse được".
+            const SENTINEL = '#ff00fe';
             ctx!.clearRect(0, 0, 1, 1);
-            ctx!.fillStyle = '#000000';
+            ctx!.fillStyle = SENTINEL;
             ctx!.fillStyle = val;
-            const resolved = ctx!.fillStyle;
-            if (resolved !== '#000000' || val.indexOf('0, 0, 0') !== -1 || val.indexOf('0%') !== -1) {
-                return resolved;
-            }
+            if (ctx!.fillStyle === SENTINEL) return null; // Không parse được — giữ nguyên màu gốc, không đoán mò.
+
             ctx!.fillRect(0, 0, 1, 1);
             const px = ctx!.getImageData(0, 0, 1, 1).data;
             if (px[3] > 0) {
                 return 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' + (px[3] / 255).toFixed(2) + ')';
             }
-            return null;
+            return ctx!.fillStyle;
         } catch (e) {
             return null;
         }
