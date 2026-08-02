@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, Timestamp, type DocumentReference } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
@@ -284,6 +284,43 @@ export function restoreNestedArraysFromFirestore(value: unknown): unknown {
     return value;
 }
 
+// Firestore giới hạn cứng 1_048_576 byte/document — checkthuong_data (bảng so sánh nhiều Kho,
+// nhiều tháng, tạo từ XLSX.utils.sheet_to_json) có thể vượt xa mốc này (đã gặp thực tế ~4MB,
+// setDoc() ném "exceeds the maximum allowed size"). Khi chuỗi JSON vượt ngưỡng an toàn, cắt
+// thành nhiều phần lưu ở subcollection configs/{key}/chunks/{n} thay vì ghi thẳng 1 document.
+// Ngưỡng tính theo KÝ TỰ (không phải byte) và chọn thấp hơn hẳn giới hạn byte thật vì tiếng Việt
+// có dấu chiếm tới 3 byte/ký tự khi encode UTF-8.
+const CHUNK_CHAR_SIZE = 300_000;
+
+function splitIntoChunks(serialized: string): string[] {
+    const chunks: string[] = [];
+    for (let i = 0; i < serialized.length; i += CHUNK_CHAR_SIZE) {
+        chunks.push(serialized.slice(i, i + CHUNK_CHAR_SIZE));
+    }
+    return chunks;
+}
+
+/** Ghép + parse lại dữ liệu từ subcollection chunks — dùng chung cho fetchHeavySettingsFromCloud
+ * (tải hàng loạt lúc đăng nhập) lẫn listener realtime ở hooks/useCloudSync.ts. */
+export async function assembleChunkedHeavyValue(docRef: DocumentReference): Promise<unknown> {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const chunksSnap = await getDocs(collection(docRef, 'chunks'));
+    if (chunksSnap.empty) return undefined;
+
+    const serialized = chunksSnap.docs
+        .slice()
+        .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+        .map(d => (d.data() as { data?: string }).data || '')
+        .join('');
+
+    try {
+        return restoreNestedArraysFromFirestore(JSON.parse(serialized));
+    } catch (e) {
+        console.warn('[Heavy Sync] Không parse được dữ liệu ghép từ chunk:', e);
+        return undefined;
+    }
+}
+
 export const syncHeavySettingToCloud = async (user: User, key: string, value: unknown) => {
     if (!user) return;
     const docRef = doc(db, 'users', user.uid, 'configs', key);
@@ -307,11 +344,41 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
 
     const cleanValue = JSON.parse(JSON.stringify(safeValue, (k, v) => v === undefined ? null : v));
     const firestoreSafeValue = sanitizeNestedArraysForFirestore(cleanValue);
+    const serialized = JSON.stringify(firestoreSafeValue);
 
-    await setDoc(docRef, {
-        value: firestoreSafeValue,
-        updatedAt: serverTimestamp()
-    }, { merge: false });
+    const { collection, getDocs, deleteDoc, writeBatch } = await import('firebase/firestore');
+    const chunksRef = collection(docRef, 'chunks');
+
+    if (serialized.length <= CHUNK_CHAR_SIZE) {
+        await setDoc(docRef, {
+            value: firestoreSafeValue,
+            chunked: false,
+            updatedAt: serverTimestamp()
+        }, { merge: false });
+
+        // Dọn chunk cũ nếu khoá này từng bị chunk ở lần ghi trước — chạy nền, không chặn ghi chính.
+        getDocs(chunksRef)
+            .then(snap => snap.empty ? undefined : Promise.all(snap.docs.map(d => deleteDoc(d.ref))))
+            .catch(err => console.warn(`[Heavy Sync] Không dọn được chunk cũ của "${key}":`, err));
+        return;
+    }
+
+    const parts = splitIntoChunks(serialized);
+    const batch = writeBatch(db);
+    parts.forEach((part, i) => batch.set(doc(chunksRef, `chunk_${i}`), { data: part }));
+    batch.set(docRef, { chunked: true, chunkCount: parts.length, updatedAt: serverTimestamp() });
+    await batch.commit();
+
+    // Dọn chunk dư ra nếu lần ghi này ít chunk hơn lần trước — chạy nền, không chặn ghi chính.
+    getDocs(chunksRef)
+        .then(snap => {
+            const stale = snap.docs.filter(d => {
+                const idx = parseInt(d.id.replace('chunk_', ''), 10);
+                return Number.isNaN(idx) || idx >= parts.length;
+            });
+            return stale.length > 0 ? Promise.all(stale.map(d => deleteDoc(d.ref))) : undefined;
+        })
+        .catch(err => console.warn(`[Heavy Sync] Không dọn được chunk dư của "${key}":`, err));
 };
 
 export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<string, { value: unknown, updatedAt: number }>> => {
@@ -321,26 +388,34 @@ export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<st
     const snap = await getDocs(configsRef);
 
     const settings: Record<string, { value: unknown, updatedAt: number }> = {};
-    snap.forEach(docSnap => {
+    for (const docSnap of snap.docs) {
         const key = docSnap.id;
         const data = docSnap.data();
-        if (data && data.value !== undefined) {
-            let val = restoreNestedArraysFromFirestore(data.value);
-            const valWithConfig = val as { config?: { groups?: ProductConfigGroups } } | undefined;
-            if (key === 'productConfig' && valWithConfig && valWithConfig.config && valWithConfig.config.groups) {
-                const restoredGroups: { [key: string]: Set<string> } = {};
-                for (const [gKey, gVal] of Object.entries(valWithConfig.config.groups)) {
-                    restoredGroups[gKey] = new Set(gVal as string[]);
-                }
-                valWithConfig.config.groups = restoredGroups;
-                val = valWithConfig;
-            }
-            settings[key] = {
-                value: val,
-                updatedAt: data.updatedAt?.toMillis ? data.updatedAt.toMillis() : (data.savedAt || 0)
-            };
+        if (!data) continue;
+
+        let val: unknown;
+        if (data.chunked) {
+            val = await assembleChunkedHeavyValue(docSnap.ref);
+            if (val === undefined) continue;
+        } else {
+            if (data.value === undefined) continue;
+            val = restoreNestedArraysFromFirestore(data.value);
         }
-    });
+
+        const valWithConfig = val as { config?: { groups?: ProductConfigGroups } } | undefined;
+        if (key === 'productConfig' && valWithConfig && valWithConfig.config && valWithConfig.config.groups) {
+            const restoredGroups: { [key: string]: Set<string> } = {};
+            for (const [gKey, gVal] of Object.entries(valWithConfig.config.groups)) {
+                restoredGroups[gKey] = new Set(gVal as string[]);
+            }
+            valWithConfig.config.groups = restoredGroups;
+            val = valWithConfig;
+        }
+        settings[key] = {
+            value: val,
+            updatedAt: data.updatedAt?.toMillis ? data.updatedAt.toMillis() : (data.savedAt || 0)
+        };
+    }
     return settings;
 };
 

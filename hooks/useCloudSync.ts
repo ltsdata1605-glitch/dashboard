@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloud, restoreNestedArraysFromFirestore } from '../services/firestoreService';
+import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloud, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
 import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -182,19 +182,26 @@ export const useCloudSync = () => {
                     }
                     
                     const data = docSnap.data();
-                    if (!data || data.value === undefined) continue;
-                    
-                    const cloudTime = data.updatedAt?.toMillis 
-                        ? data.updatedAt.toMillis() 
+                    if (!data) continue;
+                    if (!data.chunked && data.value === undefined) continue;
+
+                    const cloudTime = data.updatedAt?.toMillis
+                        ? data.updatedAt.toMillis()
                         : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
-                    
+
                     const localValue = await getSetting<unknown>(key);
                     const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
-                    
+
                     if (localValue === null || cloudTime > localTime) {
                         console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
-                        
-                        let val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
+
+                        let val: typeof data.value;
+                        if (data.chunked) {
+                            val = await assembleChunkedHeavyValue(docSnap.ref) as typeof data.value;
+                            if (val === undefined) continue;
+                        } else {
+                            val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
+                        }
                         if (key === 'productConfig' && val && val.config && val.config.groups) {
                             const restoredGroups: { [key: string]: Set<string> } = {};
                             for (const [gKey, gVal] of Object.entries(val.config.groups)) {

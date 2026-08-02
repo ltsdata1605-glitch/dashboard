@@ -39,9 +39,22 @@ service cloud.firestore {
 
       match /setting/{doc}       { allow read, write: if isSelf(uid); }
       match /schedules/{doc}     { allow read, write: if isSelf(uid); }
-      match /configs/{doc}       { allow read, write: if isSelf(uid); }
       match /salesData/{doc}     { allow read, write: if isSelf(uid); }
       match /notifications/{id}  { allow read, update: if isSelf(uid); allow create: if isSignedIn(); }
+
+      // configs/{key} — cấu hình "nặng" (services/firestoreService.ts, isHeavySyncKey()).
+      // Khoá nào vượt giới hạn 1MiB/document của Firestore (vd checkthuong_data — bảng so
+      // sánh nhiều Kho/nhiều tháng) được cắt thành nhiều phần ở subcollection chunks/{n}
+      // (assembleChunkedHeavyValue()) — match /configs/{doc} KHÔNG tự áp dụng cho
+      // subcollection con nên phải khai báo riêng, thiếu dòng này sẽ gây permission-denied
+      // im lặng khi ghi/đọc chunk dù doc cha configs/{doc} vẫn đọc/ghi bình thường.
+      match /configs/{doc} {
+        allow read, write: if isSelf(uid);
+
+        match /chunks/{n} {
+          allow read, write: if isSelf(uid);
+        }
+      }
     }
 
     match /shared_configs/{id} {
