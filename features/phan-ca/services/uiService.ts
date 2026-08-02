@@ -490,6 +490,121 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     }
     
+    // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP
+    clone.querySelectorAll('.compact-export-table, table').forEach(table => {
+        if (!(table instanceof HTMLElement)) return;
+        table.style.setProperty('table-layout', 'auto', 'important');
+        table.style.setProperty('width', '100%', 'important');
+        table.style.setProperty('min-width', 'auto', 'important');
+
+        // Tìm index của cột "NHÓM THI ĐUA" trong bảng
+        let nhomThiDuaColIdx = -1;
+        const ths = table.querySelectorAll('thead th');
+        ths.forEach((th, idx) => {
+            const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
+            if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
+                nhomThiDuaColIdx = idx;
+            }
+        });
+
+        // Xử lý các thẻ th của bảng
+        table.querySelectorAll('thead th').forEach((th, idx) => {
+            if (!(th instanceof HTMLElement)) return;
+            const isFirstCol = th.previousElementSibling === null;
+            const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+
+            // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
+            th.style.setProperty('font-size', '11px', 'important');
+            th.style.setProperty('line-height', '1.25', 'important');
+            th.style.setProperty('padding', '4px 4px', 'important');
+
+            if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
+                th.style.setProperty('min-width', '100px', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+                th.style.setProperty('max-width', 'none', 'important');
+                
+                // Bọc thẻ span con để tránh bug html2canvas/html-to-image ngắt dòng text thô
+                if (!th.querySelector('.export-nowrap-wrapper')) {
+                    const content = th.innerHTML;
+                    th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                }
+            } else {
+                th.style.setProperty('white-space', 'normal', 'important');
+                th.style.setProperty('word-break', 'break-word', 'important');
+                th.style.setProperty('max-width', '80px', 'important');
+                th.style.setProperty('min-width', '55px', 'important');
+            }
+            
+            th.querySelectorAll('span').forEach(span => {
+                span.classList.remove('truncate');
+                span.style.setProperty('line-height', '1.25', 'important');
+                if (!isFirstCol && !isNhomThiDuaCol) {
+                    span.style.setProperty('white-space', 'normal', 'important');
+                    span.style.setProperty('word-break', 'break-word', 'important');
+                } else {
+                    span.style.setProperty('white-space', 'nowrap', 'important');
+                }
+            });
+        });
+
+        // Xử lý các thẻ td của bảng
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+            tr.querySelectorAll('td').forEach((td, idx) => {
+                if (!(td instanceof HTMLElement)) return;
+                const isFirstCol = td.previousElementSibling === null;
+                const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+
+                // Ép cỡ chữ (12px) và padding/line-height vừa đủ với nội dung (tránh chữ nhỏ dòng quá lớn)
+                td.style.setProperty('font-size', '12px', 'important');
+                td.style.setProperty('line-height', '1.25', 'important');
+                td.style.setProperty('padding', '4px 6px', 'important');
+
+                // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p)
+                td.querySelectorAll<HTMLElement>('div, span, button, p, a').forEach(child => {
+                    child.style.setProperty('font-size', '12px', 'important');
+                    child.style.setProperty('line-height', '1.25', 'important');
+                    if (child.tagName === 'DIV' || child.tagName === 'P') {
+                        child.style.setProperty('padding-top', '0px', 'important');
+                        child.style.setProperty('padding-bottom', '0px', 'important');
+                        child.style.setProperty('margin-top', '0px', 'important');
+                        child.style.setProperty('margin-bottom', '0px', 'important');
+                    }
+                });
+
+                if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
+                    td.style.setProperty('white-space', 'nowrap', 'important');
+                    td.style.setProperty('min-width', '100px', 'important');
+                    td.style.setProperty('max-width', 'none', 'important');
+                    
+                    // Bọc thẻ span con chống ngắt dòng
+                    if (!td.querySelector('.export-nowrap-wrapper')) {
+                        const content = td.innerHTML;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                    }
+                } else {
+                    if (!td.classList.contains('sticky') && !isFirstCol) {
+                        td.style.setProperty('min-width', '45px', 'important');
+                        td.style.setProperty('max-width', '80px', 'important');
+
+                        // Tự động nhận diện các ô số, phần trăm hoặc ProgressBar để chống ngắt dòng
+                        const text = td.textContent?.trim() || '';
+                        const isNumeric = /^[0-9%\s.,+\-/]+$/.test(text);
+                        if (isNumeric || td.querySelector('.w-10')) {
+                            td.style.setProperty('white-space', 'nowrap', 'important');
+                            if (!td.querySelector('.export-nowrap-wrapper')) {
+                                const content = td.innerHTML;
+                                td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                            }
+                        } else {
+                            td.style.setProperty('white-space', 'normal', 'important');
+                            td.style.setProperty('word-break', 'break-all', 'important');
+                        }
+                    }
+                }
+            });
+        });
+    });
+
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
     const scrollableContainers = clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
     const hideScrollbarStyle = document.createElement('style');
