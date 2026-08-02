@@ -99,15 +99,15 @@
   }
 
   .compact-export-table th {
-    @apply px-2.5 py-2.5 text-[11.5px] font-extrabold leading-tight align-middle;
+    @apply px-2.5 py-1.5 text-[11.5px] font-extrabold leading-tight align-middle;
   }
 
   .compact-export-table td {
-    @apply px-2.5 py-3 text-[13px] leading-tight align-middle h-[42px];
+    @apply px-2.5 py-1.5 text-[13px] leading-tight align-middle;
   }
 
   .compact-export-table tfoot td {
-    @apply px-2.5 py-3 text-[13px] font-extrabold leading-tight align-middle h-[42px];
+    @apply px-2.5 py-1.5 text-[13px] font-extrabold leading-tight align-middle;
   }
 
   /* Report BI — tiêu đề & chú thích mặc định dùng UTM Avo */
