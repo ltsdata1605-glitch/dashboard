@@ -488,7 +488,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
     
     // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP
-    clone.querySelectorAll('.compact-export-table').forEach(table => {
+    clone.querySelectorAll('.compact-export-table, table').forEach(table => {
         if (!(table instanceof HTMLElement)) return;
         table.style.setProperty('table-layout', 'auto', 'important');
         table.style.setProperty('width', '100%', 'important');
