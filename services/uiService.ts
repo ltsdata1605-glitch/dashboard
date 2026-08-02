@@ -502,8 +502,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isFirstCol = th.previousElementSibling === null;
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-            // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
-            th.style.setProperty('font-size', '11px', 'important');
+            // Ép cỡ chữ (11.5px) và line-height vừa đủ, cân đối với nội dung
+            th.style.setProperty('font-size', '11.5px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
             th.style.setProperty('padding', '4px 4px', 'important');
 
@@ -543,14 +543,17 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 const isFirstCol = td.previousElementSibling === null;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-                // Ép cỡ chữ (12px) và padding/line-height vừa đủ với nội dung (tránh chữ nhỏ dòng quá lớn)
-                td.style.setProperty('font-size', '12px', 'important');
+                // Ép cỡ chữ chuẩn 13px (chữ to rõ như ảnh 2) và padding 3px 5px vừa vặn
+                td.style.setProperty('font-size', '13px', 'important');
                 td.style.setProperty('line-height', '1.25', 'important');
-                td.style.setProperty('padding', '4px 6px', 'important');
+                td.style.setProperty('padding', '3px 5px', 'important');
 
-                // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p)
+                // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p) trừ badge siêu nhỏ
                 td.querySelectorAll<HTMLElement>('div, span, button, p, a').forEach(child => {
-                    child.style.setProperty('font-size', '12px', 'important');
+                    const childCls = child.getAttribute('class') || '';
+                    if (!childCls.includes('text-[8px]') && !childCls.includes('text-[9px]')) {
+                        child.style.setProperty('font-size', '13px', 'important');
+                    }
                     child.style.setProperty('line-height', '1.25', 'important');
                     if (child.tagName === 'DIV' || child.tagName === 'P') {
                         child.style.setProperty('padding-top', '0px', 'important');
