@@ -513,10 +513,10 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isFirstCol = th.previousElementSibling === null;
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-            // Ép cỡ chữ (11.5px) và line-height vừa đủ, cân đối với nội dung
-            th.style.setProperty('font-size', '11.5px', 'important');
+            // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
+            th.style.setProperty('font-size', '11px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
-            th.style.setProperty('padding', '4px 6px', 'important');
+            th.style.setProperty('padding', '3px 5px', 'important');
 
             if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
                 th.style.setProperty('min-width', '100px', 'important');
@@ -554,10 +554,10 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 const isFirstCol = td.previousElementSibling === null;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-                // Ép cỡ chữ chuẩn 13px và padding 4px 6px giúp hàng gọn gàng, đẹp vừa vặn
+                // Ép cỡ chữ chuẩn 13px và padding 3px 5px giúp hàng gọn gàng, siêu sắc nét chuẩn như bảng Trả Góp
                 td.style.setProperty('font-size', '13px', 'important');
                 td.style.setProperty('line-height', '1.25', 'important');
-                td.style.setProperty('padding', '4px 6px', 'important');
+                td.style.setProperty('padding', '3px 5px', 'important');
 
                 // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p) trừ badge siêu nhỏ
                 td.querySelectorAll<HTMLElement>('div, span, button, p, a').forEach(child => {
@@ -566,6 +566,19 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                         child.style.setProperty('font-size', '13px', 'important');
                     }
                     child.style.setProperty('line-height', '1.25', 'important');
+
+                    // Thu gọn các badge tròn (w-5 h-5, w-6 h-6) trong ô dữ liệu để không bị phồng chiều cao dòng khi xuất
+                    if (childCls.includes('w-5') || childCls.includes('w-6') || childCls.includes('h-5') || childCls.includes('h-6')) {
+                        const txt = child.textContent?.trim() || '';
+                        if (/^[0-9\-+%]+$/.test(txt)) {
+                            child.style.setProperty('width', 'auto', 'important');
+                            child.style.setProperty('height', 'auto', 'important');
+                            child.style.setProperty('min-width', '0px', 'important');
+                            child.style.setProperty('min-height', '0px', 'important');
+                            child.style.setProperty('padding', '0px 2px', 'important');
+                        }
+                    }
+
                     if (child.tagName === 'DIV' || child.tagName === 'P') {
                         child.style.setProperty('padding-top', '0px', 'important');
                         child.style.setProperty('padding-bottom', '0px', 'important');
