@@ -42,6 +42,14 @@ export const useCloudSync = () => {
     // chặn này từng gây Firestore SDK báo "Write stream exhausted maximum allowed queued writes".
     const heavyInFlightRef = useRef<Record<string, boolean>>({});
     const heavyPendingRef = useRef<Record<string, boolean>>({});
+    // Hàng đợi ghi DÙNG CHUNG cho MỌI khóa nặng — khi tải file mới, nhiều khóa khác nhau
+    // (customTabs, industryAnalysisCustomTabs, customExploitationTabs...) hay cùng đổi trong
+    // một khoảnh khắc, hết debounce 2s gần như cùng lúc, bắn nhiều lượt ghi Firestore song song.
+    // Cùng với lượt tải salesData/khoData chunk lớn, tổng số lượt ghi đồng thời có thể vượt giới
+    // hạn "queued writes" của Firestore SDK (khác lỗi ở heavyInFlightRef — đó chặn CÙNG 1 khóa
+    // ghi chồng lên chính nó, còn đây nối tiếp các khóa KHÁC nhau thành 1 hàng, không cho chạy
+    // cùng lúc). Mỗi lượt ghi tự bắt lỗi bên trong nên promise của hàng đợi không bao giờ reject.
+    const heavyWriteQueueRef = useRef<Promise<void>>(Promise.resolve());
 
     // Clear timeout helper to prevent memory leaks
     const clearSyncTimeout = useCallback(() => {
@@ -251,23 +259,25 @@ export const useCloudSync = () => {
                 if (heavyTimeoutsRef.current[key]) {
                     clearTimeout(heavyTimeoutsRef.current[key]);
                 }
-                heavyTimeoutsRef.current[key] = setTimeout(async () => {
+                heavyTimeoutsRef.current[key] = setTimeout(() => {
                     delete heavyTimeoutsRef.current[key];
                     heavyInFlightRef.current[key] = true;
-                    try {
-                        do {
-                            heavyPendingRef.current[key] = false;
-                            const value = await getSetting(key);
-                            if (value !== null) {
-                                await syncHeavySettingToCloud(user, key, value);
-                                console.warn(`[Cloud Sync] Tự động đồng bộ khóa nặng "${key}" lên Firestore.`);
-                            }
-                        } while (heavyPendingRef.current[key]);
-                    } catch (err) {
-                        console.error(`[Cloud Sync] Đồng bộ khóa nặng "${key}" thất bại:`, err);
-                    } finally {
-                        heavyInFlightRef.current[key] = false;
-                    }
+                    heavyWriteQueueRef.current = heavyWriteQueueRef.current.then(async () => {
+                        try {
+                            do {
+                                heavyPendingRef.current[key] = false;
+                                const value = await getSetting(key);
+                                if (value !== null) {
+                                    await syncHeavySettingToCloud(user, key, value);
+                                    console.warn(`[Cloud Sync] Tự động đồng bộ khóa nặng "${key}" lên Firestore.`);
+                                }
+                            } while (heavyPendingRef.current[key]);
+                        } catch (err) {
+                            console.error(`[Cloud Sync] Đồng bộ khóa nặng "${key}" thất bại:`, err);
+                        } finally {
+                            heavyInFlightRef.current[key] = false;
+                        }
+                    });
                 }, 2000); // Debounce 2 giây
                 return;
             }
