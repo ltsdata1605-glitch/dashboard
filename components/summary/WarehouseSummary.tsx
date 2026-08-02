@@ -12,6 +12,7 @@ import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import MultiSelectDropdown from '../common/MultiSelectDropdown';
 const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
     const savedIds = new Set(savedConfig.map(c => c.id));
     const missingDefaults = DEFAULT_WAREHOUSE_COLUMNS.filter(c => !savedIds.has(c.id));
@@ -70,8 +71,43 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         isLuyKe, handleLuyKeChange 
     } = useDashboardContext();
 
-    const data = processedData?.warehouseSummary ?? [];
-    
+    const rawData = processedData?.warehouseSummary ?? [];
+
+    // Mục 63: bộ lọc Mã Kho + ẩn/hiện cột Tổng riêng cho bảng Chi Tiết Theo Kho (không ảnh hưởng
+    // filter "KHO" toàn trang ở FilterBar — filter đó reset lại cả KPI/biểu đồ/bảng khác, quá rộng
+    // cho nhu cầu "tạm xem 1-2 kho, giấu bớt cột" của riêng bảng này).
+    const khoOptions = useMemo(() => rawData.map(d => d.khoName), [rawData]);
+    const [localKhoFilter, setLocalKhoFilter] = useState<string[]>([]);
+    useEffect(() => {
+        getSetting<string[]>('warehouseSummaryKhoFilter').then(saved => {
+            if (saved) setLocalKhoFilter(saved);
+        }).catch(console.error);
+    }, []);
+    const updateLocalKhoFilter = (selected: string[]) => {
+        setLocalKhoFilter(selected);
+        saveSetting('warehouseSummaryKhoFilter', selected).catch(console.error);
+    };
+
+    const [showTotalColumn, setShowTotalColumn] = useState(true);
+    useEffect(() => {
+        getSetting<boolean>('warehouseSummaryShowTotal').then(saved => {
+            if (saved === false) setShowTotalColumn(false);
+        }).catch(console.error);
+    }, []);
+    const toggleShowTotal = () => {
+        setShowTotalColumn(prev => {
+            const next = !prev;
+            saveSetting('warehouseSummaryShowTotal', next).catch(console.error);
+            return next;
+        });
+    };
+
+    const data = useMemo(() => {
+        if (localKhoFilter.length === 0) return rawData;
+        const set = new Set(localKhoFilter);
+        return rawData.filter(d => set.has(d.khoName));
+    }, [rawData, localKhoFilter]);
+
     const summaryRef = useRef<HTMLDivElement>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'doanhThuQD', direction: 'desc' });
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -96,7 +132,23 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         setViewMode(next);
         saveSetting('warehouseViewMode', next).catch(console.error);
     };
-    
+
+    // Target riêng cho từng chỉ số con (Mục 62) — columnId -> khoName -> target. Chỉ DTQĐ/DT Thực dùng
+    // warehouseTargets/warehouseDTThucTargets sẵn có, các chỉ số khác dùng store generic này.
+    const [warehouseColumnTargets, setWarehouseColumnTargets] = useState<Record<string, Record<string, number>>>({});
+    useEffect(() => {
+        getSetting<Record<string, Record<string, number>>>('warehouseColumnTargets').then(saved => {
+            if (saved) setWarehouseColumnTargets(saved);
+        }).catch(console.error);
+    }, []);
+    const updateWarehouseColumnTarget = (columnId: string, khoName: string, value: number) => {
+        setWarehouseColumnTargets(prev => {
+            const next = { ...prev, [columnId]: { ...(prev[columnId] || {}), [khoName]: value } };
+            saveSetting('warehouseColumnTargets', next).catch(console.error);
+            return next;
+        });
+    };
+
     const { editingTargetKho, setEditingTargetKho } = useDashboardContext();
     const targetInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,7 +188,29 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         if (value === undefined || isNaN(value) || value === 0) return '—';
         return Math.round(value).toLocaleString('vi-VN');
     };
-    
+
+    // Mục 62: phân loại dòng nào được nâng cấp lên 3 cột M.Tiêu|Real|%HT ở bảng dọc.
+    const RATIO_METRICS = new Set(['hieuQuaQD', 'traChamPercent']);
+    const isUpgradableRow = (col: WarehouseColumnConfig): boolean => {
+        if (col.type === 'calculated' || col.type === 'target') return false; // cột custom admin, đã có cơ chế target riêng
+        if (col.metric === 'target' || col.metric === 'percentHT') return false; // gộp vào dòng dt_qd
+        if (col.metric && RATIO_METRICS.has(col.metric)) return false; // bản thân đã là tỷ lệ %, không có target
+        return true;
+    };
+    const isRevenueMetricCol = (col: WarehouseColumnConfig): boolean => {
+        return col.metric === 'doanhThuQD' || col.metric === 'doanhThuThuc' || col.metricType === 'revenue' || col.metricType === 'revenueQD';
+    };
+    const getTargetMap = (col: WarehouseColumnConfig): Record<string, number> => {
+        if (col.metric === 'doanhThuQD') return warehouseTargets;
+        if (col.metric === 'doanhThuThuc') return warehouseDTThucTargets;
+        return warehouseColumnTargets[col.id] || {};
+    };
+    const setRowTarget = (col: WarehouseColumnConfig, khoName: string, value: number) => {
+        if (col.metric === 'doanhThuQD') { updateWarehouseTarget(khoName, value); return; }
+        if (col.metric === 'doanhThuThuc') { updateWarehouseDTThucTarget(khoName, value); return; }
+        updateWarehouseColumnTarget(col.id, khoName, value);
+    };
+
     const handleSingleExport = async () => {
         if (summaryRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
@@ -257,6 +331,38 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             targetInputRef.current.focus();
         }
     }, [editingTargetKho?.id]);
+
+    // Mục 62: nhập Target bấm trực tiếp vào ô (spreadsheet-style) cho từng chỉ số con ở bảng dọc.
+    const [editingTargetCell, setEditingTargetCell] = useState<{ colId: string; khoName: string } | null>(null);
+    const [editingTargetCellValue, setEditingTargetCellValue] = useState('');
+    const targetCellInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (editingTargetCell && targetCellInputRef.current) {
+            targetCellInputRef.current.focus();
+            targetCellInputRef.current.select();
+        }
+    }, [editingTargetCell?.colId, editingTargetCell?.khoName]);
+
+    // Mục 62 fix: ô M.Tiêu đóng đang hiển thị giá trị đã prorate theo ngày (khi không Lũy kế) để
+    // %HT tính đúng, nên ô sửa cũng phải quy đổi cùng chiều — nếu không, gõ "50" xong hiển thị lại
+    // ra "2" (50 bị chia cho daysInMonth) vì ô đóng và ô sửa lệch đơn vị (tháng vs ngày).
+    const startEditTargetCell = (col: WarehouseColumnConfig, khoName: string) => {
+        if (userRole === 'employee') return;
+        const monthly = getTargetMap(col)[khoName] || 0;
+        const scaled = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
+        const displayValue = isRevenueMetricCol(col) ? (scaled > 0 ? scaled / 1000000 : 0) : scaled;
+        setEditingTargetCell({ colId: col.id, khoName });
+        setEditingTargetCellValue(displayValue > 0 ? formatWithCommas(displayValue.toString()) : '');
+    };
+
+    const commitEditTargetCell = (col: WarehouseColumnConfig, khoName: string) => {
+        const parsed = parseFormattedNumber(editingTargetCellValue);
+        const rawScaled = isRevenueMetricCol(col) ? parsed * 1000000 : parsed;
+        const monthly = isLuyKe ? rawScaled : rawScaled * daysInMonth;
+        setRowTarget(col, khoName, monthly);
+        setEditingTargetCell(null);
+    };
 
     const handleSort = (columnId: string) => {
         setSortConfig(prev => ({ key: columnId, direction: (prev?.key === columnId && prev.direction === 'desc') ? 'asc' : 'desc' }));
@@ -727,17 +833,29 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     <table className="w-full text-[11px] sm:text-sm border-collapse border border-slate-200 dark:border-slate-700 tabular-nums">
                         <thead>
                             <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[10px] sm:text-[12px] font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[10px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] align-middle">
                                     Nhóm / Chỉ Số
                                 </th>
                                 {currentData.map(row => (
-                                    <th key={row.khoName} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/50 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px] sm:min-w-[90px]">
+                                    <th key={row.khoName} colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-900 bg-slate-50 border-b border-slate-200 border-r border-slate-200 min-w-[70px] sm:min-w-[90px]">
                                         {row.khoName}
                                     </th>
                                 ))}
-                                <th className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[70px] sm:min-w-[90px] uppercase tracking-wider">
+                                <th colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-500 bg-slate-100 border-b border-slate-200 min-w-[70px] sm:min-w-[90px] uppercase tracking-wider">
                                     Tổng
                                 </th>
+                            </tr>
+                            <tr className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
+                                {currentData.map(row => (
+                                    <React.Fragment key={`sub-${row.khoName}`}>
+                                        <th className="px-1 py-1 text-center text-slate-500 bg-slate-50 border-b-[3px] !border-b-slate-400 border-r border-slate-100">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-sky-600 bg-sky-50/60 border-b-[3px] !border-b-sky-400 border-r border-slate-100">Real</th>
+                                        <th className="px-1 py-1 text-center text-amber-600 bg-amber-50/60 border-b-[3px] !border-b-amber-400 border-r border-slate-200">%HT</th>
+                                    </React.Fragment>
+                                ))}
+                                <th className="px-1 py-1 text-center text-slate-500 bg-slate-100 border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
+                                <th className="px-1 py-1 text-center text-sky-600 bg-slate-100 border-b-[3px] !border-b-sky-400 border-r border-slate-200">Real</th>
+                                <th className="px-1 py-1 text-center text-amber-600 bg-slate-100 border-b-[3px] !border-b-amber-400">%HT</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -749,8 +867,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 };
                                 const rows: React.ReactNode[] = [];
                                 let lastGroupName = '';
+                                const groupDividerColSpan = currentData.length * 3 + 4;
 
                                 visibleColumns.forEach((col, colIdx) => {
+                                    // Mục 62: TAR/%HT của Doanh Thu đã gộp vào dòng DTQĐ (3 cột M.Tiêu|Real|%HT), không render riêng nữa
+                                    if (col.metric === 'target' || col.metric === 'percentHT') return;
+
                                     // Group separator row
                                     if (col.mainHeader && col.mainHeader !== lastGroupName) {
                                         lastGroupName = col.mainHeader;
@@ -758,7 +880,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         const icon = GROUP_ICONS[col.mainHeader.toUpperCase()] || '📋';
                                         rows.push(
                                             <tr key={`group-${col.mainHeader}-${colIdx}`} className={styles.sub}>
-                                                <td colSpan={currentData.length + 2} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[10px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
+                                                <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[10px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
                                                     <span className="mr-1.5">{icon}</span>
                                                     {col.mainHeader}
                                                 </td>
@@ -766,31 +888,108 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         );
                                     }
 
-                                    // Data row for this column/metric
+                                    const upgradable = isUpgradableRow(col);
+
+                                    if (upgradable) {
+                                        // Mục 62: dòng 3 cột M.Tiêu | Real | %HT theo từng chỉ số con
+                                        const targetMap = getTargetMap(col);
+                                        const formatter = isRevenueMetricCol(col) ? formatRevenueForKho : formatQuantityForKho;
+                                        const canEdit = userRole !== 'employee';
+
+                                        rows.push(
+                                            <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 transition-colors">
+                                                <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[10px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                                    {col.subHeader}
+                                                </td>
+                                                {currentData.map(row => {
+                                                    const real = getColumnValue(row, col) || 0;
+                                                    const monthly = targetMap[row.khoName] || 0;
+                                                    const targetDisplay = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
+                                                    let pct = 0;
+                                                    if (monthly > 0) {
+                                                        if (isLuyKe) {
+                                                            const projected = (real / daysPassed) * daysInMonth;
+                                                            pct = (projected / monthly) * 100;
+                                                        } else {
+                                                            pct = targetDisplay > 0 ? (real / targetDisplay) * 100 : 0;
+                                                        }
+                                                    }
+                                                    const pctClass = pct >= 120 ? 'font-black text-rose-600' : pct >= 100 ? 'font-extrabold text-emerald-600' : 'font-bold text-amber-500';
+                                                    const isEditingThis = editingTargetCell?.colId === col.id && editingTargetCell?.khoName === row.khoName;
+
+                                                    return (
+                                                        <React.Fragment key={`${row.khoName}-${col.id}`}>
+                                                            <td
+                                                                className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight ${canEdit ? 'cursor-pointer' : ''}`}
+                                                                onClick={() => !isEditingThis && startEditTargetCell(col, row.khoName)}
+                                                            >
+                                                                {isEditingThis ? (
+                                                                    <input
+                                                                        ref={targetCellInputRef}
+                                                                        type="text"
+                                                                        inputMode="decimal"
+                                                                        value={editingTargetCellValue}
+                                                                        onChange={(e) => setEditingTargetCellValue(formatWithCommas(e.target.value))}
+                                                                        onBlur={() => commitEditTargetCell(col, row.khoName)}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'Enter') { e.preventDefault(); commitEditTargetCell(col, row.khoName); }
+                                                                            if (e.key === 'Escape') { e.preventDefault(); setEditingTargetCell(null); }
+                                                                        }}
+                                                                        className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
+                                                                    />
+                                                                ) : (
+                                                                    <span className={monthly > 0 ? 'font-semibold text-slate-600' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
+                                                                        {monthly > 0 ? formatter(targetDisplay) : '—'}
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
+                                                                <span className={isRevenueMetricCol(col) ? 'font-semibold text-indigo-700' : 'text-slate-700'}>{formatter(real)}</span>
+                                                            </td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
+                                                                <span className={monthly > 0 ? pctClass : 'text-slate-300 font-medium'}>{monthly > 0 ? `${Math.round(pct)}%` : '—'}</span>
+                                                            </td>
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                                {/* Total column (3 cột) */}
+                                                {(() => {
+                                                    const totalReal = customTotals.get(col.id) || 0;
+                                                    const totalMonthly = data.reduce((s, r) => s + (targetMap[r.khoName] || 0), 0);
+                                                    const totalTargetDisplay = isLuyKe ? totalMonthly : (totalMonthly > 0 ? totalMonthly / daysInMonth : 0);
+                                                    let totalPct = 0;
+                                                    if (totalMonthly > 0) {
+                                                        if (isLuyKe) {
+                                                            const projected = (totalReal / daysPassed) * daysInMonth;
+                                                            totalPct = (projected / totalMonthly) * 100;
+                                                        } else {
+                                                            totalPct = totalTargetDisplay > 0 ? (totalReal / totalTargetDisplay) * 100 : 0;
+                                                        }
+                                                    }
+                                                    const totalPctClass = totalPct >= 120 ? 'text-rose-600' : totalPct >= 100 ? 'text-emerald-600' : 'text-amber-500';
+                                                    return (
+                                                        <>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold">{totalMonthly > 0 ? formatter(totalTargetDisplay) : '—'}</td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold">{formatter(totalReal)}</td>
+                                                            <td className={`px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold ${totalMonthly > 0 ? totalPctClass : ''}`}>{totalMonthly > 0 ? `${Math.round(totalPct)}%` : '—'}</td>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </tr>
+                                        );
+                                        return;
+                                    }
+
+                                    // Dòng không nâng cấp (đã là tỷ lệ %, hoặc cột custom calculated/target) — giữ nguyên logic cũ, chỉ đổi colSpan=3 để thẳng hàng
                                     rows.push(
                                         <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             {/* Metric name (sticky left) */}
                                             <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[10px] sm:text-[12px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
-                                                {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
+                                                {col.subHeader}
                                             </td>
                                             {/* Values for each kho */}
                                             {currentData.map(row => {
-                                                let value = getColumnValue(row, col);
-                                                if (col.metric === 'target') {
-                                                    const monthly = warehouseTargets[row.khoName] || 0;
-                                                    value = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
-                                                } else if (col.metric === 'percentHT') {
-                                                    const monthly = warehouseTargets[row.khoName] || 0;
-                                                    const dtqd = row.doanhThuQD || 0;
-                                                    if (isLuyKe) {
-                                                        const target = monthly;
-                                                        const projected = (dtqd / daysPassed) * daysInMonth;
-                                                        value = target > 0 ? (projected / target) * 100 : 0;
-                                                    } else {
-                                                        const target = monthly > 0 ? monthly / daysInMonth : 0;
-                                                        value = target > 0 ? (dtqd / target) * 100 : 0;
-                                                    }
-                                                }
+                                                const value = getColumnValue(row, col);
 
                                                 // Conditional formatting
                                                 let avg: number | undefined;
@@ -820,19 +1019,10 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                                                 const textColorStyle = customColor ? { color: customColor } : {};
                                                 const isHqqd = col.metric === 'hieuQuaQD';
-                                                const isDTQD = col.metric === 'doanhThuQD';
-                                                const isPercentHT = col.metric === 'percentHT';
 
                                                 let content;
                                                 if (isHqqd) {
                                                     content = <span className={customColor ? 'font-bold' : getHqqdClass(value)} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—'}</span>;
-                                                } else if (isDTQD) {
-                                                    content = <span className={customColor ? 'font-semibold' : 'font-semibold text-indigo-700'} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
-                                                } else if (isPercentHT) {
-                                                    let classNameStr = customColor ? 'font-bold' : 'font-bold text-amber-500';
-                                                    if (value !== undefined && value >= 120 && !customColor) classNameStr = 'font-black text-rose-600';
-                                                    else if (value !== undefined && value >= 100 && !customColor) classNameStr = 'font-extrabold text-emerald-600';
-                                                    content = <span className={classNameStr} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                                 } else if (col.metric === 'traChamPercent') {
                                                     content = <span className={customColor ? 'font-medium' : 'font-medium text-slate-500'} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                                 } else if (col.type === 'calculated') {
@@ -843,8 +1033,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                     } else {
                                                         content = <span className={customColor ? 'font-bold text-indigo-600' : 'font-semibold text-indigo-700 dark:text-indigo-400'} style={textColorStyle}>{(value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
                                                     }
-                                                } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
-                                                    content = <span style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                                 } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
                                                     content = <span style={textColorStyle}>{Math.round(value || 0).toLocaleString('vi-VN')}</span>;
                                                 } else {
@@ -852,7 +1040,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 }
 
                                                 return (
-                                                    <td key={`${row.khoName}-${col.id}`} className="px-2 sm:px-3 py-1.5 sm:py-2 text-center border-r border-slate-100 dark:border-slate-800 leading-tight">
+                                                    <td key={`${row.khoName}-${col.id}`} colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
                                                         {content}
                                                     </td>
                                                 );
@@ -864,30 +1052,14 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                     totalVal = customTotals.get(col.id) || 0;
                                                 } else if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
                                                     totalVal = totals[col.metric as keyof typeof totals] as number;
-                                                } else if (col.metric === 'target') {
-                                                    totalVal = totalTarget;
-                                                } else if (col.metric === 'percentHT') {
-                                                    const totalDTQD = totals.doanhThuQD || 0;
-                                                    if (isLuyKe) {
-                                                        const projected = (totalDTQD / daysPassed) * daysInMonth;
-                                                        totalVal = totalTarget > 0 ? (projected / totalTarget) * 100 : 0;
-                                                    } else {
-                                                        totalVal = totalTarget > 0 ? (totalDTQD / totalTarget) * 100 : 0;
-                                                    }
                                                 } else {
                                                     totalVal = customTotals.get(col.id) || 0;
                                                 }
 
                                                 const isHqqd = col.metric === 'hieuQuaQD';
-                                                const isDTQD = col.metric === 'doanhThuQD';
-                                                const isPercentHT = col.metric === 'percentHT';
                                                 let content;
                                                 if (isHqqd) {
                                                     content = <span className={getHqqdClass(totalVal)}>{totalVal !== undefined && totalVal !== 0 ? `${Math.round(totalVal)}%` : '—'}</span>;
-                                                } else if (isDTQD) {
-                                                    content = <span className="text-amber-700 font-bold">{formatRevenueForKho(totalVal)}</span>;
-                                                } else if (isPercentHT) {
-                                                    content = <span className="text-amber-500 font-bold">{totalVal !== undefined && totalVal !== 0 ? `${Math.round(totalVal)}%` : '0%'}</span>;
                                                 } else if (col.metric === 'traChamPercent') {
                                                     content = <span className="font-medium">{totalVal !== undefined && totalVal !== 0 ? `${Math.round(totalVal)}%` : '0%'}</span>;
                                                 } else if (col.type === 'calculated') {
@@ -898,15 +1070,13 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                     } else {
                                                         content = <span className="font-bold text-indigo-700 dark:text-indigo-400">{(totalVal || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
                                                     }
-                                                } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
-                                                    content = <span className="font-bold">{formatRevenueForKho(totalVal)}</span>;
                                                 } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
                                                     content = <span className="font-bold">{Math.round(totalVal || 0).toLocaleString('vi-VN')}</span>;
                                                 } else {
                                                     content = <span className="font-bold">{formatQuantityForKho(totalVal)}</span>;
                                                 }
                                                 return (
-                                                    <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-center bg-slate-50 dark:bg-slate-800/50 leading-tight font-bold">
+                                                    <td colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold">
                                                         {content}
                                                     </td>
                                                 );

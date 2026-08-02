@@ -510,19 +510,20 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isFirstCol = th.previousElementSibling === null;
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-            // Ép cỡ chữ và padding nhỏ để bảng gọn gàng khi export
-            th.style.setProperty('font-size', '10px', 'important');
-            th.style.setProperty('padding', '4px 2px', 'important');
+            // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
+            th.style.setProperty('font-size', '11px', 'important');
+            th.style.setProperty('line-height', '1.25', 'important');
+            th.style.setProperty('padding', '4px 4px', 'important');
 
             if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
                 th.style.setProperty('min-width', '100px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
                 
-                // Bọc thẻ span con để tránh bug html2canvas ngắt dòng text thô
+                // Bọc thẻ span con để tránh bug html2canvas/html-to-image ngắt dòng text thô
                 if (!th.querySelector('.export-nowrap-wrapper')) {
                     const content = th.innerHTML;
-                    th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                    th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                 }
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
@@ -533,6 +534,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             
             th.querySelectorAll('span').forEach(span => {
                 span.classList.remove('truncate');
+                span.style.setProperty('line-height', '1.25', 'important');
                 if (!isFirstCol && !isNhomThiDuaCol) {
                     span.style.setProperty('white-space', 'normal', 'important');
                     span.style.setProperty('word-break', 'break-word', 'important');
@@ -549,9 +551,22 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 const isFirstCol = td.previousElementSibling === null;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
 
-                // Ép cỡ chữ và padding nhỏ để bảng gọn gàng khi export
-                td.style.setProperty('font-size', '10px', 'important');
-                td.style.setProperty('padding', '4px 2px', 'important');
+                // Ép cỡ chữ (12px) và padding/line-height vừa đủ với nội dung (tránh chữ nhỏ dòng quá lớn)
+                td.style.setProperty('font-size', '12px', 'important');
+                td.style.setProperty('line-height', '1.25', 'important');
+                td.style.setProperty('padding', '4px 6px', 'important');
+
+                // Đồng bộ cỡ chữ các thẻ con bên trong td (span, div, button, p)
+                td.querySelectorAll<HTMLElement>('div, span, button, p, a').forEach(child => {
+                    child.style.setProperty('font-size', '12px', 'important');
+                    child.style.setProperty('line-height', '1.25', 'important');
+                    if (child.tagName === 'DIV' || child.tagName === 'P') {
+                        child.style.setProperty('padding-top', '0px', 'important');
+                        child.style.setProperty('padding-bottom', '0px', 'important');
+                        child.style.setProperty('margin-top', '0px', 'important');
+                        child.style.setProperty('margin-bottom', '0px', 'important');
+                    }
+                });
 
                 if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
                     td.style.setProperty('white-space', 'nowrap', 'important');
@@ -561,7 +576,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     // Bọc thẻ span con chống ngắt dòng
                     if (!td.querySelector('.export-nowrap-wrapper')) {
                         const content = td.innerHTML;
-                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                     }
                 } else {
                     if (!td.classList.contains('sticky') && !isFirstCol) {
@@ -575,7 +590,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                             td.style.setProperty('white-space', 'nowrap', 'important');
                             if (!td.querySelector('.export-nowrap-wrapper')) {
                                 const content = td.innerHTML;
-                                td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important;">${content}</span>`;
+                                td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                             }
                         } else {
                             td.style.setProperty('white-space', 'normal', 'important');

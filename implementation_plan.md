@@ -2200,4 +2200,31 @@ User khen "đường kẻ highlight" ở header bảng "Chương trình thi đua
 - Thay đổi thuần CSS class (border color/width), không đụng logic tính toán hay cấu trúc dữ liệu — rủi ro thấp, nhưng số lượng file nhiều (~19 file cần sửa thật) nên làm tuần tự theo nhóm, chạy `npm run check` sau mỗi nhóm.
 - Nhóm C/D cần đọc kỹ logic gán màu hiện tại trước khi đổi (tránh gãy các nơi khác đang dùng chung biến màu đó cho mục đích khác, vd `groupColorMap` ở WarehouseSummary có thể được dùng lại cho cả nền lẫn text).
 
+---
+
+## Mục 62 — Target|Real|%HT cho mọi nhóm chỉ số (bảng dọc "Chi tiết theo Kho")
+
+**Yêu cầu**: Ở view Phân Tích → Chi tiết theo Kho (`components/summary/WarehouseSummary.tsx`, `viewMode === 'vertical'`), gộp 3 dòng con hiện có của nhóm Doanh Thu (DTQĐ/TAR/%HT) thành 1 dòng "DOANH THU" hiển thị 3 cột mỗi kho: **M.Tiêu | Real | %HT**, và áp dụng pattern này cho mọi nhóm chỉ số khác (SP CHÍNH, MÙA VỤ, SL PHỤ KIỆN, SL DỊCH VỤ, SL GIA DỤNG...) ở mức từng chỉ số con riêng (CE riêng, ICT riêng, Máy lạnh riêng...). Nhập Target theo kiểu bấm trực tiếp vào ô để sửa (spreadsheet-style). Xác nhận qua AskUserQuestion: (1) mức áp dụng = từng chỉ số con riêng, không gộp theo nhóm; (2) cơ chế nhập = inline click-to-edit, không phải modal.
+
+**Khảo sát nền**:
+- `constants.ts` (`DEFAULT_WAREHOUSE_COLUMNS`) — nhóm Doanh Thu có 6 dòng: `dt_thuc`(DT, ẩn), `dt_qd`(DTQĐ), `target_dt`(TAR), `percent_ht`(%HT, ẩn), `hqqd`(%QĐ), `traffic_tracham`(%TC). Các nhóm khác (SP CHÍNH/MÙA VỤ/PHỤ KIỆN/DỊCH VỤ/GIA DỤNG) chỉ là cột số liệu thô, chưa có target/%HT.
+- `warehouseTargets`/`warehouseDTThucTargets` (`Record<khoName, number>`) đã có sẵn, persist qua `services/dbService/warehouseConfig.ts` → IndexedDB `settings` → auto backup Firestore qua cơ chế chung `settingsStoreBackup` (không cần sửa firestore.rules).
+- `calculateRowMetrics()`/`SummaryTableNode` không có field target nào từ dữ liệu Excel — chỉ DTQĐ có sẵn target (do đã nhập tay từ trước), các chỉ số khác bắt đầu trống.
+- Cột custom admin tự thêm (`type: 'calculated'|'target'`) đã có cơ chế target riêng — giữ nguyên, không đụng.
+- Không sửa bảng ngang (horizontal view) — ngoài phạm vi yêu cầu.
+
+**Thiết kế**:
+1. **Data model mới**: `warehouseColumnTargets: Record<columnId, Record<khoName, number>>`. Thêm `saveWarehouseColumnTargets`/`getWarehouseColumnTargets` trong `services/dbService/warehouseConfig.ts` (wrapper `saveSetting`/`getSetting`), state + load/backup-restore trong `hooks/useDataManagement.ts`, setter `updateWarehouseColumnTarget(columnId, khoName, value)` trong `hooks/useDashboardLogic.ts`. Không cần migration: dòng DTQĐ tái dùng `warehouseTargets`, dòng DT Thực tái dùng `warehouseDTThucTargets`, mọi dòng khác dùng store mới (bắt đầu trống).
+2. **Phân loại dòng upgradable**: loại trừ cột custom (`type: 'calculated'|'target'`), loại trừ dòng đã là tỷ lệ % tự thân (`hieuQuaQD`, `traChamPercent`), xoá hẳn 2 dòng `target_dt`/`percent_ht` (dồn chức năng vào `dt_qd`). Còn lại → nâng cấp 3 cột. Dòng không nâng cấp → render `<td colSpan={3}>` giá trị đơn, căn giữa, để thẳng hàng cột.
+3. **Công thức**: tổng quát hoá logic `isLuyKe`/`daysInMonth`/`daysPassed` đã có cho DTQĐ (dòng ~779-792 cũ), dùng `getColumnValue(row, col)` làm giá trị Real thay vì hardcode `doanhThuQD`. Ngưỡng màu %HT giữ nguyên (≥120% rose, ≥100% emerald, còn lại amber).
+4. **Inline edit Target**: state `editingTargetCell: {colId, khoName} | null` trong `WarehouseSummary.tsx`, click ô → input nhỏ (border sky, rounded-md), Enter/blur lưu qua `parseFormattedNumber` + setter tương ứng, Escape huỷ. Ô trống hiển thị `—` dotted-underline gợi ý bấm. Modal "Nhập Target Tháng" cũ giữ nguyên song song.
+5. **Header 2 tầng**: tier-1 tên kho `colSpan={3}` (viền dưới chỉ xám mỏng), tier-2 mới 3 `<th>` mỗi kho (M.Tiêu slate/Real sky/%HT amber, viền màu 3px, viền dọc luôn xám nhạt) — đúng convention Mục 61. Cột sticky "Nhóm/Chỉ Số" `rowSpan={2}`. Cột Tổng cũng lên 2 tầng tương tự.
+6. **Render body**: cập nhật colSpan hàng tiêu đề nhóm từ `currentData.length + 2` → `(currentData.length + 1) * 3 + 1`.
+
+**Phạm vi**: chỉ `components/summary/WarehouseSummary.tsx` (+ 3 file hook/service liên quan tới persistence target). Không đụng `features/bi-dashboard` hay bảng ngang. Bảng dọc sẽ rộng hơn ~3 lần mỗi kho — chấp nhận đánh đổi, vẫn cuộn ngang được.
+
+**Kiểm tra**: `npm run check`, test dev server (view dọc: DOANH THU 1 dòng 3 cột giữ đúng target cũ; nhóm khác từng dòng con có 3 cột nhập được; %QĐ/%TC vẫn 1 giá trị căn giữa; Lũy kế vs theo ngày đúng; export PNG không vỡ viền/màu).
+
+**Bug fix sau khi user test tay (phát hiện qua ảnh chụp thật)**: nhập Target cho CE = "50" nhưng ô hiển thị lại "2". Root cause: ô đóng hiển thị giá trị đã prorate theo ngày khi KHÔNG Lũy kế (`monthly / daysInMonth`, để %HT so sánh đúng "hôm nay" so với "chỉ tiêu/ngày"), nhưng ô sửa (`startEditTargetCell`/`commitEditTargetCell`) lại đọc/ghi thẳng giá trị THÁNG — lệch đơn vị giữa ô đóng và ô sửa (50 tháng / 31 ngày ≈ 2 hiển thị lại). Fix: ô sửa cũng quy đổi theo `isLuyKe` giống hệt ô đóng (hiển thị/nhập giá trị theo đúng "tỉ lệ đang xem", quy đổi ngược về tháng khi lưu) — khôi phục WYSIWYG (gõ gì thấy nấy) mà không đổi công thức %HT hay ảnh hưởng bảng ngang/modal cũ.
+
 

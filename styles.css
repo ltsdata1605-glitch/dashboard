@@ -98,13 +98,16 @@
     background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
   }
 
-  .compact-export-table th,
+  .compact-export-table th {
+    @apply px-2 py-1.5 text-[11px] font-bold leading-tight align-middle;
+  }
+
   .compact-export-table td {
-    @apply px-1 py-1 text-[10px];
+    @apply px-2 py-1.5 text-[12px] leading-tight align-middle;
   }
 
   .compact-export-table tfoot td {
-    @apply text-[11px];
+    @apply px-2 py-1.5 text-[12px] font-bold leading-tight align-middle;
   }
 
   /* Report BI — tiêu đề & chú thích mặc định dùng UTM Avo */
