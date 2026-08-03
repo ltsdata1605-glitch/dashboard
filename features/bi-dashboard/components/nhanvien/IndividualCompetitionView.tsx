@@ -579,7 +579,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         bonusData={bonusData}
                         groupedPerformanceData={groupedPerformanceData}
                     />
-                    <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="overflow-x-auto scrollbar-hide rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm lg:hover:shadow-md transition-shadow" style={{ WebkitOverflowScrolling: 'touch' }}>
                         <div className="text-center py-3 px-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600">
                             <h3 className="text-xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                 {selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}

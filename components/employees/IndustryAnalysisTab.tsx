@@ -372,7 +372,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         )}
                     </div>
                 </div>
-            <div className="overflow-x-auto custom-scrollbar flex-grow p-0 border border-slate-200 dark:border-slate-700 rounded-none sm:rounded-xl shadow-sm">
+            <div className="overflow-x-auto custom-scrollbar flex-grow p-0 border-y lg:border border-slate-200 dark:border-slate-700 rounded-none lg:rounded-2xl shadow-sm lg:hover:shadow-md transition-shadow">
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                                 <tr>

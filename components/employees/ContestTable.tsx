@@ -397,16 +397,21 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     };
 
     return (
-        <div ref={exportRef} className="rounded-none sm:rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+        <div ref={exportRef} className="rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm lg:hover:shadow-md transition-shadow">
             <div className="overflow-hidden">
                 <div
-                    className="px-2 py-1 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
+                    className="px-2 py-1.5 lg:px-4 lg:py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
                 >
-                    <h3 className="text-[11px] sm:text-sm font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-white tracking-tight truncate">
-                        <Icon name={config.icon || "target"} size={3.5} className="text-primary-500 sm:hidden shrink-0" />
-                        <Icon name={config.icon || "target"} size={4} className="text-primary-500 hidden sm:block shrink-0" />
-                        <span className="truncate">{config.tableName}</span>
-                    </h3>
+                    <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+                        <div className={`w-6 h-6 lg:w-10 lg:h-10 rounded-md lg:rounded-xl flex items-center justify-center shrink-0 ${tableColorTheme.header}`}>
+                            <Icon name={config.icon || "target"} size={3.5} className="lg:hidden" />
+                            <Icon name={config.icon || "target"} size={5} className="hidden lg:block" />
+                        </div>
+                        <div className="min-w-0">
+                            <h3 className="text-[11px] lg:text-lg font-black uppercase text-slate-800 dark:text-white tracking-tight truncate leading-tight">{config.tableName}</h3>
+                            <p className="text-[8px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             <Icon name="plus-circle" size={3.5} className="sm:hidden" /><Icon name="plus-circle" size={5} className="hidden sm:block" />

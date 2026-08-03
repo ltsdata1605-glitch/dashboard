@@ -55,9 +55,16 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
     };
 
     return (
-        <div className="mt-4 mb-2 bg-white rounded-none border-t border-x border-slate-200 overflow-hidden shadow-sm relative">
+        <div className="mt-4 mb-2 bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 overflow-hidden shadow-sm lg:hover:shadow-md transition-shadow relative">
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-lg flex items-center justify-center shrink-0 bg-sky-100 text-sky-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 lg:h-4 lg:w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 3a1 1 0 011-1h2a1 1 0 011 1v13a1 1 0 01-1 1h-2a1 1 0 01-1-1V3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>
+                </div>
                 {unresolvedConflicts.length > 0 && (
                     <Button
                         variant="ghost"

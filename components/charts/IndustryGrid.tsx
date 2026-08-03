@@ -176,22 +176,6 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         setDrilldownPath(prev => prev.slice(0, index));
     };
 
-    const handleExportGrid = async () => {
-        if (!gridRef.current) return;
-        setIsExporting(true);
-        const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
-        setIsExporting(false);
-    };
-
-    const handleExportPie = async () => {
-        if (!pieRef.current) return;
-        setIsExporting(true);
-        const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
-        setIsExporting(false);
-    };
-
     const handleExport = async () => {
         if (!cardRef.current) return;
         setIsExporting(true);
@@ -332,15 +316,6 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     )}
                                 </span>
                             )}
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={handleExportGrid}
-                                disabled={isExporting}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
-                                title="Tải ảnh Thẻ Ngành Hàng"
-                            >
-                                <Icon name="download" size={3.5} />
-                            </Button>
                         </div>
 
                         {currentView.data.length === 0 ? (
@@ -444,15 +419,6 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     {pieChartData.length} mục
                                 </span>
                             </div>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={handleExportPie}
-                                disabled={isExporting}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
-                                title="Tải ảnh Biểu Đồ Tròn"
-                            >
-                                <Icon name="download" size={3.5} />
-                            </Button>
                         </div>
 
                         <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col justify-center">

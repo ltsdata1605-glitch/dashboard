@@ -309,7 +309,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
   }
   
   return (
-      <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[400px]">
+      <div className="flex items-center justify-center bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm lg:hover:shadow-md transition-shadow min-h-[400px]">
           <EmptyState
               icon={<SearchIcon className="h-12 w-12 text-slate-400" />}
               title="Sẵn sàng tìm kiếm"

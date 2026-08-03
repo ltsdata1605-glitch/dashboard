@@ -142,7 +142,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
     const metricColor = getMetricColor();
 
     return (
-        <div ref={tableRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none sm:rounded-xl overflow-hidden flex flex-col h-full shadow-sm">
+        <div ref={tableRef} className="bg-white dark:bg-slate-900 border-y lg:border border-slate-200 dark:border-slate-700 rounded-none lg:rounded-2xl overflow-hidden flex flex-col h-full shadow-sm lg:hover:shadow-md transition-shadow">
 
             <div className="overflow-x-auto custom-scrollbar flex-grow">
                 <table className="w-full text-left border-collapse whitespace-nowrap">

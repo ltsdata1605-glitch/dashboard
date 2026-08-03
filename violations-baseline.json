@@ -4,7 +4,7 @@
     "missingMobileToolbar": 0
   },
   "components/charts/IndustryGrid.tsx": {
-    "nonSemanticColor": 26,
+    "nonSemanticColor": 22,
     "missingMobileToolbar": 0
   },
   "components/charts/RevenueCalendar.tsx": {

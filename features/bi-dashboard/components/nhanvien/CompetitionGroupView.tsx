@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
+import { ChevronDownIcon, ChevronUpIcon, CameraIcon, ChartBarIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -251,11 +251,14 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     return (
         <div 
             ref={cardRef} 
-            className="competition-group-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex flex-col h-full overflow-hidden"
+            className="competition-group-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
         >
             {/* Title bar — flat, professional */}
             <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">
-                <div className="flex justify-center items-center relative">
+                <div className="flex justify-center items-center relative gap-2">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
+                        <ChartBarIcon className="h-3.5 w-3.5" />
+                    </div>
                     <h4 className="text-[14px] font-black uppercase text-sky-700 dark:text-sky-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
                         {displayTitle}
                     </h4>

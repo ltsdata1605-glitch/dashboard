@@ -2227,4 +2227,34 @@ User khen "đường kẻ highlight" ở header bảng "Chương trình thi đua
 
 **Bug fix sau khi user test tay (phát hiện qua ảnh chụp thật)**: nhập Target cho CE = "50" nhưng ô hiển thị lại "2". Root cause: ô đóng hiển thị giá trị đã prorate theo ngày khi KHÔNG Lũy kế (`monthly / daysInMonth`, để %HT so sánh đúng "hôm nay" so với "chỉ tiêu/ngày"), nhưng ô sửa (`startEditTargetCell`/`commitEditTargetCell`) lại đọc/ghi thẳng giá trị THÁNG — lệch đơn vị giữa ô đóng và ô sửa (50 tháng / 31 ngày ≈ 2 hiển thị lại). Fix: ô sửa cũng quy đổi theo `isLuyKe` giống hệt ô đóng (hiển thị/nhập giá trị theo đúng "tỉ lệ đang xem", quy đổi ngược về tháng khi lưu) — khôi phục WYSIWYG (gõ gì thấy nấy) mà không đổi công thức %HT hay ảnh hưởng bảng ngang/modal cũ.
 
+**Ghi chú dở dang (chưa xong, để tiếp tục sau)**: đã thêm state/logic lọc Mã Kho riêng cho bảng (`rawData`/`khoOptions`/`localKhoFilter`/`updateLocalKhoFilter`/`data` filtered qua `useMemo`) và toggle ẩn/hiện cột Tổng (`showTotalColumn`/`toggleShowTotal`) + import `MultiSelectDropdown` vào `WarehouseSummary.tsx`, theo yêu cầu "bổ sung bộ lọc mã kho + ẩn nhóm tổng" — nhưng CHƯA gắn UI (dropdown/nút) vào `SectionHeader` và CHƯA áp `showTotalColumn` vào phần render cột Tổng/colSpan. Logic lọc `data` đã hoạt động đúng (test qua typecheck/eslint sạch), chỉ còn thiếu bước UI + conditional render. Việc này bị gác lại giữa chừng vì user chuyển sang yêu cầu mới (Mục 63 dưới đây) — cần hoàn thiện nốt khi quay lại.
+
+---
+
+## Mục 63 — Đồng bộ khung thẻ (card) + tiêu đề icon-badge trên toàn dự án
+
+**Yêu cầu**: người dùng khen style bảng "D.Thu" (`components/employees/performance/PerformanceSingleTable.tsx`) và muốn áp dụng khung thẻ bo góc + icon-badge/tiêu đề + màu nền header nhóm cột cho TẤT CẢ module ở CẢ 4 khu vực (root/bi-dashboard/phan-ca/sticker-event). Đã khảo sát bằng 3 Explore agent song song (mỗi khu vực 1 agent).
+
+**Kết luận khảo sát chính**:
+- Màu nền header nhóm cột (`bg-{color}-50` + viền 3px, quy ước Mục 61) đã đúng chuẩn ở gần như mọi bảng trong cả 4 khu vực — không cần sửa thêm, trừ 2 bảng heatmap/lịch (`DailyStatsTable.tsx`, `VerticalIndividualSchedule.tsx` bảng ngày) đã bị Mục 61 CỐ Ý loại trừ trước đó (không có cấu trúc nhóm chỉ số) — giữ nguyên quyết định cũ.
+- Khung thẻ: đa số đã dùng đúng `SectionCard` chuẩn (`rounded-none lg:rounded-2xl border-y lg:border shadow-sm lg:hover:shadow-md`), một số file thiếu/lệch, và phát hiện **2 lỗi thật** (khung lồng đôi, không chỉ là lệch style):
+  1. `features/bi-dashboard/components/dashboard/IndustryView.tsx` — tự bọc thêm 1 lớp rounded/border/shadow NGOÀI `<Card rounded={false}>`, trong khi prop `rounded` của `Card.tsx` là no-op (khai báo nhưng không dùng) → viền/bóng lồng đôi.
+  2. `features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx` — dùng `<Card noPadding title=...>` thiếu `bordered={false}`, trong khi đã nằm trong khung `NhanVien.tsx` bọc sẵn → lồng đôi, không nhất quán với 5 tab anh em.
+
+**Phạm vi cố ý KHÔNG đụng**: `SectionHeader.tsx` (dùng chung quá rộng, đổi sẽ ảnh hưởng dây chuyền); phần hero glassmorphism của `CompetitionCompareView.tsx`/`IndividualCompetitionView.tsx` (thiết kế khác biệt có chủ đích); dọn `dark:` thừa ở sticker-event (phát hiện phụ, ngoài phạm vi — `StickerPrintControls.tsx` 57 chỗ/`StickerManualQueue.tsx` 75 chỗ mâu thuẫn với memory cũ "0 dark mode", cần task riêng).
+
+**Việc làm cụ thể**: xem đầy đủ tại `~/.claude/plans/wondrous-zooming-moler.md` (mục A/B/C) — tóm tắt: (A) fix 2 lỗi lồng đôi ở trên; (B) chuẩn hoá khung thẻ về đúng 1 cụm class `SectionCard` cho `ContestTable.tsx`/`IndustryAnalysisTab.tsx`/`HeadToHeadTable.tsx` (root), `CompetitionGroupView.tsx`/`IndividualCompetitionView.tsx` (bi-dashboard), `DailyStatsTable.tsx`/`VerticalIndividualSchedule.tsx` (phan-ca), `ResultsDisplay.tsx` (sticker-event, giữ light-only không thêm `dark:`); (C) thêm icon-badge vuông bo góc + tiêu đề in đậm uppercase + phụ đề xám cho các header đang thiếu, dùng breakpoint `lg:` chuẩn dự án (không dùng `sm:` như bảng D.Thu — đó là ngoại lệ cục bộ) và giữ màu semantic sẵn có theo từng ngữ cảnh (không ép về 1 màu cố định).
+
+**Kiểm tra**: `npm run check` sau mỗi khu vực; test tay 2 lỗi lồng đôi trên dev server bằng dữ liệu giả; soi mắt các header mới thêm icon-badge trên trình duyệt thật.
+
+**Đã hoàn thành (2026-08-03)**:
+- A: 2 lỗi lồng đôi đã sửa (`IndustryView.tsx` rounded→bordered, `CompetitionSummaryView.tsx` thêm bordered={false}) — xác minh bằng Playwright thật qua dev server (seed dữ liệu giả bằng kỹ thuật paste ClipboardEvent), chụp ảnh zoom góc thẻ xác nhận chỉ còn 1 lớp viền/bóng.
+- B: đã chuẩn hoá khung thẻ (`rounded-none lg:rounded-2xl border-y lg:border shadow-sm lg:hover:shadow-md`) cho `ContestTable.tsx`, `IndustryAnalysisTab.tsx` (sub-wrapper bảng), `HeadToHeadTable.tsx`, `CompetitionGroupView.tsx` (rounded-xl vì là thẻ trong grid, không phải section full-width), `IndividualCompetitionView.tsx`, `DailyStatsTable.tsx`, `ResultsDisplay.tsx` (chỉ khung empty-state).
+- C: đã thêm icon-badge + tiêu đề/phụ đề cho `ContestTable.tsx` (dùng `tableColorTheme.header` có sẵn), `CompetitionGroupView.tsx` (icon nhỏ cạnh tiêu đề giữa, không thêm phụ đề vì đã có sẵn thanh quỹ thời gian), `DailyStatsTable.tsx` (icon sky, xác nhận hiển thị đúng qua Playwright).
+- **Điều chỉnh phạm vi sau khi đọc code thật** (khác với dự kiến ban đầu trong lúc lập kế hoạch, dựa trên Explore agent — đã tự phát hiện khi code thật thì không hợp):
+  - `VerticalIndividualSchedule.tsx` (phan-ca): KHÔNG áp dụng — đây là layout in/export cá nhân (`isIndividualExport`), tiêu đề `<h2>` căn giữa cỡ lớn kiểu tài liệu in, không phải thẻ dashboard tương tác — ép icon-badge vào sẽ sai ngữ cảnh.
+  - `StickerPrintControls.tsx`: KHÔNG thêm icon-badge — các panel màu (rose/emerald/amber) nằm trong sidebar rất hẹp, chữ 10-11px, icon 12-14px — khung badge vuông (dù đã thu nhỏ theo D.Thu) vẫn quá to so với mật độ hiện có, đã có icon+label gọn sẵn phù hợp ngữ cảnh.
+  - `ResultsDisplay.tsx` (sticker-event): chỉ sửa khung "chưa có kết quả tìm kiếm" (placeholder nhỏ) — phần `InstructionsPanel` (hướng dẫn onboarding, icon tròn, shadow-xl) và danh sách `ProductCard` chính giữ nguyên, cùng lý do "thiết kế đặc thù có chủ đích" như hero card đã loại trừ ở bi-dashboard.
+- `npm run check` xanh hoàn toàn sau khi sửa 1 lỗi phát sinh (thêm nhầm màu `indigo` mới cho badge `DailyStatsTable.tsx` bị lint-ratchet chặn — đổi sang `sky`, không tốn thêm "quota" màu indigo không cần thiết).
+
 
