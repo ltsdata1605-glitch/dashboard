@@ -339,12 +339,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
     });
 
-    // 1c. Hide all alert/warning banners from exported KPI summary image
+    // 1c. Hide all alert/warning banners from exported KPI summary image by removing them from DOM
     clone.querySelectorAll('[class*="bg-amber-50"], [class*="bg-rose-50"], [class*="bg-amber-955"]').forEach(banner => {
         if (banner instanceof HTMLElement) {
             const text = banner.textContent?.trim() || '';
             if (text.includes('CHƯA HỦY') || text.includes('CÔNG NỢ') || text.includes('CHƯA CẤU HÌNH') || text.includes('QUÁ HẠN XUẤT')) {
-                banner.style.setProperty('display', 'none', 'important');
+                banner.remove();
             }
         }
     });
@@ -964,14 +964,14 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        // Use getBoundingClientRect for better accuracy on scaled/cloned elements
+        // Use exact bounding dimensions of clone after DOM modifications
         const rect = clone.getBoundingClientRect();
         const exportPadding = 8; // px on each side — must match the padding in htmlToImage style below
-        const finalWidth = (captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth)) + exportPadding * 2;
-        let finalHeight = (rect.height || clone.scrollHeight) + exportPadding * 2;
-        
-        // Safety: small padding to prevent content clipping at edges
-        finalHeight += 4;
+        const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
+        const contentWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
+
+        const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
+        let finalHeight = contentHeight + exportPadding * 2;
 
         let finalScale = scale;
         if (finalHeight * scale > 32000) {
