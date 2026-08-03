@@ -937,13 +937,18 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
     });
 
-    // Strip large padding from content containers (p-6, p-2.5, lg:p-6, etc.)
+    // Strip large padding from content containers (p-6, p-2.5, lg:p-6, lg:pt-8, etc.)
     clone.querySelectorAll<HTMLElement>('div, header, section').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
-        // Target elements that have explicit padding classes like p-6, p-5, py-5 but NOT table cells
-        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5')) && !cls.includes('kpi-grid')) {
-            el.style.setProperty('padding', '8px', 'important');
+        if (cls.includes('lg:pt-8') || cls.includes('lg:pt-6') || cls.includes('pt-8')) {
+            el.style.setProperty('padding-top', '6px', 'important');
+        }
+        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5') || cls.includes('lg:px-4') || cls.includes('lg:pb-4')) && !cls.includes('kpi-grid')) {
+            el.style.setProperty('padding-top', '4px', 'important');
+            el.style.setProperty('padding-bottom', '4px', 'important');
+            el.style.setProperty('padding-left', '6px', 'important');
+            el.style.setProperty('padding-right', '6px', 'important');
         }
     });
 
@@ -955,10 +960,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         await document.fonts.ready;
         await waitForImages(clone);
 
-        // FIX: Tailwind CSS v4 dùng oklch() cho toàn bộ color palette.
-        // html-to-image dùng SVG foreignObject để render → oklch() không được
-        // SVG renderer hỗ trợ đầy đủ → text/colors biến mất.
-        // Convert oklch() → rgb() inline trước khi capture.
+        // FIX: Convert oklch() → rgb() inline trước khi capture
         fixOklchColors(clone);
 
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -966,7 +968,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
         // Use exact bounding dimensions of clone after DOM modifications
         const rect = clone.getBoundingClientRect();
-        const exportPadding = 8; // px on each side — must match the padding in htmlToImage style below
+        const exportPadding = 4; // px on each side — must match the padding in htmlToImage style below
         const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
         const contentWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
 
@@ -980,7 +982,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
 
         const isDark = document.documentElement.classList.contains('dark');
-        const defaultBg = isDark ? '#0f172a' : '#f8fafc';
+        const defaultBg = isDark ? '#0f172a' : '#ffffff';
         const isTransparentTable = lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang');
 
         const htmlToImage = await import('html-to-image');
@@ -991,7 +993,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             height: finalHeight,
             style: {
                 margin: '0',
-                padding: '8px',
+                padding: '4px',
             },
             // GIỮ font embedding mặc định (skipFonts: false) để text render đúng.
             // Trước đây tắt font để "tránh treo" nhưng điều này khiến text mất hoàn toàn.

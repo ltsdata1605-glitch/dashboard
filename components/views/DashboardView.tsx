@@ -576,7 +576,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 || overdueUnshippedOrders.length > 0
                                                 || (processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0)
                                                 || overdueDebtOrders.length > 0
-                                                    ? 'lg:pt-3' : 'lg:pt-8'
+                                                    ? 'lg:pt-3' : 'lg:pt-3'
                                             }`}>
                                                 <SectionHeader
                                                     title="TỔNG QUAN DOANH THU"
