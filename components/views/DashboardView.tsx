@@ -616,7 +616,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </SectionHeader>
                                             </div>
 
-                                            <div className={`p-2 lg:px-4 lg:py-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                            <div className={`p-2 lg:px-4 lg:pt-2 lg:pb-4 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>
                                                     <KpiCards onUnshippedClick={openUnshippedModal} />
                                                 </div>

@@ -260,7 +260,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 grid grid-cols-4 gap-1.5 pb-1
                 sm:grid-cols-4 sm:gap-2.5
                 lg:grid-cols-4 lg:gap-4
-                xl:grid-cols-5 mb-3 lg:mb-8 kpi-grid-for-export
+                xl:grid-cols-5 kpi-grid-for-export
             `}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
