@@ -261,18 +261,25 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         kpiGrid.style.setProperty('grid-template-columns', `repeat(${cols}, minmax(0, 1fr))`, 'important');
         kpiGrid.style.setProperty('gap', '0.75rem', 'important');
         kpiGrid.style.setProperty('width', '100%', 'important');
+        kpiGrid.style.setProperty('margin-bottom', '0px', 'important');
+        kpiGrid.style.setProperty('padding-bottom', '0px', 'important');
+
+        if (kpiGrid.parentElement instanceof HTMLElement) {
+            kpiGrid.parentElement.style.setProperty('padding-bottom', '0.25rem', 'important');
+            kpiGrid.parentElement.style.setProperty('margin-bottom', '0px', 'important');
+        }
     }
 
     const kpiCardElements = clone.querySelectorAll('.kpi-grid-for-export > .chart-card');
     kpiCardElements.forEach(el => {
         if (el instanceof HTMLElement) {
-            el.style.paddingBottom = 'calc(1rem + 5px)';
+            el.style.paddingBottom = 'calc(0.75rem + 2px)';
         }
     });
 
     const traGopAuxElements = clone.querySelectorAll('.chart-card .flex-shrink-0 > .text-xs');
     traGopAuxElements.forEach(el => {
-        if (el instanceof HTMLElement) el.style.paddingBottom = '5px';
+        if (el instanceof HTMLElement) el.style.paddingBottom = '2px';
     });
 
     // 1b. KPI Cards: Shorten titles for compact export
@@ -324,12 +331,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
     });
 
-    // 1c. Fix overdue orders banner — change from absolute to relative so it flows in export layout
-    const overdueBanner = clone.querySelector('[class*="absolute"][class*="bg-rose-50"]');
-    if (overdueBanner && overdueBanner instanceof HTMLElement) {
-        overdueBanner.style.setProperty('position', 'relative', 'important');
-        overdueBanner.style.setProperty('border-radius', '0', 'important');
-    }
+    // 1c. Hide all alert/warning banners from exported KPI summary image
+    clone.querySelectorAll('[class*="bg-amber-50"], [class*="bg-rose-50"], [class*="bg-amber-955"]').forEach(banner => {
+        if (banner instanceof HTMLElement) {
+            const text = banner.textContent?.trim() || '';
+            if (text.includes('CHƯA HỦY') || text.includes('CÔNG NỢ') || text.includes('CHƯA CẤU HÌNH') || text.includes('QUÁ HẠN XUẤT')) {
+                banner.style.setProperty('display', 'none', 'important');
+            }
+        }
+    });
 
     // 2. Industry Grid: Fix layout for narrow export
     if (forcedWidth) {

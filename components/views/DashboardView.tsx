@@ -498,7 +498,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
                                                 <div
                                                     onClick={() => setIsUnconfiguredModalOpen(true)}
-                                                    className="relative bg-amber-50 dark:bg-amber-955/20 border-b border-amber-200/60 dark:border-amber-900/60 text-amber-800 dark:text-amber-400 px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/80 dark:hover:bg-amber-900/50 transition-colors z-[20] animate-pulse"
+                                                    className="relative bg-amber-50 dark:bg-amber-955/20 border-b border-amber-200/60 dark:border-amber-900/60 text-amber-800 dark:text-amber-400 px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/80 dark:hover:bg-amber-900/50 transition-colors z-[20] animate-pulse hide-on-export"
                                                 >
                                                     <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
                                                         <span className="relative flex h-2.5 w-2.5 mr-1">
@@ -518,7 +518,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {overdueUnshippedOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('unshipped_overdue')}
-                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
+                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] hide-on-export"
                                                 >
                                                     <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
                                                         <span className="relative flex h-2.5 w-2.5 mr-1">
@@ -537,7 +537,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('uncollected')}
-                                                    className="relative bg-amber-50 dark:bg-amber-955/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20]"
+                                                    className="relative bg-amber-50 dark:bg-amber-955/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20] hide-on-export"
                                                 >
                                                     <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
                                                         <span className="relative flex h-2.5 w-2.5 mr-1">
@@ -556,7 +556,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {overdueDebtOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('debt')}
-                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
+                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] hide-on-export"
                                                 >
                                                     <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
                                                         <span className="relative flex h-2.5 w-2.5 mr-1">
