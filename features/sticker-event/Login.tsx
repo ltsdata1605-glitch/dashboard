@@ -119,6 +119,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
     // ───────── STAFF AUTHENTICATION (NO PASSWORD) ─────────
     if (role === 'staff') {
+      const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@example.com`;
+      const staffDefaultPassword = `staff_${cleanUsername.toLowerCase()}_123456`;
+
+      // 1. Try Cloud Function stickerStaffAuth first
       try {
         const staffRes = await stickerStaffAuth({
           username: cleanUsername,
@@ -128,24 +132,111 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         await signInWithCustomToken(auth, staffRes.customToken);
         setLoading(false);
         return;
-      } catch (staffErr: unknown) {
-        console.error("Staff Auth Error:", staffErr);
-        const code = getErrorCode(staffErr) || (staffErr as AuthErrorLike).code || '';
-        let message = getErrorMessage(staffErr) || (staffErr as AuthErrorLike).message || 'Xác thực nhân viên thất bại.';
-        
-        if (code.includes('not-found')) {
-          message = 'Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.';
-        } else if (code.includes('permission-denied')) {
-          message = 'Tài khoản này là Quản lý (Admin). Vui lòng chọn vai trò Admin (Quản lý) và nhập mật khẩu.';
-        } else if (code.includes('failed-precondition')) {
-          message = 'Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.';
-        } else if (code.includes('too-many-requests')) {
-          message = 'Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 1-2 phút.';
+      } catch (fnErr: unknown) {
+        const fnCode = getErrorCode(fnErr) || (fnErr as AuthErrorLike).code || '';
+        const fnMsg = getErrorMessage(fnErr) || (fnErr as AuthErrorLike).message || '';
+
+        // If Cloud Function returns business error
+        if (fnCode.includes('not-found') || fnMsg.includes('chưa có tài khoản') || fnMsg.includes('chưa tồn tại')) {
+          setError('Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
+          setLoading(false);
+          return;
         }
-        
-        setError(message);
-        setLoading(false);
-        return;
+        if (fnCode.includes('permission-denied') || fnMsg.includes('Quản lý')) {
+          setError('Tài khoản này là Quản lý (Admin). Vui lòng chọn vai trò Admin (Quản lý) và nhập mật khẩu.');
+          setLoading(false);
+          return;
+        }
+        if (fnCode.includes('failed-precondition') || fnMsg.includes('chưa được khởi tạo')) {
+          setError('Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.');
+          setLoading(false);
+          return;
+        }
+
+        // 2. If Cloud Function returns internal / not-deployed error, fallback to client-side Auth
+        console.warn("Cloud Function stickerStaffAuth unavailable, using client-side fallback:", fnErr);
+        try {
+          if (isLogin) {
+            // Client Staff Login Fallback
+            try {
+              await signInWithEmailAndPassword(auth, email, staffDefaultPassword);
+            } catch (clientLoginErr: unknown) {
+              const code = (clientLoginErr as AuthErrorLike).code || '';
+              if (code === 'auth/too-many-requests') {
+                setError('Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 2-3 phút.');
+                setLoading(false);
+                return;
+              }
+              const fallbacks = [`${cleanUsername}123456`, '123456123456', 'staff123456'];
+              let loggedIn = false;
+              for (const fbPass of fallbacks) {
+                try {
+                  await signInWithEmailAndPassword(auth, email, fbPass);
+                  loggedIn = true;
+                  break;
+                } catch { /* continue */ }
+              }
+              if (!loggedIn) {
+                setError('Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
+                setLoading(false);
+                return;
+              }
+            }
+          } else {
+            // Client Staff Register Fallback
+            let user;
+            try {
+              const userCredential = await createUserWithEmailAndPassword(auth, email, staffDefaultPassword);
+              user = userCredential.user;
+            } catch (regErr: unknown) {
+              const code = (regErr as AuthErrorLike).code || '';
+              if (code === 'auth/email-already-in-use') {
+                try {
+                  const userCredential = await signInWithEmailAndPassword(auth, email, staffDefaultPassword);
+                  user = userCredential.user;
+                } catch {
+                  try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, `${cleanUsername}123456`);
+                    user = userCredential.user;
+                  } catch {
+                    setError('Tên đăng nhập này đã được khởi tạo. Vui lòng chọn "Đăng nhập".');
+                    setLoading(false);
+                    return;
+                  }
+                }
+              } else {
+                throw regErr;
+              }
+            }
+
+            if (user) {
+              try {
+                await stickerRegister({ username: cleanUsername, storeId: cleanStoreId, requestedRole: 'staff' });
+              } catch (regFnErr: unknown) {
+                const code = getErrorCode(regFnErr) || '';
+                if (code.includes('failed-precondition')) {
+                  setError('Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.');
+                } else {
+                  setError(getErrorMessage(regFnErr) || 'Đăng ký Nhân viên thất bại.');
+                }
+                setLoading(false);
+                return;
+              }
+            }
+          }
+          setLoading(false);
+          return;
+        } catch (fallbackErr: unknown) {
+          console.error("Staff fallback auth error:", fallbackErr);
+          const errCode = (fallbackErr as AuthErrorLike).code || '';
+          if (errCode === 'auth/too-many-requests') {
+            setError('Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 2-3 phút.');
+          } else {
+            setError('Xác thực thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc chọn "Đăng ký".');
+          }
+          setLoading(false);
+          return;
+        }
       }
     }
 
