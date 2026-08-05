@@ -318,9 +318,12 @@ export default function App(): React.JSX.Element {
         }
         let defaultName = userData?.username || '';
         if (defaultName === '21707' || defaultName === 'lts.truongson') {
-            defaultName = '';
+            defaultName = userData?.role === 'admin' ? 'Admin' : '';
         } else if (!defaultName && userData?.email) {
             defaultName = userData.email.split('@')[0];
+        }
+        if (!defaultName && userData?.role === 'admin') {
+            defaultName = 'Admin';
         }
         setEmployeeName(defaultName);
         setIsEditingEmployeeName(!defaultName);
@@ -365,7 +368,7 @@ export default function App(): React.JSX.Element {
   };
 
   const handleSaveList = () => {
-    if (!user || !userData?.storeId) {
+    if (!user) {
       showAlert('Vui lòng đăng nhập để sử dụng tính năng này.');
       return;
     }
@@ -384,7 +387,8 @@ export default function App(): React.JSX.Element {
         msp: p.msp,
         quantity: p.quantity,
       }));
-      await saveListToFirestore(userData.storeId, user!.uid, listName, itemsToSave);
+      const targetStoreId = userData?.storeId || 'SUPERADMIN';
+      await saveListToFirestore(targetStoreId, user!.uid, listName, itemsToSave);
       
       await saveUserState(user!.uid, {
         displayedProducts,
@@ -403,7 +407,7 @@ export default function App(): React.JSX.Element {
   const isSuperAdmin = userData?.username === 'admin' || userData?.username === '21707' || user?.email === 'lts.truongson@gmail.com' || user?.email === 'lts.truongson@example.com' || user?.email === 'admin@example.com';
 
   const handleViewSavedLists = () => {
-    if (!user || !userData?.storeId) {
+    if (!user) {
       showAlert('Vui lòng đăng nhập để xem danh sách đã lưu.');
       return;
     }
@@ -418,17 +422,17 @@ export default function App(): React.JSX.Element {
         reconstructedProducts.push({ ...product, quantity: item.quantity || 1, selected: false });
       } else if (item.sanPham) {
         // Định dạng cũ: item đã có đủ field Product (không chỉ msp+quantity)
-        reconstructedProducts.push({ ...item, selected: false } as Product);
+        reconstructedProducts.push({ ...item, selected: false, quantity: item.quantity || 1 } as Product);
       }
     }
     
-    if (reconstructedProducts.length === 0) {
-        showAlert('Không tìm thấy sản phẩm nào trong danh sách này (có thể do dữ liệu gốc đã bị xóa).');
-        return;
+    if (reconstructedProducts.length > 0) {
+      setDisplayedProducts(reconstructedProducts);
+      saveDisplayedProducts(reconstructedProducts);
+      showAlert(`Đã tải danh sách "${reconstructedProducts.length}" sản phẩm.`);
+    } else {
+      showAlert('Không tìm thấy dữ liệu chi tiết của các sản phẩm trong danh sách này trên hệ thống.');
     }
-    
-    setDisplayedProducts(reconstructedProducts);
-    saveDisplayedProducts(reconstructedProducts);
   };
 
   if (isInitializing) {
@@ -462,7 +466,7 @@ export default function App(): React.JSX.Element {
               )}
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              {!isMobile && (
+              {!isMobile && userData?.role !== 'staff' && (
                 <Button
                   variant="ghost"
                   onClick={() => setIsChangePasswordOpen(true)}

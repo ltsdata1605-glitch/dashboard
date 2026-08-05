@@ -118,14 +118,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setError(null);
     setLoading(true);
 
-    // Append a dummy domain to create a valid email format for Firebase Auth
-    const email = username.includes('@') ? username : `${username}@example.com`;
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+        setError('Vui lòng nhập tên đăng nhập.');
+        setLoading(false);
+        return;
+    }
 
-    // Firebase requires at least 6 characters — nếu user nhập mật khẩu ngắn
-    // hơn thì lặp lại cho đủ 6 ký tự (áp dụng cho cả admin lẫn staff — không
-    // còn mật khẩu mặc định dùng chung nữa, mỗi người tự đặt mật khẩu riêng).
-    let finalPassword = password;
-    if (password && password.length < 6) {
+    // Append a dummy domain to create a valid email format for Firebase Auth
+    const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@example.com`;
+
+    // Derived password for staff role (no user password input required)
+    const staffDefaultPassword = `staff_${cleanUsername.toLowerCase()}_123456`;
+    let finalPassword = role === 'staff' ? staffDefaultPassword : password;
+
+    if (role === 'admin' && password && password.length < 6) {
         finalPassword = password.repeat(Math.ceil(6 / password.length)).substring(0, 6);
     }
 
@@ -136,20 +143,47 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           await signInWithEmailAndPassword(auth, email, finalPassword);
         } catch (loginErr: unknown) {
           const code = (loginErr as AuthErrorLike).code;
-          if (code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
+          // If staff login fails with staffDefaultPassword, try fallback passwords for existing accounts
+          if (role === 'staff' && (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password')) {
+            let success = false;
+            const fallbacks = [
+              password,
+              `${cleanUsername}123456`,
+              '123456123456',
+              'staff123456'
+            ].filter(Boolean);
+
+            for (const fbPass of fallbacks) {
+              try {
+                await signInWithEmailAndPassword(auth, email, fbPass);
+                success = true;
+                break;
+              } catch {
+                /* continue to next fallback */
+              }
+            }
+
+            if (!success) {
+              throw {
+                code: 'auth/invalid-credential',
+                message: 'Tên đăng nhập chưa tồn tại. Vui lòng chọn "Đăng ký" bên dưới.'
+              };
+            }
+          } else if (code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
             throw {
               code: 'auth/invalid-credential',
               message: 'Tên đăng nhập hoặc mật khẩu không đúng.'
             };
+          } else {
+            throw loginErr;
           }
-          throw loginErr;
         }
       } else {
         // Register Logic
         let cleanStoreId = storeId.trim().toUpperCase();
 
         // Special case for Super Admin 21707 and admin: allow registration without storeId or with a default one
-        if ((username === '21707' || username === 'admin') && !cleanStoreId) {
+        if ((cleanUsername === '21707' || cleanUsername === 'admin') && !cleanStoreId) {
             cleanStoreId = 'SUPERADMIN';
         }
 
@@ -159,25 +193,34 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             return;
         }
 
-        // Việc kiểm tra "kho đã có admin chưa" giờ do server (stickerRegister)
-        // quyết định — client không tự đọc Firestore rồi tự tin ghi thẳng nữa.
-
         let user;
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, finalPassword);
             user = userCredential.user;
         } catch (regErr: unknown) {
             if ((regErr as AuthErrorLike).code === 'auth/email-already-in-use') {
-                // If email exists, try to login to update the profile (allows updating storeId)
+                // If email exists, try to login
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, finalPassword);
                     user = userCredential.user;
                 } catch {
-                    // If login fails, it means password was wrong or some other issue
-                    throw {
-                        code: 'auth/email-already-in-use',
-                        message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
-                    };
+                    // Try staff fallbacks if needed
+                    if (role === 'staff') {
+                      try {
+                        const userCredential = await signInWithEmailAndPassword(auth, email, `${cleanUsername}123456`);
+                        user = userCredential.user;
+                      } catch {
+                        throw {
+                          code: 'auth/email-already-in-use',
+                          message: 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn "Đăng nhập".'
+                        };
+                      }
+                    } else {
+                      throw {
+                          code: 'auth/email-already-in-use',
+                          message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
+                      };
+                    }
                 }
             } else {
                 throw regErr;
@@ -186,14 +229,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         if (user) {
             try {
-                await stickerRegister({ username, storeId: cleanStoreId, requestedRole: role });
+                await stickerRegister({ username: cleanUsername, storeId: cleanStoreId, requestedRole: role });
             } catch (fnErr: unknown) {
                 const code = getErrorCode(fnErr) || '';
                 let message = 'Đăng ký thất bại. Vui lòng thử lại.';
                 if (code.includes('already-exists')) {
                     message = `Mã kho "${cleanStoreId}" đã có quản trị viên. Mỗi mã kho chỉ được có 1 tài khoản Admin duy nhất.`;
                 } else if (code.includes('failed-precondition')) {
-                    message = `Lưu ý về lỗi "Mã kho chưa được khởi tạo": Lỗi này xuất hiện khi một Nhân viên đăng ký vào một mã kho mà chưa có Quản lý (Admin) nào đăng ký trước đó cho kho đó. Bạn hãy thông tin Quản lý, cần đăng ký tài khoản cho mã kho, sau đó Nhân viên mới có thể đăng ký vào.`;
+                    message = `Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.`;
                 } else {
                     message = getErrorMessage(fnErr) || message;
                 }
@@ -209,14 +252,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       if (authErr.code === 'sticker/register-failed') {
         setError(authErr.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       } else if (authErr.code === 'auth/email-already-in-use') {
-        setError(authErr.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng thử Đăng nhập.');
+        setError(authErr.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn "Đăng nhập".');
       } else if (authErr.code === 'auth/invalid-email') {
         setError('Tên đăng nhập không hợp lệ.');
       } else if (authErr.code === 'auth/weak-password') {
         setError('Mật khẩu không hợp lệ.');
       } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/user-not-found' || authErr.code === 'auth/wrong-password') {
         if (isLogin) {
-            setError('Tên đăng nhập hoặc mật khẩu không đúng. Nếu bạn chưa có tài khoản hoặc vừa xóa dữ liệu, vui lòng chọn "Đăng ký" bên dưới.');
+            setError(role === 'staff' ? 'Tên đăng nhập không tồn tại hoặc thông tin không đúng. Nếu chưa có tài khoản, vui lòng chọn "Đăng ký" bên dưới.' : 'Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.');
         } else {
             setError('Thông tin đăng ký không hợp lệ.');
         }
@@ -245,7 +288,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <p className="font-semibold mb-2">👋 Chào mừng bạn!</p>
             <ul className="list-disc pl-5 space-y-1">
                 <li>Nếu bạn là <strong>Quản lý</strong>: Vui lòng tạo tài khoản Admin để tải lên dữ liệu giá và tồn kho.</li>
-                <li>Nếu bạn là <strong>Nhân viên</strong>: Vui lòng tạo tài khoản Nhân viên để quét mã và in tem giá.</li>
+                <li>Nếu bạn là <strong>Nhân viên</strong>: Vui lòng tạo tài khoản Nhân viên (chỉ cần nhập User và Mã kho, không cần mật khẩu).</li>
             </ul>
         </div>
 
@@ -261,7 +304,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Vai trò</label>
               <div className="flex gap-4">
-              <label className="flex items-center cursor-pointer text-sm">
+              <label className="flex items-center cursor-pointer text-sm font-medium">
                   <input
                   type="radio"
                   value="staff"
@@ -271,7 +314,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   />
                   Nhân viên
               </label>
-              <label className="flex items-center cursor-pointer text-sm">
+              <label className="flex items-center cursor-pointer text-sm font-medium">
                   <input
                   type="radio"
                   value="admin"
@@ -296,23 +339,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
 
-          {/* Mật khẩu — bắt buộc cho cả 2 vai trò, mỗi người tự đặt riêng
-              (không còn dùng chung 1 mật khẩu mặc định cho mọi nhân viên) */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-              required
-              placeholder="Nhập mật khẩu..."
-            />
-          </div>
+          {/* Mật khẩu — Chỉ bắt buộc và hiển thị khi Vai trò là Admin */}
+          {role === 'admin' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Mật khẩu
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                required={role === 'admin'}
+                placeholder="Nhập mật khẩu..."
+              />
+            </div>
+          )}
 
-          {/* Store ID required for both Admin and Staff only during Registration */}
+          {/* Store ID required during Registration */}
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Mã kho siêu thị</label>
