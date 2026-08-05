@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
 import { StickerEventUserData } from './types';
-import { stickerRegister, stickerResolveSession } from './services/sessionService';
+import { stickerRegister, stickerResolveSession, stickerStaffAuth } from './services/sessionService';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 interface LoginProps {
   onLoginSuccess: (user: User, userData: StickerEventUserData) => void;
 }
 
-// Firebase Auth ném FirebaseError (code + message), nhưng code trong file này cũng tự throw
-// object thường { code, message } (không phải instance Error thật) — dùng chung 1 shape lỏng
-// thay vì catch (e: any) để vẫn giữ được .code/.message nhưng hẹp hơn any.
 interface AuthErrorLike {
   code?: string;
   message?: string;
@@ -31,13 +28,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Try cached userData first to save a Firestore read — nhưng chỉ tin cache
-          // nếu token hiện tại đã có custom claim stickerRole. Phiên đăng nhập từ
-          // TRƯỚC khi 3 Cloud Function này tồn tại (hoặc trước khi tài khoản này
-          // từng gọi stickerResolveSession) sẽ có token không claim gì cả — nếu cứ
-          // tin cache thì mọi thao tác đọc stores/{storeId}/** sẽ bị Rules từ chối
-          // vĩnh viễn cho tới khi user tự xoá sessionStorage (đăng xuất/đăng nhập lại
-          // cùng uid vẫn trúng cache cũ, không tự sửa được).
           const cacheKey = `userData_${user.uid}`;
           const cachedData = sessionStorage.getItem(cacheKey);
           if (cachedData) {
@@ -48,7 +38,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 onLoginSuccess(user, parsed);
                 return;
               }
-              // Claim chưa đồng bộ — bỏ qua cache, rơi xuống gọi stickerResolveSession() bên dưới.
             } catch { /* cache invalid, fall through to server */ }
           }
 
@@ -62,8 +51,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               break; // Success
             } catch (err: unknown) {
               const code = getErrorCode(err) || '';
-              // "not-found" = hồ sơ Firestore chưa kịp ghi xong ngay sau khi đăng ký
-              // (stickerRegister vẫn đang chạy) — thử lại thay vì báo lỗi ngay.
               const isNotFound = code.includes('not-found');
               console.warn(`Lỗi tải phiên đăng nhập (còn ${retries - 1} lần thử):`, err);
               lastError = err;
@@ -74,8 +61,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           }
 
           if (profile) {
-            // Đồng bộ custom claims (stickerRole/stickerStoreId) mới nhất vào ID token
-            // để các thao tác tiếp theo (đọc danh sách user theo kho...) dùng đúng quyền.
             await user.getIdToken(true);
 
             const data: StickerEventUserData = {
@@ -125,64 +110,75 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         return;
     }
 
-    // Append a dummy domain to create a valid email format for Firebase Auth
+    let cleanStoreId = storeId.trim().toUpperCase();
+    if (!isLogin && role === 'staff' && !cleanStoreId) {
+        setError('Vui lòng nhập mã kho siêu thị.');
+        setLoading(false);
+        return;
+    }
+
+    // ───────── STAFF AUTHENTICATION (NO PASSWORD) ─────────
+    if (role === 'staff') {
+      try {
+        const staffRes = await stickerStaffAuth({
+          username: cleanUsername,
+          storeId: cleanStoreId,
+          isLogin
+        });
+        await signInWithCustomToken(auth, staffRes.customToken);
+        setLoading(false);
+        return;
+      } catch (staffErr: unknown) {
+        console.error("Staff Auth Error:", staffErr);
+        const code = getErrorCode(staffErr) || (staffErr as AuthErrorLike).code || '';
+        let message = getErrorMessage(staffErr) || (staffErr as AuthErrorLike).message || 'Xác thực nhân viên thất bại.';
+        
+        if (code.includes('not-found')) {
+          message = 'Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.';
+        } else if (code.includes('permission-denied')) {
+          message = 'Tài khoản này là Quản lý (Admin). Vui lòng chọn vai trò Admin (Quản lý) và nhập mật khẩu.';
+        } else if (code.includes('failed-precondition')) {
+          message = 'Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.';
+        } else if (code.includes('too-many-requests')) {
+          message = 'Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 1-2 phút.';
+        }
+        
+        setError(message);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // ───────── ADMIN AUTHENTICATION (REQUIRES PASSWORD) ─────────
     const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@example.com`;
 
-    // Derived password for staff role (no user password input required)
-    const staffDefaultPassword = `staff_${cleanUsername.toLowerCase()}_123456`;
-    let finalPassword = role === 'staff' ? staffDefaultPassword : password;
-
-    if (role === 'admin' && password && password.length < 6) {
+    let finalPassword = password;
+    if (password && password.length < 6) {
         finalPassword = password.repeat(Math.ceil(6 / password.length)).substring(0, 6);
     }
 
     try {
       if (isLogin) {
-        // Login Logic
+        // Admin Login Logic
         try {
           await signInWithEmailAndPassword(auth, email, finalPassword);
         } catch (loginErr: unknown) {
           const code = (loginErr as AuthErrorLike).code;
-          // If staff login fails with staffDefaultPassword, try fallback passwords for existing accounts
-          if (role === 'staff' && (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password')) {
-            let success = false;
-            const fallbacks = [
-              password,
-              `${cleanUsername}123456`,
-              '123456123456',
-              'staff123456'
-            ].filter(Boolean);
-
-            for (const fbPass of fallbacks) {
-              try {
-                await signInWithEmailAndPassword(auth, email, fbPass);
-                success = true;
-                break;
-              } catch {
-                /* continue to next fallback */
-              }
-            }
-
-            if (!success) {
-              throw {
-                code: 'auth/invalid-credential',
-                message: 'Tên đăng nhập chưa tồn tại. Vui lòng chọn "Đăng ký" bên dưới.'
-              };
-            }
-          } else if (code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
+          if (code === 'auth/too-many-requests') {
+            throw {
+              code: 'auth/too-many-requests',
+              message: 'Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 2-3 phút.'
+            };
+          } else if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
             throw {
               code: 'auth/invalid-credential',
-              message: 'Tên đăng nhập hoặc mật khẩu không đúng.'
+              message: 'Tên đăng nhập hoặc mật khẩu Admin không đúng.'
             };
-          } else {
-            throw loginErr;
           }
+          throw loginErr;
         }
       } else {
-        // Register Logic
-        let cleanStoreId = storeId.trim().toUpperCase();
-
-        // Special case for Super Admin 21707 and admin: allow registration without storeId or with a default one
+        // Admin Register Logic
         if ((cleanUsername === '21707' || cleanUsername === 'admin') && !cleanStoreId) {
             cleanStoreId = 'SUPERADMIN';
         }
@@ -199,28 +195,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             user = userCredential.user;
         } catch (regErr: unknown) {
             if ((regErr as AuthErrorLike).code === 'auth/email-already-in-use') {
-                // If email exists, try to login
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, finalPassword);
                     user = userCredential.user;
                 } catch {
-                    // Try staff fallbacks if needed
-                    if (role === 'staff') {
-                      try {
-                        const userCredential = await signInWithEmailAndPassword(auth, email, `${cleanUsername}123456`);
-                        user = userCredential.user;
-                      } catch {
-                        throw {
-                          code: 'auth/email-already-in-use',
-                          message: 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn "Đăng nhập".'
-                        };
-                      }
-                    } else {
-                      throw {
-                          code: 'auth/email-already-in-use',
-                          message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
-                      };
-                    }
+                    throw {
+                        code: 'auth/email-already-in-use',
+                        message: 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn "Đăng nhập" hoặc kiểm tra lại mật khẩu.'
+                    };
                 }
             } else {
                 throw regErr;
@@ -232,11 +214,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 await stickerRegister({ username: cleanUsername, storeId: cleanStoreId, requestedRole: role });
             } catch (fnErr: unknown) {
                 const code = getErrorCode(fnErr) || '';
-                let message = 'Đăng ký thất bại. Vui lòng thử lại.';
+                let message = 'Đăng ký Admin thất bại. Vui lòng thử lại.';
                 if (code.includes('already-exists')) {
                     message = `Mã kho "${cleanStoreId}" đã có quản trị viên. Mỗi mã kho chỉ được có 1 tài khoản Admin duy nhất.`;
-                } else if (code.includes('failed-precondition')) {
-                    message = `Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.`;
                 } else {
                     message = getErrorMessage(fnErr) || message;
                 }
@@ -253,22 +233,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setError(authErr.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       } else if (authErr.code === 'auth/email-already-in-use') {
         setError(authErr.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn "Đăng nhập".');
+      } else if (authErr.code === 'auth/too-many-requests') {
+        setError(authErr.message || 'Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 2-3 phút.');
       } else if (authErr.code === 'auth/invalid-email') {
         setError('Tên đăng nhập không hợp lệ.');
       } else if (authErr.code === 'auth/weak-password') {
         setError('Mật khẩu không hợp lệ.');
       } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/user-not-found' || authErr.code === 'auth/wrong-password') {
-        if (isLogin) {
-            setError(role === 'staff' ? 'Tên đăng nhập không tồn tại hoặc thông tin không đúng. Nếu chưa có tài khoản, vui lòng chọn "Đăng ký" bên dưới.' : 'Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.');
-        } else {
-            setError('Thông tin đăng ký không hợp lệ.');
-        }
+        setError('Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.');
       } else if (authErr.code === 'auth/operation-not-allowed') {
         setError('Lỗi hệ thống: Đăng nhập bằng Email/Password chưa được bật trong Firebase Console.');
       } else if (authErr.code === 'auth/network-request-failed') {
         setError('Lỗi kết nối mạng. Vui lòng kiểm tra internet.');
-      } else {
-        setError('Lỗi: ' + (authErr.message || 'Vui lòng thử lại sau.'));
       }
       setLoading(false);
     }

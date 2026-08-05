@@ -218,3 +218,101 @@ export const stickerAdminUpdateUser = onCall(async (request) => {
 
   throw new HttpsError('invalid-argument', 'action không hợp lệ.');
 });
+
+interface StaffAuthInput {
+  username?: string;
+  storeId?: string;
+  isLogin?: boolean;
+}
+
+export const stickerStaffAuth = onCall(async (request) => {
+  const { username, storeId, isLogin } = (request.data ?? {}) as StaffAuthInput;
+
+  const cleanUsername = (username ?? '').trim();
+  if (!cleanUsername) {
+    throw new HttpsError('invalid-argument', 'Vui lòng nhập tên đăng nhập.');
+  }
+
+  const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@example.com`;
+  const usersRef = stickerDb.collection('users');
+
+  let userRecord;
+  try {
+    userRecord = await auth.getUserByEmail(email);
+  } catch (e: any) {
+    if (e.code === 'auth/user-not-found') {
+      userRecord = null;
+    } else {
+      throw e;
+    }
+  }
+
+  if (isLogin) {
+    if (!userRecord) {
+      throw new HttpsError('not-found', 'Tên đăng nhập chưa tồn tại. Vui lòng chọn "Đăng ký" bên dưới.');
+    }
+    const userDoc = await usersRef.doc(userRecord.uid).get();
+    if (!userDoc.exists) {
+      throw new HttpsError('not-found', 'Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
+    }
+    const userData = userDoc.data();
+    if (userData?.role === 'admin') {
+      throw new HttpsError('permission-denied', 'Tài khoản này là Quản lý (Admin). Vui lòng chọn vai trò Admin và nhập mật khẩu.');
+    }
+
+    const defaultStaffPassword = `staff_${cleanUsername.toLowerCase()}_123456`;
+    await auth.updateUser(userRecord.uid, { password: defaultStaffPassword });
+    await setStickerClaims(userRecord.uid, 'staff', userData?.storeId ?? null);
+
+    const customToken = await auth.createCustomToken(userRecord.uid);
+    return { customToken, username: cleanUsername, storeId: userData?.storeId ?? null, role: 'staff' };
+  } else {
+    // Staff Register
+    let cleanStoreId = (storeId ?? '').trim().toUpperCase();
+    if (!cleanStoreId) {
+      throw new HttpsError('invalid-argument', 'Vui lòng nhập mã kho siêu thị.');
+    }
+
+    // Verify store has an admin
+    const adminSnap = await usersRef
+      .where('storeId', '==', cleanStoreId)
+      .where('role', '==', 'admin')
+      .limit(1)
+      .get();
+
+    if (adminSnap.empty) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Lưu ý: Nhân viên chỉ có thể đăng ký vào mã kho sau khi Quản lý (Admin) của kho đó đã đăng ký tài khoản trước. Vui lòng liên hệ Quản lý tạo tài khoản Admin trước.'
+      );
+    }
+
+    const defaultStaffPassword = `staff_${cleanUsername.toLowerCase()}_123456`;
+    if (!userRecord) {
+      userRecord = await auth.createUser({
+        email,
+        password: defaultStaffPassword,
+        displayName: cleanUsername,
+      });
+    } else {
+      await auth.updateUser(userRecord.uid, { password: defaultStaffPassword });
+    }
+
+    await usersRef.doc(userRecord.uid).set(
+      {
+        uid: userRecord.uid,
+        username: cleanUsername,
+        email,
+        role: 'staff',
+        storeId: cleanStoreId,
+        createdAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    await setStickerClaims(userRecord.uid, 'staff', cleanStoreId);
+
+    const customToken = await auth.createCustomToken(userRecord.uid);
+    return { customToken, username: cleanUsername, storeId: cleanStoreId, role: 'staff' };
+  }
+});

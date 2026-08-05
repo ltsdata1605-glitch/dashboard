@@ -16,17 +16,37 @@ interface RegisterInput {
     requestedRole: StickerRole;
 }
 
+export interface StaffAuthResult {
+    customToken: string;
+    username: string;
+    storeId: string | null;
+    role: 'staff';
+}
+
+interface StaffAuthInput {
+    username: string;
+    storeId?: string;
+    isLogin?: boolean;
+}
+
 const stickerRegisterFn = httpsCallable<RegisterInput, StickerSessionProfile>(functions, 'stickerRegister');
 const stickerResolveSessionFn = httpsCallable<Record<string, never>, StickerSessionProfile>(
     functions,
     'stickerResolveSession'
 );
+const stickerStaffAuthFn = httpsCallable<StaffAuthInput, StaffAuthResult>(functions, 'stickerStaffAuth');
 
 // Gọi Cloud Function stickerRegister (functions/src/stickerEvent.ts) — thay
 // cho việc Login.tsx tự setDoc(role, storeId) do client chọn. Server tự kiểm
 // tra điều kiện "kho đã có admin chưa" thay vì tin client đã kiểm tra đúng.
 export const stickerRegister = async (input: RegisterInput): Promise<StickerSessionProfile> => {
     const result = await stickerRegisterFn(input);
+    return result.data;
+};
+
+// Xử lý xác thực nhân viên không cần mật khẩu qua Custom Token ở Server
+export const stickerStaffAuth = async (input: StaffAuthInput): Promise<StaffAuthResult> => {
+    const result = await stickerStaffAuthFn(input);
     return result.data;
 };
 
