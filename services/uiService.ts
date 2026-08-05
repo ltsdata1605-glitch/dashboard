@@ -578,11 +578,22 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                         }
                     }
 
-                    if (child.tagName === 'DIV' || child.tagName === 'P') {
-                        child.style.setProperty('padding-top', '0px', 'important');
-                        child.style.setProperty('padding-bottom', '0px', 'important');
+                    // CHỈ xoá margin (khoảng cách mặc định trình duyệt gây phồng dòng ngoài ý muốn),
+                    // KHÔNG xoá padding-top/bottom nữa — trước đây xoá cả padding khiến badge dạng
+                    // <div> (vd Khai Thác) bị mất hẳn py-0.5 trong khi badge dạng <span> (vd Hiệu
+                    // Suất) không bị đụng tới (rule cũ không có SPAN), làm 2 bảng cao dòng khác nhau
+                    // dù cùng class py-0.5 — xác nhận bằng cách so computed style trực tiếp trên
+                    // clone xuất ảnh thật, không phải đoán.
+                    if (child.tagName === 'DIV' || child.tagName === 'P' || child.tagName === 'BUTTON') {
                         child.style.setProperty('margin-top', '0px', 'important');
                         child.style.setProperty('margin-bottom', '0px', 'important');
+                    }
+                    if (child.tagName === 'BUTTON') {
+                        child.style.setProperty('min-height', '0px', 'important');
+                        child.style.setProperty('height', 'auto', 'important');
+                        child.style.setProperty('vertical-align', 'baseline', 'important');
+                        child.style.setProperty('border', '0', 'important');
+                        child.style.setProperty('background', 'transparent', 'important');
                     }
                 });
 

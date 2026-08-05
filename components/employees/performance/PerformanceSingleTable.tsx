@@ -417,7 +417,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             </span>
                                                         )}
                                                         {(h.key === 'weakPointsRevenue' || h.key === 'weakPointsExploitation') && (
-                                                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black ${Number(emp[h.key] || 0) > 0
+                                                            <span className={`inline-flex items-center justify-center min-w-[18px] px-1 py-0.5 rounded-full text-[10px] font-black ${Number(emp[h.key] || 0) > 0
                                                                 ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'
                                                                 : 'text-slate-300 dark:text-slate-700'}`}>
                                                                 {emp[h.key] || '—'}
