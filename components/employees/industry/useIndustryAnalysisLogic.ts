@@ -210,23 +210,34 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
         try {
             const validData = baseFilteredData.filter(row => {
-                // Chỉ tính đơn ĐÃ THU TIỀN — đơn "Chưa thu" chưa đủ điều kiện tính doanh thu/số
-                // lượng (đồng nhất với WarehouseSummary/pipeline chuẩn processDataForPeriod)
+                // Chỉ tính đơn ĐÃ THU TIỀN và Trạng thái hồ sơ "MỚI" cho tab Khai Thác
                 const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
                 if (thuTien !== 'đã thu') return false;
+                const trangThaiHoSo = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
+                if (trangThaiHoSo !== 'mới') return false;
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
                 return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                     ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
                     : !normalizedThuHoSet.has(cleanAndNormalize(htx));
             });
 
-            const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
+            const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string, row?: DataRow) => {
                 if (!filters) return false;
                 if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(industry)) {
                     return false;
                 }
                 if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(subgroup)) {
                     return false;
+                }
+                if (filters.excludedSubgroups && filters.excludedSubgroups.length > 0) {
+                    const normSubgroup = cleanAndNormalize(subgroup);
+                    const isExcluded = filters.excludedSubgroups.some(ex => cleanAndNormalize(ex) === normSubgroup);
+                    if (isExcluded) return false;
+                }
+                if (filters.requiredDocumentStatus && row) {
+                    const docStatus = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
+                    const requiredStatus = cleanAndNormalize(filters.requiredDocumentStatus);
+                    if (docStatus !== requiredStatus) return false;
                 }
                 if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(manufacturer)) {
                     return false;
@@ -253,7 +264,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
                 const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
                 const industry = productConfig.childToParentMap[rawGroup] || '';
-                const subgroup = productConfig.childToSubgroupMap[rawGroup] || '';
+                const subgroup = productConfig.childToSubgroupMap[rawGroup] || rawGroup || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
 
@@ -273,10 +284,10 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                         let isBaseMatch = false;
 
                         if (col.type === 'quantity' || col.type === 'revenue') {
-                            isMainMatch = checkMatch(col.filters, industry, subgroup, manufacturer, productCodeStr);
+                            isMainMatch = checkMatch(col.filters, industry, subgroup, manufacturer, productCodeStr, row);
                         } else if (col.type === 'percentage' && col.percentageConfig) {
-                            isMainMatch = checkMatch(col.percentageConfig.numeratorFilters, industry, subgroup, manufacturer, productCodeStr);
-                            isBaseMatch = checkMatch(col.percentageConfig.denominatorFilters, industry, subgroup, manufacturer, productCodeStr);
+                            isMainMatch = checkMatch(col.percentageConfig.numeratorFilters, industry, subgroup, manufacturer, productCodeStr, row);
+                            isBaseMatch = checkMatch(col.percentageConfig.denominatorFilters, industry, subgroup, manufacturer, productCodeStr, row);
                         }
 
                         if (isMainMatch || isBaseMatch) {

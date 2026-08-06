@@ -170,6 +170,8 @@ export interface ColumnFilterCriteria {
     selectedSubgroups: string[];
     selectedManufacturers: string[];
     productCodes: string[];
+    requiredDocumentStatus?: string;
+    excludedSubgroups?: string[];
 }
 
 // Khớp shape FormattingRule cục bộ trong
