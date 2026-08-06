@@ -1856,6 +1856,38 @@
 
             const EXPORT_WIDTH = '720px'; // Mobile-optimized width
 
+            // --- Helper: mở share sheet gốc (AirDrop/LINE/Zalo/Lưu ảnh...) trên mobile, giống
+            // hệt cơ chế downloadBlob/shareBlob của khu vực Phân Tích (services/uiService.ts) —
+            // check-thuong.html là file HTML độc lập, không dùng chung TS module đó được nên viết
+            // lại bản JS thuần tương đương. Chỉ dùng cho xuất ẢNH ĐƠN LẺ — các nút "xuất tất cả"
+            // vẫn tải file bình thường vì share sheet cần bấm xác nhận từng ảnh, không hợp vòng lặp.
+            async function shareOrDownloadDataUrl(dataUrl, filename) {
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+                if (isMobile && navigator.share && navigator.canShare) {
+                    try {
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        const file = new File([blob], filename, { type: 'image/png' });
+                        const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
+                        const shareData = { files: [file], title: displayName, text: displayName };
+                        if (navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                            return;
+                        }
+                    } catch (err) {
+                        if (err && err.name === 'AbortError') return; // Người dùng bấm huỷ share — không phải lỗi
+                        console.error('Lỗi khi chia sẻ:', err);
+                        // rơi xuống tải file bình thường bên dưới
+                    }
+                }
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
             // --- Helper Function for Image Capture ---
             async function captureElementAsImage(element, filename, options = {}) {
                 console.log('Bắt đầu xuất ảnh:', filename);
@@ -1895,12 +1927,7 @@
                         filter: (el) => !(el.classList && (el.classList.contains('backdrop-blur') || el.classList.contains('backdrop-blur-sm')))
                     });
                     console.log('Đã tạo ảnh thành công.');
-                    const link = document.createElement('a');
-                    link.download = filename;
-                    link.href = dataUrl;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    await shareOrDownloadDataUrl(dataUrl, filename);
                 } catch (error) {
                     console.error('Lỗi xuất ảnh:', error);
                     messageEl.textContent = 'Lỗi xuất ảnh: ' + (error.message || error);
