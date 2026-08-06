@@ -124,8 +124,8 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'bh_dt_sl', order: 43, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Bảo hiểm', metricType: 'quantity', mainHeader: 'BẢO HIỂM ĐỐI TÁC', subHeader: 'SL' },
     { id: 'bh_dt_dt', order: 44, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Bảo hiểm', metricType: 'revenue', mainHeader: 'BẢO HIỂM ĐỐI TÁC', subHeader: 'DT' },
     // --- BẢO HIỂM ĐMX ---
-    { id: 'bh_dmx_sl', order: 45, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Bảo hiểm ĐMX', metricType: 'quantity', mainHeader: 'BẢO HIỂM ĐMX', subHeader: 'SL' },
-    { id: 'bh_dmx_dt', order: 46, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Bảo hiểm ĐMX', metricType: 'revenue', mainHeader: 'BẢO HIỂM ĐMX', subHeader: 'DT' },
+    { id: 'bh_dmx_sl', order: 45, isVisible: true, isCustom: false, categoryType: 'subgroup', categoryName: 'Bảo hiểm ĐMX', metricType: 'quantity', mainHeader: 'BẢO HIỂM ĐMX', subHeader: 'SL' },
+    { id: 'bh_dmx_dt', order: 46, isVisible: true, isCustom: false, categoryType: 'subgroup', categoryName: 'Bảo hiểm ĐMX', metricType: 'revenue', mainHeader: 'BẢO HIỂM ĐMX', subHeader: 'DT' },
 ];
 
 // any: hằng số không có nơi nào import/dùng trong repo hiện tại (đã kiểm tra bằng grep) —

@@ -321,7 +321,7 @@ export interface WarehouseSummaryRow {
 }
 
 export type WarehouseMetricType = 'quantity' | 'revenue' | 'revenueQD';
-export type WarehouseCategoryType = 'industry' | 'group' | 'manufacturer';
+export type WarehouseCategoryType = 'industry' | 'group' | 'subgroup' | 'manufacturer';
 export type WarehouseCoreMetric = 'doanhThuThuc' | 'doanhThuQD' | 'hieuQuaQD' | 'slTiepCan' | 'slThuHo' | 'traChamPercent' | 'target' | 'percentHT';
 
 export interface WarehouseColumnConfig {
