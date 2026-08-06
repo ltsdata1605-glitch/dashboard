@@ -3,7 +3,7 @@ import type { ExploitationData, CustomExploitationTabConfig, DataRow, ProductCon
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL } from '../../../constants';
-import { getRowValue, calculateRowMetrics, cleanAndNormalize, normalizedThuHoSet } from '../../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, cleanAndNormalize, normalizedThuHoSet, getParentGroup, getSubgroup } from '../../../utils/dataUtils';
 
 interface DynamicSubHeader {
     label: string;
@@ -249,7 +249,13 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                         const normSub = cleanAndNormalize(subgroup);
                         const hasMatch = filters.selectedSubgroups.some(s => {
                             const normS = cleanAndNormalize(s);
-                            return normSub === normS || normSub.includes(normS);
+                            if (!normSub || !normS) return false;
+                            if (normSub === normS) return true;
+                            if (normSub.startsWith(normS + ' ') || normSub.endsWith(' ' + normS)) return true;
+                            if (normS === 'quạt điều hòa' && normSub.includes('điều hòa')) return true;
+                            if (normS === 'máy lọc nước' && normSub.includes('lọc nước')) return true;
+                            if (normS === 'máy nước nóng lạnh' && (normSub.includes('nước nóng') || normSub.includes('nóng lạnh'))) return true;
+                            return false;
                         });
                         if (!hasMatch) return false;
                     }
@@ -288,8 +294,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const price = Number(getRowValue(row, COL.PRICE)) || 0;
 
                 const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
-                const industry = productConfig.childToParentMap[rawGroup] || '';
-                const subgroup = productConfig.childToSubgroupMap[rawGroup] || rawGroup || '';
+                const industry = getParentGroup(rawGroup, productConfig) || productConfig?.childToParentMap?.[rawGroup] || '';
+                const subgroup = getSubgroup(rawGroup, productConfig) || productConfig?.childToSubgroupMap?.[rawGroup] || rawGroup || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 
                 // Lấy trực tiếp từ cột Mã sản phẩm (Cột AF trong file YCX)

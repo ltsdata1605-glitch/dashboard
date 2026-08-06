@@ -214,6 +214,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV22', true);
             }
 
+            // Migration logic for V23 preset tabs (Strict subgroup matching & clear quat dien false positives)
+            const hasMigratedPresetsV23 = await getSetting('presetTabsMigratedV23') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV23) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV23', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
