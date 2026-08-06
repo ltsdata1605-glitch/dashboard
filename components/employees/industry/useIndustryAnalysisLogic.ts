@@ -210,11 +210,11 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
         try {
             const validData = baseFilteredData.filter(row => {
-                // Chỉ tính đơn ĐÃ THU TIỀN và Trạng thái hồ sơ "MỚI" cho tab Khai Thác
+                // Chỉ tính đơn ĐÃ THU TIỀN và Trạng thái hồ sơ "1 - Mới" cho tab Khai Thác
                 const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
                 if (thuTien !== 'đã thu') return false;
                 const trangThaiHoSo = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
-                if (trangThaiHoSo !== 'mới') return false;
+                if (!trangThaiHoSo.includes('mới') && !trangThaiHoSo.startsWith('1')) return false;
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
                 return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
                     ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
@@ -237,7 +237,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 if (filters.requiredDocumentStatus && row) {
                     const docStatus = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
                     const requiredStatus = cleanAndNormalize(filters.requiredDocumentStatus);
-                    if (docStatus !== requiredStatus) return false;
+                    if (!docStatus.includes(requiredStatus) && !docStatus.includes('mới') && !docStatus.startsWith('1')) return false;
                 }
                 if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(manufacturer)) {
                     return false;

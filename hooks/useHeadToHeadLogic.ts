@@ -63,7 +63,7 @@ export const useHeadToHeadLogic = ({
             if (thu !== 'đã thu') return false;
             
             const hoSo = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
-            if (hoSo !== 'mới') return false;
+            if (!hoSo.includes('mới') && !hoSo.startsWith('1')) return false;
 
             return true;
         };
