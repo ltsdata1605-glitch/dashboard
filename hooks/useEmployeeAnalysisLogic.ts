@@ -203,6 +203,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV21', true);
             }
 
+            // Migration logic for V22 preset tabs (Set exactly 3 subgroups for MLN/QĐH column)
+            const hasMigratedPresetsV22 = await getSetting('presetTabsMigratedV22') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV22) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV22', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
