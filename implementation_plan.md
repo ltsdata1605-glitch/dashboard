@@ -2257,4 +2257,16 @@ User khen "đường kẻ highlight" ở header bảng "Chương trình thi đua
   - `ResultsDisplay.tsx` (sticker-event): chỉ sửa khung "chưa có kết quả tìm kiếm" (placeholder nhỏ) — phần `InstructionsPanel` (hướng dẫn onboarding, icon tròn, shadow-xl) và danh sách `ProductCard` chính giữ nguyên, cùng lý do "thiết kế đặc thù có chủ đích" như hero card đã loại trừ ở bi-dashboard.
 - `npm run check` xanh hoàn toàn sau khi sửa 1 lỗi phát sinh (thêm nhầm màu `indigo` mới cho badge `DailyStatsTable.tsx` bị lint-ratchet chặn — đổi sang `sky`, không tốn thêm "quota" màu indigo không cần thiết).
 
+---
+
+## Mục 64 — Sửa lỗi chiều cao dòng khi xuất ảnh (Hiệu Suất/Khai Thác/7 Ngày) + nhân rộng share sheet mobile cho Check Thưởng
+
+**Phần 1 — Lỗi chiều cao dòng khi xuất ảnh (root, `components/employees/*`)**: user báo bảng "Hiệu Suất" (`PerformanceSingleTable.tsx`) khi xuất ảnh PNG có dòng cao hơn hẳn "Phân Tích Khai Thác" (`IndustryAnalysisTab.tsx`)/"7 Ngày" (`HeadToHeadTable.tsx`). Sau **5 vòng đo pixel thật** trên ảnh xuất ra (không đoán mò — padding đồng loạt, min-height, thu nhỏ badge, reset `<button>`... đều thất bại/vô tác dụng, xem chi tiết quá trình thử-sai trong lịch sử hội thoại), tìm ra root cause thật bằng cách so computed style trực tiếp trên clone lúc xuất ảnh: rule xoá `padding-top/bottom` cho `<div>`/`<p>` trong bước nén `fitAllColumns` (`services/uiService.ts`) **không áp dụng cho `<span>`** — badge dạng `<div>` (Khai Thác/7 Ngày) bị mất `py-0.5`, badge dạng `<span>` (Hiệu Suất) thì không, dù cùng 1 class. **Fix**: bỏ hẳn xoá padding cho div/p/button (chỉ giữ xoá margin). Đo lại xác nhận cả 3 bảng hội tụ ~50px/dòng desktop, ~38px/dòng mobile (đã test cả 2 viewport, gap <0.1%).
+
+**Phần 2 — Nhân rộng share sheet mobile cho "Check Thưởng"**: user muốn cơ chế "xuất ảnh tự mở share sheet gốc (AirDrop/LINE/Zalo/Lưu ảnh...) trên mobile" đã có sẵn ở module Phân Tích (`services/uiService.ts` → `downloadBlob`/`shareBlob`/`canShareFiles`, dùng `navigator.share`) áp dụng thêm cho "Check Thưởng". Đã khảo sát: "Report BI" (bi-dashboard) đã có sẵn cơ chế tương đương (`showExportOptions`) — không cần sửa. **"Check Thưởng" hoá ra là 1 file HTML tĩnh độc lập** (`public/check-thuong.html`, nhúng qua `<iframe>` trong `CheckThuongView.tsx`, KHÔNG dùng chung `services/uiService.ts` vì không phải module TS/React) với ~11 nút xuất ảnh riêng, dùng `htmlToImage.toPng()` + `createElement('a')` tải thẳng, không hề biết mobile.
+
+**Fix**: viết lại bản JS thuần tương đương `downloadBlob`/`shareBlob` (`shareOrDownloadDataUrl()`) ngay trong `check-thuong.html`, gắn vào hàm dùng chung `captureElementAsImage()` (9/11 nút xuất ảnh đơn lẻ gọi qua hàm này). **Cố ý KHÔNG sửa 2 nút "xuất tất cả"** (`exportAllAnalysisRankings`, `exportAllFilteredImages`) — đây là vòng lặp tải nhiều ảnh liên tục tự động, mở share sheet (cần bấm xác nhận/huỷ từng ảnh) sẽ làm gãy tính năng tự động của nút "xuất hàng loạt".
+
+**Phạm vi đã chốt với user** (KHÔNG áp dụng, để nguyên): `features/phan-ca` và `features/sticker-event` — dù audit phát hiện các khu vực này cũng có xuất Excel/PDF/JSON chưa qua share sheet (đặc biệt `PdfPreviewModal.tsx` ở sticker-event, và 1 lỗi gọi hàm export 2 lần ở `StickerEventApp.tsx`) — user chốt chỉ cần 3 khu vực Phân Tích/Check Thưởng/Report BI, không mở rộng thêm.
+
 
