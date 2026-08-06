@@ -223,12 +223,39 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
             const checkMatch = (filters: ColumnFilterCriteria | undefined, industry: string, subgroup: string, manufacturer: string, productCodeStr: string, row?: DataRow) => {
                 if (!filters) return false;
-                if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(industry)) {
-                    return false;
+
+                // 1. Nếu có bộ lọc Mã SP cụ thể
+                if (filters.productCodes && filters.productCodes.length > 0) {
+                    let productCodeMatch = false;
+                    for (const code of filters.productCodes) {
+                        if (code && productCodeStr.includes(code.trim())) {
+                            productCodeMatch = true;
+                            break;
+                        }
+                    }
+                    // Nếu danh sách mã SP có giá trị mà không mã nào khớp -> Trả về false
+                    if (!productCodeMatch) return false;
+                } else {
+                    // Nếu không có bộ lọc Mã SP cụ thể -> Check Ngành hàng & Nhóm hàng
+                    if (filters.selectedIndustries && filters.selectedIndustries.length > 0) {
+                        const normInd = cleanAndNormalize(industry);
+                        const hasMatch = filters.selectedIndustries.some(i => {
+                            const normI = cleanAndNormalize(i);
+                            return normInd === normI || normInd.includes(normI);
+                        });
+                        if (!hasMatch) return false;
+                    }
+                    if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0) {
+                        const normSub = cleanAndNormalize(subgroup);
+                        const hasMatch = filters.selectedSubgroups.some(s => {
+                            const normS = cleanAndNormalize(s);
+                            return normSub === normS || normSub.includes(normS);
+                        });
+                        if (!hasMatch) return false;
+                    }
                 }
-                if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(subgroup)) {
-                    return false;
-                }
+
+                // 2. Kiểm tra nhóm con bị loại trừ (nếu có)
                 if (filters.excludedSubgroups && filters.excludedSubgroups.length > 0) {
                     const normSubgroup = cleanAndNormalize(subgroup);
                     const isExcluded = filters.excludedSubgroups.some(ex => {
@@ -237,24 +264,19 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                     });
                     if (isExcluded) return false;
                 }
+
+                // 3. Kiểm tra Trạng thái hồ sơ bắt buộc (nếu có)
                 if (filters.requiredDocumentStatus && row) {
                     const docStatus = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI));
                     const requiredStatus = cleanAndNormalize(filters.requiredDocumentStatus);
                     if (!docStatus.includes(requiredStatus) && !docStatus.includes('mới') && !docStatus.startsWith('1')) return false;
                 }
+
+                // 4. Kiểm tra Nhà sản xuất (nếu có)
                 if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(manufacturer)) {
                     return false;
                 }
-                if (filters.productCodes && filters.productCodes.length > 0) {
-                    let productCodeMatch = false;
-                    for (const code of filters.productCodes) {
-                        if (productCodeStr.includes(code)) {
-                            productCodeMatch = true;
-                            break;
-                        }
-                    }
-                    if (!productCodeMatch) return false;
-                }
+
                 return true;
             };
 
@@ -269,7 +291,12 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const industry = productConfig.childToParentMap[rawGroup] || '';
                 const subgroup = productConfig.childToSubgroupMap[rawGroup] || rawGroup || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
-                const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
+                
+                // Ghép Mã sản phẩm, Tên sản phẩm và Mã nhóm hàng để tìm kiếm mã SP chính xác tuyệt đối
+                const productCodeVal = String(getRowValue(row, COL.PRODUCT_CODE) || '');
+                const productNameVal = String(getRowValue(row, COL.PRODUCT) || '');
+                const groupCodeVal = String(rawGroup || '');
+                const productCodeStr = `${productCodeVal} ${productNameVal} ${groupCodeVal}`;
 
                 // Bỏ qua sản phẩm không tính doanh thu (đồng nhất với WarehouseSummary)
                 if (industry === 'Không tính doanh thu') return;
