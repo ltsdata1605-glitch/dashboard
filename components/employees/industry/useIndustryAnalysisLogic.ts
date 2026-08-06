@@ -431,6 +431,34 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 });
             }
 
+            // Tính toán đặc thù cho tab BH ĐMX ĐGD (default_tab_bao_hiem_dgd):
+            // SLBH(ĐGD) = ALL SLBH - SLBH(CE) - SLBH(ICT) - SLBH(MLN)
+            const allSlbh = customFields['val_default_tab_all_bhiem_col_all_bh_1'] || 0;
+            const ceSlbh = customFields['val_default_tab_bao_duong_ce_col_bd_ce_1'] || 0;
+            const ictSlbh = customFields['val_default_tab_bao_hiem_ict_col_bh_ict_1'] || 0;
+            const mlnSlbh = customFields['val_default_tab_bao_hiem_mln_col_bh_mln_1'] || 0;
+            const dgdSlbh = Math.max(0, allSlbh - ceSlbh - ictSlbh - mlnSlbh);
+
+            // DTBH(ĐGD) = ALL DTBH - DTBH(CE) - DTBH(ICT) - DTBH(MLN)
+            const allDtbh = customFields['val_default_tab_all_bhiem_col_all_bh_2'] || 0;
+            const ceDtbh = customFields['val_default_tab_bao_duong_ce_col_bd_ce_2'] || 0;
+            const ictDtbh = customFields['val_default_tab_bao_hiem_ict_col_bh_ict_2'] || 0;
+            const mlnDtbh = customFields['val_default_tab_bao_hiem_mln_col_bh_mln_2'] || 0;
+            const dgdDtbh = Math.max(0, allDtbh - ceDtbh - ictDtbh - mlnDtbh);
+
+            // ĐGD (Cột 0): Số lượng SP ĐGD (loại trừ MLN, QĐH, MNN, Bếp gas)
+            const dgdBaseQty = customFields['val_default_tab_bao_hiem_dgd_col_bh_dgd_0'] || 0;
+            const dgdPct = dgdBaseQty > 0 ? (dgdSlbh / dgdBaseQty) * 100 : 0;
+
+            customFields['val_default_tab_bao_hiem_dgd_col_bh_dgd_1'] = dgdSlbh;
+            customFields['val_default_tab_bao_hiem_dgd_col_bh_dgd_2'] = dgdDtbh;
+            customFields['val_default_tab_bao_hiem_dgd_col_bh_dgd_3'] = dgdPct;
+
+            customFields['raw_mainSl_default_tab_bao_hiem_dgd_col_bh_dgd_1'] = dgdSlbh;
+            customFields['raw_mainDt_default_tab_bao_hiem_dgd_col_bh_dgd_2'] = dgdDtbh;
+            customFields['raw_mainSl_default_tab_bao_hiem_dgd_col_bh_dgd_3'] = dgdSlbh;
+            customFields['raw_baseSl_default_tab_bao_hiem_dgd_col_bh_dgd_3'] = dgdBaseQty;
+
             const getCustomTabVal = (tabId: string, colType: string) => {
                 const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
                 const tab = allTabs.find(t => t.id === tabId);
