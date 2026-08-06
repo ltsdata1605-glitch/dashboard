@@ -397,79 +397,80 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                     </div>
                                 </div>
                              </summary>
-                              <div className="pb-3 px-1 sm:px-2 overflow-x-hidden">
-                                 <div className="ml-1 pl-1 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
-                                     <table className="w-full text-[10px] sm:text-sm table-fixed compact-export-table border-collapse">
-                                         <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[9px] sm:text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
-                                             <tr>
-                                                 <th className="py-1 px-1 text-left font-semibold w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]">Mã ĐH</th>
-                                                 <th className="py-1 px-1 text-left font-semibold">Sản phẩm</th>
-                                                 <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[30px]">SL</th>
-                                                 <th className="py-1 px-1 text-right font-semibold w-[55px] min-[360px]:w-[60px] sm:w-[85px] whitespace-nowrap">Doanh Thu</th>
-                                             </tr>
-                                         </thead>
-                                         <tbody>
-                                             {customer.orderGroups.map((group) => {
-                                                return group.lines.map((order, lineIndex) => {
-                                                    const orderId = group.id === 'no-id' ? '-' : group.id;
-                                                    const isUnshipped = group.status === 'Chưa xuất';
-                                                    const price = Number(getRowValue(order, COL.PRICE)) || 0;
-                                                    const isInstallment = getHinhThucThanhToan(order, productConfig) === 'tra_gop';
-                                                    
-                                                    return (
-                                                        <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                                            {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
-                                                                onClick={() => {
-                                                                    if (orderId && orderId !== '-') {
-                                                                        navigator.clipboard.writeText(orderId).then(() => {
-                                                                            const toast = document.createElement('div');
-                                                                            toast.textContent = `\u2713 \u0110\u00e3 sao ch\u00e9p: ${orderId}`;
-                                                                            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
-                                                                            document.body.appendChild(toast);
-                                                                            requestAnimationFrame(() => { toast.style.opacity = '1'; });
-                                                                            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
-                                                                        });
-                                                                    }
-                                                                }}
-                                                                title={orderId !== '-' ? `${isUnshipped ? 'Chưa xuất' : 'Đã xuất'} - Nhấn để sao chép` : ''}
-                                                            >
-                                                                    <div className="flex flex-col items-start justify-center gap-0.5">
-                                                                        <div className="flex items-center gap-1">
-                                                                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isUnshipped ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-                                                                            <span className={`font-mono font-bold text-[10px] sm:text-xs whitespace-nowrap ${isUnshipped ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>{orderId}</span>
-                                                                        </div>
-                                                                        {group.isAttached && (
-                                                                            <span className="inline-flex w-fit items-center px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
-                                                                                Bán kèm
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </td>
-                                                            )}
-                                                            <td className="py-1 px-1 text-left text-[10px] sm:text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
-                                                                <div className="flex items-center gap-1.5 min-w-0 w-full">
-                                                                    <span className="truncate text-slate-700 dark:text-slate-300" title={getRowValue(order, COL.PRODUCT) as string}>
-                                                                        {getRowValue(order, COL.PRODUCT)}
-                                                                    </span>
-                                                                    {isInstallment && (
-                                                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex-shrink-0 whitespace-nowrap leading-none">
-                                                                            Trả góp
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                            <td className="py-1 px-1 text-center text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                            <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[10px] sm:text-xs">{formatCurrency(price)}</td>
+                               
+                               <div className="pb-3 px-1 sm:px-2 overflow-x-hidden">
+                                  <div className="ml-1 pl-1 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
+                                      <table className="w-full text-[10px] sm:text-sm table-fixed compact-export-table border-collapse">
+                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[9px] sm:text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
+                                              <tr>
+                                                  <th className="py-1 px-1 text-left font-semibold w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]">Mã ĐH</th>
+                                                  <th className="py-1 px-1 text-left font-semibold">Sản phẩm</th>
+                                                  <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[30px]">SL</th>
+                                                  <th className="py-1 px-1 text-right font-semibold w-[65px] min-[360px]:w-[70px] sm:w-[90px] whitespace-nowrap">Doanh Thu</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              {customer.orderGroups.map((group) => {
+                                                 return group.lines.map((order, lineIndex) => {
+                                                     const orderId = group.id === 'no-id' ? '-' : group.id;
+                                                     const isUnshipped = group.status === 'Chưa xuất';
+                                                     const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                                                     const isInstallment = getHinhThucThanhToan(order, productConfig) === 'tra_gop';
+                                                     
+                                                     return (
+                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                                             {lineIndex === 0 && (
+                                                             <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
+                                                                 onClick={() => {
+                                                                     if (orderId && orderId !== '-') {
+                                                                         navigator.clipboard.writeText(orderId).then(() => {
+                                                                             const toast = document.createElement('div');
+                                                                             toast.textContent = `✓ Đã sao chép: ${orderId}`;
+                                                                             toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
+                                                                             document.body.appendChild(toast);
+                                                                             requestAnimationFrame(() => { toast.style.opacity = '1'; });
+                                                                             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
+                                                                         });
+                                                                     }
+                                                                 }}
+                                                                 title={orderId !== '-' ? `${isUnshipped ? 'Chưa xuất' : 'Đã xuất'} - Nhấn để sao chép` : ''}
+                                                             >
+                                                                     <div className="flex flex-col items-start justify-center gap-0.5">
+                                                                         <div className="flex items-center gap-1">
+                                                                             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isUnshipped ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+                                                                             <span className={`font-mono font-bold text-[10px] sm:text-xs whitespace-nowrap ${isUnshipped ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>{orderId}</span>
+                                                                         </div>
+                                                                         {group.isAttached && (
+                                                                             <span className="inline-flex w-fit items-center px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100 shadow-sm leading-none ring-1 ring-emerald-300/30">
+                                                                                 Bán kèm
+                                                                             </span>
+                                                                         )}
+                                                                     </div>
+                                                                 </td>
+                                                             )}
+                                                             <td className="py-1 px-1 text-left text-[10px] sm:text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                                 <div className="flex items-center gap-1.5 min-w-0 w-full">
+                                                                     <span className="text-slate-700 dark:text-slate-300 break-words leading-tight" title={getRowValue(order, COL.PRODUCT) as string}>
+                                                                         {getRowValue(order, COL.PRODUCT)}
+                                                                     </span>
+                                                                     {isInstallment && (
+                                                                         <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex-shrink-0 whitespace-nowrap leading-none">
+                                                                             Trả góp
+                                                                         </span>
+                                                                     )}
+                                                                 </div>
+                                                             </td>
+                                                             <td className="py-1 px-1 text-center text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                             <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[10px] sm:text-xs w-[65px] min-[360px]:w-[70px] sm:w-[90px]">{formatCurrency(price)}</td>
 
-                                                        </tr>
-                                                    );
-                                                });
-                                             })}
-                                         </tbody>
-                                     </table>
-                                 </div>
-                              </div>
+                                                         </tr>
+                                                     );
+                                                 });
+                                              })}
+                                          </tbody>
+                                      </table>
+                                  </div>
+                               </div>
                         </details>
                                 </React.Fragment>
                             );

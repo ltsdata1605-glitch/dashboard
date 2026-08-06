@@ -226,6 +226,17 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         }
 
         const text = el.textContent?.trim() || '';
+        const isInTable = !!el.closest('table, .compact-export-table');
+
+        if (isInTable) {
+            if (el.classList.contains('truncate')) {
+                el.classList.remove('truncate');
+                el.style.setProperty('white-space', 'normal', 'important');
+                el.style.setProperty('word-break', 'break-word', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+            }
+            return;
+        }
         
         // Target elements with truncate class or matching employee name pattern
         if (el.classList.contains('truncate') || isEmployeeNamePattern(text)) {
