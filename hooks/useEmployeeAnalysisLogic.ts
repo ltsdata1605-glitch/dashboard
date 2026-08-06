@@ -126,6 +126,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV14', true);
             }
 
+            // Migration logic for V15 preset tabs (Exclude Bếp gas from ĐGD column in BH ĐMX ĐGD tab)
+            const hasMigratedPresetsV15 = await getSetting('presetTabsMigratedV15') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV15) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV15', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
