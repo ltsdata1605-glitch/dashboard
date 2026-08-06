@@ -137,6 +137,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV15', true);
             }
 
+            // Migration logic for V16 preset tabs (Update ALL B.HIỂM industry filters to Bảo hiểm)
+            const hasMigratedPresetsV16 = await getSetting('presetTabsMigratedV16') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV16) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV16', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
