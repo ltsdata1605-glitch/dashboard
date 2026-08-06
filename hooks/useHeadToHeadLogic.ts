@@ -186,7 +186,7 @@ export const useHeadToHeadLogic = ({
                     const parentGroup = getParentGroup(maNhomHang, productConfig) || '';
                     const subgroup = getSubgroup(maNhomHang, productConfig) || '';
                     const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
-                    const productCode = getRowValue(row, COL.PRODUCT) || '';
+                    const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
                     
                     const hasOldFilters = (cfg.selectedParentGroups?.length || 0) > 0 || (cfg.selectedSubgroups?.length || 0) > 0;
                     if (hasOldFilters) {
@@ -200,7 +200,7 @@ export const useHeadToHeadLogic = ({
                     const mInds = cfg.filters.selectedIndustries.length === 0 || cfg.filters.selectedIndustries.includes(parentGroup);
                     const mSubs = cfg.filters.selectedSubgroups.length === 0 || cfg.filters.selectedSubgroups.includes(subgroup);
                     const mMans = cfg.filters.selectedManufacturers.length === 0 || cfg.filters.selectedManufacturers.includes(manufacturer);
-                    const mProds = cfg.filters.productCodes.length === 0 || cfg.filters.productCodes.some(c => productCode.includes(c));
+                    const mProds = cfg.filters.productCodes.length === 0 || cfg.filters.productCodes.some(c => c && productCode.includes(c.trim()));
                     
                     let mPrice = true;
                     if (cfg.filters.priceCondition) {

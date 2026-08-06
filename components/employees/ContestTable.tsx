@@ -118,7 +118,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 const industry = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || '';
                 const subgroup = getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
-                const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
+                const productCodeStr = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
 
                 const filters = col.filters;
                 if (!filters) return true; // No filters, include all data
@@ -130,7 +130,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 let productCodeMatch = filters.productCodes.length === 0;
                 if (!productCodeMatch) {
                     for (const code of filters.productCodes) {
-                        if (productNameStr.includes(code)) {
+                        if (code && productCodeStr.includes(code.trim())) {
                             productCodeMatch = true;
                             break;
                         }

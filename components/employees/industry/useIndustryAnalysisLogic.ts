@@ -292,11 +292,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const subgroup = productConfig.childToSubgroupMap[rawGroup] || rawGroup || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 
-                // Ghép Mã sản phẩm, Tên sản phẩm và Mã nhóm hàng để tìm kiếm mã SP chính xác tuyệt đối
-                const productCodeVal = String(getRowValue(row, COL.PRODUCT_CODE) || '');
-                const productNameVal = String(getRowValue(row, COL.PRODUCT) || '');
-                const groupCodeVal = String(rawGroup || '');
-                const productCodeStr = `${productCodeVal} ${productNameVal} ${groupCodeVal}`;
+                // Lấy trực tiếp từ cột Mã sản phẩm (Cột AF trong file YCX)
+                const productCodeStr = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
 
                 // Bỏ qua sản phẩm không tính doanh thu (đồng nhất với WarehouseSummary)
                 if (industry === 'Không tính doanh thu') return;

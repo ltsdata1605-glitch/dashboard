@@ -20,7 +20,7 @@ export const COL = {
     MA_NGANH_HANG: ['Ngành Hàng', 'Ngành hàng'],
     MA_NHOM_HANG: ['Nhóm Hàng', 'Nhóm hàng'],
     MANUFACTURER: ['Nhà sản xuất', 'Hãng'],
-    PRODUCT_CODE: ['Mã sản phẩm'],
+    PRODUCT_CODE: ['Mã sản phẩm', 'Mã SP', 'Mã sp', 'Mã Hàng', 'Mã hàng'],
     KHO_TAO: ['Kho tạo', 'Kho Tạo'],
     TRANG_THAI_GIAO_HANG: ['Trạng thái giao hàng', 'Trạng thái giao'],
     CON_NO: ['Còn nợ', 'Còn Nợ']
