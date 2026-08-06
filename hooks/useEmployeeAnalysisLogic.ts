@@ -159,6 +159,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV17', true);
             }
 
+            // Migration logic for V18 preset tabs (Add new BH ĐMX ĐGD tab with BH ĐMX MLN column filtering 3 subgroups)
+            const hasMigratedPresetsV18 = await getSetting('presetTabsMigratedV18') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV18) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV18', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }

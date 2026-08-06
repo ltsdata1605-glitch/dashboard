@@ -20,6 +20,7 @@ export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
     spChinh: 'slSPChinh_Tong',
     default_tab_bao_duong_ce: 'val_default_tab_bao_duong_ce_col_bd_ce_3',
     default_tab_bao_hiem_ict: 'val_default_tab_bao_hiem_ict_col_bh_ict_3',
+    default_tab_bao_hiem_mln: 'val_default_tab_bao_hiem_mln_col_bh_mln_3',
     default_tab_bao_hiem_dgd: 'val_default_tab_bao_hiem_dgd_col_bh_dgd_3',
     default_tab_all_bhiem: 'val_default_tab_all_bhiem_col_all_bh_3',
     default_tab_phu_kien: 'val_default_tab_phu_kien_col_pk_6',
