@@ -234,10 +234,11 @@ export const clearAllUsers = async (storeId: string) => {
 
 
 
-export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: SavedListItem[]) => {
-  if (!storeId || !userId) throw new Error("Mã kho và User ID là bắt buộc.");
+export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: any[], stickerMeta?: { stickerType?: string; headerTextContent?: string; pages?: any[] }) => {
+  if (!userId) throw new Error("User ID là bắt buộc.");
+  const targetStoreId = storeId || 'SUPERADMIN';
   
-  const listsRef = collection(db, 'stores', storeId, 'savedLists');
+  const listsRef = collection(db, 'stores', targetStoreId, 'savedLists');
   const newListRef = doc(listsRef);
   
   try {
@@ -245,40 +246,62 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
       id: newListRef.id,
       name: listName,
       userId,
-      storeId,
+      storeId: targetStoreId,
       createdAt: new Date().toISOString(),
       items: JSON.stringify(items),
-      totalItems: items.length
+      totalItems: items.length,
+      ...(stickerMeta ? { stickerMeta: JSON.stringify(stickerMeta) } : {})
     });
+    return newListRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, `stores/${storeId}/savedLists`);
+    handleFirestoreError(error, OperationType.WRITE, `stores/${targetStoreId}/savedLists`);
+    throw error;
   }
 };
 
 export const fetchSavedListsFromFirestore = async (storeId: string, userId?: string): Promise<SavedList[]> => {
-  if (!storeId) return [];
-  
-  const listsRef = collection(db, 'stores', storeId, 'savedLists');
-  try {
-    let q = query(listsRef, limit(30)); // Limit reads to save Firebase quota
-    if (userId) {
-      q = query(listsRef, where('userId', '==', userId), limit(30));
-    }
-    const snapshot = await getDocs(q);
-    
-    const lists: SavedList[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        ...data,
-        items: JSON.parse(data.items || '[]')
-      } as SavedList;
-    });
+  const storeIdsToFetch = Array.from(new Set([storeId, 'SUPERADMIN'].filter(Boolean)));
+  let combinedLists: SavedList[] = [];
 
-    return lists.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, `stores/${storeId}/savedLists`);
-    return [];
+  for (const sId of storeIdsToFetch) {
+    const listsRef = collection(db, 'stores', sId, 'savedLists');
+    try {
+      let q = query(listsRef, limit(50));
+      if (userId) {
+        q = query(listsRef, where('userId', '==', userId), limit(50));
+      }
+      const snapshot = await getDocs(q);
+      
+      const lists: SavedList[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        let parsedItems = [];
+        try {
+          parsedItems = JSON.parse(data.items || '[]');
+        } catch (e) {
+          console.error("Error parsing items JSON:", e);
+        }
+        let parsedStickerMeta = undefined;
+        if (data.stickerMeta) {
+          try {
+            parsedStickerMeta = JSON.parse(data.stickerMeta);
+          } catch (e) {}
+        }
+        return {
+          ...data,
+          items: parsedItems,
+          stickerMeta: parsedStickerMeta
+        } as SavedList & { stickerMeta?: any };
+      });
+      combinedLists = combinedLists.concat(lists);
+    } catch (error) {
+      console.warn(`Fetch saved lists failed for store ${sId}:`, error);
+    }
   }
+
+  // Remove duplicates by ID and sort by createdAt descending
+  const map = new Map<string, SavedList>();
+  combinedLists.forEach(item => map.set(item.id, item));
+  return Array.from(map.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
 export const deleteSavedListFromFirestore = async (storeId: string, listId: string) => {

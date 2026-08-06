@@ -279,7 +279,32 @@ export function useStickerEventState({
             console.error("[Cloud Sync Sticker] Error auto-saving to cloud:", e);
           }
         }
-      }, 2000);
+      }, 1000);
+
+      const handleFlushSave = () => {
+        saveDisplayedProducts(displayedProducts).catch(console.error);
+        if (user) {
+          saveUserState(user.uid, {
+            displayedProducts,
+            inventoryFilters
+          }).catch(console.error);
+        }
+      };
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          handleFlushSave();
+        }
+      };
+
+      window.addEventListener('beforeunload', handleFlushSave);
+      window.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        if (saveDisplayedProductsTimeoutRef.current) clearTimeout(saveDisplayedProductsTimeoutRef.current);
+        window.removeEventListener('beforeunload', handleFlushSave);
+        window.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [displayedProducts, inventoryFilters, isInitializing, user]);
 

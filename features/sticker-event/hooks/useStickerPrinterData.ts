@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { saveSetting, getSetting } from '../services/dbService';
+import { saveListToFirestore, fetchSavedListsFromFirestore } from '../services/firebaseService';
+import { auth } from '../firebase';
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from '../stickerprinter/types';
 import { resolvePagePrices, generatePageHtml, isHistoryDuplicate, generateDrawPagesHtml } from '../stickerprinter/pageHtmlUtils';
 import { parsePercentValue, parseBatchItemsFromExcelRows, downloadStickerTemplate, parseTemplateExcelData, parseErpPriceExcelData } from '../stickerprinter/excelParsers';
@@ -564,7 +566,66 @@ export function useStickerPrinterData() {
                 console.error("IndexedDB save failed", e);
             }
         }, 500);
-        return () => clearTimeout(timer);
+
+        // Emergency immediate save on tab unload or hide
+        const handleFlushSave = () => {
+            const dataToSave = {
+                stickerMode,
+                stickerType,
+                bgImage,
+                headerTextContent,
+                subHeaderTextContent,
+                footerTextContent,
+                showBarcode,
+                previewName,
+                previewOldPrice,
+                previewNewPrice,
+                discountDisplayMode,
+                headerTextSize,
+                subHeaderTextSize,
+                percentTextSize,
+                oldPriceTextSize,
+                nameTextSize,
+                newPriceTextSize,
+                footerTextSize,
+                barcodeImei,
+                discountThreshold,
+                searchTerm,
+                activeQueuePageId,
+                activeSubTab,
+                manualPages,
+                batchItems,
+                priceSource,
+                drawTickets,
+                drawStartNumber,
+                drawTotalTickets,
+                drawAutoIncrement,
+                drawContentTopLeftSize,
+                drawContentTopRightSize,
+                drawContentBottomLeftSize,
+                drawContentBottomRightSize,
+                drawTitleSize,
+                drawCodeSize,
+                drawFooterSize,
+                updatedAt: new Date().toISOString()
+            };
+            saveSetting(STICKER_DB_KEY, dataToSave).catch(e => console.error("Flush save failed", e));
+        };
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'hidden') {
+                handleFlushSave();
+            }
+        };
+
+        window.addEventListener('beforeunload', handleFlushSave);
+        window.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('beforeunload', handleFlushSave);
+            window.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, [
         isLoaded, stickerMode, stickerType, bgImage, headerTextContent, subHeaderTextContent,
         footerTextContent, showBarcode, previewName, previewOldPrice, previewNewPrice,
@@ -846,7 +907,7 @@ export function useStickerPrinterData() {
         setIsSaveListModalOpen(true);
     };
 
-    const handleSaveCurrentList = (name: string) => {
+    const handleSaveCurrentList = async (name: string) => {
         const list: SavedStickerList = {
             id: `list_${Date.now()}`,
             name,
@@ -855,14 +916,104 @@ export function useStickerPrinterData() {
             stickerType,
             headerTextContent,
         };
+
         setSavedLists(prev => {
-            const next = [list, ...prev].slice(0, 20);
+            const next = [list, ...prev].slice(0, 50);
             saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
             return next;
         });
+
+        // Save to Firestore Cloud for cross-device sync (Laptop <-> Mobile)
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            try {
+                const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
+                let storeId = 'SUPERADMIN';
+                if (cachedData) {
+                    try {
+                        const parsed = JSON.parse(cachedData);
+                        if (parsed.storeId) storeId = parsed.storeId;
+                    } catch (e) {}
+                }
+                const itemsToSave = manualPages.map(p => ({
+                    msp: p.code || p.id,
+                    sanPham: p.label,
+                    giaGoc: p.oldPrice,
+                    giaGiam: p.newPrice,
+                    khuyenMai: p.percent,
+                    quantity: 1,
+                    header: p.header,
+                    subHeader: p.subHeader,
+                    footer: p.footer,
+                    discountDisplayMode: p.discountDisplayMode,
+                }));
+                await saveListToFirestore(storeId, currentUser.uid, name, itemsToSave, {
+                    stickerType,
+                    headerTextContent,
+                    pages: manualPages,
+                });
+            } catch (err) {
+                console.error("[Cloud Sync] Error saving list to Firestore:", err);
+            }
+        }
+
         setIsSaveListModalOpen(false);
         toast.success(`Đã lưu danh sách "${name}" thành công!`);
     };
+
+    const toggleShowSavedLists = useCallback(async () => {
+        const nextState = !showSavedLists;
+        setShowSavedLists(nextState);
+        if (nextState && auth.currentUser) {
+            try {
+                const currentUser = auth.currentUser;
+                const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
+                let storeId = 'SUPERADMIN';
+                if (cachedData) {
+                    try {
+                        const parsed = JSON.parse(cachedData);
+                        if (parsed.storeId) storeId = parsed.storeId;
+                    } catch (e) {}
+                }
+                const cloudLists = await fetchSavedListsFromFirestore(storeId, currentUser.uid);
+                if (cloudLists.length > 0) {
+                    const formattedLists: SavedStickerList[] = cloudLists.map((c: any) => {
+                        let pages: StickerPage[] = [];
+                        if (c.stickerMeta?.pages) {
+                            pages = c.stickerMeta.pages;
+                        } else if (Array.isArray(c.items)) {
+                            pages = c.items.map((item: any, idx: number) => ({
+                                id: item.msp || `page_${idx}`,
+                                label: item.sanPham || item.name || 'Sản phẩm',
+                                oldPrice: item.giaGoc || '',
+                                newPrice: item.giaGiam || '',
+                                percent: item.khuyenMai || '',
+                                timestamp: Date.now(),
+                                code: item.msp || '',
+                                header: item.header,
+                                subHeader: item.subHeader,
+                                footer: item.footer,
+                                discountDisplayMode: item.discountDisplayMode,
+                                html: ''
+                            }));
+                        }
+                        return {
+                            id: c.id,
+                            name: c.name,
+                            pages,
+                            timestamp: new Date(c.createdAt).getTime() || Date.now(),
+                            stickerType: c.stickerMeta?.stickerType || 'gia_soc',
+                            headerTextContent: c.stickerMeta?.headerTextContent || '',
+                        };
+                    });
+                    setSavedLists(formattedLists);
+                    saveSetting(STICKER_SAVED_LISTS_KEY, formattedLists).catch(() => {});
+                }
+            } catch (err) {
+                console.error("[Cloud Sync] Error fetching saved lists from Firestore:", err);
+            }
+        }
+    }, [showSavedLists]);
 
     const loadSavedList = (list: SavedStickerList) => {
         setManualPages(list.pages);
@@ -1196,7 +1347,7 @@ export function useStickerPrinterData() {
         printHistory, setPrintHistory,
         showHistory, setShowHistory,
         savedLists, setSavedLists,
-        showSavedLists, setShowSavedLists,
+        showSavedLists, setShowSavedLists: toggleShowSavedLists,
         previewName, setPreviewName,
         previewOldPrice, setPreviewOldPrice,
         previewNewPrice, setPreviewNewPrice,
