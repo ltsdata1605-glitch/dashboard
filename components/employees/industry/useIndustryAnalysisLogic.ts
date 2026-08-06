@@ -231,7 +231,10 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 }
                 if (filters.excludedSubgroups && filters.excludedSubgroups.length > 0) {
                     const normSubgroup = cleanAndNormalize(subgroup);
-                    const isExcluded = filters.excludedSubgroups.some(ex => cleanAndNormalize(ex) === normSubgroup);
+                    const isExcluded = filters.excludedSubgroups.some(ex => {
+                        const normEx = cleanAndNormalize(ex);
+                        return normSubgroup === normEx || normSubgroup.includes(normEx);
+                    });
                     if (isExcluded) return false;
                 }
                 if (filters.requiredDocumentStatus && row) {
