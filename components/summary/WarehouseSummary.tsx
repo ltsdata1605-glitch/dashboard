@@ -88,6 +88,21 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         saveSetting('warehouseSummaryKhoFilter', selected).catch(console.error);
     };
 
+    // Bộ lọc Siêu thị và Tổng dành riêng cho Chế độ xem Dọc (Lưu vào Firebase / IndexedDB)
+    const [verticalKhoFilter, setVerticalKhoFilter] = useState<string[]>([]);
+    useEffect(() => {
+        getSetting<string[]>('warehouseVerticalKhoFilter').then(saved => {
+            if (saved) setVerticalKhoFilter(saved);
+        }).catch(console.error);
+    }, []);
+
+    const handleVerticalKhoFilterChange = (selected: string[]) => {
+        setVerticalKhoFilter(selected);
+        saveSetting('warehouseVerticalKhoFilter', selected).catch(console.error);
+    };
+
+    const verticalOptions = useMemo(() => ['TỔNG', ...khoOptions], [khoOptions]);
+
     const [showTotalColumn, setShowTotalColumn] = useState(true);
     useEffect(() => {
         getSetting<boolean>('warehouseSummaryShowTotal').then(saved => {
@@ -384,6 +399,18 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         return sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     }, [sortedData, currentPage]);
 
+    const displayedVerticalData = useMemo(() => {
+        if (!verticalKhoFilter || verticalKhoFilter.length === 0) return currentData;
+        const selectedKhos = new Set(verticalKhoFilter.filter(k => k !== 'TỔNG'));
+        if (selectedKhos.size === 0) return currentData;
+        return currentData.filter(d => selectedKhos.has(d.khoName));
+    }, [currentData, verticalKhoFilter]);
+
+    const showVerticalTotal = useMemo(() => {
+        if (!verticalKhoFilter || verticalKhoFilter.length === 0) return true;
+        return verticalKhoFilter.includes('TỔNG');
+    }, [verticalKhoFilter]);
+
     const groupedHeaders = useMemo(() => {
         const groups: { name: string; colSpan: number; startIndex: number }[] = [];
         if (visibleColumns.length === 0) return groups;
@@ -512,6 +539,18 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={5} className="hidden lg:block" />
                             <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
                         </Button>
+
+                        {/* Nút lọc Siêu thị & Tổng dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
+                        {viewMode === 'vertical' && (
+                            <MultiSelectDropdown
+                                options={verticalOptions}
+                                selected={verticalKhoFilter.length === 0 ? verticalOptions : verticalKhoFilter}
+                                onChange={handleVerticalKhoFilterChange}
+                                label="Lọc Siêu thị & Tổng"
+                                variant="compact"
+                                className="z-30"
+                            />
+                        )}
 
                         {/* Divider */}
                         <div className="hidden lg:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
@@ -836,26 +875,32 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[10px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] align-middle">
                                     Nhóm / Chỉ Số
                                 </th>
-                                {currentData.map(row => (
+                                {displayedVerticalData.map(row => (
                                     <th key={row.khoName} colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-900 bg-slate-50 border-b border-slate-200 border-r border-slate-200 min-w-[70px] sm:min-w-[90px]">
                                         {row.khoName}
                                     </th>
                                 ))}
-                                <th colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-500 bg-slate-100 border-b border-slate-200 min-w-[70px] sm:min-w-[90px] uppercase tracking-wider">
-                                    Tổng
-                                </th>
+                                {showVerticalTotal && (
+                                    <th colSpan={3} className="px-2 sm:px-3 py-1.5 sm:py-3 text-center font-extrabold text-[11px] sm:text-[13px] text-slate-500 bg-slate-100 border-b border-slate-200 min-w-[70px] sm:min-w-[90px] uppercase tracking-wider">
+                                        Tổng
+                                    </th>
+                                )}
                             </tr>
                             <tr className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
-                                {currentData.map(row => (
+                                {displayedVerticalData.map(row => (
                                     <React.Fragment key={`sub-${row.khoName}`}>
                                         <th className="px-1 py-1 text-center text-slate-500 bg-slate-50 border-b-[3px] !border-b-slate-400 border-r border-slate-100">M.Tiêu</th>
                                         <th className="px-1 py-1 text-center text-sky-600 bg-sky-50/60 border-b-[3px] !border-b-sky-400 border-r border-slate-100">Real</th>
                                         <th className="px-1 py-1 text-center text-amber-600 bg-amber-50/60 border-b-[3px] !border-b-amber-400 border-r border-slate-200">%HT</th>
                                     </React.Fragment>
                                 ))}
-                                <th className="px-1 py-1 text-center text-slate-500 bg-slate-100 border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
-                                <th className="px-1 py-1 text-center text-sky-600 bg-slate-100 border-b-[3px] !border-b-sky-400 border-r border-slate-200">Real</th>
-                                <th className="px-1 py-1 text-center text-amber-600 bg-slate-100 border-b-[3px] !border-b-amber-400">%HT</th>
+                                {showVerticalTotal && (
+                                    <>
+                                        <th className="px-1 py-1 text-center text-slate-500 bg-slate-100 border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-sky-600 bg-slate-100 border-b-[3px] !border-b-sky-400 border-r border-slate-200">Real</th>
+                                        <th className="px-1 py-1 text-center text-amber-600 bg-slate-100 border-b-[3px] !border-b-amber-400">%HT</th>
+                                    </>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -867,7 +912,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 };
                                 const rows: React.ReactNode[] = [];
                                 let lastGroupName = '';
-                                const groupDividerColSpan = currentData.length * 3 + 4;
+                                const groupDividerColSpan = displayedVerticalData.length * 3 + 1 + (showVerticalTotal ? 3 : 0);
 
                                 visibleColumns.forEach((col, colIdx) => {
                                     // Mục 62: TAR/%HT của Doanh Thu đã gộp vào dòng DTQĐ (3 cột M.Tiêu|Real|%HT), không render riêng nữa
@@ -901,7 +946,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[10px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                                     {col.subHeader}
                                                 </td>
-                                                {currentData.map(row => {
+                                                {displayedVerticalData.map(row => {
                                                     const real = getColumnValue(row, col) || 0;
                                                     const monthly = targetMap[row.khoName] || 0;
                                                     const targetDisplay = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
@@ -953,7 +998,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                     );
                                                 })}
                                                 {/* Total column (3 cột) */}
-                                                {(() => {
+                                                {showVerticalTotal && (() => {
                                                     const totalReal = customTotals.get(col.id) || 0;
                                                     const totalMonthly = data.reduce((s, r) => s + (targetMap[r.khoName] || 0), 0);
                                                     const totalTargetDisplay = isLuyKe ? totalMonthly : (totalMonthly > 0 ? totalMonthly / daysInMonth : 0);
@@ -988,13 +1033,13 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 {col.subHeader}
                                             </td>
                                             {/* Values for each kho */}
-                                            {currentData.map(row => {
+                                            {displayedVerticalData.map(row => {
                                                 const value = getColumnValue(row, col);
 
                                                 // Conditional formatting
                                                 let avg: number | undefined;
                                                 if (col.conditionalFormatting?.some(r => r.condition === '>avg' || r.condition === '<avg')) {
-                                                    const totalRows = currentData.length || 1;
+                                                    const totalRows = displayedVerticalData.length || 1;
                                                     if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
                                                         avg = (totals[col.metric as keyof typeof totals] as number) / totalRows;
                                                     } else if (customTotals.get(col.id) !== undefined) {
@@ -1046,7 +1091,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 );
                                             })}
                                             {/* Total column */}
-                                            {(() => {
+                                            {showVerticalTotal && (() => {
                                                 let totalVal: number;
                                                 if (col.isCustom) {
                                                     totalVal = customTotals.get(col.id) || 0;
