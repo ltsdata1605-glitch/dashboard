@@ -237,6 +237,7 @@ export const clearAllUsers = async (storeId: string) => {
 export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: any[], stickerMeta?: { stickerType?: string; headerTextContent?: string; pages?: any[] }) => {
   if (!userId) throw new Error("User ID là bắt buộc.");
   const targetStoreId = storeId || 'SUPERADMIN';
+  const currentUid = auth.currentUser?.uid || '';
   
   const listsRef = collection(db, 'stores', targetStoreId, 'savedLists');
   const newListRef = doc(listsRef);
@@ -246,6 +247,7 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
       id: newListRef.id,
       name: listName,
       userId,
+      authUid: currentUid,
       storeId: targetStoreId,
       createdAt: new Date().toISOString(),
       items: JSON.stringify(items),
@@ -259,39 +261,53 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
   }
 };
 
-export const fetchSavedListsFromFirestore = async (storeId: string, userId?: string): Promise<SavedList[]> => {
+export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifier?: string): Promise<SavedList[]> => {
   const storeIdsToFetch = Array.from(new Set([storeId, 'SUPERADMIN'].filter(Boolean)));
   let combinedLists: SavedList[] = [];
+  const currentUid = auth.currentUser?.uid || '';
 
   for (const sId of storeIdsToFetch) {
     const listsRef = collection(db, 'stores', sId, 'savedLists');
     try {
-      let q = query(listsRef, limit(50));
-      if (userId) {
-        q = query(listsRef, where('userId', '==', userId), limit(50));
-      }
+      const q = query(listsRef, limit(100));
       const snapshot = await getDocs(q);
       
-      const lists: SavedList[] = snapshot.docs.map(doc => {
-        const data = doc.data();
-        let parsedItems = [];
-        try {
-          parsedItems = JSON.parse(data.items || '[]');
-        } catch (e) {
-          console.error("Error parsing items JSON:", e);
-        }
-        let parsedStickerMeta = undefined;
-        if (data.stickerMeta) {
+      const lists: SavedList[] = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          let parsedItems = [];
           try {
-            parsedStickerMeta = JSON.parse(data.stickerMeta);
-          } catch (e) {}
-        }
-        return {
-          ...data,
-          items: parsedItems,
-          stickerMeta: parsedStickerMeta
-        } as SavedList & { stickerMeta?: any };
-      });
+            parsedItems = JSON.parse(data.items || '[]');
+          } catch (e) {
+            console.error("Error parsing items JSON:", e);
+          }
+          let parsedStickerMeta = undefined;
+          if (data.stickerMeta) {
+            try {
+              parsedStickerMeta = JSON.parse(data.stickerMeta);
+            } catch (e) {}
+          }
+          return {
+            ...data,
+            items: parsedItems,
+            stickerMeta: parsedStickerMeta
+          } as SavedList & { stickerMeta?: any };
+        })
+        .filter(item => {
+          if (!userIdentifier) return true; // Admin / SuperAdmin xem toàn bộ danh sách
+          const itemUserId = String(item.userId || '').toLowerCase();
+          const itemAuthUid = String((item as any).authUid || '').toLowerCase();
+          const targetId = String(userIdentifier || '').toLowerCase();
+          const targetUid = String(currentUid).toLowerCase();
+
+          return (
+            itemUserId === targetId ||
+            itemAuthUid === targetId ||
+            (targetUid && itemAuthUid === targetUid) ||
+            (targetUid && itemUserId === targetUid)
+          );
+        });
+
       combinedLists = combinedLists.concat(lists);
     } catch (error) {
       console.warn(`Fetch saved lists failed for store ${sId}:`, error);
