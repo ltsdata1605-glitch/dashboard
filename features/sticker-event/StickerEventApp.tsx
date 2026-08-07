@@ -3,6 +3,7 @@ import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
 import { fetchUserState, saveUserState, saveListToFirestore } from './services/firebaseService';
+import { getSetting } from '../../services/dbService';
 import ResultsDisplay from './ResultsDisplay';
 import Scanner from './Scanner';
 import PrintSettingsModal from './PrintSettingsModal';
@@ -387,8 +388,20 @@ export default function App(): React.JSX.Element {
         msp: p.msp,
         quantity: p.quantity,
       }));
-      const targetStoreId = userData?.storeId || 'SUPERADMIN';
-      const usernameToSave = userData?.username || user!.uid;
+      let targetStoreId = userData?.storeId;
+      if (!targetStoreId || targetStoreId === 'SUPERADMIN') {
+        const cachedDept = await getSetting<string>('cached_dept_id');
+        if (cachedDept) targetStoreId = cachedDept;
+      }
+      if (!targetStoreId) targetStoreId = 'SUPERADMIN';
+
+      let usernameToSave = userData?.username;
+      if (!usernameToSave) {
+        const cachedName = await getSetting<string>('cached_emp_name');
+        if (cachedName) usernameToSave = cachedName;
+      }
+      if (!usernameToSave) usernameToSave = user!.uid;
+
       await saveListToFirestore(targetStoreId, usernameToSave, listName, itemsToSave);
       
       await saveUserState(user!.uid, {

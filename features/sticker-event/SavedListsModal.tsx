@@ -36,8 +36,16 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
         setIsLoading(true);
         setError(null);
         try {
+            let targetStoreId = storeId;
+            if (!targetStoreId || targetStoreId === 'SUPERADMIN') {
+                const { getSetting } = await import('../../services/dbService');
+                const cachedDept = await getSetting<string>('cached_dept_id');
+                if (cachedDept) targetStoreId = cachedDept;
+            }
+            if (!targetStoreId) targetStoreId = 'SUPERADMIN';
+
             // Filter lists at query level if not admin
-            const filteredLists = await fetchSavedListsFromFirestore(storeId, isAdmin ? undefined : userId);
+            const filteredLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : userId);
             setLists(filteredLists);
         } catch (err) {
             setError('Lỗi khi tải danh sách đã lưu.');
