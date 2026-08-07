@@ -50,6 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (d) setDepartmentId(d);
             if (e) setEmployeeName(e);
             if (s) setStatus(s);
+            // Ultra-Fast Boot: Nếu đã có thông tin người dùng được cache ở IndexedDB máy local,
+            // tắt spinner loading NGAY LẬP TỨC để mở giao diện tức thì trong 0.05s mà không chờ mạng!
+            if (r && s) {
+                setIsLoading(false);
+            }
         }).catch(console.error);
     }, []);
     
