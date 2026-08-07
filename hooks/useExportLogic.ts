@@ -273,7 +273,7 @@ export const useExportLogic = ({
                 return match ? `@${match[1]}` : `@${creatorName}`;
             });
 
-            const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình đơn CHƯA THU | CHƯA HỦY:
+            const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình ĐƠN HÀNG CHƯA THU | CHƯA HỦY:
 
 Hoàn tất và giải trình xoá tên:
 ${employeeTags.join('\n')}

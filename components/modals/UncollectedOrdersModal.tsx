@@ -350,10 +350,10 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
 
             try {
                 const url = await exportToGoogleSheet(token, {
-                    title: `Đơn Hàng Quá Hạn chưa xuất - ${dateStr} ${timeStr}`,
+                    title: `Đơn Hàng Chưa Thu | Chưa Hủy - ${dateStr} ${timeStr}`,
                     headers,
                     rows,
-                    sheetName: 'DonHangChoXuat'
+                    sheetName: 'DonHangChuaThuChuaHuy'
                 });
 
                 // Build formatted clipboard message with @user tags
@@ -362,7 +362,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
                     return match ? `@${match[1]}` : `@${creator.name}`;
                 });
 
-                const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình đơn QUÁ HẠN CHƯA XUẤT:
+                const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình ĐƠN HÀNG CHƯA THU | CHƯA HỦY:
 
 Hoàn tất xuất và giải trình xoá tên:
 ${employeeTags.join('\n')}
