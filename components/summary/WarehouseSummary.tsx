@@ -520,35 +520,36 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
                             <Icon name="layers" size={5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">Lũy kế</span>
+                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Lũy kế</span>
                         </Button>
 
                         {/* Toggle Ngang/Dọc */}
                         <Button
                             variant="unstyled" size="none"
                             onClick={toggleViewMode}
-                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors whitespace-nowrap shrink-0 ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4} className="lg:hidden" />
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
+                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
                         </Button>
 
-                        {/* Nút lọc Siêu thị & Tổng dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
+                        {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
                         {viewMode === 'vertical' && (
                             <MultiSelectDropdown
                                 options={verticalOptions}
                                 selected={verticalKhoFilter.length === 0 ? verticalOptions : verticalKhoFilter}
                                 onChange={handleVerticalKhoFilterChange}
                                 label="Lọc Siêu thị & Tổng"
-                                variant="compact"
-                                className="z-30"
+                                iconOnly={true}
+                                iconName="filter"
+                                className="z-30 shrink-0"
                             />
                         )}
 

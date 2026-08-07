@@ -12,6 +12,8 @@ interface MultiSelectDropdownProps {
     placeholder?: string;
     className?: string;
     variant?: 'default' | 'compact';
+    iconOnly?: boolean;
+    iconName?: string;
 }
 
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({ 
@@ -21,7 +23,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     label,
     placeholder = "Tìm kiếm...",
     className = "",
-    variant = 'default'
+    variant = 'default',
+    iconOnly = false,
+    iconName = 'filter'
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -113,41 +117,65 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
     };
 
+    const isFiltered = selected.length > 0 && selected.length < allUniqueOptions.length;
+
     return (
-        <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
-            <Button
-                type="button"
-                variant="unstyled" size="none"
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
-                    variant === 'compact' ? 'px-1.5 sm:px-2 py-0.5 sm:py-1 h-8 sm:h-9' : 'px-3 py-2 h-9'
-                } ${
-                    isOpen
-                    ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500'
-                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500'
-                }`}
-            >
-                <div className="flex-grow flex items-center overflow-hidden">
-                    {renderContent()}
-                </div>
-                <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
-                    {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                        <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
+        <div className={`relative ${iconOnly ? 'w-auto' : 'w-full'} ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
+            {iconOnly ? (
+                <Button
+                    type="button"
+                    variant="unstyled" size="none"
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`relative p-1.5 lg:p-2 rounded-md transition-colors flex items-center justify-center ${
+                        isOpen || isFiltered
+                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-300 dark:border-sky-700'
+                            : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                    title={label}
+                >
+                    <Icon name={iconName} size={4} className="lg:hidden" />
+                    <Icon name={iconName} size={5} className="hidden lg:block" />
+                    {isFiltered && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[9px] flex items-center justify-center font-bold">
                             {selected.length}
-                        </div>
+                        </span>
                     )}
-                    <Icon
-                        name="chevron-down"
-                        size={3}
-                        className={`text-slate-400 transition-transform duration-200 sm:hidden ${isOpen ? 'rotate-180' : ''}`}
-                    />
-                    <Icon
-                        name="chevron-down"
-                        size={3.5}
-                        className={`text-slate-400 transition-transform duration-200 hidden sm:block ${isOpen ? 'rotate-180' : ''}`}
-                    />
-                </div>
-            </Button>
+                </Button>
+            ) : (
+                <Button
+                    type="button"
+                    variant="unstyled" size="none"
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
+                        variant === 'compact' ? 'px-1.5 sm:px-2 py-0.5 sm:py-1 h-8 sm:h-9' : 'px-3 py-2 h-9'
+                    } ${
+                        isOpen
+                        ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500'
+                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500'
+                    }`}
+                >
+                    <div className="flex-grow flex items-center overflow-hidden">
+                        {renderContent()}
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
+                        {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
+                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
+                                {selected.length}
+                            </div>
+                        )}
+                        <Icon
+                            name="chevron-down"
+                            size={3}
+                            className={`text-slate-400 transition-transform duration-200 sm:hidden ${isOpen ? 'rotate-180' : ''}`}
+                        />
+                        <Icon
+                            name="chevron-down"
+                            size={3.5}
+                            className={`text-slate-400 transition-transform duration-200 hidden sm:block ${isOpen ? 'rotate-180' : ''}`}
+                        />
+                    </div>
+                </Button>
+            )}
 
             {isOpen && createPortal(
                 <div 
