@@ -189,9 +189,107 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         sortConfig
     });
 
+    // Cấu hình Giờ Mở/Đóng Cửa Siêu thị (Mặc định 07:30 -> 21:30)
+    const [storeHours, setStoreHours] = useState<{ open: string; close: string }>({ open: '07:30', close: '21:30' });
+    const [isStoreHoursModalOpen, setIsStoreHoursModalOpen] = useState(false);
+    const [tempOpenHour, setTempOpenHour] = useState('07:30');
+    const [tempCloseHour, setTempCloseHour] = useState('21:30');
+
+    useEffect(() => {
+        getSetting<{ open: string; close: string }>('storeOpenCloseHours').then(saved => {
+            if (saved && saved.open && saved.close) {
+                setStoreHours(saved);
+                setTempOpenHour(saved.open);
+                setTempCloseHour(saved.close);
+            }
+        }).catch(console.error);
+    }, []);
+
+    const handleSaveStoreHours = () => {
+        const newHours = { open: tempOpenHour, close: tempCloseHour };
+        setStoreHours(newHours);
+        saveSetting('storeOpenCloseHours', newHours).catch(console.error);
+        setIsStoreHoursModalOpen(false);
+    };
+
+    const daysInMonth = useMemo(() => {
+        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+            if (match) return new Date(parseInt(match[2]), parseInt(match[1]), 0).getDate();
+        }
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }, [filterState.selectedMonths]);
+
+    const daysPassed = useMemo(() => {
+        const now = new Date();
+        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+            if (match) {
+                const m = parseInt(match[1], 10) - 1;
+                const y = parseInt(match[2], 10);
+                if (m === now.getMonth() && y === now.getFullYear()) {
+                    return now.getDate() || 1;
+                }
+                return new Date(y, m + 1, 0).getDate();
+            }
+        }
+        return now.getDate() || 1;
+    }, [filterState.selectedMonths]);
+
+    // Tính % Quỹ thời gian đã trôi qua (trong ngày hoặc lũy kế tháng)
+    const timeUsedPct = useMemo(() => {
+        const now = new Date();
+        const [openH, openM] = storeHours.open.split(':').map(Number);
+        const [closeH, closeM] = storeHours.close.split(':').map(Number);
+        const openMinutes = (openH || 7) * 60 + (openM || 30);
+        const closeMinutes = (closeH || 21) * 60 + (closeM || 30);
+        const totalMinutes = Math.max(1, closeMinutes - openMinutes);
+        
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        let todayPct = 0;
+        if (nowMinutes <= openMinutes) todayPct = 0;
+        else if (nowMinutes >= closeMinutes) todayPct = 100;
+        else todayPct = ((nowMinutes - openMinutes) / totalMinutes) * 100;
+
+        if (isLuyKe) {
+            const currentDayPct = Math.min(100, Math.max(0, todayPct));
+            const totalPassedDays = (daysPassed - 1) + (currentDayPct / 100);
+            return (totalPassedDays / daysInMonth) * 100;
+        }
+        return Math.min(100, Math.max(0, todayPct));
+    }, [storeHours, isLuyKe, daysPassed, daysInMonth]);
+
+    const getHqqdClassWithTime = (pct: number | undefined, timePct: number = timeUsedPct): string => {
+        if (pct === undefined || isNaN(pct) || pct === 0) return 'text-slate-300 dark:text-slate-600 font-normal';
+        
+        // 1. Đã hết quỹ thời gian (timePct >= 100)
+        if (timePct >= 100) {
+            if (pct < 100) {
+                // Hết giờ mà < 100% -> TÔ ĐỎ NỔI BẬT
+                return 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-extrabold px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800';
+            }
+            // Hết giờ mà >= 100% -> TÔ XANH LÁ CÂY NỔI BẬT
+            return 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 font-black px-1.5 py-0.5 rounded border-2 border-emerald-400 dark:border-emerald-600 shadow-sm';
+        }
+        
+        // 2. Chưa hết quỹ thời gian (timePct < 100)
+        if (pct < timePct) {
+            // Tỉ lệ hoàn thành < % quỹ thời gian đã sử dụng -> TÔ ĐỎ NỔI BẬT
+            return 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-extrabold px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800';
+        }
+
+        if (pct >= 100) {
+            // Đã đạt >= 100% -> XANH LÁ CÂY NỔI BẬT
+            return 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 font-black px-1.5 py-0.5 rounded border-2 border-emerald-400 dark:border-emerald-600 shadow-sm';
+        }
+
+        // Đạt tiến độ thời gian (%HT >= timePct)
+        return 'text-emerald-600 dark:text-emerald-400 font-bold px-1 py-0.5';
+    };
+
     const getHqqdClass = (hqqdValue: number | undefined): string => {
-        if (hqqdValue === undefined || isNaN(hqqdValue)) return 'text-slate-300';
-        return 'text-amber-400 font-bold';
+        return getHqqdClassWithTime(hqqdValue, timeUsedPct);
     };
 
     const formatRevenueForKho = (value: number | undefined): string => {
@@ -466,31 +564,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         return visibleColumns[index].mainHeader !== visibleColumns[index - 1].mainHeader;
     };
     
-    const daysInMonth = useMemo(() => {
-        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
-            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
-            if (match) return new Date(parseInt(match[2]), parseInt(match[1]), 0).getDate();
-        }
-        const now = new Date();
-        return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    }, [filterState.selectedMonths]);
-
-    const daysPassed = useMemo(() => {
-        const now = new Date();
-        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
-            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
-            if (match) {
-                const m = parseInt(match[1], 10) - 1;
-                const y = parseInt(match[2], 10);
-                if (m === now.getMonth() && y === now.getFullYear()) {
-                    return now.getDate() || 1;
-                }
-                return new Date(y, m + 1, 0).getDate();
-            }
-        }
-        return now.getDate() || 1;
-    }, [filterState.selectedMonths]);
-
     // Calculate total target for footer based on currently displayed data
     const totalTarget = useMemo(() => {
         const monthlyTotal = data.reduce((sum, row) => sum + (warehouseTargets[row.khoName] || 0), 0);
@@ -574,6 +647,31 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </Button>
                     </div>
                 </SectionHeader>
+
+                {/* Thanh Bar Quỹ Thời Gian (Nhấp đôi 2 cái để đổi giờ mở/đóng cửa) */}
+                <div 
+                    onDoubleClick={() => setIsStoreHoursModalOpen(true)}
+                    className="mx-1 sm:mx-2 lg:mx-6 my-2 p-2 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-800 border border-sky-200/80 dark:border-slate-700 rounded-xl cursor-pointer hover:border-sky-400 transition-all select-none group hide-on-export"
+                    title="Nhấp đôi (2 cái) để thay đổi giờ Mở / Đóng cửa siêu thị"
+                >
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                            <Icon name="clock" size={3.5} className="text-sky-600 dark:text-sky-400 animate-pulse" />
+                            <span className="uppercase tracking-wider">Quỹ thời gian ({storeHours.open} - {storeHours.close})</span>
+                            <span className="text-[9px] font-normal text-slate-400 hidden sm:inline">(Nhấp đúp 2 cái vào đây để đổi giờ mở/đóng cửa)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sky-700 dark:text-sky-300 font-extrabold">{Math.round(timeUsedPct)}% đã dùng</span>
+                        </div>
+                    </div>
+                    {/* Progress Bar Container */}
+                    <div className="w-full bg-slate-200/70 dark:bg-slate-700 h-2 rounded-full overflow-hidden p-0.5">
+                        <div 
+                            className="bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500 shadow-sm" 
+                            style={{ width: `${Math.min(100, Math.max(0, timeUsedPct))}%` }}
+                        />
+                    </div>
+                </div>
 
                 {/* END: Header Section */}
 
@@ -890,16 +988,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             <tr className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
                                 {displayedVerticalData.map(row => (
                                     <React.Fragment key={`sub-${row.khoName}`}>
-                                        <th className="px-1 py-1 text-center text-slate-500 bg-slate-50 border-b-[3px] !border-b-slate-400 border-r border-slate-100">M.Tiêu</th>
-                                        <th className="px-1 py-1 text-center text-sky-600 bg-sky-50/60 border-b-[3px] !border-b-sky-400 border-r border-slate-100">Real</th>
-                                        <th className="px-1 py-1 text-center text-amber-600 bg-amber-50/60 border-b-[3px] !border-b-amber-400 border-r border-slate-200">%HT</th>
+                                        <th className="px-1 py-1 text-center text-slate-400 dark:text-slate-500 bg-slate-100/80 dark:bg-slate-800 font-medium border-b-[3px] !border-b-slate-300 border-r border-slate-100">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-sky-700 dark:text-sky-300 font-black bg-sky-100 dark:bg-sky-950/70 border-b-[3px] !border-b-sky-500 border-r border-slate-100">REAL</th>
+                                        <th className="px-1 py-1 text-center text-amber-700 dark:text-amber-300 font-extrabold bg-amber-50 dark:bg-amber-950/40 border-b-[3px] !border-b-amber-400 border-r border-slate-200">%HT</th>
                                     </React.Fragment>
                                 ))}
                                 {showVerticalTotal && (
                                     <>
-                                        <th className="px-1 py-1 text-center text-slate-500 bg-slate-100 border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
-                                        <th className="px-1 py-1 text-center text-sky-600 bg-slate-100 border-b-[3px] !border-b-sky-400 border-r border-slate-200">Real</th>
-                                        <th className="px-1 py-1 text-center text-amber-600 bg-slate-100 border-b-[3px] !border-b-amber-400">%HT</th>
+                                        <th className="px-1 py-1 text-center text-slate-400 dark:text-slate-500 bg-slate-200/80 dark:bg-slate-800 font-medium border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-sky-700 dark:text-sky-300 font-black bg-sky-200/70 dark:bg-sky-950/80 border-b-[3px] !border-b-sky-500 border-r border-slate-200">REAL</th>
+                                        <th className="px-1 py-1 text-center text-amber-700 dark:text-amber-300 font-extrabold bg-amber-100/70 dark:bg-amber-950/50 border-b-[3px] !border-b-amber-400">%HT</th>
                                     </>
                                 )}
                             </tr>
@@ -960,13 +1058,13 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                             pct = targetDisplay > 0 ? (real / targetDisplay) * 100 : 0;
                                                         }
                                                     }
-                                                    const pctClass = pct >= 120 ? 'font-black text-rose-600' : pct >= 100 ? 'font-extrabold text-emerald-600' : 'font-bold text-amber-500';
+                                                    const pctClass = getHqqdClassWithTime(pct, timeUsedPct);
                                                     const isEditingThis = editingTargetCell?.colId === col.id && editingTargetCell?.khoName === row.khoName;
 
                                                     return (
                                                         <React.Fragment key={`${row.khoName}-${col.id}`}>
                                                             <td
-                                                                className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight ${canEdit ? 'cursor-pointer' : ''}`}
+                                                                className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight bg-slate-50/50 dark:bg-slate-900/30 text-slate-500 font-normal ${canEdit ? 'cursor-pointer' : ''}`}
                                                                 onClick={() => !isEditingThis && startEditTargetCell(col, row.khoName)}
                                                             >
                                                                 {isEditingThis ? (
@@ -984,16 +1082,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                                         className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
                                                                     />
                                                                 ) : (
-                                                                    <span className={monthly > 0 ? 'font-semibold text-slate-600' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
+                                                                    <span className={monthly > 0 ? 'font-medium text-slate-500 dark:text-slate-400' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
                                                                         {monthly > 0 ? formatter(targetDisplay) : '—'}
                                                                     </span>
                                                                 )}
                                                             </td>
-                                                            <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
-                                                                <span className={isRevenueMetricCol(col) ? 'font-semibold text-indigo-700' : 'text-slate-700'}>{formatter(real)}</span>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight bg-sky-50/60 dark:bg-sky-950/30">
+                                                                <span className="font-black text-sky-700 dark:text-sky-300 text-[11px] sm:text-[13px]">{formatter(real)}</span>
                                                             </td>
                                                             <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
-                                                                <span className={monthly > 0 ? pctClass : 'text-slate-300 font-medium'}>{monthly > 0 ? `${Math.round(pct)}%` : '—'}</span>
+                                                                <span className={monthly > 0 ? pctClass : 'text-slate-300 font-normal'}>{monthly > 0 ? `${Math.round(pct)}%` : '—'}</span>
                                                             </td>
                                                         </React.Fragment>
                                                     );
@@ -1012,11 +1110,11 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                             totalPct = totalTargetDisplay > 0 ? (totalReal / totalTargetDisplay) * 100 : 0;
                                                         }
                                                     }
-                                                    const totalPctClass = totalPct >= 120 ? 'text-rose-600' : totalPct >= 100 ? 'text-emerald-600' : 'text-amber-500';
+                                                    const totalPctClass = getHqqdClassWithTime(totalPct, timeUsedPct);
                                                     return (
                                                         <>
-                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold">{totalMonthly > 0 ? formatter(totalTargetDisplay) : '—'}</td>
-                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold">{formatter(totalReal)}</td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-100/60 dark:bg-slate-800/60 leading-tight font-normal text-slate-500">{totalMonthly > 0 ? formatter(totalTargetDisplay) : '—'}</td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-sky-100/70 dark:bg-sky-950/50 leading-tight font-black text-sky-800 dark:text-sky-200">{formatter(totalReal)}</td>
                                                             <td className={`px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold ${totalMonthly > 0 ? totalPctClass : ''}`}>{totalMonthly > 0 ? `${Math.round(totalPct)}%` : '—'}</td>
                                                         </>
                                                     );
@@ -1261,6 +1359,45 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="unstyled" size="none" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
                         <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Modal Cập Nhật Quỹ Thời Gian Siêu Thị */}
+            <Modal
+                isOpen={isStoreHoursModalOpen}
+                onClose={() => setIsStoreHoursModalOpen(false)}
+                title="Cập Nhật Quỹ Thời Gian Siêu Thị"
+                subTitle="Nhập giờ mở và đóng cửa hàng ngày (Định dạng HH:mm)"
+                titleColorClass="text-sky-600 dark:text-sky-400"
+                maxWidth="sm"
+            >
+                <div className="space-y-4 py-2">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-wider">
+                            Giờ Mở Cửa (HH:mm)
+                        </label>
+                        <input
+                            type="time"
+                            value={tempOpenHour}
+                            onChange={(e) => setTempOpenHour(e.target.value)}
+                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-wider">
+                            Giờ Đóng Cửa (HH:mm)
+                        </label>
+                        <input
+                            type="time"
+                            value={tempCloseHour}
+                            onChange={(e) => setTempCloseHour(e.target.value)}
+                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                        <Button type="button" variant="secondary" onClick={() => setIsStoreHoursModalOpen(false)}>Hủy</Button>
+                        <Button type="button" variant="primary" onClick={handleSaveStoreHours}>Lưu Cấu Hình</Button>
                     </div>
                 </div>
             </Modal>
