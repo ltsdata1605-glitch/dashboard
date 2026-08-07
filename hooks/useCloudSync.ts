@@ -148,101 +148,109 @@ export const useCloudSync = () => {
     useEffect(() => {
         if (!user || isDemoMode) return;
 
-        // 1. Setup real-time Firestore listeners
-        const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
-        const unsubscribeConfig = onSnapshot(configRef, async (snapshot) => {
-            if (!snapshot.exists()) return;
-            
-            // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
-            if (hasUnsavedChanges.current) {
-                console.warn('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
-                return;
-            }
-            
-            const data = snapshot.data();
-            if (!data) return;
+        let unsubConfig: (() => void) | null = null;
+        let unsubConfigs: (() => void) | null = null;
 
-            const cloudLastMod = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
-            if (!cloudLastMod) return;
-
-            const localLastMod = await getSetting<number>('localSettingsLastModified') || 0;
-
-            if (cloudLastMod > localLastMod) {
-                console.warn(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
-                const backup = data.settingsStoreBackup;
-                if (backup) {
-                    for (const [k, v] of Object.entries(backup)) {
-                        if (!isHeavySyncKey(k) && !isLocalOnlyKey(k) && k !== 'salesFilesRegistry') {
-                            await saveSettingFromCloud(k, v, cloudLastMod);
-                        }
-                    }
+        // PERF FIX: Hoãn khởi tạo Firestore Listeners 2s sau khi mở app
+        // Giúp 2s đầu trình duyệt tập trung 100% CPU đọc IndexedDB cục bộ cực nhanh,
+        // render giao diện mượt mà tuyệt đối mà không bị giật lag/đơ do network/JSON.parse từ Cloud.
+        const bootTimer = setTimeout(() => {
+            // 1. Setup real-time Firestore listeners
+            const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
+            unsubConfig = onSnapshot(configRef, async (snapshot) => {
+                if (!snapshot.exists()) return;
+                
+                // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
+                if (hasUnsavedChanges.current) {
+                    console.warn('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
+                    return;
                 }
-            }
-        }, (err) => {
-            console.error('[Cloud Sync] Error in configuration listener:', err);
-        });
+                
+                const data = snapshot.data();
+                if (!data) return;
 
-        const configsCollRef = collection(db, 'users', user.uid, 'configs');
-        const unsubscribeConfigs = onSnapshot(configsCollRef, async (snapshot) => {
-            for (const change of snapshot.docChanges()) {
-                if (change.type === 'added' || change.type === 'modified') {
-                    const docSnap = change.doc;
-                    const key = docSnap.id;
-                    
-                    if (!isHeavySyncKey(key)) continue;
-                    
-                    // Skip updating if a local write for this heavy key is debounced/pending
-                    if (heavyTimeoutsRef.current[key]) {
-                        console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
-                        continue;
-                    }
-                    
-                    const data = docSnap.data();
-                    if (!data) continue;
-                    if (!data.chunked && data.value === undefined) continue;
+                const cloudLastMod = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
+                if (!cloudLastMod) return;
 
-                    const cloudTime = data.updatedAt?.toMillis
-                        ? data.updatedAt.toMillis()
-                        : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
+                const localLastMod = await getSetting<number>('localSettingsLastModified') || 0;
 
-                    const localValue = await getSetting<unknown>(key);
-                    const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
-
-                    if (localValue === null || cloudTime > localTime) {
-                        console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
-
-                        let val: typeof data.value;
-                        if (data.chunked) {
-                            val = await assembleChunkedHeavyValue(docSnap.ref) as typeof data.value;
-                            if (val === undefined) continue;
-                        } else {
-                            val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
-                        }
-                        if (key === 'productConfig' && val && val.config && val.config.groups) {
-                            const restoredGroups: { [key: string]: Set<string> } = {};
-                            for (const [gKey, gVal] of Object.entries(val.config.groups)) {
-                                restoredGroups[gKey] = new Set(gVal as string[]);
-                            }
-                            val.config.groups = restoredGroups;
-                        }
-                        
-                        await saveSettingFromCloud(key, val, cloudTime || Date.now());
-                        
-                        if (key === 'checkthuong_data') {
-                            try {
-                                const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
-                                await saveCheckThuongDataToIframeDb(val);
-                                window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
-                            } catch (err) {
-                                console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
+                if (cloudLastMod > localLastMod) {
+                    console.warn(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
+                    const backup = data.settingsStoreBackup;
+                    if (backup) {
+                        for (const [k, v] of Object.entries(backup)) {
+                            if (!isHeavySyncKey(k) && !isLocalOnlyKey(k) && k !== 'salesFilesRegistry') {
+                                await saveSettingFromCloud(k, v, cloudLastMod);
                             }
                         }
                     }
                 }
-            }
-        }, (err) => {
-            console.error('[Cloud Sync] Error in configs collection listener:', err);
-        });
+            }, (err) => {
+                console.error('[Cloud Sync] Error in configuration listener:', err);
+            });
+
+            const configsCollRef = collection(db, 'users', user.uid, 'configs');
+            unsubConfigs = onSnapshot(configsCollRef, async (snapshot) => {
+                for (const change of snapshot.docChanges()) {
+                    if (change.type === 'added' || change.type === 'modified') {
+                        const docSnap = change.doc;
+                        const key = docSnap.id;
+                        
+                        if (!isHeavySyncKey(key)) continue;
+                        
+                        // Skip updating if a local write for this heavy key is debounced/pending
+                        if (heavyTimeoutsRef.current[key]) {
+                            console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
+                            continue;
+                        }
+                        
+                        const data = docSnap.data();
+                        if (!data) continue;
+                        if (!data.chunked && data.value === undefined) continue;
+
+                        const cloudTime = data.updatedAt?.toMillis
+                            ? data.updatedAt.toMillis()
+                            : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
+
+                        const localValue = await getSetting<unknown>(key);
+                        const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
+
+                        if (localValue === null || cloudTime > localTime) {
+                            console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
+
+                            let val: typeof data.value;
+                            if (data.chunked) {
+                                val = await assembleChunkedHeavyValue(docSnap.ref) as typeof data.value;
+                                if (val === undefined) continue;
+                            } else {
+                                val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
+                            }
+                            if (key === 'productConfig' && val && val.config && val.config.groups) {
+                                const restoredGroups: { [key: string]: Set<string> } = {};
+                                for (const [gKey, gVal] of Object.entries(val.config.groups)) {
+                                    restoredGroups[gKey] = new Set(gVal as string[]);
+                                }
+                                val.config.groups = restoredGroups;
+                            }
+                            
+                            await saveSettingFromCloud(key, val, cloudTime || Date.now());
+                            
+                            if (key === 'checkthuong_data') {
+                                try {
+                                    const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
+                                    await saveCheckThuongDataToIframeDb(val);
+                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                } catch (err) {
+                                    console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, (err) => {
+                console.error('[Cloud Sync] Error in configs collection listener:', err);
+            });
+        }, 2000);
 
         // 2. Setup local change handlers
         const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string }>) => {
@@ -365,8 +373,9 @@ export const useCloudSync = () => {
         const intervalId = window.setInterval(syncIfChanged, 15 * 60 * 1000);
 
         return () => {
-            unsubscribeConfig();
-            unsubscribeConfigs();
+            clearTimeout(bootTimer);
+            if (unsubConfig) unsubConfig();
+            if (unsubConfigs) unsubConfigs();
             window.removeEventListener('ycx-setting-changed', handleSettingChanged);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('beforeunload', handleBeforeUnload);
