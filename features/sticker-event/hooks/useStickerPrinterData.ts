@@ -928,7 +928,7 @@ export function useStickerPrinterData() {
         if (currentUser) {
             try {
                 const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
-                let storeId = 'SUPERADMIN';
+                let storeId = '';
                 let username = currentUser.uid;
                 if (cachedData) {
                     try {
@@ -937,6 +937,15 @@ export function useStickerPrinterData() {
                         if (parsed.username) username = parsed.username;
                     } catch (e) {}
                 }
+                if (!storeId || storeId === 'SUPERADMIN') {
+                    const cachedDept = await getSetting<string>('cached_dept_id');
+                    if (cachedDept) storeId = cachedDept;
+                }
+                if (!username || username === currentUser.uid) {
+                    const cachedName = await getSetting<string>('cached_emp_name');
+                    if (cachedName) username = cachedName;
+                }
+                const targetStoreId = storeId || 'SUPERADMIN';
                 const itemsToSave = manualPages.map(p => ({
                     msp: p.code || p.id,
                     sanPham: p.label,
@@ -949,7 +958,7 @@ export function useStickerPrinterData() {
                     footer: p.footer,
                     discountDisplayMode: p.discountDisplayMode,
                 }));
-                await saveListToFirestore(storeId, username, name, itemsToSave, {
+                await saveListToFirestore(targetStoreId, username, name, itemsToSave, {
                     stickerType,
                     headerTextContent,
                     pages: manualPages,
@@ -970,7 +979,7 @@ export function useStickerPrinterData() {
             try {
                 const currentUser = auth.currentUser;
                 const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
-                let storeId = 'SUPERADMIN';
+                let storeId = '';
                 let isAdmin = false;
                 let username = currentUser.uid;
                 if (cachedData) {
@@ -981,8 +990,13 @@ export function useStickerPrinterData() {
                         if (parsed.role === 'admin' || parsed.role === 'superadmin') isAdmin = true;
                     } catch (e) {}
                 }
+                if (!storeId || storeId === 'SUPERADMIN') {
+                    const cachedDept = await getSetting<string>('cached_dept_id');
+                    if (cachedDept) storeId = cachedDept;
+                }
+                const targetStoreId = storeId || 'SUPERADMIN';
                 // Nếu là Admin/Quản lý: LẤY TOÀN BỘ DANH SÁCH DO CẢ NHÂN VIÊN VÀ ADMIN TẠO (truyền undefined cho userId)
-                const cloudLists = await fetchSavedListsFromFirestore(storeId, isAdmin ? undefined : username);
+                const cloudLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : username);
                 if (cloudLists.length > 0) {
                     const formattedLists: SavedStickerList[] = cloudLists.map((c: any) => {
                         let pages: StickerPage[] = [];

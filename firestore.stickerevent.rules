@@ -30,8 +30,12 @@ service cloud.firestore {
       match /state/{doc} { allow read, write: if isSelf(uid); }
     }
 
+    match /stores/{storeId}/savedLists/{listId} {
+      allow read, write: if isSignedIn();
+    }
+
     match /stores/{storeId}/{document=**} {
-      allow read, write: if isSignedIn() && (isSuperAdmin() || myStoreId() == storeId);
+      allow read, write: if isSignedIn() && (isSuperAdmin() || myStoreId() == storeId || request.auth.token.departmentId == storeId || storeId == 'SUPERADMIN');
     }
   }
 }
