@@ -994,6 +994,10 @@ export function useStickerPrinterData() {
                     const cachedDept = await getSetting<string>('cached_dept_id');
                     if (cachedDept) storeId = cachedDept;
                 }
+                if (!username || username === currentUser.uid) {
+                    const cachedName = await getSetting<string>('cached_emp_name');
+                    if (cachedName) username = cachedName;
+                }
                 const targetStoreId = storeId || 'SUPERADMIN';
                 // Nếu là Admin/Quản lý: LẤY TOÀN BỘ DANH SÁCH DO CẢ NHÂN VIÊN VÀ ADMIN TẠO (truyền undefined cho userId)
                 const cloudLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : username);
@@ -1027,8 +1031,16 @@ export function useStickerPrinterData() {
                             headerTextContent: c.stickerMeta?.headerTextContent || '',
                         };
                     });
-                    setSavedLists(formattedLists);
-                    saveSetting(STICKER_SAVED_LISTS_KEY, formattedLists).catch(() => {});
+                    
+                    // Merge Cloud lists với Local lists hiện tại để không làm mất danh sách vừa tạo
+                    setSavedLists(prev => {
+                        const merged = [...formattedLists, ...prev];
+                        const uniqueMap = new Map<string, SavedStickerList>();
+                        merged.forEach(item => uniqueMap.set(item.id, item));
+                        const result = Array.from(uniqueMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+                        saveSetting(STICKER_SAVED_LISTS_KEY, result).catch(() => {});
+                        return result;
+                    });
                 }
             } catch (err) {
                 console.error("[Cloud Sync] Error fetching saved lists from Firestore:", err);
