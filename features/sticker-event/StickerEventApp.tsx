@@ -388,7 +388,8 @@ export default function App(): React.JSX.Element {
         quantity: p.quantity,
       }));
       const targetStoreId = userData?.storeId || 'SUPERADMIN';
-      await saveListToFirestore(targetStoreId, user!.uid, listName, itemsToSave);
+      const usernameToSave = userData?.username || user!.uid;
+      await saveListToFirestore(targetStoreId, usernameToSave, listName, itemsToSave);
       
       await saveUserState(user!.uid, {
         displayedProducts,

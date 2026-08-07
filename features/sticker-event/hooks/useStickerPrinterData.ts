@@ -929,10 +929,12 @@ export function useStickerPrinterData() {
             try {
                 const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
                 let storeId = 'SUPERADMIN';
+                let username = currentUser.uid;
                 if (cachedData) {
                     try {
                         const parsed = JSON.parse(cachedData);
                         if (parsed.storeId) storeId = parsed.storeId;
+                        if (parsed.username) username = parsed.username;
                     } catch (e) {}
                 }
                 const itemsToSave = manualPages.map(p => ({
@@ -947,7 +949,7 @@ export function useStickerPrinterData() {
                     footer: p.footer,
                     discountDisplayMode: p.discountDisplayMode,
                 }));
-                await saveListToFirestore(storeId, currentUser.uid, name, itemsToSave, {
+                await saveListToFirestore(storeId, username, name, itemsToSave, {
                     stickerType,
                     headerTextContent,
                     pages: manualPages,
@@ -969,13 +971,18 @@ export function useStickerPrinterData() {
                 const currentUser = auth.currentUser;
                 const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
                 let storeId = 'SUPERADMIN';
+                let isAdmin = false;
+                let username = currentUser.uid;
                 if (cachedData) {
                     try {
                         const parsed = JSON.parse(cachedData);
                         if (parsed.storeId) storeId = parsed.storeId;
+                        if (parsed.username) username = parsed.username;
+                        if (parsed.role === 'admin' || parsed.role === 'superadmin') isAdmin = true;
                     } catch (e) {}
                 }
-                const cloudLists = await fetchSavedListsFromFirestore(storeId, currentUser.uid);
+                // Nếu là Admin/Quản lý: LẤY TOÀN BỘ DANH SÁCH DO CẢ NHÂN VIÊN VÀ ADMIN TẠO (truyền undefined cho userId)
+                const cloudLists = await fetchSavedListsFromFirestore(storeId, isAdmin ? undefined : username);
                 if (cloudLists.length > 0) {
                     const formattedLists: SavedStickerList[] = cloudLists.map((c: any) => {
                         let pages: StickerPage[] = [];
@@ -999,7 +1006,7 @@ export function useStickerPrinterData() {
                         }
                         return {
                             id: c.id,
-                            name: c.name,
+                            name: c.userId ? `${c.name} (${c.userId})` : c.name,
                             pages,
                             timestamp: new Date(c.createdAt).getTime() || Date.now(),
                             stickerType: c.stickerMeta?.stickerType || 'gia_soc',
