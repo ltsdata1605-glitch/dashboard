@@ -50,8 +50,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-    // States for sorting
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'tongBot', direction: 'asc' });
+    // States for sorting - mặc định luôn sắp xếp TĂNG DẦN theo cột BOT
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'tongBot', direction: 'asc' });
     const [showPercent, setShowPercent] = useState(false);
 
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
@@ -188,24 +188,28 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         return botValues[thresholdIndex] ?? 0;
     }, [employees, columnAverages, employeeDataMap, employeeCompetitionTargets, showPercent]);
 
-    // Sort employees list based on current sortConfig
+    // Sort employees list based on current sortConfig - Luôn mặc định quay về tongBot asc
     const sortedEmployees = useMemo(() => {
-        if (!sortConfig) return employees;
-        const { key, direction } = sortConfig;
+        const { key, direction } = sortConfig || { key: 'tongBot', direction: 'asc' };
         const sorted = [...employees];
         sorted.sort((a, b) => {
             if (key === 'employee') {
-                return direction === 'asc' 
-                    ? a.name.localeCompare(b.name, 'vi') 
-                    : b.name.localeCompare(a.name, 'vi');
+                const cmp = a.name.localeCompare(b.name, 'vi');
+                return direction === 'asc' ? cmp : -cmp;
             } else if (key === 'tongBot') {
                 const botA = getEmployeeTongBot(a.name, a.originalName);
                 const botB = getEmployeeTongBot(b.name, b.originalName);
-                return direction === 'asc' ? botA - botB : botB - botA;
+                if (botA !== botB) {
+                    return direction === 'asc' ? botA - botB : botB - botA;
+                }
+                return a.name.localeCompare(b.name, 'vi');
             } else if (key === 'noSale') {
                 const valA = getEmployeeNoSale(a.name);
                 const valB = getEmployeeNoSale(b.name);
-                return direction === 'asc' ? valA - valB : valB - valA;
+                if (valA !== valB) {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+                return a.name.localeCompare(b.name, 'vi');
             } else {
                 const getVal = (emp: Employee) => {
                     const actual = employeeDataMap.get(emp.name)?.values[key] ?? 0;
@@ -218,25 +222,34 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 };
                 const valA = getVal(a);
                 const valB = getVal(b);
-                return direction === 'asc' ? valA - valB : valB - valA;
+                if (valA !== valB) {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+                return a.name.localeCompare(b.name, 'vi');
             }
         });
         return sorted;
-    }, [employees, sortConfig, employeeDataMap, employeeCompetitionTargets, showPercent, headerOriginalTitleMap]);
+    }, [employees, sortConfig, employeeDataMap, employeeCompetitionTargets, showPercent, headerOriginalTitleMap, columnAverages]);
 
-    // Handle sort toggling
+    // Handle sort toggling - Luôn fallback về tongBot asc
     const handleSort = (key: string) => {
         setSortConfig(current => {
             if (!current || current.key !== key) {
-                return { key, direction: key === 'employee' ? 'asc' : 'desc' };
+                if (key === 'tongBot') return { key: 'tongBot', direction: 'asc' };
+                if (key === 'employee') return { key: 'employee', direction: 'asc' };
+                return { key, direction: 'desc' };
+            }
+            if (key === 'tongBot') {
+                return { key: 'tongBot', direction: current.direction === 'asc' ? 'desc' : 'asc' };
             }
             if (key === 'employee') {
-                if (current.direction === 'asc') return { key, direction: 'desc' };
-                return null;
-            } else {
-                if (current.direction === 'desc') return { key, direction: 'asc' };
-                return null;
+                if (current.direction === 'asc') return { key: 'employee', direction: 'desc' };
+                return { key: 'tongBot', direction: 'asc' };
             }
+            if (current.direction === 'desc') {
+                return { key, direction: 'asc' };
+            }
+            return { key: 'tongBot', direction: 'asc' };
         });
     };
 
