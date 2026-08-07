@@ -233,17 +233,17 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 } 
                 ${zebraClass}
                 border-b border-slate-100 dark:border-slate-700`}>
-                <td className={`px-2 py-1 whitespace-nowrap text-[13px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
+                <td className={`px-1.5 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
                     <span>{employee.name}</span>
                 </td>
-                <td className={`px-1.5 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? '' : 'text-slate-500 dark:text-slate-400'}`}>{formatter.format(roundUp(target))}</td>
-                <td className={`px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
+                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? '' : 'text-slate-500 dark:text-slate-400'}`}>{formatter.format(roundUp(target))}</td>
+                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
                     {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
                 </td>
-                <td className={`px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${percentClass}`} style={percentInlineStyle}>
+                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${percentClass}`} style={percentInlineStyle}>
                     {(!actual || actual === 0) ? '-' : `${roundUp(completion).toFixed(0)}%`}
                 </td>
-                <td className={`px-1.5 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${isHighlighted ? '' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
+                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums ${isHighlighted ? '' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
             </tr>
         );
     };
@@ -347,11 +347,11 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                         {/* Dept total — emerald style */}
                                         {departmentNames.length > 1 && (
                                             <tr className="bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t-2 border-emerald-200 dark:border-emerald-800">
-                                                <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
-                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
-                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
-                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
-                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
+                                                <td className="px-1.5 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
+                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
+                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
+                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
+                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
                                             </tr>
                                         )}
                                     </React.Fragment>
@@ -366,11 +366,11 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         })}
                         {/* Grand Total — sky accent */}
                         <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
-                             <td className="px-2 py-1 text-center uppercase text-[13px] tracking-wider border-r border-sky-200 dark:border-sky-800/50">TỔNG</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
-                             <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(grandTotalRemaining))}</td>
+                             <td className="px-1.5 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-200 dark:border-sky-800/50">TỔNG</td>
+                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
+                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
+                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
+                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(grandTotalRemaining))}</td>
                         </tr>
                     </tbody>
                 </table>
