@@ -266,26 +266,26 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         // 1. Đã hết quỹ thời gian (timePct >= 100)
         if (timePct >= 100) {
             if (pct < 100) {
-                // Hết giờ mà < 100% -> TÔ ĐỎ NỔI BẬT
-                return 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-extrabold px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800';
+                // Hết giờ mà < 100% -> TÔ ĐỎ NỔI BẬT (phẳng không bo viền)
+                return 'text-rose-600 dark:text-rose-400 font-extrabold';
             }
-            // Hết giờ mà >= 100% -> TÔ XANH LÁ CÂY NỔI BẬT
-            return 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 font-black px-1.5 py-0.5 rounded border-2 border-emerald-400 dark:border-emerald-600 shadow-sm';
+            // Hết giờ mà >= 100% -> TÔ XANH LÁ CÂY NỔI BẬT (phẳng không bo viền)
+            return 'text-emerald-600 dark:text-emerald-400 font-black';
         }
         
         // 2. Chưa hết quỹ thời gian (timePct < 100)
         if (pct < timePct) {
-            // Tỉ lệ hoàn thành < % quỹ thời gian đã sử dụng -> TÔ ĐỎ NỔI BẬT
-            return 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-extrabold px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800';
+            // Tỉ lệ hoàn thành < % quỹ thời gian đã sử dụng -> TÔ ĐỎ NỔI BẬT (phẳng không bo viền)
+            return 'text-rose-600 dark:text-rose-400 font-extrabold';
         }
 
         if (pct >= 100) {
-            // Đã đạt >= 100% -> XANH LÁ CÂY NỔI BẬT
-            return 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 font-black px-1.5 py-0.5 rounded border-2 border-emerald-400 dark:border-emerald-600 shadow-sm';
+            // Đã đạt >= 100% -> XANH LÁ CÂY NỔI BẬT (phẳng không bo viền)
+            return 'text-emerald-600 dark:text-emerald-400 font-black';
         }
 
         // Đạt tiến độ thời gian (%HT >= timePct)
-        return 'text-emerald-600 dark:text-emerald-400 font-bold px-1 py-0.5';
+        return 'text-emerald-600 dark:text-emerald-400 font-bold';
     };
 
     const getHqqdClass = (hqqdValue: number | undefined): string => {
@@ -988,14 +988,14 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             <tr className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
                                 {displayedVerticalData.map(row => (
                                     <React.Fragment key={`sub-${row.khoName}`}>
-                                        <th className="px-1 py-1 text-center text-slate-400 dark:text-slate-500 bg-slate-100/80 dark:bg-slate-800 font-medium border-b-[3px] !border-b-slate-300 border-r border-slate-100">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 font-bold border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
                                         <th className="px-1 py-1 text-center text-sky-700 dark:text-sky-300 font-black bg-sky-100 dark:bg-sky-950/70 border-b-[3px] !border-b-sky-500 border-r border-slate-100">REAL</th>
                                         <th className="px-1 py-1 text-center text-amber-700 dark:text-amber-300 font-extrabold bg-amber-50 dark:bg-amber-950/40 border-b-[3px] !border-b-amber-400 border-r border-slate-200">%HT</th>
                                     </React.Fragment>
                                 ))}
                                 {showVerticalTotal && (
                                     <>
-                                        <th className="px-1 py-1 text-center text-slate-400 dark:text-slate-500 bg-slate-200/80 dark:bg-slate-800 font-medium border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
+                                        <th className="px-1 py-1 text-center text-slate-800 dark:text-slate-100 bg-slate-200 dark:bg-slate-800 font-bold border-b-[3px] !border-b-slate-500 border-r border-slate-200">M.Tiêu</th>
                                         <th className="px-1 py-1 text-center text-sky-700 dark:text-sky-300 font-black bg-sky-200/70 dark:bg-sky-950/80 border-b-[3px] !border-b-sky-500 border-r border-slate-200">REAL</th>
                                         <th className="px-1 py-1 text-center text-amber-700 dark:text-amber-300 font-extrabold bg-amber-100/70 dark:bg-amber-950/50 border-b-[3px] !border-b-amber-400">%HT</th>
                                     </>
@@ -1064,7 +1064,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                     return (
                                                         <React.Fragment key={`${row.khoName}-${col.id}`}>
                                                             <td
-                                                                className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight bg-slate-50/50 dark:bg-slate-900/30 text-slate-500 font-normal ${canEdit ? 'cursor-pointer' : ''}`}
+                                                                className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight bg-slate-50/70 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 font-semibold ${canEdit ? 'cursor-pointer' : ''}`}
                                                                 onClick={() => !isEditingThis && startEditTargetCell(col, row.khoName)}
                                                             >
                                                                 {isEditingThis ? (
@@ -1082,7 +1082,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                                         className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
                                                                     />
                                                                 ) : (
-                                                                    <span className={monthly > 0 ? 'font-medium text-slate-500 dark:text-slate-400' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
+                                                                    <span className={monthly > 0 ? 'font-semibold text-slate-700 dark:text-slate-200' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
                                                                         {monthly > 0 ? formatter(targetDisplay) : '—'}
                                                                     </span>
                                                                 )}
