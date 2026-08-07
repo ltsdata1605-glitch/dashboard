@@ -119,6 +119,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 } else {
                     baseGroups[key].subHeaders = detailHeaderGroups[key].subHeaders;
                 }
+                if (key === 'spChinh' && !baseGroups[key].subHeaders.some(sh => sh.key === 'slGiaDung_main')) {
+                    baseGroups[key].subHeaders = detailHeaderGroups['spChinh'].subHeaders;
+                }
                 baseGroups[key].colSpan = baseGroups[key].subHeaders.length;
             }
         });

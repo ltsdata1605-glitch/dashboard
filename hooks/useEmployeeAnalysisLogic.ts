@@ -236,6 +236,27 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV24', true);
             }
 
+            // Migration logic for V25 preset tabs (Ensure spChinh tab contains DGD column)
+            const hasMigratedPresetsV25 = await getSetting('presetTabsMigratedV25') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV25) {
+                const spChinhIndex = finalExploitationTabs.findIndex(tab => tab.id === 'spChinh');
+                const spChinhCols: CustomColumnConfig[] = [
+                    { id: 'slICT', name: 'ICT', type: 'quantity', filters: { selectedIndustries: ['ICT'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
+                    { id: 'slCE_main', name: 'CE', type: 'quantity', filters: { selectedIndustries: ['CE'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
+                    { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: { selectedIndustries: ['Gia dụng'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
+                    { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }
+                ];
+                if (spChinhIndex >= 0) {
+                    finalExploitationTabs[spChinhIndex] = {
+                        ...finalExploitationTabs[spChinhIndex],
+                        columns: spChinhCols
+                    };
+                }
+                await saveSetting('customExploitationTabs', finalExploitationTabs, 'local-employee-analysis');
+                await saveSetting('presetTabsMigratedV25', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
