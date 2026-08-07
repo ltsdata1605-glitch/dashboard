@@ -68,7 +68,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         handleExport, isExporting, isProcessing, uniqueFilterOptions, 
         warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, 
         updateWarehouseDTThucTarget, filterState, handleFilterChange, 
-        isLuyKe, handleLuyKeChange 
+        isLuyKe, handleLuyKeChange, kpiTargets
     } = useDashboardContext();
 
     const rawData = processedData?.warehouseSummary ?? [];
@@ -303,11 +303,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     };
 
     // Mục 62: phân loại dòng nào được nâng cấp lên 3 cột M.Tiêu|Real|%HT ở bảng dọc.
-    const RATIO_METRICS = new Set(['hieuQuaQD', 'traChamPercent']);
     const isUpgradableRow = (col: WarehouseColumnConfig): boolean => {
         if (col.type === 'calculated' || col.type === 'target') return false; // cột custom admin, đã có cơ chế target riêng
         if (col.metric === 'target' || col.metric === 'percentHT') return false; // gộp vào dòng dt_qd
-        if (col.metric && RATIO_METRICS.has(col.metric)) return false; // bản thân đã là tỷ lệ %, không có target
         return true;
     };
     const isRevenueMetricCol = (col: WarehouseColumnConfig): boolean => {
@@ -1036,9 +1034,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                                     if (upgradable) {
                                         // Mục 62: dòng 3 cột M.Tiêu | Real | %HT theo từng chỉ số con
+                                        const isPercentMetric = col.metric === 'hieuQuaQD' || col.metric === 'traChamPercent';
                                         const targetMap = getTargetMap(col);
-                                        const formatter = isRevenueMetricCol(col) ? formatRevenueForKho : formatQuantityForKho;
-                                        const canEdit = userRole !== 'employee';
+                                        const formatter = isPercentMetric 
+                                            ? (v: number | undefined) => (v !== undefined && !isNaN(v) ? `${Math.round(v)}%` : '—')
+                                            : (isRevenueMetricCol(col) ? formatRevenueForKho : formatQuantityForKho);
+                                        const canEdit = userRole !== 'employee' && !isPercentMetric;
 
                                         rows.push(
                                             <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 transition-colors">
@@ -1047,17 +1048,26 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                 </td>
                                                 {displayedVerticalData.map(row => {
                                                     const real = getColumnValue(row, col) || 0;
-                                                    const monthly = targetMap[row.khoName] || 0;
-                                                    const targetDisplay = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
+                                                    let targetDisplay = 0;
                                                     let pct = 0;
-                                                    if (monthly > 0) {
-                                                        if (isLuyKe) {
-                                                            const projected = (real / daysPassed) * daysInMonth;
-                                                            pct = (projected / monthly) * 100;
-                                                        } else {
-                                                            pct = targetDisplay > 0 ? (real / targetDisplay) * 100 : 0;
+
+                                                    if (isPercentMetric) {
+                                                        targetDisplay = col.metric === 'hieuQuaQD' ? (kpiTargets?.hieuQua ?? 55) : (kpiTargets?.traGop ?? 55);
+                                                        pct = targetDisplay > 0 ? (real / targetDisplay) * 100 : 0;
+                                                    } else {
+                                                        const monthly = targetMap[row.khoName] || 0;
+                                                        targetDisplay = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
+                                                        if (monthly > 0) {
+                                                            if (isLuyKe) {
+                                                                const projected = (real / daysPassed) * daysInMonth;
+                                                                pct = (projected / monthly) * 100;
+                                                            } else {
+                                                                pct = targetDisplay > 0 ? (real / targetDisplay) * 100 : 0;
+                                                            }
                                                         }
                                                     }
+
+                                                    const hasTarget = isPercentMetric ? targetDisplay > 0 : (targetMap[row.khoName] || 0) > 0;
                                                     const pctClass = getHqqdClassWithTime(pct, timeUsedPct);
                                                     const isEditingThis = editingTargetCell?.colId === col.id && editingTargetCell?.khoName === row.khoName;
 
@@ -1065,7 +1075,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                         <React.Fragment key={`${row.khoName}-${col.id}`}>
                                                             <td
                                                                 className={`px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight bg-slate-50/70 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 font-semibold ${canEdit ? 'cursor-pointer' : ''}`}
-                                                                onClick={() => !isEditingThis && startEditTargetCell(col, row.khoName)}
+                                                                onClick={() => canEdit && !isEditingThis && startEditTargetCell(col, row.khoName)}
                                                             >
                                                                 {isEditingThis ? (
                                                                     <input
@@ -1082,8 +1092,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                                         className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
                                                                     />
                                                                 ) : (
-                                                                    <span className={monthly > 0 ? 'font-semibold text-slate-700 dark:text-slate-200' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
-                                                                        {monthly > 0 ? formatter(targetDisplay) : '—'}
+                                                                    <span className={hasTarget ? 'font-semibold text-slate-700 dark:text-slate-200' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
+                                                                        {hasTarget ? formatter(targetDisplay) : '—'}
                                                                     </span>
                                                                 )}
                                                             </td>
@@ -1091,31 +1101,42 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                                                 <span className="font-black text-sky-700 dark:text-sky-300 text-[11px] sm:text-[13px]">{formatter(real)}</span>
                                                             </td>
                                                             <td className="px-1 py-1.5 sm:py-2 text-center border-r border-slate-100 leading-tight">
-                                                                <span className={monthly > 0 ? pctClass : 'text-slate-300 font-normal'}>{monthly > 0 ? `${Math.round(pct)}%` : '—'}</span>
+                                                                <span className={hasTarget ? pctClass : 'text-slate-300 font-normal'}>{hasTarget ? `${Math.round(pct)}%` : '—'}</span>
                                                             </td>
                                                         </React.Fragment>
                                                     );
                                                 })}
                                                 {/* Total column (3 cột) */}
                                                 {showVerticalTotal && (() => {
-                                                    const totalReal = customTotals.get(col.id) || 0;
-                                                    const totalMonthly = data.reduce((s, r) => s + (targetMap[r.khoName] || 0), 0);
-                                                    const totalTargetDisplay = isLuyKe ? totalMonthly : (totalMonthly > 0 ? totalMonthly / daysInMonth : 0);
+                                                    const totalReal = isPercentMetric 
+                                                        ? (col.metric === 'hieuQuaQD' ? (totals.hieuQuaQD || 0) : (totals.traChamPercent || 0))
+                                                        : (customTotals.get(col.id) || 0);
+                                                    let totalTargetDisplay = 0;
                                                     let totalPct = 0;
-                                                    if (totalMonthly > 0) {
-                                                        if (isLuyKe) {
-                                                            const projected = (totalReal / daysPassed) * daysInMonth;
-                                                            totalPct = (projected / totalMonthly) * 100;
-                                                        } else {
-                                                            totalPct = totalTargetDisplay > 0 ? (totalReal / totalTargetDisplay) * 100 : 0;
+
+                                                    if (isPercentMetric) {
+                                                        totalTargetDisplay = col.metric === 'hieuQuaQD' ? (kpiTargets?.hieuQua ?? 55) : (kpiTargets?.traGop ?? 55);
+                                                        totalPct = totalTargetDisplay > 0 ? (totalReal / totalTargetDisplay) * 100 : 0;
+                                                    } else {
+                                                        const totalMonthly = data.reduce((s, r) => s + (targetMap[r.khoName] || 0), 0);
+                                                        totalTargetDisplay = isLuyKe ? totalMonthly : (totalMonthly > 0 ? totalMonthly / daysInMonth : 0);
+                                                        if (totalMonthly > 0) {
+                                                            if (isLuyKe) {
+                                                                const projected = (totalReal / daysPassed) * daysInMonth;
+                                                                totalPct = (projected / totalMonthly) * 100;
+                                                            } else {
+                                                                totalPct = totalTargetDisplay > 0 ? (totalReal / totalTargetDisplay) * 100 : 0;
+                                                            }
                                                         }
                                                     }
+
+                                                    const hasTotalTarget = totalTargetDisplay > 0;
                                                     const totalPctClass = getHqqdClassWithTime(totalPct, timeUsedPct);
                                                     return (
                                                         <>
-                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-100/60 dark:bg-slate-800/60 leading-tight font-normal text-slate-500">{totalMonthly > 0 ? formatter(totalTargetDisplay) : '—'}</td>
+                                                            <td className="px-1 py-1.5 sm:py-2 text-center bg-slate-100/60 dark:bg-slate-800/60 leading-tight font-semibold text-slate-700 dark:text-slate-200">{hasTotalTarget ? formatter(totalTargetDisplay) : '—'}</td>
                                                             <td className="px-1 py-1.5 sm:py-2 text-center bg-sky-100/70 dark:bg-sky-950/50 leading-tight font-black text-sky-800 dark:text-sky-200">{formatter(totalReal)}</td>
-                                                            <td className={`px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold ${totalMonthly > 0 ? totalPctClass : ''}`}>{totalMonthly > 0 ? `${Math.round(totalPct)}%` : '—'}</td>
+                                                            <td className={`px-1 py-1.5 sm:py-2 text-center bg-slate-50 leading-tight font-bold ${hasTotalTarget ? totalPctClass : ''}`}>{hasTotalTarget ? `${Math.round(totalPct)}%` : '—'}</td>
                                                         </>
                                                     );
                                                 })()}
