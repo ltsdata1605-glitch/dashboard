@@ -238,11 +238,17 @@ export async function saveSalesFilesRegistry(registry: UploadedFileRegistryItem[
 // FileHistoryManager mỗi phiên. File vừa upload xong trong phiên hiện tại KHÔNG bị ảnh
 // hưởng (giữ nguyên isActive=true như cũ) vì hàm này chỉ chạy lúc mount, trước khi có
 // upload nào trong phiên.
-export async function resetHistoricalFilesToInactive(): Promise<void> {
+// Trả về registry hiệu lực sau khi reset (hoặc registry gốc nếu không có gì đổi) — để
+// caller (hooks/useDataManagement.ts) truyền thẳng vào getMergedSalesData() bên dưới,
+// tránh phải đọc lại IndexedDB thêm 1 lần cho đúng key 'salesFilesRegistry' (PERF FIX —
+// IndexedDB trên Safari/iOS có overhead per-transaction cao, tránh đọc trùng khi đã có
+// sẵn dữ liệu mới trong tay).
+export async function resetHistoricalFilesToInactive(): Promise<UploadedFileRegistryItem[]> {
     const registry = await getSalesFilesRegistry();
-    if (!registry.some(f => f.isActive)) return;
+    if (!registry.some(f => f.isActive)) return registry;
     const updated = registry.map(f => f.isActive ? { ...f, isActive: false } : f);
     await saveSalesFilesRegistry(updated);
+    return updated;
 }
 
 export async function saveSalesFileData(fileId: string, data: DataRow[]): Promise<void> {
@@ -641,9 +647,11 @@ async function pruneStaleActiveFiles(registry: UploadedFileRegistryItem[]): Prom
     return pruned;
 }
 
-export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number; isRealtime?: boolean } | null> {
+export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistryItem[]): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number; isRealtime?: boolean } | null> {
     try {
-        const rawRegistry = await getSalesFilesRegistry();
+        // PERF FIX: nếu caller đã có sẵn registry mới đọc (vd từ resetHistoricalFilesToInactive()
+        // ngay trước đó), dùng lại thay vì mở thêm 1 transaction IndexedDB đọc đúng key này lần nữa.
+        const rawRegistry = preloadedRegistry ?? await getSalesFilesRegistry();
         const registry = await pruneStaleActiveFiles(rawRegistry);
         let activeFiles = registry.filter(f => f.isActive);
 

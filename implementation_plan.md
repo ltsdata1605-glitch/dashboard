@@ -2269,4 +2269,22 @@ User khen "đường kẻ highlight" ở header bảng "Chương trình thi đua
 
 **Phạm vi đã chốt với user** (KHÔNG áp dụng, để nguyên): `features/phan-ca` và `features/sticker-event` — dù audit phát hiện các khu vực này cũng có xuất Excel/PDF/JSON chưa qua share sheet (đặc biệt `PdfPreviewModal.tsx` ở sticker-event, và 1 lỗi gọi hàm export 2 lần ở `StickerEventApp.tsx`) — user chốt chỉ cần 3 khu vực Phân Tích/Check Thưởng/Report BI, không mở rộng thêm.
 
+---
+
+## Mục 65 — Tối ưu tốc độ khởi động app trên mobile ("kẹt ở 25%")
+
+**Yêu cầu**: user báo app khởi động rất lâu trên điện thoại thật (iPhone, 5G) — màn hình loading đứng yên ở "Nạp dữ liệu đã lưu lên bảng điều khiển... 25%" nhiều giây. Xác nhận KHÔNG phải do đồng bộ cloud (chạy nền, không chặn UI). Khảo sát bằng 2 Explore agent song song (data-loading pipeline + bundle/code-splitting), tìm nhiều nguyên nhân cộng dồn — xem đầy đủ tại `~/.claude/plans/wondrous-zooming-moler.md`.
+
+**Nguyên nhân chính**: sau `setStatus(25%)`, chuỗi `normalizeSalesData()` → `rbacData` useMemo → `uniqueFilterOptions` useMemo → `allUnconfiguredGroups` useMemo (qua Proxy per-row) → `postMessage` sang Worker chạy liên tục KHÔNG nhường main thread, KHÔNG có setStatus nào ở giữa (`hooks/useDataManagement.ts`). Dữ liệu kỳ vọng "hàng chục/trăm nghìn dòng" (comment sẵn có, `utils/dataUtils.ts:551`). Phát hiện quan trọng: `startTransition` đã `import` nhưng chưa hề dùng ở đâu trong file.
+
+**Nguyên nhân phụ** (đặc biệt nặng trên Safari/iOS): 9-11+ transaction IndexedDB riêng lẻ không gộp; đọc trùng `getSalesFilesRegistry()` 2 lần cùng 1 lượt tải; chunk `vendor-charts` (396KB/116KB gzip) bị dính nhầm hàm tiện ích `cn` dùng ở cả code eager → cả chunk recharts bị modulepreload ngay lúc mở app dù chưa cần; `App.tsx` prefetch cứng `setTimeout(1500ms)` cả DashboardView (1.05MB, chunk lớn nhất dự án) + CheckThuongView + BiWrapper bất kể tab user đang dùng là gì.
+
+**Đã sửa trong đợt này** (ưu tiên tác động cao/rủi ro thấp, xem plan file để biết lý do từng mục):
+1. `hooks/useDataManagement.ts` — dùng `startTransition` bọc `setOriginalData`, thêm progress trung gian.
+2. `services/dbService/salesData.ts` — bỏ đọc trùng `getSalesFilesRegistry()`.
+3. `vite.config.ts` — sửa để chunk `vendor-charts` không bị kéo theo bởi code eager.
+4. `App.tsx` — prefetch đúng tab đang dùng thay vì cả 3 tab nặng nhất bất kể ngữ cảnh.
+
+**Cố ý CHƯA làm** (rủi ro cao hơn/quy mô lớn hơn, để đợt sau nếu user muốn tiếp): gộp batch IndexedDB transactions, bỏ JSON.stringify/parse cho sales data (đụng định dạng lưu trữ dữ liệu người dùng đã có), tách nhỏ thêm chunk DashboardView 1.05MB.
+
 

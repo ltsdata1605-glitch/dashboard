@@ -55,7 +55,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 // định) để giảm khối lượng dữ liệu phải gộp/xử lý — user cần xem lũy kế thì tự
                 // tick lại trong phiên qua FileHistoryManager. PHẢI chạy TRƯỚC
                 // getMergedSalesData() bên dưới để có hiệu lực ngay từ lần tải đầu tiên.
-                await dbService.resetHistoricalFilesToInactive();
+                // Nhận lại registry đã đọc để truyền thẳng cho getMergedSalesData() bên dưới,
+                // tránh đọc trùng cùng 1 key IndexedDB 2 lần (PERF FIX).
+                const freshRegistry = await dbService.resetHistoricalFilesToInactive();
 
                 // 1. Parallel Local IDB Fetch (Fast Offline First)
                 const [
@@ -76,7 +78,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     dbService.getKpiTargets(),
                     dbService.getCrossSellingConfig(),
                     dbService.getKpiCardConfig(),
-                    dbService.getMergedSalesData(),
+                    dbService.getMergedSalesData(freshRegistry),
                     dbService.getSetting<Record<string, number>>('warehouseDTThucTargets')
                 ]);
 
@@ -174,7 +176,19 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     const parseDataAndSet = () => {
                         const srcData = normalizeSalesData(savedSalesReq.data);
                         setAppState('processing');
-                        setOriginalData(srcData);
+                        // PERF FIX: setOriginalData kích hoạt re-render tính lại nhiều useMemo nặng
+                        // (rbacData, uniqueFilterOptions, allUnconfiguredGroups — mỗi cái duyệt lại
+                        // toàn bộ dữ liệu, có thể hàng chục/trăm nghìn dòng) rồi postMessage sang
+                        // Worker — trước đây là 1 state update ưu tiên cao, React không nhường main
+                        // thread nên UI (kể cả animation của màn hình loading) bị đứng hình hoàn
+                        // toàn trong lúc tính, nhìn như app treo dù thực ra vẫn đang chạy. Bọc trong
+                        // startTransition để React coi đây là cập nhật ưu tiên thấp, có thể ngắt
+                        // quãng nhường chỗ cho browser paint — UI (spinner, %) vẫn mượt trong lúc
+                        // tính toán nặng phía sau chạy ngầm.
+                        setStatus({ message: 'Đang xử lý và phân tích dữ liệu...', type: 'info', progress: 32 });
+                        startTransition(() => {
+                            setOriginalData(srcData);
+                        });
                     };
 
                     // Yield Main Thread before array iteration
@@ -433,8 +447,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 setStatus({ message: `📊 Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                 const srcData = normalizeSalesData(khoRows);
-                setOriginalData(srcData);
-                setAppState('processing');
+                // PERF FIX: cùng lý do startTransition ở loadInitialData phía trên — tránh đứng
+                // hình UI trong lúc React tính lại các useMemo nặng.
+                startTransition(() => {
+                    setOriginalData(srcData);
+                    setAppState('processing');
+                });
                 dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
             } catch (e: unknown) {
                 console.warn("⚠️ Đồng bộ dữ liệu Kho dùng chung thất bại (không ảnh hưởng app):", getErrorMessage(e));

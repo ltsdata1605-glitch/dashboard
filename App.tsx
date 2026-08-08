@@ -137,12 +137,24 @@ function AppContent() {
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
     React.useEffect(() => {
-        // Preload heavy views in background to eliminate first-load lag when switching tabs
+        // Preload the CURRENT tab's chunk in background so switching away and back feels instant.
+        // PERF FIX: trước đây prefetch CỨNG cả 3 tab nặng nhất (DashboardView 1.05MB lớn nhất dự
+        // án + CheckThuongView + BiWrapper) bất kể user đang dùng tab nào — tốn băng thông/CPU di
+        // động vô ích nếu user chỉ dùng Phân ca/In tem. Giờ chỉ tải trước đúng tab hiện tại (đã
+        // resolve xong từ IndexedDB lúc effect này chạy, do LayoutContext load activeTab async).
         const timer = setTimeout(() => {
             const preloadTarget = () => {
-                import('./components/views/DashboardView');
-                import('./components/views/CheckThuongView');
-                import('./features/bi-dashboard/components/BiWrapper');
+                switch (activeTab) {
+                    case 'analysis':
+                        import('./components/views/DashboardView');
+                        break;
+                    case 'check-thuong':
+                        import('./components/views/CheckThuongView');
+                        break;
+                    case 'employees':
+                        import('./features/bi-dashboard/components/BiWrapper');
+                        break;
+                }
             };
             if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
                 window.requestIdleCallback(preloadTarget);
@@ -151,7 +163,7 @@ function AppContent() {
             }
         }, 1500);
         return () => clearTimeout(timer);
-    }, []);
+    }, [activeTab]);
 
     const getTabIcon = () => {
         switch (activeTab) {
