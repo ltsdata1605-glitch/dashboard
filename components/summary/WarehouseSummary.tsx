@@ -72,23 +72,14 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     } = useDashboardContext();
 
     const rawData = processedData?.warehouseSummary ?? [];
+    const data = rawData;
 
-    // Mục 63: bộ lọc Mã Kho + ẩn/hiện cột Tổng riêng cho bảng Chi Tiết Theo Kho (không ảnh hưởng
-    // filter "KHO" toàn trang ở FilterBar — filter đó reset lại cả KPI/biểu đồ/bảng khác, quá rộng
-    // cho nhu cầu "tạm xem 1-2 kho, giấu bớt cột" của riêng bảng này).
+    // Mục 63: bộ lọc Mã Kho + ẩn/hiện cột Tổng riêng cho bảng Chi Tiết Theo Kho, CHỈ áp dụng ở Chế
+    // độ xem Dọc (không ảnh hưởng filter "KHO" toàn trang ở FilterBar — filter đó reset lại cả
+    // KPI/biểu đồ/bảng khác, quá rộng cho nhu cầu "tạm xem 1-2 kho, giấu bớt cột" của riêng bảng
+    // này). "TỔNG" được coi như 1 lựa chọn trong CÙNG 1 dropdown thay vì tách riêng nút bật/tắt —
+    // gọn hơn cho người dùng (xem verticalOptions/showVerticalTotal bên dưới).
     const khoOptions = useMemo(() => rawData.map(d => d.khoName), [rawData]);
-    const [localKhoFilter, setLocalKhoFilter] = useState<string[]>([]);
-    useEffect(() => {
-        getSetting<string[]>('warehouseSummaryKhoFilter').then(saved => {
-            if (saved) setLocalKhoFilter(saved);
-        }).catch(console.error);
-    }, []);
-    const updateLocalKhoFilter = (selected: string[]) => {
-        setLocalKhoFilter(selected);
-        saveSetting('warehouseSummaryKhoFilter', selected).catch(console.error);
-    };
-
-    // Bộ lọc Siêu thị và Tổng dành riêng cho Chế độ xem Dọc (Lưu vào Firebase / IndexedDB)
     const [verticalKhoFilter, setVerticalKhoFilter] = useState<string[]>([]);
     useEffect(() => {
         getSetting<string[]>('warehouseVerticalKhoFilter').then(saved => {
@@ -102,26 +93,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     };
 
     const verticalOptions = useMemo(() => ['TỔNG', ...khoOptions], [khoOptions]);
-
-    const [showTotalColumn, setShowTotalColumn] = useState(true);
-    useEffect(() => {
-        getSetting<boolean>('warehouseSummaryShowTotal').then(saved => {
-            if (saved === false) setShowTotalColumn(false);
-        }).catch(console.error);
-    }, []);
-    const toggleShowTotal = () => {
-        setShowTotalColumn(prev => {
-            const next = !prev;
-            saveSetting('warehouseSummaryShowTotal', next).catch(console.error);
-            return next;
-        });
-    };
-
-    const data = useMemo(() => {
-        if (localKhoFilter.length === 0) return rawData;
-        const set = new Set(localKhoFilter);
-        return rawData.filter(d => set.has(d.khoName));
-    }, [rawData, localKhoFilter]);
 
     const summaryRef = useRef<HTMLDivElement>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'doanhThuQD', direction: 'desc' });

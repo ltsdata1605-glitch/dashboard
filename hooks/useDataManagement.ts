@@ -175,7 +175,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                     const parseDataAndSet = () => {
                         const srcData = normalizeSalesData(savedSalesReq.data);
-                        setAppState('processing');
                         // PERF FIX: setOriginalData kích hoạt re-render tính lại nhiều useMemo nặng
                         // (rbacData, uniqueFilterOptions, allUnconfiguredGroups — mỗi cái duyệt lại
                         // toàn bộ dữ liệu, có thể hàng chục/trăm nghìn dòng) rồi postMessage sang
@@ -185,8 +184,19 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         // startTransition để React coi đây là cập nhật ưu tiên thấp, có thể ngắt
                         // quãng nhường chỗ cho browser paint — UI (spinner, %) vẫn mượt trong lúc
                         // tính toán nặng phía sau chạy ngầm.
+                        // QUAN TRỌNG: setAppState('processing') PHẢI nằm CHUNG transition với
+                        // setOriginalData (giống hệt effect đồng bộ dữ liệu Kho bên dưới) — tách
+                        // riêng ra ngoài (ưu tiên cao) khiến appState chuyển sang 'processing'
+                        // TRƯỚC khi originalData thực sự cập nhật, khiến effect "Central Data
+                        // Processing" đọc phải originalData rỗng (cũ), báo lỗi "Không tìm thấy dữ
+                        // liệu hợp lệ" rồi chuyển appState về 'upload' — và vì originalData không
+                        // nằm trong dependency array của effect đó, khi dữ liệu thật sự tới sau,
+                        // effect không chạy lại nữa, app kẹt vĩnh viễn ở màn hình upload dù dữ
+                        // liệu vẫn còn nguyên trong IndexedDB (bug đã xảy ra thật, phát hiện qua
+                        // test Playwright mô phỏng mở lại app với dữ liệu đã lưu).
                         setStatus({ message: 'Đang xử lý và phân tích dữ liệu...', type: 'info', progress: 32 });
                         startTransition(() => {
+                            setAppState('processing');
                             setOriginalData(srcData);
                         });
                     };
