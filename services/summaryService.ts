@@ -58,15 +58,21 @@ export function processSummaryTable(
             : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
         if (!isRevenue) continue;
 
-        // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
+        // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu — Mục 65c (nhóm 3):
+        // đọc row._parentGroup đã tính sẵn ở applyFiltersAndProcess() thay vì gọi lại getParentGroup().
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
-        const parentGroupCheck = getParentGroup(maNhomHangCheck, productConfig);
+        const parentGroupCheck = row._parentGroup || getParentGroup(maNhomHangCheck, productConfig);
         if (!parentGroupCheck || parentGroupCheck === 'Không tính doanh thu') continue;
 
-        // Compute all values ONCE per row (eliminating double computation)
+        // Compute all values ONCE per row (eliminating double computation). Riêng key 'parent'
+        // dùng lại parentGroupCheck vừa tính ở trên thay vì gọi lại valueExtractors['parent'](row)
+        // (chính là 1 lệnh getParentGroup() y hệt trên cùng input maNhomHangCheck) — an toàn vì
+        // parentGroupCheck tại điểm này LUÔN non-empty/không phải "Không tính doanh thu" (đã continue
+        // sớm ở trên nếu không), khớp giá trị valueExtractors['parent'] sẽ trả về (khác biệt duy nhất
+        // là fallback 'Không xác định' không bao giờ có cơ hội chạm tới ở đây).
         const allValues: Record<string, string> = {};
         for (const key in valueExtractors) {
-            allValues[key] = valueExtractors[key](row);
+            allValues[key] = key === 'parent' ? parentGroupCheck : valueExtractors[key](row);
         }
 
         const khoVal = allValues['kho'];
@@ -90,7 +96,7 @@ export function processSummaryTable(
         if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) continue;
         if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) continue;
 
-        const { revenue, revenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
+        const { revenue, revenueQD, weightedQuantity, isTraCham } = row._metrics || calculateRowMetrics(row, productConfig);
         const isTraGop = isTraCham;
 
         // Reuse already-computed allValues for keys
@@ -201,7 +207,9 @@ export function calculateWarehouseSummary(
 
         if (isRevenue) {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            const parentGroup = getParentGroup(maNhomHang, productConfig);
+            // Mục 65c (nhóm 3): đọc row._parentGroup đã tính sẵn ở applyFiltersAndProcess() thay vì
+            // gọi lại getParentGroup() từ đầu — cùng pattern đã đúng ở industryService.ts.
+            const parentGroup = row._parentGroup || getParentGroup(maNhomHang, productConfig);
             // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
             if (!parentGroup || parentGroup === 'Không tính doanh thu') continue;
 
@@ -212,7 +220,7 @@ export function calculateWarehouseSummary(
             const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
 
             const customer = getRowValue(row, COL.CUSTOMER_NAME);
-            const { revenue: rowRevenue, revenueQD: rowRevenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
+            const { revenue: rowRevenue, revenueQD: rowRevenueQD, weightedQuantity, isTraCham } = row._metrics || calculateRowMetrics(row, productConfig);
             const isTraGop = isTraCham;
 
             if (customer) summary.customers.add(customer);

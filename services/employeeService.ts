@@ -235,16 +235,18 @@ export function processEmployeeData(
             : !normalizedThuHoSet.has(cleanAndNormalize(htx));
         if (!isRevenue) continue;
 
-        // Bỏ qua nhóm hàng "Không tính doanh thu"
+        // Bỏ qua nhóm hàng "Không tính doanh thu" — Mục 65c (nhóm 3): đọc row._parentGroup đã tính
+        // sẵn ở applyFiltersAndProcess() thay vì gọi lại getParentGroup() từ đầu.
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
-        const parentGroupCheck = getParentGroup(maNhomHangCheck, productConfig);
+        const parentGroupCheck = row._parentGroup || getParentGroup(maNhomHangCheck, productConfig);
         if (!parentGroupCheck || parentGroupCheck === 'Không tính doanh thu') continue;
 
         // Nguồn duy nhất cho revenue/revenueQD/weightedQuantity/isTraCham của dòng này — trước đây
         // hàm này tính lại calculateRowMetrics 1 lần nữa bên dưới (dùng cho số liệu) trong khi vẫn
         // đọc isTraCham từ row._metrics (do filterService gán) cho phần cộng dồn trả góp, tạo 2
         // nguồn song song dư thừa. Gộp về 1 lần gọi duy nhất để tránh lệch nếu 2 nguồn từng khác nhau.
-        const { revenue, revenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
+        // Mục 65c (nhóm 3): đọc thẳng row._metrics đã tính sẵn thay vì gọi lại calculateRowMetrics().
+        const { revenue, revenueQD, weightedQuantity, isTraCham } = row._metrics || calculateRowMetrics(row, productConfig);
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const customer = getRowValue(row, COL.CUSTOMER_NAME);
@@ -284,7 +286,11 @@ export function processEmployeeData(
             emp.doanhThuTraCham! += revenue;
         }
 
-        const parentGroupForPerf = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
+        // Mục 65c (nhóm 3): dùng lại parentGroupCheck đã tính ở trên (cùng input maNhomHang/
+        // maNhomHangCheck — cùng 1 lệnh getRowValue trên cùng row) thay vì gọi lại getParentGroup()
+        // y hệt lần thứ 2. Bỏ được fallback 'Không xác định' vì tại đây parentGroupCheck LUÔN
+        // non-empty (đã continue sớm ở trên nếu rỗng/"Không tính doanh thu").
+        const parentGroupForPerf = parentGroupCheck;
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThu_CE_ICT! += revenue;
@@ -304,7 +310,8 @@ export function processEmployeeData(
         stats.doanhThuThuc = (stats.doanhThuThuc || 0) + revenue;
         stats.doanhThuQD = (stats.doanhThuQD || 0) + revenueQD;
 
-        const parentGroup = getParentGroup(maNhomHang, productConfig) || 'Không xác định';
+        // Mục 65c (nhóm 3): tương tự parentGroupForPerf ở trên — dùng lại parentGroupCheck.
+        const parentGroup = parentGroupCheck;
         const childGroup = getSubgroup(maNhomHang, productConfig) || 'Không xác định';
 
         // SP Chính

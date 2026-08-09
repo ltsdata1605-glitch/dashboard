@@ -138,9 +138,13 @@ function processDataForPeriod(
     for (let i = 0, len = periodData.length; i < len; i++) {
         const row = periodData[i];
         
-        // --- PRE-CALCULATE METRICS ---
-        row._metrics = calculateRowMetrics(row, productConfig);
-        row._parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+        // --- PRE-CALCULATE METRICS (phòng thủ — applyFiltersAndProcess() đã tính trước cho toàn
+        // bộ mainPeriodData ở trên, xem comment "Mục 65c (nhóm 3)"; điều kiện này chỉ còn tác dụng
+        // nếu processDataForPeriod() được gọi qua đường khác trong tương lai mà bỏ qua bước đó) ---
+        if (row._metrics === undefined) {
+            row._metrics = calculateRowMetrics(row, productConfig);
+            row._parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+        }
         // -----------------------------
 
         const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
@@ -292,6 +296,21 @@ export function applyFiltersAndProcess(
         if (mDate) {
             mainPeriodData.push(row);
         }
+    }
+
+    // Mục 65c (nhóm 3): trước đây row._metrics/row._parentGroup chỉ được gán bên trong
+    // processDataForPeriod() (dòng ~140 dưới), nhưng calculateWarehouseSummary() (khi cache miss)
+    // lại chạy TRƯỚC processDataForPeriod() trong luồng thực thi — nên calculateWarehouseSummary
+    // không bao giờ đọc được cache, luôn tự tính lại calculateRowMetrics()/getParentGroup() từ đầu
+    // dù warehouseGlobalData ⊆ mainPeriodData (dữ liệu processDataForPeriod SẼ tính lại sau đó).
+    // Dời việc tính 1 lần duy nhất ra đây — chạy NGAY sau khi mainPeriodData hoàn tất, TRƯỚC cả
+    // nhánh cache/calculateWarehouseSummary — để cả 2 nơi đều đọc được cùng 1 kết quả đã tính sẵn,
+    // không tăng thêm việc so với trước (processDataForPeriod trước đây đã làm việc này rồi, chỉ
+    // là dời sớm hơn — xem điều kiện phòng thủ `row._metrics === undefined` bên dưới).
+    for (let i = 0, len = mainPeriodData.length; i < len; i++) {
+        const row = mainPeriodData[i];
+        row._metrics = calculateRowMetrics(row, productConfig);
+        row._parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
     }
 
     let warehouseSummary;
