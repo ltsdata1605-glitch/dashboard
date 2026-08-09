@@ -1,5 +1,5 @@
 import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData, WarehouseSummaryRow } from '../types';
-import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
+import { COL } from '../constants';
 import { getRowValue, getParentGroup } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { processKpis } from './kpiService';
@@ -7,7 +7,7 @@ import { processTrendData } from './trendService';
 import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
-import { cleanAndNormalize, calculateRowMetrics, parseNumber, isValidSalesRow } from '../utils/dataUtils';
+import { cleanAndNormalize, calculateRowMetrics, parseNumber, isValidSalesRow, isUncollectedOrder } from '../utils/dataUtils';
 
 // Cache variables for warehouse global data and warehouse summary to prevent recalculations on filter changes
 let _lastAllData: DataRow[] | null = null;
@@ -196,9 +196,6 @@ function processDataForPeriod(
     const debtOrders: DataRow[] = [];
     const standardPeriodData: DataRow[] = [];
 
-    const hasHTXConfig = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0;
-
-    
     for (let i = 0, len = periodData.length; i < len; i++) {
         const row = periodData[i];
         
@@ -236,27 +233,11 @@ function processDataForPeriod(
                 }
             }
         } else if (thuTien === 'chưa thu') {
-            // Check uncollected orders
-            const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
-            const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
-            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-            if (
-                trangThaiXuat === 'chưa xuất' &&
-                trangThaiGiao === 'chưa giao' &&
-                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ')
-            ) {
-                // Check base revenue eligibility (no thuTien check)
-                const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                const parentGroup = row._parentGroup;
-                if (parentGroup !== 'Không tính doanh thu') {
-                    const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-                    const isRevenueBase = hasHTXConfig
-                        ? productConfig.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
-                        : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
-                    if (isRevenueBase) {
-                        uncollectedOrders.push(row);
-                    }
-                }
+            // Mục 65e: dùng chung isUncollectedOrder() (utils/dataUtils.ts) — cùng lý do
+            // isValidSalesRow ở nhánh "đã thu" trên: 1 nơi định nghĩa duy nhất để main thread
+            // (hooks/useDataManagement.ts) gọi lại được y hệt.
+            if (isUncollectedOrder(row, productConfig)) {
+                uncollectedOrders.push(row);
             }
         }
     }

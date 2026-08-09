@@ -40,14 +40,21 @@ self.onmessage = (event: MessageEvent) => {
                 departmentMap
             );
 
-            // Mục 65d: KHÔNG còn gửi baseFilteredData/warehouseFilteredData (main thread giờ tự
-            // tính lại từ originalData đã có sẵn, xem hooks/useDataManagement.ts) và KHÔNG gửi
-            // filteredValidSalesData (cũng tự tính lại trên main thread) — 3 mảng dòng dữ liệu
-            // thô này (tới 50k dòng mỗi mảng) trước đây chiếm phần lớn payload postMessage
-            // (~197MB ở tập 50k dòng), đo được chiếm ~3s/4-5s tổng thời gian xử lý MỘT MÌNH chi
-            // phí structured-clone — không phải do thuật toán tính toán chậm. Chỉ còn gửi lại
-            // processedData đã lược bỏ filteredValidSalesData (nhẹ, đã tổng hợp/gộp nhóm).
-            const { filteredValidSalesData: _filteredValidSalesData, ...resultToSend } = processedData;
+            // Mục 65d/65e: KHÔNG còn gửi baseFilteredData/warehouseFilteredData/
+            // filteredValidSalesData/unshippedOrders/debtOrders/uncollectedOrders — main thread
+            // giờ tự tính lại tất cả từ originalData đã có sẵn (xem hooks/useDataManagement.ts) —
+            // các mảng dòng dữ liệu thô này (tới hàng chục nghìn dòng mỗi mảng ở tập dữ liệu lớn)
+            // trước đây chiếm phần lớn payload postMessage (~197MB ở tập 50k dòng trước Mục 65d),
+            // đo được chiếm phần lớn thời gian xử lý MỘT MÌNH chi phí structured-clone — không
+            // phải do thuật toán tính toán chậm. Chỉ còn gửi lại processedData đã lược bỏ các
+            // mảng dòng thô (nhẹ, đã tổng hợp/gộp nhóm).
+            const {
+                filteredValidSalesData: _filteredValidSalesData,
+                unshippedOrders: _unshippedOrders,
+                debtOrders: _debtOrders,
+                uncollectedOrders: _uncollectedOrders,
+                ...resultToSend
+            } = processedData;
 
             self.postMessage({
                 type: 'PROCESS_SUCCESS',

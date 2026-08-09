@@ -876,6 +876,32 @@ export function isValidSalesRow(row: DataRow, productConfig: ProductConfig | nul
         : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
 }
 
+// Mục 65e: port nguyên văn điều kiện phân loại "uncollectedOrders" (nhánh "chưa thu") từ
+// processDataForPeriod — cùng lý do isValidSalesRow ở trên: main thread cần gọi lại ĐÚNG 1 hàm
+// này thay vì viết lại logic. Dùng revenueEligibleHTX (nếu có) hoặc HINH_THUC_XUAT_TIEN_MAT/
+// HINH_THUC_XUAT_TRA_GOP làm fallback — KHÁC với isValidSalesRow (fallback normalizedThuHoSet) vì
+// đây là "đủ điều kiện doanh thu CƠ BẢN" (base revenue eligibility), không kiểm tra thuTien.
+export function isUncollectedOrder(row: DataRow, productConfig: ProductConfig | null): boolean {
+    const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+    if (thuTien !== 'chưa thu') return false;
+
+    const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
+    const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
+    const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+    if (!(trangThaiXuat === 'chưa xuất' && trangThaiGiao === 'chưa giao' && (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ'))) {
+        return false;
+    }
+
+    const parentGroup = row._parentGroup || getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+    if (parentGroup === 'Không tính doanh thu') return false;
+
+    const hasHTXConfig = !!(productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0);
+    const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+    return hasHTXConfig
+        ? productConfig!.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
+        : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
+}
+
 export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
     const price = Number(getRowValue(row, COL.PRICE)) || 0;
     const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;

@@ -3,11 +3,11 @@ import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppSta
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
-import { computeBaseAndPeriodData, deriveWarehouseFilteredData } from '../services/filterService';
+import { computeBaseAndPeriodData, deriveWarehouseFilteredData, isXuatMatch } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_KPI_CARDS } from '../constants';
+import { DEFAULT_KPI_CARDS, COL } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS, computeRbacFilteredData, isValidSalesRow } from '../utils/dataUtils';
+import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS, computeRbacFilteredData, isValidSalesRow, isUncollectedOrder, getRowValue, parseNumber } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -733,14 +733,21 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         break;
                     case 'PROCESS_SUCCESS': {
                         const { result } = payload;
-                        // Mục 65d: lấy đúng snapshot baseFilteredData/warehouseFilteredData/
-                        // filteredValidSalesData đã tính trên main thread TẠI THỜI ĐIỂM gửi
-                        // PROCESS này (xem comment FIFO queue ở nơi khai báo
-                        // pendingMainThreadDataQueueRef) — commit CÙNG LÚC với processedData để
-                        // giữ đúng tính atomic (4 giá trị luôn tới từ 1 lần cập nhật, như trước).
+                        // Mục 65d/65e: lấy đúng snapshot baseFilteredData/warehouseFilteredData/
+                        // filteredValidSalesData/unshippedOrders/debtOrders/uncollectedOrders đã
+                        // tính trên main thread TẠI THỜI ĐIỂM gửi PROCESS này (xem comment FIFO
+                        // queue ở nơi khai báo pendingMainThreadDataQueueRef) — commit CÙNG LÚC
+                        // với processedData để giữ đúng tính atomic (như trước, mọi giá trị luôn
+                        // tới từ 1 lần cập nhật).
                         const pending = pendingMainThreadDataQueueRef.current.shift();
                         setAppState('dashboard');
-                        setProcessedData(pending ? { ...result, filteredValidSalesData: pending.filteredValidSalesData } : result);
+                        setProcessedData(pending ? {
+                            ...result,
+                            filteredValidSalesData: pending.filteredValidSalesData,
+                            unshippedOrders: pending.unshippedOrders,
+                            debtOrders: pending.debtOrders,
+                            uncollectedOrders: pending.uncollectedOrders,
+                        } : result);
                         if (pending) {
                             setBaseFilteredData(pending.baseFilteredData);
                             setWarehouseFilteredData(pending.warehouseFilteredData);
@@ -838,16 +845,42 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         return mainPeriodData.filter(row => isValidSalesRow(row, unwrapped));
     }, [mainPeriodData, productConfig]);
 
+    // Mục 65e: cùng lý do computedFilteredValidSalesData ở trên — unshippedOrders/debtOrders là
+    // TẬP CON của filteredValidSalesData đã tính sẵn (lọc rẻ, không cần productConfig thêm lần
+    // nữa), uncollectedOrders lọc từ mainPeriodData (đã có sẵn) bằng isUncollectedOrder(). Trước
+    // đây Worker gửi cả 3 mảng này (thô, ~5-6k dòng trong tập test 50k dòng) về qua postMessage —
+    // vẫn là dữ liệu dòng đầy đủ, cùng loại lãng phí đã sửa ở Mục 65d cho baseFilteredData/
+    // warehouseFilteredData/filteredValidSalesData.
+    const computedUnshippedOrders = useMemo(
+        () => computedFilteredValidSalesData.filter(row => getRowValue(row, COL.XUAT) === 'Chưa xuất'),
+        [computedFilteredValidSalesData]
+    );
+    const computedDebtOrders = useMemo(
+        () => computedFilteredValidSalesData.filter(row => isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0),
+        [computedFilteredValidSalesData]
+    );
+    const computedUncollectedOrders = useMemo(() => {
+        const unwrapped = productConfig ? unwrapProductConfigProxies(productConfig) : null;
+        return mainPeriodData.filter(row => isUncollectedOrder(row, unwrapped));
+    }, [mainPeriodData, productConfig]);
+
     // Giữ tính ATOMIC với processedData: nhiều nơi (IndustryGrid, KpiCards,
     // useEmployeeAnalysisData, useHeadToHeadLogic...) kết hợp dữ liệu Worker-sourced
-    // (processedData.*) với 3 giá trị trên TRONG CÙNG 1 phép tính (vd IndustryGrid yêu cầu
+    // (processedData.*) với các giá trị trên TRONG CÙNG 1 phép tính (vd IndustryGrid yêu cầu
     // filteredValidSalesData luôn cùng "epoch" với industryData — xem comment ở
-    // hooks/useIndustryGridLogic.ts). Nếu 3 giá trị này cập nhật NGAY khi memo đổi (nhanh hơn
-    // processedData phải chờ Worker round-trip ~0,6-1,9s) sẽ có 1 cửa sổ hiển thị SAI SỐ (không
-    // chỉ nhấp nháy). Dùng hàng đợi FIFO: snapshot đúng lúc gửi PROCESS, shift() ra đúng lúc nhận
+    // hooks/useIndustryGridLogic.ts). Nếu các giá trị này cập nhật NGAY khi memo đổi (nhanh hơn
+    // processedData phải chờ Worker round-trip) sẽ có 1 cửa sổ hiển thị SAI SỐ (không chỉ nhấp
+    // nháy). Dùng hàng đợi FIFO: snapshot đúng lúc gửi PROCESS, shift() ra đúng lúc nhận
     // PROCESS_SUCCESS/PROCESS_ERROR (Worker giữ đúng thứ tự message nên khớp cặp chính xác, không
     // cần thêm generation number) — chỉ commit setState cùng lúc với processedData.
-    const pendingMainThreadDataQueueRef = useRef<{ baseFilteredData: DataRow[]; warehouseFilteredData: DataRow[]; filteredValidSalesData: DataRow[] }[]>([]);
+    const pendingMainThreadDataQueueRef = useRef<{
+        baseFilteredData: DataRow[];
+        warehouseFilteredData: DataRow[];
+        filteredValidSalesData: DataRow[];
+        unshippedOrders: DataRow[];
+        debtOrders: DataRow[];
+        uncollectedOrders: DataRow[];
+    }[]>([]);
 
     // Central Data Processing
     useEffect(() => {
@@ -872,11 +905,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         setIsFilterProcessing(true);
 
         if (workerRef.current) {
-            // Mục 65d: snapshot ĐÚNG LÚC gửi PROCESS — xem comment FIFO queue ở trên.
+            // Mục 65d/65e: snapshot ĐÚNG LÚC gửi PROCESS — xem comment FIFO queue ở trên.
             pendingMainThreadDataQueueRef.current.push({
                 baseFilteredData: computedBaseFilteredData,
                 warehouseFilteredData: computedWarehouseFilteredData,
                 filteredValidSalesData: computedFilteredValidSalesData,
+                unshippedOrders: computedUnshippedOrders,
+                debtOrders: computedDebtOrders,
+                uncollectedOrders: computedUncollectedOrders,
             });
             workerRef.current.postMessage({
                 type: 'PROCESS',
@@ -887,7 +923,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             });
         }
-    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData]);
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData, computedUnshippedOrders, computedDebtOrders, computedUncollectedOrders]);
 
     // Mục 65c: availableWeeks/availableMonths trước đây là 2 useMemo ĐỘC LẬP, TRÙNG LẶP ở
     // FilterBar.tsx (tuần+tháng) và FilterSection.tsx (chỉ tháng) — mỗi cái tự quét lại TOÀN BỘ
