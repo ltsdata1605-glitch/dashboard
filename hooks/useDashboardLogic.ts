@@ -38,7 +38,6 @@ export const useDashboardLogic = () => {
         originalData, setOriginalData,
         baseFilteredData,
         warehouseFilteredData,
-        calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,
         processedData, setProcessedData,
@@ -253,7 +252,7 @@ export const useDashboardLogic = () => {
 
     return useMemo(() => ({
         status, appState, setAppState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
-        departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
+        departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         availableWeeks, availableMonths,
         filterState, handleFilterChange,
@@ -305,7 +304,7 @@ export const useDashboardLogic = () => {
         setEditingTargetKho
     }), [
         status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
-        departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
+        departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
         configUrl, uniqueFilterOptions,
         availableWeeks, availableMonths,
         filterState, handleFilterChange,

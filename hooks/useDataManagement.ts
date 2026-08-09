@@ -3,11 +3,11 @@ import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppSta
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
-import { applyFiltersAndProcess } from '../services/filterService';
+import { computeBaseAndPeriodData, deriveWarehouseFilteredData } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS } from '../utils/dataUtils';
+import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS, computeRbacFilteredData, isValidSalesRow } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -24,7 +24,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [hasRealtimeData, setHasRealtimeData] = useState(false);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
     const [warehouseFilteredData, setWarehouseFilteredData] = useState<DataRow[]>([]);
-    const [calendarSourceData, setCalendarSourceData] = useState<DataRow[]>([]);
     const [departmentMap, setDepartmentMap] = useState<DepartmentMap | null>(null);
     const [productConfig, _setProductConfig] = useState<ProductConfig | null>(null);
     const setProductConfig = useCallback((config: ProductConfig | null) => {
@@ -733,17 +732,28 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         setAppState('upload');
                         break;
                     case 'PROCESS_SUCCESS': {
-                        const { result, newBaseData, newWarehouseData, newCalendarSourceData } = payload;
+                        const { result } = payload;
+                        // Mục 65d: lấy đúng snapshot baseFilteredData/warehouseFilteredData/
+                        // filteredValidSalesData đã tính trên main thread TẠI THỜI ĐIỂM gửi
+                        // PROCESS này (xem comment FIFO queue ở nơi khai báo
+                        // pendingMainThreadDataQueueRef) — commit CÙNG LÚC với processedData để
+                        // giữ đúng tính atomic (4 giá trị luôn tới từ 1 lần cập nhật, như trước).
+                        const pending = pendingMainThreadDataQueueRef.current.shift();
                         setAppState('dashboard');
-                        setProcessedData(result);
-                        setBaseFilteredData(newBaseData);
-                        setWarehouseFilteredData(newWarehouseData);
-                        setCalendarSourceData(newCalendarSourceData);
+                        setProcessedData(pending ? { ...result, filteredValidSalesData: pending.filteredValidSalesData } : result);
+                        if (pending) {
+                            setBaseFilteredData(pending.baseFilteredData);
+                            setWarehouseFilteredData(pending.warehouseFilteredData);
+                        }
                         setEmployeeAnalysisData(result.employeeData);
                         setIsFilterProcessing(false);
                         break;
                     }
                     case 'PROCESS_ERROR':
+                        // Giữ hàng đợi FIFO đồng bộ với số message PROCESS thực đã gửi — nếu
+                        // không shift() ở đây, lần PROCESS_SUCCESS kế tiếp sẽ nhận nhầm snapshot
+                        // của lần gửi trước đó (lệch cặp).
+                        pendingMainThreadDataQueueRef.current.shift();
                         console.error("Lỗi khi xử lý lại dữ liệu:", payload);
                         setStatus({ message: payload, type: 'error', progress: 0 });
                         setAppState('upload');
@@ -794,6 +804,51 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         });
     }, [originalData, userRole, departmentId, employeeName, user?.email, isDemoMode, productConfig, departmentMap, workerReady]);
 
+    // Mục 65d: baseFilteredData/warehouseFilteredData/filteredValidSalesData trước đây được WORKER
+    // tính rồi gửi cả bản sao ĐẦY ĐỦ (tới 50k dòng/mảng) về qua postMessage — đo được payload tổng
+    // ~197MB ở tập 50k dòng, riêng chi phí structured-clone chiếm ~3s/4-5s tổng thời gian xử lý MỘT
+    // MÌNH (KHÔNG phải do thuật toán applyFiltersAndProcess chậm). originalData đã có sẵn TRÊN main
+    // thread từ trước (chính nơi gửi nó cho Worker) — tính lại 3 tập con này bằng ĐÚNG các hàm
+    // predicate thuần Worker cũng dùng (computeBaseAndPeriodData/deriveWarehouseFilteredData từ
+    // services/filterService.ts, isValidSalesRow từ utils/dataUtils.ts — export riêng để 2 nơi
+    // không lệch logic) rẻ hơn nhiều so với chi phí gửi qua lại.
+    //
+    // QUAN TRỌNG — RBAC: sourceData bên trong Worker luôn là computeRbacFilteredData(originalData,
+    // rbacParams), KHÔNG PHẢI originalData thô — main thread PHẢI áp dụng lại đúng hàm này trước,
+    // nếu không nhân viên/quản lý sẽ thấy dữ liệu ngoài phạm vi Kho/nhân viên được phép (rò rỉ dữ
+    // liệu, không phải chi tiết nhỏ).
+    const rbacSourceData = useMemo(() => computeRbacFilteredData(originalData, {
+        isDemoMode, userRole, departmentId, employeeName, userEmail: user?.email,
+    }), [originalData, isDemoMode, userRole, departmentId, employeeName, user?.email]);
+
+    const { baseFilteredData: computedBaseFilteredData, mainPeriodData } = useMemo(
+        () => computeBaseAndPeriodData(rbacSourceData, filterState, departmentMap),
+        [rbacSourceData, filterState, departmentMap]
+    );
+
+    const computedWarehouseFilteredData = useMemo(
+        () => deriveWarehouseFilteredData(mainPeriodData),
+        [mainPeriodData]
+    );
+
+    // isValidSalesRow cần productConfig ĐÃ UNWRAP (giống hệt Worker) để khớp đúng hành vi
+    // getParentGroup hiện có — productConfig context luôn là bản Proxy-wrap.
+    const computedFilteredValidSalesData = useMemo(() => {
+        const unwrapped = productConfig ? unwrapProductConfigProxies(productConfig) : null;
+        return mainPeriodData.filter(row => isValidSalesRow(row, unwrapped));
+    }, [mainPeriodData, productConfig]);
+
+    // Giữ tính ATOMIC với processedData: nhiều nơi (IndustryGrid, KpiCards,
+    // useEmployeeAnalysisData, useHeadToHeadLogic...) kết hợp dữ liệu Worker-sourced
+    // (processedData.*) với 3 giá trị trên TRONG CÙNG 1 phép tính (vd IndustryGrid yêu cầu
+    // filteredValidSalesData luôn cùng "epoch" với industryData — xem comment ở
+    // hooks/useIndustryGridLogic.ts). Nếu 3 giá trị này cập nhật NGAY khi memo đổi (nhanh hơn
+    // processedData phải chờ Worker round-trip ~0,6-1,9s) sẽ có 1 cửa sổ hiển thị SAI SỐ (không
+    // chỉ nhấp nháy). Dùng hàng đợi FIFO: snapshot đúng lúc gửi PROCESS, shift() ra đúng lúc nhận
+    // PROCESS_SUCCESS/PROCESS_ERROR (Worker giữ đúng thứ tự message nên khớp cặp chính xác, không
+    // cần thêm generation number) — chỉ commit setState cùng lúc với processedData.
+    const pendingMainThreadDataQueueRef = useRef<{ baseFilteredData: DataRow[]; warehouseFilteredData: DataRow[]; filteredValidSalesData: DataRow[] }[]>([]);
+
     // Central Data Processing
     useEffect(() => {
         if (appState === 'loading') return;
@@ -817,6 +872,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         setIsFilterProcessing(true);
 
         if (workerRef.current) {
+            // Mục 65d: snapshot ĐÚNG LÚC gửi PROCESS — xem comment FIFO queue ở trên.
+            pendingMainThreadDataQueueRef.current.push({
+                baseFilteredData: computedBaseFilteredData,
+                warehouseFilteredData: computedWarehouseFilteredData,
+                filteredValidSalesData: computedFilteredValidSalesData,
+            });
             workerRef.current.postMessage({
                 type: 'PROCESS',
                 payload: {
@@ -826,7 +887,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             });
         }
-    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration]);
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData]);
 
     // Mục 65c: availableWeeks/availableMonths trước đây là 2 useMemo ĐỘC LẬP, TRÙNG LẶP ở
     // FilterBar.tsx (tuần+tháng) và FilterSection.tsx (chỉ tháng) — mỗi cái tự quét lại TOÀN BỘ
@@ -965,7 +1026,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         originalData, setOriginalData,
         baseFilteredData,
         warehouseFilteredData,
-        calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,
         processedData, setProcessedData,

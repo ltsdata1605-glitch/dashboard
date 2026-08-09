@@ -856,6 +856,26 @@ export function computeUnconfiguredGroups(originalData: DataRow[], productConfig
     })).sort((a, b) => a.nganhHang.localeCompare(b.nganhHang) || a.nhomHang.localeCompare(b.nhomHang));
 }
 
+// Mục 65d: port nguyên văn điều kiện phân loại "filteredValidSalesData" (nhánh "đã thu") từ
+// processDataForPeriod (services/filterService.ts) ra đây — để main thread (hooks/useDataManagement.ts)
+// tính lại ĐÚNG CÙNG 1 điều kiện thay vì tự viết lại (tránh 2 bản lệch nhau theo thời gian).
+// KHÔNG cần row._metrics (chỉ dùng để phân loại/lọc, không dùng để tổng hợp số liệu) — chỉ cần
+// row._parentGroup (đọc cache nếu có, fallback tính mới — main thread luôn rơi vào nhánh fallback
+// vì row object trên main thread không phải cùng instance đã bị Worker mutate).
+export function isValidSalesRow(row: DataRow, productConfig: ProductConfig | null): boolean {
+    const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+    if (thuTien !== 'đã thu') return false;
+
+    const parentGroup = row._parentGroup || getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+    if (parentGroup === 'Không tính doanh thu') return false;
+
+    const hasHTXConfig = !!(productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0);
+    const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+    return hasHTXConfig
+        ? productConfig!.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
+        : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
+}
+
 export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
     const price = Number(getRowValue(row, COL.PRICE)) || 0;
     const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;

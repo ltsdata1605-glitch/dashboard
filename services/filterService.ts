@@ -1,13 +1,13 @@
 import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData, WarehouseSummaryRow } from '../types';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getParentGroup, normalizedThuHoSet } from '../utils/dataUtils';
+import { getRowValue, getParentGroup } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { processKpis } from './kpiService';
 import { processTrendData } from './trendService';
 import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
-import { cleanAndNormalize, calculateRowMetrics, parseNumber } from '../utils/dataUtils';
+import { cleanAndNormalize, calculateRowMetrics, parseNumber, isValidSalesRow } from '../utils/dataUtils';
 
 // Cache variables for warehouse global data and warehouse summary to prevent recalculations on filter changes
 let _lastAllData: DataRow[] | null = null;
@@ -113,6 +113,70 @@ export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date 
 };
 
 
+// Mục 65d: tách vòng lặp predicate (trước đây viết inline trong applyFiltersAndProcess) thành
+// 1 hàm export riêng — để main thread (hooks/useDataManagement.ts) gọi lại ĐÚNG cùng 1 hàm này
+// thay vì tự viết lại điều kiện lọc lần 2 (nguy cơ 2 bản lệch nhau theo thời gian). Hành vi giữ
+// nguyên 100% so với vòng lặp cũ — chỉ đổi CHỖ đặt code, không đổi logic. calendarSourceData (dòng
+// cũ từng có ở đây) đã bị xoá hẳn — grep toàn repo xác nhận không có nơi nào thực sự dùng tới.
+export function computeBaseAndPeriodData(
+    sourceData: DataRow[],
+    filters: FilterState,
+    departmentMap: DepartmentMap | null
+): { baseFilteredData: DataRow[]; mainPeriodData: DataRow[] } {
+    const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
+    if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
+    const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
+    if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
+
+    const trangThaiFilterSet = (filters.trangThai && filters.trangThai.length > 0) ? new Set(filters.trangThai) : null;
+    const nguoiTaoFilterSet = (filters.nguoiTao && filters.nguoiTao.length > 0) ? new Set(filters.nguoiTao) : null;
+    const khoFilterSet = (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) ? new Set(filters.kho) : null;
+    const departmentFilterSet = (filters.department && filters.department.length > 0) ? new Set(filters.department) : null;
+
+    const baseFilteredData: DataRow[] = [];
+    const mainPeriodData: DataRow[] = [];
+
+    for (let i = 0, len = sourceData.length; i < len; i++) {
+        const row = sourceData[i];
+
+        if (!isXuatMatch(row, filters.xuat)) continue;
+
+        const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
+
+        if (!isTrangThaiMatch(row, trangThaiFilterSet)) continue;
+        if (!isNguoiTaoMatch(row, nguoiTaoFilterSet)) continue;
+        if (!isDepartmentMatch(row, departmentFilterSet, departmentMap)) continue;
+
+        if (!isKhoMatch(row, khoFilterSet)) continue;
+
+        // Bỏ qua những đơn đã hủy hoặc đã trả (đồng nhất với warehouseGlobalData)
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValidOrder = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        if (!isValidOrder) continue;
+
+        baseFilteredData.push(row);
+
+        if (mDate) {
+            mainPeriodData.push(row);
+        }
+    }
+
+    return { baseFilteredData, mainPeriodData };
+}
+
+// Mục 65d: cùng lý do computeBaseAndPeriodData ở trên — 1 chỗ export duy nhất để main thread và
+// Worker luôn dùng chung logic, không lệch nhau.
+export function deriveWarehouseFilteredData(mainPeriodData: DataRow[]): DataRow[] {
+    return mainPeriodData.filter(row => {
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        return thuTien === 'đã thu' && isValid;
+    });
+}
+
 /**
  * Processes a filtered subset of data for a specific period to generate all dashboard metrics.
  */
@@ -152,29 +216,23 @@ function processDataForPeriod(
         if (thuTien === 'đã thu') {
             standardPeriodData.push(row);
 
-            // Check revenue eligibility for "đã thu" rows
-            const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            const parentGroup = row._parentGroup;
-            if (parentGroup !== 'Không tính doanh thu') {
-                const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-                const isRevenueOk = hasHTXConfig
-                    ? productConfig.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
-                    : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
+            // Mục 65d: dùng chung isValidSalesRow() (utils/dataUtils.ts) — hàm này tự đọc lại
+            // TRẠNG_THÁI_THU_TIỀN nội bộ (rẻ, đã cache qua cleanAndNormalize) nên vẫn cho kết quả
+            // đúng dù outer thuTien đã tính rồi; mục đích là CHỈ 1 nơi định nghĩa "row hợp lệ tính
+            // doanh thu" để main thread (hooks/useDataManagement.ts) gọi lại được y hệt.
+            if (isValidSalesRow(row, productConfig)) {
+                filteredValidSalesData.push(row);
 
-                if (isRevenueOk) {
-                    filteredValidSalesData.push(row);
+                // Check unshipped
+                if (getRowValue(row, COL.XUAT) === 'Chưa xuất') {
+                    unshippedOrders.push(row);
+                }
 
-                    // Check unshipped
-                    if (getRowValue(row, COL.XUAT) === 'Chưa xuất') {
-                        unshippedOrders.push(row);
-                    }
-
-                    // Check unfinished debt (Còn nợ > 0) — chỉ tính đơn ĐÃ XUẤT: đơn chưa xuất
-                    // thì chưa thể coi là "chưa hoàn tất công nợ" (chưa giao hàng thì chưa phát sinh
-                    // nghĩa vụ thu nợ).
-                    if (isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
-                        debtOrders.push(row);
-                    }
+                // Check unfinished debt (Còn nợ > 0) — chỉ tính đơn ĐÃ XUẤT: đơn chưa xuất
+                // thì chưa thể coi là "chưa hoàn tất công nợ" (chưa giao hàng thì chưa phát sinh
+                // nghĩa vụ thu nợ).
+                if (isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
+                    debtOrders.push(row);
                 }
             }
         } else if (thuTien === 'chưa thu') {
@@ -230,19 +288,9 @@ export function applyFiltersAndProcess(
     productConfig: ProductConfig,
     filters: FilterState,
     departmentMap: DepartmentMap | null
-): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
+): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[] } {
 
     const sourceData = allData;
-
-    const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
-    if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
-    const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
-    if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
-
-    const trangThaiFilterSet = (filters.trangThai && filters.trangThai.length > 0) ? new Set(filters.trangThai) : null;
-    const nguoiTaoFilterSet = (filters.nguoiTao && filters.nguoiTao.length > 0) ? new Set(filters.nguoiTao) : null;
-    const khoFilterSet = (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) ? new Set(filters.kho) : null;
-    const departmentFilterSet = (filters.department && filters.department.length > 0) ? new Set(filters.department) : null;
 
     // Check cache validity for warehouse summary
     const selectedMonthsStr = JSON.stringify(filters.selectedMonths || []);
@@ -251,7 +299,7 @@ export function applyFiltersAndProcess(
     const departmentStr = JSON.stringify(filters.department || []);
     const khoStr = JSON.stringify(filters.kho || []);
 
-    const isWarehouseCacheValid = 
+    const isWarehouseCacheValid =
         sourceData === _lastAllData &&
         productConfig === _lastProductConfig &&
         filters.xuat === _lastXuat &&
@@ -265,38 +313,8 @@ export function applyFiltersAndProcess(
         _lastWarehouseGlobalData !== null &&
         _lastWarehouseSummary !== null;
 
-    const calendarSourceData: DataRow[] = [];
-    const baseFilteredData: DataRow[] = [];
-    const mainPeriodData: DataRow[] = [];
+    const { baseFilteredData, mainPeriodData } = computeBaseAndPeriodData(sourceData, filters, departmentMap);
     let warehouseGlobalData: DataRow[] = isWarehouseCacheValid ? _lastWarehouseGlobalData! : [];
-
-    for (let i = 0, len = sourceData.length; i < len; i++) {
-        const row = sourceData[i];
-
-        if (!isXuatMatch(row, filters.xuat)) continue;
-
-        const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
-
-        if (!isTrangThaiMatch(row, trangThaiFilterSet)) continue;
-        if (!isNguoiTaoMatch(row, nguoiTaoFilterSet)) continue;
-        if (!isDepartmentMatch(row, departmentFilterSet, departmentMap)) continue;
-
-        calendarSourceData.push(row);
-
-        if (!isKhoMatch(row, khoFilterSet)) continue;
-
-        // Bỏ qua những đơn đã hủy hoặc đã trả (đồng nhất với warehouseGlobalData)
-        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
-        const isValidOrder = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
-        if (!isValidOrder) continue;
-
-        baseFilteredData.push(row);
-
-        if (mDate) {
-            mainPeriodData.push(row);
-        }
-    }
 
     // Mục 65c (nhóm 3): trước đây row._metrics/row._parentGroup chỉ được gán bên trong
     // processDataForPeriod() (dòng ~140 dưới), nhưng calculateWarehouseSummary() (khi cache miss)
@@ -317,13 +335,7 @@ export function applyFiltersAndProcess(
     if (isWarehouseCacheValid) {
         warehouseSummary = _lastWarehouseSummary!;
     } else {
-        warehouseGlobalData = mainPeriodData.filter(row => {
-            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-            const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
-            const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
-            return thuTien === 'đã thu' && isValid;
-        });
+        warehouseGlobalData = deriveWarehouseFilteredData(mainPeriodData);
         warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
         _lastAllData = sourceData;
         _lastProductConfig = productConfig;
@@ -355,5 +367,5 @@ export function applyFiltersAndProcess(
         reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Lọc theo kho: Tất cả"
     };
 
-    return { processedData, baseFilteredData, warehouseFilteredData: warehouseGlobalData, calendarSourceData };
+    return { processedData, baseFilteredData, warehouseFilteredData: warehouseGlobalData };
 }

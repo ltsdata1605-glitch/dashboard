@@ -33,22 +33,25 @@ self.onmessage = (event: MessageEvent) => {
 
         try {
             // Chạy thuật toán lọc và tính toán nặng trĩu trên Worker
-            const { processedData, baseFilteredData, warehouseFilteredData, calendarSourceData } = applyFiltersAndProcess(
+            const { processedData } = applyFiltersAndProcess(
                 cachedData,
                 productConfig,
                 filterState,
                 departmentMap
             );
 
-            // Gửi kết quả (đã tính xong, rất nhẹ) về Main Thread
+            // Mục 65d: KHÔNG còn gửi baseFilteredData/warehouseFilteredData (main thread giờ tự
+            // tính lại từ originalData đã có sẵn, xem hooks/useDataManagement.ts) và KHÔNG gửi
+            // filteredValidSalesData (cũng tự tính lại trên main thread) — 3 mảng dòng dữ liệu
+            // thô này (tới 50k dòng mỗi mảng) trước đây chiếm phần lớn payload postMessage
+            // (~197MB ở tập 50k dòng), đo được chiếm ~3s/4-5s tổng thời gian xử lý MỘT MÌNH chi
+            // phí structured-clone — không phải do thuật toán tính toán chậm. Chỉ còn gửi lại
+            // processedData đã lược bỏ filteredValidSalesData (nhẹ, đã tổng hợp/gộp nhóm).
+            const { filteredValidSalesData: _filteredValidSalesData, ...resultToSend } = processedData;
+
             self.postMessage({
                 type: 'PROCESS_SUCCESS',
-                payload: {
-                    result: processedData,
-                    newBaseData: baseFilteredData,
-                    newWarehouseData: warehouseFilteredData,
-                    newCalendarSourceData: calendarSourceData
-                }
+                payload: { result: resultToSend }
             });
         } catch (error) {
             console.error("Analytics Worker Error:", error);

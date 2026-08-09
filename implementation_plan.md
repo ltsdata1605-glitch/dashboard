@@ -2322,4 +2322,23 @@ Khảo sát sâu (2 Explore agent song song) xác định đúng 3 nguồn lãng
 
 **Kết luận cuối cùng**: cả 3 fix Mục 65c đều ĐÚNG, AN TOÀN, và loại bỏ được lãng phí THẬT (đã verify kỹ từng phần) — nhưng KHÔNG giải quyết được mục tiêu "NHANH MƯỢT" người dùng yêu cầu ban đầu, vì bottleneck chính vẫn nằm ở chỗ cả Mục 65/65b/65c đều CHƯA từng đụng tới: (1) bản thân thời gian tính toán của `applyFiltersAndProcess` với tập dữ liệu lớn (dù đã giảm phần dư thừa, thuật toán cốt lõi vẫn tốn thời gian tuyến tính đáng kể với 50k dòng), và (2) chi phí React render TOÀN BỘ dashboard (nhiều bảng lồng nhau + biểu đồ recharts) ngay sau khi có kết quả — 1 lượt commit đồng bộ lớn, chưa từng được chia nhỏ/virtualize. Muốn đạt "NHANH MƯỢT" thật sự cần 1 đợt điều tra + kế hoạch RIÊNG, quy mô lớn hơn nhiều (có thể cần virtualization cho bảng lớn, chia nhỏ commit React, hoặc tối ưu lại thuật toán `applyFiltersAndProcess` ở mức Big-O) — không phải việc chỉnh nhỏ như 3 đợt đã làm.
 
+## Mục 65d — Loại bỏ payload ~197MB giữa Worker và main thread (nguyên nhân THẬT, 2026-08-09)
+
+Instrument trực tiếp `Worker.postMessage`/`onmessage` (không đoán — bọc `window.Worker` bằng Proxy qua Playwright `addInitScript`, đo timestamp thật + `JSON.stringify` làm proxy chi phí structured-clone) phát hiện: nhận định ở Mục 65c rằng "PROCESS round-trip chậm vì thuật toán `applyFiltersAndProcess` tính toán nặng" là **SAI** — thực ra `services/analytics.worker.ts`'s `PROCESS_SUCCESS` gửi kèm **4 mảng dòng dữ liệu thô đầy đủ** (`newBaseData`/`newWarehouseData`/`newCalendarSourceData` 50.000 dòng + `result.filteredValidSalesData` 41.536 dòng) — tổng payload **196,7MB**, riêng `JSON.stringify` mất ~3 giây dưới throttle 4x CPU — đúng khớp con số "PROCESS round-trip 3,1-3,7s" đã đo nhầm nguyên nhân trước đó.
+
+**Fix**: `originalData` đã có sẵn TRÊN main thread từ trước (chính nơi gửi cho Worker) — tính lại 4 tập con này NGAY trên main thread bằng ĐÚNG các hàm predicate thuần đã tách export (`computeBaseAndPeriodData`/`deriveWarehouseFilteredData` ở `services/filterService.ts`, `isValidSalesRow` ở `utils/dataUtils.ts`, dùng lại `computeRbacFilteredData` đã có từ Mục 65b) — Worker chỉ còn gửi lại `processedData` đã lược bỏ `filteredValidSalesData` (nhẹ, đã tổng hợp). `calendarSourceData` xoá hẳn (0 người dùng thật, grep xác nhận). Để giữ đúng tính ATOMIC với `processedData` (nhiều nơi như `IndustryGrid`/`KpiCards`/`useEmployeeAnalysisData`/`useHeadToHeadLogic` kết hợp dữ liệu Worker-sourced với 3 giá trị này trong cùng 1 phép tính, đã xác nhận bằng code thật), dùng hàng đợi FIFO snapshot đúng lúc gửi `PROCESS`, chỉ commit `setState` cùng lúc với `processedData` khi nhận `PROCESS_SUCCESS`.
+
+**Verify**: RBAC là rủi ro cao nhất (`sourceData` trong Worker luôn qua `computeRbacFilteredData`, main thread PHẢI áp dụng lại — bỏ qua sẽ rò rỉ dữ liệu ngoài phạm vi cho nhân viên/quản lý) — unit test trực tiếp `computeRbacFilteredData` với tham số admin/demo/manager/employee đều đúng (9/9 case pass). `applyFiltersAndProcess` đối chiếu số liệu trước/sau refactor — khớp 100% (thuần trích xuất hàm, không đổi công thức). Playwright trên production build: reload 3/3 đúng số liệu, test filter cục bộ đúng số liệu (khớp baseline Mục 65c), test race-condition (đổi filter 2 lần liên tiếp không chờ) 3/3 lần cho kết quả nhất quán, không lỗi console.
+
+**Kết quả đo lại cuối cùng (Playwright, production build, throttle mobile — đây MỚI LÀ kết quả thật của toàn bộ nỗ lực Mục 65/65b/65c/65d)**:
+
+| Chỉ số | 20k trước (Mục 65c) | 20k sau (Mục 65d) | Cải thiện | 50k trước (Mục 65c) | 50k sau (Mục 65d) | Cải thiện |
+|---|---|---|---|---|---|---|
+| Payload `PROCESS_SUCCESS` (đã đo trực tiếp, chỉ đo ở 50k) | — (chưa đo riêng) | — | — | 196,7MB | 14,9MB | **92% ↓** |
+| Gap tối đa (rAF) | 1162-1199ms | **219-239ms** | **~80% ↓** | 2408-2474ms | **408-462ms** | **~82% ↓** |
+| Cửa sổ xử lý (loadingStatus→dashboard) | 2116-2176ms | 1096-1162ms | ~48% ↓ | 4347-4554ms | 2116-2565ms | ~52% ↓ |
+| Số lần gap >500ms (/3 lần đo) | 1-3 | **0/3** | Hết hẳn | 1-3 | **0/3** | Hết hẳn |
+
+**Kết luận**: đây mới là nguyên nhân THẬT của độ giật ban đầu user báo cáo. 20k dòng gần chạm mục tiêu ban đầu (<200ms, đạt 219-239ms — rất gần); 50k dòng còn cách xa hơn (408-462ms) nhưng đã KHÔNG CÒN đứng hình rõ rệt (trước đây luôn có ít nhất 1 khoảng >2 giây, giờ 0/3 lần vượt quá 500ms). Nếu muốn tối ưu tiếp gần mục tiêu <200ms tuyệt đối ở 50k dòng, phần còn lại (~400ms) là chi phí SET_DATA round-trip (~540-660ms, đã hợp lý cho payload còn lại) + React render (~214-236ms) — không còn "1 nguồn duy nhất chiếm phần lớn" như trước, nên lợi ích cận biên của việc tối ưu tiếp giảm đáng kể so với công sức bỏ ra.
+
 
