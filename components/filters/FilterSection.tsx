@@ -86,36 +86,17 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 }) => {
     const { userRole } = useAuth();
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-    const { 
-        filterState: globalFilters, 
-        handleFilterChange: applyGlobalFilters, 
+    const {
+        filterState: globalFilters,
+        handleFilterChange: applyGlobalFilters,
         originalData: allData,
+        availableMonths,
         productConfig,
         gtdhTargets,
         updateGtdhTarget
     } = useDashboardContext();
-    
-    const [localFilters, setLocalFilters] = useState(globalFilters);
 
-    const availableMonths = React.useMemo(() => {
-        const months = new Set<string>();
-        if (allData && allData.length > 0) {
-            allData.forEach((row) => {
-                const date = row.parsedDate;
-                if (!date || isNaN(date.getTime())) return;
-                const monthNum = date.getMonth() + 1;
-                const yearNum = date.getFullYear();
-                const mStr = `${yearNum}-${String(monthNum).padStart(2, '0')}`;
-                months.add(mStr);
-            });
-        }
-        return Array.from(months)
-            .sort((a, b) => b.localeCompare(a))
-            .map(mStr => {
-                const [year, month] = mStr.split('-');
-                return `Tháng ${month}/${year}`;
-            });
-    }, [allData]);
+    const [localFilters, setLocalFilters] = useState(globalFilters);
 
     useEffect(() => {
         setLocalFilters(globalFilters);

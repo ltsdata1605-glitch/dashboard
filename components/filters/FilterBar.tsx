@@ -21,7 +21,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
         filterState,
         handleFilterChange,
         uniqueFilterOptions,
-        originalData
+        availableWeeks,
+        availableMonths
     } = useDashboardContext();
     // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý (implementation_plan.md mục 37) — không
     // còn tự tải file/quản lý lịch sử tệp riêng nữa. Header.tsx (desktop) đã chặn đúng role
@@ -37,51 +38,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    const { availableWeeks, availableMonths } = useMemo(() => {
-        const weeksMap = new Map<string, string>();
-        const months = new Set<string>();
-        
-        if (originalData && originalData.length > 0) {
-            originalData.forEach((row) => {
-                const date = row.parsedDate;
-                if (!date || isNaN(date.getTime())) return;
-                
-                const monthNum = date.getMonth() + 1;
-                const yearNum = date.getFullYear();
-                
-                const mStr = `${yearNum}-${String(monthNum).padStart(2, '0')}`;
-                months.add(mStr);
-                
-                const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-                const dayNum = d.getUTCDay() || 7;
-                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-                const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
-                const wStr = `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
-                
-                const firstDayOfMonth = new Date(yearNum, monthNum - 1, 1);
-                const firstDayWeekday = firstDayOfMonth.getDay() || 7;
-                const offsetDate = date.getDate() + firstDayWeekday - 1;
-                const weekOfMonth = Math.ceil(offsetDate / 7);
-                
-                const label = `Tuần ${weekOfMonth} - Tháng ${String(monthNum).padStart(2, '0')}/${yearNum}`;
-                weeksMap.set(wStr, label);
-            });
-        }
-        
-        return {
-            availableWeeks: Array.from(weeksMap.entries())
-                .sort((a, b) => b[0].localeCompare(a[0]))
-                .map(([value, label]) => ({ value, label })),
-            availableMonths: Array.from(months)
-                .sort((a, b) => b.localeCompare(a))
-                .map(mStr => {
-                    const [year, month] = mStr.split('-');
-                    return `Tháng ${month}/${year}`;
-                })
-        };
-    }, [originalData]);
 
     // Dong bo selectedWeek khi dateRange thay doi tu ben ngoai
     useEffect(() => {

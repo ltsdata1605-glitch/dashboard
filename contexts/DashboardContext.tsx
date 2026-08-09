@@ -29,6 +29,8 @@ interface DashboardContextType {
     handlePendingShare: () => Promise<void>;
     handlePendingClose: () => void;
     uniqueFilterOptions: { kho: string[]; trangThai: string[]; nguoiTao: string[], department: string[], hangSX: string[] };
+    availableWeeks: { value: string; label: string }[];
+    availableMonths: string[];
     warehouseTargets: Record<string, number>;
     updateWarehouseTarget: (kho: string, target: number) => void;
     warehouseDTThucTargets: Record<string, number>;

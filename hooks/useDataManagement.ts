@@ -828,6 +828,78 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
     }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration]);
 
+    // Mục 65c: availableWeeks/availableMonths trước đây là 2 useMemo ĐỘC LẬP, TRÙNG LẶP ở
+    // FilterBar.tsx (tuần+tháng) và FilterSection.tsx (chỉ tháng) — mỗi cái tự quét lại TOÀN BỘ
+    // originalData (tới hàng chục nghìn dòng), tạo 2-3 object Date/dòng cho phần tính tuần, KHÔNG
+    // trì hoãn — chặn main thread ngay khi dashboard vừa render xong. Gộp về 1 chỗ tính DUY NHẤT
+    // ở đây, trì hoãn bằng đúng pattern đã dùng ở hooks/useWarehouseLogic.ts (setTimeout + version
+    // ref chống stale + startTransition) — không đổi công thức tính tuần/tháng, chỉ dời chỗ tính +
+    // gộp trùng lặp + không chặn paint đầu tiên của dashboard.
+    const [availableWeeksMonths, setAvailableWeeksMonths] = useState<{
+        availableWeeks: { value: string; label: string }[];
+        availableMonths: string[];
+    }>({ availableWeeks: [], availableMonths: [] });
+    const weeksMonthsVersionRef = useRef(0);
+
+    useEffect(() => {
+        const thisVersion = ++weeksMonthsVersionRef.current;
+
+        if (!originalData || originalData.length === 0) {
+            setAvailableWeeksMonths({ availableWeeks: [], availableMonths: [] });
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            if (weeksMonthsVersionRef.current !== thisVersion) return; // stale — originalData mới hơn đã tới
+
+            const weeksMap = new Map<string, string>();
+            const months = new Set<string>();
+
+            for (let i = 0, len = originalData.length; i < len; i++) {
+                const row = originalData[i];
+                const date = row.parsedDate;
+                if (!date || isNaN(date.getTime())) continue;
+
+                const monthNum = date.getMonth() + 1;
+                const yearNum = date.getFullYear();
+
+                const mStr = `${yearNum}-${String(monthNum).padStart(2, '0')}`;
+                months.add(mStr);
+
+                const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                const dayNum = d.getUTCDay() || 7;
+                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+                const wStr = `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+
+                const firstDayOfMonth = new Date(yearNum, monthNum - 1, 1);
+                const firstDayWeekday = firstDayOfMonth.getDay() || 7;
+                const offsetDate = date.getDate() + firstDayWeekday - 1;
+                const weekOfMonth = Math.ceil(offsetDate / 7);
+
+                const label = `Tuần ${weekOfMonth} - Tháng ${String(monthNum).padStart(2, '0')}/${yearNum}`;
+                weeksMap.set(wStr, label);
+            }
+
+            const availableWeeks = Array.from(weeksMap.entries())
+                .sort((a, b) => b[0].localeCompare(a[0]))
+                .map(([value, label]) => ({ value, label }));
+            const availableMonths = Array.from(months)
+                .sort((a, b) => b.localeCompare(a))
+                .map(mStr => {
+                    const [year, month] = mStr.split('-');
+                    return `Tháng ${month}/${year}`;
+                });
+
+            if (weeksMonthsVersionRef.current === thisVersion) {
+                startTransition(() => setAvailableWeeksMonths({ availableWeeks, availableMonths }));
+            }
+        }, 16);
+
+        return () => clearTimeout(timer);
+    }, [originalData]);
+
     const [ignoredGroups, setIgnoredGroups] = useState<string[]>([]);
 
     useEffect(() => {
@@ -907,6 +979,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         setKpiCardsConfig,
         crossSellingConfig, setCrossSellingConfig,
         uniqueFilterOptions,
+        availableWeeks: availableWeeksMonths.availableWeeks,
+        availableMonths: availableWeeksMonths.availableMonths,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load
         isFilterProcessing,
         fileInfo, setFileInfo,
