@@ -76,9 +76,37 @@ export const useSummaryTableLogic = () => {
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const sortableListRef = useRef<HTMLDivElement>(null);
 
+    // Mục 65c (nhóm 2): Worker đã tính processSummaryTable() 1 lần rồi (services/filterService.ts,
+    // kết quả có sẵn ở processedData.summaryTable, CÙNG shape — xem types.ts ProcessedData). Bảng
+    // này có bộ lọc drilldown RIÊNG (chỉ áp dụng trong bảng, không ảnh hưởng KPI/biểu đồ khác) nên
+    // vẫn CẦN tính lại trên main thread MỘT KHI user thực sự bấm lọc cục bộ — nhưng ngay lúc vừa
+    // tải xong, chưa ai lọc gì, việc tính lại là dư thừa 100% (cùng input, cùng công thức, cùng kết
+    // quả). Chỉ dùng thẳng processedData.summaryTable khi CẢ filter cục bộ (hasActiveFilters) LẪN
+    // filter global liên quan (filters.parent/summaryTable.kho|child|manufacturer|creator|product —
+    // đây là những field Worker đã dùng để tính processedData.summaryTable) đều rỗng, và thứ tự
+    // drilldown khớp mặc định — tránh trường hợp filters.parent vừa đổi (vd từ IndustryGrid) nhưng
+    // localParentFilters (đồng bộ qua effect riêng) chưa kịp cập nhật theo, dùng nhầm cache cũ.
+    const isSummaryFilterDefault =
+        (!filters.parent || filters.parent.length === 0) &&
+        (!filters.summaryTable.kho || filters.summaryTable.kho.length === 0) &&
+        (!filters.summaryTable.child || filters.summaryTable.child.length === 0) &&
+        (!filters.summaryTable.manufacturer || filters.summaryTable.manufacturer.length === 0) &&
+        (!filters.summaryTable.creator || filters.summaryTable.creator.length === 0) &&
+        (!filters.summaryTable.product || filters.summaryTable.product.length === 0);
+
+    const effectiveGlobalDrilldownOrder = (filters.summaryTable.drilldownOrder && filters.summaryTable.drilldownOrder.length > 0)
+        ? filters.summaryTable.drilldownOrder
+        : ['parent', 'child', 'manufacturer', 'creator', 'product'];
+    const isDrilldownOrderDefault = JSON.stringify(activeDrilldownOrder) === JSON.stringify(effectiveGlobalDrilldownOrder);
+
     const standardSummaryData = useMemo(() => {
         const dataToUse = processedData?.filteredValidSalesData || [];
         if (!dataToUse.length || !productConfig) return null;
+
+        if (!isCrossSellingMode && !hasActiveFilters && isSummaryFilterDefault && isDrilldownOrderDefault && processedData?.summaryTable) {
+            return processedData.summaryTable;
+        }
+
         const localFilterState = {
             ...filters,
             parent: localParentFilters,
@@ -94,7 +122,7 @@ export const useSummaryTableLogic = () => {
         };
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
-    }, [processedData?.filteredValidSalesData, filters, productConfig, activeDrilldownOrder, localKhoFilters, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+    }, [processedData?.filteredValidSalesData, processedData?.summaryTable, filters, productConfig, activeDrilldownOrder, localKhoFilters, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort, hasActiveFilters, isCrossSellingMode, isSummaryFilterDefault, isDrilldownOrderDefault]);
 
     // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
     const filterOptions = useMemo(() => {
