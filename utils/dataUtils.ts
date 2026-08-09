@@ -673,6 +673,189 @@ export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig
     };
 }
 
+// PERF FIX (Mục 65b): 3 hàm dưới đây trước là useMemo chạy đồng bộ trên main thread trong
+// hooks/useDataManagement.ts, duyệt lại toàn bộ originalData (hàng chục/trăm nghìn dòng) mỗi
+// khi dữ liệu thay đổi — startTransition không ngắt quãng được vòng lặp for đồng bộ đang chạy
+// dở chừng bên trong 1 useMemo, chỉ né được tranh chấp độ ưu tiên giữa các state update, nên
+// dù đã dùng startTransition vẫn đo được 1-3s đứng hình main thread thật (Playwright, throttle
+// mobile). Port nguyên văn sang đây để Worker (services/analytics.worker.ts) gọi được — dataUtils.ts
+// không import React/DOM nên an toàn dùng trong Worker (đã được Worker import gián tiếp qua
+// filterService.ts từ trước). KHÔNG đổi cách đọc cột/logic so khớp — rbacData liên quan bảo mật.
+
+export const EMPTY_UNIQUE_FILTER_OPTIONS = { kho: [] as string[], trangThai: [] as string[], nguoiTao: [] as string[], department: [] as string[], hangSX: [] as string[] };
+
+export interface RbacParams {
+    isDemoMode: boolean;
+    userRole: string | null | undefined;
+    departmentId: string | null | undefined;
+    employeeName: string | null | undefined;
+    userEmail: string | null | undefined;
+}
+
+// Port nguyên văn từ `rbacData` useMemo cũ (hooks/useDataManagement.ts).
+export function computeRbacFilteredData(originalData: DataRow[], params: RbacParams): DataRow[] {
+    let data = originalData;
+    const { isDemoMode, userRole, departmentId, employeeName, userEmail } = params;
+    if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && userEmail !== 'nguyendangkhoafit2@gmail.com') {
+        const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+        data = originalData.filter(row => {
+            const kho = String(row['Mã kho tạo'] || '').trim();
+            if (!allowedKhos.includes(kho)) return false;
+
+            if (userRole === 'employee') {
+                // "Người tạo" trong Excel có dạng "Mã số - Tên" (vd "107617 - Nguyễn Văn A"),
+                // trong khi employeeName (nhập lúc đăng ký, PendingApprovalView.tsx) CHỈ là mã
+                // số thuần (validate /^\d+$/). So khớp toàn bộ chuỗi trước đây sẽ KHÔNG BAO GIỜ
+                // khớp — nhân viên đăng nhập xong thấy Dashboard trống dù đã được duyệt quyền
+                // đúng. Trích mã số đứng đầu "Người tạo" rồi so với employeeName thay vì so cả chuỗi.
+                const nguoiTaoRaw = String(row['Người tạo'] || '').trim();
+                const empIdMatch = nguoiTaoRaw.match(/^(\d+)/);
+                const empId = empIdMatch ? empIdMatch[1] : nguoiTaoRaw;
+                if (empId !== employeeName?.trim()) return false;
+            }
+
+            return true;
+        });
+    }
+    return data;
+}
+
+// Port nguyên văn từ `uniqueFilterOptions` useMemo cũ. `departmentMap` gõ kiểu cấu trúc thay vì
+// import type DepartmentMap từ services/dataService.ts — tránh thêm cạnh import utils→services
+// (dataUtils.ts vốn không phụ thuộc services/*), 2 kiểu vẫn khớp cấu trúc { [id]: string }.
+export function computeUniqueFilterOptions(rbacData: DataRow[], departmentMap: Record<string, string> | null) {
+    if (rbacData.length === 0) return EMPTY_UNIQUE_FILTER_OPTIONS;
+
+    const khos = new Set<string>();
+    const trangThais = new Set<string>();
+    const nguoiTaos = new Set<string>();
+    const hangSxs = new Set<string>();
+
+    const len = rbacData.length;
+    for (let i = 0; i < len; i++) {
+        const r = rbacData[i];
+
+        const kho = r['Mã kho tạo'];
+        if (kho) khos.add(String(kho));
+
+        const tt = r['Trạng thái hồ sơ'];
+        if (tt) trangThais.add(String(tt));
+
+        const tao = r['Người tạo'];
+        if (tao) nguoiTaos.add(String(tao));
+
+        const hsx = r['Hãng'] || r['Hãng SX'];
+        if (hsx) hangSxs.add(String(hsx));
+    }
+
+    const khoOptions = Array.from(khos).sort();
+    const trangThaiOptions = Array.from(trangThais).sort();
+    const nguoiTaoOptions = Array.from(nguoiTaos).sort();
+    const hangSXOptions = Array.from(hangSxs).sort();
+
+    let deptOptions: string[] = [];
+    if (departmentMap) {
+        // Chỉ xét phòng ban của các nhân viên THỰC SỰ xuất hiện trong nguoiTaoOptions (đã
+        // scope theo rbacData ở trên) — tránh lộ tên phòng ban của nhân viên Kho khác qua
+        // toàn bộ departmentMap (vốn là bản đồ toàn công ty, không theo Kho).
+        const deptsSet = new Set<string>();
+        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+        for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
+            const empStr = nguoiTaoOptions[i];
+            const dashIdx = empStr.indexOf(' - ');
+            const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
+            const val = departmentMap[id] as string;
+            if (!val) continue;
+            const sepIdx = val.indexOf(';;');
+            const deptName = sepIdx !== -1 ? val.substring(0, sepIdx) : val;
+            if (deptName) {
+                const deptLower = deptName.toLowerCase();
+                let isExcluded = false;
+                for (let j = 0; j < excludedKeywords.length; j++) {
+                    if (deptLower.includes(excludedKeywords[j])) {
+                        isExcluded = true;
+                        break;
+                    }
+                }
+                if (!isExcluded) {
+                    deptsSet.add(deptName);
+                }
+            }
+        }
+        deptOptions = Array.from(deptsSet).sort();
+
+        // Check for unassigned employees
+        let hasUnassigned = false;
+        for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
+            const empStr = nguoiTaoOptions[i];
+            const dashIdx = empStr.indexOf(' - ');
+            const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
+            if (!departmentMap[id]) {
+                hasUnassigned = true;
+                break;
+            }
+        }
+        if (hasUnassigned && !deptOptions.includes('Chưa xác định')) {
+            deptOptions.push('Chưa xác định');
+        }
+    }
+
+    return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
+}
+
+// Port nguyên văn từ `allUnconfiguredGroups` useMemo cũ.
+export function computeUnconfiguredGroups(originalData: DataRow[], productConfig: ProductConfig | null): { nhomHang: string; nganhHang: string }[] {
+    if (!originalData || originalData.length === 0 || !productConfig) return [];
+
+    const missing = new Map<string, string>(); // map: nhomHang -> nganhHang
+
+    for (let i = 0; i < originalData.length; i++) {
+        const row = originalData[i];
+
+        // Bỏ qua các dòng không tính doanh thu theo hình thức xuất
+        const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+        const isRevenue = productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+            ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
+            : (!normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat)) &&
+               !hinhThucXuat.toLowerCase().normalize('NFC').includes('thu hộ') &&
+               !hinhThucXuat.toLowerCase().normalize('NFC').includes('khuyến mãi'));
+
+        if (!isRevenue) continue;
+
+        // Bỏ qua các dòng không tính doanh thu (giá bán <= 0)
+        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        if (price <= 0) continue;
+
+        // Bỏ qua các ngành hàng/nhóm hàng khuyến mãi hoặc thu hộ (không tính doanh thu)
+        const nganhHangRaw = String(getRowValue(row, COL.MA_NGANH_HANG) || '').toLowerCase().normalize('NFC');
+        const nhomHangRaw = String(getRowValue(row, COL.MA_NHOM_HANG) || '').toLowerCase().normalize('NFC');
+        if (
+            nganhHangRaw.includes('khuyến mãi') ||
+            nganhHangRaw.includes('khuyen mai') ||
+            nhomHangRaw.includes('khuyến mãi') ||
+            nhomHangRaw.includes('khuyen mai') ||
+            nganhHangRaw.includes('thu hộ') ||
+            nhomHangRaw.includes('thu hộ')
+        ) {
+            continue;
+        }
+
+        const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        if (!nhomHang) continue;
+
+        const parent = getParentGroup(nhomHang, productConfig);
+        if (!parent) {
+            const nganhHang = getRowValue(row, COL.MA_NGANH_HANG) || 'Không xác định';
+            missing.set(String(nhomHang).trim(), String(nganhHang).trim());
+        }
+    }
+
+    return Array.from(missing.entries()).map(([nhomHang, nganhHang]) => ({
+        nhomHang,
+        nganhHang
+    })).sort((a, b) => a.nganhHang.localeCompare(b.nganhHang) || a.nhomHang.localeCompare(b.nhomHang));
+}
+
 export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
     const price = Number(getRowValue(row, COL.PRICE)) || 0;
     const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;

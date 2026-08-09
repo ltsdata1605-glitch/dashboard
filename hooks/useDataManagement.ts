@@ -5,9 +5,9 @@ import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
 import { applyFiltersAndProcess } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_KPI_CARDS, COL } from '../constants';
+import { DEFAULT_KPI_CARDS } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies, getErrorMessage, normalizedThuHoSet } from '../utils/dataUtils';
+import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -686,41 +686,72 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
 
 
-    const rbacData = useMemo(() => {
-        let data = originalData;
-        if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
-            const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
-            data = originalData.filter(row => {
-                const kho = String(row['Mã kho tạo'] || '').trim();
-                if (!allowedKhos.includes(kho)) return false;
-
-                if (userRole === 'employee') {
-                    // "Người tạo" trong Excel có dạng "Mã số - Tên" (vd "107617 - Nguyễn Văn A"),
-                    // trong khi employeeName (nhập lúc đăng ký, PendingApprovalView.tsx) CHỈ là mã
-                    // số thuần (validate /^\d+$/). So khớp toàn bộ chuỗi trước đây sẽ KHÔNG BAO GIỜ
-                    // khớp — nhân viên đăng nhập xong thấy Dashboard trống dù đã được duyệt quyền
-                    // đúng. Trích mã số đứng đầu "Người tạo" rồi so với employeeName thay vì so cả chuỗi.
-                    const nguoiTaoRaw = String(row['Người tạo'] || '').trim();
-                    const empIdMatch = nguoiTaoRaw.match(/^(\d+)/);
-                    const empId = empIdMatch ? empIdMatch[1] : nguoiTaoRaw;
-                    if (empId !== employeeName?.trim()) return false;
-                }
-
-                return true;
-            });
-        }
-        return data;
-    }, [originalData, userRole, departmentId, employeeName, user?.email, isDemoMode]);
-
-    
     // Analytics Worker setup
     const workerRef = useRef<Worker | null>(null);
     const [workerReady, setWorkerReady] = useState(false);
 
+    // Mục 65b: rbacData/uniqueFilterOptions/allUnconfiguredGroups không còn là useMemo chạy trên
+    // main thread — cả 3 được tính TRONG Worker (services/analytics.worker.ts, message SET_DATA
+    // mở rộng, xem PERF FIX comment ở utils/dataUtils.ts) để không chặn UI khi dữ liệu lớn (đã đo
+    // được 1-3s đứng hình thật với startTransition đơn thuần, không đủ vì không ngắt được vòng lặp
+    // for đồng bộ giữa chừng). Không giữ state riêng cho rbacData vì nó không được dùng ở đâu khác
+    // ngoài Worker (đã grep xác nhận toàn repo) — chỉ 2 kết quả tổng hợp cần state ở main thread.
+    const [uniqueFilterOptions, setUniqueFilterOptions] = useState(EMPTY_UNIQUE_FILTER_OPTIONS);
+    const [allUnconfiguredGroups, setAllUnconfiguredGroups] = useState<{ nhomHang: string; nganhHang: string }[]>([]);
+
+    // Generation counter chống race-condition: đảm bảo effect "Central Data Processing" bên dưới
+    // KHÔNG BAO GIỜ gửi PROCESS trước khi Worker xác nhận đã cache đúng rbacData cho ĐÚNG lần
+    // originalData/rbac params/productConfig/departmentMap hiện tại — tường minh bằng số đếm,
+    // không dựa vào thứ tự effect chạy ngầm định (chính kiểu giả định ngầm này đã gây ra
+    // regression kẹt màn hình upload ở commit 4fc3f93e trước đó).
+    const dataGenerationRef = useRef(0);
+    const [workerCachedGeneration, setWorkerCachedGeneration] = useState(0);
+
     useEffect(() => {
         // @ts-ignore
         import('../services/analytics.worker?worker').then((WorkerModule) => {
-            workerRef.current = new WorkerModule.default();
+            const worker = new WorkerModule.default();
+            workerRef.current = worker;
+
+            // Gán onmessage DUY NHẤT 1 lần ở đây (không gán lại trong effect Central Data
+            // Processing bên dưới như trước) — 2 effect cùng gán onmessage sẽ đè lên nhau. Mọi
+            // setter tham chiếu bên trong đều ổn định vĩnh viễn (setState/useRef), nên closure
+            // mount-once này không bao giờ bị "stale".
+            worker.onmessage = (e: MessageEvent) => {
+                const { type, payload } = e.data;
+                switch (type) {
+                    case 'SET_DATA_SUCCESS':
+                        if (payload.generation !== dataGenerationRef.current) return; // response cũ/lệch — bỏ qua
+                        setUniqueFilterOptions(payload.uniqueFilterOptions);
+                        setAllUnconfiguredGroups(payload.allUnconfiguredGroups);
+                        setWorkerCachedGeneration(payload.generation);
+                        break;
+                    case 'SET_DATA_ERROR':
+                        if (payload.generation !== dataGenerationRef.current) return; // lỗi của lần đã bị thay thế — bỏ qua
+                        console.error("Lỗi khi lọc RBAC/phân tích dữ liệu trong Worker:", payload.message);
+                        setStatus({ message: payload.message, type: 'error', progress: 0 });
+                        setAppState('upload');
+                        break;
+                    case 'PROCESS_SUCCESS': {
+                        const { result, newBaseData, newWarehouseData, newCalendarSourceData } = payload;
+                        setAppState('dashboard');
+                        setProcessedData(result);
+                        setBaseFilteredData(newBaseData);
+                        setWarehouseFilteredData(newWarehouseData);
+                        setCalendarSourceData(newCalendarSourceData);
+                        setEmployeeAnalysisData(result.employeeData);
+                        setIsFilterProcessing(false);
+                        break;
+                    }
+                    case 'PROCESS_ERROR':
+                        console.error("Lỗi khi xử lý lại dữ liệu:", payload);
+                        setStatus({ message: payload, type: 'error', progress: 0 });
+                        setAppState('upload');
+                        setIsFilterProcessing(false);
+                        break;
+                }
+            };
+
             setWorkerReady(true);
         });
         return () => {
@@ -729,11 +760,40 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     }, []);
 
     useEffect(() => {
-        if (workerRef.current && rbacData.length > 0 && workerReady) {
-            workerRef.current.postMessage({ type: 'SET_DATA', payload: rbacData });
+        // Tăng generation TRƯỚC khi kiểm tra workerReady — nếu Worker chưa sẵn sàng, effect này
+        // return sớm mà KHÔNG gửi SET_DATA, nhưng generation đã tăng nên workerCachedGeneration
+        // (cũ) vẫn lệch với dataGenerationRef.current (mới) → gate ở effect Central Data
+        // Processing bên dưới vẫn đúng đắn chặn lại, không bị "pass hờ" do generation chưa kịp đổi.
+        dataGenerationRef.current += 1;
+        const generation = dataGenerationRef.current;
+
+        if (originalData.length === 0) {
+            setUniqueFilterOptions(EMPTY_UNIQUE_FILTER_OPTIONS);
+            setAllUnconfiguredGroups([]);
+            setWorkerCachedGeneration(generation);
+            return;
         }
-    }, [rbacData, workerReady]);
-    
+
+        if (!workerRef.current || !workerReady) return; // tự gửi lại khi workerReady đổi (có trong deps)
+
+        workerRef.current.postMessage({
+            type: 'SET_DATA',
+            payload: {
+                generation,
+                originalData,
+                rbacParams: {
+                    isDemoMode,
+                    userRole,
+                    departmentId,
+                    employeeName,
+                    userEmail: user?.email,
+                },
+                productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null,
+                departmentMap,
+            }
+        });
+    }, [originalData, userRole, departmentId, employeeName, user?.email, isDemoMode, productConfig, departmentMap, workerReady]);
+
     // Central Data Processing
     useEffect(() => {
         if (appState === 'loading') return;
@@ -747,34 +807,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             return;
         }
         if (!productConfig) return;
+        // Mục 65b: chờ Worker xác nhận đã cache ĐÚNG rbacData cho generation hiện tại (effect
+        // SET_DATA ở trên) trước khi gửi PROCESS — tránh PROCESS chạy trên dữ liệu RBAC cũ/sai
+        // nếu originalData vừa đổi lần nữa (vd Kho-sync) trong lúc round-trip SET_DATA còn dở.
+        if (workerCachedGeneration !== dataGenerationRef.current) return;
 
         // For filter changes, we DON'T set isHardProcessing to avoid layout shift.
         // isFilterProcessing is a soft signal (optional, kept for future use).
         setIsFilterProcessing(true);
 
-        const handleWorkerMessage = (e: MessageEvent) => {
-            const { type, payload } = e.data;
-            if (type === 'PROCESS_SUCCESS') {
-                const { result, newBaseData, newWarehouseData, newCalendarSourceData } = payload;
-                setAppState('dashboard');
-                setProcessedData(result);
-                setBaseFilteredData(newBaseData);
-                setWarehouseFilteredData(newWarehouseData);
-                setCalendarSourceData(newCalendarSourceData);
-                setEmployeeAnalysisData(result.employeeData);
-                setIsFilterProcessing(false);
-            } else if (type === 'PROCESS_ERROR') {
-                console.error("Lỗi khi xử lý lại dữ liệu:", payload);
-                setStatus({ message: payload, type: 'error', progress: 0 });
-                setAppState('upload');
-                setIsFilterProcessing(false);
-            }
-        };
-
         if (workerRef.current) {
-            workerRef.current.onmessage = handleWorkerMessage;
-            workerRef.current.postMessage({ 
-                type: 'PROCESS', 
+            workerRef.current.postMessage({
+                type: 'PROCESS',
                 payload: {
                     productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null,
                     filterState,
@@ -782,91 +826,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             });
         }
-    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState]);
-
-    // Unique filter options — dùng rbacData (đã lọc theo Kho/Người tạo cho employee/manager),
-    // KHÔNG dùng originalData (dữ liệu thô toàn bộ file, chưa qua RBAC) — nếu không, dropdown
-    // "Kho"/"Người tạo" sẽ lộ ra mã Kho và tên nhân viên khác mà user không có quyền xem, dù
-    // dữ liệu chi tiết (KPI/bảng/biểu đồ) đã được lọc đúng qua rbacData ở nơi khác.
-    const uniqueFilterOptions = useMemo(() => {
-        if (rbacData.length === 0) return { kho: [], trangThai: [], nguoiTao: [], department: [], hangSX: [] };
-
-        const khos = new Set<string>();
-        const trangThais = new Set<string>();
-        const nguoiTaos = new Set<string>();
-        const hangSxs = new Set<string>();
-
-        const len = rbacData.length;
-        for (let i = 0; i < len; i++) {
-            const r = rbacData[i];
-
-            const kho = r['Mã kho tạo'];
-            if (kho) khos.add(String(kho));
-
-            const tt = r['Trạng thái hồ sơ'];
-            if (tt) trangThais.add(String(tt));
-
-            const tao = r['Người tạo'];
-            if (tao) nguoiTaos.add(String(tao));
-
-            const hsx = r['Hãng'] || r['Hãng SX'];
-            if (hsx) hangSxs.add(String(hsx));
-        }
-        
-        const khoOptions = Array.from(khos).sort();
-        const trangThaiOptions = Array.from(trangThais).sort();
-        const nguoiTaoOptions = Array.from(nguoiTaos).sort();
-        const hangSXOptions = Array.from(hangSxs).sort();
-        
-        let deptOptions: string[] = [];
-        if (departmentMap) {
-            // Chỉ xét phòng ban của các nhân viên THỰC SỰ xuất hiện trong nguoiTaoOptions (đã
-            // scope theo rbacData ở trên) — tránh lộ tên phòng ban của nhân viên Kho khác qua
-            // toàn bộ departmentMap (vốn là bản đồ toàn công ty, không theo Kho).
-            const deptsSet = new Set<string>();
-            const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
-            for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
-                const empStr = nguoiTaoOptions[i];
-                const dashIdx = empStr.indexOf(' - ');
-                const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
-                const val = departmentMap[id] as string;
-                if (!val) continue;
-                const sepIdx = val.indexOf(';;');
-                const deptName = sepIdx !== -1 ? val.substring(0, sepIdx) : val;
-                if (deptName) {
-                    const deptLower = deptName.toLowerCase();
-                    let isExcluded = false;
-                    for (let j = 0; j < excludedKeywords.length; j++) {
-                        if (deptLower.includes(excludedKeywords[j])) {
-                            isExcluded = true;
-                            break;
-                        }
-                    }
-                    if (!isExcluded) {
-                        deptsSet.add(deptName);
-                    }
-                }
-            }
-            deptOptions = Array.from(deptsSet).sort();
-            
-            // Check for unassigned employees
-            let hasUnassigned = false;
-            for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
-                const empStr = nguoiTaoOptions[i];
-                const dashIdx = empStr.indexOf(' - ');
-                const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
-                if (!departmentMap[id]) {
-                    hasUnassigned = true;
-                    break;
-                }
-            }
-            if (hasUnassigned && !deptOptions.includes('Chưa xác định')) {
-                deptOptions.push('Chưa xác định');
-            }
-        }
-
-        return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
-    }, [rbacData, departmentMap]);
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration]);
 
     const [ignoredGroups, setIgnoredGroups] = useState<string[]>([]);
 
@@ -887,58 +847,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         setIgnoredGroups(updated);
         await dbService.saveSetting('ignoredGroups', updated);
     }, [ignoredGroups]);
-
-    const allUnconfiguredGroups = useMemo(() => {
-        if (!originalData || originalData.length === 0 || !productConfig) return [];
-        
-        const missing = new Map<string, string>(); // map: nhomHang -> nganhHang
-        
-        for (let i = 0; i < originalData.length; i++) {
-            const row = originalData[i];
-            
-            // Bỏ qua các dòng không tính doanh thu theo hình thức xuất
-            const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-            const isRevenue = productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
-                : (!normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat)) &&
-                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('thu hộ') &&
-                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('khuyến mãi'));
-            
-            if (!isRevenue) continue;
-            
-            // Bỏ qua các dòng không tính doanh thu (giá bán <= 0)
-            const price = Number(getRowValue(row, COL.PRICE)) || 0;
-            if (price <= 0) continue;
-            
-            // Bỏ qua các ngành hàng/nhóm hàng khuyến mãi hoặc thu hộ (không tính doanh thu)
-            const nganhHangRaw = String(getRowValue(row, COL.MA_NGANH_HANG) || '').toLowerCase().normalize('NFC');
-            const nhomHangRaw = String(getRowValue(row, COL.MA_NHOM_HANG) || '').toLowerCase().normalize('NFC');
-            if (
-                nganhHangRaw.includes('khuyến mãi') || 
-                nganhHangRaw.includes('khuyen mai') ||
-                nhomHangRaw.includes('khuyến mãi') || 
-                nhomHangRaw.includes('khuyen mai') ||
-                nganhHangRaw.includes('thu hộ') ||
-                nhomHangRaw.includes('thu hộ')
-            ) {
-                continue;
-            }
-            
-            const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            if (!nhomHang) continue;
-            
-            const parent = getParentGroup(nhomHang, productConfig);
-            if (!parent) {
-                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG) || 'Không xác định';
-                missing.set(String(nhomHang).trim(), String(nganhHang).trim());
-            }
-        }
-        
-        return Array.from(missing.entries()).map(([nhomHang, nganhHang]) => ({
-            nhomHang,
-            nganhHang
-        })).sort((a, b) => a.nganhHang.localeCompare(b.nganhHang) || a.nhomHang.localeCompare(b.nhomHang));
-    }, [originalData, productConfig]);
 
     const unconfiguredGroups = useMemo(() => {
         const ignoredSet = new Set(ignoredGroups);
