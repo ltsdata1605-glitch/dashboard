@@ -266,6 +266,8 @@ export default function StickerPrinterView() {
                     setDrawTotalTickets={setDrawTotalTickets}
                     drawAutoIncrement={drawAutoIncrement}
                     setDrawAutoIncrement={setDrawAutoIncrement}
+                    bgImage={bgImage}
+                    setBgImage={setBgImage}
                 />
             </div>
 
