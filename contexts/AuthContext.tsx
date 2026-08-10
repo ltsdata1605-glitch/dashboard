@@ -52,7 +52,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (s) setStatus(s);
             // Ultra-Fast Boot: Nếu đã có thông tin người dùng được cache ở IndexedDB máy local,
             // tắt spinner loading NGAY LẬP TỨC để mở giao diện tức thì trong 0.05s mà không chờ mạng!
-            if (r && s) {
+            //
+            // QUAN TRỌNG: chỉ được làm vậy khi cache cho biết CHẮC CHẮN sẽ vào thẳng dashboard —
+            // trước đây chỉ cần có r+s (bất kể giá trị gì) là tắt spinner ngay, nên nếu cache còn
+            // lưu status cũ 'pending'/'new'/'expired' (vd còn sót lại từ trước khi tài khoản này
+            // được công nhận admin, hoặc user bị hạ quyền rồi được khôi phục) sẽ render NGAY màn
+            // "Đăng ký/Chờ duyệt" bằng dữ liệu cache cũ, rồi mới tự sửa lại vài trăm ms sau khi
+            // resolveSession() (gọi mạng, luôn ghi đè đúng — vd tự phục hồi quyền Super Admin,
+            // xem functions/src/session.ts) chạy xong — đúng dấu hiệu "nháy màn đăng ký kho rồi
+            // mới vào trang" dù đã đăng nhập đúng quyền. App.tsx chỉ vào thẳng dashboard khi
+            // status==='approved' VÀ (role==='admin' HOẶC có departmentId hợp lệ) — lặp lại đúng
+            // 2 điều kiện đó ở đây để không bao giờ tắt spinner sớm cho 1 state sẽ hiện màn KHÁC.
+            if (s === 'approved' && (r === 'admin' || (d && d.trim() !== ''))) {
                 setIsLoading(false);
             }
         }).catch(console.error);
