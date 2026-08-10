@@ -237,37 +237,37 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </span>
                                 </label>
 
-                                {/* Chọn nền in TGĐ / ĐMX */}
+                                {/* Chọn nền in */}
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         Nền in
                                     </label>
-                                    <div className="flex gap-1.5">
+                                    <div className="flex gap-2">
                                         <button
                                             type="button"
                                             onClick={() => setBgImage('/frame/bg_phieu.png')}
-                                            className={`flex-1 px-3 py-1.5 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border ${
+                                            className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieu.png'
-                                                    ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300'
                                             }`}
                                         >
-                                            🟢 ĐMX
+                                            ĐMX
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setBgImage('/frame/bg_phieutgd.png')}
-                                            className={`flex-1 px-3 py-1.5 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border ${
+                                            className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieutgd.png'
-                                                    ? 'bg-yellow-500 text-white border-yellow-600 shadow-sm'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300'
                                             }`}
                                         >
-                                            🟡 TGĐ
+                                            TGĐ
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                     <span className="font-bold text-indigo-600 dark:text-indigo-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
                                 </div>
