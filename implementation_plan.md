@@ -2353,6 +2353,18 @@ Instrument trực tiếp `Worker.postMessage`/`onmessage` (không đoán — b�
 
 **Đây là vấn đề KHÁC hẳn** những gì Mục 65d giải quyết — không phải "gửi thừa dữ liệu dòng thô trùng lặp" mà là **1 cấu trúc cây tổng hợp lồng nhau genuinely lớn** (`summaryTable.data`: cây drilldown 5 cấp Ngành→Nhóm→Hãng→Người tạo→Sản phẩm — chỉ 25 nhóm cấp 1 nhưng do độ đa dạng tổ hợp ở các cấp sâu hơn nên tổng kích thước JSON lớn). Chưa rõ đây có phản ánh đúng dữ liệu SẢN XUẤT THẬT hay là đặc thù của bộ dữ liệu giả dùng để test (30 mã sản phẩm × 20 nhân viên × 5 hãng × nhiều nhóm hàng, có thể tạo nhiều tổ hợp lá hơn dữ liệu thật vốn có tính lặp lại tự nhiên cao hơn). Sửa vấn đề này (nếu cần) sẽ cần hướng khác hẳn (nén cấu trúc cây, tải theo yêu cầu (lazy) từng cấp khi user thực sự mở rộng, hoặc đổi cách biểu diễn dữ liệu) — không phải việc nhỏ, cần điều tra thêm trước khi quyết định có đáng làm không. User chọn dừng ở đây (đã deploy Mục 65e).
 
+## Mục 65g — Xác nhận: dữ liệu giả ngẫu nhiên phóng đại vấn đề summaryTable (2026-08-10)
+
+Theo yêu cầu tiếp tục đào sâu, kiểm tra lại giả thuyết "summaryTable lớn có thể do đặc thù dữ liệu test" bằng cách sinh lại bộ dữ liệu giả 50k dòng THỰC TẾ hơn: sửa 2 lỗi phi thực tế của generator cũ — (1) "Tên Sản Phẩm" và "Nhà sản xuất" trước đây random ĐỘC LẬP với nhau (1 dòng có thể ghi tên sản phẩm chứa "Samsung" nhưng cột Nhà sản xuất lại "LG" — không giống catalog thật, nơi 1 mã hàng luôn cố định đúng 1 hãng); (2) mỗi nhân viên bán đều ngẫu nhiên trên TOÀN BỘ 175 nhóm hàng thay vì tập trung vào vài ngành "sở trường" (khớp mô hình phân công thật, tạo tương quan/lặp lại tự nhiên giữa nhân viên-sản phẩm).
+
+**Kết quả — xác nhận giả thuyết đúng**: với dữ liệu tương quan tự nhiên hơn, `summaryTable` giảm từ 12,7MB xuống **4,62MB (-64%)**, `warehouseSummary` giảm từ 1,95MB xuống **892KB (-54%)**, tổng payload giảm từ 14,86MB xuống **5,71MB (-61,5%)**.
+
+**Nhưng — phát hiện bất ngờ thứ 2**: dù payload giảm 61,5%, đo lại rAF-gap thật (3 lần, 50k dòng) cho kết quả **KHÔNG cải thiện** (424-530ms so với 408-462ms trước đó, trong ngưỡng nhiễu đo, thậm chí hơi cao hơn). Lý do: `SummaryTable`'s UI mặc định CHỈ render 25 dòng cấp cao nhất (thu gọn, `isExpanded` mặc định false — xem `useSummaryExpand.ts`) — chi phí RENDER không phụ thuộc kích thước cây sâu bên dưới, chỉ chi phí TRUYỀN payload mới giảm. Và phần chi phí KHÔNG đổi bất kể kích thước summaryTable — `SET_DATA` gửi `originalData` thô (50k dòng, ~540-660ms, không liên quan tới summaryTable) — giờ trở thành phần đóng góp tương đối LỚN HƠN so với trước, kéo tổng max-gap về mức tương tự.
+
+**Kết luận cuối cùng của cả chuỗi Mục 65 → 65g**: đã đạt điểm lợi ích cận biên giảm rõ rệt trên hướng "giảm kích thước payload". Thành quả chính (Mục 65d: giảm 80-82% độ đứng hình so với ban đầu) vẫn là cải thiện lớn nhất và đã lên production. Muốn giảm tiếp phần còn lại (~220-530ms tuỳ số dòng) cần tấn công đồng thời NHIỀU chi phí nhỏ hơn (SET_DATA transfer, PROCESS transfer, React render) thay vì 1 điểm nghẽn lớn duy nhất — lợi ích cận biên mỗi phần nhỏ, rủi ro/công sức lớn hơn tương ứng. Khuyến nghị dừng đào sâu thêm ở hướng này trừ khi có bằng chứng thật (dữ liệu/thiết bị thật) cho thấy vẫn cần thiết.
+
+
+
 ## Mục 65f — Sửa lỗi nháy màn "Đăng ký kho" khi mở app dù đã đăng nhập admin (2026-08-10)
 
 **Báo cáo**: user (chính tài khoản Super Admin) cho biết mỗi lần mở trang, giao diện hiện lại màn "Đăng ký kho cho người dùng mới" (`PendingApprovalView`) trong chốc lát rồi mới vào được dashboard — dù đã đăng nhập đúng quyền admin.
