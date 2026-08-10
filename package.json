@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/papaparse": "^5.5.2",
+    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.11",
     "firebase": "^12.11.0",

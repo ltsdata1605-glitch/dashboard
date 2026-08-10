@@ -25,7 +25,7 @@ async function processSingleFileInWorker(file: File) {
         postStatus({ message: `Đang nạp bộ đệm file...`, type: 'info', progress: 10 });
         let arrayBuffer: ArrayBuffer | null = await file.arrayBuffer();
 
-        postStatus({ message: `Dịch cú pháp Excel...`, type: 'info', progress: 30 });
+        postStatus({ message: `Dịch cú pháp Excel...`, type: 'info', progress: 25 });
         let data: Uint8Array | null = new Uint8Array(arrayBuffer);
         arrayBuffer = null; // Tối ưu GC: Giải phóng ArrayBuffer lập tức
         
@@ -48,7 +48,7 @@ async function processSingleFileInWorker(file: File) {
             throw new Error(`Không đọc được nội dung sheet "${sheetName}" trong file — có thể file quá lớn (vượt giới hạn bộ nhớ khi giải nén) hoặc file bị lỗi định dạng. Thử tách file thành các phần nhỏ hơn.`);
         }
 
-        postStatus({ message: `Trích xuất dữ liệu...`, type: 'info', progress: 50 });
+        postStatus({ message: `Trích xuất dữ liệu...`, type: 'info', progress: 40 });
         // ÉP CÂN DỮ LIỆU: Chỉ đọc dạng mảng 2 chiều để tránh phình to Object trong RAM với các string keys thừa
         // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
         const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
@@ -88,11 +88,14 @@ async function processSingleFileInWorker(file: File) {
             console.log('[Worker Debug] Header hàng đầu tiên (rows[0]):', headers);
             console.log('[Worker Debug] Số cột khớp được với reqCols:', Object.keys(reqIndices).length, '/', reqCols.length);
 
-            // Chunked Array Push
+            // Chunked Array Push — báo tiến độ liên tục theo số dòng thực đã xử lý (40→65%),
+            // tránh bar "đứng hình" rồi nhảy mốc cứng với file lớn (hàng chục nghìn dòng).
+            const totalRowsToLoad = rows.length - 1;
+            const loadProgressChunk = Math.max(500, Math.floor(totalRowsToLoad / 20)) || 1;
             for (let r = 1; r < rows.length; r++) {
                 const rowArray = rows[r];
                 if (!rowArray || rowArray.length === 0) continue;
-                
+
                 const rowObj: Record<string, unknown> = {};
                 let hasData = false;
                 for (const idxStr of Object.keys(reqIndices)) {
@@ -103,24 +106,43 @@ async function processSingleFileInWorker(file: File) {
                         hasData = true;
                     }
                 }
-                
+
                 if (hasData) {
                     combinedJson.push(rowObj as DataRow);
                 }
+
+                if (r % loadProgressChunk === 0) {
+                    postStatus({
+                        message: `Đang nạp dữ liệu (${r.toLocaleString('vi-VN')}/${totalRowsToLoad.toLocaleString('vi-VN')} dòng)...`,
+                        type: 'info',
+                        progress: 40 + Math.min(25, Math.round((r / totalRowsToLoad) * 25))
+                    });
+                }
             }
         }
-        
-        postStatus({ message: `Đã nạp ${combinedJson.length} dòng dữ liệu.`, type: 'info', progress: 70 });
-        postStatus({ message: 'Đang lọc và chuẩn hóa dữ liệu...', type: 'info', progress: 85 });
+
+        postStatus({ message: `Đã nạp ${combinedJson.length} dòng dữ liệu, đang lọc và chuẩn hóa...`, type: 'info', progress: 65 });
 
         // OPTIMIZATION 3: Single-pass validation and mapping
         const validResults: DataRow[] = [];
         const len = combinedJson.length;
+        // Báo tiến độ liên tục theo số dòng thực đã validate (65→90%) — cùng lý do vòng lặp
+        // dựng combinedJson ở trên, vòng lặp này cũng duyệt hàng chục nghìn dòng mà trước đây
+        // không hề cập nhật % nào giữa 85% và 95%.
+        const validateProgressChunk = Math.max(500, Math.floor(len / 20)) || 1;
 
         for (let i = 0; i < len; i++) {
+            if (i % validateProgressChunk === 0) {
+                postStatus({
+                    message: `Đang lọc và chuẩn hóa dữ liệu (${i.toLocaleString('vi-VN')}/${len.toLocaleString('vi-VN')} dòng)...`,
+                    type: 'info',
+                    progress: 65 + Math.min(25, Math.round((i / len) * 25))
+                });
+            }
+
             // Chuẩn hóa và làm sạch object
             const row = combinedJson[i];
-            
+
             // Xóa rác, null, rỗng (Ép cân dữ liệu RAM)
             for (const key in row) {
                 if (row[key] === null || row[key] === undefined || row[key] === '') {

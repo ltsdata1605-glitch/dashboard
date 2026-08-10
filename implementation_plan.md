@@ -2377,4 +2377,38 @@ Theo yêu cầu tiếp tục đào sâu, kiểm tra lại giả thuyết "summar
 
 **Lưu ý cho user**: sau khi deploy fix này, nếu IndexedDB máy hiện tại VẪN còn giá trị cache cũ sai, có thể còn 1 lần cuối load hơi chậm hơn (do không dùng được đường tắt, phải chờ `resolveSession()` như bình thường) — nhưng sẽ KHÔNG còn nháy màn sai nữa, và lần sau cache sẽ tự cập nhật đúng.
 
+## Mục 66 — Popup tiến độ khi upload Excel "chạy ảo", không phản ánh đúng tiến độ thực (2026-08-10)
+
+**Báo cáo**: user cho biết khi upload file Excel, popup tiến độ (`ProcessingLoader`) hiện ra nhưng "chạy ảo", không hiển thị đúng tiến độ xử lý thật.
+
+**Root cause** (xác nhận qua đọc code, không đoán — đã dùng Explore agent khảo sát toàn bộ luồng upload trước khi kết luận): `%` hiển thị lấy từ `status.progress` (`components/common/ProcessingLoader.tsx:80`), do `services/worker.ts` (Web Worker parse Excel bằng `XLSX`) gửi qua `postStatus()`. Vấn đề không phải `setInterval` giả lập, mà là **chỉ có 6 mốc CỐ ĐỊNH** (10/30/50/70/85/95%) — giữa các mốc, 2 vòng lặp xử lý dữ liệu nặng nhất (dòng 92-110: dựng `combinedJson` từ toàn bộ hàng thô; dòng 120-162: validate + chuẩn hoá từng dòng) chạy hàng chục nghìn lần lặp mà **không hề gọi `postStatus` lần nào** — với file lớn, bar đứng yên rất lâu ở 1 mốc, cộng với CSS `transition-all duration-300` (dòng 78) khiến mỗi lần nhảy mốc bar tự trượt mượt — tạo cảm giác "chạy ảo" dù về bản chất là các checkpoint có thật, chỉ là quá thưa và không tỷ lệ với khối lượng dòng đang xử lý thực tế.
+
+**Fix**: `services/worker.ts` — thêm cập nhật tiến độ TRONG 2 vòng lặp nặng, tính theo đúng số dòng đã xử lý/tổng số dòng (không phải mốc cứng nữa):
+- Vòng lặp dựng `combinedJson` (dòng ~92): báo tiến độ liên tục trong khoảng 40→65%, tỷ lệ `r / tổng số dòng`.
+- Vòng lặp validate/chuẩn hoá (dòng ~120): báo tiến độ liên tục trong khoảng 65→90%, tỷ lệ `i / tổng số dòng`.
+- Điều chỉnh lại các mốc cố định còn lại cho khớp dải mới (10 → 25 → 40 → [40-65 động] → 65 → [65-90 động] → 95).
+- Chunk size báo tiến độ tính động (`max(500, tổng/20)`, ~20 lần cập nhật/vòng lặp) để tránh gọi `postMessage` quá dày (tốn chi phí) mà vẫn đủ mượt để thấy tiến độ thật di chuyển.
+- Không đụng tới `useFileUploadLogic.ts` (cách tính `overallProgress` cho nhiều file đã đúng, chỉ cần `payload.progress` từ worker chính xác hơn) và không đụng tới bước "Central Data Processing" sau đó (`analytics.worker.ts`, không có progress trung gian) — nằm ngoài phạm vi báo cáo của user (bước đó thường nhanh, <1s với dữ liệu vừa/nhỏ; nếu sau này user phản ánh riêng bước đó cũng "đứng hình" thì xử lý tiếp).
+
+**Verify**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch.
+
+## Mục 67 — Thêm hiệu ứng tung hoa + thông báo khi upload Excel "yêu cầu xuất" thành công (2026-08-10)
+
+**Bối cảnh**: user tham khảo UX ở 1 dự án khác (`theo-dõi-thi-đua-&-bảng-xếp-hạng-tnb`, ngoài dashboardycx) — dự án đó dùng `canvas-confetti` bắn tung hoa + toast thông báo mỗi khi dán/upload dữ liệu thành công. Sau khi khảo sát dự án kia và hỏi lại xác nhận phạm vi (AskUserQuestion — không đoán), user chốt: áp dụng lại đúng phong cách đó (tham khảo, không sửa dự án kia) vào bước upload file Excel bán hàng ("yêu cầu xuất") của **dashboardycx** — chính là bước đã sửa progress bar ở Mục 66.
+
+**Thực hiện**: `npm install canvas-confetti @types/canvas-confetti` (dashboardycx trước đó chưa có, `react-hot-toast` đã có sẵn — dùng lại, không dựng banner UI mới). `hooks/useFileUploadLogic.ts → handleFileProcessing()`: ngay sau khi `merged` (dữ liệu đã gộp) sẵn sàng và `setAppState('processing')` — đúng thời điểm biết chắc upload+gộp thành công — bắn `confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } })` + `toast.success()` báo số dòng dữ liệu đã xử lý.
+
+**Phạm vi cố ý giới hạn**: CHỈ đặt trong `handleFileProcessing` (2 nơi gọi đều là `FileHistoryModal`/`UploadTypeSelectionModal` — luôn do người dùng chủ động chọn file, đã grep xác nhận toàn repo không còn nơi gọi nào khác). KHÔNG đặt ở `loadInitialData`/hiệu ứng đồng bộ Kho trong `useDataManagement.ts` (chạy mỗi lần mở app/mỗi lần Kho có dữ liệu mới — nếu gắn tung hoa ở đó sẽ bắn phiền mỗi lần mở app, không phải hành động upload thật). Không đụng `handleShiftFileProcessing` (upload file phân ca — khác tính năng, không phải "yêu cầu xuất").
+
+**Verify**: `tsc --noEmit` sạch. `npm run check` đầy đủ có 2 lỗi ESLint tiền nhiệm không liên quan (`features/sticker-event/SavedListsModal.tsx`, `StickerEventApp.tsx` — import cross-feature, đã ghi nhận ở Mục 66, không phải do thay đổi này).
+
+## Mục 68 — Sửa 2 lỗi ESLint `import/no-restricted-paths` tồn đọng từ Mục 67 (2026-08-10)
+
+**Root cause** (xác nhận qua đọc code, không đoán): `features/sticker-event/StickerEventApp.tsx:6` và `SavedListsModal.tsx:41` import `getSetting` từ `'../../services/dbService'` (services gốc — bị cấm theo `RULES.md §2.0`/`eslint.config.js`). Đây là **sai đường dẫn tương đối**, không phải vi phạm kiến trúc có chủ đích: cả 2 file nằm trực tiếp trong `features/sticker-event/`, và chính feature này **đã có sẵn** bản `dbService.ts` riêng (`features/sticker-event/services/dbService.ts`) — comment đầu file ghi rõ "Dùng chung tên/version database (`BI_HUB_DATABASE_V2`, version 3) với hệ thống chính để không mất dữ liệu IndexedDB đã lưu trước đó" — tức bản zone-local này được XÂY SẴN chính xác để giải quyết nhu cầu đọc `cached_dept_id`/`cached_emp_name` (do `contexts/AuthContext.tsx` ghi khi đăng nhập ở app gốc) mà không phá luật cô lập feature. `features/sticker-event/hooks/useStickerPrinterData.ts` đã dùng đúng pattern này từ trước (`'../services/dbService'`).
+
+**Fix**: sửa đường dẫn import ở cả 2 file thành `'./services/dbService'` (đúng vị trí tương đối tới bản zone-local). Do 2 bản dbService trỏ CÙNG 1 IndexedDB database (đã xác nhận `DB_NAME`/`DB_VERSION` khớp 100% giữa `services/dbService/core.ts` và bản zone-local), hành vi runtime giữ nguyên y hệt — chỉ đổi import path.
+
+**Phát sinh ngoài dự kiến — lint-ratchet**: sau khi ESLint qua, `npm run check` lộ ra bước `lint:ratchet` (trước đó bị chặn sớm bởi 2 lỗi ESLint nên chưa từng chạy tới) báo 2 vi phạm màu sắc MỚI so với baseline, cả 2 đều KHÔNG liên quan tới thay đổi của Mục 66/67/68: (1) `features/sticker-event/stickerprinter/StickerPrintControls.tsx` — file không đổi 1 byte so với commit `a1dfbd45` (`git diff` rỗng) nhưng baseline lưu 24 trong khi đếm lại thực tế là 30 — nợ kỹ thuật cũ, baseline lệch sẵn từ trước, không phải do bất kỳ agent nào trong phiên này. (2) `components/common/ProcessingLoader.tsx` — phát hiện đang được người dùng chỉnh sửa giao diện trực tiếp, song song, ở nơi khác (không phải qua phiên này) — số vi phạm màu tăng dần theo thời gian thực khi `npm run check` chạy lại nhiều lần (12→23→27) khớp đúng file đang gõ dở. Đã hỏi lại user (AskUserQuestion, không đoán) — chọn: chỉ đồng bộ `violations-baseline.json` theo đúng hiện trạng đã đo tại thời điểm chạy cuối, KHÔNG sửa code/màu ở 1 trong 2 file (không thuộc phạm vi, và `ProcessingLoader.tsx` là việc dở của user).
+
+**Verify**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch tại thời điểm chạy cuối. Lưu ý cho user: nếu tiếp tục chỉnh `ProcessingLoader.tsx` sau thời điểm này, `lint-ratchet` có thể báo lệch lại — cần chạy `npm run check` lại và cập nhật baseline lần nữa khi đã chốt thiết kế.
 

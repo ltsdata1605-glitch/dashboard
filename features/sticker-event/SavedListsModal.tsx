@@ -38,7 +38,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
         try {
             let targetStoreId = storeId;
             if (!targetStoreId || targetStoreId === 'SUPERADMIN') {
-                const { getSetting } = await import('../../services/dbService');
+                const { getSetting } = await import('./services/dbService');
                 const cachedDept = await getSetting<string>('cached_dept_id');
                 if (cachedDept) targetStoreId = cachedDept;
             }

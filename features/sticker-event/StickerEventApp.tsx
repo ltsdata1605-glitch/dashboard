@@ -3,7 +3,7 @@ import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
 import { fetchUserState, saveUserState, saveListToFirestore } from './services/firebaseService';
-import { getSetting } from '../../services/dbService';
+import { getSetting } from './services/dbService';
 import ResultsDisplay from './ResultsDisplay';
 import Scanner from './Scanner';
 import PrintSettingsModal from './PrintSettingsModal';

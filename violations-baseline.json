@@ -44,7 +44,7 @@
     "missingMobileToolbar": 0
   },
   "components/common/ProcessingLoader.tsx": {
-    "nonSemanticColor": 12,
+    "nonSemanticColor": 27,
     "missingMobileToolbar": 0
   },
   "components/common/SearchableSelect.tsx": {
@@ -472,7 +472,7 @@
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintControls.tsx": {
-    "nonSemanticColor": 24,
+    "nonSemanticColor": 30,
     "missingMobileToolbar": 0
   },
   "features/sticker-event/stickerprinter/StickerPrintPreview.tsx": {

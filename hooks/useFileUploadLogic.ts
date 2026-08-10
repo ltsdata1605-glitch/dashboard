@@ -1,6 +1,7 @@
 import { useState, useRef, startTransition, useEffect } from 'react';
 // @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
+import confetti from 'canvas-confetti';
 import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterState } from '../types';
 import type { User } from 'firebase/auth';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
@@ -121,7 +122,8 @@ export const useFileUploadLogic = ({
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                setStatus({ message: `Đang xử lý file ${i + 1}/${files.length}: ${file.name}`, type: 'info', progress: 20 + (60 * (i + 1) / files.length) });
+                const shiftMsg = files.length > 1 ? `Đang xử lý tệp ${i + 1}/${files.length}...` : 'Đang xử lý tệp phân ca...';
+                setStatus({ message: shiftMsg, type: 'info', progress: 20 + (60 * (i + 1) / files.length) });
                 const { map } = await processShiftFile(file); 
                 mergedMap = { ...mergedMap, ...map }; 
             }
@@ -189,8 +191,9 @@ export const useFileUploadLogic = ({
                             const overallProgress = Math.round(
                                 (i / files.length) * 100 + (fileProgress / files.length)
                             );
+                            const stepPrefix = files.length > 1 ? `Tệp ${i + 1}/${files.length}: ` : '';
                             setStatus({
-                                message: `Tệp ${i + 1}/${files.length}: ${file.name} - ${payload.message}`,
+                                message: `${stepPrefix}${payload.message}`,
                                 type: 'info',
                                 progress: overallProgress
                             });
@@ -509,12 +512,18 @@ export const useFileUploadLogic = ({
                 }
                 
                 setFileInfo({ filename: merged.filename, savedAt: merged.savedAt.toLocaleString('vi-VN') });
-                
+
                 const srcData = normalizeSalesData(merged.data);
-                
+
                 setOriginalData(srcData);
                 setAppState('processing');
-                
+
+                // Ăn mừng tải file thành công: tung hoa + thông báo nổi bật — chỉ bắn ở đây (thao
+                // tác upload do người dùng chủ động chọn file), KHÔNG đặt ở loadInitialData/Kho-sync
+                // để tránh tung hoa mỗi lần mở lại app.
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+                toast.success(`✨ Đã tải lên và xử lý thành công ${merged.data.length.toLocaleString('vi-VN')} dòng dữ liệu!`, { duration: 3500 });
+
                 // Sync the merged result to Firebase
                 if (user && !isCloudSync) {
                     (async () => {
