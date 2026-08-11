@@ -55,8 +55,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport, isReportMode } = props;
     
     const [reportTargets, setReportTargets] = useIndexedDBState<Record<string, string>>(`report-industry-targets-${activeSupermarket || 'all'}`, {});
-    
-    const isMobile = false; // Always show table view, even on mobile
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
@@ -519,93 +517,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
-                        {isMobile ? (
-                            /* ─── MOBILE CARD VIEW ─── */
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {processedTable.rows.map((row, rIdx) => {
-                                    const isTotalRow = row[0] === 'Tổng';
-                                    const htIdx = processedTable.headers.indexOf(htKey);
-                                    const htPct = htIdx !== -1 ? roundUp(parseNumber(row[htIdx])) : 0;
-                                    const htColors = getHtColor(htPct);
-                                    const dtqdIdx = processedTable.headers.indexOf(dtqdKey);
-                                    const dtqdVal = dtqdIdx !== -1 ? roundUp(parseNumber(row[dtqdIdx])) : 0;
-
-                                    if (isTotalRow) {
-                                        return (
-                                            <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 px-4 py-3 flex items-center justify-between border-t-2 border-slate-300 dark:border-slate-600">
-                                                <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">TỔNG CỘNG</span>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="text-right">
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">DTQĐ</p>
-                                                        <p className="text-sm font-black text-primary-600 dark:text-primary-400 tabular-nums">
-                                                            {new Intl.NumberFormat('vi-VN').format(dtqdVal)}
-                                                        </p>
-                                                    </div>
-                                                    <span className={`text-xs font-black px-2.5 py-1 rounded-full ${htColors.badge}`}>
-                                                        {htPct}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <div key={rIdx} className="px-4 py-3 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                                            {/* Header row: tên + % HT badge */}
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                                                    {String(row[0]).replace('NNH ', '').toUpperCase()}
-                                                </span>
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${htColors.bg} transition-all duration-500`}
-                                                            style={{ width: `${Math.min(htPct, 100)}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htColors.badge}`}>
-                                                        {htPct}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Hero: DTQĐ */}
-                                            <div className="flex items-baseline gap-2 mb-2.5">
-                                                <span className="text-[1.6rem] font-black text-primary-600 dark:text-primary-400 tabular-nums leading-none">
-                                                    {new Intl.NumberFormat('vi-VN').format(dtqdVal)}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-slate-400">triệu QĐ</span>
-                                            </div>
-                                            
-                                            {/* Mini grid: các chỉ số khác */}
-                                            <div className="grid grid-cols-3 gap-1.5">
-                                                {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng' && h !== dtqdKey).slice(0, 6).map(h => {
-                                                    if (!visibleColumns.has(h)) return null;
-                                                    const oIdx = processedTable.headers.indexOf(h);
-                                                    if (oIdx === -1) return null;
-                                                    const cell = row[oIdx];
-                                                    const val = parseNumber(cell);
-                                                    const isPercent = h.includes('%') || h === 'Tỷ Trọng Trả Góp';
-                                                    const isHtCol = h === htKey;
-                                                    const htC = isHtCol ? getHtColor(val) : null;
-                                                    
-                                                    return (
-                                                        <div key={h} className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                            <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}></p>
-                                                            <p className={`text-[11px] font-black tabular-nums leading-none ${
-                                                                htC ? htC.badge.split(' ').filter((c: string) => c.startsWith('text-')).join(' ') : ''
-                                                            }`}>
-                                                                {val === 0 ? '-' : (isPercent ? roundUp(val) + '%' : new Intl.NumberFormat('vi-VN').format(roundUp(val)))}
-                                                            </p>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
                             /* ─── DESKTOP TABLE VIEW ─── */
                             <div className="overflow-hidden px-4 pb-4">
                                 <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
@@ -801,7 +712,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                 </table>
                                 </div>
                             </div>
-                        )}
                     </div>
                 </div>
             </Card>

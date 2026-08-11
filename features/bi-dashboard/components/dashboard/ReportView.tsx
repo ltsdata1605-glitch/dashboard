@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { useReportKpiValues } from '../../hooks/useReportKpiValues';
 import { shortenSupermarketName, parseNumber, roundUp } from '../../utils/dashboardHelpers';
 
 interface ReportViewProps {
@@ -11,31 +12,11 @@ const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
 const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, activeSupermarket }, ref) => {
     const [targets, setTargets] = useIndexedDBState<Record<string, string>>(`report-kpi-targets-${activeSupermarket || 'all'}`, {});
+    const kpiValues = useReportKpiValues(data, activeSupermarket);
 
     const processedData = useMemo(() => {
-        if (!data.headers || !data.headers.length) return [];
-        const nameIdx = data.headers.indexOf('Tên miền');
-        const dtIdx = data.headers.indexOf('DTLK');
-        const dtqdIdx = data.headers.indexOf('DTQĐ');
-        let tcIdx = data.headers.indexOf('Tỷ Trọng Trả Góp');
-        if (tcIdx === -1) tcIdx = data.headers.indexOf('Tỷ Trọng Trả Chậm');
-        
-        if (nameIdx === -1 || dtIdx === -1 || dtqdIdx === -1) return [];
-
-        const targetRow = data.rows.find(row => {
-            const name = row[nameIdx];
-            if (activeSupermarket && activeSupermarket !== 'Tổng') {
-                return name === activeSupermarket;
-            }
-            return name === 'Tổng';
-        });
-        
-        if (!targetRow) return [];
-
-        const dtlk = parseNumber(targetRow[dtIdx]);
-        const dtqd = parseNumber(targetRow[dtqdIdx]);
-        const tc = tcIdx !== -1 ? parseNumber(targetRow[tcIdx]) : 0;
-        const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
+        if (!kpiValues) return [];
+        const { dtlk, dtqd, tc, hqqd } = kpiValues;
 
         const result: { id: string, name: string; actual: number; target: string; isPercent: boolean }[] = [
             { id: 'dtlk', name: 'Doanh Thu Thực', actual: dtlk, target: targets['dtlk'] || '', isPercent: false },
@@ -45,7 +26,7 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
         ];
 
         return result;
-    }, [data, activeSupermarket, targets]);
+    }, [kpiValues, targets]);
 
     const handleTargetChange = (id: string, value: string, isPercent: boolean) => {
         const numericValue = value.replace(isPercent ? /[^0-9.-]/g : /[^0-9]/g, '');

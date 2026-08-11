@@ -13,7 +13,6 @@ interface CompetitionGroupCardProps {
     sortedEmployees: Employee[];
     employeeDataMap: Map<string, { name: string; department: string; values: Record<string, number | null> }>;
     employeeCompetitionTargets: Map<string, Map<string, number>>;
-    colorScheme: { main: string; light: string; text: string; hover: string; zebra: string; footer: string };
     highlightColorMap: Record<string, string>;
     viewMode?: 'group' | 'list';
 }
@@ -26,7 +25,6 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     sortedEmployees,
     employeeDataMap,
     employeeCompetitionTargets,
-    colorScheme: _colorScheme,
     highlightColorMap,
     viewMode = 'group'
 }) => {

@@ -52,78 +52,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
     };
 
-    const isMobile = false; // Always show table view, even on mobile
-
     return (
         <div className="overflow-hidden">
-            {isMobile ? (
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {(['SLLK', 'DTLK', 'DTQĐ'] as const).map(criterion => {
-                        const programs = groupedAndSortedPrograms[criterion];
-                        if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', accent: 'border-l-slate-400' };
-
-                        return (
-                            <div key={criterion}>
-                                <div className={`${theme.main} text-white px-4 py-2 text-[11px] font-black uppercase tracking-widest flex items-center gap-2`}>
-                                    <span className="bg-white/20 px-1.5 py-0.5 rounded text-[8px]">TIÊU CHÍ</span>
-                                    {criterion}
-                                </div>
-                                <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                                    {programs.map((program, index: number) => {
-                                        const conLai = program.conLai;
-                                        const htValue = parseNumber(program.data[headers.indexOf(isRealtime ? '%HT' : '%HTDK')]);
-                                        
-                                        return (
-                                            <div key={program.name} className="p-4 flex flex-col gap-3">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">#{ (index + 1).toString().padStart(2, '0') }</span>
-                                                        <span className="font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">{shortenName(program.name, nameOverrides)}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-end">
-                                                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htValue >= 100 ? 'bg-emerald-50 text-emerald-600' : (htValue >= 85 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')}`}>
-                                                            {roundUp(htValue)}% HT
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {headers.map((header, hIdx) => {
-                                                        if (hiddenColumns.includes(header) || header === 'Còn Lại' || header.includes('%')) return null;
-                                                        const cell = program.data[hIdx];
-                                                        const val = parseNumber(cell);
-                                                        return (
-                                                            <div key={header} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                                <p className="text-[9px] font-bold text-slate-400 uppercase mb-1" dangerouslySetInnerHTML={{ __html: getFormattedHeader(header).replace(/<br\/>/g, ' ') }}></p>
-                                                                <p className="text-xs font-black tabular-nums text-slate-700 dark:text-slate-200">
-                                                                    {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(val))}
-                                                                </p>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    {!hiddenColumns.includes('Còn Lại') && (
-                                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">CÒN LẠI</p>
-                                                            <p className={`text-xs font-black tabular-nums ${conLai >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                                {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="mt-1">
-                                                    <ProgressBar value={htValue} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            ) : (
-                <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+            <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
@@ -246,7 +177,6 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                             })}
                         </table>
                 </div>
-            )}
         </div>
     );
 };

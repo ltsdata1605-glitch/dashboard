@@ -16,7 +16,6 @@ import TimeProgressBar from './shared/TimeProgressBar';
 
 import { ColorSettingsModal, ColorSettings, DEFAULT_COLOR_SETTINGS, CriterionConfig } from './revenue/ColorSettingsModal';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
-import { RevenueMobileCard } from './revenue/RevenueMobileCard';
 import { RevenueDesktopRow } from './revenue/RevenueDesktopRow';
 import { useRevenueData } from '../../hooks/useRevenueData';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -220,8 +219,6 @@ const RevenueView: React.FC<{
     if (!supermarketName) return <Card bordered={false} title="Phân tích Nhân viên" icon="users"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
     if (isLoading) return <Card bordered={false} title={cardTitle} subtitle={cardSubtitle} icon="trending-up"><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-sky-500 animate-spin" /></div></Card>;
 
-    const isMobile = false; // Always show table view, even on mobile
-
     return (
         <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white no-print border-b border-slate-200 gap-3">
@@ -279,39 +276,6 @@ const RevenueView: React.FC<{
                     </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        {isMobile ? (
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {displayList.map((row, idx) => {
-                                    if (row.type === 'department' || row.type === 'total') {
-                                        const isGrandTotal = row.type === 'total';
-                                        return (
-                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/30 font-black text-emerald-800 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
-                                                <span className="uppercase tracking-wider text-xs">{row.name}</span>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-sky-600 dark:text-sky-400">{f.format(roundUp(row.dtqd))} Tr</span>
-                                                    <span className="text-[10px] opacity-60">{roundUp(row.calculatedCompletion)}% HT</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                    return (
-                                        <RevenueMobileCard
-                                            key={row.originalName}
-                                            row={row}
-                                            isHighlighted={isHighlighted}
-                                            onHighlightToggle={handleHighlightToggle}
-                                            onViewTrend={onViewTrend}
-                                            supermarketName={supermarketName}
-                                            colorSettings={colorSettings}
-                                            getHtColor={getHtColor}
-                                            getDynamicColor={getDynamicColor}
-                                            timeProgressPercentage={timeProgressData.percentage}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        ) : (
                             <div className="border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
@@ -422,7 +386,6 @@ const RevenueView: React.FC<{
                                 </tbody>
                             </table>
                             </div>
-                        )}
                     </div>
                     </div>
                 </Card>

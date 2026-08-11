@@ -6,14 +6,16 @@ export const ImportPrevMonthModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     onSave: (data: string) => void;
-}> = ({ isOpen, onClose, onSave }) => {
+    title?: string;
+    description?: string;
+}> = ({ isOpen, onClose, onSave, title = 'Nhập dữ liệu tháng trước', description = 'Dán dữ liệu báo cáo "Doanh thu nhân viên" của tháng trước vào đây để so sánh tăng trưởng.' }) => {
     const [pastedData, setPastedData] = useState('');
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Nhập dữ liệu tháng trước"
+            title={title}
             maxWidth="xl"
             footer={
                 <div className="flex gap-3">
@@ -22,7 +24,7 @@ export const ImportPrevMonthModal: React.FC<{
                 </div>
             }
         >
-            <p className="text-xs text-slate-500 mb-4">Dán dữ liệu báo cáo "Doanh thu nhân viên" của tháng trước vào đây để so sánh tăng trưởng.</p>
+            <p className="text-xs text-slate-500 mb-4">{description}</p>
             <textarea
                 autoFocus
                 value={pastedData}

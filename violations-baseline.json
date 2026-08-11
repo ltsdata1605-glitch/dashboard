@@ -296,7 +296,7 @@
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/DashboardWidgets.tsx": {
-    "nonSemanticColor": 9,
+    "nonSemanticColor": 1,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/dashboard/IndustryView.tsx": {
@@ -325,10 +325,6 @@
   },
   "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
     "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 5,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {

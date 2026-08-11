@@ -19,15 +19,6 @@ import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import TimeProgressBar from './shared/TimeProgressBar';
 
-const PALETTE = [
-  { main: 'bg-sky-600', light: 'bg-sky-100', text: 'text-sky-800', hover: 'hover:bg-sky-50', zebra: 'bg-sky-50/50', footer: 'bg-sky-800' },
-  { main: 'bg-emerald-600', light: 'bg-emerald-100', text: 'text-emerald-800', hover: 'hover:bg-emerald-50', zebra: 'bg-emerald-50/50', footer: 'bg-emerald-800' },
-  { main: 'bg-rose-600', light: 'bg-rose-100', text: 'text-rose-800', hover: 'hover:bg-rose-50', zebra: 'bg-sky-50/50', footer: 'bg-rose-800' },
-  { main: 'bg-amber-500', light: 'bg-amber-100', text: 'text-amber-800', hover: 'hover:bg-amber-50', zebra: 'bg-sky-50/50', footer: 'bg-amber-800' },
-  { main: 'bg-indigo-600', light: 'bg-indigo-100', text: 'text-indigo-800', hover: 'hover:bg-indigo-50', zebra: 'bg-sky-50/50', footer: 'bg-indigo-800' },
-  { main: 'bg-slate-600', light: 'bg-slate-100', text: 'text-slate-800', hover: 'hover:bg-slate-50', zebra: 'bg-sky-50/50', footer: 'bg-slate-800' },
-];
-
 import { useCompetitionData } from '../../hooks/useCompetitionData';
 
 interface CompetitionTabProps {
@@ -589,8 +580,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         </h3>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                        {sortedSelectedHeaders.map((header, index) => (
-                                            <CompetitionGroupCard key={header.title} header={header as CompetitionHeader} colorScheme={PALETTE[index % PALETTE.length]} sortedEmployees={filteredEmployees as Employee[]} employeeDataMap={employeeDataMap} employeeCompetitionTargets={employeeCompetitionTargets} highlightColorMap={effectiveHighlightColorMap} viewMode={viewMode} />
+                                        {sortedSelectedHeaders.map((header) => (
+                                            <CompetitionGroupCard key={header.title} header={header as CompetitionHeader} sortedEmployees={filteredEmployees as Employee[]} employeeDataMap={employeeDataMap} employeeCompetitionTargets={employeeCompetitionTargets} highlightColorMap={effectiveHighlightColorMap} viewMode={viewMode} />
                                         ))}
                                     </div>
                                 </div>

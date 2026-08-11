@@ -1,111 +1,22 @@
 
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { CrossSellingRow } from '../../types/nhanVienTypes';
 import { getYesterdayDateString, parseCrossSellingData } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon, DocumentReportIcon } from '../Icons';
+import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadAllIcon, DocumentReportIcon } from '../Icons';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
-import { Modal } from '../../../../components/shared/ui/Modal';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
+import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 
 // Dòng nhân viên/phòng ban/tổng đã gộp thêm rank (thứ hạng) và oldRow (dữ liệu tháng trước để so sánh)
 type CrossSellingDisplayRow = CrossSellingRow & { rank?: number; oldRow?: CrossSellingRow };
-
-const ImportPrevMonthModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (data: string) => void;
-}> = ({ isOpen, onClose, onSave }) => {
-    const [pastedData, setPastedData] = useState('');
-    return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Nhập dữ liệu Bán kèm cùng kỳ"
-            titleColorClass="text-slate-800 dark:text-white"
-            maxWidth="md"
-            footer={
-                <div className="flex gap-3">
-                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</Button>
-                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-3 bg-sky-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-sky-700 transition-colors">Lưu dữ liệu</Button>
-                </div>
-            }
-        >
-            <p className="text-xs text-slate-500 mb-4">Dán dữ liệu bảng báo cáo "Hiệu quả bán kèm" của tháng trước hoặc cùng kỳ từ HRM vào đây.</p>
-            <textarea
-                autoFocus
-                value={pastedData}
-                onChange={e => setPastedData(e.target.value)}
-                placeholder="Click vào đây rồi nhấn Ctrl + V để dán bảng từ HRM..."
-                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-sky-500 outline-none transition-all"
-            />
-        </Modal>
-    );
-};
-
-const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }> = ({ employeeName, supermarketName }) => {
-    const dbKey = `avatar-${employeeName}`;
-    const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 128;
-                    const MAX_HEIGHT = 128;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx?.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
-                    setAvatarSrc(compressedBase64);
-                };
-                img.src = reader.result as string;
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    return (
-        <div className="relative group w-8 h-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-            {avatarSrc ? (
-                <img src={avatarSrc} alt={employeeName} className="w-full h-full rounded-full object-cover shadow-sm ring-1 ring-white dark:ring-slate-700" />
-            ) : (
-                <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center ring-1 ring-slate-300 dark:ring-slate-600">
-                    <UsersIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-                </div>
-            )}
-            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 absolute inset-0 bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity no-print"><UploadIcon className="h-3 w-3 text-white" /></Button>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
-        </div>
-    );
-};
 
 interface CrossSellingDesktopRowProps {
     row: CrossSellingDisplayRow;
@@ -146,54 +57,6 @@ const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
     );
 });
 
-interface CrossSellingMobileRowProps {
-    row: CrossSellingDisplayRow;
-    isHighlighted: boolean;
-    supermarketName: string;
-    f: Intl.NumberFormat;
-}
-
-const CrossSellingMobileRow = React.memo<CrossSellingMobileRowProps>(({
-    row, isHighlighted, supermarketName, f
-}) => {
-    const oldRow = row.oldRow;
-    return (
-        <div className={`p-4 flex flex-col gap-3 ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
-            <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                    <MedalBadge rank={row.rank} />
-                    <div className="flex flex-col">
-                        <span className="font-bold text-sky-600 dark:text-sky-400">{row.name}</span>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end">
-                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.pctBillBk >= 20 ? 'bg-emerald-50 text-emerald-600' : (row.pctBillBk < 10 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600')}`}>
-                        {f.format(row.pctBillBk)}% BILL BK
-                    </span>
-                    <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
-                </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DT THỰC</p>
-                    <p className="text-xs font-black tabular-nums">{f.format(row.dtlk)}</p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">BILL BK/TỔNG</p>
-                    <p className="text-xs font-black tabular-nums">{f.format(row.billBk)}/{f.format(row.totalBill)}</p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">%SP BK</p>
-                    <p className={`text-xs font-black tabular-nums ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-600' : 'text-amber-600')}`}>
-                        {f.format(row.pctSpBk)}%
-                    </p>
-                    <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
-                </div>
-            </div>
-        </div>
-    );
-});
-
 const CrossSellingTab: React.FC<{
     rows: CrossSellingRow[];
     supermarketName: string;
@@ -203,11 +66,8 @@ const CrossSellingTab: React.FC<{
     isActive?: boolean;
 }> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive }) => {
     const cardRef = useRef<HTMLDivElement>(null);
-    const highlightRef = useRef<HTMLDivElement>(null);
-
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'pctBillBk', direction: 'desc' });
-    const [isHighlightFilterOpen, setIsHighlightFilterOpen] = useState(false);
     const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bankem-view-mode', 'group');
 
@@ -236,12 +96,6 @@ const CrossSellingTab: React.FC<{
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => { if (highlightRef.current && !highlightRef.current.contains(event.target as Node)) setIsHighlightFilterOpen(false); };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
@@ -418,20 +272,6 @@ const CrossSellingTab: React.FC<{
         setIsExportingByDept(false);
     };
 
-    const handleExportDataFile = () => {
-        if (rows.length === 0) return;
-        const dataStr = JSON.stringify(rows, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `BANKEM_${supermarketName.replace(/ /g, '_')}_${getYesterdayDateString().replace(/\//g, '-')}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -441,7 +281,6 @@ const CrossSellingTab: React.FC<{
     const cardTitle = <span className="js-report-title">Hiệu quả bán kèm nhân viên đến ngày {getYesterdayDateString()}</span>;
     const cardSubtitle = <span className="js-report-title">Không chỉ là bán hàng, đó là sự quan tâm và mang lại giải pháp toàn diện cho khách hàng.</span>;
 
-    const isMobile = false; // Always show table view, even on mobile
 
     return (
         <div className="space-y-0">
@@ -477,35 +316,6 @@ const CrossSellingTab: React.FC<{
                     </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide">
-                            {isMobile ? (
-                                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {displayList.map((row, idx) => {
-                                        if (row.type === 'department' || row.type === 'total') {
-                                            const isGrandTotal = row.type === 'total';
-                                            const oldRow = row.oldRow;
-                                            return (
-                                                <div key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100'} px-4 py-3 flex justify-between items-center font-black uppercase tracking-wider text-xs`}>
-                                                    <span>{row.name}</span>
-                                                    <div className="flex flex-col items-end">
-                                                        <span>{f.format(row.pctBillBk)}% BILL BK</span>
-                                                        <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
-                                                    </div>
-                                                </div>
-                                            );
-                                        }
-                                        const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                        return (
-                                            <CrossSellingMobileRow
-                                                key={row.originalName || idx}
-                                                row={row}
-                                                isHighlighted={isHighlighted}
-                                                supermarketName={supermarketName}
-                                                f={f}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            ) : (
                                 <table className="min-w-full text-[13px] border-collapse border border-slate-200 dark:border-slate-700">
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
@@ -570,12 +380,17 @@ const CrossSellingTab: React.FC<{
                                         })}
                                     </tbody>
                                 </table>
-                            )}
                         </div>
                     </div>
                 </Card>
             </div>
-            <ImportPrevMonthModal isOpen={isPrevMonthModalOpen} onClose={() => setIsPrevMonthModalOpen(false)} onSave={setPrevMonthRaw} />
+            <ImportPrevMonthModal
+                isOpen={isPrevMonthModalOpen}
+                onClose={() => setIsPrevMonthModalOpen(false)}
+                onSave={setPrevMonthRaw}
+                title="Nhập dữ liệu Bán kèm cùng kỳ"
+                description={'Dán dữ liệu bảng báo cáo "Hiệu quả bán kèm" của tháng trước hoặc cùng kỳ từ HRM vào đây.'}
+            />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -58,59 +58,6 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
     );
 });
 
-interface InstallmentMobileRowProps {
-    row: InstallmentDisplayRow;
-    isHighlighted: boolean;
-    supermarketName: string;
-    f: Intl.NumberFormat;
-}
-
-const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
-    row, isHighlighted, supermarketName, f
-}) => {
-    const oldRow = row.oldRow;
-    return (
-        <div className={`p-4 flex flex-col gap-3 transition-all ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : 'active:bg-slate-50'}`}>
-            <div className="flex items-center gap-3">
-                <MedalBadge rank={row.rank} />
-                <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                        <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                        <div className="flex flex-col items-end">
-                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{Math.round(row.totalPercent)}% TG</span>
-                            <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-                {row.providers.map((p: InstallmentProvider, pIdx: number) => {
-                    const oldP = oldRow?.providers[pIdx];
-                    if (p.dt === 0) return null;
-                    return (
-                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                            <div>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.shortName}</p>
-                                <p className="text-xs font-black tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
-                            </div>
-                            <div className="text-right">
-                                <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{p.percent.toFixed(2)}%</p>
-                                <DeltaBadge current={p.percent} previous={oldP?.percent} />
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-            
-            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
-                <span>Doanh thu siêu thị:</span>
-                <span className="text-slate-900 dark:text-slate-200 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))} Triệu</span>
-            </div>
-        </div>
-    );
-});
-
 const InstallmentTab: React.FC<{
     rows: InstallmentRow[];
     supermarketName: string;
@@ -120,11 +67,9 @@ const InstallmentTab: React.FC<{
     isActive?: boolean;
 }> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive }) => {
     const cardRef = useRef<HTMLDivElement>(null);
-    const highlightRef = useRef<HTMLDivElement>(null);
     const importFileRef = useRef<HTMLInputElement>(null);
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'totalPercent', direction: 'desc' });
-    const [isHighlightFilterOpen, setIsHighlightFilterOpen] = useState(false);
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('installment-view-mode', 'group');
     const [hidePercent, setHidePercent] = useState(false);
     
@@ -144,13 +89,7 @@ const InstallmentTab: React.FC<{
     const [isExportingByDept, setIsExportingByDept] = useState(false);
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
     
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }); 
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => { if (highlightRef.current && !highlightRef.current.contains(event.target as Node)) setIsHighlightFilterOpen(false); };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
@@ -180,10 +119,6 @@ const InstallmentTab: React.FC<{
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'totalDtSieuThi') { valA = a.totalDtSieuThi; valB = b.totalDtSieuThi; }
                 else if (sortConfig.key === 'totalPercent') { valA = a.totalPercent; valB = b.totalPercent; }
-                else if (sortConfig.key.startsWith('p-dt-')) {
-                    const idx = parseInt(sortConfig.key.replace('p-dt-', ''));
-                    valA = a.providers[idx]?.dt || 0; valB = b.providers[idx]?.dt || 0;
-                }
                 const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
@@ -204,10 +139,6 @@ const InstallmentTab: React.FC<{
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'totalDtSieuThi') { valA = a.totalDtSieuThi; valB = b.totalDtSieuThi; }
                 else if (sortConfig.key === 'totalPercent') { valA = a.totalPercent; valB = b.totalPercent; }
-                else if (sortConfig.key.startsWith('p-dt-')) {
-                    const idx = parseInt(sortConfig.key.replace('p-dt-', ''));
-                    valA = a.providers[idx]?.dt || 0; valB = b.providers[idx]?.dt || 0;
-                }
                 const compare = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA - (valB as number));
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
@@ -312,20 +243,6 @@ const InstallmentTab: React.FC<{
         setIsExportingByDept(false);
     };
 
-    const handleExportDataFile = () => {
-        if (rows.length === 0) return;
-        const dataStr = JSON.stringify(rows, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `TRAGOP_${supermarketName.replace(/ /g, '_')}_${getYesterdayDateString().replace(/\//g, '-')}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
     const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -353,7 +270,6 @@ const InstallmentTab: React.FC<{
     const cardTitle = <span className="js-report-title">Trả góp nhân viên đến ngày {getYesterdayDateString()}</span>;
     const cardSubtitle = <span className="js-report-title">Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên.</span>;
 
-    const isMobile = false; // Always show table view, even on mobile
 
     return (
         <div className="space-y-0">
@@ -392,38 +308,6 @@ const InstallmentTab: React.FC<{
                     </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        {isMobile ? (
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {displayList.map((row, idx) => {
-                                    if (row.type === 'department' || row.type === 'total') {
-                                        const isGrandTotal = row.type === 'total';
-                                        return (
-                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
-                                                <span className="uppercase tracking-wider text-xs">{row.name}</span>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-sky-600 dark:text-sky-400">{Math.round(row.totalPercent)}% TG</span>
-                                                    <span className="text-[10px] opacity-60">{f.format(Math.ceil(row.totalDtSieuThi))} Tr</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                    return (
-                                        <div 
-                                            key={row.originalName || idx}
-                                            onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}
-                                        >
-                                            <InstallmentMobileRow
-                                                row={row}
-                                                isHighlighted={isHighlighted}
-                                                supermarketName={supermarketName}
-                                                f={f}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
                             <table className="w-full border-collapse border border-slate-200 dark:border-slate-700">
                                 <thead className="sticky top-0 z-10">
                                     {/* Tier 1: Group Headers */}
@@ -471,7 +355,6 @@ const InstallmentTab: React.FC<{
                                     })}
                                 </tbody>
                             </table>
-                        )}
                     </div>
                     </div>
                 </Card>
