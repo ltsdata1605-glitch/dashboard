@@ -79,7 +79,11 @@ export const useRevenueData = ({
         const daysPassed = Math.max(1, currentDay - 1);
 
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
-        
+
+        // Map tra cứu O(1) thay vì .find() O(n) lồng trong .map() ở calculateWithComparison bên dưới
+        const snapshotRowsMap = new Map(snapshotRows.map(sr => [sr.originalName, sr]));
+        const prevMonthRowsMap = new Map(prevMonthRows.map(pr => [pr.originalName, pr]));
+
         const calculateWithComparison = (emp: RevenueRow): RevenueRow => {
             const weight = (departmentWeights[emp.department!] || 0) / 100;
             const empCount = deptEmployeeCounts[emp.department!] || 1;
@@ -89,9 +93,9 @@ export const useRevenueData = ({
 
             let prevData = null;
             if (snapshotId) {
-                prevData = snapshotRows.find(sr => sr.originalName === emp.originalName);
+                prevData = snapshotRowsMap.get(emp.originalName) ?? null;
             } else if (prevMonthRows.length > 0) {
-                prevData = prevMonthRows.find(pr => pr.originalName === emp.originalName);
+                prevData = prevMonthRowsMap.get(emp.originalName) ?? null;
             }
 
             let prevCompData = null;

@@ -16,6 +16,8 @@ import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 
+const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+
 // Dòng nhân viên/phòng ban/tổng đã gộp thêm rank (thứ hạng) và oldRow (dữ liệu tháng trước để so sánh)
 type InstallmentDisplayRow = InstallmentRow & { rank?: number; oldRow?: InstallmentRow };
 
@@ -88,8 +90,6 @@ const InstallmentTab: React.FC<{
     const [exportDeptFilter, setExportDeptFilter] = useState<string | null>(null);
     const [isExportingByDept, setIsExportingByDept] = useState(false);
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
-    
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
@@ -103,9 +103,10 @@ const InstallmentTab: React.FC<{
         const isFiltering = !activeDepartments.includes('all') && !(allDepts.length > 0 && allDepts.every(d => activeDepartments.includes(d)));
 
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
-        
+
+        const prevMonthRowsMap = new Map(prevMonthRows.map(pr => [pr.originalName, pr]));
         const calculateRowWithComparison = (row: InstallmentRow): InstallmentDisplayRow => {
-            const oldRow = prevMonthRows.find((pr) => pr.originalName === row.originalName);
+            const oldRow = prevMonthRowsMap.get(row.originalName);
             return { ...row, oldRow };
         };
 

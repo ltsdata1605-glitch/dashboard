@@ -151,8 +151,9 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     const [isBatchExporting, setIsBatchExporting] = useState(false);
 
     const autoPairs = useMemo(() => {
+        const employeeByName = new Map(allEmployees.map(e => [e.originalName, e]));
         const empRows = (revenueRows || []).filter(r => r.type === 'employee').sort((a, b) => (b.dtqd || 0) - (a.dtqd || 0));
-        const sortedEmps = empRows.map(r => allEmployees.find(e => e.originalName === r.originalName)).filter(Boolean) as Employee[];
+        const sortedEmps = empRows.map(r => employeeByName.get(r.originalName)).filter(Boolean) as Employee[];
         const pairs: { a: Employee, b: Employee, label: string }[] = [];
         for (let i = 0; i < sortedEmps.length - 1; i += 2) {
             pairs.push({ a: sortedEmps[i], b: sortedEmps[i+1], label: `Top ${i+1} vs ${i+2}` });

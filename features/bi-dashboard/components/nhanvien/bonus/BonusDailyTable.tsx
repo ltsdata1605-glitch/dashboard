@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { onActivateKey } from '../../../../../components/shared/ui';
 import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
@@ -43,6 +43,18 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
     getWeekGrandTotal, getWeekDeptTotal, getWeekTotalForEmployee, getEmployeeWeeksBelowAvgCount,
     highlightedEmployees, onEmployeeClick, supermarketName, f,
 }) => {
+    // Tính trước "cuối tuần" (Thứ 6/7/CN theo quy ước hoa hồng của module này) cho mỗi ngày 1 lần,
+    // thay vì tạo lại Date + gọi getDay() cho từng ô (N nhân viên × M ngày) mỗi lần render.
+    const isWeekendMap = useMemo(() => {
+        const map = new Map<string, boolean>();
+        allDates.forEach(dateStr => {
+            const [d, m, y] = dateStr.split('/').map(Number);
+            const day = new Date(y, m - 1, d).getDay();
+            map.set(dateStr, day === 5 || day === 6 || day === 0);
+        });
+        return map;
+    }, [allDates]);
+
     if (allDates.length === 0) {
         return (
             <EmptyState
@@ -139,10 +151,8 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         if (!isExpanded) return null;
                         const weekDates = week.dates;
                         return weekDates.map(dateStr => {
-                            const [d, m, y] = dateStr.split('/').map(Number);
-                            const dateObj = new Date(y, m - 1, d);
-                            const day = dateObj.getDay();
-                            const isWeekend = day === 5 || day === 6 || day === 0;
+                            const [d, m] = dateStr.split('/');
+                            const isWeekend = isWeekendMap.get(dateStr) ?? false;
                             const headerBgClass = isWeekend
                                 ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
                                 : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300';
@@ -197,12 +207,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                                 );
                                             } else {
                                                 return weekDates.map(dateStr => {
-                                                    const isWeekend = (() => {
-                                                        const [d, m, y] = dateStr.split('/').map(Number);
-                                                        const dateObj = new Date(y, m - 1, d);
-                                                        const day = dateObj.getDay();
-                                                        return day === 5 || day === 6 || day === 0;
-                                                    })();
+                                                    const isWeekend = isWeekendMap.get(dateStr) ?? false;
                                                     const bgClass = isWeekend ? "bg-rose-100/30 dark:bg-rose-950/10" : "bg-emerald-50/20 dark:bg-emerald-950/5";
                                                     return (
                                                         <td key={dateStr} className={`px-1.5 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 ${bgClass}`}>
@@ -233,12 +238,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                                 );
                                             } else {
                                                 return weekDates.map(dateStr => {
-                                                    const isWeekend = (() => {
-                                                        const [d, m, y] = dateStr.split('/').map(Number);
-                                                        const dateObj = new Date(y, m - 1, d);
-                                                        const day = dateObj.getDay();
-                                                        return day === 5 || day === 6 || day === 0;
-                                                    })();
+                                                    const isWeekend = isWeekendMap.get(dateStr) ?? false;
                                                     const bgClass = isWeekend ? "bg-rose-100/30 dark:bg-rose-950/10" : "bg-emerald-50/20 dark:bg-emerald-950/5";
                                                     return (
                                                         <td key={dateStr} className={`px-1.5 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 ${bgClass}`}>
@@ -272,12 +272,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         );
                                     } else {
                                         return weekDates.map(dateStr => {
-                                            const isWeekend = (() => {
-                                                const [d, m, y] = dateStr.split('/').map(Number);
-                                                const dateObj = new Date(y, m - 1, d);
-                                                const day = dateObj.getDay();
-                                                return day === 5 || day === 6 || day === 0;
-                                            })();
+                                            const isWeekend = isWeekendMap.get(dateStr) ?? false;
                                             const bgClass = isWeekend ? "bg-rose-100/30 dark:bg-rose-950/10" : "bg-emerald-50/20 dark:bg-emerald-950/5";
                                             return (
                                                 <td key={dateStr} className={`px-1.5 py-1 text-center border-r tabular-nums text-[13px] font-extrabold border-slate-200 dark:border-slate-700 ${bgClass}`}>
@@ -350,12 +345,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         const val = bonus?.dailyData?.[dateStr] || 0;
                                         const avg = colStats[dateStr]?.avg || 0;
                                         const top3Threshold = colStats[dateStr]?.top3Threshold || 0;
-                                        const isWeekend = (() => {
-                                            const [d, m, y] = dateStr.split('/').map(Number);
-                                            const dateObj = new Date(y, m - 1, d);
-                                            const day = dateObj.getDay();
-                                            return day === 5 || day === 6 || day === 0;
-                                        })();
+                                        const isWeekend = isWeekendMap.get(dateStr) ?? false;
 
                                         let cellClass = "px-1.5 py-1 text-center border-r tabular-nums text-[13px] border-slate-200 dark:border-slate-700 ";
                                         if (val > 0) {

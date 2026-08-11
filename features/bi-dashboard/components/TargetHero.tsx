@@ -189,6 +189,25 @@ const CreateDeptModal: React.FC<{
     );
 };
 
+// Dùng chung cho CompactTargetItem + TargetHero — tránh tạo lại Intl.NumberFormat/object theme mỗi render
+const TARGET_HERO_DECIMAL_FORMATTER = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+const COMPACT_TARGET_ITEM_THEMES: Record<'sky' | 'emerald' | 'amber' | 'slate', { bg: string; border: string; shadow: string; label: string; after: string; inputBg: string; inputBorder: string; inputText: string; ring: string; track: string; thumb: string }> = {
+    sky: { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', shadow: 'shadow-sm', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
+    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', shadow: 'shadow-sm', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
+    amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', shadow: 'shadow-sm', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
+    slate: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-200 dark:border-slate-700', shadow: 'shadow-sm', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-600', ring: 'focus-within:ring-slate-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-500' }
+};
+
+// Bảng màu pastel xoay vòng cho từng thẻ phòng ban — hoist ra ngoài để không tạo lại mỗi phần tử
+// trong combinedDepts.map() (từng bị tạo mới cho mọi phòng ban, ở mọi lần render).
+const DEPARTMENT_PASTEL_THEMES = [
+    { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
+    { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
+    { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
+    { bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-800', label: 'text-rose-700 dark:text-rose-400', after: 'text-rose-600 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-rose-200 dark:border-rose-700/50', inputText: 'text-rose-600', ring: 'focus-within:ring-rose-500', track: 'bg-rose-200 dark:bg-rose-900', thumb: 'accent-rose-500' },
+    { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500' },
+];
+
 const CompactTargetItem: React.FC<{
     label: string;
     baseValue: number;
@@ -200,16 +219,8 @@ const CompactTargetItem: React.FC<{
     colorTheme?: 'sky' | 'emerald' | 'amber' | 'slate';
     perPerson?: number;
 }> = ({ label, baseValue, adjValue, unit, ratio, onChange, onReset, colorTheme = 'slate', perPerson }) => {
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-    
-    // Theme mapping
-    const themes = {
-        sky: { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', shadow: 'shadow-sm', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-        emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', shadow: 'shadow-sm', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
-        amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', shadow: 'shadow-sm', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
-        slate: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-200 dark:border-slate-700', shadow: 'shadow-sm', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-600', ring: 'focus-within:ring-slate-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-500' }
-    };
-    const t = themes[colorTheme] || themes.slate;
+    const f = TARGET_HERO_DECIMAL_FORMATTER;
+    const t = COMPACT_TARGET_ITEM_THEMES[colorTheme] || COMPACT_TARGET_ITEM_THEMES.slate;
 
     return (
         <div className={`p-2 sm:p-2.5 rounded-lg transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
@@ -258,7 +269,7 @@ const CompactTargetItem: React.FC<{
 };
 
 const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData }) => {
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+    const f = TARGET_HERO_DECIMAL_FORMATTER;
     const safeName = shortenSupermarketName(supermarketName);
     const [traGop, setTraGop] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45, 300);
     const [quyDoi, setQuyDoi] = useIndexedDBState<number>(`targethero-${safeName}-quydoi`, 40, 300);
@@ -414,15 +425,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const perEmployee = dept.employeeCount > 0 ? allocated / dept.employeeCount : 0;
                             const isManual = dept.isManual;
                             
-                            // Department Pastel Themes Array
-                            const dThemes = [
-                                { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
-                                { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-                                { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
-                                { bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-800', label: 'text-rose-700 dark:text-rose-400', after: 'text-rose-600 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-rose-200 dark:border-rose-700/50', inputText: 'text-rose-600', ring: 'focus-within:ring-rose-500', track: 'bg-rose-200 dark:bg-rose-900', thumb: 'accent-rose-500' },
-                                { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500' },
-                            ];
-                            const t = dThemes[idx % dThemes.length];
+                            const t = DEPARTMENT_PASTEL_THEMES[idx % DEPARTMENT_PASTEL_THEMES.length];
 
                             return (
                                 <div key={dept.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} rounded-lg shadow-sm transition-all hover:scale-[1.01]`}>

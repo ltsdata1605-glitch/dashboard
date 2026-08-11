@@ -118,9 +118,21 @@ export function useNhanVienData(isActive?: boolean) {
     }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded, isActive]);
 
     useEffect(() => {
+        // Chỉ 9 key liệt kê trong fetchAllData() (config-*, manual-dept-mapping-*, bonus-data-*,
+        // targethero-*-departmentweights, hidden-employees-*, bonus-current-period-label-*) thực sự
+        // ảnh hưởng tới dữ liệu hook này trả về — "comptarget-" (target thi đua) không được fetch ở
+        // đây nên không cần bump lại; "targethero-" phải khớp đúng suffix "-departmentweights",
+        // các key targethero khác (quydoi/tragop/total) chỉ dùng ở useDashboardLogic.
         const handleDbChange = (event: CustomEvent) => {
             const key = event.detail.key;
-            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('bonus-current-period-label-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key.startsWith('hidden-employees-') || key === 'summary-luy-ke') {
+            const isRelevant = key.startsWith('config-')
+                || key.startsWith('manual-dept-mapping')
+                || key.startsWith('bonus-data-')
+                || key.startsWith('bonus-current-period-label-')
+                || key.startsWith('hidden-employees-')
+                || (key.startsWith('targethero-') && key.endsWith('-departmentweights'))
+                || key === 'summary-luy-ke';
+            if (isRelevant) {
                 setDataVersion(v => v + 1);
             }
         };

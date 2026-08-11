@@ -124,27 +124,35 @@ export const useCompetitionData = ({
         });
     }, [selectedHeadersForNhom, filteredEmployees, employeeDataMap, employeeCompetitionTargets, isActive]);
 
+    // Map tra cứu O(1) originalName -> vị trí trong allEmployees, thay cho .findIndex() O(n)
+    // lặp lại nhiều lần (effectiveHighlightColorMap, getEmployeeDotColor).
+    const employeeIndexMap = useMemo(() => {
+        const map = new Map<string, number>();
+        allEmployees.forEach((e, idx) => { if (!map.has(e.originalName)) map.set(e.originalName, idx); });
+        return map;
+    }, [allEmployees]);
+
     const effectiveHighlightColorMap = useMemo(() => {
         if (isActive === false) return {};
         const map: Record<string, string> = {};
         if (isolatedHighlightEmployee) {
-             const employeeIndex = allEmployees.findIndex((e) => e.originalName === isolatedHighlightEmployee);
-             if (employeeIndex !== -1) map[isolatedHighlightEmployee] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
+             const employeeIndex = employeeIndexMap.get(isolatedHighlightEmployee);
+             if (employeeIndex !== undefined) map[isolatedHighlightEmployee] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
              return map;
         }
         const highlightedArray = Array.from(highlightedEmployees) as string[];
         highlightedArray.forEach((name) => {
-            const employeeIndex = allEmployees.findIndex((e) => e.originalName === name);
-            if (employeeIndex !== -1) map[name] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
+            const employeeIndex = employeeIndexMap.get(name);
+            if (employeeIndex !== undefined) map[name] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
         });
         return map;
-    }, [highlightedEmployees, isolatedHighlightEmployee, allEmployees, isActive]);
+    }, [highlightedEmployees, isolatedHighlightEmployee, employeeIndexMap, isActive]);
 
     const getEmployeeDotColor = useCallback((originalName: string) => {
-        const index = allEmployees.findIndex((e) => e.originalName === originalName);
-        if (index === -1) return 'bg-slate-300';
+        const index = employeeIndexMap.get(originalName);
+        if (index === undefined) return 'bg-slate-300';
         return HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length].dot;
-    }, [allEmployees]);
+    }, [employeeIndexMap]);
 
     return {
         hasAnyData,

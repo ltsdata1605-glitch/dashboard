@@ -15,6 +15,8 @@ import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 
+const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+
 // Dòng nhân viên/phòng ban/tổng đã gộp thêm rank (thứ hạng) và oldRow (dữ liệu tháng trước để so sánh)
 type CrossSellingDisplayRow = CrossSellingRow & { rank?: number; oldRow?: CrossSellingRow };
 
@@ -95,8 +97,6 @@ const CrossSellingTab: React.FC<{
     const [isExportingByDept, setIsExportingByDept] = useState(false);
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
     const displayList = useMemo(() => {
@@ -105,8 +105,11 @@ const CrossSellingTab: React.FC<{
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
 
+        const prevEmployeeRowsMap = new Map(
+            prevMonthRows.filter(pr => pr.type === 'employee').map(pr => [pr.originalName, pr])
+        );
         const attachPrevMonth = (row: CrossSellingRow): CrossSellingDisplayRow => {
-            const oldRow = prevMonthRows.find((pr) => pr.originalName === row.originalName);
+            const oldRow = prevEmployeeRowsMap.get(row.originalName);
             return { ...row, oldRow };
         };
 

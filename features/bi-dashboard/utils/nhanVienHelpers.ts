@@ -112,9 +112,17 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Recor
     const lines = String(data).split('\n');
 
     const normalizedEmployeeMap: Record<string, string> = {};
+    // O(1) cache cho fallback "tên rút gọn" (không có hậu tố " - Mã số") — trước đây quét tuyến tính
+    // O(số nhân viên) cho MỖI dòng không khớp tên chính xác, nay tra cứu 1 lần đã build sẵn.
+    const shortNamePrefixMap = new Map<string, string>();
     for (const fullName of Object.keys(employeeDepartmentMap)) {
         const norm = normalizeText(fullName);
         if (norm) normalizedEmployeeMap[norm] = fullName;
+        const dashIdx = norm.indexOf(' - ');
+        if (dashIdx > -1) {
+            const prefix = norm.slice(0, dashIdx);
+            if (!shortNamePrefixMap.has(prefix)) shortNamePrefixMap.set(prefix, fullName);
+        }
     }
 
     const findFullName = (shortName: string) => {
@@ -122,10 +130,7 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Recor
         if (!normalizedShort) return null;
         const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
         if (exactMatch) return exactMatch;
-        for (const [normFull, fullName] of Object.entries(normalizedEmployeeMap)) {
-            if (normFull.startsWith(normalizedShort + " - ")) return fullName;
-        }
-        return null;
+        return shortNamePrefixMap.get(normalizedShort) ?? null;
     };
 
     const empMap = new Map<string, CrossSellingRow>();
@@ -269,9 +274,17 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     });
 
     const normalizedEmployeeMap: Record<string, string> = {};
+    // O(1) cache cho fallback "tên rút gọn" (không có hậu tố " - Mã số") — trước đây quét tuyến tính
+    // O(số nhân viên) cho MỖI dòng không khớp tên chính xác, nay tra cứu 1 lần đã build sẵn.
+    const shortNamePrefixMap = new Map<string, string>();
     for (const fullName of Object.keys(employeeDepartmentMap)) {
         const norm = normalizeText(fullName);
         if (norm) normalizedEmployeeMap[norm] = fullName;
+        const dashIdx = norm.indexOf(' - ');
+        if (dashIdx > -1) {
+            const prefix = norm.slice(0, dashIdx);
+            if (!shortNamePrefixMap.has(prefix)) shortNamePrefixMap.set(prefix, fullName);
+        }
     }
 
     const findFullName = (shortName: string) => {
@@ -279,10 +292,7 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         if (!normalizedShort) return null;
         const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
         if (exactMatch) return exactMatch;
-        for (const [normFull, fullName] of Object.entries(normalizedEmployeeMap)) {
-            if (normFull.startsWith(normalizedShort + " - ")) return fullName;
-        }
-        return null;
+        return shortNamePrefixMap.get(normalizedShort) ?? null;
     };
 
     const empMap = new Map<string, InstallmentRow>();

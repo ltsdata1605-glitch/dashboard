@@ -22,7 +22,7 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 
-
+const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
 const RevenueView: React.FC<{
     rows: RevenueRow[];
@@ -80,7 +80,6 @@ const RevenueView: React.FC<{
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
     const cardRef = useRef<HTMLDivElement>(null);
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
     useEffect(() => {
         const loadSnapshotData = async () => {

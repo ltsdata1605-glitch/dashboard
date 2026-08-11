@@ -166,10 +166,21 @@ export const parseEmployeeCompetitionTargets = (
         const competitionTargetsData = smData?.competitionTargets;
         const departmentWeightsData = smData?.departmentWeights;
         let currentComp: { name: string, targetIdx: number } | null = null;
-        
+        const shortSm = shortenSupermarketName(sm);
+
+        // empWeights/totalW chỉ phụ thuộc departmentWeightsData (cố định theo sm), không đổi giữa
+        // các dòng target khác nhau của cùng siêu thị — tính 1 lần/sm thay vì mỗi dòng khớp.
+        let totalW = 0;
+        const empWeights = new Map<string, number>();
+        allEmployees.forEach(emp => {
+            const w = departmentWeightsData?.[emp.department] ?? (100 / allEmployees.length);
+            empWeights.set(emp.originalName, w);
+            totalW += w;
+        });
+
         for (const line of lines) {
             const parts = line.split('\t').map(p => p.trim());
-            
+
             if (parts.length > 2) {
                 const p1 = parts[1].toUpperCase();
                 const isMetric = ['DTLK', 'DTQĐ', 'SLLK', 'DT REALTIME', 'SL REALTIME', 'DT REALTIME (QĐ)'].some(m => p1.includes(m));
@@ -184,30 +195,20 @@ export const parseEmployeeCompetitionTargets = (
                     }
                 }
             }
-            
-            if (currentComp && shortenSupermarketName(parts[0]) === shortenSupermarketName(sm)) {
+
+            if (currentComp && shortenSupermarketName(parts[0]) === shortSm) {
                 const targetValRaw = parts[currentComp.targetIdx];
-                if (targetValRaw) {
+                if (targetValRaw && totalW > 0) {
                     const baseTarget = parseNumber(targetValRaw);
                     const slider = competitionTargetsData?.[currentComp.name] ?? 100;
                     const adjTarget = baseTarget * (slider / 100);
-                    
-                    let totalW = 0;
-                    const empWeights = new Map<string, number>();
-                    allEmployees.forEach(emp => { 
-                        const w = departmentWeightsData?.[emp.department] ?? (100 / allEmployees.length); 
-                        empWeights.set(emp.originalName, w); 
-                        totalW += w; 
+
+                    if (!targets.has(currentComp.name)) targets.set(currentComp.name, new Map());
+                    const compT = targets.get(currentComp.name)!;
+                    allEmployees.forEach(emp => {
+                        const existing = compT.get(emp.originalName) || 0;
+                        compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW)));
                     });
-                    
-                    if (totalW > 0) {
-                        if (!targets.has(currentComp.name)) targets.set(currentComp.name, new Map());
-                        const compT = targets.get(currentComp.name)!;
-                        allEmployees.forEach(emp => { 
-                            const existing = compT.get(emp.originalName) || 0;
-                            compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW))); 
-                        });
-                    }
                 }
             }
         }

@@ -145,48 +145,53 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         return rankings;
     }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets, showPercent]);
 
-    // Helper to calculate "Tổng BOT" for an employee (number of categories below column average)
-    const getEmployeeTongBot = (empName: string, empOriginalName: string) => {
-        let count = 0;
-        visibleHeaders.forEach(header => {
-            const actual = employeeDataMap.get(empName)?.values[header.title] ?? 0;
-            const target = employeeCompetitionTargets.get(header.originalTitle)?.get(empOriginalName) ?? 0;
-            const ht = target > 0 ? (actual / target) * 100 : 0;
-            const averages = columnAverages[header.title];
-            if (averages) {
-                if (showPercent) {
-                    if (ht < averages.percent) {
-                        count++;
-                    }
-                } else {
-                    if (actual < averages.actual) {
-                        count++;
+    // "Tổng BOT" (số hạng mục dưới trung bình cột) và "NoSale" (số hạng mục actual=0) cho mỗi nhân
+    // viên — tính 1 lần thành Map thay vì gọi lại hàm quét toàn bộ visibleHeaders ở ~5 nơi render
+    // khác nhau mỗi lần re-render (sort cột, filter, đổi tên bảng...).
+    const employeeTongBotMap = useMemo(() => {
+        const map = new Map<string, number>();
+        employees.forEach(emp => {
+            let count = 0;
+            visibleHeaders.forEach(header => {
+                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
+                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const ht = target > 0 ? (actual / target) * 100 : 0;
+                const averages = columnAverages[header.title];
+                if (averages) {
+                    if (showPercent) {
+                        if (ht < averages.percent) count++;
+                    } else {
+                        if (actual < averages.actual) count++;
                     }
                 }
-            }
+            });
+            map.set(emp.name, count);
         });
-        return count;
-    };
+        return map;
+    }, [employees, visibleHeaders, columnAverages, employeeDataMap, employeeCompetitionTargets, showPercent]);
+    const getEmployeeTongBot = (empName: string, _empOriginalName: string) => employeeTongBotMap.get(empName) ?? 0;
 
-    // Helper to calculate "NoSale" for an employee (number of categories with actual value = 0)
-    const getEmployeeNoSale = (empName: string) => {
-        let count = 0;
-        visibleHeaders.forEach(header => {
-            const actual = employeeDataMap.get(empName)?.values[header.title] ?? 0;
-            if (actual === 0) {
-                count++;
-            }
+    const employeeNoSaleMap = useMemo(() => {
+        const map = new Map<string, number>();
+        employees.forEach(emp => {
+            let count = 0;
+            visibleHeaders.forEach(header => {
+                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
+                if (actual === 0) count++;
+            });
+            map.set(emp.name, count);
         });
-        return count;
-    };
+        return map;
+    }, [employees, visibleHeaders, employeeDataMap]);
+    const getEmployeeNoSale = (empName: string) => employeeNoSaleMap.get(empName) ?? 0;
 
     // Calculate the threshold for TOP 30% of TỔNG BOT (excluding 0 values)
     const tongBotRedCutoff = useMemo(() => {
-        const botValues = employees.map(emp => getEmployeeTongBot(emp.name, emp.originalName));
+        const botValues = employees.map(emp => employeeTongBotMap.get(emp.name) ?? 0);
         botValues.sort((a, b) => b - a); // descending order
         const thresholdIndex = Math.max(0, Math.ceil(employees.length * 0.3) - 1);
         return botValues[thresholdIndex] ?? 0;
-    }, [employees, columnAverages, employeeDataMap, employeeCompetitionTargets, showPercent]);
+    }, [employees, employeeTongBotMap]);
 
     // Sort employees list based on current sortConfig - Luôn mặc định quay về tongBot asc
     const sortedEmployees = useMemo(() => {

@@ -174,8 +174,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
             }
             const now = new Date();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe); 
-            const newAugmentedData = JSON.parse(JSON.stringify(competitionRealtimeBySupermarket));
+            const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe);
+            const newAugmentedData = structuredClone(competitionRealtimeBySupermarket);
             const programTotalTargets: Record<string, number> = {};
 
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
@@ -244,7 +244,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const daysPassed = now.getDate();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe);
-            const newAugmentedData = JSON.parse(JSON.stringify(competitionLuyKeBySupermarket));
+            const newAugmentedData = structuredClone(competitionLuyKeBySupermarket);
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
 
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
