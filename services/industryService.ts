@@ -15,7 +15,7 @@ export function processIndustryData(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
 
         const childGroup = getSubgroup(maNhomHang, productConfig);
-        const displayParentGroup = row._parentGroup || getDisplayParentGroup(maNhomHang, productConfig);
+        const displayParentGroup = getDisplayParentGroup(maNhomHang, productConfig);
 
         const isSubgroupSelected = filters.industryGrid.selectedSubgroups.length === 0 || (childGroup && filters.industryGrid.selectedSubgroups.includes(childGroup));
         if (isSubgroupSelected) {
