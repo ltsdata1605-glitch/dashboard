@@ -252,15 +252,15 @@ function AppContent() {
                     <PendingApprovalBanner />
 
                     {/* Global Page Header */}
-                    <div className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 lg:border-b border-slate-200/60 dark:border-slate-700/60">
-                        <div className="flex items-center justify-end lg:justify-between gap-4 w-full flex-wrap">
+                    <div className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
+                        <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
                                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                                     {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
                                 </h1>
                             </div>
-                            <div id="global-header-actions" className="flex items-center z-50 overflow-visible flex-1 justify-end pb-1 lg:pb-0"></div>
+                            <div id="global-header-actions" className="flex items-center z-50 overflow-visible shrink-0 justify-end pb-1 lg:pb-0"></div>
                         </div>
                     </div>
 

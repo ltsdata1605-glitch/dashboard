@@ -549,7 +549,6 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
-                th.style.setProperty('max-width', '80px', 'important');
                 th.style.setProperty('min-width', '55px', 'important');
             }
             
@@ -905,6 +904,25 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         captureContainer.style.height = 'auto';
     }
     
+    // Remove artificial outer border box on clone root to prevent nested double borders
+    clone.style.border = 'none';
+    clone.style.borderRadius = '0';
+
+    // Remove redundant inner borders on table overflow wrappers inside cards
+    clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
+        if (el instanceof HTMLElement) {
+            el.style.setProperty('border', 'none', 'important');
+            el.style.setProperty('box-shadow', 'none', 'important');
+        }
+    });
+
+    // Remove redundant box-shadows from all cloned children for crisp single-border rendering
+    clone.querySelectorAll<HTMLElement>('*').forEach((el) => {
+        if (el instanceof HTMLElement && el.style) {
+            el.style.setProperty('box-shadow', 'none', 'important');
+        }
+    });
+    
     const shouldCompactTable = captureAsDisplayed ? false : isCompactTable;
     if (shouldCompactTable) {
         const tables = clone.querySelectorAll('table');
@@ -922,12 +940,6 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // ═══════════════════════════════════════════════════════════════════════
     // EXPORT PADDING OPTIMIZATION: Strip excessive inner padding for thin borders
     // ═══════════════════════════════════════════════════════════════════════
-    const isDarkForBorder = document.documentElement.classList.contains('dark');
-    const borderColor = isDarkForBorder ? '#334155' : '#e2e8f0';
-
-    // Add thin border around the entire exported image
-    clone.style.border = `1px solid ${borderColor}`;
-    clone.style.borderRadius = '0';
 
     // Strip padding from .chart-card elements (they have p-6 = 24px by default)
     clone.querySelectorAll<HTMLElement>('.chart-card').forEach((el) => {

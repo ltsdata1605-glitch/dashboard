@@ -49,19 +49,19 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
     return (
         <label
             htmlFor={`switch-${label}`}
-            className={`flex items-center cursor-pointer justify-between w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
+            className={`flex items-center cursor-pointer justify-between w-full px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
         >
             <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className={`p-0.5 sm:p-1 rounded-md sm:rounded-lg transition-colors ${classes.iconBg}`}>
                     <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
                     <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-bold text-[9px] xs:text-[10px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-medium text-[9px] xs:text-[10px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
-                <div className={`block w-8 h-[18px] sm:w-9 sm:h-5 rounded-full transition-colors ${classes.switchBg}`}></div>
-                <div className={`dot absolute left-[3px] top-[3px] bg-white w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-[14px] sm:translate-x-[16px]' : ''}`}></div>
+                <div className={`block w-7 h-4 sm:w-7.5 sm:h-4 rounded-full transition-colors ${classes.switchBg}`}></div>
+                <div className={`dot absolute left-[2px] top-[2px] bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-[12px] sm:translate-x-[14px]' : ''}`}></div>
             </div>
         </label>
     );
@@ -288,7 +288,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="warehouse" size={3} className="sm:hidden" />
                                     <Icon name="warehouse" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Kho Tạo</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Kho Tạo" 
@@ -306,7 +306,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="calendar" size={3} className="sm:hidden" />
                                     <Icon name="calendar" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tháng</label>
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Tháng</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Tháng" 
@@ -331,7 +331,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="user" size={3} className="sm:hidden" />
                                     <Icon name="user" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
+                                <label className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Người Tạo</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Người Tạo" 
@@ -349,7 +349,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="file-text" size={3} className="sm:hidden" />
                                     <Icon name="file-text" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
+                                <label className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Trạng thái hồ sơ</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Trạng thái hồ sơ" 
@@ -367,7 +367,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="truck" size={3} className="sm:hidden" />
                                     <Icon name="truck" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">T.Thái Xuất</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="T.Thái Xuất" 
@@ -393,7 +393,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     <Icon name="users" size={3} className="sm:hidden" />
                                     <Icon name="users" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Bộ phận</label>
+                                <label className="block text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Bộ phận</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Bộ phận" 
@@ -408,7 +408,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     {/* Date Selection */}
                     <div className="space-y-2 sm:space-y-3 pt-1 px-1">
                         <div className="space-y-1 sm:space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
+                            <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
                             <div className="grid grid-cols-5 gap-1">
                                 {[
                                     { range: 'today', label: 'H.Nay' }, { range: 'yesterday', label: 'H.Qua' },
@@ -419,7 +419,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                         variant="unstyled" size="none"
                                         key={range}
                                         onClick={() => handleDateRangeClick(range)}
-                                        className={`h-9 text-[9px] xs:text-[10px] sm:text-xs font-semibold rounded-md transition-all border flex items-center justify-center text-center px-0.5 ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
+                                        className={`h-9 text-[9px] xs:text-[10px] sm:text-xs font-medium rounded-md transition-all border flex items-center justify-center text-center px-0.5 ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
                                     >
                                         {label}
                                     </Button>
@@ -429,7 +429,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Từ ngày</label>
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest ml-1">Từ ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.startDate} 
@@ -438,7 +438,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Đến ngày</label>
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest ml-1">Đến ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.endDate} 
@@ -451,7 +451,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
                     {/* Section Visibility */}
                     <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 px-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
+                        <label className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
                         <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch

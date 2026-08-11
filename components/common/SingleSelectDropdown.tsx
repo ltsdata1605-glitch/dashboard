@@ -75,14 +75,14 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
         // We always use the text-[10px] with uppercase and tracking-wider to match other inputs.
         // If variant=compact OR there is no selection, show it plainly (with indigo color if selected)
         if (!hasSelection || variant === 'compact') {
-            return <span className={`font-black uppercase tracking-wider whitespace-nowrap text-[10px] ${hasSelection ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>
+            return <span className={`font-medium uppercase tracking-wider whitespace-nowrap text-[10px] ${hasSelection ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>
                 {variant === 'compact' && hasSelection && selectedLabel !== 'Tất cả' ? selectedLabel : label}
             </span>;
         }
 
         // Default variant with a selection shows a pill
         return (
-            <span className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] px-1.5 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50 font-bold max-w-[120px] truncate">
+            <span className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] px-1.5 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50 font-medium max-w-[120px] truncate">
                 {selectedLabel}
             </span>
         );

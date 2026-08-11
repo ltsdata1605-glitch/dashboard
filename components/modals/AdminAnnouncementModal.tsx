@@ -21,15 +21,19 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
     const [active, setActive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch active announcement settings when modal opens
+    // Fetch active announcement settings ONCE when modal opens
     useEffect(() => {
-        if (isOpen) {
-            const q = query(
-                collection(db, 'shared_configs'),
-                orderBy('createdAt', 'desc'),
-                limit(100)
-            );
-            const unsub = onSnapshot(q, (snapshot) => {
+        if (!isOpen) return;
+
+        let hasInitialized = false;
+        const q = query(
+            collection(db, 'shared_configs'),
+            orderBy('createdAt', 'desc'),
+            limit(50)
+        );
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            if (!hasInitialized) {
                 let found: { content?: string; active?: boolean; isSystemAnnouncement?: boolean } | null = null;
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
@@ -44,11 +48,13 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                     setContent('');
                     setActive(false);
                 }
-            }, (error) => {
-                console.error("Lỗi khi đọc thông báo admin:", error);
-            });
-            return () => unsub();
-        }
+                hasInitialized = true;
+            }
+        }, (error) => {
+            console.error("Lỗi khi đọc thông báo admin:", error);
+        });
+
+        return () => unsub();
     }, [isOpen]);
 
     const handleSave = async (e: React.FormEvent) => {
@@ -60,7 +66,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
         setIsLoading(true);
         try {
             const sharedConfigsRef = collection(db, 'shared_configs');
-            await addDoc(sharedConfigsRef, {
+            const savePromise = addDoc(sharedConfigsRef, {
                 uid: user.uid,
                 authorName: user.displayName || 'Super Admin',
                 authorEmail: user.email,
@@ -72,12 +78,18 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 active: active,
                 createdAt: serverTimestamp()
             });
+
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Mạng chập chờn, vui lòng thử lại")), 10000)
+            );
+
+            await Promise.race([savePromise, timeoutPromise]);
             
             toast.success("Đã cập nhật thông báo hệ thống!");
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Lỗi khi lưu thông báo admin:", error);
-            toast.error("Cập nhật thông báo thất bại");
+            toast.error(error.message || "Cập nhật thông báo thất bại");
         } finally {
             setIsLoading(false);
         }
@@ -105,32 +117,34 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                     />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl">
+                <label
+                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl cursor-pointer select-none transition-all hover:brightness-95"
+                >
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-lg shrink-0">
                             <Icon name="megaphone" size={4} />
                         </div>
                         <div>
                             <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">Kích hoạt thông báo</span>
-                            <span className="block text-[10px] text-slate-400">Hiển thị đường chạy ngang dưới tiêu đề Phân Tích</span>
+                            <span className="block text-[10px] text-slate-400 dark:text-slate-500">Hiển thị đường chạy ngang dưới tiêu đề Phân Tích</span>
                         </div>
                     </div>
                     
-                    <Button
-                        type="button"
-                        variant="unstyled" size="none"
-                        onClick={() => setActive(!active)}
-                        className={`justify-start relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            active ? 'bg-rose-600' : 'bg-slate-200 dark:bg-slate-700'
-                        }`}
-                    >
-                        <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                active ? 'translate-x-5' : 'translate-x-0'
-                            }`}
+                    <div className="relative">
+                        <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={active}
+                            onChange={(e) => setActive(e.target.checked)}
                         />
-                    </Button>
-                </div>
+                        <div className={`block w-11 h-6 rounded-full transition-colors duration-200 ease-in-out ${
+                            active ? 'bg-rose-600' : 'bg-slate-200 dark:bg-slate-700'
+                        }`} />
+                        <div className={`dot absolute left-[2px] top-[2px] bg-white shadow w-5 h-5 rounded-full transition-transform duration-200 ease-in-out ${
+                            active ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                    </div>
+                </label>
 
                 <div className="flex justify-end gap-3 pt-2">
                     <Button

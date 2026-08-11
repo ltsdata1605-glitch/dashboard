@@ -358,7 +358,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                 </div>
             )}
 
-            <div className="w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
+            <div className="w-full mx-auto p-0 sm:p-2 lg:p-3 xl:px-8 xl:py-1">
                 <DashboardContext.Provider value={logic}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
@@ -373,6 +373,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         fileInfo={fileInfo}
                         onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
                         onSelectHistoryFile={handleFileProcessing}
+                        onOpenHistory={() => setIsFileHistoryModalOpen(true)}
                     />
 
                     {status.message && status.type === 'error' && <StatusDisplay status={status} />}
@@ -428,8 +429,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {showDashboard && (
                         <>
                             <FilterProcessingOverlay isVisible={isFilterProcessing} />
+                            <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
-                                <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-3 lg:space-y-6">
+                                <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-0.5 lg:py-1 space-y-3 lg:space-y-4">
+
                                     {/* Super Admin Announcement Marquee */}
                                     {announcement && announcement.active && announcement.content && (
                                         <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[10px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
@@ -437,14 +440,13 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 <Icon name="megaphone" size={4} className="animate-bounce shrink-0" />
                                                 <span className="uppercase tracking-wider text-[10px] font-black">Thông báo</span>
                                             </div>
-                                            <div className="flex-1 overflow-hidden whitespace-nowrap">
-                                                <div className="inline-block animate-marquee pl-[100%]">
+                                            <div className="flex-1 overflow-hidden relative h-5 flex items-center">
+                                                <div className="absolute whitespace-nowrap animate-marquee will-change-transform text-rose-50 dark:text-rose-100">
                                                     {announcement.content}
                                                 </div>
                                             </div>
                                         </div>
                                     )}
-                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
 
                                     {/* Data Coverage Indicator */}
                                     <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">

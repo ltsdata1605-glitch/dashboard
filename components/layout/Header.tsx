@@ -24,6 +24,7 @@ interface HeaderProps {
     fileInfo: { filename: string; savedAt: string } | null;
     onToggleFilters?: () => void;
     onSelectHistoryFile?: (files: File[]) => void;
+    onOpenHistory?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -35,7 +36,8 @@ const Header: React.FC<HeaderProps> = ({
     showNewFileButton, 
     fileInfo, 
     onToggleFilters,
-    onSelectHistoryFile 
+    onSelectHistoryFile,
+    onOpenHistory
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
@@ -78,8 +80,8 @@ const Header: React.FC<HeaderProps> = ({
                 <div 
                     className="w-full bg-rose-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
                 >
-                    <div className="flex-1 overflow-hidden whitespace-nowrap">
-                        <div className="inline-block animate-marquee pl-[100%]">
+                    <div className="flex-1 overflow-hidden relative h-5 flex items-center">
+                        <div className="absolute whitespace-nowrap animate-marquee will-change-transform">
                             ⚠️ Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."}
                         </div>
                     </div>
@@ -160,9 +162,20 @@ const Header: React.FC<HeaderProps> = ({
                                 className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
-                                <Icon name="file-up" size={4} />
+                                <Icon name="upload" size={4} />
                                 <span>File YCX</span>
                             </Button>
+                            {onOpenHistory && (
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={onOpenHistory}
+                                    id="btn-desktop-history"
+                                    title="Quản lý tệp đã lưu (Lũy kế)"
+                                    className="flex items-center justify-center p-2 text-rose-600 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 border-l border-slate-100 dark:border-slate-700 transition-colors"
+                                >
+                                    <Icon name="database" size={4} />
+                                </Button>
+                            )}
                         </>
                     )}
                     <a 
@@ -180,6 +193,20 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                 </div>
                 
+                {/* Settings Group - Standalone pill like Notification */}
+                {onToggleFilters && (
+                    <div className="flex items-center rounded-full bg-sky-500 hover:bg-sky-600 text-white shadow-sm transition-all active:scale-95">
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onToggleFilters}
+                            title="Bộ lọc nâng cao / Tuỳ chỉnh"
+                            className="flex items-center justify-center p-2 text-white rounded-full"
+                        >
+                            <Icon name="settings" size={4} />
+                        </Button>
+                    </div>
+                )}
+
                 {/* Notification Group */}
                 <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
                     <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
