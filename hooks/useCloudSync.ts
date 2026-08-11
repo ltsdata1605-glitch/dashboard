@@ -34,6 +34,13 @@ export const useCloudSync = () => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const debounceSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const heavyTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
+    // BUG FIX: onSnapshot(configsCollRef) luôn bắn 1 lượt 'added' cho TOÀN BỘ doc hiện có ngay khi
+    // listener vừa gắn (hành vi chuẩn của Firestore, không phải thay đổi thật) — nếu không phân biệt,
+    // lượt đồng bộ khởi động bình thường (mở app 1 tab duy nhất) cũng bị hiểu nhầm thành "tab khác vừa
+    // sửa", hiện toast hỏi xác nhận dù không có gì để tải lại (data đã đúng sẵn). Chỉ lượt bắn ĐẦU
+    // TIÊN của listener mới coi là đồng bộ khởi động (áp dụng ngay, không hỏi); các lượt SAU mới là
+    // thay đổi thật từ tab/thiết bị khác đang mở sống cùng lúc.
+    const isInitialConfigsSnapshotRef = useRef(true);
     // Coalesce (in-flight/pending) + hàng đợi ghi tuần tự dùng chung cho MỌI khóa nặng đã chuyển
     // xuống services/firestoreService.ts (syncHeavySettingToCloudQueued/isHeavyKeyInFlight) —
     // module-level singleton, không phải React ref, để hooks/useDataManagement.ts (hook khác,
@@ -181,6 +188,10 @@ export const useCloudSync = () => {
 
             const configsCollRef = collection(db, 'users', user.uid, 'configs');
             unsubConfigs = onSnapshot(configsCollRef, async (snapshot) => {
+                // Chốt ngay đầu lượt gọi: lượt NÀY có phải lượt bắn đầu tiên của listener không (đồng
+                // bộ khởi động) — xem giải thích ở khai báo isInitialConfigsSnapshotRef phía trên.
+                const isInitialSnapshot = isInitialConfigsSnapshotRef.current;
+                isInitialConfigsSnapshotRef.current = false;
                 for (const change of snapshot.docChanges()) {
                     if (change.type === 'added' || change.type === 'modified') {
                         const docSnap = change.doc;
@@ -235,7 +246,15 @@ export const useCloudSync = () => {
                                     // an toàn vào IndexedDB ở dòng trên + saveCheckThuongDataToIframeDb —
                                     // không mất dữ liệu — chỉ đổi tên sự kiện để CheckThuongView HỎI người
                                     // dùng trước khi áp dụng vào UI, thay vì tự động.
-                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-update-available'));
+                                    //
+                                    // BUG FIX #2: lượt bắn ĐẦU TIÊN của listener (đồng bộ khởi động khi mới mở
+                                    // app, không phải tab khác vừa sửa) vẫn phải phát tên sự kiện CŨ (áp dụng
+                                    // ngay) — nếu không, mở app bình thường cũng hiện toast hỏi "tab khác vừa
+                                    // sửa" dù chẳng có tab nào khác, và bấm "Tải lại" không thấy đổi gì vì dữ
+                                    // liệu vốn đã đúng sẵn (đây chính là lỗi user báo cáo).
+                                    window.dispatchEvent(new CustomEvent(
+                                        isInitialSnapshot ? 'check-thuong-cloud-sync' : 'check-thuong-cloud-update-available'
+                                    ));
                                 } catch (err) {
                                     console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                 }

@@ -2528,3 +2528,13 @@ File gốc dùng ngôn ngữ màu Tailwind mặc định (gray/blue/purple/green
 
 **Giới hạn môi trường**: không có trình duyệt/công cụ chụp ảnh khả dụng trong môi trường này (đã xác nhận không có `chromium-cli`, không cài được `playwright`) — **màu sắc CHƯA được xác minh trực quan**, cần user tự mở Check Thưởng kiểm tra bằng mắt trước khi coi là hoàn tất.
 
+### Mục 71d — Sửa tiếp: toast "cập nhật ở nơi khác" nổ sai khi mở app bình thường (1 tab duy nhất), bấm "Tải lại" không thấy đổi gì
+
+User test thực tế Mục 71b báo lỗi: mở Check Thưởng bình thường (không hề mở 2 tab) đã thấy toast "Dữ liệu vừa được cập nhật ở nơi khác", bấm "Tải lại dữ liệu mới" không có gì thay đổi.
+
+**Root cause**: `onSnapshot(configsCollRef, ...)` của Firestore luôn bắn 1 lượt callback với TOÀN BỘ document hiện có dưới dạng `change.type === 'added'` ngay tại thời điểm listener vừa gắn (hành vi chuẩn của Firestore SDK — không phải có ai vừa ghi thật) — đây chính là lượt đồng bộ khởi động bình thường. Mục 71b đổi tên sự kiện dispatch cho `checkthuong_data` thành `check-thuong-cloud-update-available` (hỏi xác nhận) mà không phân biệt lượt bắn ĐẦU TIÊN (khởi động) với các lượt SAU (thay đổi thật từ tab/thiết bị khác đang mở sống) — nên mở app 1 tab cũng bị hỏi xác nhận thừa, và bấm "Tải lại" không thấy đổi vì dữ liệu vốn đã đúng sẵn từ luồng boot bình thường.
+
+**Fix**: `hooks/useCloudSync.ts` thêm `isInitialConfigsSnapshotRef` (mặc định `true`), chốt giá trị `isInitialSnapshot` ngay đầu mỗi lượt gọi callback rồi lập tức đặt ref về `false` (chỉ lượt gọi đầu tiên của listener mới được coi là khởi động). Nhánh `checkthuong_data` dispatch có điều kiện: `isInitialSnapshot` → vẫn phát tên sự kiện CŨ `check-thuong-cloud-sync` (áp dụng ngay, không hỏi — đúng như hành vi boot trước đây); ngược lại mới phát `check-thuong-cloud-update-available` (hỏi xác nhận — chỉ dành cho tab/thiết bị khác đang mở sống thật sự ghi đè lúc mình đang xem).
+
+**Verify**: `npm run check` sạch. Chưa test lại thực tế đa tab (môi trường không có trình duyệt) — cần user xác nhận: (1) mở app bình thường 1 tab không còn thấy toast thừa, (2) mở thật 2 tab/thiết bị và sửa ở 1 bên vẫn thấy toast xuất hiện đúng lúc + bấm "Tải lại dữ liệu mới" cập nhật đúng số liệu mới.
+
