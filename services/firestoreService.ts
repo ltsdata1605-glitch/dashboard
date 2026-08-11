@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp, type DocumentReference } from 'firebase/firestore';
 import { db } from './firebase';
+import { getSetting } from './dbService';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
 
@@ -379,6 +380,57 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
             return stale.length > 0 ? Promise.all(stale.map(d => deleteDoc(d.ref))) : undefined;
         })
         .catch(err => console.warn(`[Heavy Sync] Không dọn được chunk dư của "${key}":`, err));
+};
+
+// BUG FIX (rà soát Check Thưởng, tiếp nối Mục 60 implementation_plan.md): cơ chế coalesce +
+// hàng đợi tuần tự cho khóa nặng trước đây chỉ tồn tại dưới dạng React ref BÊN TRONG hook
+// useCloudSync() (1 instance/tab qua SyncContext). Nhưng hooks/useDataManagement.ts (hook KHÁC,
+// mount riêng ở useDashboardLogic.ts) có 1 nhánh đối chiếu lúc boot app gọi thẳng
+// syncHeavySettingToCloud() KHÔNG qua ref đó — nếu đúng lúc app khởi động, nhánh đối chiếu phát
+// hiện 1 khóa nặng cần đẩy lên (vd còn nợ đồng bộ từ phiên trước) TRÙNG thời điểm 1 khóa KHÁC vừa
+// đổi và hết debounce 2s trong useCloudSync, 2 lượt ghi Firestore (mỗi lượt có thể là batch nhiều
+// chunk) chạy THỰC SỰ song song, ngoài tầm kiểm soát của hàng đợi — tái hiện đúng lớp lỗi "Write
+// stream exhausted maximum allowed queued writes" mà Mục 60 đã fix (khi đó chỉ fix trong phạm vi
+// useCloudSync.ts). Chuyển toàn bộ cơ chế xuống đây (module-level singleton, sống hết vòng đời
+// tab, không phải React ref) để MỌI nơi gọi — dù từ hook nào — đều tự động qua ĐÚNG 1 hàng đợi
+// duy nhất. `heavyWriteQueueRef` cũ trong useCloudSync.ts nối tiếp CẢ CÁC KHÓA KHÁC NHAU thành 1
+// hàng (không cho 2 khóa bất kỳ ghi song song) — giữ nguyên đúng ngữ nghĩa đó ở đây.
+const heavyInFlight: Record<string, boolean> = {};
+const heavyPending: Record<string, boolean> = {};
+let heavyWriteQueue: Promise<void> = Promise.resolve();
+
+/** Có đang có 1 lượt ghi thật sự bay lên Firestore cho khóa này không (không tính đang chờ debounce). */
+export const isHeavyKeyInFlight = (key: string): boolean => !!heavyInFlight[key];
+
+/**
+ * Đọc giá trị mới nhất từ IndexedDB rồi đồng bộ lên Firestore qua hàng đợi tuần tự dùng chung cho
+ * MỌI khóa nặng (không cho 2 lượt ghi bất kỳ chạy song song, coalesce nhiều lần đổi liên tiếp của
+ * CÙNG 1 khóa thành đúng 1 lượt ghi cuối). Không throw — lỗi tự bắt + log, giống hệt hành vi cũ.
+ * Fire-and-forget theo đúng cách các call site hiện tại đang dùng (không ai await kết quả).
+ */
+export const syncHeavySettingToCloudQueued = (user: User, key: string): void => {
+    if (heavyInFlight[key]) {
+        // Đã có 1 lượt ghi khóa này đang bay lên Firestore — không xếp chồng thêm, chỉ nhớ để
+        // đồng bộ lại 1 lần nữa (đọc giá trị MỚI NHẤT) ngay sau khi lượt hiện tại xong.
+        heavyPending[key] = true;
+        return;
+    }
+    heavyInFlight[key] = true;
+    heavyWriteQueue = heavyWriteQueue.then(async () => {
+        try {
+            do {
+                heavyPending[key] = false;
+                const value = await getSetting(key);
+                if (value !== null) {
+                    await syncHeavySettingToCloud(user, key, value);
+                }
+            } while (heavyPending[key]);
+        } catch (err) {
+            console.error(`[Heavy Sync] Đồng bộ khóa nặng "${key}" thất bại:`, err);
+        } finally {
+            heavyInFlight[key] = false;
+        }
+    });
 };
 
 export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<string, { value: unknown, updatedAt: number }>> => {

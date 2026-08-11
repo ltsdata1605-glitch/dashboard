@@ -210,7 +210,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 // 2. Background Cloud Sync (Settings + Sales Data)
                 if (user && !isDemoMode) {
                     // 2a. Settings sync (existing firestoreService)
-                    import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey }) => {
+                    import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloudQueued, HEAVY_SYNC_KEYS, isHeavySyncKey }) => {
                         try {
                             const [cloudData, heavyCloudData] = await Promise.all([
                                 fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); return null; }),
@@ -291,8 +291,17 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                     window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
                                 } else if (localTime > cloudTime) {
                                     console.warn(`[Cloud Sync] Local mới hơn Cloud cho khóa nặng "${key}" (${localTime} > ${cloudTime}). Đang đồng bộ lên...`);
+                                    // BUG FIX: trước đây gọi thẳng syncHeavySettingToCloud() ở đây, bỏ
+                                    // qua hàng đợi tuần tự dùng chung của hooks/useCloudSync.ts (hook
+                                    // khác, mount riêng) — nếu đúng lúc app khởi động, nhánh đối chiếu
+                                    // này VÀ nhánh debounce của useCloudSync cùng ghi 2 khóa nặng khác
+                                    // nhau, có thể chạy Firestore write thật sự song song, tái hiện lỗi
+                                    // "Write stream exhausted" (xem comment ở services/firestoreService.ts
+                                    // nơi định nghĩa syncHeavySettingToCloudQueued). Đổi sang gọi qua
+                                    // đúng hàng đợi dùng chung — tự đọc lại giá trị mới nhất từ IndexedDB
+                                    // nên không cần truyền localValue nữa.
                                     if (localValue !== null) {
-                                        await syncHeavySettingToCloud(user, key, localValue);
+                                        syncHeavySettingToCloudQueued(user, key);
                                     }
                                 }
                             }
