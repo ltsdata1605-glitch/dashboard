@@ -34,7 +34,7 @@ type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'we
 
 const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
     const { userRole } = useAuth();
-    const { filterState, kpiTargets, processedData } = useDashboardContext();
+    const { filterState, kpiTargets, processedData, gtdhTargets, productConfig } = useDashboardContext();
     const state = useSummaryTableLogic();
     const [isBuilderOpen, setIsBuilderOpen] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
@@ -223,6 +223,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                           toggleExpand={toggleExpand}
                           localDrilldownOrder={localDrilldownOrder}
                           activeSortConfig={activeSortConfig}
+                          kpiTargets={kpiTargets}
                       />
                   ) : (
                   <table className="min-w-max w-full table-auto compact-export-table border-collapse tabular-nums" id="summary-table">
@@ -432,6 +433,9 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         parentQuantity={grandTotal.totalQuantity}
                                         visibleColumns={visibleColumns}
                                         daysCountData={daysCountData}
+                                        gtdhTargets={gtdhTargets}
+                                        productConfig={productConfig}
+                                        kpiTargets={kpiTargets}
                                     />
                                 ))
                             ) : (

@@ -2,12 +2,11 @@ import React from 'react';
 import type { SummaryTableNode } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
-import { useDashboardContext } from '../../contexts/DashboardContext';
 import { Button } from '../shared/ui/Button';
 
 interface MonthlyTrendTableRowProps {
     nodeKey: string;
-    trendNodes: { [monthId: string]: SummaryTableNode | undefined }; 
+    trendNodes: { [monthId: string]: SummaryTableNode | undefined };
     months: { id: string, label: string, daysCount: number }[];
     level: number;
     parentId: string;
@@ -18,6 +17,9 @@ interface MonthlyTrendTableRowProps {
     sortConfig: { column: string, direction: 'asc' | 'desc' };
     parentMonthlyQuantities: { [monthId: string]: number };
     parentMonthlyRevenues: { [monthId: string]: number };
+    // PERF FIX: nhận qua props thay vì tự gọi useDashboardContext() bên trong component đệ quy —
+    // xem comment tương ứng ở SummaryTableRow.tsx.
+    kpiTargets?: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number };
 }
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
@@ -36,10 +38,8 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 };
 
 export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.memo(({
-    nodeKey, trendNodes, months, level, parentId, expandedIds, toggleExpand, drilldownOrder, visibleColumns, sortConfig, parentMonthlyQuantities, parentMonthlyRevenues
+    nodeKey, trendNodes, months, level, parentId, expandedIds, toggleExpand, drilldownOrder, visibleColumns, sortConfig, parentMonthlyQuantities, parentMonthlyRevenues, kpiTargets
 }) => {
-    const { kpiTargets } = useDashboardContext() || {};
-    
     const currentId = `${parentId}-${nodeKey.replace(/[^a-zA-Z0-9]/g, '-')}`;
     const isExpanded = expandedIds.has(currentId);
     
@@ -253,6 +253,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                         sortConfig={sortConfig}
                         parentMonthlyQuantities={myMonthlyQuantities}
                         parentMonthlyRevenues={myMonthlyRevenues}
+                        kpiTargets={kpiTargets}
                     />
                 );
             })}

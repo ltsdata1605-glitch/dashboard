@@ -1,13 +1,12 @@
 
 import React from 'react';
-import type { SummaryTableNode } from '../../types';
+import type { SummaryTableNode, ProductConfig } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity, getParentGroup, getSubgroup } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
-import { useDashboardContext } from '../../contexts/DashboardContext';
 
 interface RecursiveRowProps {
     nodeKey: string;
-    currentNode?: SummaryTableNode; 
+    currentNode?: SummaryTableNode;
     prevNode?: SummaryTableNode;
     level: number;
     parentId: string;
@@ -21,6 +20,12 @@ interface RecursiveRowProps {
     parentQuantity: number; // Mới thêm: Số lượng của node cha để tính %SL
     visibleColumns: string[]; // State điều khiển Ẩn Hiện Cột
     daysCountData: { current: number; prev: number }; // Số ngày để tính Trung Bình
+    // PERF FIX: nhận qua props thay vì tự gọi useDashboardContext() bên trong component đệ quy —
+    // trước đây làm React.memo vô hiệu với context (mọi RecursiveRow đang mở re-render khi BẤT KỲ
+    // phần nào của DashboardContext đổi, kể cả không liên quan — xem implementation_plan.md).
+    gtdhTargets?: Record<string, number>;
+    productConfig?: ProductConfig | null;
+    kpiTargets?: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number };
 }
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
@@ -39,11 +44,9 @@ const ROW_TEXT_COLORS: Record<string, string> = {
     'product': 'text-indigo-700 dark:text-indigo-300'     // Violet
 };
 
-const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
-    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns, daysCountData
+const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
+    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns, daysCountData, gtdhTargets, productConfig, kpiTargets
 }) => {
-    const { gtdhTargets, productConfig, kpiTargets } = useDashboardContext() || {};
-    
     const currentId = `${parentId}-${nodeKey.replace(/[^a-zA-Z0-9]/g, '-')}`;
     const isExpanded = expandedIds.has(currentId);
     
@@ -392,6 +395,9 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     parentQuantity={quantity}
                     visibleColumns={visibleColumns}
                     daysCountData={daysCountData}
+                    gtdhTargets={gtdhTargets}
+                    productConfig={productConfig}
+                    kpiTargets={kpiTargets}
                 />
             ))}
         </>

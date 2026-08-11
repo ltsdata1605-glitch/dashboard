@@ -15,10 +15,13 @@ interface MonthlyTrendTableProps {
     toggleExpand: (id: string) => void;
     localDrilldownOrder: string[];
     activeSortConfig: { column: string, direction: 'asc' | 'desc' };
+    // PERF FIX: nhận qua props để truyền xuống MonthlyTrendTableRow (đệ quy) — xem comment
+    // tương ứng ở SummaryTableRow.tsx.
+    kpiTargets?: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number };
 }
 
 export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
-    trendData, displayKeys, visibleColumns, expandedIds, toggleExpand, localDrilldownOrder, activeSortConfig
+    trendData, displayKeys, visibleColumns, expandedIds, toggleExpand, localDrilldownOrder, activeSortConfig, kpiTargets
 }) => {
     const PIVOT_EXCLUDED_COLS = ['slPercent', 'dtThucPercent', 'avgQuantity', 'avgRevenue'];
     const pivotColumns = visibleColumns.filter(c => !PIVOT_EXCLUDED_COLS.includes(c));
@@ -87,6 +90,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                                 sortConfig={activeSortConfig}
                                 parentMonthlyQuantities={rootMonthlyQuantities}
                                 parentMonthlyRevenues={rootMonthlyRevenues}
+                                kpiTargets={kpiTargets}
                             />
                         );
                     })
