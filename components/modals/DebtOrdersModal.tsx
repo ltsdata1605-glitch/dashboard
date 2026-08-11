@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
@@ -92,16 +93,45 @@ const DebtOrdersModal: React.FC<DebtOrdersModalProps> = ({ isOpen, onClose, onEx
     const creatorRefs = useRef<{ [key: string]: HTMLDetailsElement | null }>({});
     const [isExporting, setIsExporting] = useState(false);
     const [isAllExpanded, setIsAllExpanded] = useState(false);
+    // PERF FIX: bảng đơn hàng của từng customer chỉ render khi thực sự cần (user tự mở, "Mở tất
+    // cả", hoặc trước khi xuất ảnh) — tránh mount hàng nghìn <tr> vào DOM ngay khi mở modal. Chỉ
+    // THÊM, không bao giờ gỡ khỏi Set sau khi đã render — tránh phức tạp/giật khi đóng lại.
+    const [renderedCustomerIds, setRenderedCustomerIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         creatorRefs.current = {};
+        setRenderedCustomerIds(new Set());
     }, [salesData]);
+
+    // Đồng bộ (flushSync) toàn bộ id customer cần thiết vào renderedCustomerIds TRƯỚC KHI trả về
+    // — dùng cho các thao tác đọc DOM native ngay sau đó (mở toàn bộ <details>, hoặc clone DOM để
+    // xuất ảnh qua forceOpenDetails).
+    const renderCustomersSync = (ids: string[]) => {
+        flushSync(() => {
+            setRenderedCustomerIds(prev => {
+                let changed = false;
+                const next = new Set(prev);
+                for (const id of ids) {
+                    if (!next.has(id)) { next.add(id); changed = true; }
+                }
+                return changed ? next : prev;
+            });
+        });
+    };
+
+    // Id customer đầy đủ (customer.name không đảm bảo duy nhất giữa các creator khác nhau).
+    const getAllCustomerIds = () => creatorData.flatMap(creator => creator.customers.map(c => `${creator.name}::${c.name}`));
+    const getCreatorCustomerIds = (creatorName: string) => {
+        const creator = creatorData.find(c => c.name === creatorName);
+        return creator ? creator.customers.map(c => `${creatorName}::${c.name}`) : [];
+    };
 
     const handleExportAll = async () => {
         const elementToExport = modalBodyRef.current;
         if (elementToExport) {
             setIsExporting(true);
             showExportOverlay('Đang xuất ảnh toàn bộ...');
+            renderCustomersSync(getAllCustomerIds());
             await onExport(elementToExport, `don-hang-con-no-all.png`, { forceOpenDetails: true, forcedWidth: 960 });
             setIsExporting(false);
             hideExportOverlay();
@@ -111,6 +141,7 @@ const DebtOrdersModal: React.FC<DebtOrdersModalProps> = ({ isOpen, onClose, onEx
     const handleBatchExport = async () => {
         if (!modalBodyRef.current) return;
         setIsExporting(true);
+        renderCustomersSync(getAllCustomerIds());
         const total = creatorData.length;
         showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
         for (let i = 0; i < creatorData.length; i++) {
@@ -135,6 +166,7 @@ const DebtOrdersModal: React.FC<DebtOrdersModalProps> = ({ isOpen, onClose, onEx
         if (creatorElement) {
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${creatorName}`);
+            renderCustomersSync(getCreatorCustomerIds(creatorName));
             const filename = `con-no-${creatorName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
             await onExport(creatorElement, filename, {
                 forceOpenDetails: true,
@@ -147,6 +179,9 @@ const DebtOrdersModal: React.FC<DebtOrdersModalProps> = ({ isOpen, onClose, onEx
 
     const toggleAllDetails = () => {
         const nextState = !isAllExpanded;
+        if (nextState) {
+            renderCustomersSync(getAllCustomerIds());
+        }
         if (modalBodyRef.current) {
             const allDetails = modalBodyRef.current.querySelectorAll('details');
             allDetails.forEach(detail => (detail.open = nextState));
@@ -490,8 +525,19 @@ Link: ${url}`;
                                             </div>
                                         </div>
                                     </summary>
-                                    {creator.customers.map(customer => (
-                                        <details key={customer.name} className="bg-white dark:bg-slate-900 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2 mb-2 last:border-b-0">
+                                    {creator.customers.map(customer => {
+                                        const customerId = `${creator.name}::${customer.name}`;
+                                        const isRendered = renderedCustomerIds.has(customerId);
+                                        return (
+                                        <details
+                                            key={customer.name}
+                                            className="bg-white dark:bg-slate-900 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2 mb-2 last:border-b-0"
+                                            onToggle={(e) => {
+                                                if (e.currentTarget.open) {
+                                                    setRenderedCustomerIds(prev => prev.has(customerId) ? prev : new Set(prev).add(customerId));
+                                                }
+                                            }}
+                                        >
                                             <summary className="py-2 cursor-pointer flex justify-between items-center list-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors pr-2">
                                                 <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
                                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
@@ -501,6 +547,7 @@ Link: ${url}`;
                                                     </div>
                                                 </div>
                                             </summary>
+                                            {isRendered && (
                                             <div className="mt-1 pb-3 overflow-auto custom-scrollbar">
                                                 <table className="min-w-[650px] md:w-full text-sm table-fixed compact-export-table border-collapse">
                                                     <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
@@ -560,8 +607,10 @@ Link: ${url}`;
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            )}
                                         </details>
-                                    ))}
+                                        );
+                                    })}
                                 </details>
                             ))}
                         </div>

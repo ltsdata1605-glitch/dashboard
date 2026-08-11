@@ -2412,3 +2412,42 @@ Theo yêu cầu tiếp tục đào sâu, kiểm tra lại giả thuyết "summar
 
 **Verify**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch tại thời điểm chạy cuối. Lưu ý cho user: nếu tiếp tục chỉnh `ProcessingLoader.tsx` sau thời điểm này, `lint-ratchet` có thể báo lệch lại — cần chạy `npm run check` lại và cập nhật baseline lần nữa khi đã chốt thiết kế.
 
+## Mục 69 — Điều tra sâu & tối ưu hiệu năng module "Phân Tích" (chậm/treo máy dữ liệu lớn) (2026-08-11)
+
+**Bối cảnh**: user yêu cầu điều tra sâu thuật toán tính toán + cách load dữ liệu của module "Phân Tích" (`DashboardView.tsx`), tìm nguyên nhân chậm/treo máy với dữ liệu lớn (50k+ dòng), khắc phục để "nhanh nhất có thể". Đã dùng 2 đợt Explore agent (render/context, thuật toán services/*.ts) + 1 đợt Explore agent (data loading khởi động, có benchmark Node thật) + 1 Plan agent thiết kế phase, tất cả đã tự re-verify bằng đọc code trực tiếp trước khi đưa vào kế hoạch (không đoán). Kết luận quan trọng: **không có vấn đề Big-O** trong 5 hàm service tính toán (`kpiService`/`trendService`/`employeeService`/`industryService`/`summaryService`) — toàn bộ đã O(n) với cache Map/WeakMap hợp lý (kế thừa từ Mục 65 series). Nguyên nhân thật nằm ở kiến trúc render/Context và cách đọc dữ liệu từ IndexedDB — không đụng bất kỳ công thức tính doanh thu/DTQĐ nào (`calculateRowMetrics` giữ nguyên 100%). Đã lập kế hoạch qua Plan Mode (`/Users/ltson/.claude/plans/zippy-singing-walrus.md`), user duyệt làm cả 5 phần.
+
+### Mục 69a — Bug số liệu `industryService.ts:18` (không phải hiệu năng, user xác nhận sửa cùng đợt)
+
+`const displayParentGroup = row._parentGroup || getDisplayParentGroup(...)` — `row._parentGroup` (gán ở `filterService.ts` bằng `getParentGroup()`, khác hàm) luôn truthy nên `getDisplayParentGroup()` (hàm tách "ICT"→Smartphone/Laptop/Tablet, "Gia dụng"→Máy lọc nước) không bao giờ chạy, khiến biểu đồ Ngành hàng (IndustryGrid) gộp nhầm các nhóm lẽ ra phải tách riêng. Đối chiếu cách dùng đúng ở `employeeService.ts:304` (gọi `getDisplayParentGroup()` không điều kiện) — sửa thành gọi trực tiếp, bỏ fallback `||` sai hàm.
+
+### Mục 69b — Data loading lúc khởi động app (đã benchmark Node thật trước khi kết luận)
+
+**Root cause chính** (benchmark thật: nhánh chậm ~10.7ms vs fast-path đúng ~1.6ms trên 50k dòng, sẽ cao hơn trên mobile throttle): `normalizeSalesData()` (`utils/dataUtils.ts`) có "fast path" (`row.parsedDate instanceof Date`) nhưng KHÔNG BAO GIỜ trúng ở trường hợp phổ biến nhất — mở lại app, đọc dữ liệu đã lưu IndexedDB — vì `services/dbService/salesData.ts` lưu bằng `JSON.stringify()` (biến Date→ISO string) nhưng đọc lại bằng `JSON.parse()` KHÔNG restore lại Date, trong khi `services/cloudDataService.ts` đã làm đúng việc này từ trước (`downloadProcessedData`).
+
+**Fix**: thêm hàm `restoreParsedDates()` (mirror đúng pattern đã đúng ở `cloudDataService.ts`) gọi ngay sau `JSON.parse()` ở 3 hàm đọc: `getSalesData()`, `getSalesFileData()`, `getTempRealtimeData()` — `getSalesData()` tưởng "chết" nhưng thực ra được gọi nội bộ trong `getMergedSalesData()` (2 vị trí, xác nhận bằng grep) nên không được bỏ sót. Không đổi định dạng lưu trữ, chỉ sửa bên đọc.
+
+**3 fix nhỏ khác cùng đợt**:
+- `getMergedSalesData()`: bắn `getTempRealtimeData()` song song (không await tuần tự) với việc đọc file lịch sử active — 2 việc độc lập nhau.
+- `hooks/useDataManagement.ts` `loadInitialData()`: bỏ `await` trước `refreshRegistry()` (chỉ phục vụ `FileHistoryModal` ẩn mặc định, không cần cho hiển thị dashboard) — trước đây khiến dashboard bị mờ/khoá tương tác (`isHardProcessing`) lâu hơn cần thiết dù dữ liệu đã sẵn sàng render.
+- `cloudDataService.ts` `downloadProcessedData()`: nhận thêm tham số optional `preloadedMeta` để tái dùng kết quả `getCloudDataMeta()` đã gọi trước đó, bỏ 1 round-trip Firestore dư thừa (chỉ ảnh hưởng nhánh hiếm: local IndexedDB rỗng).
+
+### Mục 69c — Context → props cho `RecursiveRow`/`MonthlyTrendTableRow` (re-render thừa hàng loạt)
+
+**Root cause**: `hooks/useDashboardLogic.ts` trả `logic` qua 1 `useMemo` với dependency-array rất rộng (gồm cả state UI hiếm đổi) — bất kỳ phần nào đổi cũng làm `logic` đổi identity, phát broadcast qua `DashboardContext` cho 24 file consumer. `RecursiveRow` (`components/tables/SummaryTableRow.tsx`) và `MonthlyTrendTableRow.tsx` là 2 component ĐỆ QUY (có thể hàng trăm/nghìn instance khi "Expand All") lại tự gọi `useDashboardContext()` NGAY BÊN TRONG — làm `React.memo` bọc ngoài hoàn toàn vô hiệu với context, mọi row đang mở re-render đồng loạt khi bất kỳ phần không liên quan nào của `logic` đổi.
+
+**Fix**: áp đúng pattern đã có sẵn & đã đúng trong chính codebase (`TrendChart`/`IndustryGrid` — Outer gọi context 1 lần, Inner/đệ quy chỉ nhận props). `SummaryTable.tsx` đã gọi context sẵn cho `filterState/kpiTargets/processedData` — chỉ cần thêm `gtdhTargets/productConfig` vào cùng chỗ đó rồi truyền xuống qua props (`RecursiveRow`, `MonthlyTrendTable` → `MonthlyTrendTableRow`) — không tạo thêm điểm gọi context mới nào.
+
+### Mục 69d — Inner-split cho `WarehouseSummary.tsx` (1400 dòng, 17 field) và `KpiCards.tsx` (13 field)
+
+Cùng pattern Mục 69c nhưng khoanh gọn trong chính từng file (không có cha sẵn gọi context). Đổi thân hàm hiện tại thành `WarehouseSummaryInner`/`KpiCardsInner` (`React.memo`, nhận field qua props), tạo Outer nhỏ gọi context 1 lần rồi render Inner. Dùng `Pick<DashboardContextType, ...>` (đã export `DashboardContextType` từ `contexts/DashboardContext.tsx`) thay vì tự gõ lại type — đảm bảo type Inner LUÔN khớp đúng nguồn, tránh rủi ro "truyền nhầm field cùng kiểu dữ liệu" (vd `warehouseTargets` ↔ `warehouseDTThucTargets`) mà TypeScript thường không tự bắt được nếu gõ tay.
+
+### Mục 69e — Giảm DOM bloat 3 modal đơn hàng thô (rủi ro cao nhất, làm sau cùng)
+
+**Root cause**: `UnshippedOrdersModal.tsx`/`DebtOrdersModal.tsx`/`UncollectedOrdersModal.tsx` — cấp "creator" hardcode `<details open>` nên React mount TOÀN BỘ cây creator→customer→order vào DOM ngay khi mở modal, kể cả các `<details>` cấp "customer" đang đóng (native `<details>` vẫn mount con, chỉ ẩn bằng CSS) — với hàng nghìn đơn hàng có thể tạo hàng nghìn `<tr>` cùng lúc.
+
+**Ràng buộc phát hiện được khi đọc code kỹ** (làm đổi hướng cách sửa so với "chỉ virtualize đơn thuần"): `toggleAllDetails()` (query `querySelectorAll('details')` set `.open`) và `exportElementAsImage(..., {forceOpenDetails:true})` (`services/uiService.ts`, dùng xuất ảnh creator/xuất tất cả) đều phụ thuộc cây `<details>` ĐÃ mount đầy đủ — virtualize thật sự (ẩn hẳn khỏi DOM) sẽ làm ảnh xuất thiếu dòng.
+
+**Fix**: lazy-render bảng `<tr>` cấp "customer" theo yêu cầu — state `renderedCustomerIds: Set<string>` (key `${creatorName}::${customerName}`, đảm bảo duy nhất), `onToggle` trên `<details>` customer thêm id vào Set khi user tự mở lần đầu (chỉ THÊM, không gỡ — tránh phức tạp/giật khi đóng lại). Với `toggleAllDetails()`/`handleExportAll()`/`handleBatchExport()`/`handleExportCreator()`: gọi `renderCustomersSync()` (dùng `flushSync` từ `react-dom`) đưa TOÀN BỘ id cần thiết vào Set và đợi React commit xong TRƯỚC KHI thao tác DOM native (`.open=true`/`forceOpenDetails`) chạy — nếu không sẽ mở `<details>` rỗng hoặc xuất ảnh thiếu dòng. Áp dụng đồng bộ cả 3 modal (cấu trúc giống hệt nhau).
+
+**Verify chung cả 5 mục**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch sau mỗi phase. Không tìm được `chromium-cli`/gói `playwright` khả dụng để tự lái trình duyệt trong môi trường này (đã thử, có cache browser binaries nhưng không có package/CLI khả dụng để viết script) — **CHƯA verify được bằng tương tác trình duyệt thật** (F5 nhiều lần đối chiếu số liệu, "Expand All" quan sát re-render, mở modal đối chiếu số dòng ảnh xuất với Excel) — cần user tự kiểm tra thủ công theo đúng checklist đã ghi trong plan file, đặc biệt Mục 69b (rủi ro `Invalid Date` nếu restore sai) và Mục 69e (rủi ro ảnh xuất thiếu dòng âm thầm, không lỗi console).
+
