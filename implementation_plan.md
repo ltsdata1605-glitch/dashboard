@@ -2451,3 +2451,42 @@ Cùng pattern Mục 69c nhưng khoanh gọn trong chính từng file (không có
 
 **Verify chung cả 5 mục**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch sau mỗi phase. Không tìm được `chromium-cli`/gói `playwright` khả dụng để tự lái trình duyệt trong môi trường này (đã thử, có cache browser binaries nhưng không có package/CLI khả dụng để viết script) — **CHƯA verify được bằng tương tác trình duyệt thật** (F5 nhiều lần đối chiếu số liệu, "Expand All" quan sát re-render, mở modal đối chiếu số dòng ảnh xuất với Excel) — cần user tự kiểm tra thủ công theo đúng checklist đã ghi trong plan file, đặc biệt Mục 69b (rủi ro `Invalid Date` nếu restore sai) và Mục 69e (rủi ro ảnh xuất thiếu dòng âm thầm, không lỗi console).
 
+## Mục 70 — Rà soát "Check Thưởng" (logic tính/đồng bộ Cloud/hiệu năng/code health) (2026-08-11)
+
+**Bối cảnh**: theo yêu cầu user, dùng 3 Explore agent song song rà soát `public/check-thuong.html` (2448 dòng HTML/JS tĩnh, nhúng iframe qua `components/views/CheckThuongView.tsx`) theo 4 hướng user chọn: đồng nhất logic tính thưởng, đồng bộ Cloud/IndexedDB, hiệu năng, code health tổng quát. **Lưu ý xử lý trong suốt đợt này**: file `check-thuong.html` đang được 1 phiên/công cụ KHÁC chỉnh sửa song song (uncommitted, sửa chiều rộng ảnh xuất chế độ "list") — đã đọc đúng nội dung hiện tại trên đĩa trước mỗi lần sửa, các đoạn tôi sửa nằm ở vùng code khác hẳn (không overlap).
+
+### Mục 70a — Logic tính thưởng: KHÔNG áp dụng, an toàn
+
+Đọc toàn bộ `check-thuong.html`, xác nhận: file **không hề tự tính lại** doanh thu/DTQĐ/hệ số/trả góp — nó chỉ đọc thẳng các cột ĐÃ TÍNH SẴN từ 1 báo cáo Excel "Lũy Kế Thi Đua" tải lên riêng (khoá cứng vị trí cột D→N, validate theo `EXPECTED_HEADERS`). Đầu vào của module này là báo cáo tổng hợp từ hệ thống khác, hoàn toàn tách biệt khỏi pipeline `calculateRowMetrics()` của "Phân Tích" — không có gì để lệch chuẩn. `getPotentialBonus()` chỉ nội suy/tham khảo (copy số thưởng của đối thủ cùng ngành hàng đã đạt, không sinh công thức mới). Không sửa gì ở hạng mục này.
+
+### Mục 70b — Code health: dọn dead code + debug log
+
+`public/check-thuong.html`:
+- Xoá 3 `console.log` debug còn sót trong `captureElementAsImage()`.
+- Xoá dead code tàn dư từ 1 tính năng "Bottom 50%" đã gỡ khỏi logic nhưng chưa dọn hết khai báo: biến `bottom50MedianMap` (tính nguyên 1 lượt quét riêng trong `preProcessData()` nhưng không đọc ở đâu), object `GROUP_COLORS` (khai báo nhưng không bao giờ đọc), key `bottom50` còn sót trong `statColors`/`GROUP_PASTEL_HEADERS` (không khớp key thật nào `getGroupDefinitions()` sinh ra — chỉ có achieved/nearly/achieved100/notAchieved100/noFund/noSale).
+- Hoàn thiện 1 đoạn dở dang: biến `debugInfo` (gom log 10 dòng đầu file lúc dò tiêu đề) được push nhưng chưa từng in ra — nay log kèm cảnh báo "Không tìm thấy dòng tiêu đề chuẩn" để thực sự phục vụ mục đích chẩn đoán đã định.
+- **Cố ý CHƯA sửa** (báo cáo riêng cho user quyết định): toàn bộ hệ màu trong file dùng ngoài palette chuẩn dự án (gray/blue/purple/green/red/yellow — ~200+ class Tailwind + 187 mã hex) — đây là ngôn ngữ màu GỐC của file từ đầu (không phải nợ mới phát sinh), quy mô sửa tương đương viết lại phần lớn giao diện, cần quyết định riêng như các đợt chuẩn hoá màu Mục 61/63 trước đây (vốn cũng chỉ áp cho `.tsx` 4 khu vực, chưa từng đụng tới file này).
+
+### Mục 70c — Hiệu năng: debounce search + hồi regex + index hoá `getPotentialBonus()`
+
+- **Debounce input tìm kiếm**: `storeCodeInput1`/`storeCodeInput2` chạy lại toàn bộ pipeline lọc+render trên MỖI ký tự gõ (không debounce) — thêm debounce 200ms, chỉ áp cho 2 listener `input` (các lời gọi `handleSearchOrCompare()` khác — sau tải file, nút xoá, đồng bộ cloud — vẫn chạy ngay lập tức).
+- **`isMatchStore` → `createStoreMatcher`**: hàm so khớp mã kho cũ tự chuẩn hoá `searchCode` + dựng `RegExp` MỚI cho từng dòng bên trong `.filter()` dù không đổi trong 1 lượt lọc — tách thành factory tính 1 lần, trả về hàm test nhanh cho từng dòng, giữ nguyên 100% logic so khớp 4 bước gốc (exact match → mã số đầu chuỗi → regex từ khớp riêng biệt → includes fallback).
+- **`getPotentialBonus()` O(m×n) → O(1)**: hàm này quét lại TOÀN BỘ `competitionData` cho MỖI dòng ngành hàng cần hiển thị (gọi trong `renderSingleRow`/`renderSingleCard`). Chuyển sang tính sẵn 1 index `bestAwardedByGroup` (khoá `${KENH}|${NGANH_HANG}` nguyên bản, khớp đúng cách so sánh `===` gốc) ngay trong `preProcessData()` — gộp vào vòng lặp đã có sẵn (không thêm lượt quét mới), giữ đúng tie-break gốc (dòng xuất hiện trước thắng khi Hạng %Target bằng nhau).
+- **Cố ý CHƯA sửa** (ưu tiên thấp, đã cân nhắc): modal "Bảng Xếp Hạng" không phân trang khi số Kho cùng ngành hàng lớn — nhưng ĐÃ đúng chuẩn không mount sẵn lúc đóng (khác hẳn bug đã sửa ở 3 modal Phân Tích, Mục 69e), chỉ render khi user chủ động mở, khối lượng vài trăm dòng chấp nhận được cho 1 hành động rời rạc — không đáng đầu tư thêm.
+
+### Mục 70d — Đồng bộ Cloud: đóng lỗ hổng bypass hàng đợi (tiếp nối Mục 60)
+
+**Root cause xác nhận bằng đọc code trực tiếp** (không chỉ tin agent): cơ chế coalesce+hàng đợi tuần tự chống "Write stream exhausted" mà Mục 60 đã xây (`heavyInFlightRef`/`heavyPendingRef`/`heavyWriteQueueRef`) chỉ tồn tại dưới dạng React ref BÊN TRONG hook `useCloudSync()` (1 instance/tab qua `SyncContext`). Nhưng có 2 nơi khác gọi thẳng `syncHeavySettingToCloud()`, bỏ qua hoàn toàn hàng đợi đó:
+1. `hooks/useDataManagement.ts:295` (nhánh đối chiếu local/cloud lúc boot app cho MỌI khóa nặng, kể cả `checkthuong_data`).
+2. `hooks/useCloudSync.ts` hàm `syncPendingHeavySettings()` (flush khi đổi tab/đóng tab/mỗi 15 phút).
+
+Nếu 2 nguồn này VÀ nhánh debounce chính cùng ghi 2 khóa nặng khác nhau gần như đồng thời (dễ xảy ra nhất lúc mới mở app), Firestore write thật sự chạy song song ngoài tầm kiểm soát — tái hiện đúng lớp lỗi Mục 60 đã fix, chỉ khác nguồn ghi. `implementation_plan.md` Mục 60 tự ghi nhận đây là "ranh giới cố ý chưa làm" ở mức hợp nhất TOÀN BỘ 3 hệ thống ghi (cloudDataService/khoDataService/heavy-sync) — nhưng phát hiện lần này hẹp hơn nhiều: chỉ cần đóng đúng 2 lỗ hổng NGAY TRONG hệ thống heavy-sync, không cần đụng 2 hệ thống kia (đã tự batch/queue đúng từ Mục 60).
+
+**Fix**: chuyển cơ chế coalesce+hàng đợi từ React ref (`useCloudSync.ts`) xuống **module-level singleton** trong `services/firestoreService.ts` (`syncHeavySettingToCloudQueued()`, `isHeavyKeyInFlight()`) — sống hết vòng đời tab thay vì gắn với 1 hook instance, để MỌI nơi gọi (dù từ hook nào) tự động qua ĐÚNG 1 hàng đợi duy nhất. Cả 3 điểm gọi (`useCloudSync.ts` nhánh debounce + `syncPendingHeavySettings()`, `useDataManagement.ts` nhánh đối chiếu boot) đều đổi sang gọi hàm dùng chung này. Giữ nguyên 100% ngữ nghĩa gốc: coalesce theo từng khóa (đổi nhiều lần trong lúc đang ghi → chỉ ghi lại đúng 1 lần cuối, đọc giá trị MỚI NHẤT), hàng đợi nối tiếp DÙNG CHUNG cho mọi khóa (không cho 2 khóa bất kỳ ghi song song), lỗi tự bắt + log (không throw ra ngoài).
+
+**Cố ý CHƯA sửa, báo cáo riêng cho user** (rủi ro cao hơn/blast radius rộng hơn, ngoài phạm vi "Check Thưởng"):
+1. `services/dbService/core.ts` `saveSetting()` sau khi retry lần 2 vẫn lỗi chỉ `console.error` rồi return bình thường — KHÔNG throw, nên `.catch()` ở `CheckThuongView.tsx:25` không bao giờ chạy, ghi IndexedDB thất bại hoàn toàn im lặng (mất đồng bộ, không mất dữ liệu hiện tại vì iframe tự lưu riêng). Xác suất thấp (cần IndexedDB hết quota/Private Browsing/DB hỏng) nhưng sửa đúng cần đổi contract của `saveSetting()` — hàm dùng chung ~30 call site khắp app, ngoài phạm vi đợt rà soát Check Thưởng.
+2. Mở 2 tab cùng sửa Check Thưởng = last-write-wins, không cảnh báo — hạn chế thiết kế cố hữu của toàn bộ hệ thống đồng bộ (không riêng Check Thưởng), cần tính năng mới (vd `BroadcastChannel` liên-tab), không phải bug cần "fix".
+
+**Verify**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch. Đối chiếu kỹ 2 điểm rủi ro cao nhất trước khi sửa: tie-break `getPotentialBonus()` mới khớp 100% hành vi `reduce()` gốc (chỉ thay khi rank MỚI lớn hơn, không phải ≥); khoá `bestAwardedByGroup` dùng đúng giá trị KENH/NGANH_HANG nguyên bản (không chuẩn hoá `'N/A'`) để khớp cách so sánh `===` gốc của `getPotentialBonus`. Chưa test tương tác trình duyệt thật (cùng giới hạn môi trường đã ghi ở Mục 69) — cần user tự kiểm tra: tìm kiếm gõ nhanh vẫn ra đúng kết quả, "tiềm năng nếu leo hạng" (`getPotentialBonus`) hiển thị đúng số như trước, và nếu có điều kiện test đa tab thật với Firestore.
+

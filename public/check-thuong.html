@@ -436,7 +436,9 @@
             const fileInput = document.getElementById('fileInput'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionInfo = document.getElementById('versionInfo'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
             
             // State variables
-            let competitionData = [], currentStoreData = [], noFundGroups = new Set(), bottom50MedianMap = {};
+            let competitionData = [], currentStoreData = [], noFundGroups = new Set();
+            // PERF FIX: index tra cứu O(1) cho getPotentialBonus() — xem preProcessData().
+            let bestAwardedByGroup = {};
             let rankingDataForModal = [];
             let sortState = { key: null, direction: 'desc' };
             let comparisonSortState = { key: 'bonusDiff', direction: 'desc' };
@@ -787,14 +789,6 @@
                 }
             ];
 
-            const GROUP_COLORS = {
-                achieved: { bg: 'bg-green-600', text: 'text-white' },
-                nearly: { bg: 'bg-amber-500', text: 'text-white' },
-                bottom50: { bg: 'bg-red-600', text: 'text-white' },
-                noFund: { bg: 'bg-purple-600', text: 'text-white' },
-                noSale: { bg: 'bg-slate-600', text: 'text-white' }
-            };
-            
             function renderVersionHistory() {
                 versionModalBody.innerHTML = versionHistory.map(v => `
                     <div>
@@ -814,34 +808,38 @@
                 return EXPECTED_HEADERS.every(header => headerString.includes(header)); 
             }
             
-            function preProcessData(data) { 
-                const fundStatusByGroup = {}; 
-                data.forEach(row => { 
-                    const nganhHang = row[COLS.NGANH_HANG]; 
+            function preProcessData(data) {
+                const fundStatusByGroup = {};
+                const bestAwardedByGroupNew = {};
+                data.forEach(row => {
+                    const nganhHang = row[COLS.NGANH_HANG];
                     const kenh = row[COLS.KENH] || 'N/A';
-                    if (!nganhHang) return; 
+                    if (!nganhHang) return;
                     const key = `${kenh}|${nganhHang}`;
-                    if (parseNumber(row[COLS.TONG_THUONG]) > 0) { 
-                        fundStatusByGroup[key] = true; 
-                    } 
-                }); 
+                    if (parseNumber(row[COLS.TONG_THUONG]) > 0) {
+                        fundStatusByGroup[key] = true;
+
+                        // PERF FIX: gộp luôn bước tính "đối thủ đã đạt thưởng có Hạng %Target cao
+                        // nhất mỗi nhóm" vào đúng vòng lặp này — getPotentialBonus() trước đây tự
+                        // quét lại TOÀN BỘ competitionData cho MỖI dòng cần hiển thị (O(m×n) mỗi
+                        // lần render). Dùng khoá `${KENH}|${NGANH_HANG}` NGUYÊN BẢN (không chuẩn
+                        // hoá 'N/A' như `key` ở trên) để khớp 100% cách so sánh === gốc của
+                        // getPotentialBonus. Tie-break: chỉ thay khi rank mới LỚN HƠN rank cũ
+                        // (không phải >=) — giữ đúng hành vi reduce() gốc (dòng xuất hiện trước
+                        // thắng khi bằng hạng).
+                        const bonusKey = `${row[COLS.KENH]}|${nganhHang}`;
+                        const rank = parseInt(row[COLS.HANG_PERCENT_TARGET], 10) || 0;
+                        if (!bestAwardedByGroupNew[bonusKey] || rank > bestAwardedByGroupNew[bonusKey].rank) {
+                            bestAwardedByGroupNew[bonusKey] = { rank, row };
+                        }
+                    }
+                });
                 const allGroups = new Set(data.map(row => {
                     if (!row[COLS.NGANH_HANG]) return null;
                     return `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`;
-                }).filter(Boolean)); 
-                noFundGroups = new Set([...allGroups].filter(group => !fundStatusByGroup[group])); 
-                const groups = {}; 
-                data.forEach(row => { 
-                    const key = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG] || 'N/A'}`; 
-                    if (!groups[key]) groups[key] = []; 
-                    groups[key].push(parseNumber(row[COLS.PERCENT_DU_KIEN])); 
-                }); 
-                bottom50MedianMap = {}; 
-                for (const key in groups) { 
-                    const percentages = groups[key].sort((a, b) => a - b); 
-                    const mid = Math.floor(percentages.length / 2); 
-                    bottom50MedianMap[key] = percentages.length % 2 !== 0 ? percentages[mid] : (percentages[mid - 1] + percentages[mid]) / 2; 
-                } 
+                }).filter(Boolean));
+                noFundGroups = new Set([...allGroups].filter(group => !fundStatusByGroup[group]));
+                bestAwardedByGroup = bestAwardedByGroupNew;
             }
             
             function handleFileSelect(event) {
@@ -884,7 +882,7 @@
                         }
                         
                         if (headerRowIndex === -1) {
-                            console.warn("Không tìm thấy dòng tiêu đề chuẩn. Sẽ đọc toàn bộ dữ liệu.");
+                            console.warn("Không tìm thấy dòng tiêu đề chuẩn. Sẽ đọc toàn bộ dữ liệu.", debugInfo);
                         }
                         
                         // Lấy dữ liệu ngay sau dòng tiêu đề (nếu tìm thấy), ngược lại lấy từ dòng đầu tiên
@@ -946,40 +944,51 @@
                 }
             }
 
-            const isMatchStore = (row, targetCode) => {
-                if (!row[COLS.NGANH_HANG] || String(row[COLS.NGANH_HANG]).trim() === '') return false;
-                
-                const storeStr = String(row[COLS.SIÊU_THỊ] || '').trim().toLowerCase();
+            // PERF FIX: trước đây isMatchStore(row, targetCode) tự chuẩn hoá searchCode + dựng
+            // RegExp mới cho TỪNG DÒNG bên trong .filter() — competitionData có thể hàng nghìn
+            // dòng (file Lũy Kế toàn hệ thống), chạy lại mỗi lần gõ phím (input không debounce).
+            // searchCode/regex không đổi trong 1 lượt lọc, chỉ cần tính 1 lần. createStoreMatcher()
+            // tính sẵn 1 lần, trả về hàm test nhanh cho từng dòng — giữ nguyên 100% logic 4 bước
+            // so khớp gốc (exact match → mã số đầu chuỗi → từ khớp riêng biệt qua regex → includes
+            // fallback cho mã không thuần số).
+            const createStoreMatcher = (targetCode) => {
                 const searchCode = String(targetCode).trim().toLowerCase();
-                
-                if (!searchCode) return false;
+                if (!searchCode) return () => false;
 
-                // 1. Exact match
-                if (storeStr === searchCode) return true;
-                
-                // 2. Extract the first number sequence from the store string (e.g., "123" from "123 - Vĩnh Phúc")
-                const codeMatch = storeStr.match(/^(\d+)/);
-                if (codeMatch && codeMatch[1] === searchCode) return true;
-                
-                // 3. Match distinct word
+                const isNumericCode = /^\d+$/.test(searchCode);
+                const escapedCode = searchCode.replace(/[-/\\^\$*+?.()|[\]{}]/g, '\\$&');
+                let regex = null;
                 try {
-                    // Escape special characters for regex
-                    const escapedCode = searchCode.replace(/[-/\\^\$*+?.()|[\]{}]/g, '\\$&');
-                    const regex = new RegExp(`(^|[^a-zA-Z0-9])${escapedCode}([^a-zA-Z0-9]|$)`, 'i');
-                    if (regex.test(storeStr)) return true;
+                    regex = new RegExp(`(^|[^a-zA-Z0-9])${escapedCode}([^a-zA-Z0-9]|$)`, 'i');
                 } catch (e) {
-                    // Ignore regex errors
+                    // Ignore regex errors — bước 3 tự bỏ qua bên dưới (regex vẫn null)
                 }
-                
-                // 4. Fallback: if searchCode is not purely numeric, do a simple includes
-                if (!/^\d+$/.test(searchCode) && storeStr.includes(searchCode)) return true;
-                
-                return false;
+
+                return (row) => {
+                    if (!row[COLS.NGANH_HANG] || String(row[COLS.NGANH_HANG]).trim() === '') return false;
+
+                    const storeStr = String(row[COLS.SIÊU_THỊ] || '').trim().toLowerCase();
+
+                    // 1. Exact match
+                    if (storeStr === searchCode) return true;
+
+                    // 2. Extract the first number sequence from the store string (e.g., "123" from "123 - Vĩnh Phúc")
+                    const codeMatch = storeStr.match(/^(\d+)/);
+                    if (codeMatch && codeMatch[1] === searchCode) return true;
+
+                    // 3. Match distinct word
+                    if (regex && regex.test(storeStr)) return true;
+
+                    // 4. Fallback: if searchCode is not purely numeric, do a simple includes
+                    if (!isNumericCode && storeStr.includes(searchCode)) return true;
+
+                    return false;
+                };
             };
 
             function handleSearch(storeCode) {
                 comparisonContent.classList.add('hidden');
-                currentStoreData = competitionData.filter(row => isMatchStore(row, storeCode)); 
+                currentStoreData = competitionData.filter(createStoreMatcher(storeCode));
                 if (currentStoreData.length === 0) { 
                     messageEl.textContent = `Không tìm thấy kết quả nào cho mã kho "${storeCode}". Vui lòng kiểm tra lại mã kho.`; 
                     messageEl.classList.remove('hidden');
@@ -1034,11 +1043,8 @@
             
              function handleCompare(code1, code2) {
                 mainContent.classList.add('hidden');
-                const matchStore = (code) => {
-                    return (row) => isMatchStore(row, code);
-                };
-                const store1Data = competitionData.filter(matchStore(code1));
-                const store2Data = competitionData.filter(matchStore(code2));
+                const store1Data = competitionData.filter(createStoreMatcher(code1));
+                const store2Data = competitionData.filter(createStoreMatcher(code2));
                 
                 if (store1Data.length === 0 || store2Data.length === 0) {
                     let errorMsg = '';
@@ -1353,7 +1359,7 @@
             }
 
             function renderSummaryAndFilters(groups) {
-                const statColors = {achieved:'#10b981',nearly:'#f59e0b',bottom50:'#f43f5e',noFund:'#8b5cf6',noSale:'#64748b',achieved100:'#14b8a6',notAchieved100:'#f97316'};
+                const statColors = {achieved:'#10b981',nearly:'#f59e0b',noFund:'#8b5cf6',noSale:'#64748b',achieved100:'#14b8a6',notAchieved100:'#f97316'};
                 groupSummaryContainer.innerHTML = groups.map(g => `
                     <div class="stat-mini" onclick="const el=document.getElementById('group-section-${g.key}');if(el){const y=el.getBoundingClientRect().top+window.scrollY-20;window.scrollTo({top:y,behavior:'smooth'});}" style="--stat-color: ${statColors[g.key]||'#6366f1'}">
                         <div style="position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; background: ${statColors[g.key]||'#6366f1'}; filter: blur(25px); opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
@@ -1497,26 +1503,19 @@
                 try {
                     const groupName = row[COLS.NGANH_HANG];
                     const groupChannel = row[COLS.KENH];
-                    
-                    const awardedCompetitors = competitionData.filter(r => 
-                        r[COLS.NGANH_HANG] === groupName && 
-                        r[COLS.KENH] === groupChannel &&
-                        parseNumber(r[COLS.TONG_THUONG]) > 0
-                    );
 
-                    if (awardedCompetitors.length === 0) {
+                    // PERF FIX: tra O(1) từ index đã tính sẵn 1 lần trong preProcessData() thay vì
+                    // quét lại toàn bộ competitionData cho mỗi dòng cần hiển thị.
+                    const bonusKey = `${groupChannel}|${groupName}`;
+                    const best = bestAwardedByGroup[bonusKey];
+
+                    if (!best) {
                         return { vuot: 0, top: 0 };
                     }
 
-                    const lastAwarded = awardedCompetitors.reduce((last, current) => {
-                        const lastRank = parseInt(last[COLS.HANG_PERCENT_TARGET], 10) || 0;
-                        const currentRank = parseInt(current[COLS.HANG_PERCENT_TARGET], 10) || 0;
-                        return currentRank > lastRank ? current : last;
-                    });
-                    
                     return {
-                        vuot: parseNumber(lastAwarded[COLS.THUONG_VUOT_Uu]),
-                        top: parseNumber(lastAwarded[COLS.THUONG_TOP_PERCENT]),
+                        vuot: parseNumber(best[COLS.THUONG_VUOT_Uu]),
+                        top: parseNumber(best[COLS.THUONG_TOP_PERCENT]),
                     };
                 } catch (e) {
                     console.error("Error calculating potential bonus:", e);
@@ -1604,7 +1603,6 @@
                 const GROUP_PASTEL_HEADERS = {
                     achieved: 'pastel-green',
                     nearly: 'pastel-amber',
-                    bottom50: 'pastel-rose',
                     noFund: 'pastel-violet',
                     noSale: 'pastel-slate',
                     achieved100: 'pastel-teal',
@@ -1890,7 +1888,6 @@
 
             // --- Helper Function for Image Capture ---
             async function captureElementAsImage(element, filename, options = {}) {
-                console.log('Bắt đầu xuất ảnh:', filename);
                 if (!element) {
                     console.error('Phần tử không tồn tại!');
                     return;
@@ -1917,7 +1914,6 @@
                 await new Promise(resolve => setTimeout(resolve, 500)); 
 
                 try {
-                    console.log('Đang gọi htmlToImage...');
                     if (!document.body.contains(element)) {
                         console.error('Phần tử không nằm trong DOM!');
                     }
@@ -1926,7 +1922,6 @@
                         backgroundColor: options.backgroundColor || '#f5f5f7',
                         filter: (el) => !(el.classList && (el.classList.contains('backdrop-blur') || el.classList.contains('backdrop-blur-sm')))
                     });
-                    console.log('Đã tạo ảnh thành công.');
                     await shareOrDownloadDataUrl(dataUrl, filename);
                 } catch (error) {
                     console.error('Lỗi xuất ảnh:', error);
@@ -1947,9 +1942,24 @@
             changeFileButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileSelect);
 
+            // PERF FIX: gõ mã kho chạy lại toàn bộ pipeline tìm-kiếm+render (competitionData có
+            // thể hàng nghìn dòng) trên MỖI ký tự — debounce 200ms để chỉ chạy sau khi người dùng
+            // ngừng gõ. handleSearchOrCompare() đọc trực tiếp .value từ input lúc chạy (không phụ
+            // thuộc event object) nên trì hoãn lời gọi vẫn luôn đọc đúng giá trị mới nhất. Chỉ áp
+            // cho 2 listener 'input' này — các lời gọi handleSearchOrCompare() khác (sau khi tải
+            // file, nút xoá mã kho, đồng bộ cloud...) vẫn chạy ngay lập tức vì là hành động rời rạc.
+            const debounce = (fn, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => fn(...args), delay);
+                };
+            };
+            const debouncedSearchOrCompare = debounce(handleSearchOrCompare, 200);
+
             // Auto-search on input
-            storeCodeInput1.addEventListener('input', handleSearchOrCompare);
-            storeCodeInput2.addEventListener('input', handleSearchOrCompare);
+            storeCodeInput1.addEventListener('input', debouncedSearchOrCompare);
+            storeCodeInput2.addEventListener('input', debouncedSearchOrCompare);
             
             comparisonContent.addEventListener('click', e => {
                 const sortableHeader = e.target.closest('th.sortable');
@@ -2231,7 +2241,7 @@
                             captureElementAsImage(captureTarget, filename, {
                                 onBeforeCapture: () => {
                                     truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                    captureTarget.style.width = EXPORT_WIDTH;
+                                    captureTarget.style.width = singleViewMode === 'list' ? 'fit-content' : EXPORT_WIDTH;
                                 },
                                 onAfterCapture: () => {
                                     truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2341,7 +2351,7 @@
                         captureElementAsImage(captureTarget, filename, {
                             onBeforeCapture: () => {
                                 truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                captureTarget.style.width = EXPORT_WIDTH;
+                                captureTarget.style.width = singleViewMode === 'list' ? 'fit-content' : EXPORT_WIDTH;
                             },
                             onAfterCapture: () => {
                                 truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2380,12 +2390,12 @@
                                      const truncatedElements = captureTarget.querySelectorAll('.truncate');
                                      
                                      truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                     captureTarget.style.width = EXPORT_WIDTH;
-                                      const gridOriginals = forceExportLayout(captureTarget);
+                                     captureTarget.style.width = singleViewMode === 'list' ? 'fit-content' : EXPORT_WIDTH;
+                                     const gridOriginals = forceExportLayout(captureTarget);
 
                                      const dataUrl = await htmlToImage.toPng(captureTarget, { pixelRatio: 2, backgroundColor: '#f5f5f7' });
                                      
-                                      restoreExportLayout(gridOriginals);
+                                     restoreExportLayout(gridOriginals);
                                      captureTarget.style.width = originalWidth;
                                      truncatedElements.forEach(el => el.classList.add('truncate'));
 
