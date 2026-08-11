@@ -5,7 +5,7 @@ import { DepartmentMap } from '../services/dataService';
 import type { ExportImageOptions } from '../hooks/useExportLogic';
 
 
-interface DashboardContextType {
+export interface DashboardContextType {
     appState: 'upload' | 'processing' | 'dashboard' | 'loading';
     processedData: ProcessedData | null;
     filterState: FilterState;

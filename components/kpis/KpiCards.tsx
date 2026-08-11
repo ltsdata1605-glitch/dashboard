@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
 import { COL } from '../../constants';
-import { useDashboardContext } from '../../contexts/DashboardContext';
+import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
 import { KpiCard } from '../shared/ui/KpiCard';
 
@@ -62,8 +62,21 @@ const KpiTargetEditor: React.FC<{
 
 type EditableField = 'hieuQua' | 'traGop' | 'gtdh' | 'doanhThuThuc' | null;
 
-const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig, warehouseDTThucTargets, setEditingTargetKho, uniqueFilterOptions } = useDashboardContext();
+// PERF FIX: nhận dữ liệu qua props tường minh (Pick từ DashboardContextType) thay vì tự
+// useDashboardContext() bên trong — cùng pattern đã dùng đúng ở TrendChart/IndustryGrid/
+// WarehouseSummary (Outer gọi context 1 lần → Inner chỉ nhận props → React.memo có tác dụng
+// thật, không re-render khi phần KHÔNG liên quan của context đổi).
+type KpiCardsInnerProps = KpiCardsProps & Pick<DashboardContextType,
+    | 'processedData' | 'filterState' | 'warehouseTargets' | 'kpiTargets' | 'updateKpiTargets'
+    | 'kpiCardsConfig' | 'warehouseFilteredData' | 'isLuyKe' | 'handleLuyKeChange' | 'productConfig'
+    | 'warehouseDTThucTargets' | 'setEditingTargetKho' | 'uniqueFilterOptions'
+>;
+
+const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
+    onUnshippedClick, processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets,
+    kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig,
+    warehouseDTThucTargets, setEditingTargetKho, uniqueFilterOptions
+}) => {
     const kpis = processedData?.kpis;
 
     const getTargetKhoToEdit = () => {
@@ -501,7 +514,36 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         </div>
         </div>
     );
-};
+});
+KpiCardsInner.displayName = 'KpiCardsInner';
+
+const KpiCards: React.FC<KpiCardsProps> = React.memo(({ onUnshippedClick }) => {
+    const {
+        processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig,
+        warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig, warehouseDTThucTargets,
+        setEditingTargetKho, uniqueFilterOptions
+    } = useDashboardContext();
+
+    return (
+        <KpiCardsInner
+            onUnshippedClick={onUnshippedClick}
+            processedData={processedData}
+            filterState={filterState}
+            warehouseTargets={warehouseTargets}
+            kpiTargets={kpiTargets}
+            updateKpiTargets={updateKpiTargets}
+            kpiCardsConfig={kpiCardsConfig}
+            warehouseFilteredData={warehouseFilteredData}
+            isLuyKe={isLuyKe}
+            handleLuyKeChange={handleLuyKeChange}
+            productConfig={productConfig}
+            warehouseDTThucTargets={warehouseDTThucTargets}
+            setEditingTargetKho={setEditingTargetKho}
+            uniqueFilterOptions={uniqueFilterOptions}
+        />
+    );
+});
+KpiCards.displayName = 'KpiCards';
 
 export default React.memo(KpiCards);
 
