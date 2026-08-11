@@ -229,7 +229,13 @@ export const useCloudSync = () => {
                                 try {
                                     const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
                                     await saveCheckThuongDataToIframeDb(val);
-                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                    // BUG FIX: trước đây phát 'check-thuong-cloud-sync' — CheckThuongView.tsx
+                                    // áp dụng NGAY, ghi đè UI đang xem mà không cảnh báo khi mở 2
+                                    // tab/thiết bị cùng sửa (last-write-wins im lặng). Dữ liệu Cloud đã ghi
+                                    // an toàn vào IndexedDB ở dòng trên + saveCheckThuongDataToIframeDb —
+                                    // không mất dữ liệu — chỉ đổi tên sự kiện để CheckThuongView HỎI người
+                                    // dùng trước khi áp dụng vào UI, thay vì tự động.
+                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-update-available'));
                                 } catch (err) {
                                     console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                 }

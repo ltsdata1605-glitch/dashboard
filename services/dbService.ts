@@ -5,6 +5,7 @@
 export {
     getDb,
     saveSetting,
+    saveSettingOrThrow,
     saveSettingFromCloud,
     getAllSettings,
     clearAllSettings,

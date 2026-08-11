@@ -2490,3 +2490,41 @@ Nếu 2 nguồn này VÀ nhánh debounce chính cùng ghi 2 khóa nặng khác n
 
 **Verify**: `npm run check` (typecheck + eslint + build + lint-ratchet) sạch. Đối chiếu kỹ 2 điểm rủi ro cao nhất trước khi sửa: tie-break `getPotentialBonus()` mới khớp 100% hành vi `reduce()` gốc (chỉ thay khi rank MỚI lớn hơn, không phải ≥); khoá `bestAwardedByGroup` dùng đúng giá trị KENH/NGANH_HANG nguyên bản (không chuẩn hoá `'N/A'`) để khớp cách so sánh `===` gốc của `getPotentialBonus`. Chưa test tương tác trình duyệt thật (cùng giới hạn môi trường đã ghi ở Mục 69) — cần user tự kiểm tra: tìm kiếm gõ nhanh vẫn ra đúng kết quả, "tiềm năng nếu leo hạng" (`getPotentialBonus`) hiển thị đúng số như trước, và nếu có điều kiện test đa tab thật với Firestore.
 
+---
+
+## Mục 71 — Xử lý 3 mục cố ý hoãn lại từ Mục 70d (saveSetting nuốt lỗi, xung đột đa tab, màu ngoài palette) (2026-08-11)
+
+User yêu cầu xử lý đúng 3 việc đã báo cáo là "cố ý chưa sửa" ở Mục 70d, thay vì để tồn đọng.
+
+### Mục 71a — `saveSetting()` nuốt lỗi sau retry lần 2 → surface lỗi cho Check Thưởng mà không đổi contract 30 call site khác
+
+**Fix**: tách thân hàm `saveSetting()` (`services/dbService/core.ts`) thành `saveSettingInternal(key, value, source, throwOnFailure)`. `saveSetting()` giữ nguyên hành vi cũ 100% (`throwOnFailure=false`, vẫn nuốt lỗi sau retry — không phá vỡ ~30 call site đang phụ thuộc "fire-and-forget"). Thêm hàm mới `saveSettingOrThrow()` (`throwOnFailure=true`) — retry y hệt, nhưng nếu lần 2 vẫn lỗi thì `throw retryError` thay vì chỉ log. Export thêm qua barrel `services/dbService.ts`.
+
+`components/views/CheckThuongView.tsx` đổi từ `saveSetting` sang `saveSettingOrThrow` tại handler `CHECK_THUONG_STATE_CHANGED`, `.catch()` giờ thực sự chạy khi ghi IndexedDB thất bại → hiện toast lỗi rõ ràng cho user ("Không lưu được thay đổi Check Thưởng vào máy...") thay vì mất đồng bộ âm thầm.
+
+### Mục 71b — Mở 2 tab cùng sửa Check Thưởng = last-write-wins → cảnh báo xung đột thay vì tự ghi đè
+
+**Quyết định thiết kế**: không xây `BroadcastChannel` mới — tái dùng chính listener `onSnapshot` real-time đã có sẵn trong `useCloudSync.ts` (đang lắng nghe Firestore, tự nổ khi tab khác ghi khoá `checkthuong_data`). Trước đây khi nhận thay đổi từ cloud, hệ thống tự động dispatch sự kiện áp dữ liệu mới đè lên iframe ngay lập tức — không hỏi ý kiến, đúng kiểu last-write-wins.
+
+**Fix**: `hooks/useCloudSync.ts`, nhánh đặc biệt xử lý `checkthuong_data` trong `onSnapshot` đổi tên sự kiện dispatch từ `check-thuong-cloud-sync` → `check-thuong-cloud-update-available` (dữ liệu đã ghi an toàn vào IndexedDB trước khi dispatch — chỉ bước ÁP DỤNG lên UI đang hiển thị là được chuyển từ tự động sang chờ xác nhận).
+
+`components/views/CheckThuongView.tsx` thêm `activeTabRef` (đồng bộ qua effect, để listener mount-once đọc được tab đang active) và handler mới `handleCloudUpdateAvailable`: nếu tab Check Thưởng không active thì bỏ qua (dữ liệu đã an toàn trong IndexedDB, tab sẽ tự đọc mới khi user quay lại); nếu đang active thì hiện toast xác nhận có 2 nút dùng `<Button>` chuẩn dự án — "Giữ bản đang xem" (chỉ đóng toast) / "Tải lại dữ liệu mới" (gọi lại `handleCloudSync()` cũ để áp dụng).
+
+**Bẫy phát hiện khi sửa**: `hooks/useDataManagement.ts:295` có 1 điểm dispatch RIÊNG dùng tên sự kiện CŨ `check-thuong-cloud-sync` cho nhánh đối chiếu boot-time (không phải live cross-tab) — nếu chỉ đổi tên sự kiện ở `useCloudSync.ts` mà không giữ lại listener cũ thì boot-time reconciliation sẽ câm lặng ngừng hoạt động. Giữ ĐỒNG THỜI cả 2 listener trong `CheckThuongView.tsx`: `check-thuong-cloud-sync` (tên cũ, áp dụng ngay — boot-time không có gì "đang xem dở" cần bảo vệ) và `check-thuong-cloud-update-available` (tên mới, chờ xác nhận — live cross-tab).
+
+### Mục 71c — Chuẩn hoá màu `public/check-thuong.html` về palette dự án (sky/slate/emerald/amber/rose + indigo)
+
+File gốc dùng ngôn ngữ màu Tailwind mặc định (gray/blue/purple/green/red/yellow/teal/orange/violet) từ khi viết, không theo palette semantic của dự án. Sửa toàn bộ ~200+ class Tailwind + ~187 mã hex, giữ nguyên tuyệt đối Ý NGHĨA màu ở từng vị trí (không đổi màu nào biểu thị "đạt"/"chưa đạt"/kho nào là kho nào), chỉ đổi mã màu cụ thể:
+
+- **CSS `.pastel-*`** (header nhóm trạng thái): `.pastel-green/amber/slate` đã đúng chuẩn, giữ nguyên. `.pastel-violet`(noFund)→indigo, `.pastel-teal`(achieved100)→sky, `.pastel-orange`(notAchieved100)→rose. Xoá hẳn `.pastel-rose` (dead code không ai gọi tới).
+- **`.card-pastel-0..14`** (ramp màu thẻ ngành hàng, 15 slot) → rút còn **12 slot `.card-pastel-0..11`** đúng pattern "6 họ semantic × 2 tầng sắc độ" đã dùng ở `IndustryGrid.tsx` (sky/emerald/amber/rose/indigo/slate).
+- **JS**: `getGroupDefinitions()` màu icon nhóm, `statColors` (mã trạng thái), `GROUP_PASTEL_HEADERS` (giữ tên class cũ như `pastel-teal` — đổi tên rủi ro cao hơn cần thiết, chỉ CSS bên dưới đổi màu thật), thẻ "Phân Tích & Đề Xuất" (blue/yellow/green/red→sky/amber/emerald/rose), màu so sánh Kho1/Kho2 (blue/purple→sky/indigo, toàn bộ `colorScheme`/badge/border/icon), cờ chẩn đoán đạt/chưa đạt (green/red/gray→emerald/rose/slate), dòng "kho hiện tại" trong modal xếp hạng, trang landing (gradient/glow/icon upload), `footerColor` nhãn loại thưởng. Bulk thay `gray-*`→`slate-*` (~90 lượt) theo từng class cụ thể (`replace_all`).
+- **2 bug tự phát hiện khi sửa (không phải do user báo)**:
+  1. `iconMap` của nút "Sao chép nội dung" tra theo tên class CŨ (`bg-blue-100` v.v.) — nếu không sửa theo, icon trong nội dung copy sẽ biến mất âm thầm sau khi đổi tên class. Đã cập nhật key sang tên class mới.
+  2. Mảng JS `PALETTE` (dùng `PALETTE.length` làm modulo trong `getGroupColor()`) vẫn khai 15 phần tử sau khi CSS đã rút còn 12 class — nếu không sửa, hash rơi vào slot 12/13/14 sẽ ra thẻ KHÔNG có màu. Đã cắt còn đúng 12, kèm comment cảnh báo phải khớp số class CSS thật có.
+- **Quyết định phạm vi**: tên class CSS cũ (`pastel-teal`, `pastel-violet`...) giữ nguyên dù nay render màu khác nghĩa đen của tên — đổi tên class kéo theo sửa object `GROUP_PASTEL_HEADERS` và mọi nơi tham chiếu, rủi ro cao hơn lợi ích (chỉ là tên biến nội bộ, không hiển thị cho user).
+
+**Verify**: `node --check` trên script trích xuất (dòng 387–2463, ~2077 dòng) sạch sau mỗi đợt sửa lớn. Grep quét lại toàn bộ cuối cùng: 0 class Tailwind ngoài palette còn sót, 0 mã hex ngoài palette còn sót trong code sống (4 mã hex còn lại chỉ nằm trong comment tiếng Việt tự giải thích giá trị CŨ đã thay, vô hại). `npm run check` (typecheck+eslint+build+lint-ratchet) sạch cho toàn bộ 5 file `.ts`/`.tsx` đã sửa.
+
+**Giới hạn môi trường**: không có trình duyệt/công cụ chụp ảnh khả dụng trong môi trường này (đã xác nhận không có `chromium-cli`, không cài được `playwright`) — **màu sắc CHƯA được xác minh trực quan**, cần user tự mở Check Thưởng kiểm tra bằng mắt trước khi coi là hoàn tất.
+

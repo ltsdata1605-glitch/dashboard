@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
-import { getGlobalFont, saveSetting } from '../../services/dbService';
+import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
 
 
@@ -12,6 +13,11 @@ export const CheckThuongView: React.FC = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [hasData, setHasData] = useState(false);
     const [codes, setCodes] = useState({ code1: '910', code2: '' });
+    // Đọc được activeTab MỚI NHẤT bên trong listener của effect deps [] bên dưới (không re-subscribe
+    // message/cloud-sync listener mỗi lần đổi tab) — dùng để chỉ hiện cảnh báo cập nhật Cloud khi
+    // người dùng ĐANG xem đúng tab Check Thưởng, tránh toast lạc ngữ cảnh ở tab khác.
+    const activeTabRef = useRef(activeTab);
+    useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
     useEffect(() => {
         setMounted(true);
@@ -22,21 +28,72 @@ export const CheckThuongView: React.FC = () => {
                 if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
             } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED') {
                 if (e.data.payload) {
-                    saveSetting('checkthuong_data', e.data.payload).catch(console.error);
+                    // BUG FIX: saveSetting() mặc định nuốt lỗi sau khi retry (giữ nguyên hành vi cho
+                    // ~80 call site khác trong app — xem comment ở services/dbService/core.ts) nên
+                    // .catch(console.error) trước đây KHÔNG BAO GIỜ thực sự chạy khi ghi IndexedDB
+                    // thất bại (hết quota, Private Browsing chặn, DB hỏng...) — người dùng thao tác
+                    // trong Check Thưởng nhưng dữ liệu âm thầm không được lưu, không hề biết. Dùng
+                    // saveSettingOrThrow() để lỗi thật sự tới được đây và báo cho người dùng.
+                    saveSettingOrThrow('checkthuong_data', e.data.payload).catch((err) => {
+                        console.error('[CheckThuong] Lưu dữ liệu thất bại:', err);
+                        toast.error('Không lưu được thay đổi Check Thưởng vào máy. Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-save-failed', duration: 6000 });
+                    });
                 }
             }
         };
 
+        // Áp dụng thật sự bản Cloud mới vào iframe — chỉ chạy khi người dùng đã XÁC NHẬN qua toast
+        // cảnh báo bên dưới (không còn tự động chạy ngay khi Cloud có bản mới, xem handleCloudUpdateAvailable).
         const handleCloudSync = () => {
             iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
         };
 
+        // BUG FIX (mở 2 tab/thiết bị cùng sửa Check Thưởng = last-write-wins, im lặng): trước đây
+        // useCloudSync.ts phát 'check-thuong-cloud-sync' và handleCloudSync ở trên ÁP DỤNG NGAY —
+        // tab đang xem bị ghi đè dữ liệu (kể cả đang xem dở 1 mục) mà không hề biết có tab/thiết bị
+        // khác vừa lưu đè. Dữ liệu Cloud mới đã được ghi an toàn vào IndexedDB (cả app chính lẫn
+        // iframe) TRƯỚC KHI sự kiện này bắn — không mất dữ liệu, chỉ là UI đang xem chưa cập nhật.
+        // Đổi sang: chỉ HỎI, để người dùng chủ động chọn tải lại hay giữ nguyên bản đang xem.
+        const handleCloudUpdateAvailable = () => {
+            if (activeTabRef.current !== 'check-thuong') return; // không làm phiền khi đang ở tab khác
+            toast((t) => (
+                <div className="flex flex-col gap-2 max-w-xs">
+                    <span className="text-sm font-semibold text-slate-800">
+                        Dữ liệu Check Thưởng vừa được cập nhật ở nơi khác (tab hoặc thiết bị khác).
+                    </span>
+                    <div className="flex gap-2 justify-end">
+                        <Button
+                            variant="ghost" size="sm"
+                            onClick={() => toast.dismiss(t.id)}
+                        >
+                            Giữ bản đang xem
+                        </Button>
+                        <Button
+                            variant="primary" size="sm"
+                            onClick={() => {
+                                toast.dismiss(t.id);
+                                handleCloudSync();
+                            }}
+                        >
+                            Tải lại dữ liệu mới
+                        </Button>
+                    </div>
+                </div>
+            ), { id: 'checkthuong-cloud-update', duration: 20000 });
+        };
+
         window.addEventListener('message', handleMessage);
+        window.addEventListener('check-thuong-cloud-update-available', handleCloudUpdateAvailable);
+        // Giữ nguyên listener cũ 'check-thuong-cloud-sync' — hooks/useDataManagement.ts vẫn dùng
+        // tên sự kiện này cho nhánh đối chiếu lúc BOOT app (chạy đúng 1 lần, không phải race-condition
+        // đa tab đang mở SỐNG như nhánh useCloudSync.ts) — áp dụng ngay không cần hỏi vì tại thời
+        // điểm đó gần như chắc chắn chưa có gì đang xem dở để mất.
         window.addEventListener('check-thuong-cloud-sync', handleCloudSync);
 
         return () => {
             window.removeEventListener('message', handleMessage);
             window.removeEventListener('check-thuong-cloud-sync', handleCloudSync);
+            window.removeEventListener('check-thuong-cloud-update-available', handleCloudUpdateAvailable);
         };
     }, []);
 

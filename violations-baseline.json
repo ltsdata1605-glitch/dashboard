@@ -123,10 +123,6 @@
     "nonSemanticColor": 18,
     "missingMobileToolbar": 0
   },
-  "components/filters/FilterBar.tsx": {
-    "nonSemanticColor": 12,
-    "missingMobileToolbar": 0
-  },
   "components/filters/FilterSection.tsx": {
     "nonSemanticColor": 13,
     "missingMobileToolbar": 0

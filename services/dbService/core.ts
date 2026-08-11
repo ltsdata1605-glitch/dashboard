@@ -80,7 +80,14 @@ export function getDb(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-export async function saveSetting(key: string, value: unknown, source?: string): Promise<void> {
+// Lõi dùng chung cho saveSetting/saveSettingOrThrow — chỉ khác nhau ở hành vi khi retry lần 2
+// VẪN thất bại: saveSetting() (mặc định, ~80 call site khắp app) nuốt lỗi (chỉ console.error) để
+// không làm crash các luồng không kiểm tra promise — giữ nguyên hành vi cũ, KHÔNG đổi cho toàn bộ
+// app (đổi contract của hàm dùng chung ~80 nơi là việc rủi ro cao, riêng biệt, ngoài phạm vi rà
+// soát Check Thưởng). saveSettingOrThrow() ném lại lỗi để CALLER cụ thể (hiện tại chỉ
+// CheckThuongView.tsx ghi checkthuong_data) tự quyết định báo cho người dùng biết việc lưu thất
+// bại thay vì im lặng mất đồng bộ — xem implementation_plan.md.
+async function saveSettingInternal(key: string, value: unknown, source: string | undefined, throwOnFailure: boolean): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -150,8 +157,19 @@ export async function saveSetting(key: string, value: unknown, source?: string):
             await tryTransaction(db);
         } catch (retryError) {
             console.error(`[IDB] Permanent failure saving key '${key}':`, retryError);
+            if (throwOnFailure) throw retryError;
         }
     }
+}
+
+export async function saveSetting(key: string, value: unknown, source?: string): Promise<void> {
+    return saveSettingInternal(key, value, source, false);
+}
+
+/** Như saveSetting(), nhưng ném lại lỗi nếu retry lần 2 vẫn thất bại — dùng khi caller cần biết
+ * việc lưu KHÔNG thành công để báo cho người dùng (thay vì mặc định nuốt lỗi của saveSetting()). */
+export async function saveSettingOrThrow(key: string, value: unknown, source?: string): Promise<void> {
+    return saveSettingInternal(key, value, source, true);
 }
 
 export async function saveSettingFromCloud(key: string, value: unknown, updatedAt: number): Promise<void> {
