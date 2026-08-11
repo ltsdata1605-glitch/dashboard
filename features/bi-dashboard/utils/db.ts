@@ -162,6 +162,15 @@ export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
       console.error('Error getting data:', request.error);
       reject(request.error);
     };
+
+    // Nếu transaction bị abort trước khi request.onsuccess kịp bắn (thiết bị sleep,
+    // lỗi nội bộ trình duyệt...), Promise phải reject thay vì treo vĩnh viễn.
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
+    };
+    transaction.onerror = () => {
+      reject(transaction.error || new Error('Transaction error'));
+    };
   });
 };
 

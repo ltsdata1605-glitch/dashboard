@@ -153,6 +153,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             const dIndex = tempHeaders.indexOf('DTLK'), qIndex = tempHeaders.indexOf('DTQĐ');
             if (dIndex !== -1 && qIndex !== -1 && nameIndex !== -1) {
                 const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+                // Chụp lại thứ tự cột TRƯỚC khi chèn 3 cột mới, để chèn giá trị vào đúng vị trí theo TÊN cột
+                // (không dùng indexOf theo giá trị — dễ sai khi nhiều ô trùng giá trị, vd nhiều dòng "0%")
+                const preInsertHeaders = [...tempHeaders];
                 tempHeaders.splice(qIndex + 1, 0, '%HQQĐ');
                 const tIndex = tempHeaders.indexOf('Target (QĐ)');
                 if (tIndex !== -1) tempHeaders.splice(tIndex + 1, 0, "Target(QĐ) V.Trội");
@@ -163,11 +166,24 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     let mT = supermarketMonthlyTargets[sm] ?? 0;
                     if (sm === 'Tổng') mT = Object.values(supermarketMonthlyTargets).reduce<number>((s, v) => s + Number(v), 0);
                     const dT = mT / daysInMonth, ht = dT > 0 ? (qV / dT) * 100 : 0;
-                    nr.splice(qIndex + 1, 0, (dV > 0 ? roundUp(((qV / dV) - 1) * 100) : 0) + '%');
-                    const oT = data.headers.indexOf('Target (QĐ)');
-                    if(oT !== -1) nr.splice(oT + 2, 0, dT);
-                    const oHt = data.headers.indexOf('% HT Target (QĐ)');
-                    if(oHt !== -1) nr.splice(nr.indexOf(row[oHt]) + 1, 0, `${roundUp(ht)}%`);
+
+                    const rowHeaders = [...preInsertHeaders];
+                    const qIdxNow = rowHeaders.indexOf('DTQĐ');
+                    nr.splice(qIdxNow + 1, 0, (dV > 0 ? roundUp(((qV / dV) - 1) * 100) : 0) + '%');
+                    rowHeaders.splice(qIdxNow + 1, 0, '%HQQĐ');
+
+                    const tIdxNow = rowHeaders.indexOf('Target (QĐ)');
+                    if (tIdxNow !== -1) {
+                        nr.splice(tIdxNow + 1, 0, dT);
+                        rowHeaders.splice(tIdxNow + 1, 0, 'Target(QĐ) V.Trội');
+                    }
+
+                    const htIdxNow = rowHeaders.indexOf('% HT Target (QĐ)');
+                    if (htIdxNow !== -1) {
+                        nr.splice(htIdxNow + 1, 0, `${roundUp(ht)}%`);
+                        rowHeaders.splice(htIdxNow + 1, 0, '%HT V.Trội');
+                    }
+
                     return nr;
                 });
             }

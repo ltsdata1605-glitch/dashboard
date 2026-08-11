@@ -145,6 +145,16 @@ async function setMigrationFlag(): Promise<void> {
 
 function openDb(name: string, version: number, onUpgrade?: (db: IDBDatabase) => void): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
+        let active = true;
+        // Nếu 1 tab khác đang giữ kết nối DB phiên bản cũ, request.open() sẽ treo chờ 'blocked'
+        // vô thời hạn nếu không có onblocked/timeout — chặn migrate chạy khi mở nhiều tab cùng lúc.
+        const timeoutId = setTimeout(() => {
+            if (active) {
+                active = false;
+                reject(new Error(`[BI Migration] Timeout mở database "${name}"`));
+            }
+        }, 8000);
+
         const request = indexedDB.open(name, version);
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
@@ -156,8 +166,24 @@ function openDb(name: string, version: number, onUpgrade?: (db: IDBDatabase) => 
                 if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings');
             }
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            if (!active) { try { request.result.close(); } catch { /* noop */ } return; }
+            active = false;
+            clearTimeout(timeoutId);
+            resolve(request.result);
+        };
+        request.onerror = () => {
+            if (!active) return;
+            active = false;
+            clearTimeout(timeoutId);
+            reject(request.error);
+        };
+        request.onblocked = () => {
+            if (!active) return;
+            active = false;
+            clearTimeout(timeoutId);
+            reject(new Error(`[BI Migration] Database "${name}" bị blocked bởi tab khác`));
+        };
     });
 }
 

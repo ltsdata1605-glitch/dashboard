@@ -56,9 +56,9 @@ const MobileReportView = React.forwardRef<HTMLDivElement, MobileReportViewProps>
         const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
 
         return [
-            { id: 'dtqd', name: 'Doanh Thu Trả Chậm', actual: dtqd, target: targets['dtqd'] || '', isPercent: false, icon: '💳', color: 'bg-amber-500' },
-            { id: 'dtlk', name: 'Doanh Thu Quy Đổi', actual: dtlk, target: targets['dtlk'] || '', isPercent: false, icon: '💰', color: 'bg-emerald-500' },
-            { id: 'hqqd', name: 'Tỷ Lệ Phục Vụ', actual: hqqd, target: targets['hqqd'] || '', isPercent: true, icon: '👤', color: 'bg-sky-500' },
+            { id: 'dtqd', name: 'Doanh Thu Quy Đổi', actual: dtqd, target: targets['dtqd'] || '', isPercent: false, icon: '💳', color: 'bg-amber-500' },
+            { id: 'dtlk', name: 'Doanh Thu Thực', actual: dtlk, target: targets['dtlk'] || '', isPercent: false, icon: '💰', color: 'bg-emerald-500' },
+            { id: 'hqqd', name: 'Hiệu Quả Quy Đổi', actual: hqqd, target: targets['hqqd'] || '', isPercent: true, icon: '👤', color: 'bg-sky-500' },
             { id: 'tc', name: 'Tỷ Lệ Trả Chậm', actual: tc, target: targets['tc'] || '', isPercent: true, icon: '⏰', color: 'bg-rose-500' }
         ];
     }, [data, activeSupermarket, targets]);

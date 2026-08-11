@@ -151,9 +151,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     </div>
                 </KpiCard>
 
-                <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán" trendValue={!isRealtime ? renderGrowth(kpiData.traGopChange) : undefined}>
+                <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
                     <div className="text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
-                        {isRealtime ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : `${Math.ceil(tyTrongTraGop)}%`}
+                        {kpiData.lbillBH ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : '0'}
                     </div>
                 </KpiCard>
 

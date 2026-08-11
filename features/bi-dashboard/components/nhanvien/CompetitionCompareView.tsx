@@ -196,8 +196,8 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     total++;
                     const dkht = (daysPassed > 0 && target > 0) ? ((actual / daysPassed) * daysInMonth / target) * 100 : 0;
                     if (dkht >= 100) dkhtDat++;
+                    else if (dkht === 0) noSale++;
                     else dkhtNotDat++;
-                    if (dkht === 0) noSale++;
                 }
             });
         });
