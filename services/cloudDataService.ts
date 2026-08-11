@@ -191,17 +191,23 @@ export async function uploadProcessedData(
  * Returns null if no data exists on cloud.
  */
 export async function downloadProcessedData(
-    user: User
+    user: User,
+    preloadedMeta?: SalesDataMeta | null
 ): Promise<{ data: DataRow[]; meta: SalesDataMeta } | null> {
     if (!user) return null;
 
     const salesDataRef = collection(db, 'users', user.uid, 'salesData');
-    
-    // 1. Read meta first
-    const metaSnap = await getDoc(doc(salesDataRef, 'meta'));
-    if (!metaSnap.exists()) return null;
 
-    const meta = metaSnap.data() as SalesDataMeta;
+    // 1. Read meta first — bỏ qua nếu caller đã có sẵn (vd vừa gọi getCloudDataMeta() để so sánh
+    // thời điểm trước khi quyết định tải) để tránh 1 round-trip Firestore dư thừa trên critical path.
+    let meta: SalesDataMeta;
+    if (preloadedMeta) {
+        meta = preloadedMeta;
+    } else {
+        const metaSnap = await getDoc(doc(salesDataRef, 'meta'));
+        if (!metaSnap.exists()) return null;
+        meta = metaSnap.data() as SalesDataMeta;
+    }
     console.warn(`[CloudData] Found cloud data: ${meta.totalRows} rows in ${meta.chunkCount} chunks`);
 
     // 2. Download all chunks in parallel

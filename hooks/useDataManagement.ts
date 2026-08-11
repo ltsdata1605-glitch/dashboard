@@ -328,7 +328,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             // Only prompt if cloud is newer
                             if (cloudMeta.savedAt > localSavedAt + 15000) {
                                 console.warn(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
-                                const cloudResult = await downloadProcessedData(user);
+                                const cloudResult = await downloadProcessedData(user, cloudMeta);
                                 if (cloudResult && cloudResult.data.length > 0) {
                                     if (localSavedAt === 0) {
                                         console.warn('[CloudSync] Tự động nạp dữ liệu đám mây vì local trống');
@@ -401,8 +401,16 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     }, 5000); // Wait 5s to ensure app is fully interactive before doing heavy fetch
                 }
 
-                // Load registry
-                await refreshRegistry();
+                // PERF FIX: refreshRegistry() chỉ phục vụ FileHistoryModal (ẩn mặc định, xem
+                // components/views/DashboardView.tsx) — KHÔNG cần cho việc hiển thị dashboard
+                // chính. Trước đây `await` ở đây khiến dashboard (dù processedData đã sẵn sàng
+                // render) vẫn bị giữ mờ/khoá tương tác (isHardProcessing → opacity-50
+                // pointer-events-none) thêm 1 khoảng không cần thiết trong lúc chờ N transaction
+                // IndexedDB (registry + tempRealtime, phần lớn đã đọc rồi trong hàm này — xem
+                // checkSalesFileDataExists cho MỌI file từng đăng ký, tới RETENTION_MONTHS).
+                // Không `await` nữa — chạy nền, tự cập nhật fileRegistry/hasRealtimeData khi xong
+                // (refreshRegistry() đã có try/catch nội bộ, không cần .catch() thêm ở đây).
+                refreshRegistry();
 
             } catch (e) {
                 console.error("Lỗi khi khởi chạy hệ thống dữ liệu:", e);

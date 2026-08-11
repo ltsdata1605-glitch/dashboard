@@ -1,6 +1,23 @@
 import type { DataRow, StoredSalesData, UploadedFileRegistryItem } from '../../types';
 import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection } from './core';
 
+// PERF FIX: saveSalesFileData/saveTempRealtimeData lưu bằng JSON.stringify() (biến Date thành
+// ISO string), nhưng bên đọc trước đây KHÔNG khôi phục lại thành Date — khiến
+// normalizeSalesData() (utils/dataUtils.ts) không bao giờ trúng "fast path"
+// (row.parsedDate instanceof Date) ở đúng trường hợp phổ biến nhất (mở lại app, đọc dữ liệu
+// đã lưu trong IndexedDB), luôn phải parse lại ngày cho MỌI dòng. Mirror đúng pattern đã có sẵn
+// và đúng ở services/cloudDataService.ts (downloadProcessedData) — áp dụng ngay sau mỗi
+// JSON.parse() bên dưới, không đổi định dạng lưu trữ (chỉ sửa bên đọc).
+function restoreParsedDates(rows: DataRow[] | null | undefined): void {
+    if (!rows) return;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (row && typeof row.parsedDate === 'string') {
+            row.parsedDate = new Date(row.parsedDate);
+        }
+    }
+}
+
 // --- Sales Data ---
 export async function saveSyncCloudData(
     data: DataRow[],
@@ -142,6 +159,7 @@ export async function getSalesData(): Promise<StoredSalesData | null> {
                         if (typeof res === 'string') {
                             try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse salesData', e); }
                         }
+                        restoreParsedDates(res?.data);
                         resolve(res || null);
                     }
                 };
@@ -331,6 +349,7 @@ export async function getSalesFileData(fileId: string): Promise<DataRow[] | null
                         if (typeof res === 'string') {
                             try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse file data', e); }
                         }
+                        restoreParsedDates(res);
                         resolve(res || null);
                     }
                 };
@@ -538,6 +557,7 @@ export async function getTempRealtimeData(): Promise<StoredSalesData | null> {
                         if (typeof res === 'string') {
                             try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse tempRealtimeData', e); }
                         }
+                        restoreParsedDates(res?.data);
                         resolve(res || null);
                     }
                 };
@@ -682,6 +702,13 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
         let latestHistSavedAt = 0;
         let maxHistFileLastModified = 0;
 
+        // PERF FIX: bắn request tempRealtime đi NGAY — song song với toàn bộ khối đọc/gộp file
+        // lịch sử bên dưới (kể cả nhánh fallback getSalesData() legacy) — 2 việc này độc lập
+        // hoàn toàn với nhau. Trước đây await tuần tự SAU khi khối lịch sử xong, dù không có phụ
+        // thuộc dữ liệu nào giữa 2 bên. Chỉ await ở đúng chỗ dùng (bên dưới) để không đổi thứ tự
+        // xử lý logic hiện có.
+        const tempRealtimePromise = getTempRealtimeData();
+
         const fileDataArray = await Promise.all(activeFiles.map(file => getSalesFileData(file.id)));
         for (let i = 0; i < activeFiles.length; i++) {
             const file = activeFiles[i];
@@ -723,7 +750,7 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
         }
 
         // Load temporary realtime data
-        const tempRealtime = await getTempRealtimeData();
+        const tempRealtime = await tempRealtimePromise;
 
         // Merge datasets
         const combinedData: DataRow[] = [];
