@@ -327,6 +327,10 @@
     "nonSemanticColor": 4,
     "missingMobileToolbar": 0
   },
+  "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
+    "nonSemanticColor": 6,
+    "missingMobileToolbar": 0
+  },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 32,
     "missingMobileToolbar": 0

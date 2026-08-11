@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon } from '../Icons';
+import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon } from '../Icons';
 import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -109,11 +109,13 @@ const RevenueView: React.FC<{
         return Math.max(1, totalDays - currentDay + 1);
     }, []);
 
+    // Màu theo TIẾN ĐỘ (so với % ngày đã trôi qua trong tháng) — khác với colorSettings (ngưỡng % cố định),
+    // nên giữ hàm riêng, chỉ chuẩn hoá lại 3 mã màu về đúng palette đã duyệt (rose/emerald/amber).
     const getHtColor = React.useCallback((htValue: number) => {
         const progress = timeProgressData.percentage;
-        if (htValue < progress) return '#ef4444'; 
-        if (htValue >= progress + 20) return '#22c55e'; 
-        return '#f97316'; 
+        if (htValue < progress) return '#f43f5e'; // rose-500
+        if (htValue >= progress + 20) return '#10b981'; // emerald-500
+        return '#f59e0b'; // amber-500
     }, [timeProgressData.percentage]);
 
     const getDynamicColor = React.useCallback((val: number, config: CriterionConfig) => {
@@ -242,12 +244,14 @@ const RevenueView: React.FC<{
                         onClick={() => setIsShowRemaining(p => !p)}
                         className={`gap-1.5 ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
                     >
-                        <input
-                            type="checkbox"
-                            checked={isShowRemaining}
-                            onChange={() => {}} // handled by button click
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer pointer-events-none"
-                        />
+                        {/* Trạng thái bật/tắt do Button cha xử lý onClick — dùng span trang trí thay <input type="checkbox">
+                            thật để tránh 1 phần tử form không tương tác trực tiếp được (RULES.md §2.5). */}
+                        <span
+                            aria-hidden="true"
+                            className={`h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors ${isShowRemaining ? 'bg-amber-600 border-amber-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}
+                        >
+                            {isShowRemaining && <CheckCircleIcon className="h-3 w-3 text-white" />}
+                        </span>
                         <span>Còn lại</span>
                     </Button>
                 </div>

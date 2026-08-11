@@ -19,66 +19,6 @@ const LEVEL_NUMBERS: Record<string, number> = {
     hang: 5
 };
 
-const VIEW_LEVELS = [
-    { value: 1, label: 'Cấp 1: Bộ phận' },
-    { value: 2, label: 'Cấp 2: Nhân viên' },
-    { value: 3, label: 'Cấp 3: Ngành hàng' },
-    { value: 4, label: 'Cấp 4: Nhóm hàng' },
-    { value: 5, label: 'Cấp 5: Hãng' },
-];
-
-const LevelSelect: React.FC<{
-    value: number;
-    onChange: (val: number) => void;
-    options: { value: number; label: string }[];
-    widthClass?: string;
-}> = ({ value, onChange, options, widthClass = 'w-36' }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const selectedOption = options.find(opt => opt.value === value);
-    const displayValue = selectedOption ? selectedOption.label : 'Cấp độ xem';
-
-    return (
-        <div className={`relative ${widthClass} z-40`} ref={ref}>
-            <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsOpen(!isOpen)}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left font-bold"
-            >
-                <span className="truncate">{displayValue}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 dark:text-slate-500 shrink-0" />
-            </Button>
-            {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col">
-                    <div className="overflow-y-auto text-[11px]">
-                        {options.map(opt => (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                key={opt.value}
-                                onClick={() => { onChange(opt.value); setIsOpen(false); }}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt.value ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
-                            >
-                                {opt.label}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
 interface DetailTabProps {
     rawData: string;
     supermarketName: string;

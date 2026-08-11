@@ -52,10 +52,10 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
             <div className="w-full max-w-md mt-2">
                 <div className="relative group">
                     {/* Glow effect behind */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/40 via-rose-500/40 to-sky-500/40 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
-                    
-                    <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
-                        <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/40 via-rose-500/40 to-sky-500/40 rounded-xl blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+
+                    <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-xl p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
+                        <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-xl overflow-hidden border border-slate-100 dark:border-white/5 p-5">
                             
                             <div className="flex flex-col items-center gap-4">
                                 <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">

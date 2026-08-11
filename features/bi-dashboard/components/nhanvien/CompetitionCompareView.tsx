@@ -312,7 +312,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 pb-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-4 sm:p-6 mt-4">
+        <div className="space-y-4 pb-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-6 mt-4">
             {/* Auto Pairing Quick Select */}
             {autoPairs.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
@@ -362,11 +362,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             </div>
 
             {(!empA || !empB) ? (
-                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                     Vui lòng chọn 2 nhân viên để bắt đầu so sánh.
                 </div>
             ) : (
-                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
                     {/* Header Banner */}
                     <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />

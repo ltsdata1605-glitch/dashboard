@@ -12,6 +12,20 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
 
+// 6 họ màu semantic đã duyệt (CLAUDE.md mục 2), xoay vòng cho từng cột thi đua. Dùng class
+// literal đầy đủ (không nội suy chuỗi bg-${color}-50) để Tailwind JIT chắc chắn sinh CSS ở build
+// production — trước đây dùng template literal với biến, JIT không nhận diện được và còn lẫn
+// violet/teal ngoài palette.
+const HEADER_COLUMN_COLOR_KEYS = ['sky', 'emerald', 'amber', 'indigo', 'rose', 'slate'] as const;
+const HEADER_COLUMN_THEMES: Record<typeof HEADER_COLUMN_COLOR_KEYS[number], string> = {
+    sky: 'border-b-sky-400 bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50',
+    emerald: 'border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
+    amber: 'border-b-amber-400 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50',
+    indigo: 'border-b-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
+    rose: 'border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50',
+    slate: 'border-b-slate-400 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/50',
+};
+
 interface CompetitionSummaryViewProps {
     employees: Employee[];
     selectedTitles: string[];
@@ -487,20 +501,19 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             </div>
                                         </th>
                                         {(() => {
-                                            const colors = ['sky', 'emerald', 'amber', 'violet', 'rose', 'teal'];
                                             return visibleHeaders.map((header, index) => {
-                                                const color = colors[index % colors.length];
+                                                const colorKey = HEADER_COLUMN_COLOR_KEYS[index % HEADER_COLUMN_COLOR_KEYS.length];
                                                 const isDragging = draggedIndex === index;
                                                 return (
-                                                    <th 
-                                                        key={header.title} 
+                                                    <th
+                                                        key={header.title}
                                                         draggable
                                                         onDragStart={(e) => handleDragStart(e, index)}
                                                         onDragOver={(e) => handleDragOver(e, index)}
                                                         onDrop={(e) => handleDrop(e, index)}
                                                         onDragEnd={() => setDraggedIndex(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`px-1.5 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-${color}-400 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_COLUMN_THEMES[colorKey]} min-w-[65px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex items-center justify-center gap-1">

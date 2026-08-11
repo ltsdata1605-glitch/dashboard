@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
 
-// --- Vivid/Hot Color Palette ---
+// Bảng màu chọn nhanh — giới hạn đúng 6 họ màu semantic đã duyệt (CLAUDE.md mục 2),
+// cấm tự thêm màu ngoài palette (vd cyan/vàng/cam/hồng/tím trước đây).
 export const VIVID_COLORS = [
-    { hex: '#22c55e', name: 'Xanh lá' },
-    { hex: '#3b82f6', name: 'Xanh dương' },
-    { hex: '#06b6d4', name: 'Xanh lơ' },
-    { hex: '#eab308', name: 'Vàng' },
-    { hex: '#f97316', name: 'Cam' },
-    { hex: '#ef4444', name: 'Đỏ' },
-    { hex: '#ec4899', name: 'Hồng' },
-    { hex: '#a855f7', name: 'Tím' },
-    { hex: '#475569', name: 'Xám' },
+    { hex: '#10b981', name: 'Emerald (Tốt)' },
+    { hex: '#0ea5e9', name: 'Sky (Chính)' },
+    { hex: '#f59e0b', name: 'Amber (Cảnh báo)' },
+    { hex: '#f43f5e', name: 'Rose (Xấu)' },
+    { hex: '#6366f1', name: 'Indigo' },
+    { hex: '#64748b', name: 'Slate' },
 ];
 
 export interface RangeConfig {
@@ -36,12 +34,12 @@ export interface ColorSettings {
 }
 
 export const DEFAULT_COLOR_SETTINGS: ColorSettings = {
-    ht: { good: { threshold: 100, color: '#22c55e' }, average: { threshold: 85, color: '#eab308' }, bad: { color: '#ef4444' } },
-    hqqd: { good: { threshold: 35, color: '#22c55e' }, average: { threshold: 30, color: '#eab308' }, bad: { color: '#ef4444' } },
-    tragop: { good: { threshold: 45, color: '#22c55e' }, average: { threshold: 40, color: '#eab308' }, bad: { color: '#ef4444' } },
-    dtqd: { good: { threshold: 50, color: '#3b82f6' }, average: { threshold: 20, color: '#eab308' }, bad: { color: '#ef4444' } },
-    dtthuc: { good: { threshold: 50, color: '#475569' }, average: { threshold: 20, color: '#eab308' }, bad: { color: '#ef4444' } },
-    bankem: { good: { threshold: 20, color: '#22c55e' }, average: { threshold: 10, color: '#eab308' }, bad: { color: '#ef4444' } },
+    ht: { good: { threshold: 100, color: '#10b981' }, average: { threshold: 85, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    hqqd: { good: { threshold: 35, color: '#10b981' }, average: { threshold: 30, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    tragop: { good: { threshold: 45, color: '#10b981' }, average: { threshold: 40, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    dtqd: { good: { threshold: 50, color: '#0ea5e9' }, average: { threshold: 20, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    dtthuc: { good: { threshold: 50, color: '#64748b' }, average: { threshold: 20, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    bankem: { good: { threshold: 20, color: '#10b981' }, average: { threshold: 10, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
 };
 
 export const CompactColorPicker: React.FC<{ selected: string; onSelect: (hex: string) => void }> = ({ selected, onSelect }) => (

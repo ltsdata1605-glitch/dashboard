@@ -4,7 +4,6 @@ import { DownloadIcon, XIcon, CheckCircleIcon, ChevronDownIcon, ResetIcon, Alert
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
-import Slider from './Slider';
 import Card from './Card';
 import * as db from '../utils/db';
 import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
@@ -13,6 +12,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Tabs } from '../../../components/shared/ui/Tabs';
+import { Input } from '../../../components/shared/ui/Input';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
@@ -56,12 +56,13 @@ const BulkRenameModal: React.FC<{
             subTitle="Cấu hình tên hiển thị và tái định vị các nhóm. Thông tin sẽ đồng bộ toàn báo cáo."
             maxWidth="2xl"
             controls={
-                <input
+                <Input
                     type="text"
+                    fullWidth={false}
                     placeholder="Tìm kiếm nhóm BI..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-40 sm:w-64 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                    className="w-40 sm:w-64 bg-white dark:bg-slate-900 rounded-xl border-sky-200 dark:border-sky-800 text-sm focus-visible:ring-sky-500/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
                 />
             }
             footer={
@@ -76,28 +77,28 @@ const BulkRenameModal: React.FC<{
                     {availableGroups.map(g => <option key={g} value={g} />)}
                 </datalist>
                 {filteredComps.length > 0 ? filteredComps.map(comp => (
-                        <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
+                        <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
                             <div className="flex-1 min-w-0">
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên gốc trong BI</p>
                                 <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{comp.name}</p>
                             </div>
                             <div className="flex-1">
                                 <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Tên hiển thị mới</p>
-                                <input 
+                                <Input
                                     value={tempName[comp.name] ?? ''}
                                     onChange={e => setTempName({...tempName, [comp.name]: e.target.value})}
                                     placeholder={shortenName(comp.name)}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="bg-white dark:bg-slate-950 rounded-xl border-slate-200 dark:border-slate-700 text-xs font-bold focus-visible:ring-sky-500/10 focus-visible:border-sky-400 placeholder:text-slate-300"
                                 />
                             </div>
                             <div className="flex-1">
                                 <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
-                                <input 
+                                <Input
                                     list="group-list"
                                     value={tempGroup[comp.name] ?? ''}
                                     onChange={e => setTempGroup({...tempGroup, [comp.name]: e.target.value})}
                                     placeholder={comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="bg-white dark:bg-slate-950 rounded-xl border-slate-200 dark:border-slate-700 text-xs font-bold focus-visible:ring-sky-500/10 focus-visible:border-sky-400 placeholder:text-slate-300"
                                 />
                             </div>
                         </div>
@@ -119,7 +120,7 @@ const StatusTile: React.FC<{
     onClear: (title: string) => void;
     error?: string | null;
     icon?: React.ReactNode;
-    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'purple';
+    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo';
     downloadUrl?: string;
 }> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl }) => {
     const [isPasting, setIsPasting] = useState(false);
@@ -150,7 +151,7 @@ const StatusTile: React.FC<{
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700 shadow-sm',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
-        purple: {
+        indigo: {
             wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
             text: 'text-indigo-800 dark:text-indigo-200',
             iconActive: 'text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 shadow-sm',
@@ -329,7 +330,7 @@ const CompetitionTarget: React.FC<{
                 });
 
                 return (
-                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-2xl p-6">
+                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl rounded-xl p-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-3">
                                 <h3 className="text-[14px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
@@ -606,7 +607,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=1`}
-                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="purple"
+                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="indigo"
                                     onChange={(v) => { setDanhSachData(v); handleUpdate('danhSach', v, s => s.includes('Nhân viên	DTLK	DTQĐ'), setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); }}
                                     onClear={(title) => { 
                                         setDanhSachData(''); 
