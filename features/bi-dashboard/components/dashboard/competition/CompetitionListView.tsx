@@ -111,7 +111,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     </td>
                                                     {program.data.map((cell, cIdx: number) => {
                                                         const header = headers[cIdx];
-                                                        if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
+                                                        // Một số chương trình thi đua trong cùng 1 lần dán có số cột khác nhau (VD có/không
+                                                        // có cột "%HTDK V.Trội") — parseCompetitionDataBySupermarket() lưu headers dùng
+                                                        // chung cho cả siêu thị nên có thể ngắn hơn data của 1 vài chương trình cụ thể.
+                                                        // Bỏ qua cột thừa thay vì crash toàn trang.
+                                                        if (header === undefined || hiddenColumns.includes(header) || header === 'Còn Lại') return null;
 
                                                         const isNumericToRound = numericHeadersToRound.has(header);
                                                         const isPercentToRound = percentHeadersToRound.has(header);

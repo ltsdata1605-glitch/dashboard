@@ -30,8 +30,8 @@ interface CompetitionTabProps {
     versions: Version[];
     activeVersionName: string | 'new' | null;
     setActiveVersionName: React.Dispatch<React.SetStateAction<string | 'new' | null>>;
-    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh';
-    setActiveCompetitionTab: (c: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh') => void;
+    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'tatca' | 'sosanh';
+    setActiveCompetitionTab: (c: Criterion | 'nhom' | 'canhan' | 'tong' | 'tatca' | 'sosanh') => void;
     onVersionTabClick: (version: Version) => void;
     onStartNewVersion: () => void;
     onCancelNewVersion: () => void;
@@ -378,6 +378,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const totalFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().length;
     const isFiltered = activeFilterCount < totalFilterCount;
 
+    // Tab "Tổng" — luôn hiển thị TẤT CẢ nhóm hàng thi đua hiện có (không cho tự chọn cột,
+    // khác với tab "Tuỳ chỉnh" nơi người dùng tự chọn/lưu nhiều bảng riêng).
+    const allCompetitionTitles = useMemo(() => {
+        return (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[])
+            .flatMap(c => c.headers.map(h => h.title));
+    }, [allCompetitionsByCriterion]);
+
     // --- Logic cho tab Tổng ---
     const handleAddSummaryTable = () => {
         setSummaryTables(prev => {
@@ -439,7 +446,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             {/* Toolbar bar - giống Trả Góp */}
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-2 items-center">
-                    {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
+                    {([['tatca', 'Tổng'], ['nhom', 'Nhóm'], ['tong', 'Tuỳ chỉnh'], ['canhan', 'Cá nhân'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
                         <Button
                             variant="secondary"
                             size="sm"
@@ -604,6 +611,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 installmentRows={installmentRows}
                                 banKemRows={banKemRows}
                                 bonusData={bonusData}
+                            />
+                        )}
+                        {activeCompetitionTab === 'tatca' && (
+                            <CompetitionSummaryView
+                                employees={filteredEmployees as Employee[]}
+                                selectedTitles={allCompetitionTitles}
+                                onUpdateTitles={() => {}}
+                                onDelete={() => {}}
+                                onRename={() => {}}
+                                allCompetitionsByCriterion={allCompetitionsByCriterion}
+                                employeeDataMap={employeeDataMap}
+                                employeeCompetitionTargets={employeeCompetitionTargets}
+                                supermarketName={supermarket || 'TongHop'}
+                                tableName="Tổng hợp tất cả nhóm hàng"
+                                readOnly
                             />
                         )}
                         {activeCompetitionTab === 'tong' && (

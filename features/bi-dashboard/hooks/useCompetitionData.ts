@@ -6,7 +6,7 @@ interface UseCompetitionDataProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }>;
     allCompetitionsByCriterion: Record<Criterion, { headers: CompetitionHeader[] }>;
     selectedCompetitions: Set<string>;
-    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh';
+    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'tatca' | 'sosanh';
     activeDepartments: string[];
     employeeCompetitionTargets: Map<string, Map<string, number>>;
     allEmployees: Employee[];
@@ -44,7 +44,7 @@ export const useCompetitionData = ({
 
     const relevantCompetitions = useMemo(() => {
         if (isActive === false) return {} as Record<string, { headers: CompetitionHeader[] }>;
-        if (activeCompetitionTab === 'nhom' || activeCompetitionTab === 'canhan' || activeCompetitionTab === 'tong') {
+        if (activeCompetitionTab === 'nhom' || activeCompetitionTab === 'canhan' || activeCompetitionTab === 'tong' || activeCompetitionTab === 'tatca') {
              return allCompetitionsByCriterion;
         }
         return { [activeCompetitionTab]: allCompetitionsByCriterion[activeCompetitionTab] } as Record<string, { headers: CompetitionHeader[] }>;

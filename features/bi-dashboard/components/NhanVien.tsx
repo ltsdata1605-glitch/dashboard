@@ -141,7 +141,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees, isActive]);
 
     // Fix: Updated type to include 'tong'
-    const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
+    const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'tatca' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
     const [highlightedEmpArray, setHighlightedEmpArray] = useIndexedDBState<string[]>('highlight-employees-multi', []);
     const highlightedEmployees = useMemo(() => new Set(highlightedEmpArray), [highlightedEmpArray]);
     const setHighlightedEmployees = useCallback((updater: React.SetStateAction<Set<string>>) => { 
