@@ -47,6 +47,9 @@ export type { ProgressBarProps } from './ProgressBar';
 export { Dropdown, DropdownButton } from './Dropdown';
 export type { DropdownProps, DropdownItem, DropdownButtonProps } from './Dropdown';
 
+export { MultiSelectDropdown } from './MultiSelectDropdown';
+export type { MultiSelectDropdownProps, MultiSelectDropdownOption } from './MultiSelectDropdown';
+
 // Section-level patterns (Design upgrade — DESIGN_SYSTEM_MODERN.md)
 export { SectionCard } from './SectionCard';
 export { SectionHeader } from './SectionHeader';

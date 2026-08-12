@@ -1,5 +1,5 @@
-import { useWorker } from "../hooks/useWorker";import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, ChevronDownIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
+import { useWorker } from "../hooks/useWorker";import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -8,7 +8,6 @@ import { CompetitionTab } from './nhanvien/CompetitionTab';
 import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
 import { shortenSupermarketName, parseNumber } from '../utils/dashboardHelpers';
-import { Switch } from './dashboard/DashboardWidgets';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -20,9 +19,8 @@ import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
-import { Button } from '../../../components/shared/ui/Button';
 import { Tabs } from '../../../components/shared/ui/Tabs';
-import { onActivateKey } from '../../../components/shared/ui';
+import { MultiSelectDropdown } from '../../../components/shared/ui/MultiSelectDropdown';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
@@ -64,9 +62,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [activeTab]);
 
-    const [isSmFilterOpen, setIsSmFilterOpen] = useState(false);
-    const smRef = useRef<HTMLDivElement>(null);
-
     const [editingBonusEmployee, setEditingBonusEmployee] = useState<Employee | null>(null);
     const [isBatchBonusMode, setIsBatchBonusMode] = useState(false);
     const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
@@ -97,18 +92,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         setBonusPeriodLabel,
         dataVersion
     } = data;
-
-    const [isDeptFilterOpen, setIsDeptFilterOpen] = useState(false);
-    const deptRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (deptRef.current && !deptRef.current.contains(event.target as Node)) setIsDeptFilterOpen(false);
-            if (smRef.current && !smRef.current.contains(event.target as Node)) setIsSmFilterOpen(false);
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const handleBonusModalClose = (reason: 'save' | 'skip' | 'stop') => {
         if (!isBatchBonusMode || reason === 'stop') {
@@ -321,65 +304,35 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <div className="flex flex-1 sm:flex-none w-full sm:w-auto justify-end">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx */}
                     <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        {/* Supermarket Filter */}
-                        <div className="relative w-full sm:w-auto min-w-0 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-700" ref={smRef}>
-                            <Button variant="unstyled" size="none" onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                    <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                                    <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}</span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                    <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
-                                    <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
-                                </div>
-                            </Button>
-                            {isSmFilterOpen && (
-                                <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
-                                    <div className="space-y-0.5">
-                                        <div role="button" tabIndex={0} onClick={() => toggleSupermarket('all')} onKeyDown={onActivateKey(() => toggleSupermarket('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span className="text-xs font-black text-sky-600 dark:text-sky-400">Chọn tất cả</span>
-                                            <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
-                                        </div>
-                                        {Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => (
-                                            <div key={sm} role="button" tabIndex={0} onClick={() => toggleSupermarket(sm)} onKeyDown={onActivateKey(() => toggleSupermarket(sm))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
-                                                <Switch checked={activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm))} onChange={() => {}} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Department Filter (Mới bổ sung) */}
-                        <div className="relative w-full sm:w-auto min-w-0" ref={deptRef}>
-                            <Button variant="unstyled" size="none" onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                    <ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                                    <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                    <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
-                                    <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
-                                </div>
-                            </Button>
-                            {isDeptFilterOpen && (
-                                <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
-                                    <div className="space-y-0.5">
-                                        <div role="button" tabIndex={0} onClick={() => toggleDepartment('all')} onKeyDown={onActivateKey(() => toggleDepartment('all'))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span className="text-xs font-black text-sky-600 dark:text-sky-400">Tất cả bộ phận</span>
-                                            <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
-                                        </div>
-                                        {departmentOptions.map(dept => (
-                                            <div key={dept} role="button" tabIndex={0} onClick={() => toggleDepartment(dept)} onKeyDown={onActivateKey(() => toggleDepartment(dept))} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
-                                                <Switch checked={activeDepartments.includes(dept) || activeDepartments.includes('all')} onChange={() => {}} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <MultiSelectDropdown
+                            className="border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-700"
+                            icon={<BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            triggerLabel={activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
+                            count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
+                            allLabel="Chọn tất cả"
+                            allChecked={activeSupermarkets.length === supermarkets.length}
+                            onToggleAll={() => toggleSupermarket('all')}
+                            options={Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => ({
+                                key: sm,
+                                label: shortenSupermarketName(sm),
+                                checked: activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm)),
+                            }))}
+                            onToggleOption={toggleSupermarket}
+                        />
+                        <MultiSelectDropdown
+                            icon={<ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            triggerLabel={activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}
+                            count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
+                            allLabel="Tất cả bộ phận"
+                            allChecked={activeDepartments.includes('all')}
+                            onToggleAll={() => toggleDepartment('all')}
+                            options={departmentOptions.map(dept => ({
+                                key: dept,
+                                label: dept,
+                                checked: activeDepartments.includes(dept) || activeDepartments.includes('all'),
+                            }))}
+                            onToggleOption={toggleDepartment}
+                        />
                     </div>
                 </div>
             </div>
