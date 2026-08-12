@@ -188,7 +188,7 @@ const InstallmentTab: React.FC<{
             }
         });
 
-        if (totalRow && !exportDeptFilter && !isFiltering) {
+        if (totalRow && !exportDeptFilter) {
             finalOutput.push({ ...calculateRowWithComparison(totalRow), rank: 0 });
         }
 

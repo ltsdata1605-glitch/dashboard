@@ -1,4 +1,5 @@
 import { parseNumber } from "../../../utils/dataUtils";
+import { isLevel0 } from "./dashboardHelpers";
 /**
  * Parser for 4-level employee revenue detail data.
  * Hierarchy: Department > Employee > Ngành hàng (NNH) > Nhóm hàng > Hãng
@@ -17,43 +18,6 @@ export interface DetailNode {
 
 
 
-
-const isLevel0 = (name: string): boolean => {
-    const clean = name.trim().toUpperCase();
-    if (clean.startsWith('NNH ')) return true;
-    const level0Names = new Set([
-        'VAS',
-        'PHỤ KIỆN',
-        'TABLET',
-        'ĐIỆN THOẠI',
-        'LAPTOP',
-        'ĐỒNG HỒ',
-        'ỐP LƯNG',
-        'GIA DỤNG',
-        'ĐIỆN LẠNH',
-        'ĐIỆN TỬ',
-        'XE ĐẠP',
-        'MÁY CŨ',
-        'MẸ VÀ BÉ',
-        'ICT',
-        'BẢO HÀNH',
-        'ĐIỆN THOẠI CŨ',
-        'LAPTOP CŨ',
-        'PHÂN KHU KHÁC',
-        'THIẾT BỊ VĂN PHÒNG',
-        'ĐIỆN THOẠI - TABLET',
-        'ĐIỆN THOẠI & TABLET',
-        'PHỤ KIỆN LAPTOP',
-        'PHỤ KIỆN ĐIỆN THOẠI',
-        'PHỤ KIỆN KHÁC',
-        'MÁY LẠNH',
-        'TỦ LẠNH',
-        'MÁY GIẶT',
-        'TIVI',
-        'GIA DỤNG NHÀ BẾP'
-    ]);
-    return level0Names.has(clean);
-};
 
 /**
  * Detect row level from context:
