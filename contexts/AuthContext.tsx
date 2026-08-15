@@ -15,6 +15,11 @@ interface AuthContextType {
     expiresAt?: Date | null;
     status?: 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
     isLoading: boolean;
+    // true khi Ultra-Fast Boot tắt spinner sớm dựa trên cache role/status/departmentId hợp lệ,
+    // nhưng Firebase `onAuthStateChanged` (nguồn của `user`) chưa kịp xác nhận xong — App.tsx
+    // dùng cờ này để KHÔNG hiện màn Login trong khoảng vài chục ms đó (xem giải thích ở effect
+    // Ultra-Fast Boot bên dưới). Tự trở về false ngay khi Firebase xác nhận thật sự đã đăng xuất.
+    hasCachedSession: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     isDemoMode: boolean;
@@ -37,7 +42,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [employeeName, setEmployeeName] = useState<string | undefined>(undefined);
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
     const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
-    
+    const [hasCachedSession, setHasCachedSession] = useState(false);
+
     useEffect(() => {
         cleanupGarbageKeys().catch(console.error);
         Promise.all([
@@ -63,8 +69,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // mới vào trang" dù đã đăng nhập đúng quyền. App.tsx chỉ vào thẳng dashboard khi
             // status==='approved' VÀ (role==='admin' HOẶC có departmentId hợp lệ) — lặp lại đúng
             // 2 điều kiện đó ở đây để không bao giờ tắt spinner sớm cho 1 state sẽ hiện màn KHÁC.
+            //
+            // hasCachedSession: cache này (IndexedDB riêng của app) và `onAuthStateChanged` (nguồn
+            // của `user`, IndexedDB riêng của Firebase SDK) là 2 round-trip bất đồng bộ ĐỘC LẬP —
+            // cache này thường xong TRƯỚC. Nếu chỉ setIsLoading(false) mà không báo cho App.tsx
+            // biết, App.tsx sẽ thấy `user === null` (Firebase chưa kịp xác nhận) và hiện nhầm màn
+            // Login trong vài chục ms trước khi `user` cập nhật — đúng dấu hiệu "nháy qua màn đăng
+            // nhập rồi mới vào trang" dù máy đã đăng nhập sẵn. hasCachedSession báo App.tsx bỏ qua
+            // màn Login trong lúc chờ, vào thẳng dashboard bằng dữ liệu cache.
             if (s === 'approved' && (r === 'admin' || (d && d.trim() !== ''))) {
                 setIsLoading(false);
+                setHasCachedSession(true);
             }
         }).catch(console.error);
     }, []);
@@ -178,6 +193,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setEmployeeName(undefined);
                 setExpiresAt(null);
                 setStatus('new');
+                // Firebase đã xác nhận THẬT SỰ không có phiên đăng nhập — tắt cờ "tin cache" để
+                // App.tsx quay lại hiện đúng màn Login (không còn lý do bỏ qua nữa).
+                setHasCachedSession(false);
                 saveSetting('cached_user_role', null).catch(() => {});
                 saveSetting('cached_user_status', null).catch(() => {});
                 saveSetting('cached_dept_id', null).catch(() => {});
@@ -225,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const activeStatus = isDemoMode ? 'approved' : status;
 
     return (
-        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess, functions, db }}>
+        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, hasCachedSession, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess, functions, db }}>
             {children}
         </AuthContext.Provider>
     );
@@ -236,6 +254,7 @@ const SAFE_AUTH_FALLBACK: AuthContextType = {
     user: null,
     userRole: null,
     isLoading: true,
+    hasCachedSession: false,
     loginWithGoogle: async () => { console.warn('[Auth] loginWithGoogle called outside AuthProvider'); },
     logout: async () => { console.warn('[Auth] logout called outside AuthProvider'); },
     isDemoMode: false,

@@ -133,7 +133,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
     const { activeTab } = useActiveTab();
-    const { user, userRole, isDemoMode, isLoading, departmentId, status } = useAuth();
+    const { user, userRole, isDemoMode, isLoading, departmentId, status, hasCachedSession } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
     React.useEffect(() => {
@@ -209,8 +209,11 @@ function AppContent() {
          );
     }
 
-    // Nếu chưa đăng nhập và cũng chưa bật chế độ Demo -> Bắt buộc ở màn Login
-    if (!user && !isDemoMode) {
+    // Nếu chưa đăng nhập và cũng chưa bật chế độ Demo -> Bắt buộc ở màn Login.
+    // Bỏ qua khi hasCachedSession=true: Ultra-Fast Boot đã xác nhận qua cache là phiên hợp lệ,
+    // chỉ đang chờ Firebase SDK xác nhận lại `user` (thường vài chục ms) — không hiện nhầm màn
+    // Login trong lúc chờ (xem chú thích chi tiết ở AuthContext.tsx).
+    if (!user && !isDemoMode && !hasCachedSession) {
         return <LoginView />;
     }
 
