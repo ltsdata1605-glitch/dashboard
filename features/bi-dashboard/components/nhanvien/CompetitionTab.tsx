@@ -524,7 +524,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
                                                     {(Object.entries(relevantCompetitions) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
-                                                        const filteredComps = (data.headers || []).filter(c => c.title.toLowerCase().includes(filterSearch.toLowerCase()));
+                                                        // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải c.title thô — nếu không,
+                                                        // gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
+                                                        const filteredComps = (data.headers || []).filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()));
                                                         if (filteredComps.length === 0) return null;
                                                         return (
                                                             <div key={criterion}>

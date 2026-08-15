@@ -519,7 +519,9 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                         {(Object.entries(allCompetitionsByCriterion) as [string, { headers: CompetitionHeader[] }][]).map(([criterion, competitionsData]) => {
                                             const competitions = competitionsData.headers || [];
                                             if (competitions.length === 0) return null;
-                                            const filteredComps = competitions.filter(c => c.title.toLowerCase().includes(filterSearch.toLowerCase()));
+                                            // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải c.title thô — nếu không,
+                                            // gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
+                                            const filteredComps = competitions.filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()));
                                             if (filteredComps.length === 0) return null;
                                             return (
                                                 <div key={criterion}>
