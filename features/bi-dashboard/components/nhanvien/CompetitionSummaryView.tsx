@@ -665,7 +665,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all"
+                                            className="px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>%Đạt</span>
@@ -683,7 +683,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-rose-400 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-200 dark:hover:bg-rose-900/60 transition-all"
+                                            className="px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
@@ -750,8 +750,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const datPercent = totalHeaderCount > 0 ? (dat / totalHeaderCount) * 100 : 0;
                                                     const isBelowStore = datPercent < storeDatPercent;
                                                     const datPercentColorClass = isBelowStore
-                                                        ? 'text-rose-700 dark:text-rose-300 font-extrabold bg-rose-100/40 dark:bg-rose-900/20'
-                                                        : 'text-emerald-800 dark:text-emerald-300 font-extrabold bg-emerald-100/40 dark:bg-emerald-900/20';
+                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        : 'text-emerald-700 dark:text-emerald-400 font-extrabold bg-emerald-50/40 dark:bg-emerald-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datPercentColorClass}`}>
                                                             {datPercent > 0 ? `${roundUp(datPercent)}%` : '0%'}
@@ -761,8 +761,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 {(() => {
                                                     const isRed = tongBot > 0 && tongBotRedCutoff > 0 && tongBot >= tongBotRedCutoff;
                                                     const tongBotColorClass = isRed
-                                                        ? 'text-rose-600 dark:text-rose-455 font-extrabold bg-rose-50/20 dark:bg-rose-950/10'
-                                                        : 'text-slate-800 dark:text-slate-200 font-bold bg-slate-50/50 dark:bg-slate-900/30';
+                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
                                                             {tongBot > 0 ? tongBot : '-'}
@@ -771,8 +771,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 })()}
                                                 {(() => {
                                                     const noSale = getEmployeeNoSale(emp.name);
+                                                    const isNoSaleRed = noSale > 0;
+                                                    const noSaleColorClass = isNoSaleRed
+                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
-                                                        <td className="px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap font-bold text-slate-800 dark:text-slate-200 bg-slate-50/50 dark:bg-slate-900/30 tabular-nums">
+                                                        <td className={`px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${noSaleColorClass}`}>
                                                             {noSale > 0 ? noSale : '-'}
                                                         </td>
                                                     );
