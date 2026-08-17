@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.6
+// @version      2.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -97,7 +97,7 @@
  *
  * BẢN 2.3 — MỖI LẦN CLICK "CLICK+" CHỈ MỞ ĐÚNG 1 CẤP (+):
  * - Đặt ACP_MAX_ROUNDS = 1: Mỗi lần nhấn nút Click+, script chỉ mở toàn bộ các nút dấu cộng của cấp hiện tại,
- *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp voor người dùng.
+ *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp cho người dùng.
  *
  * BẢN 2.4 — TỰ ĐỘNG COPY ALL TOÀN BỘ DỮ LIỆU SAU MỖI LẦN MỞ 1 CẤP:
  * - Thực thi tự động Copy All ngay sau khi hoàn tất mở 1 cấp và chờ spinner tải xong 100%.
@@ -109,6 +109,11 @@
  * - Thêm bộ quét định kỳ 1s tự động đổi nhãn nút nổi thành `⚡ Click+` ngay khi chuyển tab có nút dấu cộng mới.
  * - Bổ sung đầy đủ selector cho DevExpress DataGrid (.dx-datagrid-group-closed, td.dx-command-expand).
  * - Siết chặt isPlusButton(): Kiểm tra trạng thái đã mở của thẻ cha (tr/td), tuyệt đối không click lại hàng đã mở (chống thu gọn).
+ *
+ * BẢN 2.7 — TÍCH HỢP DATASET TAGGING TỪ BOOKMARKLET & BẢO TOÀN DỮ LIỆU MỞ NHIỀU CẤP:
+ * - Đánh dấu HTML dataset `el.dataset.clickPlusDone = '1'` ngay khi click nút/hàng (từ thuật toán Bookmarklet).
+ * - Thêm `isAlreadyOpened(el)` kiểm tra các cờ DOM đa dạng (`aria-expanded="true"`, `data-state="open"`, `.fa-minus`).
+ * - Bảo toàn 100% dữ liệu qua kết hợp `accumulatedChunks` (MutationObserver) + `GM_setClipboard(finalText)`.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1034,11 +1039,31 @@
       });
     }
 
+    // --- Kiểm tra trạng thái đã mở rộng của hàng (thuật toán Bookmarklet) ---
+    function isAlreadyOpened(el) {
+      if (!el || !el.isConnected) return false;
+      if (el.dataset && el.dataset.clickPlusDone === '1') return true;
+
+      const clickable = el.closest ? el.closest('button, a, [role="button"], .cursor-pointer, tr, td, div') : null;
+      if (!clickable) return false;
+
+      if (clickable.dataset && clickable.dataset.clickPlusDone === '1') return true;
+      if (clickable.getAttribute('aria-expanded') === 'true') return true;
+      if (clickable.getAttribute('data-state') === 'open') return true;
+      if (clickable.querySelector('.fa-minus, .dx-datagrid-group-opened, .dx-command-collapse')) return true;
+
+      return false;
+    }
+
     // --- Tìm nút dấu cộng (quét cả document chính lẫn iframe cùng nguồn) ---
     function isPlusButton(el) {
       if (!el || !el.isConnected) return false;
 
-      // 1. Kiểm tra trạng thái đã mở (nút trừ / collapse) -> BỎ QUA TUYỆT ĐỐI
+      // Đã đánh dấu click qua dataset hoặc đã mở rộng -> BỎ QUA TUYỆT ĐỐI
+      if (el.dataset && el.dataset.clickPlusDone === '1') return false;
+      if (isAlreadyOpened(el)) return false;
+
+      // 1. Kiểm tra class đã mở (nút trừ / collapse)
       if (el.classList) {
         if (el.classList.contains('fa-minus') ||
             el.classList.contains('dx-datagrid-group-opened') ||
@@ -1121,9 +1146,13 @@
         }
       }
 
-      const uniqueButtons = Array.from(
-        new Set(allButtons.filter(el => isPlusButton(el) && isVisible(el)))
-      );
+      const validButtons = allButtons
+        .filter(el => isVisible(el))
+        .filter(el => isPlusButton(el))
+        .filter(el => !isAlreadyOpened(el))
+        .filter(el => el.dataset?.clickPlusDone !== '1');
+
+      const uniqueButtons = Array.from(new Set(validButtons));
 
       // Bước A: Loại bỏ các thẻ cha bao ngoài nếu thẻ con của nó cũng nằm trong danh sách click (chỉ giữ phần tử sâu nhất)
       const deepestButtons = uniqueButtons.filter(btnA => {
@@ -1140,7 +1169,7 @@
         if (excludeRows && (excludeRows.has(btn) || excludeRows.has(row))) {
           continue;
         }
-        if (seenRows.has(row)) {
+        if (seenRows.has(row) || isAlreadyOpened(row)) {
           continue;
         }
         seenRows.add(row);
@@ -1149,6 +1178,7 @@
 
       return finalButtons;
     }
+
 
 
     // Lấy nội dung text của các node vừa được thêm vào DOM bởi một click (dùng chung với waitForDomSettle).
@@ -1572,7 +1602,10 @@
                 for (const pb of batch) {
                   const row = getRowContainer(pb) || pb;
                   // Kiểm tra lại trước khi click: nếu đã mở hoặc không còn là nút plus -> bỏ qua ngay (chống thu gọn lại)
-                  if (!isPlusButton(pb)) continue;
+                  if (!isPlusButton(pb) || isAlreadyOpened(pb)) continue;
+
+                  if (pb.dataset) pb.dataset.clickPlusDone = '1';
+                  if (row.dataset) row.dataset.clickPlusDone = '1';
 
                   clickedItems.add(pb);
                   clickedItems.add(row);
