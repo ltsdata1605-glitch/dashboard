@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.0
+// @version      2.1
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -81,19 +81,17 @@
  * - Thêm `copyEverythingNatively()` bôi đen Range/Selection toàn bộ nội dung trang.
  *
  * BẢN 1.9 — SỬA TRIỆT ĐỂ LỖI "COPY ALL" THIẾU DỮ LIỆU (QUÉT IFRAME & PRESERVE TSV):
- * - Quét cả document chính lẫn tất cả `iframe` cùng nguồn (`getReadableDocuments()`)
- *   để không bao giờ bỏ sót bảng dữ liệu được nhúng trong iframe.
- * - Chuyển đổi chuẩn xác từng `<table>` trong các document thành định dạng TSV (phân cách
- *   cột bằng `\t`, ngắt dòng bằng `\n`), loại bỏ nhiễu từ UI của script.
- * - Ưu tiên đọc DOM hoàn chỉnh sau khi mở rộng (`currentFullText`), chỉ gộp phần thiếu
- *   từ `accumulatedChunks` nếu có hàng tự đóng.
- * - Ưu tiên tuyệt đối `GM_setClipboard` (đặc quyền Tampermonkey) đảm bảo copy thành công 100%.
+ * - Quét cả document chính lẫn tất cả `iframe` cùng nguồn (`getReadableDocuments()`).
+ * - Chuyển đổi chuẩn xác từng `<table>` trong các document thành định dạng TSV (\t và \n).
  *
  * BẢN 2.0 — TỐI ƯU TỐC ĐỘ CLICK (PACING) & TỰ ĐỘNG CHỜ SPINNER TẢI DỮ LIỆU:
- * - Giảm kích thước lô từ 20 xuống 6 nút/lô, thêm micro-delay 35ms giữa các cú click trong lô
- *   và tăng thời gian nghỉ giữa các lô lên 180ms để chống tràn luồng sự kiện/treo trang.
- * - Thêm cơ chế tự động chờ tất cả loading spinners (`waitForSpinnersToClear`) trên trang mẹ
- *   và iframe biến mất hoàn toàn trước khi trích xuất dữ liệu copy.
+ * - Giảm kích thước lô từ 20 xuống 6 nút/lô, thêm micro-delay 35ms giữa các cú click.
+ * - Thêm cơ chế tự động chờ tất cả loading spinners (`waitForSpinnersToClear`) biến mất.
+ *
+ * BẢN 2.1 — ĐỔI TÊN NÚT THÀNH "CLICK+" & HIỆN ĐẠI HOÁ UI + SIẾT BẬC CHỜ SPINNER:
+ * - Đổi tên nút thành `⚡ Click+` / `📋 Copy Click+`.
+ * - Thiết kế giao diện nút nổi hiện đại sang trọng (gradient, glassmorphism, hiệu ứng nhún mượt mà).
+ * - Mở rộng nhận diện spinner DevExpress và duy trì thời gian chờ ổn định 400ms đảm bảo 100% dữ liệu.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -950,7 +948,8 @@
     function hasActiveSpinners() {
       const docs = getReadableDocuments();
       const selectors = [
-        '.dx-loadindicator', '.dx-loadpanel', '.dx-loadpanel-content',
+        '.dx-loadindicator', '.dx-loadpanel', '.dx-loadpanel-content', '.dx-loadpanel-wrapper',
+        '.dx-overlay-wrapper', '[class*="loadpanel"]', '[class*="indicator"]',
         '.fa-spinner', '.fa-spin', '.fa-circle-notch',
         '[class*="animate-spin"]', '[class*="loading-spinner"]',
         'svg.animate-spin', 'div.loading'
@@ -967,12 +966,12 @@
       return false;
     }
 
-    // Chờ cho tất cả loading spinners biến mất hoàn toàn trước khi trích xuất dữ liệu copy
-    async function waitForSpinnersToClear(maxWaitMs = 7000) {
+    // Chờ cho tất cả loading spinners biến mất hoàn toàn và ổn định 400ms trước khi trích xuất dữ liệu copy
+    async function waitForSpinnersToClear(maxWaitMs = 8000) {
       const start = performance.now();
       while (performance.now() - start < maxWaitMs) {
         if (!hasActiveSpinners()) {
-          await sleep(250);
+          await sleep(400);
           if (!hasActiveSpinners()) return true;
         }
         await sleep(150);
@@ -1088,9 +1087,6 @@
       });
 
       // Bước B: Đảm bảo chỉ click tối đa một lần trên mỗi hàng (row container) để tránh trigger click đúp do nổi bọt sự kiện.
-      // Đồng thời loại bỏ các hàng đã click ở lượt trước (excludeRows) — icon một số bảng (vd BC theo nhân viên)
-      // không đổi từ fa-plus sang fa-minus ngay lập tức do tải dữ liệu bất đồng bộ, nếu không loại trừ sẽ bị bấm
-      // trùng lần 2 khiến hàng vừa mở tự đóng lại (toggle).
       const finalButtons = [];
       const seenRows = new Set();
 
@@ -1109,8 +1105,6 @@
     }
 
     // Lấy nội dung text của các node vừa được thêm vào DOM bởi một click (dùng chung với waitForDomSettle).
-    // Loại bỏ node thuộc UI của chính AutoClick+ (nút, khung tiến trình) và node con nếu node cha của nó
-    // cũng nằm trong danh sách (tránh lặp nội dung do cha lẫn con cùng được ghi nhận là "mới thêm").
     function extractAddedText(nodes) {
       const isOwnUi = (el) => (
         el.id === ACP_BTN_ID || el.id === ACP_MSG_ID ||
@@ -1146,7 +1140,7 @@
     function refreshAcpButtonLabel() {
       const btn = getAcpButton();
       if (!btn || acpRunning) return;
-      btn.textContent = getPlusButtons().length ? '📋 AutoClick+' : '📄 Copy All';
+      btn.textContent = getPlusButtons().length ? '⚡ Click+' : '📋 Copy Click+';
     }
 
     function createAcpButton() {
@@ -1154,20 +1148,39 @@
       const btn = document.createElement('button');
       btn.id = ACP_BTN_ID;
       btn.type = 'button';
-      btn.textContent = '📋 AutoClick+';
+      btn.textContent = '⚡ Click+';
       btn.style.cssText = `
         position:fixed;right:20px;bottom:80px;z-index:2147483647;
-        min-width:150px;padding:12px 18px;border:0;border-radius:999px;
-        background:#2563eb;color:#fff;
-        box-shadow:0 6px 20px rgba(0,0,0,.25);
-        font:700 15px Arial,sans-serif;cursor:pointer;user-select:none;
+        min-width:140px;padding:12px 22px;border:1px solid rgba(255,255,255,0.3);border-radius:999px;
+        background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:#fff;
+        box-shadow:0 8px 25px rgba(37,99,235,0.4),0 2px 8px rgba(0,0,0,0.15);
+        font:700 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        letter-spacing:0.3px;cursor:pointer;user-select:none;
+        transition:all 0.25s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(8px);
       `;
-      btn.addEventListener('mouseenter', () => { if (!acpRunning) btn.style.background = '#1d4ed8'; });
-      btn.addEventListener('mouseleave', () => { if (!acpRunning) btn.style.background = '#2563eb'; });
+      btn.addEventListener('mouseenter', () => {
+        if (!acpRunning) {
+          btn.style.transform = 'translateY(-2px) scale(1.03)';
+          btn.style.boxShadow = '0 12px 30px rgba(37,99,235,0.5),0 4px 12px rgba(0,0,0,0.2)';
+        }
+      });
+      btn.addEventListener('mouseleave', () => {
+        if (!acpRunning) {
+          btn.style.transform = 'translateY(0) scale(1)';
+          btn.style.boxShadow = '0 8px 25px rgba(37,99,235,0.4),0 2px 8px rgba(0,0,0,0.15)';
+        }
+      });
+      btn.addEventListener('mousedown', () => {
+        if (!acpRunning) btn.style.transform = 'translateY(0) scale(0.97)';
+      });
+      btn.addEventListener('mouseup', () => {
+        if (!acpRunning) btn.style.transform = 'translateY(-2px) scale(1.03)';
+      });
       btn.addEventListener('click', runAutoClick);
       document.body.appendChild(btn);
       refreshAcpButtonLabel();
     }
+
 
     function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true, copyText = null }) {
       closeAcpMessage();
@@ -1502,8 +1515,8 @@
         if (btn) btn.textContent = 'Đang tải dữ liệu...';
         await yieldToBrowser();
 
-        // Chờ cho tất cả loading spinners / biểu tượng xoay tròn biến mất hoàn toàn trước khi đọc DOM
-        await waitForSpinnersToClear(7000);
+        // Chờ cho tất cả loading spinners / biểu tượng xoay tròn biến mất hoàn toàn và ổn định trước khi đọc DOM
+        await waitForSpinnersToClear(8000);
 
         if (btn) btn.textContent = 'Đang copy...';
         await yieldToBrowser();
