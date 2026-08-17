@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.3
+// @version      2.4
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -98,6 +98,10 @@
  * BẢN 2.3 — MỖI LẦN CLICK "CLICK+" CHỈ MỞ ĐÚNG 1 CẤP (+):
  * - Đặt ACP_MAX_ROUNDS = 1: Mỗi lần nhấn nút Click+, script chỉ mở toàn bộ các nút dấu cộng của cấp hiện tại,
  *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp cho người dùng.
+ *
+ * BẢN 2.4 — TỰ ĐỘNG COPY ALL TOÀN BỘ DỮ LIỆU SAU MỖI LẦN MỞ 1 CẤP:
+ * - Thực thi tự động Copy All 2 lớp (GM_setClipboard dữ liệu TSV chuẩn + copyEverythingNatively bôi đen toàn bộ DOM)
+ *   ngay sau khi hoàn tất mở 1 cấp và chờ spinner tải xong 100%.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1544,19 +1548,23 @@
           }
         }
 
+        // Tự động copy toàn bộ dữ liệu (GM_setClipboard dữ liệu TSV + Native Selection Copy)
         let copied = await copyTextToClipboard(finalText);
-        if (!copied) {
-          copied = await copyEverythingNatively();
+        try {
+          await copyEverythingNatively();
+          copied = true;
+        } catch (e) {
+          console.warn('AutoClick+ copyEverythingNatively warning:', e);
         }
 
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
-            title: userStop ? '⏹ Đã dừng lại' : '✅ Hoàn tất',
-            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục qua ${round} cấp.<br>Đã copy toàn bộ nội dung.<br>Thời gian: ${elapsed} giây.`,
+            title: userStop ? '⏹ Đã dừng lại' : '✅ Đã mở 1 cấp & Copy All',
+            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục cấp này.<br>Đã tự động Copy All toàn bộ dữ liệu vào Clipboard.<br>Thời gian: ${elapsed} giây.`,
             success: !userStop,
           });
-          if (btn) btn.textContent = userStop ? '⏹ Đã dừng' : '✅ Đã copy';
+          if (btn) btn.textContent = userStop ? '⏹ Đã dừng' : '✅ Đã Copy All';
         } else {
           showAcpMessage({
             title: '⚠️ Trình duyệt chặn tự copy',
@@ -1565,6 +1573,7 @@
           });
           if (btn) btn.textContent = '📋 Copy thủ công';
         }
+
       } catch (error) {
         console.error('AutoClick+ lỗi:', error);
         showAcpMessage({
