@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.5
+// @version      2.6
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -97,15 +97,18 @@
  *
  * BẢN 2.3 — MỖI LẦN CLICK "CLICK+" CHỈ MỞ ĐÚNG 1 CẤP (+):
  * - Đặt ACP_MAX_ROUNDS = 1: Mỗi lần nhấn nút Click+, script chỉ mở toàn bộ các nút dấu cộng của cấp hiện tại,
- *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp cho người dùng.
+ *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp voor người dùng.
  *
  * BẢN 2.4 — TỰ ĐỘNG COPY ALL TOÀN BỘ DỮ LIỆU SAU MỖI LẦN MỞ 1 CẤP:
  * - Thực thi tự động Copy All ngay sau khi hoàn tất mở 1 cấp và chờ spinner tải xong 100%.
  *
  * BẢN 2.5 — XỬ LÝ TRIỆT ĐỂ LỖI COPY TRÙNG LẶP & DỮ LIỆU RÁC "UNDEFINED":
- * - Chỉ sử dụng copyEverythingNatively() làm dự phòng khi GM_setClipboard thất bại (tránh ghi đè dữ liệu rác từ DOM).
- * - Lọc bỏ các bảng trùng cột cố định .dx-datagrid-content-fixed và các phần tử ẩn .dx-hidden, [aria-hidden="true"].
- * - Loại bỏ hoàn toàn các dòng rác chứa 'undefined' và tự động khử trùng lặp các dòng giống hệt nhau liên tiếp.
+ * - Lọc bỏ các phần tử rác DevExpress (.dx-datagrid-content-fixed, .dx-hidden) và dòng rác 'undefined'.
+ *
+ * BẢN 2.6 — TỰ ĐỘNG CẬP NHẬT NHÃN NÚT KHI CHUYỂN TAB & CHỐNG TỰ THU GỌN LẠI:
+ * - Thêm bộ quét định kỳ 1s tự động đổi nhãn nút nổi thành `⚡ Click+` ngay khi chuyển tab có nút dấu cộng mới.
+ * - Bổ sung đầy đủ selector cho DevExpress DataGrid (.dx-datagrid-group-closed, td.dx-command-expand).
+ * - Siết chặt isPlusButton(): Kiểm tra trạng thái đã mở của thẻ cha (tr/td), tuyệt đối không click lại hàng đã mở (chống thu gọn).
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1031,12 +1034,44 @@
       });
     }
 
-    // --- Tìm nút dấu cộng (quét cả iframe cùng nguồn) ---
+    // --- Tìm nút dấu cộng (quét cả document chính lẫn iframe cùng nguồn) ---
     function isPlusButton(el) {
-      return Boolean(
-        el && el.isConnected && el.classList &&
-        el.classList.contains('fa-plus') && !el.classList.contains('fa-minus')
-      );
+      if (!el || !el.isConnected) return false;
+
+      // 1. Kiểm tra trạng thái đã mở (nút trừ / collapse) -> BỎ QUA TUYỆT ĐỐI
+      if (el.classList) {
+        if (el.classList.contains('fa-minus') ||
+            el.classList.contains('dx-datagrid-group-opened') ||
+            el.classList.contains('dx-command-collapse')) {
+          return false;
+        }
+      }
+
+      const parentTd = el.closest ? el.closest('td') : null;
+      if (parentTd && parentTd.classList && parentTd.classList.contains('dx-command-collapse')) {
+        return false;
+      }
+
+      const parentTr = el.closest ? el.closest('tr') : null;
+      if (parentTr && parentTr.classList &&
+          (parentTr.classList.contains('dx-datagrid-group-opened') || parentTr.getAttribute('aria-expanded') === 'true')) {
+        return false;
+      }
+
+      // 2. Kiểm tra nếu là nút cộng / chưa mở
+      if (el.classList) {
+        if (el.classList.contains('fa-plus') ||
+            el.classList.contains('dx-datagrid-group-closed') ||
+            el.classList.contains('dx-icon-expandcompleted')) {
+          return true;
+        }
+      }
+
+      if (parentTd && parentTd.classList && parentTd.classList.contains('dx-command-expand')) {
+        return true;
+      }
+
+      return false;
     }
 
     function isVisible(el) {
@@ -1066,29 +1101,25 @@
 
     function getPlusButtons(excludeRows) {
       const allButtons = [];
-      
-      // 1. Quét document chính
-      let buttons = Array.from(document.querySelectorAll('.fa-solid.fa-plus.text-gray-700'));
-      if (!buttons.length) {
-        buttons = Array.from(document.querySelectorAll('.fa-plus'));
-      }
-      allButtons.push(...buttons);
+      const queryDocs = getReadableDocuments();
+      const selectors = [
+        '.fa-solid.fa-plus.text-gray-700',
+        '.fa-plus',
+        '.dx-datagrid-group-closed',
+        'td.dx-command-expand'
+      ];
 
-      // 2. Quét các iframe cùng nguồn (same-origin)
-      document.querySelectorAll('iframe').forEach(iframe => {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDoc) {
-            let ifrButtons = Array.from(iframeDoc.querySelectorAll('.fa-solid.fa-plus.text-gray-700'));
-            if (!ifrButtons.length) {
-              ifrButtons = Array.from(iframeDoc.querySelectorAll('.fa-plus'));
+      for (const doc of queryDocs) {
+        if (!doc.body) continue;
+        for (const sel of selectors) {
+          try {
+            const found = Array.from(doc.querySelectorAll(sel));
+            if (found.length > 0) {
+              allButtons.push(...found);
             }
-            allButtons.push(...ifrButtons);
-          }
-        } catch (e) {
-          // Bỏ qua nếu dính CORS của iframe khác nguồn
+          } catch (e) {}
         }
-      });
+      }
 
       const uniqueButtons = Array.from(
         new Set(allButtons.filter(el => isPlusButton(el) && isVisible(el)))
@@ -1105,16 +1136,14 @@
       const seenRows = new Set();
 
       for (const btn of deepestButtons) {
-        if (excludeRows && (excludeRows.has(btn) || excludeRows.has(getRowContainer(btn)))) {
+        const row = getRowContainer(btn) || btn;
+        if (excludeRows && (excludeRows.has(btn) || excludeRows.has(row))) {
           continue;
         }
-        const row = getRowContainer(btn);
-        if (row) {
-          if (seenRows.has(row)) {
-            continue;
-          }
-          seenRows.add(row);
+        if (seenRows.has(row)) {
+          continue;
         }
+        seenRows.add(row);
         finalButtons.push(btn);
       }
 
@@ -1158,7 +1187,8 @@
     function refreshAcpButtonLabel() {
       const btn = getAcpButton();
       if (!btn || acpRunning) return;
-      btn.textContent = getPlusButtons().length ? '⚡ Click+' : '📋 Copy Click+';
+      const count = getPlusButtons().length;
+      btn.textContent = count > 0 ? '⚡ Click+' : '📋 Copy Click+';
     }
 
     function createAcpButton() {
@@ -1197,7 +1227,11 @@
       btn.addEventListener('click', runAutoClick);
       document.body.appendChild(btn);
       refreshAcpButtonLabel();
+
+      // Tự động quét lại nhãn nút định kỳ 1s/lần (bắt kịp sự kiện đổi tab / AJAX swap DOM)
+      setInterval(refreshAcpButtonLabel, 1000);
     }
+
 
 
     function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true, copyText = null }) {
@@ -1536,9 +1570,12 @@
             try {
               const addedNodes = await waitForDomSettle(async () => {
                 for (const pb of batch) {
+                  const row = getRowContainer(pb) || pb;
+                  // Kiểm tra lại trước khi click: nếu đã mở hoặc không còn là nút plus -> bỏ qua ngay (chống thu gọn lại)
+                  if (!isPlusButton(pb)) continue;
+
                   clickedItems.add(pb);
-                  const row = getRowContainer(pb);
-                  if (row) clickedItems.add(row);
+                  clickedItems.add(row);
                   try {
                     pb.click();
                     clicked++;
@@ -1547,6 +1584,7 @@
                   }
                   await sleep(ACP_CLICK_DELAY);
                 }
+
               }, { quietMs: 150, maxMs: 1500 });
               const chunkText = extractAddedText(addedNodes);
               if (chunkText) accumulatedChunks.push(chunkText);
