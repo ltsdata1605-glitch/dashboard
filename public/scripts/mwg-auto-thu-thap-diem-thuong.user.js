@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.1
+// @version      2.2
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -91,7 +91,10 @@
  * BẢN 2.1 — ĐỔI TÊN NÚT THÀNH "CLICK+" & HIỆN ĐẠI HOÁ UI + SIẾT BẬC CHỜ SPINNER:
  * - Đổi tên nút thành `⚡ Click+` / `📋 Copy Click+`.
  * - Thiết kế giao diện nút nổi hiện đại sang trọng (gradient, glassmorphism, hiệu ứng nhún mượt mà).
- * - Mở rộng nhận diện spinner DevExpress và duy trì thời gian chờ ổn định 400ms đảm bảo 100% dữ liệu.
+ *
+ * BẢN 2.2 — TỰ ĐỘNG MỞ RỘNG TẤT CẢ CÁC CẤP TRONG 1 LẦN CLICK DUY NHẤT:
+ * - Sau mỗi lượt click mở 1 cấp, tự động chờ tất cả spinner cấp con tải xong 100% trước khi quét cấp tiếp theo.
+ * - Thêm cơ chế double-check đảm bảo tự động mở liên hoàn Cấp 1 -> Cấp 2 -> Cấp 3... cho tới khi hết sạch nút dấu cộng.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1091,9 +1094,12 @@
       const seenRows = new Set();
 
       for (const btn of deepestButtons) {
+        if (excludeRows && (excludeRows.has(btn) || excludeRows.has(getRowContainer(btn)))) {
+          continue;
+        }
         const row = getRowContainer(btn);
         if (row) {
-          if (seenRows.has(row) || (excludeRows && excludeRows.has(row))) {
+          if (seenRows.has(row)) {
             continue;
           }
           seenRows.add(row);
@@ -1103,6 +1109,7 @@
 
       return finalButtons;
     }
+
 
     // Lấy nội dung text của các node vừa được thêm vào DOM bởi một click (dùng chung với waitForDomSettle).
     function extractAddedText(nodes) {
@@ -1457,7 +1464,6 @@
       };
 
       const ACP_MAX_ROUNDS = 60;
-      const ACP_ROUND_SETTLE = 220;
       const ACP_CLICK_BATCH_SIZE = 6;  // Giảm kích thước lô từ 20 xuống 6 nút để tránh nghẽn luồng sự kiện
       const ACP_CLICK_DELAY = 35;      // Micro-delay 35ms giữa các cú click trong lô
       const ACP_BATCH_YIELD = 180;     // Nghỉ 180ms giữa các lô giúp UI và Network stack xử lý mượt mà
@@ -1466,10 +1472,10 @@
       let clicked = 0;
       let seenTotal = 0;
       let round = 0;
-      const clickedRows = new Set();
+      const clickedItems = new Set();
 
       const accumulatedChunks = [];
-      let pending = getPlusButtons(clickedRows);
+      let pending = getPlusButtons(clickedItems);
       const ui = showAcpProgress(pending.length, onUserCancel);
 
       try {
@@ -1483,8 +1489,9 @@
             try {
               const addedNodes = await waitForDomSettle(async () => {
                 for (const pb of batch) {
+                  clickedItems.add(pb);
                   const row = getRowContainer(pb);
-                  if (row) clickedRows.add(row);
+                  if (row) clickedItems.add(row);
                   try {
                     pb.click();
                     clicked++;
@@ -1506,9 +1513,21 @@
           }
 
           if (userStop) break;
-          await sleep(ACP_ROUND_SETTLE);
-          pending = getPlusButtons(clickedRows);
+
+          // Chờ tất cả loading spinners của cấp vừa mở tải xong 100% trước khi quét cấp tiếp theo
+          ui.title.textContent = `Đang chờ dữ liệu Cấp ${round + 1} tải xong...`;
+          await waitForSpinnersToClear(7000);
+          await sleep(300);
+
+          pending = getPlusButtons(clickedItems);
+
+          // Nếu chưa tìm thấy nút mới ở cấp tiếp theo, thử nghỉ thêm 450ms và quét lại (double check)
+          if (!pending.length && !userStop) {
+            await sleep(450);
+            pending = getPlusButtons(clickedItems);
+          }
         }
+
 
         updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt, true);
         ui.title.textContent = userStop ? 'Đang chờ dữ liệu tải xong (Dừng bởi user)...' : 'Đang chờ dữ liệu tải xong...';
