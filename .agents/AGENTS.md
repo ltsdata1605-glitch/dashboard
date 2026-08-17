@@ -30,3 +30,9 @@ This script will handle both pushing the changes to Github and creating a zipped
    - Code phải được chia nhỏ (Component/Hook không vượt quá 300 dòng).
    - Các module phải giao tiếp qua `index.ts` (Public API) để tránh imports lộn xộn.
    - Khai báo kiểu dữ liệu (TypeScript) chặt chẽ, không dùng `any` bừa bãi.
+
+## Tampermonkey UserScript Versioning Rule
+Mỗi khi chỉnh sửa hoặc nâng cấp file user script `public/scripts/mwg-auto-thu-thap-diem-thuong.user.js` (hoặc bất kỳ script Tampermonkey nào khác), **BẮT BUỘC** phải:
+1. Tăng chỉ số `@version` trong phần header metadata (ví dụ: từ `1.9` $\rightarrow$ `2.0` hoặc `1.9.1`).
+2. Thêm thông tin ghi chú về các thay đổi của bản mới vào phần comment header (Changelog).
+Điều này giúp Tampermonkey trên trình duyệt của người dùng phát hiện bản mới thông qua `@updateURL`/`@downloadURL` và tự động cập nhật mượt mà.

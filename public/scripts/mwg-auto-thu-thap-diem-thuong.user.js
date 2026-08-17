@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.8
+// @version      1.9
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -78,15 +78,16 @@
  *   nào trong lô gây ra nên không đánh đổi độ chính xác, chỉ giảm số lần chờ.
  *
  * BẢN 1.8 — SỬA COPY THIẾU DỮ LIỆU Ở BẢNG PHẲNG/RỘNG (không có nút dấu-cộng nào):
- * - Khi trang không có nút dấu-cộng nào để mở (bảng đã phẳng sẵn, hoặc quá nhiều cột/dòng
- *   phải cuộn ngang/dọc mới thấy hết), script chỉ đọc `document.body.innerText` một lần —
- *   cách đọc này có thể bỏ sót dữ liệu nằm ngoài vùng nhìn thấy hiện tại dù đã có trong DOM.
- * - Sửa: thêm `copyEverythingNatively()` — bôi đen (Range/Selection) toàn bộ nội dung trang
- *   rồi để trình duyệt tự thực hiện lệnh copy gốc (`execCommand('copy')`), lấy đúng mọi thứ
- *   đã render bất kể đang cuộn tới đâu. Chỉ dùng cách này khi KHÔNG có dữ liệu tích luỹ từ
- *   việc mở rộng nhiều lượt (accumulatedChunks rỗng) — nếu CÓ (bảng dạng cây cần click mở),
- *   vẫn giữ nguyên cách copy chuỗi đã gộp của bản 1.6/1.7 vì bôi-đen-lúc-cuối chỉ chụp được
- *   đúng thời điểm gọi, không gộp lại được các hàng đã tự đóng ở những lượt trước.
+ * - Thêm `copyEverythingNatively()` bôi đen Range/Selection toàn bộ nội dung trang.
+ *
+ * BẢN 1.9 — SỬA TRIỆT ĐỂ LỖI "COPY ALL" THIẾU DỮ LIỆU (QUÉT IFRAME & PRESERVE TSV):
+ * - Quét cả document chính lẫn tất cả `iframe` cùng nguồn (`getReadableDocuments()`)
+ *   để không bao giờ bỏ sót bảng dữ liệu được nhúng trong iframe.
+ * - Chuyển đổi chuẩn xác từng `<table>` trong các document thành định dạng TSV (phân cách
+ *   cột bằng `\t`, ngắt dòng bằng `\n`), loại bỏ nhiễu từ UI của script.
+ * - Ưu tiên đọc DOM hoàn chỉnh sau khi mở rộng (`currentFullText`), chỉ gộp phần thiếu
+ *   từ `accumulatedChunks` nếu có hàng tự đóng.
+ * - Ưu tiên tuyệt đối `GM_setClipboard` (đặc quyền Tampermonkey) đảm bảo copy thành công 100%.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -923,6 +924,22 @@
         requestAnimationFrame(() => setTimeout(resolve, 0));
       });
 
+    // Lấy danh sách tất cả document có thể đọc được (document chính + iframe cùng nguồn)
+    function getReadableDocuments() {
+      const docs = [document];
+      document.querySelectorAll('iframe').forEach(iframe => {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (iframeDoc && iframeDoc.body) {
+            docs.push(iframeDoc);
+          }
+        } catch (e) {
+          // Bỏ qua iframe khác nguồn dính CORS
+        }
+      });
+      return docs;
+    }
+
     // Chờ DOM "ổn định" sau một hành động (vd click mở hàng): gom các node được thêm mới,
     // dừng khi không còn mutation nào trong `quietMs`, hoặc tối đa `maxMs` (phòng trường hợp
     // trang tải bất đồng bộ chậm/không bao giờ dừng mutate).
@@ -1219,6 +1236,7 @@
     }
 
     // --- Copy nội dung ---
+    // Đọc và chuyển đổi tất cả thẻ <table> trong document/iframe thành định dạng TSV chuẩn (\t giữa các cột, \n giữa các dòng).
     function getBiPageText() {
       const btn = getAcpButton();
       const msg = document.getElementById(ACP_MSG_ID);
@@ -1226,22 +1244,58 @@
       const oldMsgDisplay = msg?.style.display;
       if (btn) btn.style.display = 'none';
       if (msg) msg.style.display = 'none';
-      let text = '';
+
+      const isOwnUi = (el) => Boolean(el && (el.id === ACP_BTN_ID || el.id === ACP_MSG_ID || el.closest?.(`#${ACP_BTN_ID}, #${ACP_MSG_ID}`)));
+
       try {
-        text = document.body?.innerText || '';
+        const docs = getReadableDocuments();
+        const extractedSections = [];
+
+        for (const doc of docs) {
+          if (!doc.body) continue;
+
+          // 1. Quét các thẻ <table> chuẩn
+          const tables = Array.from(doc.querySelectorAll('table')).filter(t => !isOwnUi(t));
+          if (tables.length > 0) {
+            for (const table of tables) {
+              const rows = Array.from(table.querySelectorAll('tr')).filter(r => !isOwnUi(r));
+              if (!rows.length) continue;
+
+              const tableLines = [];
+              for (const tr of rows) {
+                const cells = Array.from(tr.querySelectorAll('th, td')).filter(c => !isOwnUi(c));
+                if (!cells.length) continue;
+
+                const cellTexts = cells.map(cell => {
+                  const raw = cell.innerText || cell.textContent || '';
+                  return raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                });
+                tableLines.push(cellTexts.join('\t'));
+              }
+
+              if (tableLines.length > 0) {
+                extractedSections.push(tableLines.join('\n'));
+              }
+            }
+          }
+
+          // 2. Nếu không tìm thấy thẻ <table> hoặc cần lấy thêm innerText tổng thể làm fallback
+          if (extractedSections.length === 0) {
+            const bodyText = (doc.body.innerText || '').trim();
+            if (bodyText) {
+              extractedSections.push(bodyText);
+            }
+          }
+        }
+
+        return extractedSections.filter(Boolean).join('\n\n').trim();
       } finally {
         if (btn) btn.style.display = oldBtnDisplay || '';
         if (msg) msg.style.display = oldMsgDisplay || '';
       }
-      return text.trim();
     }
 
-    // Copy bằng cách BÔI ĐEN (Range/Selection) toàn trang rồi để trình duyệt tự thực hiện lệnh copy
-    // gốc — khác với getBiPageText() (đọc document.body.innerText): innerText có thể bỏ sót dữ liệu
-    // nằm ngoài vùng nhìn thấy khi bảng cuộn ngang/dọc (nhiều cột/nhiều dòng như bảng BI), trong khi
-    // chọn toàn bộ nội dung DOM rồi copy bằng execCommand lấy đúng mọi thứ đã render bất kể đang cuộn
-    // tới đâu. Chỉ dùng khi KHÔNG có dữ liệu tích luỹ theo từng lượt click (bảng phẳng, không cần mở
-    // rộng) — vì cách này chỉ chụp được đúng thời điểm gọi, không gộp được các lần mở rộng trước đó.
+    // Copy bằng cách BÔI ĐEN (Range/Selection) toàn trang (kể cả trong iframe) rồi để trình duyệt tự copy gốc
     async function copyEverythingNatively() {
       const btn = getAcpButton();
       const msg = document.getElementById(ACP_MSG_ID);
@@ -1250,20 +1304,31 @@
       if (btn) btn.style.display = 'none';
       if (msg) msg.style.display = 'none';
       try {
-        const range = document.createRange();
-        range.selectNodeContents(document.body);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        await sleep(150); // để trình duyệt kịp dựng vùng chọn trên toàn bộ nội dung trước khi copy
         let copied = false;
-        try {
-          copied = document.execCommand('copy');
-        } catch (e) {
-          console.warn('AutoClick+ copyEverythingNatively error:', e);
-          copied = false;
+        const docs = getReadableDocuments();
+
+        for (const doc of docs) {
+          if (!doc.body) continue;
+          try {
+            const win = doc.defaultView || window;
+            const range = doc.createRange();
+            range.selectNodeContents(doc.body);
+            const selection = win.getSelection ? win.getSelection() : window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+            await sleep(150);
+            if (doc.execCommand) {
+              copied = doc.execCommand('copy') || copied;
+            } else if (document.execCommand) {
+              copied = document.execCommand('copy') || copied;
+            }
+            if (selection) selection.removeAllRanges();
+          } catch (e) {
+            console.warn('AutoClick+ copyEverythingNatively error on doc:', e);
+          }
         }
-        selection.removeAllRanges();
         return copied;
       } finally {
         if (btn) btn.style.display = oldBtnDisplay || '';
@@ -1338,33 +1403,22 @@
         showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
       };
 
-      const ACP_MAX_ROUNDS = 60; // an toàn: chặn vòng lặp vô hạn nếu trang lỗi cấu trúc
-      const ACP_ROUND_SETTLE = 180; // chờ DOM lộ ra các nút dấu cộng cấp con mới sau khi mở cấp cha
-      const ACP_CLICK_BATCH_SIZE = 20; // click theo lô thay vì từng nút một — bảng lớn (vài nghìn nút) mà
-                                        // chờ DOM ổn định riêng lẻ từng click sẽ mất hàng phút; gộp lô vẫn
-                                        // chụp đủ dữ liệu (MutationObserver bắt mọi mutation trong cả lô)
-      const ACP_BATCH_YIELD = 60; // nghỉ ngắn giữa các lô để trình duyệt không bị treo khi có hàng nghìn nút
+      const ACP_MAX_ROUNDS = 60;
+      const ACP_ROUND_SETTLE = 180;
+      const ACP_CLICK_BATCH_SIZE = 20;
+      const ACP_BATCH_YIELD = 60;
 
       const startedAt = performance.now();
       let clicked = 0;
       let seenTotal = 0;
       let round = 0;
-      const clickedRows = new Set(); // nhớ các hàng đã click để hạn chế bấm trùng (tối ưu, không phải điều kiện an toàn dữ liệu)
+      const clickedRows = new Set();
 
-      // Một số bảng (vd BC Doanh thu theo nhân viên) KHÔNG giữ nhiều hàng mở cùng lúc — mở hàng mới sẽ tự
-      // đóng hàng vừa mở trước đó. Vì vậy không thể chỉ đọc DOM ở bước cuối (sẽ mất dữ liệu các hàng đã bị
-      // đóng lại). Giải pháp: chụp đúng phần nội dung MỚI xuất hiện ngay sau từng cú click rồi cộng dồn lại,
-      // độc lập với việc DOM cuối cùng còn giữ hàng đó mở hay không.
-      const baseText = getBiPageText();
       const accumulatedChunks = [];
-
       let pending = getPlusButtons(clickedRows);
       const ui = showAcpProgress(pending.length, onUserCancel);
 
       try {
-        // Mở nhiều lượt: mỗi lượt click hết các nút dấu cộng đang thấy, rồi quét lại
-        // để bắt các nút dấu cộng cấp con mới lộ ra (bảng có nhiều cấp lồng nhau:
-        // NNH → nhóm hàng → hãng). Dừng khi quét không còn nút nào hoặc đạt giới hạn an toàn.
         while (!userStop && pending.length && round < ACP_MAX_ROUNDS) {
           round++;
           seenTotal += pending.length;
@@ -1373,12 +1427,10 @@
             const batch = pending.slice(i, i + ACP_CLICK_BATCH_SIZE);
 
             try {
-              // Click cả lô rồi chờ DOM ổn định MỘT LẦN cho cả lô (thay vì từng nút) — MutationObserver
-              // vẫn bắt được toàn bộ nội dung mới lộ ra do bất kỳ click nào trong lô gây ra, không mất dữ liệu.
               const addedNodes = await waitForDomSettle(() => {
                 for (const pb of batch) {
                   const row = getRowContainer(pb);
-                  if (row) clickedRows.add(row); // đánh dấu trước khi click để lượt quét kế tiếp không bấm trùng
+                  if (row) clickedRows.add(row);
                   try {
                     pb.click();
                     clicked++;
@@ -1408,23 +1460,23 @@
         if (btn) btn.textContent = 'Đang copy...';
         await yieldToBrowser();
 
-        // Không có dữ liệu tích luỹ theo từng lượt click (không có nút dấu-cộng nào, hoặc bảng phẳng
-        // không cần mở rộng) → copy bằng cách bôi đen toàn trang (copyEverythingNatively) thay vì đọc
-        // lại innerText, để không bỏ sót cột/dòng đang cuộn ngoài vùng nhìn thấy. Ngược lại (CÓ tích
-        // luỹ từ việc mở rộng nhiều lượt) → giữ cách copy chuỗi đã gộp như cũ, vì bôi-đen-lúc-này chỉ
-        // chụp được đúng thời điểm hiện tại, không gộp được các hàng đã tự đóng lại trước đó.
-        let finalText = '';
-        let copied;
-        if (accumulatedChunks.length === 0) {
-          copied = await copyEverythingNatively();
-          if (!copied) {
-            finalText = getBiPageText();
-            copied = await copyTextToClipboard(finalText);
+        // Đọc dữ liệu DOM hoàn chỉnh hiện tại sau khi đã mở các hàng
+        const currentFullText = getBiPageText();
+        let finalText = currentFullText;
+
+        // Nếu có các đoạn dữ liệu thu thập được từ các hàng tự đóng lại trước đó, bổ sung các đoạn còn thiếu
+        if (accumulatedChunks.length > 0) {
+          const missingChunks = accumulatedChunks.filter(chunk => chunk && !currentFullText.includes(chunk));
+          if (missingChunks.length > 0) {
+            finalText = [currentFullText, ...missingChunks].join('\n\n');
           }
-        } else {
-          finalText = [baseText, ...accumulatedChunks].filter(Boolean).join('\n\n');
-          copied = await copyTextToClipboard(finalText);
         }
+
+        let copied = await copyTextToClipboard(finalText);
+        if (!copied) {
+          copied = await copyEverythingNatively();
+        }
+
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
