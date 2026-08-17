@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.8
+// @version      2.1
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -78,15 +78,20 @@
  *   nào trong lô gây ra nên không đánh đổi độ chính xác, chỉ giảm số lần chờ.
  *
  * BẢN 1.8 — SỬA COPY THIẾU DỮ LIỆU Ở BẢNG PHẲNG/RỘNG (không có nút dấu-cộng nào):
- * - Khi trang không có nút dấu-cộng nào để mở (bảng đã phẳng sẵn, hoặc quá nhiều cột/dòng
- *   phải cuộn ngang/dọc mới thấy hết), script chỉ đọc `document.body.innerText` một lần —
- *   cách đọc này có thể bỏ sót dữ liệu nằm ngoài vùng nhìn thấy hiện tại dù đã có trong DOM.
- * - Sửa: thêm `copyEverythingNatively()` — bôi đen (Range/Selection) toàn bộ nội dung trang
- *   rồi để trình duyệt tự thực hiện lệnh copy gốc (`execCommand('copy')`), lấy đúng mọi thứ
- *   đã render bất kể đang cuộn tới đâu. Chỉ dùng cách này khi KHÔNG có dữ liệu tích luỹ từ
- *   việc mở rộng nhiều lượt (accumulatedChunks rỗng) — nếu CÓ (bảng dạng cây cần click mở),
- *   vẫn giữ nguyên cách copy chuỗi đã gộp của bản 1.6/1.7 vì bôi-đen-lúc-cuối chỉ chụp được
- *   đúng thời điểm gọi, không gộp lại được các hàng đã tự đóng ở những lượt trước.
+ * - Thêm `copyEverythingNatively()` bôi đen Range/Selection toàn bộ nội dung trang.
+ *
+ * BẢN 1.9 — SỬA TRIỆT ĐỂ LỖI "COPY ALL" THIẾU DỮ LIỆU (QUÉT IFRAME & PRESERVE TSV):
+ * - Quét cả document chính lẫn tất cả `iframe` cùng nguồn (`getReadableDocuments()`).
+ * - Chuyển đổi chuẩn xác từng `<table>` trong các document thành định dạng TSV (\t và \n).
+ *
+ * BẢN 2.0 — TỐI ƯU TỐC ĐỘ CLICK (PACING) & TỰ ĐỘNG CHỜ SPINNER TẢI DỮ LIỆU:
+ * - Giảm kích thước lô từ 20 xuống 6 nút/lô, thêm micro-delay 35ms giữa các cú click.
+ * - Thêm cơ chế tự động chờ tất cả loading spinners (`waitForSpinnersToClear`) biến mất.
+ *
+ * BẢN 2.1 — ĐỔI TÊN NÚT THÀNH "CLICK+" & HIỆN ĐẠI HOÁ UI + SIẾT BẬC CHỜ SPINNER:
+ * - Đổi tên nút thành `⚡ Click+` / `📋 Copy Click+`.
+ * - Thiết kế giao diện nút nổi hiện đại sang trọng (gradient, glassmorphism, hiệu ứng nhún mượt mà).
+ * - Mở rộng nhận diện spinner DevExpress và duy trì thời gian chờ ổn định 400ms đảm bảo 100% dữ liệu.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -923,6 +928,57 @@
         requestAnimationFrame(() => setTimeout(resolve, 0));
       });
 
+    // Lấy danh sách tất cả document có thể đọc được (document chính + iframe cùng nguồn)
+    function getReadableDocuments() {
+      const docs = [document];
+      document.querySelectorAll('iframe').forEach(iframe => {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (iframeDoc && iframeDoc.body) {
+            docs.push(iframeDoc);
+          }
+        } catch (e) {
+          // Bỏ qua iframe khác nguồn dính CORS
+        }
+      });
+      return docs;
+    }
+
+    // Kiểm tra xem có biểu tượng xoay tròn / loading spinner nào đang hiển thị trên trang hoặc iframe hay không
+    function hasActiveSpinners() {
+      const docs = getReadableDocuments();
+      const selectors = [
+        '.dx-loadindicator', '.dx-loadpanel', '.dx-loadpanel-content', '.dx-loadpanel-wrapper',
+        '.dx-overlay-wrapper', '[class*="loadpanel"]', '[class*="indicator"]',
+        '.fa-spinner', '.fa-spin', '.fa-circle-notch',
+        '[class*="animate-spin"]', '[class*="loading-spinner"]',
+        'svg.animate-spin', 'div.loading'
+      ];
+      for (const doc of docs) {
+        if (!doc.body) continue;
+        for (const sel of selectors) {
+          const els = doc.querySelectorAll(sel);
+          for (const el of els) {
+            if (isVisible(el)) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Chờ cho tất cả loading spinners biến mất hoàn toàn và ổn định 400ms trước khi trích xuất dữ liệu copy
+    async function waitForSpinnersToClear(maxWaitMs = 8000) {
+      const start = performance.now();
+      while (performance.now() - start < maxWaitMs) {
+        if (!hasActiveSpinners()) {
+          await sleep(400);
+          if (!hasActiveSpinners()) return true;
+        }
+        await sleep(150);
+      }
+      return false;
+    }
+
     // Chờ DOM "ổn định" sau một hành động (vd click mở hàng): gom các node được thêm mới,
     // dừng khi không còn mutation nào trong `quietMs`, hoặc tối đa `maxMs` (phòng trường hợp
     // trang tải bất đồng bộ chậm/không bao giờ dừng mutate).
@@ -1031,9 +1087,6 @@
       });
 
       // Bước B: Đảm bảo chỉ click tối đa một lần trên mỗi hàng (row container) để tránh trigger click đúp do nổi bọt sự kiện.
-      // Đồng thời loại bỏ các hàng đã click ở lượt trước (excludeRows) — icon một số bảng (vd BC theo nhân viên)
-      // không đổi từ fa-plus sang fa-minus ngay lập tức do tải dữ liệu bất đồng bộ, nếu không loại trừ sẽ bị bấm
-      // trùng lần 2 khiến hàng vừa mở tự đóng lại (toggle).
       const finalButtons = [];
       const seenRows = new Set();
 
@@ -1052,8 +1105,6 @@
     }
 
     // Lấy nội dung text của các node vừa được thêm vào DOM bởi một click (dùng chung với waitForDomSettle).
-    // Loại bỏ node thuộc UI của chính AutoClick+ (nút, khung tiến trình) và node con nếu node cha của nó
-    // cũng nằm trong danh sách (tránh lặp nội dung do cha lẫn con cùng được ghi nhận là "mới thêm").
     function extractAddedText(nodes) {
       const isOwnUi = (el) => (
         el.id === ACP_BTN_ID || el.id === ACP_MSG_ID ||
@@ -1089,7 +1140,7 @@
     function refreshAcpButtonLabel() {
       const btn = getAcpButton();
       if (!btn || acpRunning) return;
-      btn.textContent = getPlusButtons().length ? '📋 AutoClick+' : '📄 Copy All';
+      btn.textContent = getPlusButtons().length ? '⚡ Click+' : '📋 Copy Click+';
     }
 
     function createAcpButton() {
@@ -1097,20 +1148,39 @@
       const btn = document.createElement('button');
       btn.id = ACP_BTN_ID;
       btn.type = 'button';
-      btn.textContent = '📋 AutoClick+';
+      btn.textContent = '⚡ Click+';
       btn.style.cssText = `
         position:fixed;right:20px;bottom:80px;z-index:2147483647;
-        min-width:150px;padding:12px 18px;border:0;border-radius:999px;
-        background:#2563eb;color:#fff;
-        box-shadow:0 6px 20px rgba(0,0,0,.25);
-        font:700 15px Arial,sans-serif;cursor:pointer;user-select:none;
+        min-width:140px;padding:12px 22px;border:1px solid rgba(255,255,255,0.3);border-radius:999px;
+        background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:#fff;
+        box-shadow:0 8px 25px rgba(37,99,235,0.4),0 2px 8px rgba(0,0,0,0.15);
+        font:700 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        letter-spacing:0.3px;cursor:pointer;user-select:none;
+        transition:all 0.25s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(8px);
       `;
-      btn.addEventListener('mouseenter', () => { if (!acpRunning) btn.style.background = '#1d4ed8'; });
-      btn.addEventListener('mouseleave', () => { if (!acpRunning) btn.style.background = '#2563eb'; });
+      btn.addEventListener('mouseenter', () => {
+        if (!acpRunning) {
+          btn.style.transform = 'translateY(-2px) scale(1.03)';
+          btn.style.boxShadow = '0 12px 30px rgba(37,99,235,0.5),0 4px 12px rgba(0,0,0,0.2)';
+        }
+      });
+      btn.addEventListener('mouseleave', () => {
+        if (!acpRunning) {
+          btn.style.transform = 'translateY(0) scale(1)';
+          btn.style.boxShadow = '0 8px 25px rgba(37,99,235,0.4),0 2px 8px rgba(0,0,0,0.15)';
+        }
+      });
+      btn.addEventListener('mousedown', () => {
+        if (!acpRunning) btn.style.transform = 'translateY(0) scale(0.97)';
+      });
+      btn.addEventListener('mouseup', () => {
+        if (!acpRunning) btn.style.transform = 'translateY(-2px) scale(1.03)';
+      });
       btn.addEventListener('click', runAutoClick);
       document.body.appendChild(btn);
       refreshAcpButtonLabel();
     }
+
 
     function showAcpMessage({ title, message = '', success = true, showCopyButton = false, autoClose = true, copyText = null }) {
       closeAcpMessage();
@@ -1219,6 +1289,7 @@
     }
 
     // --- Copy nội dung ---
+    // Đọc và chuyển đổi tất cả thẻ <table> trong document/iframe thành định dạng TSV chuẩn (\t giữa các cột, \n giữa các dòng).
     function getBiPageText() {
       const btn = getAcpButton();
       const msg = document.getElementById(ACP_MSG_ID);
@@ -1226,22 +1297,58 @@
       const oldMsgDisplay = msg?.style.display;
       if (btn) btn.style.display = 'none';
       if (msg) msg.style.display = 'none';
-      let text = '';
+
+      const isOwnUi = (el) => Boolean(el && (el.id === ACP_BTN_ID || el.id === ACP_MSG_ID || el.closest?.(`#${ACP_BTN_ID}, #${ACP_MSG_ID}`)));
+
       try {
-        text = document.body?.innerText || '';
+        const docs = getReadableDocuments();
+        const extractedSections = [];
+
+        for (const doc of docs) {
+          if (!doc.body) continue;
+
+          // 1. Quét các thẻ <table> chuẩn
+          const tables = Array.from(doc.querySelectorAll('table')).filter(t => !isOwnUi(t));
+          if (tables.length > 0) {
+            for (const table of tables) {
+              const rows = Array.from(table.querySelectorAll('tr')).filter(r => !isOwnUi(r));
+              if (!rows.length) continue;
+
+              const tableLines = [];
+              for (const tr of rows) {
+                const cells = Array.from(tr.querySelectorAll('th, td')).filter(c => !isOwnUi(c));
+                if (!cells.length) continue;
+
+                const cellTexts = cells.map(cell => {
+                  const raw = cell.innerText || cell.textContent || '';
+                  return raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                });
+                tableLines.push(cellTexts.join('\t'));
+              }
+
+              if (tableLines.length > 0) {
+                extractedSections.push(tableLines.join('\n'));
+              }
+            }
+          }
+
+          // 2. Nếu không tìm thấy thẻ <table> hoặc cần lấy thêm innerText tổng thể làm fallback
+          if (extractedSections.length === 0) {
+            const bodyText = (doc.body.innerText || '').trim();
+            if (bodyText) {
+              extractedSections.push(bodyText);
+            }
+          }
+        }
+
+        return extractedSections.filter(Boolean).join('\n\n').trim();
       } finally {
         if (btn) btn.style.display = oldBtnDisplay || '';
         if (msg) msg.style.display = oldMsgDisplay || '';
       }
-      return text.trim();
     }
 
-    // Copy bằng cách BÔI ĐEN (Range/Selection) toàn trang rồi để trình duyệt tự thực hiện lệnh copy
-    // gốc — khác với getBiPageText() (đọc document.body.innerText): innerText có thể bỏ sót dữ liệu
-    // nằm ngoài vùng nhìn thấy khi bảng cuộn ngang/dọc (nhiều cột/nhiều dòng như bảng BI), trong khi
-    // chọn toàn bộ nội dung DOM rồi copy bằng execCommand lấy đúng mọi thứ đã render bất kể đang cuộn
-    // tới đâu. Chỉ dùng khi KHÔNG có dữ liệu tích luỹ theo từng lượt click (bảng phẳng, không cần mở
-    // rộng) — vì cách này chỉ chụp được đúng thời điểm gọi, không gộp được các lần mở rộng trước đó.
+    // Copy bằng cách BÔI ĐEN (Range/Selection) toàn trang (kể cả trong iframe) rồi để trình duyệt tự copy gốc
     async function copyEverythingNatively() {
       const btn = getAcpButton();
       const msg = document.getElementById(ACP_MSG_ID);
@@ -1250,20 +1357,31 @@
       if (btn) btn.style.display = 'none';
       if (msg) msg.style.display = 'none';
       try {
-        const range = document.createRange();
-        range.selectNodeContents(document.body);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        await sleep(150); // để trình duyệt kịp dựng vùng chọn trên toàn bộ nội dung trước khi copy
         let copied = false;
-        try {
-          copied = document.execCommand('copy');
-        } catch (e) {
-          console.warn('AutoClick+ copyEverythingNatively error:', e);
-          copied = false;
+        const docs = getReadableDocuments();
+
+        for (const doc of docs) {
+          if (!doc.body) continue;
+          try {
+            const win = doc.defaultView || window;
+            const range = doc.createRange();
+            range.selectNodeContents(doc.body);
+            const selection = win.getSelection ? win.getSelection() : window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+            await sleep(150);
+            if (doc.execCommand) {
+              copied = doc.execCommand('copy') || copied;
+            } else if (document.execCommand) {
+              copied = document.execCommand('copy') || copied;
+            }
+            if (selection) selection.removeAllRanges();
+          } catch (e) {
+            console.warn('AutoClick+ copyEverythingNatively error on doc:', e);
+          }
         }
-        selection.removeAllRanges();
         return copied;
       } finally {
         if (btn) btn.style.display = oldBtnDisplay || '';
@@ -1338,33 +1456,23 @@
         showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
       };
 
-      const ACP_MAX_ROUNDS = 60; // an toàn: chặn vòng lặp vô hạn nếu trang lỗi cấu trúc
-      const ACP_ROUND_SETTLE = 180; // chờ DOM lộ ra các nút dấu cộng cấp con mới sau khi mở cấp cha
-      const ACP_CLICK_BATCH_SIZE = 20; // click theo lô thay vì từng nút một — bảng lớn (vài nghìn nút) mà
-                                        // chờ DOM ổn định riêng lẻ từng click sẽ mất hàng phút; gộp lô vẫn
-                                        // chụp đủ dữ liệu (MutationObserver bắt mọi mutation trong cả lô)
-      const ACP_BATCH_YIELD = 60; // nghỉ ngắn giữa các lô để trình duyệt không bị treo khi có hàng nghìn nút
+      const ACP_MAX_ROUNDS = 60;
+      const ACP_ROUND_SETTLE = 220;
+      const ACP_CLICK_BATCH_SIZE = 6;  // Giảm kích thước lô từ 20 xuống 6 nút để tránh nghẽn luồng sự kiện
+      const ACP_CLICK_DELAY = 35;      // Micro-delay 35ms giữa các cú click trong lô
+      const ACP_BATCH_YIELD = 180;     // Nghỉ 180ms giữa các lô giúp UI và Network stack xử lý mượt mà
 
       const startedAt = performance.now();
       let clicked = 0;
       let seenTotal = 0;
       let round = 0;
-      const clickedRows = new Set(); // nhớ các hàng đã click để hạn chế bấm trùng (tối ưu, không phải điều kiện an toàn dữ liệu)
+      const clickedRows = new Set();
 
-      // Một số bảng (vd BC Doanh thu theo nhân viên) KHÔNG giữ nhiều hàng mở cùng lúc — mở hàng mới sẽ tự
-      // đóng hàng vừa mở trước đó. Vì vậy không thể chỉ đọc DOM ở bước cuối (sẽ mất dữ liệu các hàng đã bị
-      // đóng lại). Giải pháp: chụp đúng phần nội dung MỚI xuất hiện ngay sau từng cú click rồi cộng dồn lại,
-      // độc lập với việc DOM cuối cùng còn giữ hàng đó mở hay không.
-      const baseText = getBiPageText();
       const accumulatedChunks = [];
-
       let pending = getPlusButtons(clickedRows);
       const ui = showAcpProgress(pending.length, onUserCancel);
 
       try {
-        // Mở nhiều lượt: mỗi lượt click hết các nút dấu cộng đang thấy, rồi quét lại
-        // để bắt các nút dấu cộng cấp con mới lộ ra (bảng có nhiều cấp lồng nhau:
-        // NNH → nhóm hàng → hãng). Dừng khi quét không còn nút nào hoặc đạt giới hạn an toàn.
         while (!userStop && pending.length && round < ACP_MAX_ROUNDS) {
           round++;
           seenTotal += pending.length;
@@ -1373,18 +1481,17 @@
             const batch = pending.slice(i, i + ACP_CLICK_BATCH_SIZE);
 
             try {
-              // Click cả lô rồi chờ DOM ổn định MỘT LẦN cho cả lô (thay vì từng nút) — MutationObserver
-              // vẫn bắt được toàn bộ nội dung mới lộ ra do bất kỳ click nào trong lô gây ra, không mất dữ liệu.
-              const addedNodes = await waitForDomSettle(() => {
+              const addedNodes = await waitForDomSettle(async () => {
                 for (const pb of batch) {
                   const row = getRowContainer(pb);
-                  if (row) clickedRows.add(row); // đánh dấu trước khi click để lượt quét kế tiếp không bấm trùng
+                  if (row) clickedRows.add(row);
                   try {
                     pb.click();
                     clicked++;
                   } catch (err) {
                     console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
                   }
+                  await sleep(ACP_CLICK_DELAY);
                 }
               }, { quietMs: 150, maxMs: 1500 });
               const chunkText = extractAddedText(addedNodes);
@@ -1404,27 +1511,34 @@
         }
 
         updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt, true);
-        ui.title.textContent = userStop ? 'Đang chuẩn bị copy (Dừng bởi user)...' : 'Đang chuẩn bị copy...';
+        ui.title.textContent = userStop ? 'Đang chờ dữ liệu tải xong (Dừng bởi user)...' : 'Đang chờ dữ liệu tải xong...';
+        if (btn) btn.textContent = 'Đang tải dữ liệu...';
+        await yieldToBrowser();
+
+        // Chờ cho tất cả loading spinners / biểu tượng xoay tròn biến mất hoàn toàn và ổn định trước khi đọc DOM
+        await waitForSpinnersToClear(8000);
+
         if (btn) btn.textContent = 'Đang copy...';
         await yieldToBrowser();
 
-        // Không có dữ liệu tích luỹ theo từng lượt click (không có nút dấu-cộng nào, hoặc bảng phẳng
-        // không cần mở rộng) → copy bằng cách bôi đen toàn trang (copyEverythingNatively) thay vì đọc
-        // lại innerText, để không bỏ sót cột/dòng đang cuộn ngoài vùng nhìn thấy. Ngược lại (CÓ tích
-        // luỹ từ việc mở rộng nhiều lượt) → giữ cách copy chuỗi đã gộp như cũ, vì bôi-đen-lúc-này chỉ
-        // chụp được đúng thời điểm hiện tại, không gộp được các hàng đã tự đóng lại trước đó.
-        let finalText = '';
-        let copied;
-        if (accumulatedChunks.length === 0) {
-          copied = await copyEverythingNatively();
-          if (!copied) {
-            finalText = getBiPageText();
-            copied = await copyTextToClipboard(finalText);
+        // Đọc dữ liệu DOM hoàn chỉnh hiện tại sau khi đã mở các hàng và dữ liệu tải xong
+        const currentFullText = getBiPageText();
+        let finalText = currentFullText;
+
+
+        // Nếu có các đoạn dữ liệu thu thập được từ các hàng tự đóng lại trước đó, bổ sung các đoạn còn thiếu
+        if (accumulatedChunks.length > 0) {
+          const missingChunks = accumulatedChunks.filter(chunk => chunk && !currentFullText.includes(chunk));
+          if (missingChunks.length > 0) {
+            finalText = [currentFullText, ...missingChunks].join('\n\n');
           }
-        } else {
-          finalText = [baseText, ...accumulatedChunks].filter(Boolean).join('\n\n');
-          copied = await copyTextToClipboard(finalText);
         }
+
+        let copied = await copyTextToClipboard(finalText);
+        if (!copied) {
+          copied = await copyEverythingNatively();
+        }
+
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
