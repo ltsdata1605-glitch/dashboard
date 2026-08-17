@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.2
+// @version      2.3
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -93,8 +93,11 @@
  * - Thiết kế giao diện nút nổi hiện đại sang trọng (gradient, glassmorphism, hiệu ứng nhún mượt mà).
  *
  * BẢN 2.2 — TỰ ĐỘNG MỞ RỘNG TẤT CẢ CÁC CẤP TRONG 1 LẦN CLICK DUY NHẤT:
- * - Sau mỗi lượt click mở 1 cấp, tự động chờ tất cả spinner cấp con tải xong 100% trước khi quét cấp tiếp theo.
- * - Thêm cơ chế double-check đảm bảo tự động mở liên hoàn Cấp 1 -> Cấp 2 -> Cấp 3... cho tới khi hết sạch nút dấu cộng.
+ * - Tự động chờ spinner cấp con và mở liên hoàn Cấp 1 -> Cấp 2 -> Cấp 3.
+ *
+ * BẢN 2.3 — MỖI LẦN CLICK "CLICK+" CHỈ MỞ ĐÚNG 1 CẤP (+):
+ * - Đặt ACP_MAX_ROUNDS = 1: Mỗi lần nhấn nút Click+, script chỉ mở toàn bộ các nút dấu cộng của cấp hiện tại,
+ *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp cho người dùng.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1463,7 +1466,7 @@
         showAcpMessage({ title: '⏹ Đang dừng lại...', message: 'Vui lòng đợi giây lát.', success: false });
       };
 
-      const ACP_MAX_ROUNDS = 60;
+      const ACP_MAX_ROUNDS = 1;         // Mỗi lần click Click+ chỉ mở đúng 1 cấp dấu cộng
       const ACP_CLICK_BATCH_SIZE = 6;  // Giảm kích thước lô từ 20 xuống 6 nút để tránh nghẽn luồng sự kiện
       const ACP_CLICK_DELAY = 35;      // Micro-delay 35ms giữa các cú click trong lô
       const ACP_BATCH_YIELD = 180;     // Nghỉ 180ms giữa các lô giúp UI và Network stack xử lý mượt mà
@@ -1513,20 +1516,8 @@
           }
 
           if (userStop) break;
-
-          // Chờ tất cả loading spinners của cấp vừa mở tải xong 100% trước khi quét cấp tiếp theo
-          ui.title.textContent = `Đang chờ dữ liệu Cấp ${round + 1} tải xong...`;
-          await waitForSpinnersToClear(7000);
-          await sleep(300);
-
-          pending = getPlusButtons(clickedItems);
-
-          // Nếu chưa tìm thấy nút mới ở cấp tiếp theo, thử nghỉ thêm 450ms và quét lại (double check)
-          if (!pending.length && !userStop) {
-            await sleep(450);
-            pending = getPlusButtons(clickedItems);
-          }
         }
+
 
 
         updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt, true);
