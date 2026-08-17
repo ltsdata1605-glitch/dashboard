@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      1.9
+// @version      2.0
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -88,6 +88,12 @@
  * - Ưu tiên đọc DOM hoàn chỉnh sau khi mở rộng (`currentFullText`), chỉ gộp phần thiếu
  *   từ `accumulatedChunks` nếu có hàng tự đóng.
  * - Ưu tiên tuyệt đối `GM_setClipboard` (đặc quyền Tampermonkey) đảm bảo copy thành công 100%.
+ *
+ * BẢN 2.0 — TỐI ƯU TỐC ĐỘ CLICK (PACING) & TỰ ĐỘNG CHỜ SPINNER TẢI DỮ LIỆU:
+ * - Giảm kích thước lô từ 20 xuống 6 nút/lô, thêm micro-delay 35ms giữa các cú click trong lô
+ *   và tăng thời gian nghỉ giữa các lô lên 180ms để chống tràn luồng sự kiện/treo trang.
+ * - Thêm cơ chế tự động chờ tất cả loading spinners (`waitForSpinnersToClear`) trên trang mẹ
+ *   và iframe biến mất hoàn toàn trước khi trích xuất dữ liệu copy.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -940,6 +946,40 @@
       return docs;
     }
 
+    // Kiểm tra xem có biểu tượng xoay tròn / loading spinner nào đang hiển thị trên trang hoặc iframe hay không
+    function hasActiveSpinners() {
+      const docs = getReadableDocuments();
+      const selectors = [
+        '.dx-loadindicator', '.dx-loadpanel', '.dx-loadpanel-content',
+        '.fa-spinner', '.fa-spin', '.fa-circle-notch',
+        '[class*="animate-spin"]', '[class*="loading-spinner"]',
+        'svg.animate-spin', 'div.loading'
+      ];
+      for (const doc of docs) {
+        if (!doc.body) continue;
+        for (const sel of selectors) {
+          const els = doc.querySelectorAll(sel);
+          for (const el of els) {
+            if (isVisible(el)) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Chờ cho tất cả loading spinners biến mất hoàn toàn trước khi trích xuất dữ liệu copy
+    async function waitForSpinnersToClear(maxWaitMs = 7000) {
+      const start = performance.now();
+      while (performance.now() - start < maxWaitMs) {
+        if (!hasActiveSpinners()) {
+          await sleep(250);
+          if (!hasActiveSpinners()) return true;
+        }
+        await sleep(150);
+      }
+      return false;
+    }
+
     // Chờ DOM "ổn định" sau một hành động (vd click mở hàng): gom các node được thêm mới,
     // dừng khi không còn mutation nào trong `quietMs`, hoặc tối đa `maxMs` (phòng trường hợp
     // trang tải bất đồng bộ chậm/không bao giờ dừng mutate).
@@ -1404,9 +1444,10 @@
       };
 
       const ACP_MAX_ROUNDS = 60;
-      const ACP_ROUND_SETTLE = 180;
-      const ACP_CLICK_BATCH_SIZE = 20;
-      const ACP_BATCH_YIELD = 60;
+      const ACP_ROUND_SETTLE = 220;
+      const ACP_CLICK_BATCH_SIZE = 6;  // Giảm kích thước lô từ 20 xuống 6 nút để tránh nghẽn luồng sự kiện
+      const ACP_CLICK_DELAY = 35;      // Micro-delay 35ms giữa các cú click trong lô
+      const ACP_BATCH_YIELD = 180;     // Nghỉ 180ms giữa các lô giúp UI và Network stack xử lý mượt mà
 
       const startedAt = performance.now();
       let clicked = 0;
@@ -1427,7 +1468,7 @@
             const batch = pending.slice(i, i + ACP_CLICK_BATCH_SIZE);
 
             try {
-              const addedNodes = await waitForDomSettle(() => {
+              const addedNodes = await waitForDomSettle(async () => {
                 for (const pb of batch) {
                   const row = getRowContainer(pb);
                   if (row) clickedRows.add(row);
@@ -1437,6 +1478,7 @@
                   } catch (err) {
                     console.warn('AutoClick+ bỏ qua một nút lỗi:', err);
                   }
+                  await sleep(ACP_CLICK_DELAY);
                 }
               }, { quietMs: 150, maxMs: 1500 });
               const chunkText = extractAddedText(addedNodes);
@@ -1456,13 +1498,20 @@
         }
 
         updateAcpProgress(ui, clicked, seenTotal, clicked, startedAt, true);
-        ui.title.textContent = userStop ? 'Đang chuẩn bị copy (Dừng bởi user)...' : 'Đang chuẩn bị copy...';
+        ui.title.textContent = userStop ? 'Đang chờ dữ liệu tải xong (Dừng bởi user)...' : 'Đang chờ dữ liệu tải xong...';
+        if (btn) btn.textContent = 'Đang tải dữ liệu...';
+        await yieldToBrowser();
+
+        // Chờ cho tất cả loading spinners / biểu tượng xoay tròn biến mất hoàn toàn trước khi đọc DOM
+        await waitForSpinnersToClear(7000);
+
         if (btn) btn.textContent = 'Đang copy...';
         await yieldToBrowser();
 
-        // Đọc dữ liệu DOM hoàn chỉnh hiện tại sau khi đã mở các hàng
+        // Đọc dữ liệu DOM hoàn chỉnh hiện tại sau khi đã mở các hàng và dữ liệu tải xong
         const currentFullText = getBiPageText();
         let finalText = currentFullText;
+
 
         // Nếu có các đoạn dữ liệu thu thập được từ các hàng tự đóng lại trước đó, bổ sung các đoạn còn thiếu
         if (accumulatedChunks.length > 0) {
