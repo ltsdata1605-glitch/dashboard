@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      2.4
+// @version      2.5
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://dashboard.pro.vn/*
@@ -100,8 +100,12 @@
  *   tự động chờ spinner tải 100% dữ liệu cấp đó rồi copy và kết thúc. Nhường quyền kiểm soát từng cấp cho người dùng.
  *
  * BẢN 2.4 — TỰ ĐỘNG COPY ALL TOÀN BỘ DỮ LIỆU SAU MỖI LẦN MỞ 1 CẤP:
- * - Thực thi tự động Copy All 2 lớp (GM_setClipboard dữ liệu TSV chuẩn + copyEverythingNatively bôi đen toàn bộ DOM)
- *   ngay sau khi hoàn tất mở 1 cấp và chờ spinner tải xong 100%.
+ * - Thực thi tự động Copy All ngay sau khi hoàn tất mở 1 cấp và chờ spinner tải xong 100%.
+ *
+ * BẢN 2.5 — XỬ LÝ TRIỆT ĐỂ LỖI COPY TRÙNG LẶP & DỮ LIỆU RÁC "UNDEFINED":
+ * - Chỉ sử dụng copyEverythingNatively() làm dự phòng khi GM_setClipboard thất bại (tránh ghi đè dữ liệu rác từ DOM).
+ * - Lọc bỏ các bảng trùng cột cố định .dx-datagrid-content-fixed và các phần tử ẩn .dx-hidden, [aria-hidden="true"].
+ * - Loại bỏ hoàn toàn các dòng rác chứa 'undefined' và tự động khử trùng lặp các dòng giống hệt nhau liên tiếp.
  *
  * CHƯA KIỂM CHỨNG THẬT (cần test tay trước khi tin tưởng hoàn toàn):
  * - GM storage dùng chung xuyên 2 domain cho cùng 1 script; GM_addValueChangeListener
@@ -1304,6 +1308,7 @@
 
     // --- Copy nội dung ---
     // Đọc và chuyển đổi tất cả thẻ <table> trong document/iframe thành định dạng TSV chuẩn (\t giữa các cột, \n giữa các dòng).
+    // Tự động lọc bỏ các phần tử rác DevExpress (.dx-datagrid-content-fixed, .dx-hidden, aria-hidden), ô undefined và dòng trùng lặp.
     function getBiPageText() {
       const btn = getAcpButton();
       const msg = document.getElementById(ACP_MSG_ID);
@@ -1314,6 +1319,12 @@
 
       const isOwnUi = (el) => Boolean(el && (el.id === ACP_BTN_ID || el.id === ACP_MSG_ID || el.closest?.(`#${ACP_BTN_ID}, #${ACP_MSG_ID}`)));
 
+      const isHiddenOrDup = (el) => {
+        if (!el) return true;
+        if (el.closest?.('.dx-datagrid-content-fixed, .dx-hidden, .dx-invisible, [aria-hidden="true"], .dx-aria-element, .dx-datagrid-filter-row')) return true;
+        return false;
+      };
+
       try {
         const docs = getReadableDocuments();
         const extractedSections = [];
@@ -1321,22 +1332,27 @@
         for (const doc of docs) {
           if (!doc.body) continue;
 
-          // 1. Quét các thẻ <table> chuẩn
-          const tables = Array.from(doc.querySelectorAll('table')).filter(t => !isOwnUi(t));
+          // 1. Quét các thẻ <table> chuẩn, bỏ qua bảng chứa cột cố định trùng lặp (.dx-datagrid-content-fixed)
+          const tables = Array.from(doc.querySelectorAll('table')).filter(t => !isOwnUi(t) && !isHiddenOrDup(t));
           if (tables.length > 0) {
             for (const table of tables) {
-              const rows = Array.from(table.querySelectorAll('tr')).filter(r => !isOwnUi(r));
+              const rows = Array.from(table.querySelectorAll('tr')).filter(r => !isOwnUi(r) && !isHiddenOrDup(r));
               if (!rows.length) continue;
 
               const tableLines = [];
               for (const tr of rows) {
-                const cells = Array.from(tr.querySelectorAll('th, td')).filter(c => !isOwnUi(c));
+                const cells = Array.from(tr.querySelectorAll('th, td')).filter(c => !isOwnUi(c) && !isHiddenOrDup(c));
                 if (!cells.length) continue;
 
                 const cellTexts = cells.map(cell => {
                   const raw = cell.innerText || cell.textContent || '';
-                  return raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                  const clean = raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                  return (clean === 'undefined' || clean === 'null') ? '' : clean;
                 });
+
+                // Nếu tất cả ô trong dòng đều rỗng -> bỏ qua dòng trống này
+                if (cellTexts.every(txt => txt === '')) continue;
+
                 tableLines.push(cellTexts.join('\t'));
               }
 
@@ -1355,7 +1371,31 @@
           }
         }
 
-        return extractedSections.filter(Boolean).join('\n\n').trim();
+        const rawFullText = extractedSections.filter(Boolean).join('\n\n').trim();
+        const lines = rawFullText.split('\n');
+        const cleanLines = [];
+        let lastLine = null;
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            if (cleanLines.length > 0 && cleanLines[cleanLines.length - 1] !== '') {
+              cleanLines.push('');
+            }
+            continue;
+          }
+          // Khử trùng lặp dòng liền kề giống hệt nhau
+          if (trimmed === lastLine) continue;
+
+          // Bỏ qua các dòng rác chứa từ khóa undefined rác của DevExpress
+          const noTabStr = trimmed.replace(/[\t\s]/g, '');
+          if (noTabStr === 'undefined' || noTabStr.includes('undefined0.00undefined') || noTabStr.startsWith('undefined')) continue;
+
+          cleanLines.push(line);
+          lastLine = trimmed;
+        }
+
+        return cleanLines.join('\n').trim();
       } finally {
         if (btn) btn.style.display = oldBtnDisplay || '';
         if (msg) msg.style.display = oldMsgDisplay || '';
@@ -1548,20 +1588,18 @@
           }
         }
 
-        // Tự động copy toàn bộ dữ liệu (GM_setClipboard dữ liệu TSV + Native Selection Copy)
+        // Tự động copy toàn bộ dữ liệu vào Clipboard (ưu tiên GM_setClipboard chuẩn TSV)
         let copied = await copyTextToClipboard(finalText);
-        try {
-          await copyEverythingNatively();
-          copied = true;
-        } catch (e) {
-          console.warn('AutoClick+ copyEverythingNatively warning:', e);
+        if (!copied) {
+          // Chỉ dùng dự phòng copyEverythingNatively khi GM_setClipboard / Clipboard API thất bại hoàn toàn
+          copied = await copyEverythingNatively();
         }
 
         const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
         if (copied) {
           showAcpMessage({
             title: userStop ? '⏹ Đã dừng lại' : '✅ Đã mở 1 cấp & Copy All',
-            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục cấp này.<br>Đã tự động Copy All toàn bộ dữ liệu vào Clipboard.<br>Thời gian: ${elapsed} giây.`,
+            message: `Đã mở <b>${clicked}/${seenTotal}</b> mục cấp này.<br>Đã tự động Copy All toàn bộ dữ liệu sạch vào Clipboard.<br>Thời gian: ${elapsed} giây.`,
             success: !userStop,
           });
           if (btn) btn.textContent = userStop ? '⏹ Đã dừng' : '✅ Đã Copy All';
@@ -1573,6 +1611,7 @@
           });
           if (btn) btn.textContent = '📋 Copy thủ công';
         }
+
 
       } catch (error) {
         console.error('AutoClick+ lỗi:', error);
