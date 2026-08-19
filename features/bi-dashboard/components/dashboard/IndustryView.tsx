@@ -9,8 +9,6 @@ import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 
-import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
     column: string | null;
@@ -21,9 +19,7 @@ interface IndustryViewProps {
     realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
     luykeData: ReturnType<typeof parseIndustryLuyKeData>;
     isRealtime: boolean;
-    activeSupermarket: string | null;
     onExport?: () => Promise<void>;
-    isReportMode?: boolean;
 }
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
@@ -52,9 +48,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
-    const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport, isReportMode } = props;
-    
-    const [reportTargets, setReportTargets] = useIndexedDBState<Record<string, string>>(`report-industry-targets-${activeSupermarket || 'all'}`, {});
+    const { realtimeData, luykeData, isRealtime, onExport } = props;
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
@@ -368,7 +362,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     };
 
     // --- Shared cell rendering logic ---
-    const renderCell = (cell: string | number, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, fullRow: (string | number)[]) => {
+    const renderCell = (cell: string | number, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, childrenCount: number = 0) => {
         const numericValue = parseNumber(cell);
         const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
         const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;
@@ -385,9 +379,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
         const cellContent = () => {
             if (headerName === 'Nhóm ngành hàng') {
-                const displayName = isTotalRow ? 'TỔNG CỘNG' 
-                    : isNNH ? String(cell).replace('NNH ', '').toUpperCase()
-                    : String(cell || '');
+                const toSentenceCase = (text: string): string => {
+                    if (!text) return '';
+                    let str = text.replace(/^NNH\s+/i, '').trim();
+                    if (!str) return '';
+                    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+                    return str
+                        .replace(/\bDmx\b/g, 'DMX')
+                        .replace(/\bIt\b/g, 'IT')
+                        .replace(/\bBi\b/g, 'BI')
+                        .replace(/\bDv\b/g, 'DV');
+                };
+
+                const displayName = isTotalRow ? 'Tổng cộng' 
+                    : toSentenceCase(String(cell || ''));
                 
                 const indent = isNhomHang ? 20 : isHang ? 40 : 0;
                 
@@ -411,67 +416,51 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             </span>
                         )}
                         <span className={
-                            isTotalRow ? 'font-extrabold' 
-                            : isNNH ? 'font-black' 
-                            : isNhomHang ? 'font-semibold' 
-                            : 'font-normal'
+                            isTotalRow ? 'font-bold text-slate-800 dark:text-slate-100'
+                            : isNNH ? 'font-bold text-slate-800 dark:text-slate-200'
+                            : isNhomHang ? 'font-semibold text-slate-700 dark:text-slate-300'
+                            : 'font-normal text-slate-600 dark:text-slate-400'
                         }>
                             {displayName}
                         </span>
-                    </div>
-                );
-            }
-            if (isReportMode && headerName === 'Target Ngày (QĐ)') {
-                const industryName = String(fullRow[0]).replace('NNH ', '').trim();
-                const storageKey = isTotalRow ? 'TỔNG CỘNG' : industryName;
-                const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
-                    setReportTargets(prev => ({ ...prev, [storageKey]: numericValue }));
-                };
-                return (
-                    <div className="flex justify-end">
-                        <input 
-                            type="text" 
-                            className="w-full min-w-[50px] max-w-[80px] text-right bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-[12px] font-bold tabular-nums text-slate-800 dark:text-slate-200 no-print"
-                            value={reportTargets[storageKey] ? new Intl.NumberFormat('vi-VN').format(parseInt(reportTargets[storageKey], 10)) : ''}
-                            onChange={handleTargetChange}
-                            placeholder="Nhập..."
-                        />
-                        <span className="hidden print:inline text-[12px] font-bold tabular-nums">
-                            {reportTargets[storageKey] ? new Intl.NumberFormat('vi-VN').format(parseInt(reportTargets[storageKey], 10)) : '-'}
-                        </span>
-                    </div>
-                );
-            }
-            if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : isGTDHCol ? fmtGTDH.format(numericValue) : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
-            if (isHtCol) {
-                let computedValue = numericValue;
-                if (isReportMode && headerName === '% HT Target Ngày (QĐ)') {
-                    const industryName = String(fullRow[0]).replace('NNH ', '').trim();
-                    const storageKey = isTotalRow ? 'TỔNG CỘNG' : industryName;
-                    const tarNum = parseNumber(reportTargets[storageKey] || '');
-                    const actualIdx = processedTable.headers.indexOf('DT Realtime (QĐ)');
-                    const actualVal = actualIdx !== -1 ? parseNumber(fullRow[actualIdx]) : 0;
-                    computedValue = tarNum > 0 ? (actualVal / tarNum) * 100 : 0;
-                }
-                
-                return (
-                    <div className="flex justify-center items-center">
-                        {(isReportMode && headerName === '% HT Target Ngày (QĐ)' && parseNumber(reportTargets[isTotalRow ? 'TỔNG CỘNG' : String(fullRow[0]).replace('NNH ', '').trim()] || '') <= 0) ? (
-                            <span className="text-slate-400">-</span>
-                        ) : (
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
-                                {roundUp(computedValue)}%
+                        {hasChildren && (
+                            <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                                {childrenCount}
                             </span>
                         )}
                     </div>
                 );
             }
-            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
+            if (isTotalRow && (isPercentCol || isNumericCol)) {
+                if (isPercentCol) {
+                    const rounded = Math.round(numericValue);
+                    return (isNaN(numericValue) || rounded === 0) ? '-' : `${rounded}%`;
+                }
+                if (isGTDHCol) return fmtGTDH.format(numericValue);
+                return new Intl.NumberFormat('vi-VN').format(Math.round(numericValue));
+            }
+            if (isHtCol) {
+                const rounded = Math.round(numericValue);
+                if (rounded === 0) {
+                    return <span className="text-slate-400 font-bold">-</span>;
+                }
+                return (
+                    <div className="flex justify-center items-center">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
+                            {rounded}%
+                        </span>
+                    </div>
+                );
+            }
+            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(Math.round(numericValue))}</span>;
             if (isGTDHCol && isNumericCol) return fmtGTDH.format(numericValue);
-            if (isPercentCol && isNumericCol && numericValue === 0) return '-';
-            if (isPercentCol) return `${roundUp(numericValue)}%`;
-            if (isNumericCol) return new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
+            if (isPercentCol) {
+                const rounded = Math.round(numericValue);
+                if (isNaN(numericValue) || rounded === 0) return '-';
+                return `${rounded}%`;
+            }
+            if (isNumericCol) return new Intl.NumberFormat('vi-VN').format(Math.round(numericValue));
+            if (cell === '0.0%' || cell === '0%' || cell === '0.0' || cell === '0,0%') return '-';
             return cell;
         };
 
@@ -479,7 +468,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             px-2 whitespace-nowrap 
             border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0 
             tabular-nums align-middle
-            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-slate-900' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}`}
+            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-slate-900'}`}
             ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
         `;
         
@@ -514,10 +503,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-sm sm:text-base lg:text-lg font-medium uppercase text-slate-700 dark:text-slate-200 tracking-wide">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
-                            /* ─── DESKTOP TABLE VIEW ─── */
+                            {/* ─── DESKTOP TABLE VIEW ─── */}
                             <div className="overflow-hidden px-4 pb-4">
                                 <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse compact-export-table">
@@ -665,11 +654,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             key={flatRow.rowKey} 
                                                             className={`
                                                                 transition-colors duration-100 group
-                                                                ${isTotalRow 
-                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
-                                                                    : isNNH ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
-                                                                    : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700'
-                                                                    : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/10 border-b border-slate-100 dark:border-slate-700'
+                                                                ${isTotalRow
+                                                                    ? 'bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800'
+                                                                    : 'bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60'
                                                                 }
                                                             `}
                                                         >
@@ -677,7 +664,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                                 if (!visibleColumns.has(headerName)) return null;
                                                                 const originalCellIndex = processedTable.headers.indexOf(headerName);
                                                                 const cell = flatRow.values[originalCellIndex];
-                                                                return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded, flatRow.values);
+                                                                return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded, flatRow.childrenCount);
                                                             })}
                                                         </tr>
                                                     );
@@ -702,7 +689,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             if (!visibleColumns.has(headerName)) return null;
                                                             const originalCellIndex = processedTable.headers.indexOf(headerName);
                                                             const cell = row[originalCellIndex];
-                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, 0, `flat-${rIdx}`, false, false, row);
+                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, 0, `flat-${rIdx}`, false, false);
                                                         })}
                                                     </tr>
                                                 );

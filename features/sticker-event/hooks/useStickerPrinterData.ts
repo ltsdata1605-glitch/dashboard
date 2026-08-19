@@ -937,14 +937,11 @@ export function useStickerPrinterData() {
                         if (parsed.username) username = parsed.username;
                     } catch (e) {}
                 }
-                if (!storeId || storeId === 'SUPERADMIN') {
-                    const cachedDept = await getSetting<string>('cached_dept_id');
-                    if (cachedDept) storeId = cachedDept;
-                }
-                if (!username || username === currentUser.uid) {
-                    const cachedName = await getSetting<string>('cached_emp_name');
-                    if (cachedName) username = cachedName;
-                }
+                // BUG FIX: đã bỏ fallback đọc 'cached_dept_id'/'cached_emp_name' — 2 khoá này
+                // thuộc app gốc (contexts/AuthContext.tsx), vô tình trùng IndexedDB với
+                // sticker-event nên đọc nhầm dữ liệu của nhau (xem giải thích chi tiết tại
+                // StickerEventApp.tsx#onConfirmSaveList), khiến storeId lúc lưu có thể khác lúc
+                // tải lại, làm danh sách vừa lưu không hiện ra trong "DS đã lưu".
                 const targetStoreId = storeId || 'SUPERADMIN';
                 const itemsToSave = manualPages.map(p => ({
                     msp: p.code || p.id,
@@ -990,14 +987,11 @@ export function useStickerPrinterData() {
                         if (parsed.role === 'admin' || parsed.role === 'superadmin') isAdmin = true;
                     } catch (e) {}
                 }
-                if (!storeId || storeId === 'SUPERADMIN') {
-                    const cachedDept = await getSetting<string>('cached_dept_id');
-                    if (cachedDept) storeId = cachedDept;
-                }
-                if (!username || username === currentUser.uid) {
-                    const cachedName = await getSetting<string>('cached_emp_name');
-                    if (cachedName) username = cachedName;
-                }
+                // BUG FIX: đã bỏ fallback đọc 'cached_dept_id'/'cached_emp_name' — 2 khoá này
+                // thuộc app gốc (contexts/AuthContext.tsx), vô tình trùng IndexedDB với
+                // sticker-event nên đọc nhầm dữ liệu của nhau (xem giải thích chi tiết tại
+                // StickerEventApp.tsx#onConfirmSaveList), khiến storeId lúc lưu có thể khác lúc
+                // tải lại, làm danh sách vừa lưu không hiện ra trong "DS đã lưu".
                 const targetStoreId = storeId || 'SUPERADMIN';
                 // Nếu là Admin/Quản lý: LẤY TOÀN BỘ DANH SÁCH DO CẢ NHÂN VIÊN VÀ ADMIN TẠO (truyền undefined cho userId)
                 const cloudLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : username);

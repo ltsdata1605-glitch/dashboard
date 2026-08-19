@@ -8,6 +8,7 @@ export interface FlatDisplayRow {
     name: string;
     rowKey: string;
     hasChildren: boolean;
+    childrenCount: number;
     isExpanded: boolean;
 }
 
@@ -26,6 +27,7 @@ export const flattenTree = (
             name: node.name,
             rowKey: key,
             hasChildren: node.children.length > 0,
+            childrenCount: node.children.length,
             isExpanded: isExp
         });
         if (isExp && node.children.length > 0) {
@@ -125,6 +127,7 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
                 name: 'Tổng',
                 rowKey: '__total__',
                 hasChildren: false,
+                childrenCount: 0,
                 isExpanded: false
             });
         }

@@ -289,7 +289,7 @@ const RevenueView: React.FC<{
                                             <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th colSpan={3} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-slate-200 dark:border-slate-700">
+                                            <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-slate-200 dark:border-slate-700">
                                                 Doanh thu
                                             </th>
                                             {isShowRemaining && (
@@ -297,7 +297,7 @@ const RevenueView: React.FC<{
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={5} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-slate-200 dark:border-slate-700">
                                                 Hiệu suất
                                             </th>
                                         </tr>
@@ -306,13 +306,13 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
                                             {isShowRemaining && (
                                                 <>
                                                     <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-amber-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
                                                     <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-amber-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
                                                 </>
                                             )}
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
@@ -339,6 +339,10 @@ const RevenueView: React.FC<{
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
+                                                        <div>{roundUp(row.calculatedCompletion)}%</div>
+                                                        <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
+                                                    </td>
                                                     {isShowRemaining && (
                                                         <>
                                                             <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
@@ -349,10 +353,6 @@ const RevenueView: React.FC<{
                                                             </td>
                                                         </>
                                                     )}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
-                                                        <div>{roundUp(row.calculatedCompletion)}%</div>
-                                                        <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
-                                                    </td>
                                                     <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                         <div style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />

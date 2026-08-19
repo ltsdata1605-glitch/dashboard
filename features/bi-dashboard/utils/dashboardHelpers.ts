@@ -5,7 +5,7 @@ export interface SupermarketCompetitionData {
     programs: { name: string; data: (string | number)[]; metric: string }[];
 }
 
-export type MainTab = 'realtime' | 'cumulative' | 'report';
+export type MainTab = 'realtime' | 'cumulative';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
@@ -185,17 +185,19 @@ export function aggregateTreeNodes(nodes: IndustryTreeNode[], headers: string[])
         if (htIdx >= 0 && dtqdIdx >= 0 && targetIdx >= 0) {
             const dtqd = parseNumber(values[dtqdIdx]);
             const target = parseNumber(values[targetIdx]);
-            values[htIdx] = target > 0 ? `${((dtqd / target) * 100).toFixed(1)}%` : '0%';
+            const pct = target > 0 ? Math.round((dtqd / target) * 100) : 0;
+            values[htIdx] = pct > 0 ? `${pct}%` : '0%';
         }
         if (ttgIdx >= 0 && dtgIdx >= 0 && dtqdIdx >= 0) {
             const dtg = parseNumber(values[dtgIdx]);
             const dtqd = parseNumber(values[dtqdIdx]);
-            values[ttgIdx] = dtqd > 0 ? `${((dtg / dtqd) * 100).toFixed(1)}%` : '0%';
+            const pct = dtqd > 0 ? Math.round((dtg / dtqd) * 100) : 0;
+            values[ttgIdx] = pct > 0 ? `${pct}%` : '0%';
         }
         if (dgIdx >= 0 && dtqdIdx >= 0 && slIdx >= 0) {
             const dtqd = parseNumber(values[dtqdIdx]);
             const sl = parseNumber(values[slIdx]);
-            values[dgIdx] = sl > 0 ? (dtqd / sl).toFixed(2) : '0';
+            values[dgIdx] = sl > 0 ? String(Math.round(dtqd / sl)) : '0';
         }
     };
 
@@ -224,7 +226,8 @@ export function aggregateTreeNodes(nodes: IndustryTreeNode[], headers: string[])
                     sumDTCK += childDTCK;
                     totalDtqd += childDtqd;
                 });
-                values[dtckIdx] = sumDTCK > 0 ? `${(((totalDtqd - sumDTCK) / sumDTCK) * 100).toFixed(1)}%` : '0%';
+                const pct = sumDTCK > 0 ? Math.round(((totalDtqd - sumDTCK) / sumDTCK) * 100) : 0;
+                values[dtckIdx] = pct !== 0 ? `${pct}%` : '0%';
             }
 
             computeDerived(values);
@@ -243,7 +246,8 @@ export function aggregateTreeNodes(nodes: IndustryTreeNode[], headers: string[])
                     sumDTCK += childDTCK;
                     totalDtqd += childDtqd;
                 });
-                values[dtckIdx] = sumDTCK > 0 ? `${(((totalDtqd - sumDTCK) / sumDTCK) * 100).toFixed(1)}%` : '0%';
+                const pct = sumDTCK > 0 ? Math.round(((totalDtqd - sumDTCK) / sumDTCK) * 100) : 0;
+                values[dtckIdx] = pct !== 0 ? `${pct}%` : '0%';
             }
 
             computeDerived(values);

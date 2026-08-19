@@ -3,7 +3,6 @@ import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
 import { fetchUserState, saveUserState, saveListToFirestore } from './services/firebaseService';
-import { getSetting } from './services/dbService';
 import ResultsDisplay from './ResultsDisplay';
 import Scanner from './Scanner';
 import PrintSettingsModal from './PrintSettingsModal';
@@ -388,19 +387,17 @@ export default function App(): React.JSX.Element {
         msp: p.msp,
         quantity: p.quantity,
       }));
-      let targetStoreId = userData?.storeId;
-      if (!targetStoreId || targetStoreId === 'SUPERADMIN') {
-        const cachedDept = await getSetting<string>('cached_dept_id');
-        if (cachedDept) targetStoreId = cachedDept;
-      }
-      if (!targetStoreId) targetStoreId = 'SUPERADMIN';
-
-      let usernameToSave = userData?.username;
-      if (!usernameToSave) {
-        const cachedName = await getSetting<string>('cached_emp_name');
-        if (cachedName) usernameToSave = cachedName;
-      }
-      if (!usernameToSave) usernameToSave = user!.uid;
+      // BUG FIX: 'cached_dept_id'/'cached_emp_name' KHÔNG PHẢI cache riêng của sticker-event —
+      // đây là 2 khoá do contexts/AuthContext.tsx (app gốc, dự án Firebase khác hẳn) ghi vào,
+      // nhưng cả 2 khu vực dùng CHUNG một IndexedDB (BI_HUB_DATABASE_V2/settings — xem
+      // services/dbService/core.ts và features/sticker-event/services/dbService.ts) nên vô
+      // tình đọc trúng dữ liệu của nhau. sticker-event không hề tự ghi 2 khoá này, và giá trị
+      // có thể bị app gốc âm thầm đổi/xoá bất cứ lúc nào (đăng nhập/đăng xuất/làm mới token ở
+      // app gốc) — khiến "Lưu DS" và "DS đã lưu" đôi khi tính ra 2 targetStoreId khác nhau dù
+      // chỉ cách nhau vài chục giây, làm danh sách vừa lưu "biến mất" khi mở lại (bug user báo
+      // cáo). Bỏ hẳn 2 fallback này — chỉ dùng đúng dữ liệu thuộc phiên đăng nhập sticker-event.
+      const targetStoreId = userData?.storeId || 'SUPERADMIN';
+      const usernameToSave = userData?.username || user!.uid;
 
       await saveListToFirestore(targetStoreId, usernameToSave, listName, itemsToSave);
       

@@ -18,10 +18,10 @@ export interface MultiSelectDropdownOption {
 export interface MultiSelectDropdownProps {
   icon?: React.ReactNode;
   triggerLabel: string;
-  count: number;
-  allLabel: string;
-  allChecked: boolean;
-  onToggleAll: () => void;
+  count?: number;
+  allLabel?: string;
+  allChecked?: boolean;
+  onToggleAll?: () => void;
   options: MultiSelectDropdownOption[];
   onToggleOption: (key: string) => void;
   align?: 'left' | 'right';
@@ -51,7 +51,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   triggerLabel,
   count,
   allLabel,
-  allChecked,
+  allChecked = false,
   onToggleAll,
   options,
   onToggleOption,
@@ -95,7 +95,9 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{triggerLabel}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+          {typeof count === 'number' && (
+            <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+          )}
           <ChevronDown size={16} className={cn('text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
         </div>
       </Button>
@@ -108,16 +110,18 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           )}
         >
           <div className="space-y-0.5">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={onToggleAll}
-              onKeyDown={onActivateKey(onToggleAll)}
-              className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors"
-            >
-              <span className="text-xs font-black text-sky-600 dark:text-sky-400">{allLabel}</span>
-              <ToggleDot checked={allChecked} />
-            </div>
+            {allLabel && onToggleAll && (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={onToggleAll}
+                onKeyDown={onActivateKey(onToggleAll)}
+                className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors"
+              >
+                <span className="text-xs font-black text-sky-600 dark:text-sky-400">{allLabel}</span>
+                <ToggleDot checked={allChecked} />
+              </div>
+            )}
             {options.map(opt => (
               <div
                 key={opt.key}

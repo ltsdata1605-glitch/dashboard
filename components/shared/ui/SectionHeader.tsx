@@ -25,7 +25,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     <Icon name={icon} size={5} className="hidden lg:block" />
                 </div>
                 <div className="min-w-0">
-                    <h2 className="text-sm lg:text-xl font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{title}</h2>
+                    <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{title}</h2>
                     {subtitle && <div className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{subtitle}</div>}
                 </div>
             </div>

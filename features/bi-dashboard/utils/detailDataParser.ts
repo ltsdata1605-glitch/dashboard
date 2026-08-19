@@ -2,12 +2,12 @@ import { parseNumber } from "../../../utils/dataUtils";
 import { isLevel0 } from "./dashboardHelpers";
 /**
  * Parser for 4-level employee revenue detail data.
- * Hierarchy: Department > Employee > Ngành hàng (NNH) > Nhóm hàng > Hãng
+ * Hierarchy: Department > Employee > Ngành hàng (NNH) > Nhóm hàng > Hãng > Sản phẩm
  */
 
 export interface DetailNode {
     name: string;
-    level: 'total' | 'department' | 'employee' | 'nnh' | 'nhomHang' | 'hang';
+    level: 'total' | 'department' | 'employee' | 'nnh' | 'nhomHang' | 'hang' | 'sanPham';
     dtlk: number;
     dtqd: number;
     hieuQuaQD: number;
@@ -25,7 +25,7 @@ export interface DetailNode {
  * - Starts with "BP " → department
  * - Matches "Name - DIGITS" (employee ID pattern) → employee
  * - Starts with "NNH " → nnh (ngành hàng)
- * - Everything else is nhomHang or hang (determined by children)
+ * - Everything else is nhomHang, hang, or sanPham (determined by tree structure)
  */
 function detectLevel(name: string): 'total' | 'department' | 'employee' | 'nnh' | 'nhomHang' {
     if (name === 'Tổng') return 'total';
@@ -33,11 +33,41 @@ function detectLevel(name: string): 'total' | 'department' | 'employee' | 'nnh' 
     // Employee: "Name - 12345" or "Name - 123456"
     if (/\s-\s\d{4,}$/.test(name)) return 'employee';
     if (isLevel0(name)) return 'nnh';
-    return 'nhomHang'; // Will be refined to 'hang' based on tree structure
+    return 'nhomHang'; // Will be refined based on tree structure
 }
 
 export function parseDetailData(raw: string): DetailNode[] {
     return parseDetailDataV2(raw);
+}
+
+const KNOWN_BRANDS = new Set([
+    // Laptop / Máy tính / IT
+    'acer', 'asus', 'hp', 'dell', 'lenovo', 'msi', 'macbook', 'singpc', 'chuwi', 'microsoft surface', 'gigabyte', 'vaio', 'lg gram',
+    // Điện thoại / Tablet
+    'apple', 'samsung', 'oppo', 'xiaomi', 'realme', 'vivo', 'honor', 'nokia', 'masstel', 'mobell', 'itel', 'tecno', 'infinix', 'bphone', 'vsmart', 'huawei', 'zte', 'tcl', 'oneplus', 'poco',
+    // Điện tử / Tivi / Loa / Âm thanh
+    'lg', 'aqua', 'toshiba', 'panasonic', 'sharp', 'casper', 'tcl', 'sony', 'hisense', 'coocaa',
+    'jbl', 'marshall', 'harman kardon', 'alpha works', 'soundcore', 'anker', 'bose', 'sennheiser', 'edifier', 'dalton', 'nanomax', 'acnos', 'paramax', 'boston acoustics', 'zenbos', 'sumico', 'monster', 'klipsch',
+    // Điện lạnh (Tủ lạnh, Máy giặt, Máy lạnh, Tủ đông)
+    'daikin', 'midea', 'nagakawa', 'comfee', 'gree', 'bompani', 'electrolux', 'sanaki', 'sanaky', 'funiki', 'mitsubishi heavy', 'mitsubishi electric', 'hitachi', 'carrier', 'candy', 'beko', 'haier',
+    // Điện gia dụng & Bếp & Lọc nước
+    'kangaroo', 'karofi', 'sunhouse', 'bluestone', 'tefal', 'cuckoo', 'philips', 'bear', 'elmich', 'delites', 'ava', 'ava+', 'dreame', 'roborock', 'ecovacs', 'daikiosan', 'makano', 'mishio', 'hafele', 'bosch', 'pramie', 'malloca', 'stiebel eltron', 'ferroli', 'ariston', 'rossi', 'rapido', 'hawonkoo', 'supor', 'kitchenlux', 'homemy', 'happycook', 'lotte', 'lock&lock', 'lock and lock', 'inochi', 'namilux', 'senko', 'asia', 'ac', 'mitsubishi', 'kdk', 'lifan', 'yanfan', 'viet nhat', 'viet-tiep', 'dien quang', 'rang dong', 'kutchen', 'kuvings', 'hurom', 'tiross', 'zelmer', 'korihome', 'mutosi', 'aosmith', 'a.o. smith', 'coway', 'chungho', 'pureit', 'unilever pureit', 'braun', 'oral-b', 'oral b', 'flyco', 'enchen', 'showsee',
+    // Đồng hồ & Phụ kiện
+    'casio', 'elio', 'mvw', 'smile kid', 'korlex', 'q&q', 'orient', 'citizen', 'fossil', 'tommy hilfiger', 'anne klein', 'titan', 'rossini', 'nakzen', 'curren', 'naviforce', 'skmei', 'julius', 'srwatch', 'mathey tissot', 'candino', 'frederique constant', 'certina', 'tissot', 'bulova', 'coach', 'michael kors', 'lacoste', 'adriatica', 'baby-g', 'g-shock', 'sheen', 'edifice', 'pro trek',
+    'belkin', 'baseus', 'ugreen', 'remax', 'hoco', 'rezo', 'hydrus', 'joway', 'mipow', 'x-mobile', 'targus', 'tomtoc', 'jincase', 'occa', 'togo', 'akko', 'dareu', 'logitech', 'razer', 'corsair', 'hyperwork', 'edra', 'e-dra', 'machenike', 'kinh van hoa', 'canon', 'brother', 'kingston', 'sandisk', 'kioxia', 'hiksemi', 'transcend', 'lexar', 'seagate', 'western digital', 'wd', 'tp-link', 'mercusys', 'totolink', 'tenda', 'd-link',
+    // Xe đạp & Dụng cụ thể thao
+    'thong nhat', 'thống nhất', 'fornix', 'giant', 'trinx', 'twitter', 'java', 'sava', 'maruishi', 'royalbaby', 'stitch', 'chipmunk', 'fascino',
+    // Dịch vụ & Phần mềm
+    'viettel', 'vinaphone', 'mobifone', 'vietnamobile', 'itravel', 'wintel', 'local',
+    'mic', 'pvi', 'pti', 'bao viet', 'vbi', 'fubon', 'vieon', 'galaxy play', 'fpt play', 'tv360', 'k+', 'office 365', 'microsoft', 'kaspersky', 'bkav', 'eset'
+]);
+
+function isKnownBrand(name: string): boolean {
+    const clean = name.trim().toLowerCase();
+    if (KNOWN_BRANDS.has(clean)) return true;
+    const normalized = clean.replace(/[^a-z0-9]/g, '');
+    if (KNOWN_BRANDS.has(normalized)) return true;
+    return false;
 }
 
 function isCategoryName(name: string): boolean {
@@ -50,7 +80,7 @@ function isCategoryName(name: string): boolean {
         'sim', 'thẻ cào', 'dịch vụ', 'xe đạp', 'thể thao', 'bình đun', 'sinh tố', 'ép trái cây',
         'nước nóng', 'sấy quần áo', 'rửa chén', 'hút mùi', 'chảo', 'nồi cơm', 'nồi áp suất',
         'bàn là', 'vợt muỗi', 'đèn', 'sưởi', 'massage', 'cân', 'bàn chải', 'cạo râu', 'triệt lông',
-        'xoay', 'ép', 'âm thanh', 'kỹ thuật số', 'gia dụng', 'điện tử', 'điện lạnh'
+        'xoay', 'ép', 'âm thanh', 'kỹ thuật số', 'gia dụng', 'điện tử', 'điện lạnh', 'bàn phím', 'chuột'
     ];
 
     return categoryKeywords.some(keyword => lowercaseName.includes(keyword));
@@ -62,23 +92,63 @@ function rebuildNnhChildren(flatChildren: DetailNode[]): DetailNode[] {
     let remainingSL = 0;
     let remainingDTQD = 0;
 
+    let currentBrand: DetailNode | null = null;
+    let remainingBrandSL = 0;
+    let remainingBrandDTQD = 0;
+
     for (const child of flatChildren) {
-        let isBrand = false;
-        if (currentNhomHang) {
-            const hasCatKeyword = isCategoryName(child.name);
-            const fitsQty = child.soLuong <= remainingSL + 0.1;
-            const fitsRevenue = child.dtqd <= remainingDTQD + 1.0;
-            
-            if (!hasCatKeyword && fitsQty && fitsRevenue && remainingSL > 0) {
-                isBrand = true;
-            }
+        const isBrand = isKnownBrand(child.name);
+
+        // Check if child is product of currentBrand
+        const fitsBrand = currentBrand && 
+                          !isBrand &&
+                          remainingBrandSL > 0.01 && 
+                          child.soLuong <= remainingBrandSL + 0.1 && 
+                          child.dtqd <= remainingBrandDTQD + 1.0;
+
+        if (fitsBrand && currentBrand) {
+            child.level = 'sanPham';
+            currentBrand.children.push(child);
+            remainingBrandSL = Math.max(0, remainingBrandSL - child.soLuong);
+            remainingBrandDTQD = Math.max(0, remainingBrandDTQD - child.dtqd);
+            continue;
         }
 
-        if (isBrand && currentNhomHang) {
+        // Check if child is brand of currentNhomHang
+        const hasCatKeyword = isCategoryName(child.name);
+        const fitsNhomHang = currentNhomHang && 
+                            !hasCatKeyword && 
+                            child.soLuong <= remainingSL + 0.1 && 
+                            child.dtqd <= remainingDTQD + 1.0 && 
+                            remainingSL > 0.01;
+
+        if ((isBrand || fitsNhomHang) && currentNhomHang) {
             child.level = 'hang';
+            child.children = [];
             currentNhomHang.children.push(child);
-            remainingSL -= child.soLuong;
-            remainingDTQD -= child.dtqd;
+            currentBrand = child;
+            remainingBrandSL = child.soLuong;
+            remainingBrandDTQD = child.dtqd;
+            remainingSL = Math.max(0, remainingSL - child.soLuong);
+            remainingDTQD = Math.max(0, remainingDTQD - child.dtqd);
+        } else if (isBrand && !currentNhomHang) {
+            currentNhomHang = {
+                name: child.name,
+                level: 'nhomHang',
+                dtlk: 0,
+                dtqd: 0,
+                hieuQuaQD: 0,
+                soLuong: 0,
+                donGia: 0,
+                children: []
+            };
+            structuredChildren.push(currentNhomHang);
+            child.level = 'hang';
+            child.children = [];
+            currentNhomHang.children.push(child);
+            currentBrand = child;
+            remainingBrandSL = child.soLuong;
+            remainingBrandDTQD = child.dtqd;
         } else {
             child.level = 'nhomHang';
             child.children = [];
@@ -86,6 +156,9 @@ function rebuildNnhChildren(flatChildren: DetailNode[]): DetailNode[] {
             currentNhomHang = child;
             remainingSL = child.soLuong;
             remainingDTQD = child.dtqd;
+            currentBrand = null;
+            remainingBrandSL = 0;
+            remainingBrandDTQD = 0;
         }
     }
 
@@ -114,22 +187,27 @@ function rebuildEmployeeSubtree(
 ): DetailNode[] {
     const parentNames = new Set(Object.values(industryBiMap).map(v => v.parent.toLowerCase()));
     
-    // Construct a tree of Level 3 (nnh) -> Level 4 (nhomHang) -> Level 5 (hang)
-    const nnhMap = new Map<string, DetailNode>(); // Key: NhomCha (lowercase)
-    const nhomHangMaps = new Map<string, Map<string, DetailNode>>(); // Key: NhomCha (lowercase), Value: Map of NhomCon (lowercase) -> nhomHang Node
-    const brandMaps = new Map<string, Map<string, DetailNode>>(); // Key: childKey, Value: Map of brandName (lowercase) -> Brand Node
+    // Construct a tree of Level 3 (nnh) -> Level 4 (nhomHang) -> Level 5 (hang) -> Level 6 (sanPham)
+    const nnhMap = new Map<string, DetailNode>(); // Key: parentKey
+    const nhomHangMaps = new Map<string, Map<string, DetailNode>>(); // Key: parentKey, Value: Map of childKey -> nhomHang Node
     const nnhOrder: string[] = [];
 
     let activeNhomHangNode: DetailNode | null = null;
-    let activeChildKey: string | null = null;
+    let remainingNhomHangSL = 0;
+    let remainingNhomHangDTQD = 0;
     let activeNhomHangIndent = -1;
+
+    let activeBrandNode: DetailNode | null = null;
+    let remainingBrandSL = 0;
+    let remainingBrandDTQD = 0;
+
     let currentNnhHeader = '';
 
     for (const row of rows) {
         const cleanName = row.name.trim();
         const lowerName = cleanName.toLowerCase();
         
-        // Check if it is a category summary row (like NNH Điện lạnh)
+        // 1. Check if it is a category summary row (like NNH Điện lạnh)
         const isCategorySummary = cleanName.startsWith('NNH ') || 
                                  parentNames.has(lowerName) || 
                                  parentNames.has(cleanName.replace(/^NNH\s+/i, '').toLowerCase());
@@ -160,17 +238,28 @@ function rebuildEmployeeSubtree(
                 nnhNode.soLuong += row.soLuong;
             }
             activeNhomHangNode = null;
-            activeChildKey = null;
+            remainingNhomHangSL = 0;
+            remainingNhomHangDTQD = 0;
             activeNhomHangIndent = -1;
+
+            activeBrandNode = null;
+            remainingBrandSL = 0;
+            remainingBrandDTQD = 0;
             continue;
         }
 
+        // 2. Check if it is a Level 4 Nhóm hàng
         const compoundKey = `${currentNnhHeader.toLowerCase()}|||${lowerName}`;
         const mapInfo = industryBiMap[compoundKey] || industryBiMap[lowerName];
-        const isActuallyNhomHang = mapInfo && (activeNhomHangNode === null || row.indent <= activeNhomHangIndent);
+        const isBrand = isKnownBrand(cleanName);
+        const isActuallyNhomHang = !isBrand && !!mapInfo && (
+            activeNhomHangNode === null || 
+            remainingNhomHangSL <= 0.01 || 
+            row.indent <= activeNhomHangIndent
+        );
 
         if (isActuallyNhomHang) {
-            const parentName = mapInfo.parent.trim(); // Level 3 (Ngành hàng)
+            const parentName = currentNnhHeader ? currentNnhHeader.replace(/^NNH\s+/i, '').trim() : mapInfo.parent.trim(); // Level 3 (Ngành hàng)
             const childName = mapInfo.child.trim();   // Level 4 (Nhóm hàng)
             const parentKey = parentName.toLowerCase();
             const childKey = childName.toLowerCase();
@@ -198,88 +287,80 @@ function rebuildEmployeeSubtree(
                 nhomHangNode = {
                     name: childName,
                     level: 'nhomHang',
-                    dtlk: 0,
-                    dtqd: 0,
-                    hieuQuaQD: 0,
-                    soLuong: 0,
-                    donGia: 0,
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
                     children: []
                 };
                 nhomHangMap.set(childKey, nhomHangNode);
                 nnhNode.children.push(nhomHangNode);
+            } else {
+                // Sum the group row's values if repeated
+                nhomHangNode.dtlk += row.dtlk;
+                nhomHangNode.dtqd += row.dtqd;
+                nhomHangNode.soLuong += row.soLuong;
             }
 
-            // Sum the group row's values into nhomHangNode
-            nhomHangNode.dtlk += row.dtlk;
-            nhomHangNode.dtqd += row.dtqd;
-            nhomHangNode.soLuong += row.soLuong;
-
             activeNhomHangNode = nhomHangNode;
-            activeChildKey = childKey;
+            remainingNhomHangSL = row.soLuong;
+            remainingNhomHangDTQD = row.dtqd;
             activeNhomHangIndent = row.indent;
-            
-        } else {
-            // 3. Otherwise, it must be a Level 5 Brand (Hãng)!
-            if (activeNhomHangNode && activeChildKey) {
-                let brandMap = brandMaps.get(activeChildKey);
-                if (!brandMap) {
-                    brandMap = new Map();
-                    brandMaps.set(activeChildKey, brandMap);
-                }
 
-                let brandNode = brandMap.get(lowerName);
-                if (brandNode) {
-                    // Sum/merge brand values if it appears multiple times under the same NhomCon
-                    brandNode.dtlk += row.dtlk;
-                    brandNode.dtqd += row.dtqd;
-                    brandNode.soLuong += row.soLuong;
-                } else {
-                    brandNode = {
-                        name: cleanName,
-                        level: 'hang',
-                        dtlk: row.dtlk,
-                        dtqd: row.dtqd,
-                        hieuQuaQD: row.hieuQuaQD,
-                        soLuong: row.soLuong,
-                        donGia: row.donGia,
-                        children: []
-                    };
-                    brandMap.set(lowerName, brandNode);
-                    activeNhomHangNode.children.push(brandNode);
-                }
-            } else {
-                // Fallback parent and child
-                const fallbackParentName = currentNnhHeader ? currentNnhHeader.replace(/^NNH\s+/i, '').trim() : 'Khác';
-                const fallbackChildName = cleanName;
-                const parentKey = fallbackParentName.toLowerCase();
-                const childKey = fallbackChildName.toLowerCase();
-                
+            activeBrandNode = null;
+            remainingBrandSL = 0;
+            remainingBrandDTQD = 0;
+            continue;
+        }
+
+        // 3. Check if it is a Level 6 Product (Sản phẩm) under activeBrandNode
+        const fitsBrandQty = activeBrandNode && remainingBrandSL > 0.01 && row.soLuong <= remainingBrandSL + 0.1;
+        const fitsBrandRev = activeBrandNode && remainingBrandDTQD > 0.01 && row.dtqd <= remainingBrandDTQD + 1.0;
+
+        if (activeBrandNode && !isBrand && fitsBrandQty && fitsBrandRev) {
+            const productNode: DetailNode = {
+                name: cleanName,
+                level: 'sanPham',
+                dtlk: row.dtlk,
+                dtqd: row.dtqd,
+                hieuQuaQD: row.hieuQuaQD,
+                soLuong: row.soLuong,
+                donGia: row.donGia,
+                children: []
+            };
+            activeBrandNode.children.push(productNode);
+            remainingBrandSL = Math.max(0, remainingBrandSL - row.soLuong);
+            remainingBrandDTQD = Math.max(0, remainingBrandDTQD - row.dtqd);
+            continue;
+        }
+
+        // 4. Otherwise, it is a Level 5 Brand (Hãng) under activeNhomHangNode
+        if (isBrand || activeNhomHangNode) {
+            if (!activeNhomHangNode) {
+                const parentName = currentNnhHeader ? currentNnhHeader.replace(/^NNH\s+/i, '').trim() : 'Khác';
+                const parentKey = parentName.toLowerCase();
                 let nnhNode = nnhMap.get(parentKey);
                 if (!nnhNode) {
                     nnhNode = {
-                        name: fallbackParentName,
+                        name: parentName,
                         level: 'nnh',
-                        dtlk: row.dtlk,
-                        dtqd: row.dtqd,
-                        hieuQuaQD: row.hieuQuaQD,
-                        soLuong: row.soLuong,
-                        donGia: row.donGia,
+                        dtlk: 0,
+                        dtqd: 0,
+                        hieuQuaQD: 0,
+                        soLuong: 0,
+                        donGia: 0,
                         children: []
                     };
                     nnhMap.set(parentKey, nnhNode);
                     nnhOrder.push(parentKey);
                     nhomHangMaps.set(parentKey, new Map());
-                } else {
-                    nnhNode.dtlk += row.dtlk;
-                    nnhNode.dtqd += row.dtqd;
-                    nnhNode.soLuong += row.soLuong;
                 }
-                
                 const nhomHangMap = nhomHangMaps.get(parentKey)!;
-                let nhomHangNode = nhomHangMap.get(childKey);
+                let nhomHangNode = nhomHangMap.get(parentKey);
                 if (!nhomHangNode) {
                     nhomHangNode = {
-                        name: fallbackChildName,
+                        name: parentName,
                         level: 'nhomHang',
                         dtlk: 0,
                         dtqd: 0,
@@ -288,77 +369,78 @@ function rebuildEmployeeSubtree(
                         donGia: 0,
                         children: []
                     };
-                    nhomHangMap.set(childKey, nhomHangNode);
+                    nhomHangMap.set(parentKey, nhomHangNode);
                     nnhNode.children.push(nhomHangNode);
                 }
-
-                let brandMap = brandMaps.get(childKey);
-                if (!brandMap) {
-                    brandMap = new Map();
-                    brandMaps.set(childKey, brandMap);
-                }
-
-                let brandNode = brandMap.get(lowerName);
-                if (brandNode) {
-                    brandNode.dtlk += row.dtlk;
-                    brandNode.dtqd += row.dtqd;
-                    brandNode.soLuong += row.soLuong;
-                } else {
-                    brandNode = {
-                        name: cleanName,
-                        level: 'hang',
-                        dtlk: row.dtlk,
-                        dtqd: row.dtqd,
-                        hieuQuaQD: row.hieuQuaQD,
-                        soLuong: row.soLuong,
-                        donGia: row.donGia,
-                        children: []
-                    };
-                    brandMap.set(lowerName, brandNode);
-                    nhomHangNode.children.push(brandNode);
-                }
+                activeNhomHangNode = nhomHangNode;
             }
-        }
-    }
-    
-    // Aggregate metrics for Level 3 (nnh) nodes
-    const nnhList: DetailNode[] = [];
-    for (const key of nnhOrder) {
-        const nnhNode = nnhMap.get(key);
-        if (nnhNode) {
-            if (nnhNode.children.length > 0) {
-                let totalDtlk = 0;
-                let totalDtqd = 0;
-                let totalSoLuong = 0;
-                
-                for (const nhomHang of nnhNode.children) {
-                    // First recalculate nhomHang level derived metrics
-                    nhomHang.donGia = nhomHang.soLuong > 0 ? (nhomHang.dtqd / nhomHang.soLuong) : 0;
-                    nhomHang.hieuQuaQD = nhomHang.dtlk > 0 ? (nhomHang.dtqd - nhomHang.dtlk) / nhomHang.dtlk : 0;
-                    
-                    // Recalculate brand level donGia and hieuQuaQD if they were merged!
-                    for (const hang of nhomHang.children) {
-                        hang.donGia = hang.soLuong > 0 ? (hang.dtqd / hang.soLuong) : 0;
-                        hang.hieuQuaQD = hang.dtlk > 0 ? (hang.dtqd - hang.dtlk) / hang.dtlk : 0;
-                    }
 
-                    totalDtlk += nhomHang.dtlk;
-                    totalDtqd += nhomHang.dtqd;
-                    totalSoLuong += nhomHang.soLuong;
-                }
-                
-                nnhNode.dtlk = totalDtlk;
-                nnhNode.dtqd = totalDtqd;
-                nnhNode.soLuong = totalSoLuong;
-                nnhNode.donGia = totalSoLuong > 0 ? (totalDtqd / totalSoLuong) : 0;
-                nnhNode.hieuQuaQD = totalDtlk > 0 ? (totalDtqd - totalDtlk) / totalDtlk : 0;
-            }
+            const brandNode: DetailNode = {
+                name: cleanName,
+                level: 'hang',
+                dtlk: row.dtlk,
+                dtqd: row.dtqd,
+                hieuQuaQD: row.hieuQuaQD,
+                soLuong: row.soLuong,
+                donGia: row.donGia,
+                children: []
+            };
+            activeNhomHangNode.children.push(brandNode);
+            activeBrandNode = brandNode;
+            remainingBrandSL = row.soLuong;
+            remainingBrandDTQD = row.dtqd;
+            remainingNhomHangSL = Math.max(0, remainingNhomHangSL - row.soLuong);
+            remainingNhomHangDTQD = Math.max(0, remainingNhomHangDTQD - row.dtqd);
+        } else {
+            // Fallback when not a known brand and no active nhomHang
+            const fallbackParentName = currentNnhHeader ? currentNnhHeader.replace(/^NNH\s+/i, '').trim() : 'Khác';
+            const fallbackChildName = cleanName;
+            const parentKey = fallbackParentName.toLowerCase();
+            const childKey = fallbackChildName.toLowerCase();
             
-            nnhList.push(nnhNode);
+            let nnhNode = nnhMap.get(parentKey);
+            if (!nnhNode) {
+                nnhNode = {
+                    name: fallbackParentName,
+                    level: 'nnh',
+                    dtlk: 0,
+                    dtqd: 0,
+                    hieuQuaQD: 0,
+                    soLuong: 0,
+                    donGia: 0,
+                    children: []
+                };
+                nnhMap.set(parentKey, nnhNode);
+                nnhOrder.push(parentKey);
+                nhomHangMaps.set(parentKey, new Map());
+            }
+
+            const nhomHangMap = nhomHangMaps.get(parentKey)!;
+            let nhomHangNode = nhomHangMap.get(childKey);
+            if (!nhomHangNode) {
+                nhomHangNode = {
+                    name: fallbackChildName,
+                    level: 'nhomHang',
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
+                    children: []
+                };
+                nhomHangMap.set(childKey, nhomHangNode);
+                nnhNode.children.push(nhomHangNode);
+            }
+            activeNhomHangNode = nhomHangNode;
+            remainingNhomHangSL = row.soLuong;
+            remainingNhomHangDTQD = row.dtqd;
+            activeBrandNode = null;
+            remainingBrandSL = 0;
+            remainingBrandDTQD = 0;
         }
     }
-    
-    return nnhList;
+
+    return nnhOrder.map(key => nnhMap.get(key)!).filter(Boolean);
 }
 
 /**
@@ -370,8 +452,6 @@ export function parseDetailDataV2(
 ): DetailNode[] {
     if (!raw) return [];
 
-    // Split into lines, filter out empty lines, but do not trim them immediately
-    // to preserve leading spaces/tabs
     const lines = raw.split('\n').filter(l => l.trim());
     const headerIdx = lines.findIndex(l => l.includes('Nhân viên') && l.includes('DTLK') && l.includes('DTQĐ'));
     if (headerIdx === -1) return [];
@@ -379,7 +459,6 @@ export function parseDetailDataV2(
     const dataLines = lines.slice(headerIdx + 1);
     if (dataLines.length === 0) return [];
 
-    // Parse all rows with detected levels and indentation
     interface RawRow {
         name: string;
         dtlk: number;
@@ -393,22 +472,18 @@ export function parseDetailDataV2(
     const rawRows: RawRow[] = [];
     for (const line of dataLines) {
         const parts = line.split('\t');
-        
-        // Find the first non-empty cell as the name cell
         let nameIdx = 0;
         while (nameIdx < parts.length && parts[nameIdx].trim() === '') {
             nameIdx++;
         }
-        if (nameIdx >= parts.length) continue; // empty line
+        if (nameIdx >= parts.length) continue;
 
         const rawName = parts[nameIdx];
         const leadingSpaces = rawName.length - rawName.trimStart().length;
         const name = rawName.trim();
         if (!name) continue;
 
-        // Skip known non-data lines
         if (name.includes('Hỗ trợ BI') || name.includes('Logo BI') || name.includes('Trang chủ')) continue;
-        // Skip filter/header lines
         if (name.includes('Doanh thu theo') || name.includes('Ngành hàng chính') || name.includes('Tháng ') || name.includes('Phòng ban') || name.includes('Tất cả ngành hàng') || name.includes('Danh sách')) continue;
         if (name === 'Nhân viên') continue;
 
@@ -503,10 +578,10 @@ export function parseDetailDataV2(
             }
         }
         flushEmpRows();
+        optimizeTreeHierarchy(roots);
         return roots;
     }
 
-    // Fallback: Build tree using stack for total -> department -> employee -> NNH -> nhomHang -> hang
     const roots: DetailNode[] = [];
     
     interface StackElement {
@@ -563,7 +638,6 @@ export function parseDetailDataV2(
             stack = stack.filter(el => ['total', 'department', 'employee'].includes(el.node.level));
             stack.push({ node, indent: row.indent });
         } else {
-            // Push directly as flat child under current NNH
             const nnhEl = stack.find(el => el.node.level === 'nnh');
             if (nnhEl) {
                 nnhEl.node.children.push(node);
@@ -571,10 +645,7 @@ export function parseDetailDataV2(
         }
     }
 
-    // Now rebuild and restructure all NNH children lists
     rebuildAllNnhChildren(roots);
-
-    // Optimize hierarchy: roll up child numbers and remove redundant identical brand leaves
     optimizeTreeHierarchy(roots);
 
     return roots;
@@ -583,12 +654,38 @@ export function parseDetailDataV2(
 function optimizeTreeHierarchy(roots: DetailNode[]) {
     const walk = (node: DetailNode) => {
         if (node.children && node.children.length > 0) {
-            // Traverse children first (bottom-up)
             for (const child of node.children) {
                 walk(child);
             }
 
-            // Subgroup (Level 4 nhomHang)
+            // Level 5 (hang) - roll up product metrics if children exist
+            if (node.level === 'hang') {
+                let totalDtlk = 0;
+                let totalDtqd = 0;
+                let totalSoLuong = 0;
+                for (const prod of node.children) {
+                    totalDtlk += prod.dtlk;
+                    totalDtqd += prod.dtqd;
+                    totalSoLuong += prod.soLuong;
+                }
+                
+                if (totalSoLuong > 0 || totalDtqd > 0) {
+                    node.dtlk = totalDtlk;
+                    node.dtqd = totalDtqd;
+                    node.soLuong = totalSoLuong;
+                }
+                node.donGia = node.soLuong > 0 ? (node.dtqd / node.soLuong) : 0;
+                node.hieuQuaQD = node.dtlk > 0 ? (node.dtqd - node.dtlk) / node.dtlk : 0;
+
+                if (node.children.length === 1) {
+                    const singleChild = node.children[0];
+                    if (singleChild.name.trim().toLowerCase() === node.name.trim().toLowerCase()) {
+                        node.children = [];
+                    }
+                }
+            }
+
+            // Level 4 (nhomHang)
             if (node.level === 'nhomHang') {
                 let totalDtlk = 0;
                 let totalDtqd = 0;
@@ -599,7 +696,6 @@ function optimizeTreeHierarchy(roots: DetailNode[]) {
                     totalSoLuong += hang.soLuong;
                 }
                 
-                // Roll up if child data is present
                 if (totalSoLuong > 0 || totalDtqd > 0) {
                     node.dtlk = totalDtlk;
                     node.dtqd = totalDtqd;
@@ -607,17 +703,8 @@ function optimizeTreeHierarchy(roots: DetailNode[]) {
                 }
                 node.donGia = node.soLuong > 0 ? (node.dtqd / node.soLuong) : 0;
                 node.hieuQuaQD = node.dtlk > 0 ? (node.dtqd - node.dtlk) / node.dtlk : 0;
-
-                // If a subgroup has exactly 1 brand child and its name is identical to the subgroup name, collapse it.
-                if (node.children.length === 1) {
-                    const singleChild = node.children[0];
-                    if (singleChild.name.trim().toLowerCase() === node.name.trim().toLowerCase()) {
-                        node.children = []; // Remove redundant leaf
-                    }
-                }
             }
             
-            // Structural parents (total, department, employee, nnh)
             if (['nnh', 'employee', 'department', 'total'].includes(node.level)) {
                 let totalDtlk = 0;
                 let totalDtqd = 0;

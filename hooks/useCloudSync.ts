@@ -199,9 +199,17 @@ export const useCloudSync = () => {
                         
                         if (!isHeavySyncKey(key)) continue;
                         
-                        // Skip updating if a local write for this heavy key is debounced/pending
-                        if (heavyTimeoutsRef.current[key]) {
-                            console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
+                        // Skip updating if a local write for this heavy key is debounced/pending —
+                        // hoặc ĐANG BAY lên Firestore (isHeavyKeyInFlight). `heavyTimeoutsRef` chỉ phủ
+                        // được lúc CHỜ debounce (2s); sau khi debounce bắn, updatedAt thật sự ghi vào
+                        // Firestore là serverTimestamp() chốt lúc SERVER nhận ghi — luôn TRỄ hơn
+                        // lastModified_ (Date.now() chốt lúc sửa, trước debounce) ít nhất bằng độ trễ
+                        // debounce + round-trip mạng. Nếu không loại trừ isHeavyKeyInFlight, chính lượt
+                        // ghi của TAB NÀY sẽ tự "vọng" (echo) về qua onSnapshot và bị hiểu nhầm là
+                        // "cloud mới hơn" — gây toast "cập nhật ở nơi khác" giả cho checkthuong_data dù
+                        // không hề có tab/thiết bị nào khác đang sửa (bug user báo cáo).
+                        if (heavyTimeoutsRef.current[key] || isHeavyKeyInFlight(key)) {
+                            console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending or in flight.`);
                             continue;
                         }
                         

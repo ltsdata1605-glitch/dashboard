@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
-import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ChevronDownIcon, ImagesIcon } from '../Icons';
+import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon, ClockIcon } from '../Icons';
 import { Icon } from '../../../../components/common/Icon';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
+import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 
 interface DashboardHeaderProps {
     title: string;
@@ -60,47 +61,57 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // đã được thể hiện rõ qua các tab đang active phía trên, không cần nhắc lại.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
-        const isReport = activeMainTab === 'report';
-        return `CẬP NHẬT ĐẾN NGÀY ${getDateLabel(isRealtime || isReport)}`;
+        return `CẬP NHẬT ĐẾN NGÀY ${getDateLabel(isRealtime)}`;
     }, [activeMainTab]);
 
     return (
         <div className="space-y-0">
-            {/* Row 1: Title + Supermarket Selector — matches NhanVien style */}
-            <div className="relative z-20 mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-3 pb-1 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white uppercase">
+            {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
+            <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <Icon name="bar-chart-3" size={4.5} className="sm:hidden" />
+                        <Icon name="bar-chart-3" size={5} className="hidden sm:block" />
+                    </div>
+                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                         {title}
-                    </h1>
-                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 pb-2">
-                        Realtime & Luỹ kế tháng
-                    </p>
+                    </h2>
                 </div>
-                <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 w-full sm:w-auto justify-end hide-on-export">
-                    {/* Supermarket Selector — same style as NhanVien */}
-                    <div className="relative w-full sm:w-auto min-w-0">
-                        <select
-                            value={activeSupermarket}
-                            onChange={(e) => setActiveSupermarket(e.target.value)}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        >
-                            <option value="Tổng">CỤM</option>
-                            {supermarkets?.map(sm => (
-                                <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
-                            ))}
-                        </select>
-                        <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-sky-400 dark:hover:border-sky-600 transition-all outline-none whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px]">
-                                    {activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
-                                <ChevronDownIcon className="h-4 w-4 text-slate-400" />
-                            </div>
+                <div className="flex flex-none justify-end hide-on-export">
+                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên) */}
+                    <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-700">
+                            <ClockIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveMainTab('realtime')}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-xs sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                            >
+                                Realtime
+                            </Button>
+                            <span className="text-slate-300 dark:text-slate-600">/</span>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveMainTab('cumulative')}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-xs sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                            >
+                                Luỹ kế
+                            </Button>
                         </div>
+                        <MultiSelectDropdown
+                            icon={<BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
+                            count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
+                            allLabel="Chọn tất cả"
+                            allChecked={activeSupermarket === 'Tổng'}
+                            onToggleAll={() => setActiveSupermarket('Tổng')}
+                            options={Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => ({
+                                key: sm,
+                                label: shortenSupermarketName(sm),
+                                checked: activeSupermarket === sm,
+                            }))}
+                            onToggleOption={(key) => setActiveSupermarket(key === activeSupermarket ? 'Tổng' : key)}
+                        />
                     </div>
                 </div>
             </div>
@@ -119,19 +130,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
 
                 {/* Action bar — matching NhanVien toolbar */}
-                <div className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 relative z-50">
-                    {/* Left: Realtime / Luỹ kế toggle */}
-                    <Tabs
-                        items={[
-                            { id: 'realtime', label: 'Realtime' },
-                            { id: 'cumulative', label: 'Luỹ kế' },
-                            ...(activeSubTab === 'revenue' ? [{ id: 'report', label: 'Báo cáo' }] : []),
-                        ]}
-                        activeId={activeMainTab}
-                        onChange={(id) => setActiveMainTab(id as MainTab)}
-                        variant="segment"
-                        size="sm"
-                    />
+                <div className="flex items-center justify-end px-4 py-2 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 relative z-10">
 
                     {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}
                     <div className="flex items-center gap-1">

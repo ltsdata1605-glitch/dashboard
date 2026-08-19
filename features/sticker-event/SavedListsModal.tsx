@@ -36,13 +36,11 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
         setIsLoading(true);
         setError(null);
         try {
-            let targetStoreId = storeId;
-            if (!targetStoreId || targetStoreId === 'SUPERADMIN') {
-                const { getSetting } = await import('./services/dbService');
-                const cachedDept = await getSetting<string>('cached_dept_id');
-                if (cachedDept) targetStoreId = cachedDept;
-            }
-            if (!targetStoreId) targetStoreId = 'SUPERADMIN';
+            // BUG FIX: đã bỏ fallback đọc 'cached_dept_id' — khoá này thuộc app gốc
+            // (contexts/AuthContext.tsx), vô tình trùng IndexedDB với sticker-event (xem giải
+            // thích chi tiết tại StickerEventApp.tsx#onConfirmSaveList), khiến targetStoreId lúc
+            // tải danh sách có thể khác lúc lưu, làm danh sách vừa lưu không hiện ra.
+            const targetStoreId = storeId || 'SUPERADMIN';
 
             // Filter lists at query level if not admin
             const filteredLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : userId);

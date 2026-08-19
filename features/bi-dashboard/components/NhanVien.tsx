@@ -1,5 +1,5 @@
 import { useWorker } from "../hooks/useWorker";import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
+import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, FilterIcon, CreditCardIcon, SparklesIcon, UsersIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -292,16 +292,16 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
 
             {/* Title + Filter Toolbar */}
-            <div className="relative z-20 mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-3 pb-1 border-b border-slate-200 dark:border-slate-800 w-full">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white uppercase">
+            <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                         Nhân Viên
-                    </h1>
-                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 pb-2">
-                        Hiệu suất cá nhân
-                    </p>
+                    </h2>
                 </div>
-                <div className="flex flex-1 sm:flex-none w-full sm:w-auto justify-end">
+                <div className="flex flex-none justify-end">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx */}
                     <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <MultiSelectDropdown

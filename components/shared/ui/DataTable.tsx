@@ -25,6 +25,8 @@ export interface DataTableColumn<T = unknown> {
   minWidth?: string;
   /** Text alignment */
   align?: 'left' | 'center' | 'right';
+  /** Header text alignment override (defaults to `align`) */
+  headerAlign?: 'left' | 'center' | 'right';
   /** Sticky left column */
   sticky?: boolean;
   /** Sortable */
@@ -64,6 +66,8 @@ export interface DataTableProps<T = unknown> {
   footer?: React.ReactNode;
   /** Compact mode */
   compact?: boolean;
+  /** Show a light vertical divider between columns */
+  columnDividers?: boolean;
   /** Additional className */
   className?: string;
   /** Max height with scroll */
@@ -104,6 +108,7 @@ export function DataTable<T>({
   isRowHighlighted,
   footer,
   compact = false,
+  columnDividers = false,
   className,
   maxHeight,
 }: DataTableProps<T>) {
@@ -172,7 +177,7 @@ export function DataTable<T>({
 
             {/* Column Headers */}
             <tr className="bg-slate-50 dark:bg-slate-800/60">
-              {columns.map(col => (
+              {columns.map((col, i) => (
                 <th
                   key={col.id}
                   className={cn(
@@ -180,10 +185,11 @@ export function DataTable<T>({
                     'border-b border-slate-200 dark:border-slate-700/50',
                     'text-slate-500 dark:text-slate-400 whitespace-nowrap',
                     headerPadding,
-                    col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
+                    (col.headerAlign ?? col.align) === 'right' ? 'text-right' : (col.headerAlign ?? col.align) === 'center' ? 'text-center' : 'text-left',
                     col.sticky && 'sticky left-0 z-20 bg-slate-50 dark:bg-slate-800/60',
                     col.sortable && 'cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors',
                     col.hideMobile && 'hidden lg:table-cell',
+                    columnDividers && i > 0 && 'border-l border-slate-200 dark:border-slate-700/50',
                     col.className
                   )}
                   style={{
@@ -243,7 +249,7 @@ export function DataTable<T>({
                 )}
                 onClick={() => onRowClick?.(row, ri)}
               >
-                {columns.map(col => (
+                {columns.map((col, i) => (
                   <td
                     key={col.id}
                     className={cn(
@@ -252,6 +258,7 @@ export function DataTable<T>({
                       col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
                       col.sticky && 'sticky left-0 z-10 bg-white dark:bg-slate-900',
                       col.hideMobile && 'hidden lg:table-cell',
+                      columnDividers && i > 0 && 'border-l border-slate-100 dark:border-slate-800/50',
                       col.className
                     )}
                     style={{

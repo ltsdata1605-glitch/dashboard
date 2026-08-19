@@ -121,56 +121,57 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
             {/* Layout cho desktop (lg trở lên) */}
-            <div className="hidden lg:flex flex-col flex-1 px-4 py-3.5">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                        <Icon name={icon} size={4.5} />
+            <div className="hidden lg:flex flex-col justify-between flex-1 px-3 py-2">
+                {/* Hàng 1: Icon + Title bên trái, Giá trị (Value) bên phải */}
+                <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                            <Icon name={icon} size={3} />
+                        </div>
+                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{title}</h3>
                     </div>
-                    <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-2 flex-1 min-w-0">{title}</h3>
-                </div>
-
-                <div className="mt-auto">
-                    <div className="flex flex-col">
+                    <div className="text-right shrink-0">
                         {children}
                     </div>
+                </div>
 
-                    {clampedProgress !== undefined && (
-                        <div className="mt-2">
-                            <div className="flex items-center justify-between mb-0.5">
-                                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">Tiến độ</span>
-                                <span className={`text-[11px] font-bold ${style.iconText}`}>
+                {/* Hàng 2: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
+                {(clampedProgress !== undefined || trendLabel || trendValue) && (
+                    <div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-0.5">
+                        {clampedProgress !== undefined && (
+                            <div className="flex items-center gap-1.5">
+                                <div className={`flex-1 h-1.5 rounded-full ${style.progressBg} overflow-hidden`}>
+                                    <div
+                                        className={`h-full rounded-full ${style.progressFill} transition-all duration-700 ease-out progress-shimmer`}
+                                        style={{ width: `${clampedProgress}%` }}
+                                    />
+                                </div>
+                                <span className={`text-[9.5px] font-bold ${style.iconText} shrink-0 tabular-nums`}>
                                     {Math.round(clampedProgress)}%
                                 </span>
                             </div>
-                            <div className={`w-full h-2 rounded-full ${style.progressBg} overflow-hidden`}>
-                                <div
-                                    className={`h-full rounded-full ${style.progressFill} transition-all duration-700 ease-out progress-shimmer`}
-                                    style={{ width: `${clampedProgress}%` }}
-                                />
+                        )}
+                        {(trendLabel || trendValue) && (
+                            <div className="flex items-center justify-between gap-1 text-[9px] leading-none">
+                                <span className="text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
+                                <div className="font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
+                                    {trendValue}
+                                </div>
                             </div>
-                        </div>
-                    )}
-
-                    {(trendLabel || trendValue) && (
-                        <div className="flex items-center justify-between gap-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-white/[0.04]">
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
-                            <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
-                                {trendValue}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
-            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1.5 py-2 text-center h-full">
+            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1.5 py-1.5 text-center h-full">
                 {/* Hàng 1: Icon */}
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 mb-1`}>
-                    <Icon name={icon} size={3.5} />
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 mb-0.5`}>
+                    <Icon name={icon} size={3} />
                 </div>
                 
                 {/* Hàng 2: Title */}
-                <h3 className="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 mb-0.5 w-full">{title}</h3>
+                <h3 className="text-[8.5px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 mb-0.5 w-full truncate">{title}</h3>
                 
                 {/* Hàng 3: Value */}
                 <div className="my-0.5 min-w-0 w-full overflow-hidden shrink-0">
@@ -179,15 +180,15 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 
                 {/* Hàng 4: Label phụ */}
                 {trendValue ? (
-                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[8.5px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
+                    <div className="text-[8.5px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
                 ) : (
-                    <div className="h-3 shrink-0"></div>
+                    <div className="h-2 shrink-0"></div>
                 )}
             </div>
         </div>

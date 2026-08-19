@@ -234,26 +234,32 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     };
 
     return (
-        <div className="max-w-7xl mx-auto md:space-y-4 space-y-4 pb-20 md:px-4 px-2">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-3 pt-3 pb-1 border-b border-slate-200 dark:border-slate-800">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white uppercase">DỮ LIỆU</h1>
-                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 pb-2">
-                        Dán báo cáo BI tương ứng để làm mới bảng điều khiển.
-                    </p>
+        <div className="space-y-4 sm:space-y-6 relative pb-20">
+            {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
+            <div className="relative z-20 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <UploadIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                        CẬP NHẬT DỮ LIỆU
+                    </h2>
                 </div>
-                <div className="flex items-center gap-2 pb-2">
-                    <Button
-                        variant="ghost"
-                        onClick={() => setIsConfirmingClear(true)}
-                        title="Xoá tất cả dữ liệu"
-                        className="bg-transparent hover:bg-transparent border-0 h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase rounded-md border border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-all shadow-sm"
-                    >
-                        <TrashIcon className="h-3.5 w-3.5" />
-                        <span>LÀM MỚI TẤT CẢ</span>
-                    </Button>
+                <div className="flex flex-none justify-end">
+                    <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={() => setIsConfirmingClear(true)}
+                            title="Xoá tất cả dữ liệu"
+                            className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
+                        >
+                            <TrashIcon className="h-4 w-4 text-rose-500" />
+                            <span className="uppercase text-[11px] sm:text-xs tracking-wider">LÀM MỚI TẤT CẢ</span>
+                        </Button>
+                    </div>
                 </div>
-            </header>
+            </div>
 
             <div className="relative z-10">
                 <Card title="Dữ Liệu Báo Cáo Cụm" icon="upload-cloud">

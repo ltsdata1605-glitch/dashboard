@@ -35,8 +35,11 @@ export type BIKey =
   | 'revenue-view-mode'
   | 'installment-view-mode'
   | 'bankem-view-mode'
-  | 'ai-assistant-history'
-  | 'app-theme'
+  | 'custom-dt-thuc-targets'
+  | 'custom-dtqd-targets'
+  | 'custom-hqqd-targets'
+  | 'custom-tracham-targets'
+  | `custom-dt-thuc-target-${string}`
   | 'main-active-view'
   | 'dashboard-main-tab'
   | 'dashboard-sub-tab'

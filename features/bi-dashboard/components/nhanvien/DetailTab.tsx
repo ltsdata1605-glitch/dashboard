@@ -16,7 +16,8 @@ const LEVEL_NUMBERS: Record<string, number> = {
     employee: 2,
     nnh: 3,
     nhomHang: 4,
-    hang: 5
+    hang: 5,
+    sanPham: 6
 };
 
 interface DetailTabProps {
@@ -35,9 +36,10 @@ const LEVEL_STYLES: Record<string, { indent: number; bg: string; text: string; f
     total: { indent: 0, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-800 dark:text-emerald-200', font: 'font-black uppercase', size: 'text-[13px]' },
     department: { indent: 0, bg: 'bg-rose-50/60 dark:bg-rose-900/15', text: 'text-rose-800 dark:text-rose-200', font: 'font-extrabold uppercase', border: 'border-t-2 border-rose-200 dark:border-rose-800', size: 'text-[12px]' },
     employee: { indent: 0, bg: 'bg-sky-50/40 dark:bg-sky-900/10', text: 'text-sky-800 dark:text-sky-200', font: 'font-bold', size: 'text-[13px]' },
-    nnh: { indent: 20, bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-300', font: 'font-semibold', size: 'text-[12px]' },
-    nhomHang: { indent: 40, bg: '', text: 'text-slate-600 dark:text-slate-400', font: 'font-medium', size: 'text-[12px]' },
-    hang: { indent: 60, bg: '', text: 'text-slate-500 dark:text-slate-500', font: 'font-normal', size: 'text-[11px]' },
+    nnh: { indent: 16, bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-300', font: 'font-semibold', size: 'text-[12px]' },
+    nhomHang: { indent: 32, bg: '', text: 'text-slate-700 dark:text-slate-300', font: 'font-medium', size: 'text-[12px]' },
+    hang: { indent: 48, bg: '', text: 'text-slate-600 dark:text-slate-400', font: 'font-medium', size: 'text-[11px]' },
+    sanPham: { indent: 64, bg: '', text: 'text-slate-500 dark:text-slate-400', font: 'font-normal italic', size: 'text-[11px]' },
 };
 
 interface DetailRowProps {
@@ -58,12 +60,18 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             className={`${style.bg} ${style.border || ''} border-b border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`}
         >
             {/* Name column */}
-            <td className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit`}>
+            <td 
+                className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit ${hasChildren ? 'cursor-pointer' : ''}`}
+                onClick={() => hasChildren && toggleExpand(rowKey)}
+            >
                 <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
                     {hasChildren ? (
                         <Button
                             variant="ghost"
-                            onClick={() => toggleExpand(rowKey)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpand(rowKey);
+                            }}
                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors flex-shrink-0"
                         >
                             {isExpanded
@@ -144,13 +152,13 @@ const SearchableSelect: React.FC<{
                 variant="secondary"
                 size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-[11px] text-left"
+                className="flex items-center justify-between w-full px-2 py-1 rounded text-[11px] text-left h-7.5"
             >
                 <span className="truncate">{displayValue}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 dark:text-slate-500 shrink-0" />
+                <ChevronDownIcon className="h-3 w-3 ml-0.5 text-slate-400 dark:text-slate-500 shrink-0" />
             </Button>
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-60">
+                <div className="absolute top-full left-0 mt-1 min-w-[200px] w-max max-w-[280px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-64">
                     <div className="p-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
                         <input
                             type="text"
@@ -196,6 +204,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const [filterNnh, setFilterNnh] = useState<string>('all');
     const [filterNhomHang, setFilterNhomHang] = useState<string>('all');
     const [filterHang, setFilterHang] = useState<string>('all');
+    const [filterSanPham, setFilterSanPham] = useState<string>('all');
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
     const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
@@ -255,10 +264,15 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         return departments;
     }, [fullTree, activeDepartments, hiddenSet, isActive]);
 
-    // Sync expanded keys when tree changes (default expand to level 2 showing employee names collapsed)
+    const lastRawDataRef = useRef<string>('');
+
+    // Sync expanded keys when rawData changes (default expand to level 2 showing employee names collapsed)
     useEffect(() => {
-        if (isActive === false) return;
-        if (tree.length > 0) {
+        if (isActive === false || tree.length === 0) return;
+        
+        // Only re-initialize default expand state if rawData actually changed
+        if (lastRawDataRef.current !== rawData) {
+            lastRawDataRef.current = rawData;
             const keys = new Set<string>();
             const walk = (nodes: DetailNode[], prefix: string) => {
                 nodes.forEach((n, i) => {
@@ -273,7 +287,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             walk(tree, 'root');
             setExpandedKeys(keys);
         }
-    }, [tree, isActive]);
+    }, [tree, rawData, isActive]);
 
     // Collect all expandable keys
     const allKeys = useMemo(() => {
@@ -309,11 +323,12 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     }, []);
 
     const filterOptions = useMemo(() => {
-        if (isActive === false) return { employees: [], nnhs: [], nhomHangs: [], hangs: [] };
+        if (isActive === false) return { employees: [], nnhs: [], nhomHangs: [], hangs: [], sanPhams: [] };
         const employees = new Set<string>();
         const nnhs = new Set<string>();
         const nhomHangs = new Set<string>();
         const hangs = new Set<string>();
+        const sanPhams = new Set<string>();
 
         const walk = (nodes: DetailNode[]) => {
             for (const node of nodes) {
@@ -321,6 +336,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 if (node.level === 'nnh') nnhs.add(node.name);
                 if (node.level === 'nhomHang') nhomHangs.add(node.name);
                 if (node.level === 'hang') hangs.add(node.name);
+                if (node.level === 'sanPham') sanPhams.add(node.name);
                 walk(node.children);
             }
         };
@@ -330,6 +346,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             nnhs: Array.from(nnhs).sort(),
             nhomHangs: Array.from(nhomHangs).sort(),
             hangs: Array.from(hangs).sort(),
+            sanPhams: Array.from(sanPhams).sort(),
         };
     }, [tree, isActive]);
 
@@ -337,7 +354,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const filteredTree = useMemo(() => {
         if (isActive === false) return [];
         const q = debouncedSearchQuery.toLowerCase().trim();
-        const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || filterHang !== 'all' || q !== '';
+        const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || filterHang !== 'all' || filterSanPham !== 'all' || q !== '';
 
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
             return nodes.reduce<DetailNode[]>((acc, node) => {
@@ -358,15 +375,16 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 if (cloned.level === 'nnh' && filterNnh !== 'all' && cloned.name !== filterNnh) keep = false;
                 if (cloned.level === 'nhomHang' && filterNhomHang !== 'all' && cloned.name !== filterNhomHang) keep = false;
                 if (cloned.level === 'hang' && filterHang !== 'all' && cloned.name !== filterHang) keep = false;
+                if (cloned.level === 'sanPham' && filterSanPham !== 'all' && cloned.name !== filterSanPham) keep = false;
 
                 // If a structural node loses all its children due to active filtering, drop it
-                if (isFiltering && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level) && cloned.children.length === 0) {
+                if (isFiltering && ['department', 'employee', 'nnh', 'nhomHang', 'hang'].includes(cloned.level) && cloned.children.length === 0) {
                     keep = false;
                 }
 
                 if (keep) {
                     // Update structural parent totals based on remaining filtered children
-                    if (isFiltering && cloned.children && cloned.children.length > 0 && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level)) {
+                    if (isFiltering && cloned.children && cloned.children.length > 0 && ['department', 'employee', 'nnh', 'nhomHang', 'hang'].includes(cloned.level)) {
                         let totalDtlk = 0;
                         let totalDtqd = 0;
                         let totalSoLuong = 0;
@@ -484,7 +502,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         options={filterOptions.nnhs}
                         placeholder="Tất cả Ngành hàng"
                         emptyText="Không tìm thấy"
-                        widthClass="w-36"
+                        widthClass="w-28"
                     />
                     <SearchableSelect
                         value={filterNhomHang}
@@ -492,7 +510,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         options={filterOptions.nhomHangs}
                         placeholder="Tất cả Nhóm hàng"
                         emptyText="Không tìm thấy"
-                        widthClass="w-36"
+                        widthClass="w-28"
                     />
                     <SearchableSelect
                         value={filterHang}
@@ -500,7 +518,15 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         options={filterOptions.hangs}
                         placeholder="Tất cả Hãng"
                         emptyText="Không tìm thấy"
-                        widthClass="w-36"
+                        widthClass="w-24"
+                    />
+                    <SearchableSelect
+                        value={filterSanPham}
+                        onChange={setFilterSanPham}
+                        options={filterOptions.sanPhams}
+                        placeholder="Tất cả Sản phẩm"
+                        emptyText="Không tìm thấy"
+                        widthClass="w-32"
                     />
                     <SearchableSelect
                         value={filterEmployee}
@@ -508,7 +534,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         options={filterOptions.employees}
                         placeholder="Tất cả Nhân viên"
                         emptyText="Không tìm thấy"
-                        widthClass="w-36"
+                        widthClass="w-28"
                     />
                     {/* Expand all button */}
                     <Button
@@ -517,7 +543,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleExpandAll}
                         title="Mở rộng tất cả"
-                        className="text-slate-500"
+                        className="text-slate-500 h-7.5 w-7.5 p-0 shrink-0"
                     >
                         <ChevronsUpDown className="h-3.5 w-3.5" />
                     </Button>
@@ -528,12 +554,12 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleCollapseAll}
                         title="Thu gọn tất cả"
-                        className="text-slate-500"
+                        className="text-slate-500 h-7.5 w-7.5 p-0 shrink-0"
                     >
                         <ChevronsDownUp className="h-3.5 w-3.5" />
                     </Button>
                 </div>
-                <div className="flex gap-1.5 items-center">
+                <div className="flex gap-1.5 items-center shrink-0">
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
             </div>
@@ -544,7 +570,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     rounded={false}
                     icon="list-todo"
                     title="Chi tiết doanh thu theo ngành hàng"
-                    subtitle="Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng"
+                    subtitle="Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng › Sản phẩm"
                 >
                     <div className="w-full overflow-hidden px-4 pt-3 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
