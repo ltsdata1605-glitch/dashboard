@@ -18,9 +18,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onFilterClick,
 }) => {
   return (
-    <div 
+    <div
       className="fixed left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-14 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
-      style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
+      style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <Button
         variant="ghost"

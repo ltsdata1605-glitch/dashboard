@@ -460,7 +460,7 @@ export default function App(): React.JSX.Element {
 
   return (
     <ErrorBoundary>
-      <div className={`min-h-screen bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0 pb-[180px]' : 'p-2 sm:p-3'}`}>
+      <div className={`min-h-screen bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0 pb-[124px]' : 'p-2 sm:p-3'}`}>
         <div className="w-full max-w-7xl mx-auto">
           <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white border-b border-slate-100 px-2 py-1.5' : 'mb-3 px-1'}`}>
             <div className="flex items-center gap-2 min-w-0">
