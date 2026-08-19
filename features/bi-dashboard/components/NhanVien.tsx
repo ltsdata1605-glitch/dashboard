@@ -303,10 +303,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 </div>
                 <div className="flex flex-none justify-end">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx */}
-                    <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <MultiSelectDropdown
-                            className="border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-700"
-                            icon={<BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            className="border-r border-slate-200 dark:border-slate-700"
+                            icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
                             allLabel="Chọn tất cả"

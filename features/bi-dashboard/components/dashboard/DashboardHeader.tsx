@@ -79,13 +79,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
                 <div className="flex flex-none justify-end hide-on-export">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên) */}
-                    <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-700">
-                            <ClockIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
+                            <ClockIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveMainTab('realtime')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-xs sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Realtime
                             </Button>
@@ -93,13 +93,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveMainTab('cumulative')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-xs sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Luỹ kế
                             </Button>
                         </div>
                         <MultiSelectDropdown
-                            icon={<BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
                             allLabel="Chọn tất cả"

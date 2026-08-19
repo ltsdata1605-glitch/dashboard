@@ -448,7 +448,7 @@ export default function App(): React.JSX.Element {
 
   if (isInitializing) {
      return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-dvh flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
      );
@@ -460,7 +460,13 @@ export default function App(): React.JSX.Element {
 
   return (
     <ErrorBoundary>
-      <div className={`min-h-screen bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0 pb-[124px]' : 'p-2 sm:p-3'}`}>
+      {/* BUG FIX: min-h-screen (100vh) đo theo viewport LỚN NHẤT (lúc thanh địa chỉ trình
+          duyệt mobile đã thu gọn) — lúc trang vừa tải/thanh địa chỉ đang hiện, viewport thực tế
+          nhỏ hơn 100vh, đẩy thanh công cụ `fixed` của BottomNavigation ra ngoài vùng nhìn thấy
+          cho tới khi cuộn để trình duyệt tự thu gọn thanh địa chỉ (bug user báo cáo trên webview
+          mobile). min-h-dvh theo dõi đúng viewport ĐANG hiển thị, không bị lệch theo trạng thái
+          ẩn/hiện thanh địa chỉ. */}
+      <div className={`min-h-dvh bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0 pb-[124px]' : 'p-2 sm:p-3'}`}>
         <div className="w-full max-w-7xl mx-auto">
           <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white border-b border-slate-100 px-2 py-1.5' : 'mb-3 px-1'}`}>
             <div className="flex items-center gap-2 min-w-0">
