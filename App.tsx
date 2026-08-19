@@ -4,6 +4,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
+import { Button } from './components/shared/ui/Button';
 import {
     BarChart3,
     LayoutDashboard,
@@ -17,7 +18,8 @@ import {
     HelpCircle,
     Shield,
     Wrench,
-    Package
+    Package,
+    ChevronLeft
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -132,9 +134,16 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 
 function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
-    const { activeTab } = useActiveTab();
+    const { activeTab, setActiveTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading, departmentId, status, hasCachedSession } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
+    // Các "mini-app" toàn màn hình (In Sticker có sẵn BottomNavigation nội bộ: Trang chủ/Công
+    // cụ/Quét mã/Lưu DS/Lọc; Phân ca là lịch/bảng cần tối đa không gian màn hình) — hiện thêm
+    // MobileBottomNav của app chính bên dưới chúng tạo ra 2 lớp thanh điều hướng chồng nhau trên
+    // mobile (riêng In Sticker), vừa rối mắt vừa dư khoảng trắng, và chiếm mất không gian màn
+    // hình quý giá của cả hai (bug user báo cáo). Ẩn thanh điều hướng chính khi đang ở các tab
+    // này; đổi lại logo/tiêu đề ở top bar (vẫn hiện, không bị ẩn) trở thành nút "Về Dashboard".
+    const isFullscreenMobileTool = activeTab === 'tools-print-sticker' || activeTab === 'tools-phanca';
 
     React.useEffect(() => {
         // Preload the CURRENT tab's chunk in background so switching away and back feels instant.
@@ -230,20 +239,37 @@ function AppContent() {
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
-            <MobileBottomNav />
+            {!isFullscreenMobileTool && <MobileBottomNav />}
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
                 <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
-                            {getTabIcon()}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
-                            <span id="mobile-topbar-subtitle" className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
-                        </div>
-                    </div>
+                    {(() => {
+                        const brandIconAndTitle = (
+                            <>
+                                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
+                                    {getTabIcon()}
+                                </div>
+                                <div className="flex flex-col items-start">
+                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
+                                    <span id="mobile-topbar-subtitle" className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
+                                </div>
+                            </>
+                        );
+                        return isFullscreenMobileTool ? (
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={() => setActiveTab('analysis')}
+                                title="Về Dashboard"
+                                className="flex items-center gap-2.5 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
+                            >
+                                <ChevronLeft size={18} className="text-slate-400 dark:text-slate-500 -mr-1.5" />
+                                {brandIconAndTitle}
+                            </Button>
+                        ) : (
+                            <div className="flex items-center gap-2.5">{brandIconAndTitle}</div>
+                        );
+                    })()}
                     <div className="flex items-center gap-0.5">
                         <div id="mobile-topbar-actions" className="flex items-center"></div>
                         <NotificationDropdown />
