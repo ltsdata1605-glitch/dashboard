@@ -290,7 +290,13 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0 flex flex-col">
+                    {/* BUG FIX: pb-20 chừa 80px bên dưới cho MobileBottomNav CHÍNH — nhưng In
+                        Sticker/Phân ca đã ẩn thanh đó (isFullscreenMobileTool) và tự quản lý
+                        khoảng chừa riêng (StickerEventApp.tsx dùng pb-[124px] khớp đúng thanh công
+                        cụ nội bộ của nó). Giữ nguyên pb-20 sẽ để lại 80px trống thừa vô nghĩa ngay
+                        trên thanh công cụ riêng đó — đúng là dải trống/vệt user báo cáo (xác nhận
+                        qua DevTools: pb-20 hiện trên khung bọc ngoài dù thanh chính đã ẩn). */}
+                    <div className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-20 lg:pb-0'} flex flex-col`}>
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
