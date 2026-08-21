@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Product } from './types';
 import FileUpload from './FileUpload';
 import SearchBar from './SearchBar';
@@ -224,21 +225,29 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
             </div>
 
             {/* ───────── Tìm kiếm sản phẩm ───────── */}
-            <div 
-                className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty && !props.isMobile && !isAdmin ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
-                style={props.isMobile ? { bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', willChange: 'transform' } : {}}
-            >
-                <SearchBar
-                    searchQuery={props.searchQuery}
-                    onSearchChange={props.onSearchChange}
-                    onIconClick={props.onOpenScanner}
-                    disabled={props.isLoading || (isEmployeeNameEmpty && !props.isMobile && !isAdmin)}
-                    suggestions={props.suggestions}
-                    onSuggestionClick={props.onSuggestionClick}
-                    showNoResults={props.showNoResults}
-                    isMobile={props.isMobile}
-                />
-            </div>
+            {(() => {
+                const searchBarBlock = (
+                    <div
+                        className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty && !props.isMobile && !isAdmin ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
+                        style={props.isMobile ? { bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' } : {}}
+                    >
+                        <SearchBar
+                            searchQuery={props.searchQuery}
+                            onSearchChange={props.onSearchChange}
+                            onIconClick={props.onOpenScanner}
+                            disabled={props.isLoading || (isEmployeeNameEmpty && !props.isMobile && !isAdmin)}
+                            suggestions={props.suggestions}
+                            onSuggestionClick={props.onSuggestionClick}
+                            showNoResults={props.showNoResults}
+                            isMobile={props.isMobile}
+                        />
+                    </div>
+                );
+                // Cùng nguyên nhân/cách sửa như BottomNavigation.tsx: thanh này fixed nhưng nằm
+                // trong div đang thực sự cuộn (overflow-y-auto ở StickerPrinterView.tsx) — WebKit
+                // mobile vẽ sai lúc cuộn. Portal ra document.body để thoát khỏi container cuộn đó.
+                return props.isMobile ? createPortal(searchBarBlock, document.body) : searchBarBlock;
+            })()}
 
              {/* ───────── Công cụ nhanh + Thao tác ───────── */}
              {!props.isLoading && (

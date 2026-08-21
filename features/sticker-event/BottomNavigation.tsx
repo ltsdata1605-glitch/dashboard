@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Home, ScanLine, Save, Filter, Wrench } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 
@@ -17,20 +18,18 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onSaveListClick,
   onFilterClick,
 }) => {
-  return (
+  // BUG FIX (nguyên nhân gốc, không phải compositing): thanh này nằm bên trong div đang thực sự
+  // cuộn (overflow-y-auto ở StickerPrinterView.tsx), không phải body/document. WebKit mobile có
+  // bug lâu năm: position:fixed lồng trong 1 ancestor overflow-y-auto bị vẽ sai/trễ khung hình lúc
+  // cuộn (lộ vệt nền, đôi khi biến mất) dù đúng chuẩn CSS thì fixed phải thoát ra viewport. 2 lần
+  // vá trước (translateZ, will-change) chỉ sửa lớp compositing nên không triệt để. Portal thẳng ra
+  // document.body để thanh này thực sự nằm ngoài mọi container cuộn/stacking context nội bộ.
+  return createPortal(
     <div
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
       style={{
         height: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        // BUG FIX (thử lại, an toàn hơn lần trước): user báo cáo thật — lúc cuộn (momentum scroll
-        // WebKit mobile), thanh này bị "vệt" xám/xanh che lên do trễ 1 khung hình khi trình duyệt
-        // vẽ lại phần tử fixed cùng lúc với nội dung đang cuộn. Lần trước dùng transform:
-        // translateZ(0) + backface-visibility:hidden để ép tách lớp render riêng — nhưng tổ hợp đó
-        // khiến CHÍNH thanh này biến mất hẳn trên webview thật của user (lỗi nặng hơn cả vệt cũ,
-        // đã hoàn tác). will-change chỉ là GỢI Ý tách lớp cho trình duyệt, không tự áp transform
-        // nào lên phần tử — rủi ro thấp hơn hẳn, nhưng CHƯA kiểm chứng được trên thiết bị thật.
-        willChange: 'transform',
       }}
     >
       <Button
@@ -83,7 +82,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <Filter className="w-5 h-5" />
         <span className="text-[9px] font-medium">Lọc</span>
       </Button>
-    </div>
+    </div>,
+    document.body
   );
 };
 
