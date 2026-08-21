@@ -98,7 +98,7 @@ export default function StickerPrinterView() {
     } = useStickerPrinterData();
 
     return (
-        <div className="print-wrapper w-full h-[calc(100vh-64px)] bg-slate-100 dark:bg-slate-900 relative overflow-hidden">
+        <div className="print-wrapper w-full h-[calc(100dvh-64px)] bg-slate-100 dark:bg-slate-900 relative overflow-hidden">
             <StickerModeToolbar
                 stickerMode={stickerMode}
                 stickerType={stickerType}
