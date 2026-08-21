@@ -6,6 +6,7 @@ import SearchBar from './SearchBar';
 import { PrintIcon, SettingsIcon, StarIcon, TagIcon, TrashIcon, ExportIcon, ImportIcon, PenSquareIcon, InventoryIcon, FilePlusIcon, UserIcon } from './Icons';
 import { Trash2, ShieldAlert, Info, Cloud, Save, FolderOpen, FileDown, FileUp } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
+import { useActiveTab } from '../../contexts/LayoutContext';
 
 interface ControlPanelProps {
     employeeName: string;
@@ -58,6 +59,10 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
     const selectedCount = useMemo(() => props.displayedProducts.filter(p => p.selected).length, [props.displayedProducts]);
     const isEmployeeNameEmpty = !props.employeeName || props.employeeName.trim() === '';
     const isAdmin = props.userRole === 'admin';
+    // App.tsx giữ mọi tab mounted ngầm (ẩn bằng CSS, không unmount) để giữ state. Thanh tìm kiếm
+    // bên dưới portal ra document.body khi mobile nên thoát khỏi lớp ẩn CSS của ancestor — phải tự
+    // kiểm tra tab toàn app đang active hay không mới được portal ra ngoài.
+    const { activeTab: globalActiveTab } = useActiveTab();
     
     return (
         <aside className={`w-full lg:w-80 lg:flex-shrink-0 bg-white p-4 rounded-xl shadow-sm border border-slate-200 lg:sticky lg:top-2 lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:scrollbar-thin lg:scrollbar-thumb-slate-200 lg:scrollbar-track-transparent self-start space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'contents' : 'flex flex-col'}`}>
@@ -246,7 +251,10 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                 // Cùng nguyên nhân/cách sửa như BottomNavigation.tsx: thanh này fixed nhưng nằm
                 // trong div đang thực sự cuộn (overflow-y-auto ở StickerPrinterView.tsx) — WebKit
                 // mobile vẽ sai lúc cuộn. Portal ra document.body để thoát khỏi container cuộn đó.
-                return props.isMobile ? createPortal(searchBarBlock, document.body) : searchBarBlock;
+                // Chỉ portal khi tab In Sticker thực sự active — nếu không, ancestor CSS ẩn tab
+                // này sẽ không còn tác dụng lên phần tử đã thoát ra document.body.
+                if (!props.isMobile) return searchBarBlock;
+                return globalActiveTab === 'tools-print-sticker' ? createPortal(searchBarBlock, document.body) : null;
             })()}
 
              {/* ───────── Công cụ nhanh + Thao tác ───────── */}
