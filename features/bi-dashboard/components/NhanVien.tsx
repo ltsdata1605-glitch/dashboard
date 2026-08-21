@@ -302,8 +302,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     </h2>
                 </div>
                 <div className="flex flex-none justify-end">
-                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx.
+                        BUG FIX: KHÔNG dùng overflow-hidden ở đây — panel dropdown của MultiSelectDropdown định vị
+                        absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill
+                        (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
+                        hiện gì để bấm chọn được (user báo cáo thật). */}
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <MultiSelectDropdown
                             className="border-r border-slate-200 dark:border-slate-700"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}

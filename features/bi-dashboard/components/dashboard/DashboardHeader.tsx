@@ -78,8 +78,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     </h2>
                 </div>
                 <div className="flex flex-none justify-end hide-on-export">
-                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên) */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên).
+                        BUG FIX: KHÔNG overflow-hidden — panel của MultiSelectDropdown (supermarket
+                        selector bên dưới) định vị absolute, xổ ra NGOÀI khung pill; overflow-hidden
+                        sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
+                        xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
                             <ClockIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />
                             <Button

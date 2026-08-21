@@ -226,7 +226,16 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
             {/* ───────── Tìm kiếm sản phẩm ───────── */}
             <div 
                 className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty && !props.isMobile && !isAdmin ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
-                style={props.isMobile ? { bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' } : {}}
+                // BUG FIX: cùng nguyên nhân với BottomNavigation.tsx — fixed không có layer render
+                // riêng bị trễ 1 khung hình lúc cuộn trên WebKit mobile, lộ vệt/seam. translateZ(0)
+                // ép tạo compositing layer riêng, giữ thanh này ổn định khi cuộn nội dung.
+                style={props.isMobile ? {
+                    bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))',
+                    transform: 'translateZ(0)',
+                    WebkitTransform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                } : {}}
             >
                 <SearchBar
                     searchQuery={props.searchQuery}

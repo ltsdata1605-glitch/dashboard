@@ -6,9 +6,19 @@ interface ExportButtonProps {
   onExportPNG: () => Promise<void>;
   disabled?: boolean;
   className?: string;
+  icon?: React.ReactNode;
+  title?: string;
+  ariaLabel?: string;
 }
 
-const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = false, className }) => {
+const ExportButton: React.FC<ExportButtonProps> = ({
+  onExportPNG,
+  disabled = false,
+  className,
+  icon,
+  title = 'Xuất ảnh báo cáo (PNG)',
+  ariaLabel = 'Xuất ảnh báo cáo',
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const isProcessingRef = React.useRef(false);
 
@@ -37,13 +47,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = fal
         "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center",
         className
       )}
-      aria-label="Xuất ảnh báo cáo"
-      title="Xuất ảnh báo cáo (PNG)"
+      aria-label={ariaLabel}
+      title={title}
     >
       {isLoading ? (
         <SpinnerIcon className="h-5 w-5 animate-spin" />
       ) : (
-        <CameraIcon className="h-5 w-5" />
+        icon || <CameraIcon className="h-5 w-5" />
       )}
     </Button>
   );

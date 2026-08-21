@@ -4,6 +4,7 @@ import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon } from '../Icons';
+import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -450,6 +451,31 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         }
     };
 
+    // Xuất ảnh RÚT GỌN: chỉ giữ cột Nhân viên + 2 nhóm cố định "%HT 100%" (Đạt/%Đạt) và
+    // "HIỆU QUẢ" (BOT/NoSale) — ẩn hết các cột ngành hàng động (groupedVisibleHeaders). Dùng lại
+    // đúng cơ chế elementsToHide của exportElementAsImage (thao tác trên bản CLONE, không đụng gì
+    // tới bảng đang hiển thị) nên không cần đổi selectedTitles hay bất kỳ state nào của bảng gốc.
+    const handleExportSummaryPNG = async (): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
+        const original = cardRef.current;
+        try {
+            const nameToUse = tableName || 'BaoCao';
+            const filename = `ThiDua_TomTat_${nameToUse.replace(/[\s/]/g, '_')}_${supermarketName}.png`;
+            const blob = await exportElementAsImage(original, filename, {
+                mode: 'blob-only',
+                elementsToHide: ['.no-print', '.export-button-component', '.competition-dynamic-col'],
+                isCompactTable: true
+            });
+            if (blob) {
+                return await showExportOptions(blob, filename);
+            }
+            return null;
+        } catch (err) {
+            console.error('Failed to export summary image', err);
+            return null;
+        }
+    };
+
     const handleToggleTitle = (title: string) => {
         const next = selectedTitles.includes(title) 
             ? selectedTitles.filter(t => t !== title)
@@ -597,6 +623,13 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
             </Button>
 
+            <ExportButton
+                onExportPNG={async () => { await handleExportSummaryPNG(); }}
+                icon={<Columns3 className="h-5 w-5" />}
+                title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
+                ariaLabel="Xuất ảnh rút gọn"
+            />
+
             <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
         </div>
     );
@@ -646,7 +679,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             <th
                                                 key={`group-${runIndex}-${run.group}`}
                                                 colSpan={run.span}
-                                                className={`px-1 py-1 text-center border-r border-b ${HEADER_GROUP_THEMES[run.colorKey]} text-[9px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                                className={`competition-dynamic-col px-1 py-1 text-center border-r border-b ${HEADER_GROUP_THEMES[run.colorKey]} text-[9px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                                 title={run.group}
                                             >
                                                 {run.group}
@@ -703,7 +736,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         onDrop={(e) => handleDrop(e, header.title)}
                                                         onDragEnd={() => setDraggedTitle(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_COLUMN_THEMES[colorKey]} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
+                                                        className={`competition-dynamic-col px-1 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_COLUMN_THEMES[colorKey]} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex flex-col items-center justify-center gap-0.5">
@@ -787,7 +820,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const ht = target > 0 ? (actual / target) * 100 : 0;
                                                     const cellColorClass = getCellStyle(actual, ht, header.title, emp.name);
                                                     return (
-                                                        <td key={header.title} className="px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums">
+                                                        <td key={header.title} className="competition-dynamic-col px-1 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums">
                                                             {showPercent ? (
                                                                 actual > 0 && target > 0 ? (
                                                                     <span className={cellColorClass}>{roundUp(ht)}%</span>
@@ -840,7 +873,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         {groupedVisibleHeaders.map(header => {
                                             const averages = columnAverages[header.title];
                                             return (
-                                                <td key={header.title} className="px-1 py-1 text-center text-[13px] border-r border-slate-200 dark:border-slate-700/50 whitespace-nowrap tabular-nums">
+                                                <td key={header.title} className="competition-dynamic-col px-1 py-1 text-center text-[13px] border-r border-slate-200 dark:border-slate-700/50 whitespace-nowrap tabular-nums">
                                                     {showPercent ? (
                                                         averages && averages.percent > 0 ? (
                                                             <span>{averages.percent.toFixed(1)}%</span>
@@ -886,7 +919,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                              const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
 
                                              return (
-                                                 <td key={header.title} className="px-1 py-1 text-center text-[13px] border-r border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                                 <td key={header.title} className="competition-dynamic-col px-1 py-1 text-center text-[13px] border-r border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
                                                      {showPercent ? (
                                                          totalActual > 0 && totalTarget > 0 ? (
                                                              <span>{roundUp(totalHt).toFixed(0)}%</span>
