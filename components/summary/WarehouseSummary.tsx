@@ -629,26 +629,38 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     </div>
                 </SectionHeader>
 
-                {/* Thanh Bar Quỹ Thời Gian (Nhấp đôi 2 cái để đổi giờ mở/đóng cửa) */}
+                {/* Thanh Bar Quỹ Thời Gian (Đồng bộ style với Design System & Bảng dữ liệu) */}
                 <div 
                     onDoubleClick={() => setIsStoreHoursModalOpen(true)}
-                    className="mx-1 sm:mx-2 lg:mx-6 my-2 p-2 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-800 border border-sky-200/80 dark:border-slate-700 rounded-xl cursor-pointer hover:border-sky-400 transition-all select-none group hide-on-export"
-                    title="Nhấp đôi (2 cái) để thay đổi giờ Mở / Đóng cửa siêu thị"
+                    className="px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors select-none group hide-on-export"
+                    title="Nhấp đúp (2 cái) để thay đổi giờ Mở / Đóng cửa siêu thị"
                 >
-                    <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        <div className="flex items-center gap-1.5">
-                            <Icon name="clock" size={3.5} className="text-sky-600 dark:text-sky-400 animate-pulse" />
-                            <span className="uppercase tracking-wider">Quỹ thời gian ({storeHours.open} - {storeHours.close})</span>
-                            <span className="text-[9px] font-normal text-slate-400 hidden sm:inline">(Nhấp đúp 2 cái vào đây để đổi giờ mở/đóng cửa)</span>
+                    <div className="flex items-center justify-between mb-1.5 text-[10px] sm:text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
+                                <Icon name="clock" size={3} className="text-slate-400 dark:text-slate-500" />
+                                <span className="text-[10px] font-black uppercase tracking-wider">Quỹ thời gian</span>
+                            </div>
+                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+                                ({storeHours.open} - {storeHours.close})
+                            </span>
+                            <span className="text-[9px] font-normal text-slate-400 dark:text-slate-500 hidden sm:inline">
+                                • Nhấp đúp để đổi giờ mở/đóng cửa
+                            </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sky-700 dark:text-sky-300 font-extrabold">{Math.round(timeUsedPct)}% đã dùng</span>
+                        <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-[11px] font-black text-sky-600 dark:text-sky-400 tabular-nums">
+                                {Math.round(timeUsedPct)}%
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 hidden sm:inline">
+                                đã dùng
+                            </span>
                         </div>
                     </div>
                     {/* Progress Bar Container */}
-                    <div className="w-full bg-slate-200/70 dark:bg-slate-700 h-2 rounded-full overflow-hidden p-0.5">
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                         <div 
-                            className="bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500 shadow-sm" 
+                            className="bg-gradient-to-r from-sky-500 to-indigo-600 h-full rounded-full transition-all duration-500" 
                             style={{ width: `${Math.min(100, Math.max(0, timeUsedPct))}%` }}
                         />
                     </div>

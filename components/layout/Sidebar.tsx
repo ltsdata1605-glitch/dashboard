@@ -11,7 +11,6 @@ import {
     Moon,
     Sun,
     LogOut,
-    Package,
     FileText,
     MessageSquare,
     Menu,
@@ -90,7 +89,6 @@ const NavItem = React.memo(({
                         if (item.path === '/analysis') setActiveTab('analysis');
                         else if (item.path === '/') setActiveTab('check-thuong');
                         else if (item.path === '/employees') setActiveTab('employees');
-                        else if (item.path === '/inventory') setActiveTab('inventory');
                         else if (item.path === '/reports') setActiveTab('reports');
                         else if (item.path === '/tools') setActiveTab('tools');
                         else if (item.id) setActiveTab(item.id);
@@ -212,7 +210,6 @@ export default function Sidebar() {
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
         { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
 
-        { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
         { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/' },
         { 
             id: 'tools', 

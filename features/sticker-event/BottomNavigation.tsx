@@ -19,8 +19,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 }) => {
   return (
     <div
-      className="fixed left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-14 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
-      style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+      style={{ height: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <Button
         variant="ghost"

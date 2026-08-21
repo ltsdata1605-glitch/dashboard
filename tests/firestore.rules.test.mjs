@@ -129,51 +129,6 @@ async function main() {
     await check('Manager A xoá được file của Kho mình',
         assertSucceeds(fileDoc(managerA, 'file2').delete()));
 
-    // --- inventoryChecking/{maKho}/sessions/{sessionId}/items/{itemId} (mục 20 —
-    // features/kho-hang, khác khoData ở chỗ NHÂN VIÊN THƯỜNG cũng được ghi item, không chỉ
-    // manager, vì kiểm kê là việc nhân viên trực tiếp quét) ---
-    const sessionDoc = (ctx, sessionId = 'sess1') => ctx.firestore().doc(`inventoryChecking/TESTKHO/sessions/${sessionId}`);
-    const itemDoc = (ctx, sessionId = 'sess1', itemId = 'item1') =>
-        ctx.firestore().doc(`inventoryChecking/TESTKHO/sessions/${sessionId}/items/${itemId}`);
-
-    const sampleSession = (createdBy) => ({
-        maKho: 'TESTKHO', storeName: 'Test Store', createdBy, createdByName: 'X',
-        startDate: Date.now(), endDate: null, status: 'in_progress', totalItems: 10,
-    });
-    const sampleItem = { soLuongKiemKe: 1, ghiChu: '', lastScannedAt: Date.now(), scannedByUid: 'employeeSame' };
-
-    console.log('\n=== INVENTORY CHECKING — TẠO PHIÊN ===');
-    await check('Nhân viên (không chỉ manager) tạo được phiên cho Kho mình',
-        assertSucceeds(sessionDoc(employeeSame).set(sampleSession('employeeSame'))));
-    await check('Nhân viên Kho khác KHÔNG tạo được phiên cho TESTKHO',
-        assertFails(sessionDoc(employeeOther, 'hack-sess').set(sampleSession('employeeOther'))));
-    await check('Giả mạo createdBy (không phải chính mình) bị chặn',
-        assertFails(sessionDoc(employeeSame, 'fake-sess').set(sampleSession('someone-else'))));
-
-    console.log('\n=== INVENTORY CHECKING — GHI/ĐỌC ITEM (quét IMEI) ===');
-    await check('Nhân viên ghi được tiến độ quét (item) vào phiên của Kho mình',
-        assertSucceeds(itemDoc(employeeSame).set(sampleItem)));
-    await check('Đồng nghiệp cùng Kho đọc được tiến độ quét (chia sẻ phiên)',
-        assertSucceeds(itemDoc(managerA).get()));
-    await check('Nhân viên Kho khác KHÔNG đọc được item của TESTKHO',
-        assertFails(itemDoc(employeeOther).get()));
-    await check('Nhân viên Kho khác KHÔNG ghi được item vào TESTKHO',
-        assertFails(itemDoc(employeeOther, 'sess1', 'hack-item').set(sampleItem)));
-    await check('Chưa đăng nhập KHÔNG đọc/ghi được item',
-        assertFails(itemDoc(anon).get()));
-
-    console.log('\n=== INVENTORY CHECKING — HOÀN THÀNH/XOÁ PHIÊN ===');
-    await check('Nhân viên thường KHÔNG xoá được phiên (chỉ manager/admin)',
-        assertFails(sessionDoc(employeeSame).delete()));
-    await check('Nhân viên thường KHÔNG được đánh dấu phiên completed (chỉ manager/admin, dù vẫn ghi item bình thường)',
-        assertFails(sessionDoc(employeeSame).update({ status: 'completed', endDate: Date.now() })));
-    await check('Manager Kho khác KHÔNG xoá được phiên của TESTKHO',
-        assertFails(sessionDoc(managerOther).delete()));
-    await check('Manager A đánh dấu phiên completed được',
-        assertSucceeds(sessionDoc(managerA).update({ status: 'completed', endDate: Date.now() })));
-    await check('Manager A xoá được phiên của Kho mình',
-        assertSucceeds(sessionDoc(managerA).delete()));
-
     await testEnv.cleanup();
 
     console.log(`\n=== KẾT QUẢ: ${pass} pass / ${fail} fail (tổng ${pass + fail}) ===`);
@@ -181,3 +136,4 @@ async function main() {
 }
 
 main().catch(e => { console.error('Lỗi chạy test:', e); process.exit(1); });
+

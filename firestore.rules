@@ -85,27 +85,6 @@ service cloud.firestore {
     match /_system/{doc} {
       allow read, write: if isSignedIn();
     }
-
-    // Dữ liệu kiểm kê kho (features/kho-hang, implementation_plan.md mục 20) — cùng mẫu
-    // với khoData/{maKho} ở trên (chia sẻ theo Kho, dùng myKhos(), không qua Cloud
-    // Function). Khác biệt: kiểm kê là việc nhân viên thường trực tiếp quét (không chỉ
-    // quản lý) nên ITEM con cho phép MỌI thành viên Kho ghi, không giới hạn isManager()
-    // như khoData/salesFiles. Nhưng doc PHIÊN (sessions/{sessionId}) — update (vd đánh dấu
-    // completed) và delete — vẫn giới hạn manager/admin: nhân viên quét không bao giờ cần
-    // ghi vào doc này (chỉ ghi items/{itemId}), nên siết lại không ảnh hưởng luồng quét,
-    // tránh 1 nhân viên lỡ tay/cố ý kết thúc phiên hoặc xoá công sức kiểm kê của cả nhóm.
-    match /inventoryChecking/{maKho} {
-      match /sessions/{sessionId} {
-        allow read:   if isSignedIn() && maKho in myKhos();
-        allow create: if isSignedIn() && maKho in myKhos()
-                      && request.resource.data.createdBy == request.auth.uid;
-        allow update: if isSignedIn() && isManager() && maKho in myKhos();
-        allow delete: if isSignedIn() && isManager() && maKho in myKhos();
-
-        match /items/{itemId} {
-          allow read, write: if isSignedIn() && maKho in myKhos();
-        }
-      }
-    }
   }
 }
+

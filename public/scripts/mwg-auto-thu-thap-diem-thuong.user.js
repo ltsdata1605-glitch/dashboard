@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      3.4
+// @version      3.6
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://bi.thegioididong.com/*
@@ -30,6 +30,28 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 3.5 — ĐỒNG BỘ TOAST & BẢO ĐẢM TƯƠNG THÍCH VỚI BOOKMARKLET COPYALL:
+ * - Tương thích hoàn toàn với bookmarklet CopyAll trên trang BI Thegioididong.
+ * - Tối ưu hoá luồng thông báo tiến độ sao chép văn bản toàn trang.
+ *
+ * BẢN 3.6 — SỬA COPY BỊ SÓT DỮ LIỆU SAU KHI MỞ RỘNG & TĂNG TỐC ĐỘ CLICK+:
+ * - User báo cáo thật: mở "+" chạy tốt, nhưng copy cuối cùng bị SÓT dữ liệu — tự kiểm chứng bằng
+ *   1 bookmarklet "Copy All" độc lập (Selection/Range API) và xác nhận copy đủ, khác kết quả của
+ *   acpExtractVisibleText() cũ (dùng document.body.innerText).
+ * - Nguyên nhân: innerText tính theo layout ĐÃ RENDER — DevExpress DataGrid có scroll container
+ *   riêng cho bảng (khác window scroll), dòng cấp con vừa mở rộng nằm ngoài khung nhìn của chính
+ *   bảng lúc copy có thể bị innerText bỏ sót dù vẫn còn nguyên trong DOM.
+ * - Sửa: acpExtractVisibleText() đổi sang bôi đen toàn bộ document.body qua Range rồi lấy
+ *   Selection.toString() — đúng cách bookmarklet CopyAll của user đang dùng, phản ánh đúng nội
+ *   dung thật có trong DOM, không phụ thuộc bảng đã cuộn tới đâu. Giữ innerText làm phương án dự
+ *   phòng nếu Selection API lỗi. Vẫn dùng copyToClipboard() (ưu tiên GM_setClipboard, đáng tin cậy
+ *   hơn navigator.clipboard.writeText của bookmarklet vì không bị giới hạn "user gesture"/quyền).
+ * - User báo cáo thêm: tốc độ mở "+" rất chậm (196 nút còn lại). Cơ chế chống quá tải backend thật
+ *   sự là acpWaitForSpinnersToClear() (chờ đúng vòng xoay #Loading của trang biến mất giữa các lô)
+ *   — KHÔNG phải các độ trễ cố định. Tăng ACP_BATCH_SIZE 4→8, giảm ACP_INTRA_BATCH_CLICK_DELAY
+ *   25→15ms và ACP_BATCH_PACING_DELAY 80→40ms; giữ nguyên spinner-wait (an toàn không đổi vì mỗi
+ *   lô vẫn phải đợi trang xử lý xong thật mới click lô kế tiếp, không dồn request).
  *
  * BẢN 0.6 — UX CHO CHẾ ĐỘ TỰ ĐỘNG:
  * - Static asset công khai tại /scripts/..., có @updateURL/@downloadURL để tự cập nhật
@@ -1010,12 +1032,18 @@
   // hoạt động đúng — click lô nhỏ (4 nút) + luôn chờ đúng vòng xoay #Loading thật giữa
   // các lô vẫn an toàn (không dồn dập như bản 3.1: lô 6 nút NHƯNG chờ-spinner khi đó
   // hoàn toàn vô tác dụng do bug offsetParent, nên thực chất không hề chờ gì cả).
-  const ACP_BATCH_SIZE = 4; // số nút click liên tiếp trong 1 lô trước khi chờ vòng xoay
-  const ACP_INTRA_BATCH_CLICK_DELAY = 25; // ms nghỉ giữa từng cú click trong cùng 1 lô
+  // BẢN 3.5 — TĂNG TỐC ĐỘ MỞ (user báo cáo thật: 196 nút còn lại mở rất chậm):
+  // Cơ chế CHỐNG QUÁ TẢI thật sự là acpWaitForSpinnersToClear() (chờ đúng vòng xoay #Loading
+  // thật của trang biến mất trước khi click lô kế tiếp) — KHÔNG phải các độ trễ cố định dưới đây.
+  // Giữ nguyên spinner-wait (ACP_SPINNER_MAX_WAIT_MS/POLL_MS) y hệt bản 3.3, chỉ giảm các khoảng
+  // nghỉ TUỲ Ý (intra-batch delay, settle, pacing) và tăng batch size — vẫn an toàn vì mỗi lô vẫn
+  // phải đợi trang thật sự xử lý xong (không dồn request) trước khi sang lô kế tiếp.
+  const ACP_BATCH_SIZE = 8; // số nút click liên tiếp trong 1 lô trước khi chờ vòng xoay
+  const ACP_INTRA_BATCH_CLICK_DELAY = 15; // ms nghỉ giữa từng cú click trong cùng 1 lô
   const ACP_CLICK_SETTLE_MS = 50; // chờ 1 chút sau khi click xong cả lô để vòng xoay (nếu có) kịp xuất hiện trước khi bắt đầu kiểm tra
   const ACP_SPINNER_MAX_WAIT_MS = 6000; // chờ tối đa vòng xoay biến mất cho MỖI LÔ — tránh treo vĩnh viễn nếu trang không phản hồi
   const ACP_SPINNER_POLL_MS = 60;
-  const ACP_BATCH_PACING_DELAY = 80; // nghỉ thêm sau khi vòng xoay đã tắt, trước khi click lô kế tiếp
+  const ACP_BATCH_PACING_DELAY = 40; // nghỉ thêm sau khi vòng xoay đã tắt, trước khi click lô kế tiếp
   const ACP_FA_PLUS_SELECTOR = '.fa-plus';
   const ACP_DX_CLOSED_SELECTOR = '.dx-datagrid-group-closed, td.dx-command-expand.dx-datagrid-group-closed';
   const ACP_SPINNER_SELECTOR = [
@@ -1142,6 +1170,13 @@
   // Đọc text hiển thị của trang, loại vùng nhân bản cột cố định DevExpress
   // (.dx-datagrid-content-fixed, .dx-hidden) + hộp trạng thái của chính script, và bỏ
   // dòng rác "undefined".
+  // BUG FIX: document.body.innerText tính theo layout ĐÃ RENDER — DevExpress DataGrid quản lý
+  // scroll RIÊNG cho bảng (khác window scroll), nên các dòng cấp con vừa được Click+ mở rộng
+  // (đặc biệt dòng nằm ngoài vùng khung nhìn của chính bảng lúc copy) có thể bị innerText bỏ sót
+  // dù vẫn còn nguyên trong DOM — user báo cáo thật: "mở rộng xong, copy dữ liệu bị sót", tự kiểm
+  // chứng bằng 1 bookmarklet "Copy All" độc lập dùng Selection/Range API và xác nhận copy đủ.
+  // Đổi sang đúng cách đó: bôi đen toàn bộ document.body qua Range rồi lấy Selection.toString() —
+  // phản ánh đúng nội dung đang có trong DOM, không phụ thuộc bảng đã cuộn tới đâu.
   function acpExtractVisibleText() {
     const excluded = Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden'));
     const statusBox = document.getElementById('acp-status-box');
@@ -1149,7 +1184,19 @@
     const prevDisplay = excluded.map((el) => el.style.display);
     excluded.forEach((el) => { el.style.display = 'none'; });
 
-    const text = document.body.innerText || document.body.textContent || '';
+    let text = '';
+    try {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(document.body);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      text = selection.toString();
+      selection.removeAllRanges();
+    } catch (e) {
+      console.warn('[Click+] Selection API thất bại, dùng lại innerText:', e);
+      text = document.body.innerText || document.body.textContent || '';
+    }
 
     excluded.forEach((el, i) => { el.style.display = prevDisplay[i]; });
 

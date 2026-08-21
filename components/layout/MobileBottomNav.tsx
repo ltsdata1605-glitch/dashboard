@@ -17,7 +17,6 @@ import {
     Shield,
     Printer,
     Calendar,
-    Package,
     FileText
 } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
@@ -38,7 +37,6 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const moreTabs = [
-        { id: 'inventory', label: 'Kho hàng', icon: Package },
         { id: 'reports', label: 'Báo cáo', icon: FileText, externalUrl: 'https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/' },
         { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },

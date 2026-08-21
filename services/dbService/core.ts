@@ -247,6 +247,34 @@ export async function saveSettingFromCloud(key: string, value: unknown, updatedA
     }
 }
 
+// BUG FIX (self-echo còn sót sau isHeavyKeyInFlight ở hooks/useCloudSync.ts): guard in-flight chỉ
+// đóng được phần lớn cửa sổ đua (từ lúc debounce bắn tới lúc ghi Firestore xong), nhưng THỨ TỰ
+// giữa "promise ghi Firestore resolve" và "onSnapshot bắn cho chính lượt ghi đó" không được đảm
+// bảo tuyệt đối bởi SDK — với payload lớn (checkthuong_data từ upload Excel, có thể ~4MB, phải
+// ghi chunked qua nhiều batch) cửa sổ đua này lộ rõ hơn, khiến chính lượt ghi của mình vẫn thỉnh
+// thoảng bị hiểu nhầm là "cloud mới hơn" (user báo cáo lại sau khi đã áp guard in-flight). Chốt
+// thêm 1 lớp: sau khi ghi Firestore THÀNH CÔNG, cập nhật lại lastModified_ cục bộ về "vừa xong" —
+// không ghi lại value (đã đúng sẵn) và KHÔNG dispatch sự kiện nào (tránh vòng lặp tự kích lại
+// đồng bộ) — chỉ để lần so sánh cloudTime > localTime kế tiếp (nếu vẫn lọt qua guard in-flight)
+// không còn chênh lệch nhiều giây như trước.
+export async function touchLastModified(key: string, timestamp: number): Promise<void> {
+    try {
+        const db = await getDb();
+        await new Promise<void>((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                tx.objectStore(SETTINGS_STORE).put(timestamp, `lastModified_${key}`);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
+                tx.onabort = () => reject(new Error('Transaction aborted'));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    } catch (error) {
+        console.warn(`[IDB] touchLastModified '${key}' failed (không ảnh hưởng dữ liệu chính):`, (error as Error)?.message);
+    }
+}
 
 export async function getAllSettings(): Promise<Record<string, unknown>> {
     try {

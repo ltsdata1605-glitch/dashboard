@@ -7,6 +7,7 @@ export {
     saveSetting,
     saveSettingOrThrow,
     saveSettingFromCloud,
+    touchLastModified,
     getAllSettings,
     clearAllSettings,
     importAllSettings,

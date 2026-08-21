@@ -466,7 +466,10 @@ export default function App(): React.JSX.Element {
           cho tới khi cuộn để trình duyệt tự thu gọn thanh địa chỉ (bug user báo cáo trên webview
           mobile). min-h-dvh theo dõi đúng viewport ĐANG hiển thị, không bị lệch theo trạng thái
           ẩn/hiện thanh địa chỉ. */}
-      <div className={`min-h-dvh bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0 pb-[124px]' : 'p-2 sm:p-3'}`}>
+      <div
+        className={`min-h-dvh bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0' : 'p-2 sm:p-3'}`}
+        style={isMobile ? { paddingBottom: 'calc(3.5rem + 52px + env(safe-area-inset-bottom, 0px) + 8px)' } : {}}
+      >
         <div className="w-full max-w-7xl mx-auto">
           <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white border-b border-slate-100 px-2 py-1.5' : 'mb-3 px-1'}`}>
             <div className="flex items-center gap-2 min-w-0">

@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp, type DocumentReference } from 'firebase/firestore';
 import { db } from './firebase';
-import { getSetting } from './dbService';
+import { getSetting, touchLastModified } from './dbService';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
 
@@ -423,6 +423,10 @@ export const syncHeavySettingToCloudQueued = (user: User, key: string): void => 
                 const value = await getSetting(key);
                 if (value !== null) {
                     await syncHeavySettingToCloud(user, key, value);
+                    // Xem giải thích ở touchLastModified() trong services/dbService/core.ts —
+                    // chốt lastModified_ cục bộ về thời điểm ghi Firestore vừa xong, phòng khi
+                    // guard isHeavyKeyInFlight ở useCloudSync.ts vẫn lọt self-echo (payload lớn).
+                    await touchLastModified(key, Date.now());
                 }
             } while (heavyPending[key]);
         } catch (err) {
