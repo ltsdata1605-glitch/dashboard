@@ -1,9 +1,10 @@
 
 import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Card from '../Card';
+import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon } from '../Icons';
+import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon, ChevronDownIcon, DownloadAllIcon, SpinnerIcon } from '../Icons';
 import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
@@ -107,7 +108,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             .flatMap(c => c.headers);
     }, [allCompetitionsByCriterion]);
 
-    const visibleHeaders = useMemo(() => {
+    const rawVisibleHeaders = useMemo(() => {
         const headerMap = new Map(allHeaders.map(h => [h.title, h]));
         return selectedTitles
             .map(title => headerMap.get(title))
@@ -118,6 +119,38 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     // chung 1 nguồn IndexedDB (key theo originalTitle, giống cách SupermarketConfig tra cứu)
     // để hiển thị dòng tiêu đề nhóm gộp cột cùng nhóm phía trên dòng tên cột.
     const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
+
+    const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>('all');
+    const [exportGroupFilter, setExportGroupFilter] = useState<string | null>(null);
+    const [isExportingByGroup, setIsExportingByGroup] = useState(false);
+    const [exportGroupProgress, setExportGroupProgress] = useState({ current: 0, total: 0 });
+
+    const activeGroupFilter = exportGroupFilter ?? (selectedGroupFilter !== 'all' ? selectedGroupFilter : null);
+
+    const allAvailableGroups = useMemo(() => {
+        const set = new Set<string>();
+        rawVisibleHeaders.forEach(header => {
+            const defaultGroup = header.metric === 'SLLK' ? 'Số lượng' : header.metric === 'DTLK' ? 'Doanh thu' : header.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : header.metric;
+            const group = groupOverrides[header.originalTitle] || defaultGroup;
+            if (group) set.add(group);
+        });
+        return Array.from(set);
+    }, [rawVisibleHeaders, groupOverrides]);
+
+    useEffect(() => {
+        if (selectedGroupFilter !== 'all' && !allAvailableGroups.includes(selectedGroupFilter)) {
+            setSelectedGroupFilter('all');
+        }
+    }, [allAvailableGroups, selectedGroupFilter]);
+
+    const visibleHeaders = useMemo(() => {
+        if (!activeGroupFilter) return rawVisibleHeaders;
+        return rawVisibleHeaders.filter(header => {
+            const defaultGroup = header.metric === 'SLLK' ? 'Số lượng' : header.metric === 'DTLK' ? 'Doanh thu' : header.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : header.metric;
+            const group = groupOverrides[header.originalTitle] || defaultGroup;
+            return group === activeGroupFilter;
+        });
+    }, [rawVisibleHeaders, activeGroupFilter, groupOverrides]);
 
     // Sắp lại cột để các cột CÙNG nhóm tiêu chí luôn đứng liền nhau (không rời rạc), rồi mới
     // gộp thành các ô colSpan cho dòng tiêu đề nhóm. Thứ tự nhóm lấy theo lần xuất hiện đầu
@@ -428,8 +461,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const nameToUse = customFilename || tableName || 'BaoCao';
-            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}_${supermarketName}.png`;
+            const currentGroup = activeGroupFilter ? `_${activeGroupFilter.replace(/[\s/\\&]+/g, '_')}` : '';
+            const nameToUse = customFilename || `ThiDua_${(tableName || 'BaoCao').replace(/[\s/]/g, '_')}${currentGroup}_${supermarketName}.png`;
+            const filename = customFilename ? (customFilename.endsWith('.png') ? customFilename : `${customFilename}.png`) : nameToUse;
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
@@ -449,6 +483,31 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             console.error('Failed to export image', err);
             return null;
         }
+    };
+
+    const handleBatchExportByGroup = async () => {
+        if (allAvailableGroups.length === 0) {
+            toast.error('Không có nhóm tiêu chí nào để xuất ảnh.');
+            return;
+        }
+        setIsExportingByGroup(true);
+        setExportGroupProgress({ current: 0, total: allAvailableGroups.length });
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+
+        for (let i = 0; i < allAvailableGroups.length; i++) {
+            const group = allAvailableGroups[i];
+            setExportGroupFilter(group);
+            setExportGroupProgress({ current: i + 1, total: allAvailableGroups.length });
+            await new Promise(r => setTimeout(r, 450));
+            const safeGroupName = group.replace(/[\s/\\&]+/g, '_');
+            const nameToUse = tableName || 'ThiDua';
+            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}_${safeGroupName}_${supermarketName}.png`;
+            const action = await handleExportPNG(filename, autoAction);
+            if (action === 'cancel') break;
+            autoAction = action;
+        }
+        setExportGroupFilter(null);
+        setIsExportingByGroup(false);
     };
 
     // Xuất ảnh RÚT GỌN: chỉ giữ cột Nhân viên + 2 nhóm cố định "%HT 100%" (Đạt/%Đạt) và
@@ -534,7 +593,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     </Button>
                 </div>
             ) : (
-                <span className="js-report-title">{tableName} - ĐẾN {getYesterdayDateString()}</span>
+                <span className="js-report-title">
+                    {tableName}{activeGroupFilter ? ` - ${activeGroupFilter}` : ''} - ĐẾN {getYesterdayDateString()}
+                </span>
             )}
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
         </div>
@@ -609,6 +670,50 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     title="Xóa bảng"
                 >
                     <TrashIcon className="h-5 w-5" />
+                </Button>
+            )}
+
+            {/* Bộ lọc nhóm tiêu chí */}
+            {allAvailableGroups.length > 0 && (
+                <div className="relative flex items-center no-print">
+                    <select
+                        value={selectedGroupFilter}
+                        onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                        className="text-[11px] font-bold h-7.5 pl-2.5 pr-6 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-sm hover:border-sky-300 dark:hover:border-sky-600 transition-colors"
+                        title="Lọc theo nhóm tiêu chí"
+                    >
+                        <option value="all">Tất cả nhóm ({rawVisibleHeaders.length})</option>
+                        {allAvailableGroups.map((group) => {
+                            const count = rawVisibleHeaders.filter(h => {
+                                const defaultGroup = h.metric === 'SLLK' ? 'Số lượng' : h.metric === 'DTLK' ? 'Doanh thu' : h.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : h.metric;
+                                return (groupOverrides[h.originalTitle] || defaultGroup) === group;
+                            }).length;
+                            return (
+                                <option key={group} value={group}>
+                                    {group} ({count})
+                                </option>
+                            );
+                        })}
+                    </select>
+                    <ChevronDownIcon className="h-3.5 w-3.5 absolute right-1.5 text-slate-400 pointer-events-none" />
+                </div>
+            )}
+
+            {/* Xuất ảnh theo từng nhóm tiêu chí */}
+            {allAvailableGroups.length > 1 && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleBatchExportByGroup}
+                    disabled={isExportingByGroup}
+                    title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
+                    className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors no-print"
+                >
+                    {isExportingByGroup ? (
+                        <SpinnerIcon className="h-4 w-4 animate-spin text-sky-600" />
+                    ) : (
+                        <DownloadAllIcon className="h-4 w-4" />
+                    )}
                 </Button>
             )}
 

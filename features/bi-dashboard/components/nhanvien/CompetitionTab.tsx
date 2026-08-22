@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
+import ExportButton from '../ExportButton';
 import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
@@ -135,22 +136,42 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         prevTablesLengthRef.current = currentLength;
     }, [summaryTables]);
 
-    // Tính vị trí panel MỘT LẦN lúc mở (giống pattern đã có ở components/common/MultiSelectDropdown.tsx),
-    // không đọc getBoundingClientRect() trực tiếp trong render — đọc trong render khiến panel bị tính lại
-    // vị trí (và có thể co giật) trên MỌI lần re-render trong lúc đang mở, kể cả khi bấm chọn 1 dòng
-    // trong chính panel (setSelectedCompetitions ở NhanVien.tsx re-render CompetitionTab).
+    // Không đọc getBoundingClientRect() trực tiếp trong render (anti-pattern, gây vị trí bị tính lại/co
+    // giật trên MỌI lần re-render trong lúc đang mở — kể cả lúc bấm chọn 1 dòng bên trong chính panel).
+    // Cũng KHÔNG thể chỉ tính 1 lần lúc mở: panel portal ra document.body nên là position:fixed theo
+    // viewport, còn nút bấm cuộn theo trang — nếu không theo dõi scroll, panel đứng yên còn nút bấm
+    // trôi đi, nhìn như 2 thứ "tách rời" nhau khi cuộn (user báo cáo thật). Theo dõi scroll (capture để
+    // bắt cả scroll của container lồng bên trong, không chỉ window) + resize trong lúc panel đang mở.
     useEffect(() => {
-        if (isFilterOpen && filterRef.current) {
+        if (!isFilterOpen) return;
+        const updatePosition = () => {
+            if (!filterRef.current) return;
             const rect = filterRef.current.getBoundingClientRect();
             setFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
-        }
+        };
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+        };
     }, [isFilterOpen]);
 
     useEffect(() => {
-        if (isEmployeeFilterOpen && employeeFilterRef.current) {
+        if (!isEmployeeFilterOpen) return;
+        const updatePosition = () => {
+            if (!employeeFilterRef.current) return;
             const rect = employeeFilterRef.current.getBoundingClientRect();
             setEmployeeFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
-        }
+        };
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+        };
     }, [isEmployeeFilterOpen]);
 
     useEffect(() => {
@@ -204,13 +225,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         const original = refToExport.current;
         // Count how many group cards exist to decide layout
         const cardCount = original.querySelectorAll('.competition-group-card').length;
-        const useTwoColGrid = cardCount === 2;
 
         try {
             const blob = await exportElementAsImage(original, filename, {
-                mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                forcedWidth: useTwoColGrid ? 1000 : 500,
-                fitAllColumns: useTwoColGrid,
+                mode: 'blob-only',
+                elementsToHide: ['.export-button-component', '.no-print'],
                 onCloneReady: (clone: HTMLElement) => {
                     // Remove overflow constraints
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
@@ -226,21 +245,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
                     const gridContainer = clone.querySelector('.grid');
                     if (gridContainer) {
-                        if (useTwoColGrid) {
-                            // Keep 2-column grid — match displayed layout
-                            (gridContainer as HTMLElement).style.display = 'grid';
-                            (gridContainer as HTMLElement).style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
-                            (gridContainer as HTMLElement).style.gap = '24px';
-                            (gridContainer as HTMLElement).style.width = '100%';
-                            (gridContainer as HTMLElement).style.alignItems = 'start';
-                        } else {
-                            // Stack vertically for 3+ cards
-                            (gridContainer as HTMLElement).style.display = 'flex';
-                            (gridContainer as HTMLElement).style.flexDirection = 'column';
-                            (gridContainer as HTMLElement).style.alignItems = 'stretch';
-                            (gridContainer as HTMLElement).style.gap = '24px';
-                            (gridContainer as HTMLElement).style.width = '100%';
-                        }
+                        (gridContainer as HTMLElement).style.display = 'grid';
+                        (gridContainer as HTMLElement).style.gridTemplateColumns = cardCount === 1 ? '1fr' : 'repeat(2, minmax(0, 1fr))';
+                        (gridContainer as HTMLElement).style.gap = '20px';
+                        (gridContainer as HTMLElement).style.width = '100%';
+                        (gridContainer as HTMLElement).style.alignItems = 'start';
                     }
                 }
             });
@@ -510,7 +519,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                             <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
-                            <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="text-slate-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</Button>
+                            {highlightedEmployees.size > 0 && (
+                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={`Xuất Highlight (${highlightedEmployees.size} NV)`} className="text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
+                            )}
+                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`NhomThiDua_${supermarket || 'SieuThi'}.png`, groupViewRef); }} />
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
@@ -518,7 +530,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="text-slate-400"><CameraIcon className="h-4 w-4" /></Button>
+                            <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />
                         </>
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (

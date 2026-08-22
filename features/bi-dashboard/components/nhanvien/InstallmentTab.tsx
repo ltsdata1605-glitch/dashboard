@@ -73,7 +73,7 @@ const InstallmentTab: React.FC<{
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'totalPercent', direction: 'desc' });
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('installment-view-mode', 'group');
-    const [hidePercent, setHidePercent] = useState(false);
+    const [hidePercent, setHidePercent] = useIndexedDBState<boolean>('installment-hide-percent', true);
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-installment-${supermarketName}`, '');
     const prevMonthRows = useMemo((): InstallmentRow[] => {
