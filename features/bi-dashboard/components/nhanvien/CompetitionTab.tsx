@@ -1,5 +1,6 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -91,6 +92,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [isEmployeeFilterOpen, setIsEmployeeFilterOpen] = useState(false);
     const [employeeFilterSearch, setEmployeeFilterSearch] = useState('');
     const employeeFilterRef = useRef<HTMLDivElement>(null);
+    const employeeFilterPanelRef = useRef<HTMLDivElement>(null);
     const [isExportingHighlights, setIsExportingHighlights] = useState(false);
     const [exportTitleOverride, setExportTitleOverride] = useState<string | null>(null);
     const [isolatedHighlightEmployee, setIsolatedHighlightEmployee] = useState<string | null>(null);
@@ -98,6 +100,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const individualViewRef = useRef<IndividualCompetitionViewHandle>(null);
     const summaryViewRefs = useRef<Record<string, CompetitionSummaryViewHandle>>({});
     const filterRef = useRef<HTMLDivElement>(null);
+    const filterPanelRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
@@ -132,8 +135,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (employeeFilterRef.current && !employeeFilterRef.current.contains(event.target as Node)) setIsEmployeeFilterOpen(false);
-            if (filterRef.current && !filterRef.current.contains(event.target as Node)) setIsFilterOpen(false);
+            const target = event.target as Node;
+            const isOutsideEmployeeFilter = employeeFilterRef.current && !employeeFilterRef.current.contains(target)
+                && (!employeeFilterPanelRef.current || !employeeFilterPanelRef.current.contains(target));
+            if (isOutsideEmployeeFilter) setIsEmployeeFilterOpen(false);
+            const isOutsideFilter = filterRef.current && !filterRef.current.contains(target)
+                && (!filterPanelRef.current || !filterPanelRef.current.contains(target));
+            if (isOutsideFilter) setIsFilterOpen(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -516,8 +524,16 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Lọc nhóm */}
                                     <div className="relative" ref={filterRef}>
                                         <Button variant="ghost" onClick={() => setIsFilterOpen(!isFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</Button>
-                                        {isFilterOpen && (
-                                            <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
+                                        {isFilterOpen && filterRef.current && createPortal(
+                                            <div
+                                                ref={filterPanelRef}
+                                                style={{
+                                                    position: 'fixed',
+                                                    top: filterRef.current.getBoundingClientRect().bottom + 4,
+                                                    right: window.innerWidth - filterRef.current.getBoundingClientRect().right,
+                                                }}
+                                                className="w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
+                                            >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
                                                     <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 bg-white placeholder-slate-400" autoFocus />
                                                     <div className="flex items-center justify-between mt-1.5"><Button variant="ghost" onClick={handleSelectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
@@ -546,7 +562,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                         );
                                                     })}
                                                 </div>
-                                            </div>
+                                            </div>,
+                                            document.body
                                         )}
                                     </div>
                                     {/* Highlight */}
@@ -554,8 +571,16 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         <Button variant="ghost" onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
                                             <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
-                                        {isEmployeeFilterOpen && (
-                                            <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
+                                        {isEmployeeFilterOpen && employeeFilterRef.current && createPortal(
+                                            <div
+                                                ref={employeeFilterPanelRef}
+                                                style={{
+                                                    position: 'fixed',
+                                                    top: employeeFilterRef.current.getBoundingClientRect().bottom + 4,
+                                                    right: window.innerWidth - employeeFilterRef.current.getBoundingClientRect().right,
+                                                }}
+                                                className="w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
+                                            >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                                     <input type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
                                                     <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="ghost" onClick={handleSelectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
@@ -574,7 +599,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                         );
                                                     })}
                                                 </div>
-                                            </div>
+                                            </div>,
+                                            document.body
                                         )}
                                     </div>
                                 </div>
