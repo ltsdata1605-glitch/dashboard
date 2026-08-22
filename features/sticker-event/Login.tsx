@@ -34,7 +34,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             try {
               const parsed = JSON.parse(cachedData) as StickerEventUserData;
               const tokenResult = await user.getIdTokenResult();
-              if (tokenResult.claims.stickerRole) {
+              // BUG FIX: trước đây chỉ kiểm tra tokenResult.claims.stickerRole có tồn tại hay không
+              // rồi tin toàn bộ cache — không so khớp storeId. Cloud Function setStickerClaims()
+              // (functions/src/stickerEvent.ts) ghi CẢ stickerRole LẪN stickerStoreId vào token, nên
+              // token mới luôn phản ánh đúng storeId hiện tại kể cả khi cache cũ đã lệch. Nếu admin
+              // đổi kho của 1 nhân viên (stickerAdminUpdateUser), storeId trong token đổi theo nhưng
+              // cache sessionStorage của tab đang mở vẫn giữ storeId CŨ vô thời hạn cho tới khi đăng
+              // xuất/đăng nhập lại — mọi "Lưu DS" tiếp theo lưu nhầm vào kho cũ, admin kiểm tra ở kho
+              // mới không thấy (đúng lớp bug user báo cáo, không chỉ do limit(100)/orderBy Firestore).
+              // So khớp storeId trong token với cache — lệch thì bỏ qua cache, tải lại từ server.
+              const claimStoreId = (tokenResult.claims.stickerStoreId as string | null | undefined) ?? '';
+              const cachedStoreId = parsed.storeId ?? '';
+              if (tokenResult.claims.stickerRole && claimStoreId === cachedStoreId) {
                 onLoginSuccess(user, parsed);
                 return;
               }

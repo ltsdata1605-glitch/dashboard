@@ -22,7 +22,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const [listToDelete, setListToDelete] = useState<string | null>(null);
+    const [listToDelete, setListToDelete] = useState<SavedList | null>(null);
     const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; message: string }>({
         isOpen: false,
         message: ''
@@ -53,17 +53,24 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
         }
     };
 
-    const handleDelete = (listId: string) => {
-        setListToDelete(listId);
+    const handleDelete = (list: SavedList) => {
+        setListToDelete(list);
         setIsConfirmOpen(true);
     };
 
     const executeDelete = async () => {
         if (!listToDelete) return;
-        
+
         try {
-            await deleteSavedListFromFirestore(storeId, listToDelete);
-            setLists(lists.filter(l => l.id !== listToDelete));
+            // BUG FIX: trước đây xóa bằng `storeId` (prop truyền vào modal, có thể là storeId của
+            // NGƯỜI XEM sau khi áp fallback || 'SUPERADMIN'), không phải storeId THẬT của chính
+            // danh sách đó — fetchSavedListsFromFirestore() gộp kết quả từ NHIỀU store (storeId của
+            // user + 'SUPERADMIN'), nên 1 danh sách hiển thị trong modal có thể thực sự nằm ở store
+            // khác với prop storeId. Xóa sai store khiến deleteDoc() "thành công" (không lỗi) nhưng
+            // không xóa được gì — danh sách vẫn còn nguyên. Dùng đúng list.storeId lưu sẵn trong
+            // chính bản ghi Firestore để luôn xóa đúng chỗ.
+            await deleteSavedListFromFirestore(listToDelete.storeId || storeId, listToDelete.id);
+            setLists(lists.filter(l => l.id !== listToDelete.id));
         } catch (err) {
             setAlertConfig({ isOpen: true, message: 'Lỗi khi xóa danh sách.' });
             console.error(err);
@@ -127,7 +134,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                         </Button>
                                         <Button
                                             variant="ghost"
-                                            onClick={() => handleDelete(list.id)}
+                                            onClick={() => handleDelete(list)}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                             title="Xóa danh sách"
                                         >

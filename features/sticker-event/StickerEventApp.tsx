@@ -777,11 +777,16 @@ export default function App(): React.JSX.Element {
           type="danger"
         />
 
-        {isSavedListsModalOpen && userData?.storeId && user && (
+        {isSavedListsModalOpen && user && (
+          // BUG FIX: trước đây gate bằng `userData?.storeId &&` — tài khoản không gắn kho cụ thể
+          // (vd SuperAdmin) có storeId rỗng, khiến modal không bao giờ mở (bấm "DS đã lưu" không có
+          // phản ứng gì, không báo lỗi). onConfirmSaveList() đã dùng fallback `|| 'SUPERADMIN'` khi
+          // lưu — SavedListsModal cũng phải dùng ĐÚNG fallback này khi xem, nếu không 2 bên lệch
+          // storeId (bên lưu ra 'SUPERADMIN', bên xem đòi storeId thật) gây "lưu xong không thấy".
           <SavedListsModal
-            storeId={userData.storeId}
+            storeId={userData?.storeId || 'SUPERADMIN'}
             userId={user.uid}
-            isAdmin={userData.role === 'admin'}
+            isAdmin={userData?.role === 'admin'}
             onClose={() => setIsSavedListsModalOpen(false)}
             onLoadList={handleLoadSavedList}
           />
