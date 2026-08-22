@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { saveSetting, getSetting } from '../services/dbService';
-import { saveListToFirestore, fetchSavedListsFromFirestore } from '../services/firebaseService';
+import { saveListToFirestore, fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from '../services/firebaseService';
 import { auth } from '../firebase';
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from '../stickerprinter/types';
 import { resolvePagePrices, generatePageHtml, isHistoryDuplicate, generateDrawPagesHtml } from '../stickerprinter/pageHtmlUtils';
@@ -908,23 +908,16 @@ export function useStickerPrinterData() {
     };
 
     const handleSaveCurrentList = async (name: string) => {
-        const list: SavedStickerList = {
-            id: `list_${Date.now()}`,
-            name,
-            pages: manualPages,
-            timestamp: Date.now(),
-            stickerType,
-            headerTextContent,
-        };
-
-        setSavedLists(prev => {
-            const next = [list, ...prev].slice(0, 50);
-            saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
-            return next;
-        });
-
-        // Save to Firestore Cloud for cross-device sync (Laptop <-> Mobile)
+        // BUG FIX: trước đây ID cục bộ (`list_${Date.now()}`) và ID Firestore (auto-gen của
+        // saveListToFirestore) là 2 ID KHÁC NHAU cho cùng 1 danh sách — kết quả trả về của
+        // saveListToFirestore() bị bỏ qua, không lưu lại. Hậu quả: deleteSavedList() không có cách
+        // nào biết ID Firestore thật để xóa (chỉ xóa được cục bộ), danh sách "xóa" xong vẫn tái xuất
+        // hiện sau lần đồng bộ Cloud kế tiếp. Lấy ID Firestore thật (nếu lưu cloud thành công) và
+        // dùng luôn ID đó cho bản ghi cục bộ, kèm storeId để xóa đúng chỗ sau này.
         const currentUser = auth.currentUser;
+        let cloudId: string | null = null;
+        let targetStoreId = '';
+
         if (currentUser) {
             try {
                 const cachedData = sessionStorage.getItem(`userData_${currentUser.uid}`);
@@ -942,7 +935,7 @@ export function useStickerPrinterData() {
                 // sticker-event nên đọc nhầm dữ liệu của nhau (xem giải thích chi tiết tại
                 // StickerEventApp.tsx#onConfirmSaveList), khiến storeId lúc lưu có thể khác lúc
                 // tải lại, làm danh sách vừa lưu không hiện ra trong "DS đã lưu".
-                const targetStoreId = storeId || 'SUPERADMIN';
+                targetStoreId = storeId || 'SUPERADMIN';
                 const itemsToSave = manualPages.map(p => ({
                     msp: p.code || p.id,
                     sanPham: p.label,
@@ -955,7 +948,7 @@ export function useStickerPrinterData() {
                     footer: p.footer,
                     discountDisplayMode: p.discountDisplayMode,
                 }));
-                await saveListToFirestore(targetStoreId, username, name, itemsToSave, {
+                cloudId = await saveListToFirestore(targetStoreId, username, name, itemsToSave, {
                     stickerType,
                     headerTextContent,
                     pages: manualPages,
@@ -964,6 +957,22 @@ export function useStickerPrinterData() {
                 console.error("[Cloud Sync] Error saving list to Firestore:", err);
             }
         }
+
+        const list: SavedStickerList = {
+            id: cloudId || `list_${Date.now()}`,
+            name,
+            pages: manualPages,
+            timestamp: Date.now(),
+            stickerType,
+            headerTextContent,
+            storeId: cloudId ? targetStoreId : undefined,
+        };
+
+        setSavedLists(prev => {
+            const next = [list, ...prev].slice(0, 50);
+            saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
+            return next;
+        });
 
         setIsSaveListModalOpen(false);
         toast.success(`Đã lưu danh sách "${name}" thành công!`);
@@ -1023,6 +1032,7 @@ export function useStickerPrinterData() {
                             timestamp: new Date(c.createdAt).getTime() || Date.now(),
                             stickerType: c.stickerMeta?.stickerType || 'gia_soc',
                             headerTextContent: c.stickerMeta?.headerTextContent || '',
+                            storeId: c.storeId || targetStoreId,
                         };
                     });
                     
@@ -1050,9 +1060,23 @@ export function useStickerPrinterData() {
         setActiveQueuePageId(null);
     };
 
-    const deleteSavedList = (id: string) => {
+    const deleteSavedList = async (list: SavedStickerList) => {
+        // BUG FIX: trước đây chỉ xóa khỏi state cục bộ/IndexedDB, KHÔNG gọi Firestore — danh sách
+        // "xóa" xong vẫn còn nguyên trên Cloud nên tái xuất hiện ngay sau lần Đồng bộ Cloud kế tiếp
+        // (toggleShowSavedLists gộp lại từ server). Chỉ xóa được Firestore khi có storeId (danh sách
+        // đã đồng bộ cloud thành công lúc lưu) — danh sách thuần cục bộ (chưa đăng nhập lúc lưu) thì
+        // storeId rỗng, chỉ xóa cục bộ như cũ.
+        if (list.storeId) {
+            try {
+                await deleteSavedListFromFirestore(list.storeId, list.id);
+            } catch (err) {
+                console.error("[Cloud Sync] Error deleting list from Firestore:", err);
+                toast.error('Không thể xóa danh sách trên Cloud. Vui lòng thử lại.');
+                return;
+            }
+        }
         setSavedLists(prev => {
-            const next = prev.filter(l => l.id !== id);
+            const next = prev.filter(l => l.id !== list.id);
             saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
             return next;
         });

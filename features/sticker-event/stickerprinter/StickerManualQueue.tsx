@@ -23,7 +23,7 @@ interface StickerManualQueueProps {
     loadPageToEditor: (page: StickerPage) => void;
     removeManualPage: (id: string) => void;
     loadSavedList: (list: SavedStickerList) => void;
-    deleteSavedList: (id: string) => void;
+    deleteSavedList: (list: SavedStickerList) => void;
     togglePageSelection: (id: string) => void;
     toggleAllPagesSelection: (select: boolean) => void;
     discountThreshold: string;
@@ -437,7 +437,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         </Button>
                                         <Button
                                             variant="ghost"
-                                            onClick={() => deleteSavedList(list.id)}
+                                            onClick={() => deleteSavedList(list)}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-lg hover:bg-rose-200 transition-colors"
                                             title="Xóa"
                                         >

@@ -23,6 +23,9 @@ export interface SavedStickerList {
     timestamp: number;
     stickerType: 'gia_soc' | 'gio_vang' | 'draw';
     headerTextContent: string;
+    /** storeId Firestore thật của bản ghi này (stores/{storeId}/savedLists/{id}) — cần để xóa đúng
+     *  chỗ. Rỗng nếu danh sách chỉ tồn tại cục bộ (chưa đăng nhập lúc lưu, chưa đồng bộ Cloud). */
+    storeId?: string;
 }
 
 export interface PrintHistoryEntry {

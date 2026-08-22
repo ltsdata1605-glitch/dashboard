@@ -39,7 +39,7 @@ interface StickerPrintControlsProps {
     loadPageToEditor: (page: StickerPage) => void;
     removeManualPage: (id: string) => void;
     loadSavedList: (list: SavedStickerList) => void;
-    deleteSavedList: (id: string) => void;
+    deleteSavedList: (list: SavedStickerList) => void;
     togglePageSelection: (id: string) => void;
     toggleAllPagesSelection: (select: boolean) => void;
     discountThreshold: string;
