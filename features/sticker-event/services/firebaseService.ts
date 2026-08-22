@@ -1,5 +1,5 @@
 import { db, auth } from '../firebase';
-import { collection, doc, writeBatch, getDocs, query, where, orderBy, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
+import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
 import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord } from '../types';
 import { stickerAdminUpdateUser } from './adminUserService';
 
@@ -269,12 +269,14 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
   for (const sId of storeIdsToFetch) {
     const listsRef = collection(db, 'stores', sId, 'savedLists');
     try {
-      // BUG FIX: limit(100) trước đây KHÔNG có orderBy — Firestore trả về 100 bản ghi theo thứ tự
-      // không đảm bảo (không chắc là mới nhất). Với kho đã tích luỹ trên 100 danh sách đã lưu (rất
-      // dễ xảy ra với kho test dùng lâu), danh sách vừa lưu xong có thể bị rớt khỏi 100 kết quả dù
-      // ghi Firestore thành công — đúng triệu chứng user báo cáo ("lưu thành công nhưng mở lại
-      // không thấy"). Sắp theo createdAt mới nhất trước khi cắt 100 để luôn ưu tiên bản ghi mới.
-      const q = query(listsRef, orderBy('createdAt', 'desc'), limit(100));
+      // BUG FIX: limit(100) KHÔNG có orderBy khiến Firestore trả về theo thứ tự không đảm bảo mới
+      // nhất (mặc định theo document ID — ở đây là ID tự sinh ngẫu nhiên của doc(), không liên quan
+      // gì tới thời gian tạo) — kho đã tích luỹ trên 100 danh sách thì bản vừa lưu có thể bị rớt khỏi
+      // kết quả dù ghi thành công. Đã thử thêm orderBy('createdAt','desc') nhưng khiến modal load rất
+      // chậm trên thực tế (nghi ngờ do lần đầu Firestore phải build index cho field này trên collection
+      // đã có sẵn nhiều dữ liệu) — bỏ orderBy, thay bằng nâng limit lên rộng rãi + dựa vào sort phía
+      // client đã có sẵn cuối hàm (Array.from(map.values()).sort(...)) để không phụ thuộc index nào.
+      const q = query(listsRef, limit(500));
       const snapshot = await getDocs(q);
       
       const lists: SavedList[] = snapshot.docs
