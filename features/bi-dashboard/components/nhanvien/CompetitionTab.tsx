@@ -93,6 +93,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [employeeFilterSearch, setEmployeeFilterSearch] = useState('');
     const employeeFilterRef = useRef<HTMLDivElement>(null);
     const employeeFilterPanelRef = useRef<HTMLDivElement>(null);
+    const [employeeFilterPanelStyle, setEmployeeFilterPanelStyle] = useState<React.CSSProperties>({});
     const [isExportingHighlights, setIsExportingHighlights] = useState(false);
     const [exportTitleOverride, setExportTitleOverride] = useState<string | null>(null);
     const [isolatedHighlightEmployee, setIsolatedHighlightEmployee] = useState<string | null>(null);
@@ -102,6 +103,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const filterRef = useRef<HTMLDivElement>(null);
     const filterPanelRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filterPanelStyle, setFilterPanelStyle] = useState<React.CSSProperties>({});
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('competition-view-mode', 'list');
@@ -132,6 +134,24 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         }
         prevTablesLengthRef.current = currentLength;
     }, [summaryTables]);
+
+    // Tính vị trí panel MỘT LẦN lúc mở (giống pattern đã có ở components/common/MultiSelectDropdown.tsx),
+    // không đọc getBoundingClientRect() trực tiếp trong render — đọc trong render khiến panel bị tính lại
+    // vị trí (và có thể co giật) trên MỌI lần re-render trong lúc đang mở, kể cả khi bấm chọn 1 dòng
+    // trong chính panel (setSelectedCompetitions ở NhanVien.tsx re-render CompetitionTab).
+    useEffect(() => {
+        if (isFilterOpen && filterRef.current) {
+            const rect = filterRef.current.getBoundingClientRect();
+            setFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
+        }
+    }, [isFilterOpen]);
+
+    useEffect(() => {
+        if (isEmployeeFilterOpen && employeeFilterRef.current) {
+            const rect = employeeFilterRef.current.getBoundingClientRect();
+            setEmployeeFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
+        }
+    }, [isEmployeeFilterOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -524,14 +544,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Lọc nhóm */}
                                     <div className="relative" ref={filterRef}>
                                         <Button variant="ghost" onClick={() => setIsFilterOpen(!isFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</Button>
-                                        {isFilterOpen && filterRef.current && createPortal(
+                                        {isFilterOpen && createPortal(
                                             <div
                                                 ref={filterPanelRef}
-                                                style={{
-                                                    position: 'fixed',
-                                                    top: filterRef.current.getBoundingClientRect().bottom + 4,
-                                                    right: window.innerWidth - filterRef.current.getBoundingClientRect().right,
-                                                }}
+                                                style={filterPanelStyle}
                                                 className="w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
@@ -546,7 +562,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                         if (filteredComps.length === 0) return null;
                                                         return (
                                                             <div key={criterion}>
-                                                                <h5 className="px-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tiêu chí {criterion}</h5>
+                                                                <h5 className="px-2 py-1 mb-1 -mx-0.5 text-[10px] font-black text-sky-700 uppercase tracking-wider bg-sky-50 rounded-md">Tiêu chí {criterion}</h5>
                                                                 <div className="space-y-0.5">
                                                                     {filteredComps.map(comp => {
                                                                         const displayCompName = shortenName(comp.originalTitle, nameOverrides);
@@ -571,14 +587,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         <Button variant="ghost" onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
                                             <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
-                                        {isEmployeeFilterOpen && employeeFilterRef.current && createPortal(
+                                        {isEmployeeFilterOpen && createPortal(
                                             <div
                                                 ref={employeeFilterPanelRef}
-                                                style={{
-                                                    position: 'fixed',
-                                                    top: employeeFilterRef.current.getBoundingClientRect().bottom + 4,
-                                                    right: window.innerWidth - employeeFilterRef.current.getBoundingClientRect().right,
-                                                }}
+                                                style={employeeFilterPanelStyle}
                                                 className="w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
