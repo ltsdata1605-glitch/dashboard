@@ -1861,7 +1861,9 @@
                 });
             }
 
-            const EXPORT_WIDTH = '720px'; // Mobile-optimized width
+            const EXPORT_WIDTH = '960px'; // Bằng đúng max-width của .app-shell (bố cục desktop) — trước là
+            // 720px "tối ưu mobile" khiến ảnh xuất ra từ desktop bị ép hẹp hơn màn hình đang xem, chữ
+            // xuống dòng nhiều hơn thực tế (user báo cáo). Tăng lên khớp bố cục desktop, giảm xuống dòng thừa.
 
             // --- Helper: mở share sheet gốc (AirDrop/LINE/Zalo/Lưu ảnh...) trên mobile, giống
             // hệt cơ chế downloadBlob/shareBlob của khu vực Phân Tích (services/uiService.ts) —
