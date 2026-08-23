@@ -360,7 +360,7 @@
                 <h3 id="modalTitle" class="text-xl font-bold text-[#0f172a]">Bảng Xếp Hạng</h3>
                 <div class="flex items-center gap-2 no-print">
                     <button id="exportRankingImageButton" title="Xuất ảnh bảng xếp hạng" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lucide lucide-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                     </button>
                     <button id="closeModalButton" class="text-slate-400 hover:text-slate-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -1224,8 +1224,8 @@
                         <div id="captureComparisonMain">
                             <div class="bg-white/80 backdrop-blur-sm border border-slate-200/80 p-3 shadow-sm mb-3 rounded-xl flex justify-between items-center">
                                 <h2 class="text-base sm:text-2xl font-bold text-slate-800">So Sánh Trực Diện</h2>
-                                <button id="exportComparisonImageButton" title="Xuất ảnh so sánh" class="p-1 bg-slate-100 hover:bg-slate-200 text-slate-600 transition shadow-sm rounded-md border border-slate-200/50 no-print">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" /></svg>
+                                <button id="exportComparisonImageButton" title="Xuất ảnh so sánh" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 transition shadow-sm rounded-md border border-slate-200/50 no-print flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lucide lucide-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
                             </div>
 
@@ -1330,11 +1330,11 @@
                                 </div>
                             </div>
                             <div id="analysisContent" class="space-y-4">`;
-                html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><p class="font-semibold text-sm text-[#0f172a]">Siêu thị đã xuất sắc đạt được tổng giải thưởng là <strong class="text-sky-600">${formatCurrency(totalBonus)}</strong> với <strong class="text-sky-600">${achievedCount}/${totalCategories}</strong> môn thi đang có thưởng.</p></div></div>`;
+                html += `<div class="flex items-start" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;"><div class="flex-shrink-0 bg-sky-100" style="flex-shrink: 0; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; margin-top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg></div><div style="flex: 1; min-width: 0;"><p style="margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #0f172a;">Siêu thị đã xuất sắc đạt được tổng giải thưởng là <strong style="color: #0284c7;">${formatCurrency(totalBonus)}</strong> với <strong style="color: #0284c7;">${achievedCount}/${totalCategories}</strong> môn thi đang có thưởng.</p></div></div>`;
                 if (warningList.length > 0) {
-                    html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
-                    <div>
-                        <p class="font-semibold text-sm text-[#0f172a]">Cảnh báo: <span class="text-amber-600">Có ${warningList.length} môn</span> đang có thưởng nhưng ở vị trí mấp mé. Cần chú ý duy trì để không rớt hạng:</p>
+                    html += `<div class="flex items-start" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;"><div class="flex-shrink-0 bg-amber-100" style="flex-shrink: 0; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; margin-top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
+                    <div style="flex: 1; min-width: 0;">
+                        <p style="margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #0f172a;">Cảnh báo: <span style="color: #d97706;">Có ${warningList.length} môn</span> đang có thưởng nhưng ở vị trí mấp mé. Cần chú ý duy trì để không rớt hạng:</p>
                         <ul class="list-disc list-inside mt-2 text-[#64748b] text-xs space-y-1">
                             ${warningList.map(item => `
                                 <li class="opportunity-item cursor-pointer hover:text-sky-600 hover:underline" data-group-name="${item[COLS.NGANH_HANG]}" data-group-channel="${item[COLS.KENH]}">
@@ -1344,8 +1344,8 @@
                         </ul>
                     </div></div>`;
                 }
-                if (opportunityList.length > 0) { html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518 4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg></div><div><p class="font-semibold text-sm text-[#0f172a]">Cơ hội vàng: <span class="text-emerald-600">Tập trung vào ${opportunityList.length} môn tiềm năng</span> sau để tối đa hóa giải thưởng:</p><ul class="list-disc list-inside mt-2 text-[#64748b] text-xs space-y-1">${opportunityList.map(item => `<li class="opportunity-item cursor-pointer hover:text-sky-600 hover:underline" data-group-name="${item.name}" data-group-channel="${item.kenh}"><strong>${item.name}:</strong> cần cải thiện <strong class="text-emerald-700">${item.ranksNeeded}</strong> hạng.</li>`).join('')}</ul></div></div>`; }
-                if(noSaleCount > 0) { html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div><div><p class="font-semibold text-sm text-[#0f172a]">Điểm cần bứt phá: <span class="text-rose-600">${noSaleCount} môn chưa phát sinh doanh số</span>. Cần xem xét lại chiến lược và tìm giải pháp cải thiện.</p></div></div>`; }
+                if (opportunityList.length > 0) { html += `<div class="flex items-start" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;"><div class="flex-shrink-0 bg-emerald-100" style="flex-shrink: 0; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center; margin-top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518 4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg></div><div style="flex: 1; min-width: 0;"><p style="margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #0f172a;">Cơ hội vàng: <span style="color: #059669;">Tập trung vào ${opportunityList.length} môn tiềm năng</span> sau để tối đa hóa giải thưởng:</p><ul class="list-disc list-inside mt-2 text-[#64748b] text-xs space-y-1">${opportunityList.map(item => `<li class="opportunity-item cursor-pointer hover:text-sky-600 hover:underline" data-group-name="${item.name}" data-group-channel="${item.kenh}"><strong>${item.name}:</strong> cần cải thiện <strong class="text-emerald-700">${item.ranksNeeded}</strong> hạng.</li>`).join('')}</ul></div></div>`; }
+                if(noSaleCount > 0) { html += `<div class="flex items-start" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;"><div class="flex-shrink-0 bg-rose-100" style="flex-shrink: 0; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background: #ffe4e6; color: #e11d48; display: flex; align-items: center; justify-content: center; margin-top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" style="width: 12px; height: 12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div><div style="flex: 1; min-width: 0;"><p style="margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #0f172a;">Điểm cần bứt phá: <span style="color: #e11d48;">${noSaleCount} môn chưa phát sinh doanh số</span>. Cần xem xét lại chiến lược và tìm giải pháp cải thiện.</p></div></div>`; }
                 html += `</div>`; 
                 analysisSection.innerHTML = html; 
             }
@@ -1591,11 +1591,11 @@
                     const nearlyBadgeHtml = isNearly ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>` : '';
                     
                     return `
-                        <tr class="hover:bg-slate-50 transition-colors text-[13px] border-b border-slate-100 last:border-0 group">
+                        <tr class="hover:bg-sky-50/70 cursor-pointer transition-colors text-[13px] border-b border-slate-100 last:border-0 group view-ranking-row" data-group-name="${groupNameVal}" data-group-channel="${groupChannelVal}">
                             <td class="px-3 py-2 font-medium text-slate-800">
                                 <div class="flex items-center gap-2">
                                     <span class="text-slate-400 font-bold text-[11px]">#${index}</span>
-                                    <span class="truncate max-w-[280px]" title="${groupNameVal}">${groupNameVal}</span>${nearlyBadgeHtml}
+                                    <span class="truncate max-w-[280px] group-hover:text-indigo-600 group-hover:underline" title="${groupNameVal}">${groupNameVal}</span>${nearlyBadgeHtml}
                                     <button class="view-ranking-btn no-print ml-1 text-slate-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xem xếp hạng" data-group-name="${groupNameVal}" data-group-channel="${groupChannelVal}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                     </button>
@@ -1686,9 +1686,9 @@
                         </div>`;
 
                     return `
-                        <div class="s-card border border-slate-200">
+                        <div class="s-card border border-slate-200 cursor-pointer view-ranking-card hover:shadow-md transition-all group/card" data-group-name="${row[COLS.NGANH_HANG]}" data-group-channel="${row[COLS.KENH]}">
                             <div class="${bg}" style="padding:7px 10px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e2e8f0">
-                                <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate">${groupName.toUpperCase()}</h3>
+                                <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate group-hover/card:underline">${groupName.toUpperCase()}</h3>
                                 <button class="view-ranking-btn no-print" title="Xem xếp hạng" data-group-name="${row[COLS.NGANH_HANG]}" data-group-channel="${row[COLS.KENH]}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:4px;border-radius:6px;background:rgba(255,255,255,0.3);border:none;cursor:pointer;color:inherit;display:flex;align-items:center;justify-content:center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                 </button>
@@ -1861,9 +1861,9 @@
                 });
             }
 
-            const EXPORT_WIDTH = '960px'; // Bằng đúng max-width của .app-shell (bố cục desktop) — trước là
-            // 720px "tối ưu mobile" khiến ảnh xuất ra từ desktop bị ép hẹp hơn màn hình đang xem, chữ
-            // xuống dòng nhiều hơn thực tế (user báo cáo). Tăng lên khớp bố cục desktop, giảm xuống dòng thừa.
+            const EXPORT_WIDTH = '720px'; // Giữ 720px (không tăng lên 960px khớp .app-shell desktop) —
+            // các dòng văn bản dài (vd "Phân Tích & Đề Xuất") tự động xuống dòng bình thường ở khổ
+            // hẹp hơn, đây là hành vi mong muốn để tối ưu độ rộng ảnh xuất, không phải lỗi cần vá.
 
             // --- Helper: mở share sheet gốc (AirDrop/LINE/Zalo/Lưu ảnh...) trên mobile, giống
             // hệt cơ chế downloadBlob/shareBlob của khu vực Phân Tích (services/uiService.ts) —
@@ -2227,16 +2227,6 @@
             });
             
             detailsGrid.addEventListener('click', (event) => {
-                const rankingBtn = event.target.closest('.view-ranking-btn');
-                if (rankingBtn) {
-                    const groupName = rankingBtn.dataset.groupName;
-                    const groupChannel = rankingBtn.dataset.groupChannel;
-                    if (groupName && groupChannel) {
-                        showRankingModal(groupName, groupChannel);
-                    }
-                    return;
-                }
-                
                 const exportGroupBtn = event.target.closest('.exportGroupImageBtn');
                 if (exportGroupBtn) {
                     const groupKey = exportGroupBtn.dataset.groupKey;
@@ -2263,6 +2253,16 @@
                     }
                     return;
                 }
+
+                const rankingTarget = event.target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card');
+                if (rankingTarget) {
+                    const groupName = rankingTarget.dataset.groupName;
+                    const groupChannel = rankingTarget.dataset.groupChannel;
+                    if (groupName && groupChannel) {
+                        showRankingModal(groupName, groupChannel);
+                    }
+                    return;
+                }
             });
 
             closeModalButton.addEventListener('click', () => { rankingModal.classList.add('hidden'); });
@@ -2273,23 +2273,31 @@
                 }
                 const exportBtn = event.target.closest('#exportRankingImageButton');
                 if (exportBtn) {
-                    const modalContent = rankingModal.querySelector('.bg-white');
-                    const modalBody = document.getElementById('modalBody');
-                    const tableWrapper = modalBody.querySelector('.overflow-x-auto');
+                    const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
+                    let exportData = [...rankingDataForModal];
+                    const selectedStoreIndex = exportData.findIndex(row => row[COLS.SIÊU_THỊ] === currentStoreFullName);
+                    if (selectedStoreIndex !== -1) {
+                        // Rút gọn: lấy từ đầu bảng đến siêu thị được chọn + 5 siêu thị kế tiếp (giống như BXH Phân tích & Đề xuất)
+                        exportData = exportData.slice(0, selectedStoreIndex + 6);
+                    }
+                    
                     const modalTitleText = document.getElementById('modalTitle').textContent || 'xep_hang';
                     const filename = modalTitleText.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') + '.png';
-                    
-                    captureElementAsImage(modalBody, filename, {
+
+                    const tempContainer = document.createElement('div');
+                    tempContainer.style.position = 'absolute';
+                    tempContainer.style.left = '-9999px';
+                    tempContainer.style.top = '-9999px';
+                    tempContainer.style.width = '800px';
+                    tempContainer.innerHTML = getRankingTableHtml(exportData, modalTitleText);
+                    document.body.appendChild(tempContainer);
+
+                    captureElementAsImage(tempContainer.firstChild, filename, {
                          backgroundColor: '#ffffff',
-                         onBeforeCapture: () => {
-                            modalContent.style.maxHeight = 'none';
-                            modalBody.style.overflowY = 'visible';
-                            tableWrapper.style.overflowX = 'visible';
-                         },
                          onAfterCapture: () => {
-                            modalContent.style.maxHeight = '';
-                            modalBody.style.overflowY = '';
-                            tableWrapper.style.overflowX = '';
+                             if (document.body.contains(tempContainer)) {
+                                 document.body.removeChild(tempContainer);
+                             }
                          }
                     });
                 }

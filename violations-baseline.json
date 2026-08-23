@@ -159,10 +159,6 @@
     "nonSemanticColor": 25,
     "missingMobileToolbar": 0
   },
-  "components/modals/DebtOrdersModal.tsx": {
-    "nonSemanticColor": 14,
-    "missingMobileToolbar": 0
-  },
   "components/modals/EmployeeManagerModal.tsx": {
     "nonSemanticColor": 24,
     "missingMobileToolbar": 0

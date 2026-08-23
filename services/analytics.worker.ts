@@ -41,7 +41,7 @@ self.onmessage = (event: MessageEvent) => {
             );
 
             // Mục 65d/65e: KHÔNG còn gửi baseFilteredData/warehouseFilteredData/
-            // filteredValidSalesData/unshippedOrders/debtOrders/uncollectedOrders — main thread
+            // filteredValidSalesData/unshippedOrders/uncollectedOrders — main thread
             // giờ tự tính lại tất cả từ originalData đã có sẵn (xem hooks/useDataManagement.ts) —
             // các mảng dòng dữ liệu thô này (tới hàng chục nghìn dòng mỗi mảng ở tập dữ liệu lớn)
             // trước đây chiếm phần lớn payload postMessage (~197MB ở tập 50k dòng trước Mục 65d),
@@ -51,7 +51,6 @@ self.onmessage = (event: MessageEvent) => {
             const {
                 filteredValidSalesData: _filteredValidSalesData,
                 unshippedOrders: _unshippedOrders,
-                debtOrders: _debtOrders,
                 uncollectedOrders: _uncollectedOrders,
                 ...resultToSend
             } = processedData;

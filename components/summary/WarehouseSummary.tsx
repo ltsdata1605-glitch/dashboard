@@ -438,6 +438,22 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         }
     }, [editingTargetCell?.colId, editingTargetCell?.khoName]);
 
+    const visibleColumns = useMemo(() => {
+        return columns
+            .filter(c => c.isVisible)
+            .sort((a, b) => a.order - b.order);
+    }, [columns]);
+
+    // Danh sách các cột/dòng có ô nhập M.Tiêu trong chế độ xem dọc
+    const editableVerticalColumns = useMemo(() => {
+        return visibleColumns.filter(col => {
+            if (col.metric === 'target' || col.metric === 'percentHT') return false;
+            if (!isUpgradableRow(col)) return false;
+            const isPercentMetric = col.metric === 'hieuQuaQD' || col.metric === 'traChamPercent';
+            return !isPercentMetric;
+        });
+    }, [visibleColumns]);
+
     // Mục 62 fix: ô M.Tiêu đóng đang hiển thị giá trị đã prorate theo ngày (khi không Lũy kế) để
     // %HT tính đúng, nên ô sửa cũng phải quy đổi cùng chiều — nếu không, gõ "50" xong hiển thị lại
     // ra "2" (50 bị chia cho daysInMonth) vì ô đóng và ô sửa lệch đơn vị (tháng vs ngày).
@@ -458,15 +474,23 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         setEditingTargetCell(null);
     };
 
-    const handleSort = (columnId: string) => {
-        setSortConfig(prev => ({ key: columnId, direction: (prev?.key === columnId && prev.direction === 'desc') ? 'asc' : 'desc' }));
+    const moveToAdjacentRow = (col: WarehouseColumnConfig, khoName: string, direction: 'next' | 'prev') => {
+        const parsed = parseFormattedNumber(editingTargetCellValue);
+        const rawScaled = isRevenueMetricCol(col) ? parsed * 1000000 : parsed;
+        const monthly = isLuyKe ? rawScaled : rawScaled * daysInMonth;
+        setRowTarget(col, khoName, monthly);
+
+        const currentIndex = editableVerticalColumns.findIndex(c => c.id === col.id);
+        if (currentIndex !== -1) {
+            const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+            if (targetIndex >= 0 && targetIndex < editableVerticalColumns.length) {
+                const targetCol = editableVerticalColumns[targetIndex];
+                startEditTargetCell(targetCol, khoName);
+                return;
+            }
+        }
+        setEditingTargetCell(null);
     };
-    
-    const visibleColumns = useMemo(() => {
-        return columns
-            .filter(c => c.isVisible)
-            .sort((a, b) => a.order - b.order);
-    }, [columns]);
 
     // Pagination Logic
     useEffect(() => {
@@ -1081,8 +1105,16 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                                         onChange={(e) => setEditingTargetCellValue(formatWithCommas(e.target.value))}
                                                                         onBlur={() => commitEditTargetCell(col, row.khoName)}
                                                                         onKeyDown={(e) => {
-                                                                            if (e.key === 'Enter') { e.preventDefault(); commitEditTargetCell(col, row.khoName); }
-                                                                            if (e.key === 'Escape') { e.preventDefault(); setEditingTargetCell(null); }
+                                                                            if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey) || e.key === 'ArrowDown') {
+                                                                                e.preventDefault();
+                                                                                moveToAdjacentRow(col, row.khoName, 'next');
+                                                                            } else if ((e.key === 'Tab' && e.shiftKey) || e.key === 'ArrowUp') {
+                                                                                e.preventDefault();
+                                                                                moveToAdjacentRow(col, row.khoName, 'prev');
+                                                                            } else if (e.key === 'Escape') {
+                                                                                e.preventDefault();
+                                                                                setEditingTargetCell(null);
+                                                                            }
                                                                         }}
                                                                         className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
                                                                     />

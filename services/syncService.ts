@@ -110,7 +110,7 @@ export const initSyncListeners = () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             pushSettingsToFirebase();
-        }, 30000); // Tự động sync sau 30s nếu có thay đổi mà ko thoát trình duyệt
+        }, 2000); // Tự động sync ngầm lên Firebase sau 2s khi có thay đổi
     };
 
     window.addEventListener('visibilitychange', handleVisibilityChange);

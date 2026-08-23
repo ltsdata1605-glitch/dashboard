@@ -751,7 +751,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     case 'PROCESS_SUCCESS': {
                         const { result } = payload;
                         // Mục 65d/65e: lấy đúng snapshot baseFilteredData/warehouseFilteredData/
-                        // filteredValidSalesData/unshippedOrders/debtOrders/uncollectedOrders đã
+                        // filteredValidSalesData/unshippedOrders/uncollectedOrders đã
                         // tính trên main thread TẠI THỜI ĐIỂM gửi PROCESS này (xem comment FIFO
                         // queue ở nơi khai báo pendingMainThreadDataQueueRef) — commit CÙNG LÚC
                         // với processedData để giữ đúng tính atomic (như trước, mọi giá trị luôn
@@ -762,7 +762,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             ...result,
                             filteredValidSalesData: pending.filteredValidSalesData,
                             unshippedOrders: pending.unshippedOrders,
-                            debtOrders: pending.debtOrders,
                             uncollectedOrders: pending.uncollectedOrders,
                         } : result);
                         if (pending) {
@@ -862,18 +861,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         return mainPeriodData.filter(row => isValidSalesRow(row, unwrapped));
     }, [mainPeriodData, productConfig]);
 
-    // Mục 65e: cùng lý do computedFilteredValidSalesData ở trên — unshippedOrders/debtOrders là
+    // Mục 65e: cùng lý do computedFilteredValidSalesData ở trên — unshippedOrders là
     // TẬP CON của filteredValidSalesData đã tính sẵn (lọc rẻ, không cần productConfig thêm lần
     // nữa), uncollectedOrders lọc từ mainPeriodData (đã có sẵn) bằng isUncollectedOrder(). Trước
-    // đây Worker gửi cả 3 mảng này (thô, ~5-6k dòng trong tập test 50k dòng) về qua postMessage —
+    // đây Worker gửi cả 2 mảng này (thô) về qua postMessage —
     // vẫn là dữ liệu dòng đầy đủ, cùng loại lãng phí đã sửa ở Mục 65d cho baseFilteredData/
     // warehouseFilteredData/filteredValidSalesData.
     const computedUnshippedOrders = useMemo(
         () => computedFilteredValidSalesData.filter(row => getRowValue(row, COL.XUAT) === 'Chưa xuất'),
-        [computedFilteredValidSalesData]
-    );
-    const computedDebtOrders = useMemo(
-        () => computedFilteredValidSalesData.filter(row => isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0),
         [computedFilteredValidSalesData]
     );
     const computedUncollectedOrders = useMemo(() => {
@@ -895,7 +890,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         warehouseFilteredData: DataRow[];
         filteredValidSalesData: DataRow[];
         unshippedOrders: DataRow[];
-        debtOrders: DataRow[];
         uncollectedOrders: DataRow[];
     }[]>([]);
 
@@ -928,7 +922,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 warehouseFilteredData: computedWarehouseFilteredData,
                 filteredValidSalesData: computedFilteredValidSalesData,
                 unshippedOrders: computedUnshippedOrders,
-                debtOrders: computedDebtOrders,
                 uncollectedOrders: computedUncollectedOrders,
             });
             workerRef.current.postMessage({
@@ -940,7 +933,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             });
         }
-    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData, computedUnshippedOrders, computedDebtOrders, computedUncollectedOrders]);
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData, computedUnshippedOrders, computedUncollectedOrders]);
 
     // Mục 65c: availableWeeks/availableMonths trước đây là 2 useMemo ĐỘC LẬP, TRÙNG LẶP ở
     // FilterBar.tsx (tuần+tháng) và FilterSection.tsx (chỉ tháng) — mỗi cái tự quét lại TOÀN BỘ

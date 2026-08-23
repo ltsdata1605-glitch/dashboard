@@ -193,7 +193,6 @@ function processDataForPeriod(
     const filteredValidSalesData: DataRow[] = [];
     const unshippedOrders: DataRow[] = [];
     const uncollectedOrders: DataRow[] = [];
-    const debtOrders: DataRow[] = [];
     const standardPeriodData: DataRow[] = [];
 
     for (let i = 0, len = periodData.length; i < len; i++) {
@@ -224,13 +223,6 @@ function processDataForPeriod(
                 if (getRowValue(row, COL.XUAT) === 'Chưa xuất') {
                     unshippedOrders.push(row);
                 }
-
-                // Check unfinished debt (Còn nợ > 0) — chỉ tính đơn ĐÃ XUẤT: đơn chưa xuất
-                // thì chưa thể coi là "chưa hoàn tất công nợ" (chưa giao hàng thì chưa phát sinh
-                // nghĩa vụ thu nợ).
-                if (isXuatMatch(row, 'Đã') && parseNumber(getRowValue(row, COL.CON_NO)) > 0) {
-                    debtOrders.push(row);
-                }
             }
         } else if (thuTien === 'chưa thu') {
             // Mục 65e: dùng chung isUncollectedOrder() (utils/dataUtils.ts) — cùng lý do
@@ -256,7 +248,6 @@ function processDataForPeriod(
         summaryTable,
         unshippedOrders,
         uncollectedOrders,
-        debtOrders,
         filteredValidSalesData,
     };
 }
