@@ -258,7 +258,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
         if (!cardRef.current) return null;
         try {
-            const defaultFilename = `SoSanh_${empA?.name.replace(/[\s/]/g, '')}_vs_${empB?.name.replace(/[\s/]/g, '')}.png`;
+            const defaultFilename = `So Sánh - ${empA?.name.replace(/[\\/:*?"<>|]/g, '')} vs ${empB?.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
             const filename = customFilename || defaultFilename;
             const blob = await exportElementAsImage(cardRef.current, filename, { mode: 'blob-only', elementsToHide: ['.no-print'] });
             if (blob) {
@@ -290,7 +290,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 setEmpAId(pair.a.originalName);
                 setEmpBId(pair.b.originalName);
                 await new Promise(resolve => setTimeout(resolve, 300));
-                const filename = `SoSanh_${pair.a.name.replace(/[\s/]/g, '')}_vs_${pair.b.name.replace(/[\s/]/g, '')}.png`;
+                const filename = `So Sánh - ${pair.a.name.replace(/[\\/:*?"<>|]/g, '')} vs ${pair.b.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
                 const action = await handleExportPNG(filename, autoAction);
                 if (action === 'cancel') break;
                 autoAction = action;

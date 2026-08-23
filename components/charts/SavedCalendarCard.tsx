@@ -31,7 +31,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
         if (cardRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filter.kho);
-            await exportElementAsImage(cardRef.current, `${prefix}-Lich-doanh-thu.png`, { elementsToHide: ['.hide-on-export'] });
+            await exportElementAsImage(cardRef.current, `${prefix} - Lịch Doanh Thu.png`, { elementsToHide: ['.hide-on-export'] });
             setIsExporting(false);
         }
     };

@@ -273,7 +273,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       if (draftCalendarRef.current) {
           const prefix = getExportFilenamePrefix(filterState.kho);
           const monthLabel = calendarFilters.month ? calendarFilters.month.split('-').reverse().join('-') : 'lich';
-          await handleExport(draftCalendarRef.current, `${prefix}-Lich-doanh-thu-nhap-${monthLabel}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+          await handleExport(draftCalendarRef.current, `${prefix} - Lịch Doanh Thu Nhập Tháng ${monthLabel}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
       }
   };
 
@@ -283,12 +283,12 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           const targets = document.querySelectorAll('.calendar-export-target');
           if (targets.length > 0) {
               for (let i = 0; i < targets.length; i++) {
-                  await handleExport(targets[i] as HTMLElement, `${prefix}-Lich-doanh-thu-tab-${i}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+                  await handleExport(targets[i] as HTMLElement, `${prefix} - Lịch Doanh Thu (${i + 1}).png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
                   await new Promise(r => setTimeout(r, 1000));
               }
           }
       } else {
-          handleExport(chartCardRef.current, `${prefix}-Xu-huong-doanh-thu.png`, { captureAsDisplayed: true });
+          handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true });
       }
   };
   

@@ -308,7 +308,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     const handleSingleExport = async () => {
         if (summaryRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
-            await handleExport(summaryRef.current, `${prefix}-Chi-tiet-theo-kho.png`, {
+            await handleExport(summaryRef.current, `${prefix} - Chi Tiết Theo Kho.png`, {
                 elementsToHide: ['.hide-on-export'],
                 scale: 2
             });
@@ -472,6 +472,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         const monthly = isLuyKe ? rawScaled : rawScaled * daysInMonth;
         setRowTarget(col, khoName, monthly);
         setEditingTargetCell(null);
+    };
+
+    const handleSort = (columnId: string) => {
+        setSortConfig(prev => ({ key: columnId, direction: (prev?.key === columnId && prev.direction === 'desc') ? 'asc' : 'desc' }));
     };
 
     const moveToAdjacentRow = (col: WarehouseColumnConfig, khoName: string, direction: 'next' | 'prev') => {

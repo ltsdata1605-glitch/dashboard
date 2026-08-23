@@ -160,7 +160,7 @@ const RevenueView: React.FC<{
         const original = cardRef.current;
         
         try {
-            const safeName = customFilename || `DT_NhanVien_${supermarketName}.png`;
+            const safeName = customFilename || `Báo Cáo Doanh Thu Nhân Viên - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
@@ -196,8 +196,8 @@ const RevenueView: React.FC<{
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
-            const safeDeptName = dept.replace(/\//g, '_').replace(/\s+/g, '_');
-            const action = await handleExportPNG(`DT_BP_${safeDeptName}_${supermarketName}.png`, autoAction);
+            const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
+            const action = await handleExportPNG(`Doanh Thu - ${safeDeptName} - ${supermarketName}.png`, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
         }

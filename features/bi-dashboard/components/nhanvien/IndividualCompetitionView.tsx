@@ -399,8 +399,8 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         if (!cardRef.current) return null;
         const originalCard = cardRef.current;
         try {
-            const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
-            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
+            const nameToUse = customFilename || selectedEmployee?.name || 'Nhân Viên';
+            const filename = `Thi Đua - ${nameToUse.replace(/[\\/:*?"<>|]/g, '')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
                 mode: 'blob-only', forcedWidth: 640, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print'], isCompactTable: true
             });

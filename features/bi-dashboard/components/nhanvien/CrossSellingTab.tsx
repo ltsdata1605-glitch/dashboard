@@ -231,7 +231,7 @@ const CrossSellingTab: React.FC<{
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const safeName = customFilename || `CrossSelling_${supermarketName}.png`;
+            const safeName = customFilename || `Báo Cáo Bán Kèm - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
@@ -266,8 +266,8 @@ const CrossSellingTab: React.FC<{
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
-            const safeDeptName = dept.replace(/\//g, '_').replace(/\s+/g, '_');
-            const action = await handleExportPNG(`BK_BP_${safeDeptName}_${supermarketName}.png`, autoAction);
+            const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
+            const action = await handleExportPNG(`Bán Kèm - ${safeDeptName} - ${supermarketName}.png`, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
         }

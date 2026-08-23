@@ -627,7 +627,7 @@ export default function App(): React.JSX.Element {
                     }
                     try {
                       showExportOverlay('Đang xuất ảnh danh sách sản phẩm...');
-                      const filename = `danh-sach-san-pham-${new Date().toISOString().slice(0,10)}.png`;
+                      const filename = `Danh Sách Sản Phẩm - ${new Date().toISOString().slice(0,10)}.png`;
                       const blob = await exportElementAsImage(target, filename, {
                         elementsToHide: ['.hide-on-export'],
                         scale: 2,

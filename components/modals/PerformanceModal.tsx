@@ -232,7 +232,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         if (elementToExport) {
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${employeeName}`);
-            await onExport(elementToExport, `phan-tich-hieu-qua-${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 640 });
+            await onExport(elementToExport, `Phân Tích Hiệu Quả - ${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 640 });
             setIsExporting(false);
             hideExportOverlay();
         }

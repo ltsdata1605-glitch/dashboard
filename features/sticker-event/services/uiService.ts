@@ -46,19 +46,12 @@ export function canShareFiles(): boolean {
 /** Share a blob via Web Share API (LINE, Zalo, Telegram, etc.) */
 export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
     try {
-        const file = new File([blob], filename, { type: 'image/png' });
-        
-        // Chuyển đổi tên file thành tên bảng hiển thị tiếng Việt
-        let displayName = filename.replace('.png', '').replace(/_/g, ' ');
-        displayName = displayName.replace(/Bonus Report/i, 'Báo Cáo Thưởng');
-        displayName = displayName.replace(/ChiTiet/i, 'Báo Cáo Chi Tiết');
-        displayName = displayName.replace(/BC DoanhThu/i, 'Báo Cáo Doanh Thu');
-        displayName = displayName.replace(/BC CrossSelling/i, 'Báo Cáo Bán Kèm');
-        displayName = displayName.replace(/BC Installment/i, 'Báo Cáo Trả Góp');
-        displayName = displayName.replace(/Competition/i, 'Báo Cáo Thi Đua');
-        
-        const shareData = { 
-            files: [file], 
+        // Tiêu đề khu vực ảnh được xuất: bỏ đuôi .png, gạch dưới -> khoảng trắng
+        const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim() || 'Anh xuat';
+        const file = new File([blob], `${displayName}.png`, { type: 'image/png' });
+
+        const shareData = {
+            files: [file],
             title: displayName,
             text: displayName
         };

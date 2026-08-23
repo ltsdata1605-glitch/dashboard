@@ -180,7 +180,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         if (!cardRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 1024, scale: 3 });
+        await exportElementAsImage(cardRef.current, `${prefix} - Tỷ Trọng Ngành Hàng.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 1024, scale: 3 });
         setIsExporting(false);
     };
 

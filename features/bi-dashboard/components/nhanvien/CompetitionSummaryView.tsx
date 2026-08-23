@@ -461,8 +461,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const currentGroup = activeGroupFilter ? `_${activeGroupFilter.replace(/[\s/\\&]+/g, '_')}` : '';
-            const nameToUse = customFilename || `ThiDua_${(tableName || 'BaoCao').replace(/[\s/]/g, '_')}${currentGroup}_${supermarketName}.png`;
+            const currentGroup = activeGroupFilter ? ` - ${activeGroupFilter.replace(/[\\/:*?"<>|]/g, '')}` : '';
+            const nameToUse = customFilename || `Thi Đua - ${(tableName || 'Báo Cáo').replace(/[\\/:*?"<>|]/g, '')}${currentGroup} - ${supermarketName}.png`;
             const filename = customFilename ? (customFilename.endsWith('.png') ? customFilename : `${customFilename}.png`) : nameToUse;
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
@@ -499,9 +499,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             setExportGroupFilter(group);
             setExportGroupProgress({ current: i + 1, total: allAvailableGroups.length });
             await new Promise(r => setTimeout(r, 450));
-            const safeGroupName = group.replace(/[\s/\\&]+/g, '_');
-            const nameToUse = tableName || 'ThiDua';
-            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}_${safeGroupName}_${supermarketName}.png`;
+            const safeGroupName = group.replace(/[\\/:*?"<>|]/g, '');
+            const nameToUse = tableName || 'Thi Đua';
+            const filename = `Thi Đua - ${nameToUse.replace(/[\\/:*?"<>|]/g, '')} - ${safeGroupName} - ${supermarketName}.png`;
             const action = await handleExportPNG(filename, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
@@ -518,8 +518,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const nameToUse = tableName || 'BaoCao';
-            const filename = `ThiDua_TomTat_${nameToUse.replace(/[\s/]/g, '_')}_${supermarketName}.png`;
+            const nameToUse = tableName || 'Báo Cáo';
+            const filename = `Thi Đua - Tóm Tắt - ${nameToUse.replace(/[\\/:*?"<>|]/g, '')} - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only',
                 elementsToHide: ['.no-print', '.export-button-component', '.competition-dynamic-col'],

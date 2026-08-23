@@ -115,7 +115,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             setIsExporting(true);
             showExportOverlay('Đang xuất ảnh toàn bộ...');
             renderCustomersSync(getAllCustomerIds());
-            await onExport(elementToExport, `don-hang-chua-thu-all.png`, { forceOpenDetails: true, forcedWidth: 960 });
+            await onExport(elementToExport, `Đơn Hàng Chưa Thu - Chưa Hủy (Tất Cả).png`, { forceOpenDetails: true, forcedWidth: 960 });
             setIsExporting(false);
             hideExportOverlay();
         }
@@ -132,7 +132,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             updateExportOverlay(`Đang xuất: ${creator.name}`, `${i + 1}/${total}`);
             const creatorElement = creatorRefs.current[creator.name];
             if (creatorElement) {
-                const filename = `chua-thu-${creator.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                const filename = `Đơn Hàng Chưa Thu - ${creator.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
                 await onExport(creatorElement, filename, {
                     forceOpenDetails: true,
                     forcedWidth: 960,
@@ -150,7 +150,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${creatorName}`);
             renderCustomersSync(getCreatorCustomerIds(creatorName));
-            const filename = `chua-thu-${creatorName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+            const filename = `Đơn Hàng Chưa Thu - ${creatorName.replace(/[\\/:*?"<>|]/g, '')}.png`;
             await onExport(creatorElement, filename, {
                 forceOpenDetails: true,
                 forcedWidth: 960,

@@ -68,7 +68,7 @@ export const BonusView: React.FC<{
         const original = cardRef.current;
 
         try {
-            const safeName = customFilename || `Bonus_Report_${supermarketName}.png`;
+            const safeName = customFilename || `Báo Cáo Thưởng - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });

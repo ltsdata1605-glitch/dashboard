@@ -344,8 +344,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         if (exportRef.current) {
             setIsExporting(true);
             const prefix = (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `[${filterState.kho.join('_')}]` : '[Tat-ca-khu-vuc]';
-            const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
-            await exportElementAsImage(exportRef.current, `${prefix}-${safeTabName}.png`, {
+            const safeTabName = config.tableName.replace(/[\\/:*?"<>|]/g, '').trim();
+            await exportElementAsImage(exportRef.current, `${prefix} - ${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true,
                 fitAllColumns: true

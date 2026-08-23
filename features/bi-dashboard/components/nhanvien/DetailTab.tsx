@@ -431,10 +431,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     const handleExportPNG = async () => {
         if (!cardRef.current) return;
-        const blob = await exportElementAsImage(cardRef.current, `ChiTiet_${supermarketName}.png`, {
+        const blob = await exportElementAsImage(cardRef.current, `Báo Cáo Chi Tiết - ${supermarketName}.png`, {
             mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
         });
-        if (blob) await showExportOptions(blob, `ChiTiet_${supermarketName}.png`);
+        if (blob) await showExportOptions(blob, `Báo Cáo Chi Tiết - ${supermarketName}.png`);
     };
 
     if (isActive === false) {

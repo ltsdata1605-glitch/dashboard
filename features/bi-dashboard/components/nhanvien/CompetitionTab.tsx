@@ -312,7 +312,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 setIsolatedHighlightEmployee(empId);
                 setExportTitleOverride(`${empName} - NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`);
                 await new Promise(resolve => setTimeout(resolve, 800));
-                const safeName = `${empName.replace(/[\s/]/g, '_')}_Highlight.png`;
+                const safeName = `${empName.replace(/[\\/:*?"<>|]/g, '')} - Nổi Bật.png`;
                 const action = await exportGroupViewToPNG(safeName, groupViewRef, autoAction);
                 if (action === 'cancel') break;
                 autoAction = action;
@@ -338,7 +338,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
 
         try {
-            const action1 = await exportGroupViewToPNG(`TongHop_NhomThiDua_${supermarket || 'SieuThi'}.png`, groupViewRef, autoAction);
+            const action1 = await exportGroupViewToPNG(`Tổng Hợp Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef, autoAction);
             if (action1 === 'cancel') throw new Error('cancelled');
             autoAction = action1;
             setExportProgress(prev => ({ ...prev, current: prev.current + 1 }));
@@ -347,7 +347,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             for (let i = 0; i < cards.length; i++) {
                 const card = cards[i] as HTMLElement;
                 const titleElement = card.querySelector('h4');
-                const title = titleElement ? titleElement.innerText : `Nhom_${i}`;
+                const title = titleElement ? titleElement.innerText : `Nhóm ${i}`;
                 
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
@@ -543,7 +543,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             {highlightedEmployees.size > 0 && (
                                 <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={`Xuất Highlight (${highlightedEmployees.size} NV)`} className="text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
                             )}
-                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`NhomThiDua_${supermarket || 'SieuThi'}.png`, groupViewRef); }} />
+                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (

@@ -118,7 +118,7 @@ export const useExportLogic = ({
                 });
                 const modalContent = offscreenContainer.querySelector('.modal-content');
                 if (modalContent) {
-                    const filename = `phan-tich-hieu-qua-${employee.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                    const filename = `Phân Tích Hiệu Quả - ${employee.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
                     await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: 960 });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports
@@ -157,7 +157,7 @@ export const useExportLogic = ({
             updateExportOverlay('Đang xuất: Tổng hợp kho', `1/${total}`);
             handleFilterChange({ kho: [] }); // Reset to show all
             await new Promise(resolve => setTimeout(resolve, 1500));
-            await exportElementAsImage(warehouseElement, `bao-cao-kho-tong-hop.png`, {
+            await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
                 elementsToHide: ['.hide-on-export'],
             });
             await new Promise(resolve => setTimeout(resolve, 800));
@@ -169,7 +169,7 @@ export const useExportLogic = ({
                 handleFilterChange({ kho: [kho] });
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                await exportElementAsImage(overviewElement, `tong-quan-kinh-doanh-${kho}.png`, {
+                await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     captureAsDisplayed: true,
                 });

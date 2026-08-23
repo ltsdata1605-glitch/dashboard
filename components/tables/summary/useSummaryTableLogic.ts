@@ -207,7 +207,7 @@ export const useSummaryTableLogic = () => {
         if (tableContainerRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filters.kho);
-            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, {
+            await exportElementAsImage(tableContainerRef.current, `${prefix} - Chi Tiết Ngành Hàng.png`, {
                 fitCategoryColumn: true,
                 fitAllColumns: true
             });

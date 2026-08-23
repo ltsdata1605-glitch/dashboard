@@ -202,7 +202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
         if (!original) return null;
 
         try {
-            const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
+            const safeName = filenamePart.replace(/[\\/:*?"<>|]/g, '_');
             const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0, 10)}.png`;
 
             const blob = await exportElementAsImage(original, filename, {
@@ -240,8 +240,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                 setActiveSupermarket(sm);
                 await sleep(1500);
                 const targetRef = pageRef;
-                const prefix = mode === 'competition' ? `ThiDua_${activeMainTab}` : (mode === 'realtime' ? 'DoanhThu' : 'DoanhThu_LuyKe');
-                const action = await handleExportPNG(targetRef, `${prefix}_${sm}`, autoAction);
+                const label = mode === 'competition'
+                    ? `Thi Đua ${activeMainTab === 'realtime' ? 'Thời Gian Thực' : 'Lũy Kế'}`
+                    : (mode === 'realtime' ? 'Doanh Thu' : 'Doanh Thu Lũy Kế');
+                const action = await handleExportPNG(targetRef, `${label} - ${sm}`, autoAction);
                 if (action === 'cancel') break;
                 autoAction = action;
             }
@@ -313,7 +315,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                         onExport={async () => {
                             setIsHeaderExporting(true);
                             // Export everything inside printableRef for both tabs
-                            await handleExportPNG(printableRef, `Dashboard_${activeSubTab}_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`);
+                            const subTabLabel = activeSubTab === 'competition' ? 'Thi Đua' : 'Doanh Thu';
+                            await handleExportPNG(printableRef, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`);
                             setIsHeaderExporting(false);
                         }}
                         isExporting={isHeaderExporting}
@@ -328,7 +331,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                     supermarketDailyTargets={supermarketDailyTargets}
                                     supermarketMonthlyTargets={supermarketMonthlyTargets}
                                     activeSupermarket={activeSupermarket}
-                                    onExport={async () => { await handleExportPNG(summaryTableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`); }}
+                                    onExport={async () => { await handleExportPNG(summaryTableRef, `Bảng Doanh Thu${!isRealtimeView ? ' Lũy Kế' : ''} - ${activeSupermarket}`); }}
                                     updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
                                     supermarketTargets={supermarketTargets}
                                 />
@@ -360,7 +363,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 onBatchExport={() => runBatchExport('competition')}
                                 isBatchExporting={isBatchExportingCompetition}
                                 updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
-                                onExport={async () => { await handleExportPNG(printableRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
+                                onExport={async () => { await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
                             />
                         </div>
                     )}
@@ -374,7 +377,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 isRealtime={isRealtimeView}
                                 realtimeData={industryRealtimeParsed}
                                 luykeData={industryLuyKeParsed}
-                                onExport={async () => { await handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
+                                onExport={async () => { await handleExportPNG(industryTableRef, `Ngành Hàng ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
                             />
                         </div>
                     )}

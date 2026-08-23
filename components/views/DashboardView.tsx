@@ -193,7 +193,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const handleBusinessOverviewExport = async () => {
         if (businessOverviewRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
-            await handleExport(businessOverviewRef.current, `${prefix}-Toan-bo-ban-tin.png`, {
+            await handleExport(businessOverviewRef.current, `${prefix} - Toàn Bộ Bản Tin.png`, {
                 captureAsDisplayed: true,
             });
         }
@@ -202,7 +202,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const handleKpiCardsOnlyExport = async () => {
         if (kpiCardsOnlyRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
-            await handleExport(kpiCardsOnlyRef.current, `${prefix}-Tong-quan-doanh-thu.png`, {
+            await handleExport(kpiCardsOnlyRef.current, `${prefix} - Tổng Quan Doanh Thu.png`, {
                 captureAsDisplayed: true,
             });
         }

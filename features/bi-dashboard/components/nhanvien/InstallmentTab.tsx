@@ -201,7 +201,7 @@ const InstallmentTab: React.FC<{
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const safeName = customFilename || `Installment_${supermarketName}.png`;
+            const safeName = customFilename || `Báo Cáo Trả Góp - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
@@ -235,8 +235,8 @@ const InstallmentTab: React.FC<{
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
-            const safeDeptName = dept.replace(/\//g, '_').replace(/\s+/g, '_');
-            const action = await handleExportPNG(`TG_BP_${safeDeptName}_${supermarketName}.png`, autoAction);
+            const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
+            const action = await handleExportPNG(`Trả Góp - ${safeDeptName} - ${supermarketName}.png`, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
         }

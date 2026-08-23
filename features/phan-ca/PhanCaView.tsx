@@ -259,7 +259,7 @@ const App: React.FC = () => {
     setExportTitle(`Lịch Công Tác: ${currentSupermarket || 'Cửa Hàng'}`);
     setWeeklyExportConfig(null);
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
-    const filename = `Lich_Toan_Bo_Thang_${monthVal}_${yearVal}.png`;
+    const filename = `Lịch Toàn Bộ - Tháng ${monthVal}-${yearVal}.png`;
     setTimeout(() => {
         exportToImage(exportContainerRef, filename).finally(() => {
             setIsExportingImage(false);
@@ -291,7 +291,7 @@ const App: React.FC = () => {
             setExportTitle(`Lịch Tuần ${i + 1} - ${currentSupermarket}`);
             setBatchExportProgress({ current: i + 1, total: weeks.length, name: `Đang xử lý Tuần ${i + 1}` });
             await new Promise(resolve => setTimeout(resolve, 800));
-            await exportToImage(exportContainerRef, `Lich_Tuan_${i + 1}_Thang_${monthVal}_${yearVal}.png`);
+            await exportToImage(exportContainerRef, `Lịch Tuần ${i + 1} - Tháng ${monthVal}-${yearVal}.png`);
             await new Promise(resolve => setTimeout(resolve, 300));
         }
     } catch (err) {
@@ -325,8 +325,8 @@ const App: React.FC = () => {
                     setStaffListForExport([staff]);
                     setExportTitle(staff.name);
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    const sanitizedStaffName = staff.name.replace(/[^a-zA-Z0-9\s._-]/g, '').replace(/\s+/g, '_');
-                    await exportToImage(exportContainerRef, `Lich_Ca_Nhan_${sanitizedStaffName}_Thang_${monthVal}_${yearVal}.png`);
+                    const sanitizedStaffName = staff.name.replace(/[\\/:*?"<>|]/g, '').trim();
+                    await exportToImage(exportContainerRef, `Lịch Cá Nhân - ${sanitizedStaffName} - Tháng ${monthVal}-${yearVal}.png`);
                     await new Promise(resolve => setTimeout(resolve, 400));
                 }
             } catch (err) {

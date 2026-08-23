@@ -61,8 +61,8 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
         if (tableRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filterState.kho);
-            const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
-            await exportElementAsImage(tableRef.current, `${prefix}-7-ngay-${safeTabName}.png`, {
+            const safeTabName = config.tableName.replace(/[\\/:*?"<>|]/g, '').trim();
+            await exportElementAsImage(tableRef.current, `${prefix} - 7 Ngày - ${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true,
                 fitAllColumns: true
