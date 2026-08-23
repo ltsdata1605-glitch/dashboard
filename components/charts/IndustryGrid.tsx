@@ -291,7 +291,8 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             onClick={() => handleBreadcrumbClick(drilldownPath.length - 1)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
                         >
-                            <Icon name="chevron-left" size={3.5} />
+                            <Icon name="chevron-left" size={4} className="lg:hidden" />
+                            <Icon name="chevron-left" size={5} className="hidden lg:block" />
                             Quay lại
                         </Button>
                     )}

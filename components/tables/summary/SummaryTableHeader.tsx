@@ -134,7 +134,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     title="Xuất Ảnh"
                                     className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                 >
-                                    {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                                    {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                                 </Button>
                             ) : (
                                 <>
@@ -145,10 +145,11 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
-                                            <Icon name="settings-2" size={4.5}/>
+                                            <Icon name="settings-2" size={4} className="lg:hidden"/>
+                                            <Icon name="settings-2" size={5} className="hidden lg:block"/>
                                         </Button>
                                         <Button variant="unstyled" size="none" onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
+                                            {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                                         </Button>
                                     </div>
 
@@ -156,7 +157,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                             <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
                                                 <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                                <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></Button>
+                                                <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4} className="lg:hidden"/><Icon name="x" size={5} className="hidden lg:block"/></Button>
                                             </div>
                                             <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                                 {HEADER_CONFIG.filter((col) => {

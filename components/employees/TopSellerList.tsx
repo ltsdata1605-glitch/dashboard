@@ -82,8 +82,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
             <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
-                        <Icon name="trophy" size={3.5} className="sm:hidden" />
-                        <Icon name="trophy" size={5} className="hidden sm:block" />
+                        <Icon name="trophy" size={4} className="lg:hidden" />
+                        <Icon name="trophy" size={5} className="hidden lg:block" />
                     </div>
                     <div className="min-w-0">
                         <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Top Nhân Viên</h3>
@@ -92,25 +92,25 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                 </div>
                 <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
                         <div className="inline-flex gap-0.5 sm:gap-1">
-                            <Button onClick={() => setIsExpanded(false)} variant="ghost" size="icon" className={`transition-all w-8 h-8 sm:w-10 sm:h-10 ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
-                                <Icon name="percent" size={4.5} />
+                            <Button onClick={() => setIsExpanded(false)} variant="ghost" size="icon" className={`transition-all w-8 h-8 lg:w-10 lg:h-10 ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
+                                <><Icon name="percent" size={4} className="lg:hidden" /><Icon name="percent" size={5} className="hidden lg:block" /></>
                             </Button>
-                            <Button onClick={() => setIsExpanded(true)} variant="ghost" size="icon" className={`transition-all w-8 h-8 sm:w-10 sm:h-10 ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
-                                <Icon name="layout-list" size={4.5} />
+                            <Button onClick={() => setIsExpanded(true)} variant="ghost" size="icon" className={`transition-all w-8 h-8 lg:w-10 lg:h-10 ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
+                                <><Icon name="layout-list" size={4} className="lg:hidden" /><Icon name="layout-list" size={5} className="hidden lg:block" /></>
                             </Button>
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
                         <Button 
                             onClick={handleBatchExportClick}
                             variant="ghost" size="icon"
-                            className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 sm:w-10 sm:h-10"
+                            className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 lg:w-10 lg:h-10"
                             title="Xuất hàng loạt báo cáo chi tiết"
                         >
-                            <Icon name="images" size={4.5} />
+                            <><Icon name="images" size={4} className="lg:hidden" /><Icon name="images" size={5} className="hidden lg:block" /></>
                         </Button>
                         {onExport && (
-                            <Button onClick={onExport} disabled={isExporting} isLoading={isExporting} variant="ghost" size="icon" title="Xuất Ảnh" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 sm:w-10 sm:h-10">
-                                {!isExporting && <Icon name="camera" size={4.5} />}
+                            <Button onClick={onExport} disabled={isExporting} isLoading={isExporting} variant="ghost" size="icon" title="Xuất Ảnh" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 lg:w-10 lg:h-10">
+                                {!isExporting && <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                             </Button>
                         )}
                 </div>

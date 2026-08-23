@@ -186,8 +186,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 ${theme.iconBlockBg} ${theme.iconBlockText}`}>
-                        <Icon name={theme.icon} size={3.5} className="sm:hidden" />
-                        <Icon name={theme.icon} size={5} className="hidden sm:block" />
+                        <Icon name={theme.icon} size={4} className="lg:hidden" />
+                        <Icon name={theme.icon} size={5} className="hidden lg:block" />
                     </div>
                     <div className="min-w-0">
                         <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{theme.title}</h3>
@@ -207,11 +207,11 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     variant="unstyled" size="none"
-                                    className={`px-1.5 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 h-8 sm:h-10 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                                    className={`px-1.5 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 h-8 lg:h-10 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                                     title={tabLabel}
                                 >
-                                    <Icon name={tabIcon} size={4.5} className="sm:hidden" />
-                                    <Icon name={tabIcon} size={5} className="hidden sm:block" />
+                                    <Icon name={tabIcon} size={4} className="lg:hidden" />
+                                    <Icon name={tabIcon} size={5} className="hidden lg:block" />
                                     <span className="hidden sm:inline">{tabLabel}</span>
                                 </Button>
                             )})}
@@ -223,18 +223,18 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 onBatchExport();
                             }}
                             disabled={isExporting}
-                            variant="unstyled" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="unstyled" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={4.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
+                            <Icon name="images" size={4} className="lg:hidden" /><Icon name="images" size={5} className="hidden lg:block" />
                         </Button>
                         <Button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting} isLoading={isExporting}
-                            variant="unstyled" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="unstyled" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {!isExporting && <><Icon name="camera" size={4.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
+                            {!isExporting && <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                         </Button>
                     </div>
                 </div>

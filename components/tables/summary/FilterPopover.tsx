@@ -99,8 +99,8 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                 className={`p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-sky-600 dark:text-sky-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
                 title={`Lọc ${label}`}
             >
-                <Icon name="filter" size={3} className={`sm:hidden ${hasFilters ? "fill-current" : ""}`} />
-                <Icon name="filter" size={3.5} className={`hidden sm:block ${hasFilters ? "fill-current" : ""}`} />
+                <Icon name="filter" size={4} className={`lg:hidden ${hasFilters ? "fill-current" : ""}`} />
+                <Icon name="filter" size={5} className={`hidden lg:block ${hasFilters ? "fill-current" : ""}`} />
                 {hasFilters && (
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white dark:border-slate-800"></span>
                 )}

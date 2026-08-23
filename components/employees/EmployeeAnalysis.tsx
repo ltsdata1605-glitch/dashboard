@@ -211,10 +211,10 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             variant="ghost" size="icon"
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="h-7 w-7 sm:h-9 sm:w-9 text-slate-500 dark:text-slate-400"
+                            className="h-7 w-7 lg:h-9 lg:w-9 text-slate-500 dark:text-slate-400"
                         >
-                            <Icon name="settings-2" size={4.5} className="sm:hidden"/>
-                            <Icon name="settings-2" size={5} className="hidden sm:block"/>
+                            <Icon name="settings-2" size={4} className="lg:hidden"/>
+                            <Icon name="settings-2" size={5} className="hidden lg:block"/>
                         </Button>
                         {isSettingsOpen && (
                             <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">

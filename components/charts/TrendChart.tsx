@@ -655,7 +655,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
                                         >
-                                            <Icon name="plus" size={3.5} />
+                                            <Icon name="plus" size={4} className="lg:hidden" />
+                                            <Icon name="plus" size={5} className="hidden lg:block" />
                                         </Button>
                                         <Button
                                             variant="unstyled" size="none"
@@ -664,7 +665,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
                                             title="Xuất ảnh"
                                         >
-                                            <Icon name="camera" size={3.5} />
+                                            <Icon name="camera" size={4} className="lg:hidden" />
+                                            <Icon name="camera" size={5} className="hidden lg:block" />
                                         </Button>
                                     </>
                                 }

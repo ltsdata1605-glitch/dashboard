@@ -404,7 +404,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 >
                     <div className="flex items-center gap-2 lg:gap-3 min-w-0">
                         <div className={`w-6 h-6 lg:w-10 lg:h-10 rounded-md lg:rounded-xl flex items-center justify-center shrink-0 ${tableColorTheme.header}`}>
-                            <Icon name={config.icon || "target"} size={3.5} className="lg:hidden" />
+                            <Icon name={config.icon || "target"} size={4} className="lg:hidden" />
                             <Icon name={config.icon || "target"} size={5} className="hidden lg:block" />
                         </div>
                         <div className="min-w-0">
@@ -413,18 +413,18 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="plus-circle" size={3.5} className="sm:hidden" /><Icon name="plus-circle" size={5} className="hidden sm:block" />
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="plus-circle" size={4} className="lg:hidden" /><Icon name="plus-circle" size={5} className="hidden lg:block" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="settings-2" size={3.5} className="sm:hidden" /><Icon name="settings-2" size={5} className="hidden sm:block" />
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="settings-2" size={4} className="lg:hidden" /><Icon name="settings-2" size={5} className="hidden lg:block" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
-                            <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={5} className="hidden sm:block" />
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                            <Icon name="trash-2" size={4} className="lg:hidden" /><Icon name="trash-2" size={5} className="hidden lg:block" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
-                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
                         </Button>
                     </div>
                 </div>
@@ -474,8 +474,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
                                             </div>
                                         </th>
                                     );
@@ -502,8 +502,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
                                             </div>
                                         </th>
                                     );

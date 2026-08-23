@@ -25,14 +25,15 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                 type="button"
                 variant="unstyled" size="none"
                 onClick={handleToggle}
-                className={`p-1 sm:p-1.5 rounded-lg transition-all ${
+                className={`p-1.5 lg:p-2 rounded-lg transition-all ${
                     hideZeroRevenue
                     ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title={hideZeroRevenue ? 'Đang ẩn nhân viên No Sale — Nhấn để hiện' : 'Đang hiện tất cả — Nhấn để ẩn No Sale'}
             >
-                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4} />
+                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4} className="lg:hidden" />
+                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={5} className="hidden lg:block" />
             </Button>
         </div>
     );

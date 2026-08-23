@@ -652,7 +652,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             </Button>
                         )}
                         <Button variant="unstyled" size="none" onClick={handleSingleExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
-                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={4} /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                            {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                         </Button>
                     </div>
                 </SectionHeader>

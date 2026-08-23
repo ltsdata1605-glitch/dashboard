@@ -298,7 +298,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             </div>
                         </div>
                         <Button variant="unstyled" size="none" onClick={() => setPendingCloudSync(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
-                            <Icon name="x" size={3.5} />
+                            <Icon name="x" size={4} className="lg:hidden" />
+                            <Icon name="x" size={5} className="hidden lg:block" />
                         </Button>
                     </div>
                     <div className="flex gap-2 mt-0.5">
@@ -430,7 +431,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
                                                     className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
                                                 >
-                                                    <Icon name="trash-2" size={3.5} className="text-rose-500 animate-pulse" />
+                                                    <Icon name="trash-2" size={4} className="text-rose-500 animate-pulse lg:hidden" />
+                                                    <Icon name="trash-2" size={5} className="text-rose-500 animate-pulse hidden lg:block" />
                                                     <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA YCX LŨY KẾ"}</span>
                                                 </Button>
                                             )}
