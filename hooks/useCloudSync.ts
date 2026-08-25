@@ -20,7 +20,6 @@ const isLocalOnlyKey = (key: string): boolean => {
         k === 'dashboard-active-supermarket' ||
         k === 'nhanvien-active-supermarkets' ||
         k === 'nhanvien-active-depts-multi' ||
-        k === 'highlight-employees-multi' ||
         k.startsWith('active-')
     );
 };

@@ -1,57 +1,20 @@
-# Kế hoạch: Đồng bộ kích thước icon toolbar toàn bộ module Phân Tích
+# Kế hoạch: Bật đồng bộ Firebase cho "Highlight" (Report BI → Nhân viên)
 
 ## Bối cảnh
-User chỉ icon camera (nút "Chụp ảnh") trong toolbar "Chi Tiết Theo Kho"
-(`WarehouseSummary.tsx`) làm chuẩn, yêu cầu đồng bộ toàn bộ icon nút hành động
-trong toolbar/header các card của module Phân Tích theo đúng kích thước đó.
+- "Lọc nhóm" (`global-selected-competitions`) đã tự động đồng bộ Firestore sẵn qua `useCloudSync` (theo tài khoản đăng nhập, không phải demo mode).
+- "Highlight" (`highlight-employees-multi`) đang bị đánh dấu tường minh là local-only trong `isLocalOnlyKey()`, nên chỉ lưu IndexedDB, không lên Firestore.
+- User xác nhận muốn bật đồng bộ Highlight, tái dùng đúng hạ tầng sẵn có (document `users/{uid}/setting/configuration`, field `settingsStoreBackup`) — không tạo collection/rule mới. `firestore.rules:40` đã cho phép owner read/write toàn bộ `setting/{doc}`.
 
-**Pattern chuẩn** (đã xác nhận đúng ở WarehouseSummary.tsx dòng 600-656):
-mỗi nút icon toolbar (`Button variant="unstyled" size="none"` với
-`p-1.5 lg:p-2 rounded-md`) render CẶP ĐÔI:
-```tsx
-<Icon name="X" size={4} className="lg:hidden" />
-<Icon name="X" size={5} className="hidden lg:block" />
-```
-Icon mobile = 4, desktop (từ breakpoint `lg:` = 1024px) = 5.
+## Thay đổi
+- **File**: `hooks/useCloudSync.ts`
+  - Xoá dòng `k === 'highlight-employees-multi' ||` khỏi hàm `isLocalOnlyKey()` (dòng 23).
+  - Không đổi gì khác trong file — các key `active-*`, `*-active-tab`, `dashboard-main-tab`... vẫn giữ nguyên local-only (nằm ngoài phạm vi yêu cầu).
 
-## Kết quả rà soát (agent Explore) — 5 nhóm lệch chuẩn
+## Hệ quả
+- `highlight-employees-multi` sẽ đi qua đúng luồng debounce (2s) → `forceSync()` → ghi vào `settingsStoreBackup.highlight-employees-multi` trên Firestore, và đọc ngược lại qua `onSnapshot` real-time listener như các key nhẹ khác.
+- Đồng bộ **theo tài khoản đăng nhập, nhiều thiết bị** — không phải chia sẻ giữa nhiều tài khoản khác nhau xem chung dashboard.
+- Không tạo Firestore collection mới, không cần cập nhật `firestore.rules`.
 
-**A. WarehouseSummary.tsx:655** — spinner `loader-2` khi xuất ảnh chỉ có
-`size={4}` cố định, không cặp `lg:` như icon camera tĩnh cạnh nó.
-
-**B. TrendChart.tsx (658,667), SavedCalendarCard.tsx (157,165),
-IndustryGrid.tsx (294)** — icon cố định `size={3.5}`, không tách mobile/desktop.
-
-**C. Cụm Phân Tích Nhân Viên** (EmployeeAnalysis.tsx, EmployeeAnalysisFilters.tsx,
-ContestTable.tsx, HeadToHeadTab.tsx, EmployeeAnalysisContent.tsx,
-TopSellerList.tsx, IndustryAnalysisTab.tsx, performance/PerformanceSingleTable.tsx)
-— toàn bộ đang dùng breakpoint **`sm:` (640px)** + size **3.5/4.5 → 5**, không
-phải `lg:` (1024px) + 4 → 5. Đổi cả breakpoint lẫn size mobile.
-
-**D. components/tables/summary/*** (SummaryTableHeader.tsx,
-SummaryTableFilterBar.tsx, FilterPopover.tsx) — hỗn hợp: vài nút 1-size cố
-định, vài nút dùng `sm:`+3.5/4, vài nút dùng đúng `lg:` nhưng size 3/4 (lệch 1
-bậc so với chuẩn 4/5).
-
-**E. DashboardView.tsx (301-302, 433)** — nút đóng/xóa dạng inline (không phải
-SectionHeader chuẩn), 1 size cố định `size={3.5}`.
-
-## Quyết định phạm vi
-User chọn sửa **toàn bộ 5 nhóm** (không chỉ A+B) — bao gồm đổi breakpoint
-`sm:`→`lg:` ở cụm Phân Tích Nhân Viên, chấp nhận thay đổi cách icon hiển thị ở
-độ rộng tablet (640–1024px).
-
-## Không đổi
-Icon trang trí nhỏ bên trong nội dung (search icon trong input, check-icon
-checkbox, icon trong badge số...) — KHÔNG phải nút hành động toolbar, giữ
-nguyên theo agent audit.
-
-## Trình tự
-1. Nhóm A+B (rủi ro thấp, core Phân Tích, không đổi breakpoint) — sửa trước.
-2. Nhóm D (components/tables/summary — dùng chung nhiều nơi).
-3. Nhóm E (DashboardView — 2 điểm nhỏ).
-4. Nhóm C (lớn nhất, đổi `sm:`→`lg:` — cần cẩn thận không sai breakpoint còn
-   sót ở chỗ khác trong cùng file).
-5. `npm run typecheck && npm run lint:eslint && npm run build` sau mỗi nhóm
-   lớn, `npm run check` đầy đủ ở bước cuối.
-6. Chạy dev server, chụp thử responsive ở vài độ rộng để xác nhận không vỡ layout.
+## Kiểm tra
+- `npm run check` (typecheck + eslint + build + lint-ratchet).
+- Test thủ công: đăng nhập cùng 1 tài khoản trên 2 tab/trình duyệt, bật Highlight vài nhân viên ở tab A, xác nhận tab B tự cập nhật (hoặc sau reload).
