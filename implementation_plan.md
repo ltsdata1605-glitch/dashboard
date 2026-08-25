@@ -93,3 +93,34 @@ Fix: đồng bộ điều kiện nhận diện dòng siêu thị giống hệt `
 ## Kiểm tra (Đợt 3)
 - `npm run check` PASS toàn bộ, 0 lỗi mới.
 - Diff: 2 file (`useNhanVienData.ts`, `useDashboardLogic.ts`), +32/-11 dòng.
+
+---
+
+## Đợt 4 (theo yêu cầu tiếp theo): Kiểm tra đồng bộ bộ lọc "Thi đua" (Nhân viên) vs "Tổng Quan > Thi đua"
+
+### Câu hỏi
+User hỏi bộ lọc tab "Thi Đua" (Nhân viên) có đồng bộ với bộ lọc "Tổng Quan > Thi đua" hay không.
+
+### Phát hiện
+Rà soát toàn bộ state IndexedDB của 2 khu vực này:
+- **"Lọc nhóm"** (Nhân viên, `CompetitionTab.tsx`) và **"Lọc chương trình thi đua"** (Tổng Quan, `CompetitionView.tsx`) dùng CHUNG 1 key `global-selected-competitions` — có vẻ chủ đích đồng bộ (naming convention "global-" trong codebase này luôn nghĩa là chia sẻ toàn app, ví dụ `global-compare-emp-a`, `global-competition-sort-config`).
+- **NHƯNG**: 2 bên lưu 2 ĐỊNH DẠNG TÊN khác nhau vào cùng key đó — Nhân viên lưu tên đã rút gọn (`h.title`, qua `shortenName()`), Tổng Quan lưu tên gốc chưa rút gọn (`program.name` = `parts[0]` thô). `shortenName()` áp dụng ~47 rule đổi tên cứng (VD "BÁN HÀNG PANASONIC" → "Panasonic", "Thi đua Vivo" → "Vivo"...) + nhiều biến đổi động (thay "&"/"THI ĐUA"/"BÁN HÀNG "...). Với chương trình có tên đơn giản trùng khớp tình cờ (không rơi vào rule nào) thì đồng bộ VẪN đúng — nhưng với đa số chương trình có tên dài/đặc thù (rất phổ biến trong cách đặt tên thi đua của MWG), lưu ở 1 bên sẽ KHÔNG khớp được ở bên kia → lọc ở 1 tab không phản ánh đúng sang tab kia, trông như "đôi lúc đồng bộ, đôi lúc không".
+- Các bộ lọc khác (siêu thị, phòng ban, sort, ẩn cột, highlight) — kiểm tra riêng từng cái, xác nhận KHÔNG chia sẻ key và đúng ý đồ thiết kế (Nhân viên hỗ trợ multi-select nhiều siêu thị "Tổng hợp", Tổng Quan chỉ 1 siêu thị/lần — 2 mô hình UI khác nhau, không nên và không cần đồng bộ).
+
+### Đã sửa
+Chuẩn hoá về DÙNG TÊN GỐC (`originalTitle`) làm khoá nhận diện trong Set `selectedCompetitions` ở TẤT CẢ nơi ghi/đọc (Tổng Quan vốn đã đúng theo cách này từ đầu, không đổi):
+- `hooks/useCompetitionData.ts`
+- `components/nhanvien/CompetitionTab.tsx` (chọn tất cả/bỏ chọn/toggle từng mục/đếm filter)
+- `components/nhanvien/IndividualCompetitionView.tsx` (tương tự)
+- `components/nhanvien/CompetitionCompareView.tsx`
+
+Phần HIỂN THỊ (tên rút gọn trên UI) không đổi gì — vốn đã tính riêng qua `shortenName(comp.originalTitle, nameOverrides)` tại thời điểm render (áp dụng cả tên tuỳ chỉnh người dùng đặt), độc lập với khoá Set. `comp.title` (tên rút gọn tính lúc parse, không áp dụng nameOverrides) giờ không còn được dùng để so khớp filter nữa — chỉ còn dùng làm React `key` ở 1-2 chỗ (vô hại).
+
+Tiện thể dọn 2 khai báo type key chết trong `db.ts` phát hiện được trong lúc rà soát (`competition-sort-config-${string}`, `competition_view_hidden_columns_${string}` — không nơi nào dùng, chỉ 2 biến thể có tiền tố `global-` mới thực sự tồn tại).
+
+### Rủi ro & lưu ý quan trọng
+⚠️ **Người dùng đã có sẵn lựa chọn lọc trong `global-selected-competitions` trước bản vá này sẽ bị "mất" lựa chọn 1 lần** — vì giá trị cũ lưu tên rút gọn, không còn khớp `originalTitle` nữa. Không mất dữ liệu, không lỗi — hệ thống tự hiểu là "chưa lọc gì" (hiển thị tất cả) cho tới khi người dùng chọn lại. Đây là cái giá chấp nhận được để sửa dứt điểm 1 lần, thay vì tiếp tục sống chung với đồng bộ nửa vời.
+
+### Kiểm tra
+- `npm run check` PASS toàn bộ, 0 lỗi mới.
+- Test thủ công đề xuất: ở Tổng Quan > Thi đua, chọn lọc còn 1-2 chương trình có tên phức tạp (VD chứa "&" hoặc "THI ĐUA"); chuyển sang Nhân viên > Thi đua > Lọc nhóm — xác nhận đúng các chương trình đó đang được chọn (trước đây sẽ không khớp).

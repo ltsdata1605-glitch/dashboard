@@ -373,7 +373,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
             const headers = allCompetitionsByCriterion[criterion]?.headers || [];
-            const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.title));
+            const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.originalTitle));
             if (filteredHeaders.length === 0) return;
 
             let rows = filteredHeaders.map(comp => {
@@ -449,7 +449,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     };
 
     const handleSelectAllCompetitions = () => {
-         const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.title);
+         const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.originalTitle);
          setSelectedCompetitions(prev => {
              const newSet = new Set(prev);
              allRelevantTitles.forEach(t => newSet.add(t));
@@ -457,7 +457,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
          });
     };
     const handleDeselectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.title);
+        const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.originalTitle);
         setSelectedCompetitions(prev => {
              const newSet = new Set(prev);
              allRelevantTitles.forEach(t => newSet.delete(t));
@@ -483,7 +483,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
     const allRelevantHeaders = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers);
-    const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.title)).length;
+    const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.originalTitle)).length;
     const totalFilterCount = allRelevantHeaders.length;
     const isFiltered = activeFilterCount < totalFilterCount;
     const isMobile = false; // Always show table view, even on mobile
@@ -532,8 +532,8 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                             const displayCompTitle = shortenName(comp.originalTitle, nameOverrides);
                                                             return (
                                                                 <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
-                                                                    <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.title)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.title))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompTitle}</span>
-                                                                    <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
+                                                                    <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.originalTitle)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.originalTitle))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.originalTitle) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompTitle}</span>
+                                                                    <Switch checked={selectedCompetitions.has(comp.originalTitle)} onChange={() => handleToggleCompetition(comp.originalTitle)} />
                                                                 </div>
                                                             );
                                                         })}

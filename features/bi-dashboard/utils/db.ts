@@ -83,8 +83,6 @@ export type BIKey =
   | `hidden-cols-industry-${string}`
   | `hidden-industries-${string}`
   | `hidden-cols-summary-${string}`
-  | `competition-sort-config-${string}`
-  | `competition_view_hidden_columns_${string}`
   | `previous-${string}`
   | `snapshot-metadata-${string}`
   | `snapshot-data-${string}`

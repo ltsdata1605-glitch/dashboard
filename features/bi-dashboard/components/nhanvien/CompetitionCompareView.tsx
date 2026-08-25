@@ -193,7 +193,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
 
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
-            headers.filter(h => selectedCompetitions.has(h.title)).forEach(comp => {
+            headers.filter(h => selectedCompetitions.has(h.originalTitle)).forEach(comp => {
                 const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(emp.originalName) ?? 0;
                 const actual = employeeDataMap.get(emp.name)?.values[comp.title] ?? 0;
                 if (target > 0 || actual > 0) {
@@ -227,7 +227,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const rows: { criterion: Criterion; originalTitle: string; name: string; pctA: number; pctB: number; actualA: number; actualB: number }[] = [];
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
-            const headerMap = new Map(headers.map(h => [h.title, h]));
+            const headerMap = new Map(headers.map(h => [h.originalTitle, h]));
             const filteredHeaders = Array.from(selectedCompetitions)
                 .map(title => headerMap.get(title))
                 .filter((h): h is CompetitionHeader => !!h);

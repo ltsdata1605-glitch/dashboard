@@ -421,18 +421,18 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     };
 
     const handleSelectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.title);
+        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.originalTitle);
         setSelectedCompetitions(prev => { const newSet = new Set(prev); allRelevantTitles.forEach(t => newSet.add(t)); return newSet; });
     };
     const handleDeselectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.title);
+        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.originalTitle);
         setSelectedCompetitions(prev => { const newSet = new Set(prev); allRelevantTitles.forEach(t => newSet.delete(t)); return newSet; });
     };
     const handleToggleCompetition = (competitionTitle: string) => {
         setSelectedCompetitions(prev => { const newSet = new Set(prev); if (newSet.has(competitionTitle)) newSet.delete(competitionTitle); else newSet.add(competitionTitle); return newSet; });
     };
 
-    const activeFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().filter(h => selectedCompetitions.has(h.title)).length;
+    const activeFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().filter(h => selectedCompetitions.has(h.originalTitle)).length;
     const totalFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().length;
     const isFiltered = activeFilterCount < totalFilterCount;
 
@@ -601,8 +601,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                                         const displayCompName = shortenName(comp.originalTitle, nameOverrides);
                                                                         return (
                                                                             <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
-                                                                                <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.title)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.title))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
-                                                                                <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
+                                                                                <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.originalTitle)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.originalTitle))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.originalTitle) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
+                                                                                <Switch checked={selectedCompetitions.has(comp.originalTitle)} onChange={() => handleToggleCompetition(comp.originalTitle)} />
                                                                             </div>
                                                                         );
                                                                     })}

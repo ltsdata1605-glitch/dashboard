@@ -96,7 +96,7 @@ export const useCompetitionData = ({
         if (isActive === false) return [];
         return criteriaOrder.flatMap(criterion =>
             (allCompetitionsByCriterion[criterion]?.headers || [])
-                .filter((h: CompetitionHeader) => selectedCompetitions.has(h.title))
+                .filter((h: CompetitionHeader) => selectedCompetitions.has(h.originalTitle))
                 .map((header, index: number) => ({ ...header, criterion, originalIndex: index }))
         );
     }, [allCompetitionsByCriterion, selectedCompetitions, isActive]);
