@@ -89,6 +89,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        resolveEmployeeSupermarket,
         setBonusPeriodLabel,
         dataVersion
     } = data;
@@ -410,7 +411,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <BonusDataModal
                     employee={editingBonusEmployee}
                     nextEmployee={isBatchBonusMode ? allEmployees[allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) + 1] || null : null}
-                    supermarketName={activeSupermarkets[0]}
+                    supermarketName={resolveEmployeeSupermarket(editingBonusEmployee.originalName)}
                     remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
                     onClose={handleBonusModalClose}
                     onSave={handleSaveBonus}

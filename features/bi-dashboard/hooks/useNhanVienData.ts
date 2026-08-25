@@ -30,6 +30,14 @@ export function useNhanVienData(isActive?: boolean) {
 
     const [dataVersion, setDataVersion] = useState(0);
     const [aggregatedWeights, setAggregatedWeights] = useState<Record<string, number>>({});
+    const { runWorkerTask } = useWorker();
+
+    // Nhân viên -> tên siêu thị GỐC (chưa rút gọn) họ thực sự thuộc về — chỉ có giá trị khi
+    // ≥2 siêu thị active cùng lúc ("Tổng hợp"). Dùng để các hàm lưu Thưởng ghi đúng key siêu
+    // thị của từng nhân viên thay vì đổ hết vào activeSupermarkets[0] (bug: dữ liệu thưởng của
+    // nhân viên siêu thị 2/3... bị ghi nhầm vào siêu thị 1, biến mất khi xem lại siêu thị đó
+    // riêng lẻ). 1 siêu thị active thì bỏ trống, resolveEmployeeSupermarket tự fallback đúng.
+    const [employeeSupermarketMap, setEmployeeSupermarketMap] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (isActiveSupermarketsLoaded && activeSupermarkets.length === 0 && supermarkets.length > 0) {
@@ -51,6 +59,7 @@ export function useNhanVienData(isActive?: boolean) {
                     bonusData: {},
                     bonusPeriodLabel: null
                 });
+                setEmployeeSupermarketMap({});
                 return;
             }
 
@@ -112,10 +121,49 @@ export function useNhanVienData(isActive?: boolean) {
                 bonusData: combinedBonus,
                 bonusPeriodLabel: combinedPeriodLabel
             });
+
+            // Chỉ cần xác định nhân viên -> siêu thị khi có ≥2 siêu thị active cùng lúc — 1
+            // siêu thị thì mọi nhân viên chắc chắn thuộc siêu thị đó, resolveEmployeeSupermarket
+            // tự fallback đúng mà không cần parse lại. Dò theo activeSupermarkets (tên gốc,
+            // chưa rút gọn) thay vì uniqueSafeNames để giữ đúng tên gốc dùng trong key
+            // bonus-history-* (xem BonusDataModal.tsx).
+            if (uniqueSafeNames.length > 1) {
+                const newEmployeeSupermarketMap: Record<string, string> = {};
+                await Promise.all(activeSupermarkets.map(async (rawName) => {
+                    const safeName = shortenSupermarketName(rawName);
+                    const idx = uniqueSafeNames.indexOf(safeName);
+                    if (idx === -1) return;
+                    const [ds, , , , mm] = results[idx];
+                    if (ds) {
+                        try {
+                            const rows = await runWorkerTask('PARSE_REVENUE', ds) as RevenueRow[];
+                            rows.forEach(row => {
+                                if (row.type === 'employee' && row.originalName && !(row.originalName in newEmployeeSupermarketMap)) {
+                                    newEmployeeSupermarketMap[row.originalName] = rawName;
+                                }
+                            });
+                        } catch (err) {
+                            console.error(`[useNhanVienData] Lỗi xác định siêu thị nhân viên (${rawName}):`, err);
+                        }
+                    }
+                    if (mm) {
+                        Object.values(mm as ManualDeptMapping).forEach(employees => {
+                            if (Array.isArray(employees)) {
+                                employees.forEach(empName => {
+                                    if (!(empName in newEmployeeSupermarketMap)) newEmployeeSupermarketMap[empName] = rawName;
+                                });
+                            }
+                        });
+                    }
+                }));
+                if (isMounted) setEmployeeSupermarketMap(newEmployeeSupermarketMap);
+            } else {
+                setEmployeeSupermarketMap({});
+            }
         };
         fetchAllData();
         return () => { isMounted = false; };
-    }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded, isActive]);
+    }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded, isActive, runWorkerTask]);
 
     useEffect(() => {
         // Chỉ 9 key liệt kê trong fetchAllData() (config-*, manual-dept-mapping-*, bonus-data-*,
@@ -141,7 +189,6 @@ export function useNhanVienData(isActive?: boolean) {
     }, []);
 
     const hiddenEmployeesSet = useMemo(() => new Set(hiddenEmployees), [hiddenEmployees]);
-    const { runWorkerTask } = useWorker();
 
     const [parsedRevenueBase, setParsedRevenueBase] = useState<RevenueRow[]>([]);
     useEffect(() => {
@@ -303,21 +350,29 @@ export function useNhanVienData(isActive?: boolean) {
         return counts;
     }, [allEmployees, isActive]);
 
+    // Siêu thị GỐC (chưa rút gọn) của 1 nhân viên — dùng employeeSupermarketMap khi có (chỉ
+    // xây dựng lúc ≥2 siêu thị active); fallback về activeSupermarkets[0] khi chỉ 1 siêu thị
+    // active hoặc nhân viên chưa xác định được (giữ đúng hành vi cũ, không regressions).
+    const resolveEmployeeSupermarket = useCallback((originalName: string): string => {
+        return employeeSupermarketMap[originalName] || activeSupermarkets[0];
+    }, [employeeSupermarketMap, activeSupermarkets]);
+
     const handleSaveBonus = useCallback(async (originalName: string, metrics: BonusMetrics) => {
-        let safeName = shortenSupermarketName(activeSupermarkets[0]);
+        const safeName = shortenSupermarketName(resolveEmployeeSupermarket(originalName));
         setAggregatedData(prev => ({
             ...prev,
             bonusData: { ...prev.bonusData, [originalName]: metrics }
         }));
         const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
         await db.set(`bonus-data-${safeName}`, { ...currentDbData, [originalName]: metrics });
-    }, [activeSupermarkets]);
+    }, [resolveEmployeeSupermarket]);
 
-    // Ghi hàng loạt cho chế độ Tự động — 1 lần đọc/ghi db thay vì gọi handleSaveBonus lặp
-    // N lần (read-modify-write không khóa, gọi lặp nhanh có nguy cơ ghi đè lẫn nhau).
+    // Ghi hàng loạt cho chế độ Tự động — gom nhóm theo ĐÚNG siêu thị của từng nhân viên (trước
+    // đây đổ hết vào activeSupermarkets[0], sai dữ liệu khi 2+ siêu thị active cùng lúc — xem
+    // resolveEmployeeSupermarket) rồi đọc/ghi 1 lần/nhóm thay vì gọi handleSaveBonus lặp N lần
+    // (read-modify-write không khóa, gọi lặp nhanh có nguy cơ ghi đè lẫn nhau).
     const handleSaveBonusBatch = useCallback(async (entries: { originalName: string; metrics: BonusMetrics }[]) => {
         if (entries.length === 0) return;
-        const safeName = shortenSupermarketName(activeSupermarkets[0]);
 
         setAggregatedData(prev => {
             const nextBonusData = { ...prev.bonusData };
@@ -325,20 +380,29 @@ export function useNhanVienData(isActive?: boolean) {
             return { ...prev, bonusData: nextBonusData };
         });
 
-        const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
-        const mergedDbData = { ...currentDbData };
-        entries.forEach(({ originalName, metrics }) => { mergedDbData[originalName] = metrics; });
-        await db.set(`bonus-data-${safeName}`, mergedDbData);
+        const groups = new Map<string, { originalName: string; metrics: BonusMetrics }[]>();
+        entries.forEach(entry => {
+            const safeName = shortenSupermarketName(resolveEmployeeSupermarket(entry.originalName));
+            if (!groups.has(safeName)) groups.set(safeName, []);
+            groups.get(safeName)!.push(entry);
+        });
+
+        await Promise.all(Array.from(groups.entries()).map(async ([safeName, groupEntries]) => {
+            const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
+            const mergedDbData = { ...currentDbData };
+            groupEntries.forEach(({ originalName, metrics }) => { mergedDbData[originalName] = metrics; });
+            await db.set(`bonus-data-${safeName}`, mergedDbData);
+        }));
 
         // Ghi lịch sử từng nhân viên, đúng key scheme BonusDataModal đang dùng (bonus-history-*),
         // để chế độ Tự động không tạo khoảng trống dữ liệu so với dán tay.
-        const historySupermarket = activeSupermarkets[0];
         await Promise.all(entries.map(async ({ originalName, metrics }) => {
+            const historySupermarket = resolveEmployeeSupermarket(originalName);
             const historyKey = `bonus-history-${historySupermarket}-${originalName}` as const;
             const currentHistory = await db.get<BonusMetrics[]>(historyKey) || [];
             await db.set(historyKey, [...currentHistory, metrics].slice(-30));
         }));
-    }, [activeSupermarkets]);
+    }, [resolveEmployeeSupermarket]);
 
     // Ghi kho lưu trữ theo THÁNG (phục vụ "Xem theo tháng") — 1 key/(siêu thị, tháng),
     // ghi đè toàn bộ mỗi lần chạy lại cùng tháng (dữ liệu mới nhất thắng, không cộng dồn).
@@ -349,27 +413,38 @@ export function useNhanVienData(isActive?: boolean) {
         yyyymm: string,
     ) => {
         if (entries.length === 0) return;
-        const safeName = shortenSupermarketName(activeSupermarkets[0]);
 
-        const monthlyKey = `bonus-monthly-${safeName}-${yyyymm}` as const;
-        const monthlyData: Record<string, BonusMetrics> = {};
-        entries.forEach(({ originalName, metrics }) => { monthlyData[originalName] = metrics; });
-        await db.set(monthlyKey, monthlyData);
+        const groups = new Map<string, { originalName: string; metrics: BonusMetrics }[]>();
+        entries.forEach(entry => {
+            const safeName = shortenSupermarketName(resolveEmployeeSupermarket(entry.originalName));
+            if (!groups.has(safeName)) groups.set(safeName, []);
+            groups.get(safeName)!.push(entry);
+        });
+
+        await Promise.all(Array.from(groups.entries()).map(async ([safeName, groupEntries]) => {
+            const monthlyKey = `bonus-monthly-${safeName}-${yyyymm}` as const;
+            const monthlyData: Record<string, BonusMetrics> = {};
+            groupEntries.forEach(({ originalName, metrics }) => { monthlyData[originalName] = metrics; });
+            await db.set(monthlyKey, monthlyData);
+        }));
 
         const now = new Date();
         const currentYYYYMM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         if (yyyymm === currentYYYYMM) {
             await handleSaveBonusBatch(entries);
         }
-    }, [activeSupermarkets, handleSaveBonusBatch]);
+    }, [resolveEmployeeSupermarket, handleSaveBonusBatch]);
 
     // Nhãn kỳ hiện tại của bonusData (VD "THÁNG 6/2026", "NĂM 2026 (LUỸ KẾ)") — do
     // AutoBonusPanel gọi sau khi 1 lượt Tự động chạy xong, để BonusTab đổi tiêu đề báo cáo
     // đúng theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian thay vì luôn cố định "hôm qua".
+    // Ghi vào TẤT CẢ siêu thị đang active (không chỉ activeSupermarkets[0]) — đây chỉ là 1
+    // chuỗi nhãn kỳ báo cáo (không phải dữ liệu theo nhân viên), nên đảm bảo mọi siêu thị
+    // active đều thấy đúng nhãn khi xem riêng lẻ sau đó.
     const setBonusPeriodLabel = useCallback(async (label: string) => {
-        const safeName = shortenSupermarketName(activeSupermarkets[0]);
         setAggregatedData(prev => ({ ...prev, bonusPeriodLabel: label }));
-        await db.set(`bonus-current-period-label-${safeName}`, label);
+        const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
+        await Promise.all(uniqueSafeNames.map(safeName => db.set(`bonus-current-period-label-${safeName}`, label)));
     }, [activeSupermarkets]);
 
     const effectiveAggregatedWeights = useMemo(() => {
@@ -412,6 +487,7 @@ export function useNhanVienData(isActive?: boolean) {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        resolveEmployeeSupermarket,
         setBonusPeriodLabel,
         setAggregatedData,
         dataVersion

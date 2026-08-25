@@ -42,3 +42,25 @@ User yêu cầu rà soát toàn bộ code trong `features/bi-dashboard`: loại 
 ## Kiểm tra
 - `npm run check` (typecheck + eslint + build + lint-ratchet) — PASS toàn bộ, 0 lỗi.
 - Diff cuối cùng: 15 file, +94/-43 dòng — khoanh vùng gọn, không đổi hành vi UI nhìn thấy được (trừ 2 bugfix hiển thị %âm và bonus=0, vốn là mục tiêu).
+
+---
+
+## Đợt 2 (theo yêu cầu tiếp theo): Fix bug ghi sai dữ liệu Thưởng đa siêu thị
+
+### Thiết kế
+`hooks/useNhanVienData.ts` — thêm state `employeeSupermarketMap: Record<originalName, tênSiêuThịGốc>`, chỉ xây dựng khi `activeSupermarkets.length > 1` (1 siêu thị thì không cần, tránh tốn parse thêm):
+- Trong `fetchAllData`, sau khi gộp dữ liệu như cũ, với MỖI siêu thị active: parse riêng `ds` (danh sách doanh thu) của siêu thị đó qua `runWorkerTask('PARSE_REVENUE', ds)` để lấy danh sách `originalName` nhân viên thật sự thuộc siêu thị đó, cộng thêm nhân viên từ `manual-dept-mapping` riêng của siêu thị đó (nhân viên thêm tay).
+- Dùng **tên siêu thị GỐC** (chưa rút gọn) làm value trong map — khớp đúng convention `bonus-history-*` đang dùng tên gốc (khác với `bonus-data-*`/`bonus-monthly-*` dùng tên đã rút gọn qua `shortenSupermarketName()`) — tránh phá vỡ key scheme cũ.
+- Thêm `resolveEmployeeSupermarket(originalName)`: tra map, fallback `activeSupermarkets[0]` nếu không có (giữ nguyên hành vi cũ 1-siêu-thị, không regression).
+- `handleSaveBonus`/`handleSaveBonusBatch`/`handleSaveBonusMonthly`: gom nhóm entries theo đúng siêu thị của từng nhân viên (qua resolver) rồi ghi riêng từng nhóm, thay vì đổ hết vào `activeSupermarkets[0]`.
+- `setBonusPeriodLabel`: ghi nhãn kỳ báo cáo vào TẤT CẢ siêu thị active (không phải dữ liệu theo người nên không cần resolver, chỉ cần nhất quán).
+- `NhanVien.tsx`: `<BonusDataModal supermarketName={...}>` đổi từ `activeSupermarkets[0]` sang `resolveEmployeeSupermarket(editingBonusEmployee.originalName)` — sửa luôn bug tương tự ở modal lưu thủ công (trước đây cũng dùng cứng `activeSupermarkets[0]` để ghi lịch sử `bonus-history-*`).
+
+### Rủi ro & đã kiểm soát
+- Chi phí thêm: parse lại `danhSach` từng siêu thị riêng lẻ (thêm N lệnh gọi worker khi N siêu thị active) — chỉ xảy ra ở chế độ đa siêu thị, không ảnh hưởng chế độ 1 siêu thị (phổ biến nhất).
+- Trùng tên nhân viên giữa 2 siêu thị (hiếm, dùng chung mã NV): map lấy theo lượt parse đầu tiên tìm thấy — cùng rủi ro với `employeeDepartmentMap` đã có sẵn trong code (không phải rủi ro mới do đợt fix này tạo ra).
+- Nhân viên chưa xác định được siêu thị (lỗi timing/dữ liệu lạ): fallback về `activeSupermarkets[0]` — đúng hệt hành vi cũ (lỗi), không tệ hơn trước.
+- `npm run check` PASS toàn bộ sau khi sửa.
+
+### Cách kiểm tra thủ công đề xuất
+Chọn 2 siêu thị active (chế độ "Tổng hợp"), lưu/thu thập Thưởng cho 1 nhân viên mỗi siêu thị, sau đó chuyển về xem riêng lẻ từng siêu thị — xác nhận dữ liệu thưởng xuất hiện đúng ở từng siêu thị tương ứng (trước đây sẽ đổ hết vào siêu thị đầu tiên).
