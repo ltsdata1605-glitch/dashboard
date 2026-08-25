@@ -96,6 +96,40 @@ Fix: đồng bộ điều kiện nhận diện dòng siêu thị giống hệt `
 
 ---
 
+## Đợt 5 (theo yêu cầu tiếp theo): Đồng bộ real-time + đồng nhất style TẤT CẢ bộ lọc nhóm hàng thi đua
+
+### Yêu cầu
+Chọn nhóm hàng thi đua ở 1 nơi → tự đồng bộ sang các nơi khác (Tổng quan>Thi đua, Nhân viên>Thi đua). Style bộ lọc phải đồng nhất với style bộ lọc khác trong dự án.
+
+### Hiện trạng trước khi sửa
+Đợt 4 đã sửa ĐÚNG cơ chế lưu trữ (originalTitle) nên phần "đồng bộ dữ liệu" về bản chất đã hoạt động — nhưng có 3 bộ lọc "Lọc nhóm"/"Lọc chương trình thi đua" là 3 bản UI tự viết tay HOÀN TOÀN RIÊNG BIỆT (CompetitionTab.tsx dùng `createPortal`+theo dõi scroll, IndividualCompetitionView.tsx và CompetitionView.tsx dùng `absolute` đơn giản) — không cái nào dùng chung component, style/hành vi lệch nhau, không đúng chuẩn `components/shared/ui/*` bắt buộc.
+
+### Đã sửa
+Mở rộng `components/shared/ui/MultiSelectDropdown.tsx` (component filter đa-chọn CHUẨN đã dùng sẵn cho bộ lọc siêu thị ở `NhanVien.tsx`/`DashboardHeader.tsx`) thêm 3 khả năng tuỳ chọn, KHÔNG phá vỡ 2 nơi đang dùng mặc định:
+- `groups` (thay `options`): danh sách chia nhóm có tiêu đề (dùng cho "Tiêu chí SLLK/DTLK/DTQĐ").
+- `searchValue`/`onSearchChange`/`searchPlaceholder`: ô tìm kiếm trong panel.
+- `usePortal`: render qua `createPortal(document.body)` + theo dõi scroll/resize (giữ nguyên hành vi đã được chứng minh đúng ở `CompetitionTab.tsx`, tránh regression panel bị cắt bởi container cha).
+
+Áp dụng vào cả 3 nơi, xoá state/refs/effect hand-roll cũ (giữ nguyên các dropdown KHÁC không thuộc phạm vi — "Highlight" ở CompetitionTab.tsx, "Cột hiển thị"/chọn nhân viên ở 2 file kia):
+- `CompetitionTab.tsx` ("Lọc nhóm", Nhóm view): `usePortal` (giữ hành vi cũ), `groups` theo tiêu chí.
+- `IndividualCompetitionView.tsx` ("Lọc nhóm", Cá nhân view): `absolute` đơn giản (khớp hành vi cũ), `groups` theo tiêu chí.
+- `CompetitionView.tsx` ("Lọc chương trình", Tổng Quan): `absolute` đơn giản, `options` phẳng (không nhóm, khớp thiết kế gốc). Tiện sửa luôn 1 thiếu sót nhỏ phát hiện được: label/tìm kiếm trước đây bỏ qua `nameOverrides` (tên tuỳ chỉnh người dùng đặt) dù `nameOverrides` đã dùng ở chỗ khác trong cùng file — giờ nhất quán.
+
+### Đã xác minh trực quan bằng Playwright (không phải chỉ build/typecheck)
+Dựng dữ liệu giả qua kỹ thuật dán ClipboardEvent (xem `reference_bi_dashboard_seed_data_testing` trong memory), test đầy đủ:
+- Cả 3 panel render đúng: nút trigger cùng style (icon + nhãn + badge đếm + chevron) — đồng nhất với bộ lọc siêu thị.
+- Tìm kiếm trong panel lọc đúng danh sách hiển thị.
+- "Chọn tất cả"/toggle từng mục hoạt động đúng, badge đếm cập nhật đúng.
+- **Đồng bộ chéo xác nhận THẬT**: chọn "DAIKIN" ở Nhân viên > Thi đua > Nhóm → mở Tổng Quan > Thi đua > Lọc chương trình → DAIKIN đã hiện sẵn ở trạng thái ĐÃ CHỌN, bảng dữ liệu lọc đúng, hiện đúng số liệu thật (1.000.000/800.000/125%). Test tiếp tab Cá nhân → cùng trạng thái "3 đã chọn" hiện đúng, bảng thi đua cá nhân lọc đúng theo DAIKIN.
+- Click ra ngoài đóng panel đúng (portal lẫn absolute).
+- Phát hiện phụ (không phải bug code, do dữ liệu test tự dựng sai định dạng): dòng "BP `<tên>`" trong `danhSachData` cần có cột số thứ 2 mới được `parseRevenueData` nhận diện — đã dùng làm bài học, không phải lỗi trong các file đã sửa.
+
+### Kiểm tra
+- `npm run check` PASS toàn bộ, 0 lỗi mới.
+- Diff: 4 file (`MultiSelectDropdown.tsx`, `CompetitionTab.tsx`, `IndividualCompetitionView.tsx`, `CompetitionView.tsx`), +229/-219 dòng — chủ yếu thay code hand-roll bằng lời gọi component chung nên tổng dòng giảm dù thêm tính năng.
+
+---
+
 ## Đợt 4 (theo yêu cầu tiếp theo): Kiểm tra đồng bộ bộ lọc "Thi đua" (Nhân viên) vs "Tổng Quan > Thi đua"
 
 ### Câu hỏi

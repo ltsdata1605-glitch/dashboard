@@ -10,8 +10,8 @@ import { exportElementAsImage } from '../../services/uiService';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
-import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
@@ -44,19 +44,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isExporting, setIsExporting] = useState(false);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
-    const [isProgramFilterOpen, setIsProgramFilterOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
-    const programFilterRef = useRef<HTMLDivElement>(null);
 
-    // Click outside handler for column selector & program filter
+    // Click outside handler for column selector
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) {
                 setIsColumnSelectorOpen(false);
-            }
-            if (programFilterRef.current && !programFilterRef.current.contains(event.target as Node)) {
-                setIsProgramFilterOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -164,6 +159,21 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         }, {} as Partial<Record<Criterion, ProcessedProgram[]>>);
     }, [sortedPrograms]);
 
+    const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
+    const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));
+    const isProgramFiltered = validSelectedPrograms.length > 0 && validSelectedPrograms.length < allProgramNames.length;
+    const toggleProgram = (name: string) => setSelectedPrograms(prev => {
+        const s = new Set(prev);
+        if (s.has(name)) s.delete(name); else s.add(name);
+        return Array.from(s);
+    });
+    const toggleAllPrograms = () => setSelectedPrograms(validSelectedPrograms.length === allProgramNames.length ? [] : allProgramNames);
+    // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), khớp cách Nhân viên > Thi đua đang làm —
+    // trước đây chỗ này bỏ qua nameOverrides dù nameOverrides đã dùng ở nơi khác trong cùng file.
+    const programOptions = allProgramNames
+        .filter(name => shortenName(name, nameOverrides).toLowerCase().includes(programFilterSearch.toLowerCase()))
+        .map(name => ({ key: name, label: shortenName(name, nameOverrides), checked: selectedPrograms.includes(name) }));
+
     return (
         <div ref={ref} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
             {/* Portal view mode controls into DashboardHeader action bar */}
@@ -178,54 +188,23 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 </h3>
                 {/* Filter + Column settings — in title bar */}
                 <div className="hide-on-export flex items-center gap-1">
-                    {/* Program filter */}
-                    <div className="relative" ref={programFilterRef}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsProgramFilterOpen(p => !p)}
-                            className={`h-7 w-7 relative ${isProgramFilterOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                            title="Lọc chương trình thi đua"
-                        >
-                            <FilterIcon className="h-4 w-4" />
-                            {(() => {
-                                const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
-                                const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
-                                const isFiltered = validSelected.length > 0 && validSelected.length < allProgramNames.length;
-                                return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;
-                            })()}
-                        </Button>
-                        {isProgramFilterOpen && (
-                            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
-                                <div className="mb-2">
-                                    <input
-                                        type="text"
-                                        value={programFilterSearch}
-                                        onChange={(e) => setProgramFilterSearch(e.target.value)}
-                                        placeholder="Tìm kiếm chương trình..."
-                                        className="w-full px-3 py-1.5 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
-                                    />
-                                </div>
-                                <div className="flex justify-between items-center mb-2 px-1">
-                                    <Button variant="ghost" onClick={() => setSelectedPrograms(allProgramNames)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-sky-600 hover:underline uppercase tracking-wider">Chọn tất cả</Button>
-                                    <Button variant="ghost" onClick={() => setSelectedPrograms([])} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</Button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
-                                    {allProgramNames.filter(name => !programFilterSearch || name.toLowerCase().includes(programFilterSearch.toLowerCase())).map(name => (
-                                        <div key={name} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span role="button" tabIndex={0} className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-sky-600 dark:text-sky-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })} onKeyDown={onActivateKey(() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); }))}>
-                                                {shortenName(name)}
-                                            </span>
-                                            <Switch 
-                                                checked={selectedPrograms.includes(name)} 
-                                                onChange={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    {/* Program filter — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
+                        style với các bộ lọc khác trong dự án (VD "Lọc nhóm" ở Tab Nhân viên > Thi đua) */}
+                    <MultiSelectDropdown
+                        icon={<FilterIcon className="h-4 w-4 text-slate-400" />}
+                        triggerLabel="Lọc chương trình"
+                        count={isProgramFiltered ? validSelectedPrograms.length : undefined}
+                        allLabel="Chọn tất cả"
+                        allChecked={validSelectedPrograms.length === allProgramNames.length}
+                        onToggleAll={toggleAllPrograms}
+                        options={programOptions}
+                        onToggleOption={toggleProgram}
+                        searchValue={programFilterSearch}
+                        onSearchChange={setProgramFilterSearch}
+                        searchPlaceholder="Tìm kiếm chương trình..."
+                        panelWidthClass="w-80"
+                        maxHeightClass="max-h-96"
+                    />
                     {/* Column selector */}
                     <div className="relative" ref={columnSelectorRef}>
                         <Button

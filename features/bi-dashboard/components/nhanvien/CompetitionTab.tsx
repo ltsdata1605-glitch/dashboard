@@ -19,6 +19,7 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/ui
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import TimeProgressBar from './shared/TimeProgressBar';
 
 import { useCompetitionData } from '../../hooks/useCompetitionData';
@@ -101,10 +102,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const groupViewRef = useRef<HTMLDivElement>(null);
     const individualViewRef = useRef<IndividualCompetitionViewHandle>(null);
     const summaryViewRefs = useRef<Record<string, CompetitionSummaryViewHandle>>({});
-    const filterRef = useRef<HTMLDivElement>(null);
-    const filterPanelRef = useRef<HTMLDivElement>(null);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [filterPanelStyle, setFilterPanelStyle] = useState<React.CSSProperties>({});
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('competition-view-mode', 'list');
@@ -136,16 +133,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         prevTablesLengthRef.current = currentLength;
     }, [summaryTables]);
 
-    const filterInputRef = useRef<HTMLInputElement>(null);
     const employeeFilterInputRef = useRef<HTMLInputElement>(null);
-
-    const handleToggleFilter = () => {
-        if (!isFilterOpen && filterRef.current) {
-            const rect = filterRef.current.getBoundingClientRect();
-            setFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
-        }
-        setIsFilterOpen(prev => !prev);
-    };
 
     const handleToggleEmployeeFilter = () => {
         if (!isEmployeeFilterOpen && employeeFilterRef.current) {
@@ -161,23 +149,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     // viewport, còn nút bấm cuộn theo trang — nếu không theo dõi scroll, panel đứng yên còn nút bấm
     // trôi đi, nhìn như 2 thứ "tách rời" nhau khi cuộn (user báo cáo thật). Theo dõi scroll (capture để
     // bắt cả scroll của container lồng bên trong, không chỉ window) + resize trong lúc panel đang mở.
-    useEffect(() => {
-        if (!isFilterOpen) return;
-        const updatePosition = () => {
-            if (!filterRef.current) return;
-            const rect = filterRef.current.getBoundingClientRect();
-            setFilterPanelStyle({ position: 'fixed', top: rect.bottom + 4, right: window.innerWidth - rect.right });
-        };
-        updatePosition();
-        filterInputRef.current?.focus({ preventScroll: true });
-        window.addEventListener('scroll', updatePosition, true);
-        window.addEventListener('resize', updatePosition);
-        return () => {
-            window.removeEventListener('scroll', updatePosition, true);
-            window.removeEventListener('resize', updatePosition);
-        };
-    }, [isFilterOpen]);
-
     useEffect(() => {
         if (!isEmployeeFilterOpen) return;
         const updatePosition = () => {
@@ -201,9 +172,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             const isOutsideEmployeeFilter = employeeFilterRef.current && !employeeFilterRef.current.contains(target)
                 && (!employeeFilterPanelRef.current || !employeeFilterPanelRef.current.contains(target));
             if (isOutsideEmployeeFilter) setIsEmployeeFilterOpen(false);
-            const isOutsideFilter = filterRef.current && !filterRef.current.contains(target)
-                && (!filterPanelRef.current || !filterPanelRef.current.contains(target));
-            if (isOutsideFilter) setIsFilterOpen(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -435,6 +403,19 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const activeFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().filter(h => selectedCompetitions.has(h.originalTitle)).length;
     const totalFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().length;
     const isFiltered = activeFilterCount < totalFilterCount;
+    const handleToggleAllCompetitions = () => {
+        if (activeFilterCount === totalFilterCount) handleDeselectAllCompetitions();
+        else handleSelectAllCompetitions();
+    };
+    // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải originalTitle thô — nếu
+    // không, gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
+    const filterGroups = (Object.entries(relevantCompetitions) as [Criterion, { headers?: CompetitionHeader[] }][]).map(([criterion, data]) => ({
+        key: criterion,
+        label: `Tiêu chí ${criterion}`,
+        options: (data.headers || [])
+            .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
+            .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides), checked: selectedCompetitions.has(c.originalTitle) }))
+    }));
 
     // Tab "Tổng" — luôn hiển thị TẤT CẢ nhóm hàng thi đua hiện có (không cho tự chọn cột,
     // khác với tab "Tuỳ chỉnh" nơi người dùng tự chọn/lưu nhiều bảng riêng).
@@ -574,47 +555,24 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             {/* Toolbar: Lọc nhóm + Highlight — canh phải */}
                             <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    {/* Lọc nhóm */}
-                                    <div className="relative" ref={filterRef}>
-                                        <Button variant="ghost" onClick={handleToggleFilter} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</Button>
-                                        {isFilterOpen && createPortal(
-                                            <div
-                                                ref={filterPanelRef}
-                                                style={filterPanelStyle}
-                                                className="fixed w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
-                                            >
-                                                <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
-                                                    <input ref={filterInputRef} type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 bg-white placeholder-slate-400" />
-                                                    <div className="flex items-center justify-between mt-1.5"><Button variant="ghost" onClick={handleSelectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
-                                                </div>
-                                                <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
-                                                    {(Object.entries(relevantCompetitions) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
-                                                        // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải c.title thô — nếu không,
-                                                        // gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
-                                                        const filteredComps = (data.headers || []).filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()));
-                                                        if (filteredComps.length === 0) return null;
-                                                        return (
-                                                            <div key={criterion}>
-                                                                <h5 className="px-2 py-1 mb-1 -mx-0.5 text-[10px] font-black text-sky-700 uppercase tracking-wider bg-sky-50 rounded-md">Tiêu chí {criterion}</h5>
-                                                                <div className="space-y-0.5">
-                                                                    {filteredComps.map(comp => {
-                                                                        const displayCompName = shortenName(comp.originalTitle, nameOverrides);
-                                                                        return (
-                                                                            <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
-                                                                                <span role="button" tabIndex={0} onClick={() => handleToggleCompetition(comp.originalTitle)} onKeyDown={onActivateKey(() => handleToggleCompetition(comp.originalTitle))} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.originalTitle) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
-                                                                                <Switch checked={selectedCompetitions.has(comp.originalTitle)} onChange={() => handleToggleCompetition(comp.originalTitle)} />
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>,
-                                            document.body
-                                        )}
-                                    </div>
+                                    {/* Lọc nhóm — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
+                                        style với các bộ lọc khác trong dự án (VD bộ lọc siêu thị ngay phía trên) */}
+                                    <MultiSelectDropdown
+                                        icon={<FilterIcon className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />}
+                                        triggerLabel="Lọc nhóm"
+                                        count={isFiltered ? activeFilterCount : undefined}
+                                        allLabel="Chọn tất cả"
+                                        allChecked={activeFilterCount === totalFilterCount}
+                                        onToggleAll={handleToggleAllCompetitions}
+                                        groups={filterGroups}
+                                        onToggleOption={handleToggleCompetition}
+                                        searchValue={filterSearch}
+                                        onSearchChange={setFilterSearch}
+                                        searchPlaceholder="Tìm nhóm thi đua..."
+                                        panelWidthClass="w-80"
+                                        maxHeightClass="max-h-[80vh]"
+                                        usePortal
+                                    />
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
                                         <Button variant="ghost" onClick={handleToggleEmployeeFilter} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
