@@ -287,26 +287,43 @@ export function useNhanVienData(isActive?: boolean) {
         return finalRows;
     }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
 
-    const departmentOptions = useMemo(() => {
+    // Toàn bộ tên phòng ban thật sự có nhân viên (không lọc bớt) — dùng để "Tất cả" luôn đúng
+    // nghĩa là TẤT CẢ. Trước đây effectiveActiveDepartments khi chọn "Tất cả" lại resolve về
+    // departmentOptions (danh sách ĐÃ lọc bớt cho dropdown), nên nhân viên phòng "Kế toán"/"Tiếp
+    // đón khách hàng"/chứa "quản lý" tuy vẫn được đếm vào employeeDepartmentMap (isIgnoredDept ở
+    // nhanVienHelpers.ts chỉ loại "quản lý siêu thị"/"trưởng ca", hẹp hơn nhiều) nhưng lại bị
+    // useRevenueData.ts lọc mất khỏi MỌI bảng hiển thị (Doanh thu/Bán kèm/Trả góp/Thi đua/Chi
+    // tiết) kể cả khi user đã chọn "Tất cả" — vì departmentNames.includes(r.department) không
+    // bao giờ chứa các phòng ban đó. Doanh thu thật của những nhân viên này vẫn bị đếm ở
+    // deptEmployeeCounts/employeeDepartmentMap nhưng biến mất khỏi mọi bảng số liệu.
+    const allDepartmentNames = useMemo(() => {
         if (isActive === false) return [];
-        const uniqueDepartments = Array.from(new Set(Object.values(employeeDepartmentMap as Record<string, string>)));
-        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
-        return uniqueDepartments
-            .filter(d => typeof d === "string" && !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)))
+        return Array.from(new Set(Object.values(employeeDepartmentMap as Record<string, string>)))
+            .filter((d): d is string => typeof d === 'string')
             .sort();
     }, [employeeDepartmentMap, isActive]);
-    
+
+    // Danh sách cho dropdown chọn phòng ban — CỐ Ý lọc bớt các phòng không phải kinh doanh
+    // (quản lý/trưởng ca/kế toán/tiếp đón khách) để không ai cần lọc riêng theo các phòng này.
+    // Chỉ ảnh hưởng danh sách LỰA CHỌN trong dropdown, KHÔNG còn ảnh hưởng tới việc "Tất cả"
+    // hiển thị gì (xem allDepartmentNames ở trên).
+    const departmentOptions = useMemo(() => {
+        if (isActive === false) return [];
+        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+        return allDepartmentNames.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
+    }, [allDepartmentNames, isActive]);
+
     const [activeDepartmentsRaw, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
     const activeDepartments = useMemo(() => {
         if (isActive === false) return ['all'];
-        return Array.isArray(activeDepartmentsRaw) 
-            ? activeDepartmentsRaw.filter(d => d === 'all' || departmentOptions.includes(d)) 
+        return Array.isArray(activeDepartmentsRaw)
+            ? activeDepartmentsRaw.filter(d => d === 'all' || departmentOptions.includes(d))
             : ['all'];
     }, [activeDepartmentsRaw, departmentOptions, isActive]);
     const effectiveActiveDepartments = useMemo(() => {
         if (isActive === false) return [];
-        return activeDepartments.length === 0 || activeDepartments.includes('all') ? departmentOptions : activeDepartments;
-    }, [activeDepartments, departmentOptions, isActive]);
+        return activeDepartments.length === 0 || activeDepartments.includes('all') ? allDepartmentNames : activeDepartments;
+    }, [activeDepartments, allDepartmentNames, isActive]);
 
     const toggleSupermarket = useCallback((sm: string) => {
         setActiveSupermarkets(prev => {

@@ -64,3 +64,32 @@ User yêu cầu rà soát toàn bộ code trong `features/bi-dashboard`: loại 
 
 ### Cách kiểm tra thủ công đề xuất
 Chọn 2 siêu thị active (chế độ "Tổng hợp"), lưu/thu thập Thưởng cho 1 nhân viên mỗi siêu thị, sau đó chuyển về xem riêng lẻ từng siêu thị — xác nhận dữ liệu thưởng xuất hiện đúng ở từng siêu thị tương ứng (trước đây sẽ đổ hết vào siêu thị đầu tiên).
+
+---
+
+## Đợt 3 (theo yêu cầu tiếp theo): Xử lý các mục "cần domain judgment" còn lại
+
+Điều tra sâu hơn từng mục để xác định mục nào sửa an toàn được (bug cấu trúc, không phải đoán nghiệp vụ) và mục nào thực sự cần dừng lại.
+
+### Đã sửa
+
+**1. "Tất cả" (phòng ban) không thực sự là tất cả — `hooks/useNhanVienData.ts`**
+`effectiveActiveDepartments` khi chọn "Tất cả" trước đây resolve về `departmentOptions` — danh sách ĐÃ bị lọc bớt (loại "quản lý"/"trưởng ca"/"kế toán"/"tiếp đón khách hàng") chỉ để phục vụ dropdown chọn phòng ban cho gọn. Nhưng danh sách lọc-bớt này lại được `useRevenueData.ts` dùng làm bộ lọc dòng thật (`departmentNames.includes(r.department)` — luôn áp dụng vì `departmentNames` không bao giờ chứa literal `'all'`), khiến nhân viên phòng Kế toán/Tiếp đón khách hàng/... — vốn VẪN được đếm là nhân viên thật qua `isIgnoredDept` (nhanVienHelpers.ts, chỉ loại "quản lý siêu thị"/"trưởng ca", hẹp hơn nhiều) — biến mất khỏi MỌI bảng hiển thị (Doanh thu/Bán kèm/Trả góp/Thi đua/Chi tiết) dù user đã chọn "Tất cả". Xác nhận đây là bug cấu trúc (2 mục đích dùng chung 1 danh sách), không phải câu hỏi nghiệp vụ "nên loại phòng nào" — vì `isIgnoredDept` (nơi THẬT SỰ quyết định ai được tính là nhân viên) đã ngầm trả lời câu hỏi đó rồi.
+Fix: tách `allDepartmentNames` (đầy đủ, không lọc — dùng cho "Tất cả") khỏi `departmentOptions` (có lọc — chỉ dùng cho danh sách dropdown). Dropdown vẫn gọn như cũ; "Tất cả" giờ hiển thị đúng tất cả. Hiệu ứng dây chuyền: cùng sửa luôn lỗi tương tự ở `filteredEmployees` trong `useCompetitionData.ts` (nhận `effectiveActiveDepartments` qua prop, không cần sửa thêm).
+
+**2. 2 hàm parse target thi đua lệch rule nhận diện siêu thị — `hooks/useDashboardLogic.ts`**
+`parseCompetitionLuyKeBaseTargets` (tab Tổng quan) chỉ nhận diện dòng siêu thị bắt đầu bằng `ĐM` hoặc đúng bằng `Tổng`, thiếu tiền tố `TGD` và pattern chứa `" - "` — trong khi `dashboardHelpers.ts` (dùng ở `parseSummaryData`/`parseCompetitionDataBySupermarket`, tức là chính luồng dữ liệu chính của tab này) đã nhận diện `TGD` từ lâu (3 chỗ). Không phải câu hỏi nghiệp vụ — chỉ là áp dụng ĐÚNG pattern đã có sẵn, đã được kiểm chứng, trong cùng file cho 1 hàm bị bỏ sót. Nếu MWG có siêu thị dạng `TGD -...`, tab Tổng quan trước đây sẽ thiếu target thi đua của siêu thị đó dù tab Nhân viên (parseBaseTargetsMap, so khớp chính xác tên chứ không hardcode tiền tố) vẫn đúng.
+Fix: đồng bộ điều kiện nhận diện dòng siêu thị giống hệt `dashboardHelpers.ts`.
+
+### Đã điều tra kỹ hơn — xác nhận KHÔNG phải bug, giữ nguyên
+
+**Giá trị thi đua = 0 lưu như `null` (`parseCompetitionData`, nhanVienHelpers.ts)** — lúc đầu nghi là bug (không phân biệt "chưa có target" vs "đạt 0"). Nhưng kiểm tra kỹ thấy `dkht === 0` (tương đương giá trị `null`/0 này) đang được dùng CÓ CHỦ ĐÍCH khắp module Thi đua như 1 hạng mục UI thật — "Chưa bán được" (`noSale = dkhtValues.filter(d => d === 0).length` ở `IndividualCompetitionView.tsx`, và tương tự ở `CompetitionCompareView.tsx`). Đổi hành vi này sẽ làm vỡ tính năng "Chưa bán được" đang hoạt động đúng, không phải sửa lỗi. **Giữ nguyên, không sửa.**
+
+### Vẫn giữ nguyên — thật sự cần input bên ngoài, không tự đoán
+
+- **`KNOWN_BRANDS`** (~200 tên brand hard-code, `detailDataParser.ts`) — không có cách nào tự xác định "danh sách brand hiện tại của MWG đã đầy đủ chưa" từ code; cần dữ liệu thật để đối chiếu hoặc đổi hẳn cách tiếp cận (dùng tín hiệu cấu trúc `row.indent` thay vì whitelist tên) — đây là thay đổi kiến trúc cho phần lõi dựng cây doanh thu chi tiết, rủi ro cao nếu không có dữ liệu mẫu thật để so sánh trước/sau. Để ngoài phạm vi cho tới khi có yêu cầu cụ thể kèm dữ liệu kiểm thử.
+- **`isStoreRow`** (`useCompetitionData.ts`) — bộ lọc phòng vệ (lọc dòng "ĐMX -"/"BP "/"all in one" lọt qua từ parse) đang hoạt động đúng, không phải lỗi đang xảy ra — chỉ là kiến trúc chưa tối ưu (nên lọc ngay lúc parse thay vì vá ở tầng dưới). Không có lợi ích rõ ràng để đánh đổi rủi ro động vào core parser dùng chung nhiều nơi. Không sửa.
+
+## Kiểm tra (Đợt 3)
+- `npm run check` PASS toàn bộ, 0 lỗi mới.
+- Diff: 2 file (`useNhanVienData.ts`, `useDashboardLogic.ts`), +32/-11 dòng.

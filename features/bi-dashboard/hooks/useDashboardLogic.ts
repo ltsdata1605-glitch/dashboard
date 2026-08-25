@@ -155,7 +155,11 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 currentCompetition = parts[0];
                 continue;
             }
-            if (currentCompetition && (parts[0].startsWith('ĐM') || parts[0] === 'Tổng')) {
+            // Khớp đúng pattern nhận diện dòng siêu thị đã dùng ở dashboardHelpers.ts (parseSummaryData/
+            // parseCompetitionDataBySupermarket) — trước đây thiếu tiền tố "TGD" khiến siêu thị dạng
+            // này bị bỏ sót target thi đua ở tab Tổng quan dù tab Nhân viên (parseBaseTargetsMap) vẫn
+            // nhận đúng (so khớp chính xác tên, không hardcode tiền tố).
+            if (currentCompetition && (parts[0].startsWith('ĐM') || parts[0].startsWith('TGD') || parts[0] === 'Tổng' || (parts[0].includes(' - ') && !parts[0].includes(' liên hệ ')))) {
                 const supermarketName = parts[0];
                 const targetValue = parseNumber(parts[2]); 
                 if (!targets[supermarketName]) targets[supermarketName] = {};
