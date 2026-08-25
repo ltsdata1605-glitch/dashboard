@@ -8,6 +8,7 @@ import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon,
 import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
+import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -130,7 +131,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     const allAvailableGroups = useMemo(() => {
         const set = new Set<string>();
         rawVisibleHeaders.forEach(header => {
-            const defaultGroup = header.metric === 'SLLK' ? 'Số lượng' : header.metric === 'DTLK' ? 'Doanh thu' : header.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : header.metric;
+            const defaultGroup = getDefaultGroupLabel(header.metric);
             const group = groupOverrides[header.originalTitle] || defaultGroup;
             if (group) set.add(group);
         });
@@ -146,7 +147,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     const visibleHeaders = useMemo(() => {
         if (!activeGroupFilter) return rawVisibleHeaders;
         return rawVisibleHeaders.filter(header => {
-            const defaultGroup = header.metric === 'SLLK' ? 'Số lượng' : header.metric === 'DTLK' ? 'Doanh thu' : header.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : header.metric;
+            const defaultGroup = getDefaultGroupLabel(header.metric);
             const group = groupOverrides[header.originalTitle] || defaultGroup;
             return group === activeGroupFilter;
         });
@@ -161,7 +162,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     // HEADER_GROUP_THEMES) để người dùng nhận biết ngay cột nào thuộc nhóm nào.
     const { groupedVisibleHeaders, headerGroupRuns, columnColorKeyMap } = useMemo(() => {
         const withGroups = visibleHeaders.map(header => {
-            const defaultGroup = header.metric === 'SLLK' ? 'Số lượng' : header.metric === 'DTLK' ? 'Doanh thu' : header.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : header.metric;
+            const defaultGroup = getDefaultGroupLabel(header.metric);
             const group = groupOverrides[header.originalTitle] || defaultGroup;
             return { header, group };
         });
@@ -685,7 +686,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         <option value="all">Tất cả nhóm ({rawVisibleHeaders.length})</option>
                         {allAvailableGroups.map((group) => {
                             const count = rawVisibleHeaders.filter(h => {
-                                const defaultGroup = h.metric === 'SLLK' ? 'Số lượng' : h.metric === 'DTLK' ? 'Doanh thu' : h.metric === 'DTQĐ' ? 'Doanh thu quy đổi' : h.metric;
+                                const defaultGroup = getDefaultGroupLabel(h.metric);
                                 return (groupOverrides[h.originalTitle] || defaultGroup) === group;
                             }).length;
                             return (

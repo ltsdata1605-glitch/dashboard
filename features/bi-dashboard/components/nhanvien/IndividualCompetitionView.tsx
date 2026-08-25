@@ -9,6 +9,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
+import { calculateRunRate } from '../../services/metricService';
 import { PieChart, Pie, Cell } from 'recharts';
 
 // 1 chương trình thi đua đã tính target/actual/completion cho nhân viên đang xem, gộp theo Criterion (SLLK/DTLK/DTQĐ)
@@ -206,8 +207,8 @@ const EmployeeProfileCard: React.FC<{
         const total = allItems.length;
         // Calculate %DKHT for each item
         const dkhtValues = allItems.map(i => {
-            if (daysPassed <= 0 || !i.target || i.target <= 0) return 0;
-            return ((i.actual / daysPassed) * daysInMonth / i.target) * 100;
+            if (!i.target || i.target <= 0) return 0;
+            return (calculateRunRate(i.actual, daysPassed, daysInMonth) / i.target) * 100;
         });
         const dkhtDat = dkhtValues.filter(d => d >= 100).length;
         const dkhtGanDat = dkhtValues.filter(d => d >= 80 && d < 100).length;
@@ -674,7 +675,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                </tr>
                                                {items.map((item, index) => {
                                                    const remainingColor = item.remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-                                                   const dkht = (daysPassed > 0 && item.target > 0) ? ((item.actual / daysPassed) * daysInMonth / item.target) * 100 : 0;
+                                                   const dkht = item.target > 0 ? (calculateRunRate(item.actual, daysPassed, daysInMonth) / item.target) * 100 : 0;
                                                    const dkhtColor = dkht >= 100 ? 'text-emerald-600 dark:text-emerald-400' : dkht >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
                                                    return (
                                                        <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">

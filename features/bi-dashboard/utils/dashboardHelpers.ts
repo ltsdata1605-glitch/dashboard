@@ -9,6 +9,10 @@ export type MainTab = 'realtime' | 'cumulative';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
+/** Nhãn nhóm mặc định theo tiêu chí thi đua (dùng cho cấu hình target và bảng tổng hợp thi đua). */
+export const getDefaultGroupLabel = (metric: string): string =>
+    metric === 'SLLK' ? 'Số lượng' : metric === 'DTLK' ? 'Doanh thu' : metric === 'DTQĐ' ? 'Doanh thu quy đổi' : metric;
+
 import { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../../utils/dataUtils';
 export { roundUp, parseNumber, shortenName, shortenSupermarketName };
 
@@ -186,13 +190,13 @@ export function aggregateTreeNodes(nodes: IndustryTreeNode[], headers: string[])
             const dtqd = parseNumber(values[dtqdIdx]);
             const target = parseNumber(values[targetIdx]);
             const pct = target > 0 ? Math.round((dtqd / target) * 100) : 0;
-            values[htIdx] = pct > 0 ? `${pct}%` : '0%';
+            values[htIdx] = pct !== 0 ? `${pct}%` : '0%';
         }
         if (ttgIdx >= 0 && dtgIdx >= 0 && dtqdIdx >= 0) {
             const dtg = parseNumber(values[dtgIdx]);
             const dtqd = parseNumber(values[dtqdIdx]);
             const pct = dtqd > 0 ? Math.round((dtg / dtqd) * 100) : 0;
-            values[ttgIdx] = pct > 0 ? `${pct}%` : '0%';
+            values[ttgIdx] = pct !== 0 ? `${pct}%` : '0%';
         }
         if (dgIdx >= 0 && dtqdIdx >= 0 && slIdx >= 0) {
             const dtqd = parseNumber(values[dtqdIdx]);

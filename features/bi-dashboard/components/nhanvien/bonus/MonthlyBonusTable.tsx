@@ -5,7 +5,7 @@ import AvatarDisplay from '../shared/AvatarDisplay';
 
 /** Rút gọn theo đơn vị triệu, 1 chữ số thập phân, kèm hậu tố "Tr". */
 function formatMillionShort(value: number): string {
-    if (!value || Number.isNaN(value)) return '-';
+    if (value == null || Number.isNaN(value)) return '-';
     return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')} Tr`;
 }
 

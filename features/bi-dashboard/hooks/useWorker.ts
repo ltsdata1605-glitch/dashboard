@@ -17,6 +17,15 @@ const getWorker = () => {
                 pendingRequests.delete(id);
             }
         };
+        // Không có onerror trước đây: 1 lỗi worker-level (crash module, exception ngoài
+        // try/catch của analytics.worker.ts) không bắn onmessage — mọi pendingRequests treo
+        // vĩnh viễn (không resolve/reject), toàn bộ view phụ thuộc worker giữ dữ liệu cũ/rỗng
+        // im lặng. Reject hết các request đang chờ để lỗi lan lên .catch() ở nơi gọi thay vì treo.
+        workerInstance.onerror = (e) => {
+            const err = new Error(e.message || 'Worker crashed');
+            pendingRequests.forEach(promise => promise.reject(err));
+            pendingRequests.clear();
+        };
     }
     return workerInstance;
 };

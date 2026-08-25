@@ -49,7 +49,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_SUMMARY', summaryRealtime).then(res => {
             if (isMounted && res) setSummaryRealtimeParsed(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse tổng hợp realtime:', err));
         return () => { isMounted = false; };
     }, [summaryRealtime, isActive]);
 
@@ -59,7 +59,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_SUMMARY', summaryLuyKe).then(res => {
             if (isMounted && res) setSummaryLuyKeParsed(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse tổng hợp luỹ kế:', err));
         return () => { isMounted = false; };
     }, [summaryLuyKe, isActive]);
 
@@ -69,7 +69,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionRealtime).then(res => {
             if (isMounted && res) setCompetitionRealtimeBySupermarket(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse thi đua realtime:', err));
         return () => { isMounted = false; };
     }, [competitionRealtime, isActive]);
 
@@ -79,7 +79,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionLuyKe).then(res => {
             if (isMounted && res) setCompetitionLuyKeBySupermarket(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse thi đua luỹ kế:', err));
         return () => { isMounted = false; };
     }, [competitionLuyKe, isActive]);
 
@@ -107,7 +107,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_INDUSTRY_REALTIME', { text: industryRealtimeData, industryBiMap }).then(res => {
             if (isMounted && res) setIndustryRealtimeParsed(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse ngành hàng realtime:', err));
         return () => { isMounted = false; };
     }, [industryRealtimeData, isActive, industryBiMap]);
 
@@ -119,7 +119,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let isMounted = true;
         runWorkerTask('PARSE_INDUSTRY_LUYKE', { text: industryLuyKeData, industryBiMap }).then(res => {
             if (isMounted && res) setIndustryLuyKeParsed(res);
-        });
+        }).catch(err => console.error('[useDashboardLogic] Lỗi parse ngành hàng luỹ kế:', err));
         return () => { isMounted = false; };
     }, [industryLuyKeData, isActive, industryBiMap]);
 

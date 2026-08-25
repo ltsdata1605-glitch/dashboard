@@ -1,12 +1,11 @@
 
 import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { DownloadIcon, XIcon, CheckCircleIcon, ChevronDownIcon, ResetIcon, AlertTriangleIcon, PencilIcon, SaveIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, DocumentReportIcon, ChartPieIcon } from './Icons';
+import { DownloadIcon, XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
-import Card from './Card';
 import * as db from '../utils/db';
-import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenName, shortenSupermarketName, getDefaultGroupLabel } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
 import { Modal } from '../../../components/shared/ui/Modal';
@@ -66,8 +65,9 @@ const GroupCombobox: React.FC<{
                     placeholder={placeholder}
                     className="w-full bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 placeholder:text-slate-300 text-slate-800 dark:text-slate-200 shadow-sm"
                 />
-                <button
+                <Button
                     type="button"
+                    variant="unstyled"
                     tabIndex={-1}
                     onClick={() => setIsOpen(prev => !prev)}
                     className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -76,7 +76,7 @@ const GroupCombobox: React.FC<{
                     <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-600' : ''}`} viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
-                </button>
+                </Button>
             </div>
 
             {isOpen && (
@@ -84,8 +84,9 @@ const GroupCombobox: React.FC<{
                     <div className="px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <span>Nhóm có sẵn ({availableGroups.length})</span>
                         {value && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onChange('');
@@ -93,15 +94,16 @@ const GroupCombobox: React.FC<{
                                 className="text-rose-500 hover:underline lowercase font-normal"
                             >
                                 xoá
-                            </button>
+                            </Button>
                         )}
                     </div>
                     {availableGroups.map((group) => {
                         const isSelected = value === group;
                         return (
-                            <button
+                            <Button
                                 key={group}
                                 type="button"
+                                variant="unstyled"
                                 onClick={() => {
                                     onChange(group);
                                     setIsOpen(false);
@@ -116,7 +118,7 @@ const GroupCombobox: React.FC<{
                                 {isSelected && (
                                     <span className="text-[10px] text-sky-500 font-bold ml-2">✓</span>
                                 )}
-                            </button>
+                            </Button>
                         );
                     })}
                 </div>
@@ -148,7 +150,7 @@ const BulkRenameModal: React.FC<{
     const availableGroups = useMemo(() => {
         const set = new Set<string>(DEFAULT_PRESET_GROUPS);
         competitions.forEach(c => {
-            const defaultGroup = c.criteria === 'SLLK' ? 'Số lượng' : c.criteria === 'DTLK' ? 'Doanh thu' : c.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : c.criteria;
+            const defaultGroup = getDefaultGroupLabel(c.criteria);
             if (defaultGroup) set.add(defaultGroup);
             if (tempGroup[c.name]) set.add(tempGroup[c.name]);
             if (groupOverrides[c.name]) set.add(groupOverrides[c.name]);
@@ -203,7 +205,7 @@ const BulkRenameModal: React.FC<{
                                 <GroupCombobox
                                     value={tempGroup[comp.name] ?? ''}
                                     onChange={val => setTempGroup({...tempGroup, [comp.name]: val})}
-                                    placeholder={comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria}
+                                    placeholder={getDefaultGroupLabel(comp.criteria)}
                                     availableGroups={availableGroups}
                                 />
                             </div>
@@ -285,7 +287,7 @@ const StatusTile: React.FC<{
                         <textarea
                             autoFocus
                             className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
-                            placeholder="Nhấn Ctrl + V..."
+                            placeholder={placeholder || 'Nhấn Ctrl + V...'}
                             onPaste={(e) => {
                                 const text = e.clipboardData.getData('text');
                                 onChange(text);
@@ -429,7 +431,7 @@ const CompetitionTarget: React.FC<{
             {competitions.length > 0 ? (() => {
                 const groupedCompetitions: Record<string, Competition[]> = {};
                 competitions.forEach(comp => {
-                    let defaultGroup = comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria;
+                    let defaultGroup = getDefaultGroupLabel(comp.criteria);
                     let group = groupOverrides[comp.name] || defaultGroup;
 
                     if (!groupedCompetitions[group]) groupedCompetitions[group] = [];
@@ -702,7 +704,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                 <div className="shrink-0 pb-1 flex items-center pr-2">
                     <a
                         ref={bookmarkletRef}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 dark:from-emerald-900/30 dark:via-teal-900/30 dark:to-sky-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded-full border border-emerald-300 dark:border-emerald-700/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-50 to-sky-50 dark:from-emerald-900/30 dark:to-sky-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded-full border border-emerald-300 dark:border-emerald-700/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
                         title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) để Tự động mở rộng cây dữ liệu và Copy toàn trang trong 1 cú click"
                         onClick={(e) => {
                             e.preventDefault();

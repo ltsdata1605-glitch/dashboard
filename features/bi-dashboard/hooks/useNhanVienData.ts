@@ -151,7 +151,7 @@ export function useNhanVienData(isActive?: boolean) {
             if (isMounted) {
                 setParsedRevenueBase(base.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
             }
-        });
+        }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu:', err));
         return () => { isMounted = false; };
     }, [aggregatedData.danhSach, hiddenEmployeesSet, isActive]);
 
@@ -182,7 +182,7 @@ export function useNhanVienData(isActive?: boolean) {
             if (isMounted && rows) {
                 setInstallmentRows(rows.filter((r: InstallmentRow) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
             }
-        });
+        }).catch(err => console.error('[useNhanVienData] Lỗi parse trả góp:', err));
         return () => { isMounted = false; };
     }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
@@ -194,7 +194,7 @@ export function useNhanVienData(isActive?: boolean) {
             if (isMounted && rows) {
                 setBanKemRows(rows.filter((r: CrossSellingRow) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
             }
-        });
+        }).catch(err => console.error('[useNhanVienData] Lỗi parse bán kèm:', err));
         return () => { isMounted = false; };
     }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 

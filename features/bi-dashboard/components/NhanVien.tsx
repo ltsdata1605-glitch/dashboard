@@ -136,7 +136,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 };
             });
             setCompetitionData(filteredResult);
-        });
+        }).catch(err => console.error('[NhanVien] Lỗi parse dữ liệu thi đua:', err));
         return () => { isMounted = false; };
     }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees, isActive]);
 

@@ -374,22 +374,24 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                         {activeTargetType === 'dtThuc' && totalVuotTroi > 0 ? (
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
                                 onClick={() => setInputTarget(Math.round(totalVuotTroi).toString())}
                                 className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
                             >
                                 ⚡ Lấy theo Target DTQĐ ({roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr)
-                            </button>
+                            </Button>
                         ) : <div />}
 
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
                             onClick={handleRemoveTarget}
                             className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 hover:text-rose-700 transition-colors"
                         >
                             Loại bỏ
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

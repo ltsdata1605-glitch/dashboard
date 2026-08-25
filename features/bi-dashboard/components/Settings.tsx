@@ -214,6 +214,18 @@ const Settings: React.FC = () => {
                 });
             }
         };
+        reader.onerror = () => {
+            console.error('Restore failed: FileReader error', reader.error);
+            setIsLoading(null);
+            showConfirm({
+                title: 'Khôi phục thất bại',
+                message: 'Không thể đọc file. Vui lòng thử lại.',
+                variant: 'danger',
+                confirmText: 'Đóng',
+                singleButton: true,
+                onConfirm: closeConfirm
+            });
+        };
         reader.readAsText(file);
     };
 

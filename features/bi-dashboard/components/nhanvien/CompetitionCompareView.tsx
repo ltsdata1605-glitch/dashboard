@@ -7,6 +7,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
+import { calculateRunRate } from '../../services/metricService';
 
 interface CompetitionCompareViewProps {
     allEmployees: Employee[];
@@ -61,8 +62,10 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
     const diff = a - b;
     const formatDiff = (v: number) => mode === 'pct' ? `${v.toFixed(0)}%` : fMoney.format(v);
 
-    if (diff > 0) return <span className="text-[11px] font-black text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
-    if (diff < 0) return <span className="text-[11px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
+    // Epsilon tránh sai số dấu phẩy động (vd 2000/3000*100 vs 4000/6000*100) hiển thị nhầm
+    // "+0%" thay vì "Hòa" dù 2 tỉ lệ về mặt toán học là bằng nhau.
+    if (diff > 1e-9) return <span className="text-[11px] font-black text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
+    if (diff < -1e-9) return <span className="text-[11px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
     return <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
 };
 
@@ -195,7 +198,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 const actual = employeeDataMap.get(emp.name)?.values[comp.title] ?? 0;
                 if (target > 0 || actual > 0) {
                     total++;
-                    const dkht = (daysPassed > 0 && target > 0) ? ((actual / daysPassed) * daysInMonth / target) * 100 : 0;
+                    const dkht = target > 0 ? (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100 : 0;
                     if (dkht >= 100) dkhtDat++;
                     else if (dkht === 0) noSale++;
                     else dkhtNotDat++;

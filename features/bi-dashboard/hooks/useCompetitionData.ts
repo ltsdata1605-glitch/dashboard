@@ -48,7 +48,7 @@ export const useCompetitionData = ({
              return allCompetitionsByCriterion;
         }
         return { [activeCompetitionTab]: allCompetitionsByCriterion[activeCompetitionTab] } as Record<string, { headers: CompetitionHeader[] }>;
-    }, [activeCompetitionTab, allCompetitionsByCriterion]);
+    }, [activeCompetitionTab, allCompetitionsByCriterion, isActive]);
 
     const filteredEmployees = useMemo(() => {
         if (isActive === false) return [];

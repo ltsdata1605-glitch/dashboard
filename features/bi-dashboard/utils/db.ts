@@ -116,6 +116,11 @@ export const set = async (key: BIKey, value: unknown, source?: string): Promise<
       console.error('Error setting data:', transaction.error);
       reject(transaction.error);
     };
+    // Xem giải thích ở get() — abort không kèm error event (thiết bị sleep, lỗi trình duyệt)
+    // phải reject thay vì để Promise treo vĩnh viễn.
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
+    };
   });
 };
 
@@ -145,6 +150,9 @@ export const setMany = async (items: { key: BIKey; value: unknown }[], source?: 
     transaction.onerror = (_event) => {
       console.error('Transaction error:', transaction.error);
       reject(transaction.error);
+    };
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
     };
   });
 };
@@ -203,6 +211,9 @@ export const getAll = async (): Promise<{ key: string; value: unknown }[]> => {
       console.error('Error getting all data:', transaction.error);
       reject(transaction.error);
     };
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
+    };
   });
 };
 
@@ -233,6 +244,9 @@ export const clearStore = async (): Promise<void> => {
       console.error('Error clearing store:', transaction.error);
       reject(transaction.error);
     };
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
+    };
   });
 };
 
@@ -251,6 +265,9 @@ export const deleteEntry = async (key: BIKey): Promise<void> => {
     request.onerror = () => {
       console.error('Error deleting data:', request.error);
       reject(request.error);
+    };
+    transaction.onabort = () => {
+      reject(transaction.error || new Error('Transaction aborted'));
     };
   });
 };
