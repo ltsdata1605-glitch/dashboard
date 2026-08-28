@@ -4,6 +4,36 @@ import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndus
 import { presetExploitationTabs } from './presetExploitationTabs';
 import type { Tab } from '../components/employees/EmployeeAnalysisTabs';
 
+// Chuẩn hoá tab cũ (dạng displayOptions) sang dạng columns mới — dùng chung khi load từ DB (mount)
+// và khi nhận sự kiện đồng bộ cloud, trước đây 2 nơi copy-paste giống hệt logic này.
+const normalizeExploitationTabColumns = (tab: CustomExploitationTabConfig): CustomExploitationTabConfig => {
+    if (tab.columns && Array.isArray(tab.columns)) return tab;
+
+    const columns: CustomColumnConfig[] = [];
+    const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
+
+    if (displayOpts.showQuantity) {
+        columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
+    }
+    if (displayOpts.showRevenue) {
+        columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });
+    }
+    if (displayOpts.showPercentage) {
+        columns.push({
+            id: `pct`,
+            name: '%',
+            type: 'percentage',
+            percentageConfig: {
+                numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
+                baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
+                numeratorFilters: tab.filters,
+                denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
+            }
+        });
+    }
+    return { ...tab, columns };
+};
+
 export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: string) => void, defaultTabs: Tab[]) => {
     const [customTabs, setCustomTabs] = useState<CustomContestTab[]>([]);
     const [industryAnalysisTabs, setIndustryAnalysisTabs] = useState<CustomContestTab[]>([]);
@@ -42,198 +72,24 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 // Filter out old presets per user request to delete BẢO HIỂM, SIM, ĐỒNG HỒ, PHỤ KIỆN, GIA DỤNG
                 const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
                 
-                finalExploitationTabs = filteredExploitationTabs.map(tab => {
-                    if (tab.columns && Array.isArray(tab.columns)) return tab;
-                    
-                    const columns: CustomColumnConfig[] = [];
-                    const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
-                    
-                    if (displayOpts.showQuantity) {
-                        columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
-                    }
-                    if (displayOpts.showRevenue) {
-                        columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });
-                    }
-                    if (displayOpts.showPercentage) {
-                        columns.push({ 
-                            id: `pct`, 
-                            name: '%', 
-                            type: 'percentage', 
-                            percentageConfig: {
-                                numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
-                                baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
-                                numeratorFilters: tab.filters,
-                                denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
-                            }
-                        });
-                    }
-                    return { ...tab, columns };
-                });
+                finalExploitationTabs = filteredExploitationTabs.map(normalizeExploitationTabColumns);
             }
 
-            // Migration logic for V10 preset tabs (Clean up duplicate DONG HO filters)
-            const hasMigratedPresetsV10 = await getSetting('presetTabsMigratedV10') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV10) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV10', true);
-            }
-
-            // Migration logic for V11 preset tabs (Update Bảo hiểm ĐMX / CE tab configuration)
-            const hasMigratedPresetsV11 = await getSetting('presetTabsMigratedV11') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV11) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV11', true);
-            }
-
-            // Migration logic for V12 preset tabs (Update BH ĐMX CE, BH ĐMX ICT and add BH ĐMX ĐGD tab)
-            const hasMigratedPresetsV12 = await getSetting('presetTabsMigratedV12') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV12) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV12', true);
-            }
-
-            // Migration logic for V13 preset tabs (Optimize ALL B.HIỂM tab excludedSubgroups)
-            const hasMigratedPresetsV13 = await getSetting('presetTabsMigratedV13') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV13) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV13', true);
-            }
-
-            // Migration logic for V14 preset tabs (Update shorter BH ĐMX group header labels)
-            const hasMigratedPresetsV14 = await getSetting('presetTabsMigratedV14') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV14) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV14', true);
-            }
-
-            // Migration logic for V15 preset tabs (Exclude Bếp gas from ĐGD column in BH ĐMX ĐGD tab)
-            const hasMigratedPresetsV15 = await getSetting('presetTabsMigratedV15') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV15) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV15', true);
-            }
-
-            // Migration logic for V16 preset tabs (Update ALL B.HIỂM industry filters to Bảo hiểm)
-            const hasMigratedPresetsV16 = await getSetting('presetTabsMigratedV16') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV16) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV16', true);
-            }
-
-            // Migration logic for V17 preset tabs (Update BH ĐMX MLN tab names and column labels)
-            const hasMigratedPresetsV17 = await getSetting('presetTabsMigratedV17') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV17) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV17', true);
-            }
-
-            // Migration logic for V18 preset tabs (Add new BH ĐMX ĐGD tab with BH ĐMX MLN column filtering 3 subgroups)
-            const hasMigratedPresetsV18 = await getSetting('presetTabsMigratedV18') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV18) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV18', true);
-            }
-
-            // Migration logic for V19 preset tabs (Rename SL -> SLBH and DT -> DTBH for BH ĐMX MLN & ĐGD tabs)
-            const hasMigratedPresetsV19 = await getSetting('presetTabsMigratedV19') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV19) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV19', true);
-            }
-
-            // Migration logic for V20 preset tabs (Remove BH ĐMX ĐGD tab)
-            const hasMigratedPresetsV20 = await getSetting('presetTabsMigratedV20') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV20) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV20', true);
-            }
-
-            // Migration logic for V21 preset tabs (Refresh BH ĐMX MLN tab subgroups for MLN/QĐH column)
-            const hasMigratedPresetsV21 = await getSetting('presetTabsMigratedV21') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV21) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV21', true);
-            }
-
-            // Migration logic for V22 preset tabs (Set exactly 3 subgroups for MLN/QĐH column)
-            const hasMigratedPresetsV22 = await getSetting('presetTabsMigratedV22') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV22) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV22', true);
-            }
-
-            // Migration logic for V23 preset tabs (Strict subgroup matching & clear quat dien false positives)
-            const hasMigratedPresetsV23 = await getSetting('presetTabsMigratedV23') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV23) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV23', true);
-            }
-
-            // Migration logic for V24 preset tabs (Add new BH ĐMX ĐGD tab with ĐGD column excluding MLN, QĐH, MNN, Bếp gas)
-            const hasMigratedPresetsV24 = await getSetting('presetTabsMigratedV24') === true;
-            if (!isMounted) return;
-            if (!hasMigratedPresetsV24) {
-                // Filter out previous default tabs to prevent duplication
-                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
-                // Thêm preset mới vào mảng
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV24', true);
+            // Migration logic V10-V24: mỗi version lịch sử chỉ đơn thuần áp lại preset mới nhất
+            // (presetExploitationTabs luôn phản ánh bản mới nhất tại thời điểm build) và tự đánh dấu
+            // đã migrate — 15 khối trước đây bị copy-paste giống hệt nhau, chỉ khác số version.
+            // Giữ nguyên đúng thứ tự tuần tự + gate isMounted giữa từng bước như code gốc.
+            for (let v = 10; v <= 24; v++) {
+                const flagKey = `presetTabsMigratedV${v}`;
+                const hasMigrated = await getSetting(flagKey) === true;
+                if (!isMounted) return;
+                if (!hasMigrated) {
+                    // Filter out previous default tabs to prevent duplication
+                    finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                    // Thêm preset mới vào mảng
+                    finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                    await saveSetting(flagKey, true);
+                }
             }
 
             // Migration logic for V25 preset tabs (Ensure spChinh tab contains DGD column)
@@ -318,27 +174,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
                 if (savedExploitationTabs) {
                     const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
-                    const normalizedTabs = filteredExploitationTabs.map(tab => {
-                        if (tab.columns && Array.isArray(tab.columns)) return tab;
-                        const columns: CustomColumnConfig[] = [];
-                        const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
-                        if (displayOpts.showQuantity) columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
-                        if (displayOpts.showRevenue) columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });
-                        if (displayOpts.showPercentage) {
-                            columns.push({ 
-                                id: `pct`, 
-                                name: '%', 
-                                type: 'percentage', 
-                                percentageConfig: {
-                                    numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
-                                    baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
-                                    numeratorFilters: tab.filters,
-                                    denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
-                                }
-                            });
-                        }
-                        return { ...tab, columns };
-                    });
+                    const normalizedTabs = filteredExploitationTabs.map(normalizeExploitationTabColumns);
                     setCustomExploitationTabs(prev => {
                         if (JSON.stringify(prev) !== JSON.stringify(normalizedTabs)) {
                             isUpdatingFromCloudRef.current = true;

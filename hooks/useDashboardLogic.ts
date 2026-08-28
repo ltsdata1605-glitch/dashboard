@@ -197,8 +197,9 @@ export const useDashboardLogic = () => {
         await dbService.saveDepartmentMap(map);
     });
 
-    const handleDeleteFile = useStableCallback(async (id: string) => {
-        await handleDeleteFileRaw(id);
+    // Dùng chung sau khi xoá file hoặc xem lại báo cáo — 2 handler trước đây copy-paste giống hệt
+    // khối này, chỉ khác action gọi trước đó (handleDeleteFileRaw vs handleViewReportRaw).
+    const resetFilterStateAfterFileChange = useStableCallback(async () => {
         const registry = await dbService.getSalesFilesRegistry();
         const activeHistoricalCount = registry.filter(f => f.isActive).length;
         const merged = await dbService.getMergedSalesData();
@@ -224,31 +225,14 @@ export const useDashboardLogic = () => {
         }
     });
 
+    const handleDeleteFile = useStableCallback(async (id: string) => {
+        await handleDeleteFileRaw(id);
+        await resetFilterStateAfterFileChange();
+    });
+
     const handleViewReport = useStableCallback(async () => {
         await handleViewReportRaw();
-        const registry = await dbService.getSalesFilesRegistry();
-        const activeHistoricalCount = registry.filter(f => f.isActive).length;
-        const merged = await dbService.getMergedSalesData();
-        if (merged) {
-            if (activeHistoricalCount > 0) {
-                const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
-                const todayStr = getTodayStr();
-                setFilterState(prev => ({
-                    ...prev,
-                    kho: [],
-                    xuat: 'all',
-                    trangThai: allTrangThai,
-                    nguoiTao: [],
-                    department: [],
-                    startDate: todayStr,
-                    endDate: todayStr,
-                    dateRange: 'today',
-                    selectedMonths: []
-                }));
-            } else {
-                setFilterState(initialFilterState);
-            }
-        }
+        await resetFilterStateAfterFileChange();
     });
 
     return useMemo(() => ({
