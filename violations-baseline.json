@@ -44,7 +44,7 @@
     "missingMobileToolbar": 0
   },
   "components/common/ProcessingLoader.tsx": {
-    "nonSemanticColor": 27,
+    "nonSemanticColor": 6,
     "missingMobileToolbar": 0
   },
   "components/common/SearchableSelect.tsx": {

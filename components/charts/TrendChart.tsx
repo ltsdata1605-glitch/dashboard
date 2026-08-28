@@ -366,12 +366,14 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         <Cell 
                             key={`cell-${index}`} 
                             fill={
-                                entry.fill 
-                                    ? entry.fill 
-                                    : entry.isDecrease 
-                                        ? '#FC8181'
-                                        : '#68D391'
-                            } 
+                                entry.fill
+                                    ? entry.fill
+                                    // rose-400 / emerald-400 — khớp palette semantic đã duyệt (trước đây dùng hex
+                                    // ngoài palette #FC8181/#68D391, thực ra là red.400/green.400 của Chakra UI).
+                                    : entry.isDecrease
+                                        ? '#fb7185'
+                                        : '#34d399'
+                            }
                         />
                     ))}
                 </Bar>

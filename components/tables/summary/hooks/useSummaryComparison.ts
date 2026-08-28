@@ -170,8 +170,10 @@ export const useSummaryComparison = (
             
             const wCurr = weeksInSelectedMonth.find((w) => w.id === wCurrId);
             const wPrev = weeksInSelectedMonth.find((w) => w.id === wPrevId);
-            
-            if (!wCurr) return;
+
+            // Reset thay vì để lại compTree/dateDisplay cũ — lựa chọn hiện tại không hợp lệ
+            // (VD đổi tháng khiến tuần đã chọn không còn tồn tại) không nên hiện dữ liệu tháng cũ.
+            if (!wCurr) { setCompTree(null); setDateDisplay({ current: '', prev: '' }); return; }
 
             currentStart = wCurr.start;
             currentEnd = wCurr.end;
@@ -191,7 +193,7 @@ export const useSummaryComparison = (
         } else if (compMode === 'week_same_period') {
             const selectedWeekId = selectedWeeks[0];
             const wCurrent = weeksInSelectedMonth.find((w) => w.id === selectedWeekId);
-            if (!wCurrent) return;
+            if (!wCurrent) { setCompTree(null); setDateDisplay({ current: '', prev: '' }); return; }
 
             currentStart = wCurrent.start;
             currentEnd = wCurrent.end;
@@ -202,8 +204,8 @@ export const useSummaryComparison = (
             
             const prevWeekIndex = Math.min(selectedWeekId, prevWeeks.length);
             const prevWeek = prevWeeks.find(w => w.id === prevWeekIndex);
-            
-            if (!prevWeek) return;
+
+            if (!prevWeek) { setCompTree(null); setDateDisplay({ current: '', prev: '' }); return; }
 
             prevStart = prevWeek.start;
             prevEnd = prevWeek.end;

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
@@ -29,6 +29,9 @@ interface ExportLogicProps {
     filterState: FilterState;
     handleFilterChange: (newFilters: Partial<FilterState>) => void;
     setStatus: (status: { message: string; type: 'info' | 'success' | 'error'; progress: number }) => void;
+    /** Cờ Worker đang tính lại processedData sau khi đổi filter — dùng để handleBatchKhoExport
+     *  đợi ĐÚNG lúc dữ liệu Kho mới đã sẵn sàng thay vì chỉ dựa vào timeout cố định. */
+    isFilterProcessing?: boolean;
 }
 
 export const useExportLogic = ({
@@ -37,10 +40,19 @@ export const useExportLogic = ({
     uniqueFilterOptions,
     filterState,
     handleFilterChange,
-    setStatus
+    setStatus,
+    isFilterProcessing
 }: ExportLogicProps) => {
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
+
+    // Ref gương của isFilterProcessing — handleBatchKhoExport là 1 useCallback chạy vòng lặp
+    // async dài, closure của nó chỉ thấy giá trị prop LÚC TẠO callback, không tự cập nhật theo
+    // state mới trong lúc đang chạy. Ref cho phép đọc giá trị TƯƠI ngay trong vòng lặp.
+    const isFilterProcessingRef = useRef(isFilterProcessing);
+    useEffect(() => {
+        isFilterProcessingRef.current = isFilterProcessing;
+    }, [isFilterProcessing]);
 
     const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}) => {
         if (element) {
@@ -138,10 +150,24 @@ export const useExportLogic = ({
             setStatus({ message: 'Chỉ có một kho, không thể xuất hàng loạt.', type: 'error', progress: 0 });
             return;
         }
-    
+
         setIsExporting(true);
         const originalKho = filterState.kho;
-    
+
+        // BUG FIX: trước đây chỉ đợi timeout cố định (1.5s) sau mỗi lần đổi filter Kho rồi chụp
+        // ảnh ngay — dataset lớn có thể mất hơn 1.5s để Worker tính lại processedData, khiến ảnh
+        // xuất chụp nhầm dữ liệu Kho TRƯỚC ĐÓ mà không có dấu hiệu lỗi nào. Đợi ĐÚNG tín hiệu
+        // isFilterProcessing chuyển về false (qua ref, đọc giá trị tươi trong vòng lặp async dài),
+        // rồi mới đợi thêm 1 khoảng ngắn để DOM kịp vẽ lại trước khi chụp.
+        const waitForFilterSettled = async (maxWaitMs = 8000) => {
+            const start = Date.now();
+            await new Promise(resolve => setTimeout(resolve, 150)); // đợi cờ kịp bật lên true
+            while (isFilterProcessingRef.current && Date.now() - start < maxWaitMs) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            await new Promise(resolve => setTimeout(resolve, 300)); // đệm cho DOM vẽ lại
+        };
+
         try {
             const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
             const total = khosToExport.length + 1; // +1 for warehouse summary
@@ -156,18 +182,18 @@ export const useExportLogic = ({
             // Export warehouse summary once (all khos, no highlight)
             updateExportOverlay('Đang xuất: Tổng hợp kho', `1/${total}`);
             handleFilterChange({ kho: [] }); // Reset to show all
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await waitForFilterSettled();
             await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
                 elementsToHide: ['.hide-on-export'],
             });
             await new Promise(resolve => setTimeout(resolve, 800));
-    
+
             // Then export business overview per kho
             for (let i = 0; i < khosToExport.length; i++) {
                 const kho = khosToExport[i];
                 updateExportOverlay(`Đang xuất: ${kho}`, `${i + 2}/${total}`);
                 handleFilterChange({ kho: [kho] });
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await waitForFilterSettled();
 
                 await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],

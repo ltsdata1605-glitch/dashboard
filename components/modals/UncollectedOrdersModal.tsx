@@ -304,7 +304,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             });
         });
 
-        const text = `Danh sách nhân viên có đơn QUÁ HẠN XUẤT:\nSố lượng nhân viên: ${employeeIds.length}\nSố lượng đơn hàng: ${totalOrders}\n\n${employeeIds.join('\n')}`;
+        const text = `Danh sách nhân viên có đơn QUÁ HẠN CHƯA THU:\nSố lượng nhân viên: ${employeeIds.length}\nSố lượng đơn hàng: ${totalOrders}\n\n${employeeIds.join('\n')}`;
 
         navigator.clipboard.writeText(text).then(() => {
             const toast = document.createElement('div');
@@ -317,6 +317,19 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
     };
 
     const handleExportGoogleSheet = async () => {
+        // Guard dữ liệu rỗng — trước đây thiếu (khác prop onExportSheet không dùng tới, có guard
+        // này nhưng cột/logic khác nên không thể thay thế trực tiếp), khiến 0 đơn hàng vẫn ép
+        // đăng nhập lại Google OAuth thay vì báo lỗi thân thiện. Dùng đúng pattern toast cục bộ
+        // đã có sẵn trong file này (CLAUDE.md cấm window.alert).
+        if (salesData.length === 0) {
+            const toast = document.createElement('div');
+            toast.textContent = 'Không có đơn hàng chưa thu | chưa hủy nào để xuất.';
+            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; });
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 3000);
+            return;
+        }
         setIsExporting(true);
         const toastEl = document.createElement('div');
         toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
@@ -522,7 +535,7 @@ Link: ${url}`;
 
     const controls = (
         <div className="flex items-center gap-1 lg:gap-2 hide-on-export">
-            <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn xuất" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
+            <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn chưa thu" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
                 <Icon name="clipboard-list" size={4} />
             </Button>
             <Button onClick={toggleAllDetails} variant="secondary" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}>
@@ -558,7 +571,7 @@ Link: ${url}`;
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
-                            <h4 className="font-black text-base sm:text-2xl text-sky-800 dark:text-sky-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
+                            <h4 className="font-black text-base sm:text-2xl text-sky-800 dark:text-sky-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA THU</h4>
                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUncollectedRevenue > 0 ? (item.revenue / totalUncollectedRevenue * 100) : 0;

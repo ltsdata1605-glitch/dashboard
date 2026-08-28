@@ -111,7 +111,8 @@ export const useDashboardLogic = () => {
         uniqueFilterOptions,
         filterState,
         handleFilterChange,
-        setStatus
+        setStatus,
+        isFilterProcessing
     });
 
     // Removed repopulating filter state effects here because they caused 
