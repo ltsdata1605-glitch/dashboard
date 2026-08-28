@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp, type DocumentReference } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { getSetting, touchLastModified } from './dbService';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
@@ -412,6 +412,11 @@ export const syncHeavySettingToCloudQueued = (user: User, key: string): void => 
     if (heavyInFlight[key]) {
         // Đã có 1 lượt ghi khóa này đang bay lên Firestore — không xếp chồng thêm, chỉ nhớ để
         // đồng bộ lại 1 lần nữa (đọc giá trị MỚI NHẤT) ngay sau khi lượt hiện tại xong.
+        // BUG FIX: KHÔNG lưu lại `user` của lượt gọi này — nếu tài khoản đã đổi (đăng xuất rồi
+        // đăng nhập tài khoản khác cùng tab, không reload) trong lúc đang chờ, dùng `user` đóng
+        // trong closure của lượt ĐẦU sẽ ghi nhầm dữ liệu tài khoản mới vào doc Firestore tài
+        // khoản cũ. Đọc lại auth.currentUser TƯƠI ngay trước khi ghi (bên dưới) thay vì tin
+        // closure cũ.
         heavyPending[key] = true;
         return;
     }
@@ -420,9 +425,10 @@ export const syncHeavySettingToCloudQueued = (user: User, key: string): void => 
         try {
             do {
                 heavyPending[key] = false;
+                const currentUser = auth.currentUser || user;
                 const value = await getSetting(key);
                 if (value !== null) {
-                    await syncHeavySettingToCloud(user, key, value);
+                    await syncHeavySettingToCloud(currentUser, key, value);
                     // Xem giải thích ở touchLastModified() trong services/dbService/core.ts —
                     // chốt lastModified_ cục bộ về thời điểm ghi Firestore vừa xong, phòng khi
                     // guard isHeavyKeyInFlight ở useCloudSync.ts vẫn lọt self-echo (payload lớn).

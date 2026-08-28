@@ -914,15 +914,13 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     
     const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
     
-    const htx = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-    let isTraCham = false;
-    if (productConfig && productConfig.htxClassification && Object.keys(productConfig.htxClassification).length > 0) {
-        isTraCham = productConfig.htxClassification[cleanAndNormalize(htx)] === 'tra_gop';
-    } else {
-        // So khớp đã chuẩn hoá — tránh bỏ sót đơn trả góp chỉ vì lệch hoa/thường/khoảng trắng
-        // so với danh sách hardcode khi chưa có Config Excel (xem HINH_THUC_XUAT_TRA_GOP).
-        isTraCham = normalizedTraGopSet.has(cleanAndNormalize(htx));
-    }
+    // Gọi thẳng getHinhThucThanhToan() thay vì tự viết lại logic phân loại — bản tự viết trước đây
+    // (Object.keys(...).length > 0 rồi so === 'tra_gop' trực tiếp) BỎ SÓT fallback về danh sách
+    // hardcode (normalizedTraGopSet) khi productConfig.htxClassification có DỮ LIỆU nhưng không
+    // phủ đúng giá trị HTX của dòng này — 1 dòng "Hình thức xuất" lạ, chưa được admin cấu hình
+    // trong bảng phân loại, silently tính isTraCham = false (mất +30% DTQĐ) dù getHinhThucThanhToan
+    // (dùng ở nơi khác để hiển thị) vẫn nhận diện đúng qua fallback.
+    const isTraCham = getHinhThucThanhToan(row, productConfig) === 'tra_gop';
     
     // DTQĐ = Doanh thu thực * Hệ số + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
     const revenueQD = revenue * heso + (isTraCham ? revenue * 0.3 : 0);

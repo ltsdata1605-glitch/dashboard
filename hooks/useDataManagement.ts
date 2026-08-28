@@ -221,7 +221,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             let forcePushLight = false;
                             if (cloudData) {
                                 const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
-                                const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
+                                // BUG FIX: `cloudData.lastSync` không bao giờ tồn tại — fetchFromCloud() đọc doc
+                                // users/{uid}/setting/configuration (có field `updatedAt`), trong khi `lastSync`
+                                // chỉ được ghi vào doc users/{uid} GỐC (khác doc) bởi syncToCloud(). Kể cả đọc
+                                // đúng field, `new Date(...)` cũng không parse được Firestore Timestamp object
+                                // (cần .toMillis()) — 2 lỗi cộng dồn khiến cloudLastMod LUÔN = 0, mọi thiết bị có
+                                // localLastMod > 0 (đã từng đổi setting) đều force-push đè cấu hình cloud mới hơn.
+                                const cloudLastMod = cloudData.updatedAt?.toMillis ? cloudData.updatedAt.toMillis() : 0;
 
                                 if (cloudLastMod < localLastMod) {
                                     console.warn('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
@@ -975,17 +981,23 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                 const dayNum = d.getUTCDay() || 7;
-                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                d.setUTCDate(d.getUTCDate() + 4 - dayNum); // d giờ là Thứ Năm của tuần ISO chứa `date`
                 const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
                 const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
                 const wStr = `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 
-                const firstDayOfMonth = new Date(yearNum, monthNum - 1, 1);
-                const firstDayWeekday = firstDayOfMonth.getDay() || 7;
-                const offsetDate = date.getDate() + firstDayWeekday - 1;
+                // Nhãn hiển thị PHẢI tính theo cùng mốc `d` (Thứ Năm ISO) đã dùng để suy ra wStr,
+                // KHÔNG phải `date` gốc — nếu không, 2 ngày rơi vào CÙNG 1 tuần ISO (VD tuần ISO
+                // W01 vắt qua ranh giới năm, gồm cả cuối tháng 12 lẫn đầu tháng 1) sẽ tính ra 2
+                // label khác nhau dù chung 1 key wStr, ghi đè nhãn của nhau tuỳ thứ tự xử lý dòng.
+                const labelMonth = d.getUTCMonth() + 1;
+                const labelYear = d.getUTCFullYear();
+                const firstDayOfLabelMonth = new Date(Date.UTC(labelYear, labelMonth - 1, 1));
+                const firstDayWeekday = firstDayOfLabelMonth.getUTCDay() || 7;
+                const offsetDate = d.getUTCDate() + firstDayWeekday - 1;
                 const weekOfMonth = Math.ceil(offsetDate / 7);
 
-                const label = `Tuần ${weekOfMonth} - Tháng ${String(monthNum).padStart(2, '0')}/${yearNum}`;
+                const label = `Tuần ${weekOfMonth} - Tháng ${String(labelMonth).padStart(2, '0')}/${labelYear}`;
                 weeksMap.set(wStr, label);
             }
 

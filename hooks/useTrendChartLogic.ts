@@ -33,10 +33,9 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
         
         const rows: RechartsTrendData[] = [];
 
-        const isDark = document.documentElement.classList.contains('dark');
-        const shiftColors = isDark 
-            ? ['#a78bfa', '#7dd3fc', '#6ee7b7', '#fde047', '#f9a8d4', '#fda4af']
-            : ['#818cf8', '#38bdf8', '#34d399', '#facc15', '#f472b6', '#fb7185'];
+        // Dark Mode đã tắt toàn dự án — luôn dùng bảng màu Sáng, khớp quyết định đã gỡ observer
+        // '.dark' tương tự ở TrendChart.tsx (nơi gọi hook này).
+        const shiftColors = ['#818cf8', '#38bdf8', '#34d399', '#facc15', '#f472b6', '#fb7185'];
 
         if (view === 'daily') {
             const dailyData = (Object.values(trendData.daily || {}) as Array<{ date: Date; revenue: number; revenueQD: number; }>).sort((a, b) => a.date.getTime() - b.date.getTime());

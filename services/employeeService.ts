@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
 import { COL } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics, getSubgroup, normalizedThuHoSet } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics, getSubgroup, normalizedThuHoSet, toLocalISOString } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
@@ -251,7 +251,9 @@ export function processEmployeeData(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const customer = getRowValue(row, COL.CUSTOMER_NAME);
         const dateCreated: Date = row.parsedDate;
-        const dateKey = dateCreated.toISOString().split('T')[0];
+        // toLocalISOString (local time), KHÔNG phải .toISOString() (UTC) — đơn tạo sáng sớm giờ
+        // VN (UTC+7) bị lệch sang ngày hôm trước nếu dùng UTC, lệch với trendService.ts (local).
+        const dateKey = toLocalISOString(dateCreated);
 
         // --- Initialize stats objects ---
         if (!employeeStats[creator]) {

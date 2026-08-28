@@ -1,25 +1,16 @@
 import { db, auth } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getAllSettings, mergeSettings } from './dbService';
+import { doc, setDoc } from 'firebase/firestore';
+import { getAllSettings } from './dbService';
 import { isHeavySyncKey } from './firestoreService';
 
-export const pullSettingsFromFirebase = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-        const userRef = doc(db, 'users', user.uid);
-        const snap = await getDoc(userRef);
-        if (snap.exists()) {
-            const data = snap.data();
-            if (data.settings) {
-                await mergeSettings(data.settings);
-                console.warn("[Sync] Đã tải cài đặt cấu hình từ Firebase xuống IndexedDB");
-            }
-        }
-    } catch (e) {
-        console.error("[Sync] Lỗi pull settings từ Firebase:", e);
-    }
-};
+// Đọc thẳng sessionStorage (không qua React Context) — module thuần, không phải hook. Đây là
+// nguồn chân lý duy nhất cho Demo Mode (xem contexts/AuthContext.tsx isDemoMode/setDemoMode).
+// BUG FIX: initSyncListeners() trước đây không hề kiểm tra Demo Mode (khác hooks/useCloudSync.ts
+// đã gate rõ ràng `!user || isDemoMode`) — auth.currentUser vẫn là tài khoản THẬT khi bật Demo
+// Mode (chỉ userRole/status bị che), nên sửa setting lúc xem Demo Mode vẫn bị đẩy lên Firestore
+// tài khoản thật.
+const isDemoModeActive = (): boolean =>
+    typeof window !== 'undefined' && sessionStorage.getItem('ycx_demo_mode') === 'true';
 
 // Keys that are too large or unnecessary for cloud sync
 const EXCLUDED_SYNC_KEYS = new Set([
@@ -39,7 +30,7 @@ const MAX_SYNC_BYTES = 800 * 1024;
 
 export const pushSettingsToFirebase = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user || isDemoModeActive()) return;
     try {
         const allSettings = await getAllSettings();
         
