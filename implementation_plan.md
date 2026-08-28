@@ -54,10 +54,27 @@ User yêu cầu "lần kiểm tra sâu và kỹ nhất": đồng nhất thiết 
 ## Tier 4 — Hiệu năng (ngoài phạm vi yêu cầu, chỉ ghi nhận)
 `KpiCards.tsx` không tận dụng cache `row._metrics`/`row._parentGroup` đã có sẵn, tính lại `calculateRowMetrics()` mỗi card; `useIndustryGridLogic.ts` gọi `calculateRowMetrics()` dư 2-3 lần/dòng; `ContestTable.tsx`/`useHeadToHeadLogic.ts` quét lại toàn mảng O(n×cột)/O(n×config). Không sửa trong đợt này — không phải bug/code thừa như yêu cầu, rủi ro cao nếu sửa vội cho các hàm tính KPI cốt lõi.
 
-## Kế hoạch thực thi
+## Kế hoạch thực thi — ĐÃ HOÀN THÀNH (2026-08-28)
 Xử lý theo lô, mỗi lô build + `npm run check` + commit riêng:
-- Lô 1: Tier 1 các mục an toàn/khoanh vùng rõ (9, 10, 12, 13, 27, 28).
-- Lô 2: Tier 1 các mục cần đọc kỹ thêm trước khi sửa (1, 2, 3, 6, 7, 8, 11, 14, 15).
-- Lô 3: Tier 1 mục cần quyết định nghiệp vụ (4, 5 — TRANG_THAI check nên áp dụng hay bỏ) — HỎI USER trước khi sửa hàng loạt, giống case DTQĐ tháng 7.
-- Lô 4: Tier 1 phần còn lại (16-19) + Tier 2 (20-23).
-- Lô 5: Tier 3 dọn dẹp an toàn (24-35), ưu tiên các mục rủi ro thấp trước.
+- Lô 1: Tier 1 các mục an toàn/khoanh vùng rõ (9, 10, 12, 13, 27, 28). ✅ DONE (commit 2269dd5e)
+- Lô 2: Tier 1 các mục cần đọc kỹ thêm trước khi sửa (1, 2, 3, 6, 7, 8, 11, 14, 15). ✅ DONE (commit e7e39e9c)
+- Lô 3: Tier 1 mục cần quyết định nghiệp vụ — đã hỏi user qua AskUserQuestion:
+  - Item 4 (lọc giá 3 nơi lệch nhau): user chọn "sửa cả 2 phía". ✅ DONE (commit 2df40796) — validate bắt buộc priceValue1 khi có priceCondition (ColumnConfigModal.tsx, HeadToHeadConfigModal.tsx) + đồng bộ useWarehouseLogic.ts/useHeadToHeadLogic.ts theo đúng cách ContestTable.tsx (rỗng = bỏ qua filter).
+  - Item 5 (TRANG_THAI check ở Head-to-Head/Khai Thác): xác nhận có comment giải thích đây là CHỦ Ý (không phải lỗi) cho riêng 2 tab này. User chọn "để lại, không gộp". ⏸️ GIỮ NGUYÊN — đã ghi nhận, không đụng vào logic tính doanh thu.
+- Lô 4: Tier 1 phần còn lại (16-19) + Tier 2 (21, 22). ✅ DONE (commit d89205eb)
+  - Item 20 (3 nơi tự dựng `<button>` bằng document.createElement) — ⏸️ DEFERRED có chủ ý: rủi ro cao vì nằm trong luồng xuất Google Sheet nhiều bước qua OAuth, không thể test an toàn end-to-end trong phiên này.
+  - Item 23 (segment toggle tự dựng thay vì `<Tabs variant="segment">`) — ⏸️ DEFERRED, chưa làm trong đợt này.
+- Lô 5: Tier 3 dọn dẹp (24-35). ✅ DONE trừ item 30 — (commit cc9b0907, a243acbc, d1424067)
+  - 24 (dead code calculateRevenueQD/calculateWeightedQuantity): DONE — Lô 1.
+  - 25 (15 khối migration lặp): DONE — gộp thành vòng lặp for V10..V24.
+  - 26 (handleDeleteFile/handleViewReport trùng thân hàm): DONE — gộp resetFilterStateAfterFileChange().
+  - 27, 28: DONE — Lô 1.
+  - 29 (chuẩn hoá cột lặp 2 chỗ): DONE — gộp normalizeExploitationTabColumns().
+  - 30 (UncollectedOrdersModal ~90% trùng UnshippedOrdersModal, ~700 dòng/file): ⏸️ DEFERRED có chủ ý — rủi ro cao, không gộp trong đợt này (giống lý do item 20).
+  - 31 (tự viết lại lookup alias cột thay vì getRowValue()): DONE — KpiCards.tsx, KpiCardConfigModal.tsx, CrossSellingTable.tsx, DashboardView.tsx, Uncollected/UnshippedOrdersModal.tsx chuyển sang getRowValue()+COL; mở rộng COL.MA_NHOM_HANG/MA_NGANH_HANG/MANUFACTURER thêm biến thể không dấu đã thấy dùng cục bộ; thêm COL.NGAY_HEN_GIAO mới. KHÔNG đụng nhánh fallback vị trí cột __EMPTY_24/Column25 trong UnshippedOrdersModal (logic phòng thủ Excel thiếu header, rủi ro cao).
+  - 32 (WarehouseSummary formatRevenueForKho/formatQuantityForKho trùng): DONE — formatRevenueForKho alias sang formatRevenueForHeadToHead(); formatQuantityForKho GIỮ RIÊNG (không alias formatQuantity vì thiếu Math.round có thể lộ số lẻ).
+  - 33 (9 nơi lặp regex sanitize tên file): DONE — thêm sanitizeFilename() dùng chung.
+  - 34: DONE — Lô 2.
+  - 35 (PerformanceTable dead `|| {}`): DONE.
+
+Toàn bộ đã qua `npm run check` (typecheck + eslint + build + lint-ratchet) sạch trước mỗi lần commit.
