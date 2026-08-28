@@ -45,7 +45,8 @@ import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
-import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
+import { getExportFilenamePrefix, formatCurrency, getRowValue } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
 import type { DebugInfo } from '../common/DebugPanel';
@@ -150,7 +151,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
         return processedData?.unshippedOrders?.filter(row => {
-            let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row['Thời Gian Hẹn Giao'];
+            let scheduledDateRaw = getRowValue(row, COL.NGAY_HEN_GIAO);
             if (!scheduledDateRaw) return false;
             let scheduledDate: Date | null = null;
             if (scheduledDateRaw instanceof Date) {

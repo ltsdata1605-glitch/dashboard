@@ -5,7 +5,7 @@ import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
 import { COL } from '../constants';
-import { getRowValue, getErrorMessage } from '../utils/dataUtils';
+import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 
 // Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
 // chỉ gõ kiểu phần gọi ở hook này. Export để DashboardContext.tsx dùng lại.
@@ -130,7 +130,7 @@ export const useExportLogic = ({
                 });
                 const modalContent = offscreenContainer.querySelector('.modal-content');
                 if (modalContent) {
-                    const filename = `Phân Tích Hiệu Quả - ${employee.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
+                    const filename = `Phân Tích Hiệu Quả - ${sanitizeFilename(employee.name)}.png`;
                     await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: 960 });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports

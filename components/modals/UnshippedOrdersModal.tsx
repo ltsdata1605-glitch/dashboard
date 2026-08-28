@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -58,7 +58,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             data = data.filter(row => {
-                let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row.parsedDate;
+                let scheduledDateRaw = getRowValue(row, COL.NGAY_HEN_GIAO) || row.parsedDate;
                 if (!scheduledDateRaw) return false;
                 let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
                 if (!isNaN(scheduledDate.getTime())) {
@@ -134,7 +134,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             updateExportOverlay(`Đang xuất: ${creator.name}`, `${i + 1}/${total}`);
             const creatorElement = creatorRefs.current[creator.name];
             if (creatorElement) {
-                const filename = `Đơn Hàng Chờ Xuất - ${creator.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
+                const filename = `Đơn Hàng Chờ Xuất - ${sanitizeFilename(creator.name)}.png`;
                 await onExport(creatorElement, filename, {
                     forceOpenDetails: true,
                     forcedWidth: 960,
@@ -152,7 +152,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${creatorName}`);
             renderCustomersSync(getCreatorCustomerIds(creatorName));
-            const filename = `Đơn Hàng Chờ Xuất - ${creatorName.replace(/[\\/:*?"<>|]/g, '')}.png`;
+            const filename = `Đơn Hàng Chờ Xuất - ${sanitizeFilename(creatorName)}.png`;
             await onExport(creatorElement, filename, {
                 forceOpenDetails: true,
                 forcedWidth: 960,
@@ -185,7 +185,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         const exportData = finalUnshippedOrders.map(order => {
             const { revenue: price, revenueQD } = calculateRowMetrics(order, productConfig);
 
-            let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
+            let scheduledDateRaw = getRowValue(order, COL.NGAY_HEN_GIAO) || order.parsedDate;
             let formattedDate = 'N/A';
             if (scheduledDateRaw) {
                 let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
@@ -389,7 +389,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             const rows = finalOrders.map(order => {
                 const price = Number(getRowValue(order, COL.PRICE)) || 0;
 
-                let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
+                let scheduledDateRaw = getRowValue(order, COL.NGAY_HEN_GIAO) || order.parsedDate;
                 let formattedDate = 'N/A';
                 if (scheduledDateRaw) {
                     let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);

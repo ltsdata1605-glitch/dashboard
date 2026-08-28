@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../../types';
-import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString, getExportFilenamePrefix } from '../../../utils/dataUtils';
+import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString, getExportFilenamePrefix, sanitizeFilename } from '../../../utils/dataUtils';
 import { Icon } from '../../common/Icon';
 import { useHeadToHeadLogic, HeadToHeadRow as HeadToHeadRowData } from '../../../hooks/useHeadToHeadLogic';
 import { exportElementAsImage } from '../../../services/uiService';
@@ -61,7 +61,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
         if (tableRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filterState.kho);
-            const safeTabName = config.tableName.replace(/[\\/:*?"<>|]/g, '').trim();
+            const safeTabName = sanitizeFilename(config.tableName).trim();
             await exportElementAsImage(tableRef.current, `${prefix} - 7 Ngày - ${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true,

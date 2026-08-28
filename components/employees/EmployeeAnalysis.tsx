@@ -11,7 +11,7 @@ import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
-import { getExportFilenamePrefix } from '../../utils/dataUtils';
+import { getExportFilenamePrefix, sanitizeFilename } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
 import type { ContestTableConfig } from '../../types';
 
@@ -157,7 +157,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             customTabs.find(t => t.id === activeTab)?.name || 
                             activeTab;
             // Giữ nguyên dấu tiếng Việt cho tên file, chỉ chặn ký tự không hợp lệ trên hệ điều hành
-            const safeTabName = tabName.replace(/[\\/:*?"<>|]/g, '').trim();
+            const safeTabName = sanitizeFilename(tabName).trim();
             const filename = `${prefix} - Phân Tích Nhân Viên - ${safeTabName}.png`;
             const compactTabs = ['performanceTable', 'headToHead', 'summarySynthesis', 'industryAnalysis'];
             const isCustomTab = !defaultTabs.find(t => t.id === activeTab);

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
@@ -344,7 +344,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         if (exportRef.current) {
             setIsExporting(true);
             const prefix = (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `[${filterState.kho.join('_')}]` : '[Tat-ca-khu-vuc]';
-            const safeTabName = config.tableName.replace(/[\\/:*?"<>|]/g, '').trim();
+            const safeTabName = sanitizeFilename(config.tableName).trim();
             await exportElementAsImage(exportRef.current, `${prefix} - ${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true,

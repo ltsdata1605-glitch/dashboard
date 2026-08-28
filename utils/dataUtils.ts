@@ -375,6 +375,11 @@ export function getExportFilenamePrefix(khoFilter: string | string[]): string {
     return `[${khosStr.toUpperCase()}]`;
 }
 
+// Loại bỏ ký tự không hợp lệ trong tên file Windows/macOS khi xuất ảnh/báo cáo
+export function sanitizeFilename(name: string): string {
+    return name.replace(/[\\/:*?"<>|]/g, '');
+}
+
 export const roundUp = (num: number): number => {
     if (num > -1e-9 && num < 0) {
         return 0;

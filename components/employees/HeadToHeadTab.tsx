@@ -5,7 +5,7 @@ import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig, HeadToHea
 import { exportElementAsImage } from '../../services/uiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables, getSetting, saveSetting } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
+import { getExportFilenamePrefix, getRowValue, sanitizeFilename } from '../../utils/dataUtils';
 import { COL, DATA_STATUS_COLORS } from '../../constants';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
@@ -235,7 +235,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             const tableConfig = tables[i];
             if (tableElement && tableConfig) {
                 const prefix = getExportFilenamePrefix(filterState.kho);
-                const safeTabName = tableConfig.tableName.replace(/[\\/:*?"<>|]/g, '').trim();
+                const safeTabName = sanitizeFilename(tableConfig.tableName).trim();
                 await exportElementAsImage(tableElement, `${prefix} - 7 Ngày - ${safeTabName}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     isCompactTable: true,

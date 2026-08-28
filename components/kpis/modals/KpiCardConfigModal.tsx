@@ -7,6 +7,8 @@ import { Button } from '../../shared/ui/Button';
 import { Input } from '../../shared/ui/Input';
 import { Select } from '../../shared/ui/Select';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
+import { getRowValue } from '../../../utils/dataUtils';
+import { COL } from '../../../constants';
 
 interface Props {
     isOpen: boolean;
@@ -71,7 +73,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
             });
         }
         
-        const manufacturers = new Set<string>(originalData.map(row => String(row['Hãng'] || row['Hãng SX'] || '')).filter(Boolean));
+        const manufacturers = new Set<string>(originalData.map(row => String(getRowValue(row, COL.MANUFACTURER) || '')).filter(Boolean));
         
         return {
             allIndustries: Array.from(industries).sort(),

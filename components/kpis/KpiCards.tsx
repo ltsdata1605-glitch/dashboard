@@ -209,7 +209,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
 
                 let val = 0;
                 for (const row of warehouseFilteredData) {
-                    const rawNhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '').trim();
+                    const rawNhom = String(getRowValue(row, COL.MA_NHOM_HANG) || '').trim();
                     const parentGroup = getParentGroup(rawNhom, productConfig);
                     if (parentGroup === 'Không tính doanh thu') continue;
 
@@ -219,17 +219,17 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
                     if (!isRevenue) continue;
 
-                    const hsx = String(row['Hãng'] || row['Hãng SX'] || '').trim().toLowerCase();
+                    const hsx = String(getRowValue(row, COL.MANUFACTURER) || '').trim().toLowerCase();
                     if (filterHsx.length > 0 && !filterHsx.includes(hsx)) continue;
 
-                    const nganhMapValue = String(getParentGroup(rawNhom, productConfig) || row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '').trim().toLowerCase();
+                    const nganhMapValue = String(getParentGroup(rawNhom, productConfig) || getRowValue(row, COL.MA_NGANH_HANG) || '').trim().toLowerCase();
                     if (filterNganh.length > 0 && !filterNganh.includes(nganhMapValue)) continue;
 
                     const nhomMapValue = String(getSubgroup(rawNhom, productConfig) || rawNhom).trim().toLowerCase();
                     if (filterNhom.length > 0 && !filterNhom.includes(nhomMapValue)) continue;
 
                     if (filters.metricType === 'quantity') {
-                        val += Number(row['Số Lượng'] || row['Số lượng'] || 0);
+                        val += Number(getRowValue(row, COL.QUANTITY) || 0);
                     } else if (filters.metricType === 'revenueQD') {
                         val += calculateRowMetrics(row, productConfig).revenueQD;
                     } else { // revenue

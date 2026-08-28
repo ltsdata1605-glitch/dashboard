@@ -63,11 +63,11 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
                 const qty = metrics.weightedQuantity;
                 const doanhThuQD = metrics.revenueQD;
 
-                const NhomHang = row['Nhóm hàng'] || '';
-                const NganhHang = row['Ngành hàng'] || '';
+                const NhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
+                const NganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
                 const SanPham = row['Sản phẩm'] || '';
-                const HangSX = row['Hãng'] || row['Hãng SX'] || '';
-                const MaSP = String(row['Mã sản phẩm'] || row['Mã SP'] || '');
+                const HangSX = getRowValue(row, COL.MANUFACTURER) || '';
+                const MaSP = String(getRowValue(row, COL.PRODUCT_CODE) || '');
 
                 // 1. Phân tích Cột Fixed Data (Mẫu số)
                 dataCols.forEach(c => {

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -59,7 +59,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             data = data.filter(row => {
-                let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row.parsedDate;
+                let scheduledDateRaw = getRowValue(row, COL.NGAY_HEN_GIAO) || row.parsedDate;
                 if (!scheduledDateRaw) return false;
                 let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
                 if (!isNaN(scheduledDate.getTime())) {
@@ -132,7 +132,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             updateExportOverlay(`Đang xuất: ${creator.name}`, `${i + 1}/${total}`);
             const creatorElement = creatorRefs.current[creator.name];
             if (creatorElement) {
-                const filename = `Đơn Hàng Chưa Thu - ${creator.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
+                const filename = `Đơn Hàng Chưa Thu - ${sanitizeFilename(creator.name)}.png`;
                 await onExport(creatorElement, filename, {
                     forceOpenDetails: true,
                     forcedWidth: 960,
@@ -150,7 +150,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${creatorName}`);
             renderCustomersSync(getCreatorCustomerIds(creatorName));
-            const filename = `Đơn Hàng Chưa Thu - ${creatorName.replace(/[\\/:*?"<>|]/g, '')}.png`;
+            const filename = `Đơn Hàng Chưa Thu - ${sanitizeFilename(creatorName)}.png`;
             await onExport(creatorElement, filename, {
                 forceOpenDetails: true,
                 forcedWidth: 960,
