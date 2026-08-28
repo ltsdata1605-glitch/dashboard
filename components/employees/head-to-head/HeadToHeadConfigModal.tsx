@@ -233,7 +233,18 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             showFeedback('error', 'Vui lòng nhập Tên bảng.');
             return;
         }
-        
+
+        if (tableType === 'data' && priceCondition !== 'none') {
+            if (priceValue1.trim() === '' || isNaN(parseFloat(priceValue1))) {
+                showFeedback('error', 'Vui lòng nhập giá trị lọc giá (hoặc chọn "Không lọc").');
+                return;
+            }
+            if (priceCondition === 'between' && (priceValue2.trim() === '' || isNaN(parseFloat(priceValue2)))) {
+                showFeedback('error', 'Vui lòng nhập đủ 2 giá trị cho điều kiện "Trong khoảng".');
+                return;
+            }
+        }
+
         let finalTableName = tableName.trim().toUpperCase();
         if (!editingConfig && !finalTableName.startsWith('7 NGÀY')) {
             finalTableName = `7 NGÀY - ${finalTableName}`;

@@ -202,15 +202,18 @@ export const useHeadToHeadLogic = ({
                     const mMans = cfg.filters.selectedManufacturers.length === 0 || cfg.filters.selectedManufacturers.includes(manufacturer);
                     const mProds = cfg.filters.productCodes.length === 0 || cfg.filters.productCodes.some(c => c && productCode.includes(c.trim()));
                     
+                    // Chỉ áp bộ lọc giá khi priceValue1 đã nhập số hợp lệ — priceValue1 rỗng nghĩa là
+                    // bỏ qua bộ lọc (khớp hành vi ContestTable.tsx), tránh mặc định về 0 gây loại
+                    // nhầm gần hết dữ liệu với điều kiện "nhỏ hơn"/"bằng"/"giữa".
                     let mPrice = true;
-                    if (cfg.filters.priceCondition) {
+                    if (cfg.filters.priceCondition && typeof cfg.filters.priceValue1 === 'number') {
                         const priceToUse = Number(getRowValue(row, cfg.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
-                        const v1 = cfg.filters.priceValue1 || 0;
-                        const v2 = cfg.filters.priceValue2 || 0;
+                        const v1 = cfg.filters.priceValue1;
+                        const v2 = cfg.filters.priceValue2;
                         if (cfg.filters.priceCondition === 'greater') mPrice = priceToUse > v1;
                         else if (cfg.filters.priceCondition === 'less') mPrice = priceToUse < v1;
                         else if (cfg.filters.priceCondition === 'equal') mPrice = priceToUse === v1;
-                        else if (cfg.filters.priceCondition === 'between') mPrice = priceToUse >= v1 && priceToUse <= v2;
+                        else if (cfg.filters.priceCondition === 'between') mPrice = typeof v2 === 'number' && priceToUse >= v1 && priceToUse <= v2;
                     }
                     
                     return mInds && mSubs && mMans && mProds && mPrice;

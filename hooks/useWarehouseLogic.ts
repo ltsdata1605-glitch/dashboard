@@ -110,15 +110,21 @@ export const useWarehouseLogic = ({
                             if (!pMatch) continue;
                         }
 
-                        if (col.filters?.priceCondition) {
+                        // Chỉ áp bộ lọc giá khi priceValue1 đã nhập số hợp lệ — priceValue1 rỗng nghĩa là
+                        // bỏ qua bộ lọc (khớp hành vi ContestTable.tsx), tránh mặc định về 0 gây loại
+                        // nhầm gần hết dữ liệu với điều kiện "nhỏ hơn"/"bằng"/"giữa".
+                        if (col.filters?.priceCondition && typeof col.filters.priceValue1 === 'number') {
                             const priceVal = Number(getRowValue(row, col.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
-                            const v1 = col.filters.priceValue1 || 0;
-                            const v2 = col.filters.priceValue2 || 0;
+                            const v1 = col.filters.priceValue1;
                             switch (col.filters.priceCondition) {
                                 case 'greater': if (priceVal <= v1) isMatch = false; break;
                                 case 'less': if (priceVal >= v1) isMatch = false; break;
                                 case 'equal': if (priceVal !== v1) isMatch = false; break;
-                                case 'between': if (priceVal < v1 || priceVal > v2) isMatch = false; break;
+                                case 'between': {
+                                    const v2 = col.filters.priceValue2;
+                                    if (typeof v2 !== 'number' || priceVal < v1 || priceVal > v2) isMatch = false;
+                                    break;
+                                }
                             }
                             if (!isMatch) continue;
                         }
