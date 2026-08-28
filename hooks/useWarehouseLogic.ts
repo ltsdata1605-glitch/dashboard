@@ -403,10 +403,11 @@ export const useWarehouseLogic = ({
             return acc;
         }, initialTotals);
 
-        if (coreTotals.doanhThuThuc) {
-            coreTotals.hieuQuaQD = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuQD || 0) - (coreTotals.doanhThuThuc || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
-            coreTotals.traChamPercent = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuTraCham || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
-        }
+        // Không bọc trong `if (coreTotals.doanhThuThuc)` — doanhThuThuc = 0 (đúng, không phải
+        // thiếu dữ liệu) là falsy nên trước đây bỏ qua set hieuQuaQD/traChamPercent, để lại
+        // undefined thay vì 0 đúng (2 ternary bên trong đã tự xử lý đúng trường hợp <=0 rồi).
+        coreTotals.hieuQuaQD = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuQD || 0) - (coreTotals.doanhThuThuc || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
+        coreTotals.traChamPercent = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuTraCham || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
 
         // Second pass: Calculate dynamically for 'calculated' columns
         const getDynamicTotal = (colId: string): number => {

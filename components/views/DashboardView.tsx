@@ -256,9 +256,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     }, [isInspectorActive]);
 
 
-    useEffect(() => {
-        // Lucide icon initialization is now handled by the Icon component using lucide-react
-    }, [appState, processedData, activeModal, isExporting, isDebugPanelVisible, uniqueFilterOptions, isProcessing, filterState, isFilterSidebarOpen]);
 
     if (isActive === false) {
         return <div className="hidden" />;
@@ -519,12 +516,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </div>
                                             )}
 
-                                            <div className={`relative z-10 pt-1 ${
-                                                ((userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0)
-                                                || overdueUnshippedOrders.length > 0
-                                                || (processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0)
-                                                    ? 'lg:pt-3' : 'lg:pt-3'
-                                            }`}>
+                                            <div className="relative z-10 pt-1 lg:pt-3">
                                                 <SectionHeader
                                                     title="TỔNG QUAN DOANH THU"
                                                     icon="bar-chart-3"

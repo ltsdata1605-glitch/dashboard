@@ -206,7 +206,11 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         }
 
                         const isWeekend = dayData.isWeekend;
-                        const hasData = dayData.value !== null && dayData.value > 0;
+                        // `value !== null` đã đủ phân biệt "có dữ liệu" (kể cả giá trị thật = 0,
+                        // VD 0% trả chậm 1 ngày có doanh thu) với "không có dữ liệu" (null, ngày
+                        // không có trong dataMap) — trước đây thêm `&& value > 0` khiến giá trị 0%
+                        // hợp lệ hiển thị mờ + dấu "-" giống hệt ngày không có dữ liệu.
+                        const hasData = dayData.value !== null;
                         const isToday = new Date().getDate() === dayData.day && new Date().getMonth() === month && new Date().getFullYear() === year;
                         
                         let bgClass = 'bg-white dark:bg-slate-900';

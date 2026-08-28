@@ -196,7 +196,10 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     }
 
     const indentMargin = `${(level - 1) * 12}px`;
-    const traGopDisplay = traGopPercent === 0 ? '-' : `${Math.ceil(traGopPercent)}%`;
+    // So điều kiện hiển thị theo MẪU SỐ (revenue > 0, tức có doanh thu để tính %), không theo
+    // KẾT QUẢ === 0 — doanh thu thật nhưng 0% trả góp là kết quả hợp lệ (khác "-" = không có
+    // dữ liệu để tính), 2 trường hợp trước đây bị gộp chung vì cả 2 đều cho ra đúng số 0.
+    const traGopDisplay = revenue > 0 ? `${Math.ceil(traGopPercent)}%` : '-';
 
     const cellClass = "px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px]"; 
     const deltaCellClass = "px-1 sm:px-2 py-1 sm:py-1.5 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
@@ -251,7 +254,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                         </td>
                     ) : (
                         <td className={`${cellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
-                            {slPercent > 0 ? `${Math.ceil(slPercent)}%` : '-'}
+                            {parentQuantity > 0 ? `${Math.ceil(slPercent)}%` : '-'}
                         </td>
                     )
                 )}
@@ -284,7 +287,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                         </td>
                     ) : (
                         <td className={`${cellClass} font-bold text-amber-600 dark:text-amber-400 ${separatorClass}`}>
-                            {dtThucPercent > 0 ? `${Math.ceil(dtThucPercent)}%` : '-'}
+                            {parentRevenue > 0 ? `${Math.ceil(dtThucPercent)}%` : '-'}
                         </td>
                     )
                 )}

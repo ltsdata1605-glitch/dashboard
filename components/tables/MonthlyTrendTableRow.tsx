@@ -153,7 +153,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     return (
                         <td key={`slpct-${m.id}`} className="px-3 py-3 text-right">
                             <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">
-                                {qtyPercent > 0 ? `${qtyPercent.toFixed(1)}%` : '-'}
+                                {(pQty && pQty > 0) ? `${qtyPercent.toFixed(1)}%` : '-'}
                             </span>
                         </td>
                     );
@@ -174,7 +174,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     return (
                         <td key={`revpct-${m.id}`} className="px-3 py-3 text-right">
                             <span className="font-semibold text-sky-600/70 dark:text-sky-400/70 text-xs">
-                                {revPct > 0 ? `${revPct.toFixed(1)}%` : '-'}
+                                {(pRev && pRev > 0) ? `${revPct.toFixed(1)}%` : '-'}
                             </span>
                         </td>
                     );
@@ -223,7 +223,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     return (
                         <td key={`tg-${m.id}`} className="px-3 py-3 text-right group-hover:bg-rose-50 dark:group-hover:bg-rose-900/10 transition-colors">
                             <span className={`text-[13px] ${getTraGopPercentClass(traGopPct, tgTarget)}`}>
-                                {traGopPct > 0 ? `${Math.ceil(traGopPct)}%` : '-'}
+                                {(node && node.totalRevenue > 0) ? `${Math.ceil(traGopPct)}%` : '-'}
                             </span>
                         </td>
                     );

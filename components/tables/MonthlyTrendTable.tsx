@@ -119,7 +119,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                             else if (h.key === 'aov') valueToDisplay = totalForMonth.totalQuantity > 0 ? (totalForMonth.totalRevenue / totalForMonth.totalQuantity / 1000000).toFixed(1) : '-';
                             else if (h.key === 'traGopPercent') {
                                 const val = totalForMonth.totalRevenue > 0 ? (totalForMonth.totalTraGop / totalForMonth.totalRevenue) * 100 : 0;
-                                valueToDisplay = val > 0 ? `${Math.ceil(val)}%` : '-';
+                                valueToDisplay = totalForMonth.totalRevenue > 0 ? `${Math.ceil(val)}%` : '-';
                             }
                             return (
                                 <td key={`tf-${h.key}-${m.id}`} className="px-2 py-2 text-right border-r border-sky-200 dark:border-sky-800 text-slate-700 dark:text-slate-300 font-bold text-xs">

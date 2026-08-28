@@ -29,9 +29,9 @@ let _lastKhoStr: string = '';
 
 export const isXuatMatch = (row: DataRow, xuatFilter: string) => {
     if (xuatFilter === 'all') return true;
-    const xuatValue = getRowValue(row, COL.XUAT);
+    const xuatValue = cleanAndNormalize(getRowValue(row, COL.XUAT));
     if (!xuatValue) return xuatFilter === 'Chưa';
-    const isDa = xuatValue.indexOf('Đã') !== -1 || xuatValue.indexOf('đã') !== -1 || xuatValue.indexOf('ĐÃ') !== -1;
+    const isDa = xuatValue.includes('đã');
     return (isDa ? 'Đã' : 'Chưa') === xuatFilter;
 };
 
@@ -79,11 +79,12 @@ export const isNguoiTaoMatch = (row: DataRow, nguoiTaoFilter: string[] | Set<str
 
 export const isKhoMatch = (row: DataRow, khoFilter: string[] | Set<string> | null) => {
     if (!khoFilter) return true;
+    const khoValue = String(getRowValue(row, COL.KHO) || '');
     if (khoFilter instanceof Set) {
-        return khoFilter.has(getRowValue(row, COL.KHO).toString());
+        return khoFilter.has(khoValue);
     }
     if (khoFilter.length === 0 || khoFilter.includes('all')) return true;
-    return khoFilter.includes(getRowValue(row, COL.KHO).toString());
+    return khoFilter.includes(khoValue);
 };
 
 export const isDepartmentMatch = (row: DataRow, departmentFilter: string[] | Set<string> | null, departmentMap: DepartmentMap | null) => {

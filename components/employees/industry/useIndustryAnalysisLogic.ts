@@ -30,10 +30,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     
     useEffect(() => {
         let isMounted = true;
-        Promise.all([
-            getIndustryVisibleGroups(),
-            getIndustryVisibleGroups() // Temporary fallback for efficiency if missing
-        ]).then(([savedDetail]) => {
+        getIndustryVisibleGroups().then((savedDetail) => {
             if (!isMounted) return;
             let initialGroups = ['spChinh'];
             if (savedDetail && savedDetail.length > 0) {
