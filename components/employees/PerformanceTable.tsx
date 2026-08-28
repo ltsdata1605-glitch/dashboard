@@ -21,7 +21,7 @@ interface PerformanceTableProps {
 const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableProps>(({
     employeeData, onEmployeeClick, onExport, isExporting,
 }, ref) => {
-    const { kpiTargets } = useDashboardContext() || {};
+    const { kpiTargets } = useDashboardContext();
     const [activeTab, setActiveTab] = useState<GroupType>('doanhThu');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>({ key: 'doanhThuQD', direction: 'desc' });
     const [targetPerEmployee, setTargetPerEmployee] = useState(150_000_000);

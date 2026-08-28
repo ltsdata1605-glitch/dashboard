@@ -5,7 +5,7 @@ import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
 import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
-import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix, getBorderAccentFromColorClass } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, formatRevenueForHeadToHead, getExportFilenamePrefix, getBorderAccentFromColorClass } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
@@ -275,13 +275,15 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         return getHqqdClassWithTime(hqqdValue, timeUsedPct);
     };
 
-    const formatRevenueForKho = (value: number | undefined): string => {
-        if (value === undefined || isNaN(value) || value === 0) return '—';
-        return Math.round(value / 1000000).toLocaleString('vi-VN');
-    };
-    
+    // Alias sang hàm chuẩn dùng chung formatRevenueForHeadToHead() (dataUtils.ts) — trước đây viết
+    // lại cục bộ giống hệt công thức, chỉ khác ký tự gạch ngang khi rỗng ("—" thay vì "-"), silently
+    // phân kỳ hiển thị với các bảng khác dùng đúng hàm chuẩn.
+    const formatRevenueForKho = formatRevenueForHeadToHead;
+    // GIỮ RIÊNG (không alias formatQuantity đã import) — formatQuantity() không Math.round() giá
+    // trị trước khi hiển thị (có thể lộ số lẻ nếu cột là số lượng quy đổi/weightedQuantity không
+    // nguyên), trong khi bảng Kho luôn cần số nguyên; chỉ sửa ký tự gạch ngang cho nhất quán.
     const formatQuantityForKho = (value: number | undefined): string => {
-        if (value === undefined || isNaN(value) || value === 0) return '—';
+        if (value === undefined || isNaN(value) || value === 0) return '-';
         return Math.round(value).toLocaleString('vi-VN');
     };
 
