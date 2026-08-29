@@ -42,7 +42,6 @@ interface CompetitionTabProps {
     onDeleteVersion: (name: string) => void;
     employeeCompetitionTargets: Map<string, Map<string, number>>;
     allEmployees: Employee[];
-    performanceChanges: Map<string, { change: number; direction: 'up' | 'down' }>;
     individualViewEmployees: Employee[];
     selectedIndividual: Employee | null;
     onSelectIndividual: (emp: Employee | null) => void;
@@ -529,7 +528,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="text-slate-400">
+                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
                             <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />

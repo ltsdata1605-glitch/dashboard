@@ -6,8 +6,6 @@ interface UseRevenueDataProps {
     rows: RevenueRow[];
     departmentNames: string[];
     sortConfig: { key: string; direction: 'asc' | 'desc' };
-    snapshotId?: string | null;
-    snapshotRows: RevenueRow[];
     prevMonthRows: RevenueRow[];
     departmentWeights: Record<string, number>;
     deptEmployeeCounts: Record<string, number>;
@@ -23,8 +21,6 @@ export const useRevenueData = ({
     rows,
     departmentNames,
     sortConfig,
-    snapshotId,
-    snapshotRows,
     prevMonthRows,
     departmentWeights,
     deptEmployeeCounts,
@@ -82,7 +78,6 @@ export const useRevenueData = ({
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
 
         // Map tra cứu O(1) thay vì .find() O(n) lồng trong .map() ở calculateWithComparison bên dưới
-        const snapshotRowsMap = new Map(snapshotRows.map(sr => [sr.originalName, sr]));
         const prevMonthRowsMap = new Map(prevMonthRows.map(pr => [pr.originalName, pr]));
 
         const calculateWithComparison = (emp: RevenueRow): RevenueRow => {
@@ -92,12 +87,7 @@ export const useRevenueData = ({
             const currentInstallment = employeeInstallmentMap.get(emp.originalName || '') || 0;
             const currentCompletion = empTarget > 0 ? (emp.dtqd / empTarget) * 100 : 0;
 
-            let prevData = null;
-            if (snapshotId) {
-                prevData = snapshotRowsMap.get(emp.originalName) ?? null;
-            } else if (prevMonthRows.length > 0) {
-                prevData = prevMonthRowsMap.get(emp.originalName) ?? null;
-            }
+            const prevData = prevMonthRows.length > 0 ? (prevMonthRowsMap.get(emp.originalName) ?? null) : null;
 
             let prevCompData = null;
             if (prevData) {
@@ -319,7 +309,7 @@ export const useRevenueData = ({
         }
 
         return finalOutput;
-    }, [rows, departmentNames, sortConfig, snapshotId, snapshotRows, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData]);
+    }, [rows, departmentNames, sortConfig, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData]);
 
     return { displayList };
 };

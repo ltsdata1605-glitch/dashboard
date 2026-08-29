@@ -245,7 +245,19 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
-                <div className="flex flex-none justify-end">
+                <div className="flex flex-none justify-end gap-2">
+                    {onNavigateToDashboard && (
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={onNavigateToDashboard}
+                            title="Xem Dashboard"
+                            className="flex items-center gap-1.5 rounded-lg sm:rounded-full bg-sky-600 hover:bg-sky-700 border border-sky-600 shadow-sm px-3.5 py-2 text-xs sm:text-sm font-bold text-white transition-colors"
+                        >
+                            <ChartBarIcon className="h-4 w-4" />
+                            <span className="uppercase text-[11px] sm:text-xs tracking-wider">Xong, xem Dashboard</span>
+                        </Button>
+                    )}
                     <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <Button
                             variant="unstyled"

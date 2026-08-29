@@ -1,16 +1,9 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import Card from './Card';
-import { DownloadIcon, UploadIcon, AlertTriangleIcon, SpinnerIcon, TrashIcon, CheckCircleIcon, SaveIcon, ClockIcon } from './Icons';
+import React, { useState, useRef } from 'react';
+import { UploadIcon, SpinnerIcon, SaveIcon } from './Icons';
 import * as db from '../utils/db';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
-
-interface SnapshotMetadata {
-    id: string;
-    name: string;
-    date: string;
-}
 
 interface BackupMetadata {
     appName: string;
@@ -35,8 +28,7 @@ interface BackupFileContent {
 const Settings: React.FC = () => {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [allSnapshots, setAllSnapshots] = useState<Record<string, SnapshotMetadata[]>>({});
-    
+
     // Confirm Dialog State
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean;
@@ -59,29 +51,6 @@ const Settings: React.FC = () => {
         setConfirmDialog({ ...options, isOpen: true });
     };
     const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-    useEffect(() => {
-        const fetchSnapshots = async () => {
-            setIsLoading('snapshots');
-            try {
-                const allData = await db.getAll();
-                const snapshotMetadata = allData.filter(item => item.key.startsWith('snapshots-'));
-                
-                const groupedSnapshots: Record<string, SnapshotMetadata[]> = {};
-                snapshotMetadata.forEach(item => {
-                    const supermarketName = item.key.replace('snapshots-', '');
-                    if (Array.isArray(item.value)) {
-                        groupedSnapshots[supermarketName] = item.value.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                    }
-                });
-                setAllSnapshots(groupedSnapshots);
-            } catch (error) {
-                console.error("Failed to fetch snapshots", error);
-            } finally {
-                setIsLoading(null);
-            }
-        };
-        fetchSnapshots();
-    }, []);
 
     const handleBackup = async () => {
         setIsLoading('backup');
@@ -227,28 +196,6 @@ const Settings: React.FC = () => {
             });
         };
         reader.readAsText(file);
-    };
-
-    const handleDeleteSnapshot = (supermarket: string, snapshotId: string) => {
-        showConfirm({
-            title: 'Xóa Snapshot',
-            message: 'Bạn có chắc chắn muốn xoá snapshot này không?',
-            variant: 'danger',
-            confirmText: 'Xóa',
-            onConfirm: async () => {
-                closeConfirm();
-                try {
-                    const metadataKey = `snapshots-${supermarket}`;
-                    const currentMetadata: SnapshotMetadata[] = await db.get(metadataKey) || [];
-                    const updatedMetadata = currentMetadata.filter(meta => meta.id !== snapshotId);
-                    await db.set(metadataKey, updatedMetadata);
-                    await db.deleteEntry(`snapshot-data-${supermarket}-${snapshotId}`);
-                    setAllSnapshots(prev => ({ ...prev, [supermarket]: updatedMetadata }));
-                } catch (error) {
-                    console.error("Delete failed", error);
-                }
-            }
-        });
     };
 
     return (

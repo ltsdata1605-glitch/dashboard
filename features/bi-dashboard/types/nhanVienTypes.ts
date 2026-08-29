@@ -8,11 +8,6 @@ export interface CompetitionHeader {
     metric: string;
 }
 
-export interface PerformanceChange {
-    change: number;
-    direction: 'up' | 'down';
-}
-
 export interface BonusMetrics {
     erp: number;
     tNong: number;
@@ -95,17 +90,6 @@ export interface InstallmentRow {
     providers: InstallmentProvider[];
     totalDtSieuThi: number;
     totalPercent: number;
-}
-
-export interface SnapshotMetadata {
-    id: string;
-    name: string;
-    date: string;
-}
-
-export interface SnapshotData {
-    danhSachData: string;
-    thiDuaData: string;
 }
 
 export interface Version {

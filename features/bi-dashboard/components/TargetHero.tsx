@@ -235,7 +235,12 @@ const CompactTargetItem: React.FC<{
     return (
         <div className={`p-2 sm:p-2.5 rounded-lg transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
             <div className="mb-2">
-                <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
+                <div className="flex items-center justify-between">
+                    <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
+                    <Button variant="ghost" size="icon" onClick={onReset} title="Reset về mặc định" className="text-slate-400 hover:text-rose-500 h-5 w-5 p-0 shrink-0">
+                        <ResetIcon className="h-3 w-3" />
+                    </Button>
+                </div>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
                     <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
                     <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
@@ -367,9 +372,9 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <ResetIcon className="h-4 w-4" />
                         </Button>
                     </div>
-                    <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => setTotalTarget(v)} onReset={() => setTotalTarget(100)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
-                    <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => setTraGop(v)} onReset={() => setTraGop(45)} colorTheme="emerald" />
-                    <CompactTargetItem label="Target Quy đổi" baseValue={40} adjValue={quyDoi} unit="%" ratio={quyDoi} onChange={v => setQuyDoi(v)} onReset={() => setQuyDoi(40)} colorTheme="amber" />
+                    <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => { setTotalTarget(v); addUpdate(`targethero-${safeName}-total`, `Điều chỉnh Target DTQĐ - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTotalTarget(100)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
+                    <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => { setTraGop(v); addUpdate(`targethero-${safeName}-tragop`, `Điều chỉnh Target Trả góp - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTraGop(45)} colorTheme="emerald" />
+                    <CompactTargetItem label="Target Quy đổi" baseValue={40} adjValue={quyDoi} unit="%" ratio={quyDoi} onChange={v => { setQuyDoi(v); addUpdate(`targethero-${safeName}-quydoi`, `Điều chỉnh Target Quy đổi - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setQuyDoi(40)} colorTheme="amber" />
                 </div>
 
                 {/* Cột phải: Phân bổ bộ phận */}

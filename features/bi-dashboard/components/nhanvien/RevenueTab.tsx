@@ -4,10 +4,9 @@ import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon } from '../Icons';
-import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata, BonusMetrics } from '../../types/nhanVienTypes';
+import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import * as db from '../../utils/db';
 import { parseRevenueData } from '../../utils/nhanVienHelpers';
 
 
@@ -28,32 +27,23 @@ const RevenueView: React.FC<{
     rows: RevenueRow[];
     supermarketName: string;
     departmentNames: string[];
-    performanceChanges: Map<string, PerformanceChange>;
-    onViewTrend: (employee: Employee) => void;
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
-    snapshotId?: string | null;
-    setSnapshotId: (id: string | null) => void;
-    snapshots: SnapshotMetadata[];
-    handleSaveSnapshot: () => void;
-    handleDeleteSnapshot: (id: string, name: string) => void;
     supermarketTarget: number;
     departmentWeights: Record<string, number>;
     deptEmployeeCounts: Record<string, number>;
     employeeInstallmentMap: Map<string, number>;
     isActive?: boolean;
     bonusData?: Record<string, BonusMetrics | null>;
-}> = ({ 
-    rows, supermarketName, departmentNames, onViewTrend, 
-    highlightedEmployees, setHighlightedEmployees, snapshotId, setSnapshotId,
-    snapshots,
+}> = ({
+    rows, supermarketName, departmentNames,
+    highlightedEmployees, setHighlightedEmployees,
     supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap,
     isActive,
     bonusData
 }) => {
     const [isLoading, setIsLoading] = useState(supermarketName && rows.length === 0);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dtqd', direction: 'desc' });
-    const [snapshotRows, setSnapshotRows] = useState<RevenueRow[]>([]);
     const [isColorModalOpen, setIsColorModalOpen] = useState(false);
     const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
     
@@ -80,17 +70,6 @@ const RevenueView: React.FC<{
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
     const cardRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const loadSnapshotData = async () => {
-            if (isActive === false) return;
-            if (snapshotId && supermarketName) {
-                const data: SnapshotData | undefined = await db.get(`snapshot-data-${supermarketName}-${snapshotId}`);
-                if (data?.danhSachData) setSnapshotRows(parseRevenueData(data.danhSachData));
-            } else setSnapshotRows([]);
-        };
-        loadSnapshotData();
-    }, [snapshotId, supermarketName, isActive]);
 
     useEffect(() => { setIsLoading(!!(supermarketName && rows.length === 0)); }, [rows, supermarketName]);
 
@@ -129,8 +108,6 @@ const RevenueView: React.FC<{
         rows,
         departmentNames,
         sortConfig,
-        snapshotId,
-        snapshotRows,
         prevMonthRows,
         departmentWeights,
         deptEmployeeCounts,
@@ -379,7 +356,6 @@ const RevenueView: React.FC<{
                                                 row={row}
                                                 isHighlighted={isHighlighted}
                                                 onHighlightToggle={handleHighlightToggle}
-                                                onViewTrend={onViewTrend}
                                                 supermarketName={supermarketName}
                                                 colorSettings={colorSettings}
                                                 getHtColor={getHtColor}

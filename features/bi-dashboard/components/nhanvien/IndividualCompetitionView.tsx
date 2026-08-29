@@ -63,6 +63,7 @@ export interface IndividualCompetitionViewHandle {
     handleExportPNG: (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null) => Promise<'download' | 'share' | 'cancel' | null>;
     performBatchExport: () => Promise<void>;
     isBatchExporting: boolean;
+    exportProgress: { current: number; total: number } | null;
 }
 
 // ─── Mini KPI Stat ───
@@ -359,7 +360,8 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     useImperativeHandle(ref, () => ({
         handleExportPNG,
         performBatchExport,
-        isBatchExporting
+        isBatchExporting,
+        exportProgress
     }));
 
 

@@ -1,9 +1,8 @@
 import React from 'react';
-import { RevenueRow, Employee } from '../../../types/nhanVienTypes';
+import { RevenueRow } from '../../../types/nhanVienTypes';
 import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
 import AvatarDisplay from '../shared/AvatarDisplay';
-import { Button } from '../../../../../components/shared/ui/Button';
 import { onActivateKey } from '../../../../../components/shared/ui';
 
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
@@ -12,7 +11,6 @@ interface RevenueDesktopRowProps {
     row: RevenueRow;
     isHighlighted: boolean;
     onHighlightToggle: (name: string) => void;
-    onViewTrend: (employee: Employee) => void;
     supermarketName: string;
     colorSettings: ColorSettings;
     getHtColor: (val: number) => string;
@@ -26,7 +24,6 @@ export const RevenueDesktopRow = React.memo(({
     row,
     isHighlighted,
     onHighlightToggle,
-    onViewTrend,
     supermarketName,
     colorSettings,
     getHtColor,
@@ -40,11 +37,9 @@ export const RevenueDesktopRow = React.memo(({
             <td className="px-2 py-1 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-800/60">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
-                    <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} onClick={() => onViewTrend(row as Employee)} />
+                    <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
                     <div role="button" tabIndex={0} className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
-                        <div className="flex items-center gap-2">
-                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-600 dark:text-sky-400 text-[13px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</Button>
-                        </div>
+                        <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
                     </div>
                 </div>
             </td>
