@@ -1,6 +1,7 @@
 
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { DownloadIcon, XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
+import { ExternalLink } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
@@ -327,9 +328,9 @@ const StatusTile: React.FC<{
                         e.stopPropagation(); 
                     }} 
                     className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10 ${hasData ? 'right-10' : 'right-2'}`} 
-                    title="Mở link tải báo cáo từ BI"
+                    title="Mở liên kết báo cáo từ BI"
                 >
-                    <DownloadIcon className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-3.5 w-3.5" />
                 </a>
             )}
             {hasData && !isPasting && (
@@ -756,9 +757,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 BC D.Thu theo NV
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
-                                <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=1`}
+                                <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="indigo"
-                                    onChange={(v) => { setDanhSachData(v); handleUpdate('danhSach', v, s => s.includes('Nhân viên	DTLK	DTQĐ'), setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); }}
+                                    onChange={(v) => { 
+                                        setDanhSachData(v); 
+                                        handleUpdate('danhSach', v, s => {
+                                            const lower = s.toLowerCase();
+                                            return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                   (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('số lượng'));
+                                        }, setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); 
+                                    }}
                                     onClear={(title) => { 
                                         setDanhSachData(''); 
                                         setDanhSachTs(null); 
@@ -798,9 +806,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         
                                     }} />
 
-                                <StatusTile title="Trả góp NV" lastUpdated={traGopTs} value={traGopData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=5`}
+                                <StatusTile title="Trả góp NV" lastUpdated={traGopTs} value={traGopData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/tra-cham"
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
-                                    onChange={(v) => { setTraGopData(v); handleUpdate('traGop', v, s => s.includes('Nhân viên') && s.includes('DT Siêu thị'), setTraGopTs, `Nhân viên (TG) - ${supermarketName}`, ids.tg!); }}
+                                    onChange={(v) => { 
+                                        setTraGopData(v); 
+                                        handleUpdate('traGop', v, s => {
+                                            const lower = s.toLowerCase();
+                                            return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                   (lower.includes('trả góp') || lower.includes('tra gop') || lower.includes('trả chậm') || lower.includes('tra cham') || lower.includes('homecredit') || lower.includes('dt siêu thị'));
+                                        }, setTraGopTs, `Nhân viên (TG) - ${supermarketName}`, ids.tg!); 
+                                    }}
                                     onClear={(title) => { 
                                         setTraGopData(''); 
                                         setTraGopTs(null); 

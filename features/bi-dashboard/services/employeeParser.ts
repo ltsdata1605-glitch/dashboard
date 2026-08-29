@@ -2,6 +2,7 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee ở types/nhanVienTypes.ts có thêm department (nhân viên đã gắn phòng ban) — khác với
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
+import { parseRevenueData, standardizeEmployeeName } from '../utils/nhanVienHelpers';
 
 export interface Employee {
     originalName: string;
@@ -70,87 +71,100 @@ export const parseBaseTargetsMap = (competitionLuyKeData: string, supermarketNam
 export const parseAllEmployees = (allEmployeesRaw: string, hiddenEmployees: string[] = []): Employee[] => {
     if (!allEmployeesRaw) return [];
     
-    return allEmployeesRaw.split('\n')
-        .map(l => l.trim())
-        .filter(l => {
-            const namePart = l.split('\t')[0];
-            if (!namePart.includes(' - ')) return false;
-            
-            // Hardcoded exclusion rules from previous implementation
-            if (namePart.startsWith('BP ') || 
-                namePart.startsWith('Hỗ trợ BI') || 
-                namePart.startsWith('NNH ') || 
-                namePart.startsWith('ĐML_STR_STR') || 
-                namePart.startsWith('Yêu cầu xuất') || 
-                /^\d/.test(namePart)) {
-                return false;
+    const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
+    
+    // First try using parseRevenueData (handles both new BI multi-line/stream and legacy formats)
+    const revenueRows = parseRevenueData(allEmployeesRaw);
+    const fromRevenue = revenueRows
+        .filter(r => r.type === 'employee' && r.originalName)
+        .map(r => ({
+            originalName: r.originalName!,
+            name: r.originalName!
+        }));
+    
+    if (fromRevenue.length > 0) {
+        return fromRevenue.filter(emp => !hiddenSet.has(emp.originalName));
+    }
+    
+    // Fallback: parse lines directly
+    const result: Employee[] = [];
+    const seen = new Set<string>();
+    const lines = String(allEmployeesRaw).split(/\r?\n/).map(l => l.trim()).filter(l => l);
+
+    for (const line of lines) {
+        const firstPart = line.split('\t')[0].trim();
+        if (firstPart.includes(' - ') && !firstPart.startsWith('BP ') && !firstPart.includes('http') && !firstPart.includes('Báo cáo') && !firstPart.includes('Dashboards')) {
+            const canonicalName = standardizeEmployeeName(firstPart);
+            if (!seen.has(canonicalName) && !hiddenSet.has(canonicalName) && !hiddenSet.has(firstPart)) {
+                seen.add(canonicalName);
+                result.push({
+                    originalName: canonicalName,
+                    name: canonicalName
+                });
             }
-            
-            const parts = namePart.split(' - ');
-            const possibleId = parts[parts.length - 1].trim();
-            return /^\d+$/.test(possibleId);
-        })
-        .map(l => {
-            const originalName = l.split('\t')[0];
-            return { originalName, name: originalName };
-        })
-        .filter(emp => !hiddenEmployees.includes(emp.originalName));
+        }
+    }
+    return result;
 };
 
 export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: string[] = []): DepartmentInfo[] => {
     if (!allEmployeesRaw) return [];
     
-    const lines = allEmployeesRaw.split('\n').map(l => l.trim()).filter(l => l);
+    const lines = allEmployeesRaw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
     const departmentList: DepartmentInfo[] = [];
     let currentDept: DepartmentInfo | null = null;
+    let totalEmployees = 0;
     
     for (const line of lines) {
         const parts = line.split('\t');
-        const namePart = parts[0];
+        const namePart = parts[0].trim();
         
-        if (namePart.startsWith('BP ') && parts.length > 1) {
+        if (namePart.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
             if (currentDept) departmentList.push(currentDept);
-            currentDept = { name: namePart.trim(), employeeCount: 0, isManual: false };
-        } else if (currentDept && parts.length > 1) {
-            if (namePart.includes(' - ') && 
-                !namePart.startsWith('Hỗ trợ BI') && 
-                !namePart.startsWith('NNH ') && 
-                !namePart.startsWith('ĐML_STR_STR') && 
-                !namePart.startsWith('Yêu cầu xuất') && 
-                !/^\d/.test(namePart)) {
-                
-                const npParts = namePart.split(' - ');
-                const possibleId = npParts[npParts.length - 1].trim();
-                
-                if (/^\d+$/.test(possibleId) && !hiddenEmployees.includes(namePart)) {
+            currentDept = { name: namePart, employeeCount: 0, isManual: false };
+        } else if (currentDept && (parts.length > 1 || namePart.includes(' - '))) {
+            if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo')) {
+                const canonical = standardizeEmployeeName(namePart);
+                if (!hiddenEmployees.includes(namePart) && !hiddenEmployees.includes(canonical)) {
                     currentDept.employeeCount++;
                 }
             }
+        } else if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo') && !namePart.includes('Dashboards')) {
+            totalEmployees++;
         }
     }
     
     if (currentDept) departmentList.push(currentDept);
+    if (departmentList.length === 0 && totalEmployees > 0) {
+        departmentList.push({ name: 'BP ALL IN ONE - DMX', employeeCount: totalEmployees, isManual: false });
+    }
     return departmentList;
 };
 
 export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] => {
-    if (!danhSachData || !danhSachData.includes('Nhân viên\tDTLK\tDTQĐ\tHiệu quả QĐ\tSố lượng\tĐơn giá')) return [];
+    if (!danhSachData) return [];
     
-    const lines = danhSachData.split('\n').map(l => l.trim()).filter(l => l);
+    const lines = danhSachData.split(/\r?\n/).map(l => l.trim()).filter(l => l);
     const departmentList: DepartmentInfo[] = [];
     let currentDept: DepartmentInfo | null = null;
+    let totalEmployees = 0;
     
     for (const line of lines) {
         const parts = line.split('\t');
-        if (line.startsWith('BP ') && parts.length > 1) {
+        if (line.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
             if (currentDept) departmentList.push(currentDept);
             currentDept = { name: parts[0].trim(), employeeCount: 0 };
-        } else if (currentDept && parts.length > 1) {
+        } else if (currentDept && (parts.length > 1 || line.includes(' - '))) {
             currentDept.employeeCount++;
+        } else if (line.includes(' - ') && !line.includes('http') && !line.includes('Báo cáo') && !line.includes('Dashboards')) {
+            totalEmployees++;
         }
     }
     
     if (currentDept) departmentList.push(currentDept);
+    if (departmentList.length === 0 && totalEmployees > 0) {
+        departmentList.push({ name: 'BP ALL IN ONE - DMX', employeeCount: totalEmployees });
+    }
     return departmentList;
 };
 

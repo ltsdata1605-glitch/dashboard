@@ -3,7 +3,7 @@ import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboa
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
-import { formatEmployeeName } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useWorker } from './useWorker';
 
 export function useNhanVienData(isActive?: boolean) {
@@ -207,6 +207,14 @@ export function useNhanVienData(isActive?: boolean) {
         const map: Record<string, string> = {};
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
             map[r.originalName!] = r.department!;
+            const canonical = standardizeEmployeeName(r.originalName!);
+            map[canonical] = r.department!;
+            if (r.originalName!.includes(' - ')) {
+                const parts = r.originalName!.split(' - ').map(p => p.trim());
+                map[`${parts[1]} - ${parts[0]}`] = r.department!;
+                map[parts[0]] = r.department!;
+                map[parts[1]] = r.department!;
+            }
         });
 
         Object.entries(aggregatedData.manualMapping).forEach(([deptName, employees]) => {
@@ -214,6 +222,14 @@ export function useNhanVienData(isActive?: boolean) {
                 employees.forEach(empName => {
                     if (!hiddenEmployeesSet.has(empName)) {
                         map[empName] = deptName;
+                        const canonical = standardizeEmployeeName(empName);
+                        map[canonical] = deptName;
+                        if (empName.includes(' - ')) {
+                            const parts = empName.split(' - ').map(p => p.trim());
+                            map[`${parts[1]} - ${parts[0]}`] = deptName;
+                            map[parts[0]] = deptName;
+                            map[parts[1]] = deptName;
+                        }
                     }
                 });
             }
@@ -255,12 +271,28 @@ export function useNhanVienData(isActive?: boolean) {
     const revenueRows = useMemo(() => {
         if (isActive === false) return [];
         const rows = parsedRevenueBase;
+
+        const getDeptForEmployee = (origName?: string, currentDept?: string): string => {
+            if (origName) {
+                if (employeeDepartmentMap[origName]) return employeeDepartmentMap[origName];
+                const canonical = standardizeEmployeeName(origName);
+                if (employeeDepartmentMap[canonical]) return employeeDepartmentMap[canonical];
+                if (origName.includes(' - ')) {
+                    const parts = origName.split(' - ').map(p => p.trim());
+                    if (employeeDepartmentMap[`${parts[1]} - ${parts[0]}`]) return employeeDepartmentMap[`${parts[1]} - ${parts[0]}`];
+                    if (employeeDepartmentMap[parts[0]]) return employeeDepartmentMap[parts[0]];
+                    if (employeeDepartmentMap[parts[1]]) return employeeDepartmentMap[parts[1]];
+                }
+            }
+            return currentDept || 'BP Khác';
+        };
+
         const mappedRows = rows.map(row => {
             if (row.type === 'employee' && row.originalName) {
                 const pctBillBk = banKemMap.get(row.originalName) || 0;
                 return { 
                     ...row, 
-                    department: employeeDepartmentMap[row.originalName] || 'BP Khác',
+                    department: getDeptForEmployee(row.originalName, row.department),
                     pctBillBk: pctBillBk
                 };
             }

@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { UsersIcon, UploadIcon } from '../../Icons';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { standardizeEmployeeName } from '../../../utils/nhanVienHelpers';
+import * as db from '../../../utils/db';
 
 interface AvatarDisplayProps {
     employeeName: string;
@@ -11,10 +13,42 @@ interface AvatarDisplayProps {
 }
 
 const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarketName, isHidden, onClick }) => {
-    // Bỏ supermarketName ra khỏi key để avatar dùng chung cho toàn hệ thống
-    const dbKey = `avatar-${employeeName}`;
+    const canonicalName = standardizeEmployeeName(employeeName);
+    const dbKey = `avatar-${canonicalName}`;
     const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
+    const [fallbackSrc, setFallbackSrc] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!avatarSrc && employeeName) {
+            let isMounted = true;
+            (async () => {
+                const keys: string[] = [`avatar-${employeeName}`, `avatar-${canonicalName}`];
+                if (employeeName.includes(' - ')) {
+                    const parts = employeeName.split(' - ').map(p => p.trim());
+                    if (parts.length >= 2) {
+                        keys.push(`avatar-${parts[1]} - ${parts[0]}`);
+                        keys.push(`avatar-${parts[0]}`);
+                        keys.push(`avatar-${parts[1]}`);
+                    }
+                }
+                for (const k of keys) {
+                    try {
+                        const val = await db.get<string>(k as any);
+                        if (val && isMounted) {
+                            setFallbackSrc(val);
+                            return;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+            })();
+            return () => { isMounted = false; };
+        }
+    }, [avatarSrc, employeeName, canonicalName]);
+
+    const activeSrc = avatarSrc || fallbackSrc;
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -22,7 +56,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarket
             const reader = new FileReader();
             reader.onloadend = () => {
                 const img = new Image();
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 128;
                     const MAX_HEIGHT = 128;
@@ -46,6 +80,14 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarket
                     ctx?.drawImage(img, 0, 0, width, height);
                     const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
                     setAvatarSrc(compressedBase64);
+                    // Also save to other variations for safety
+                    try {
+                        if (employeeName !== canonicalName) {
+                            await db.set(`avatar-${employeeName}` as any, compressedBase64);
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
                 };
                 img.src = reader.result as string;
             };
@@ -58,9 +100,9 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarket
             className="relative group w-8 h-8 flex-shrink-0"
             onClick={(e) => e.stopPropagation()} 
         >
-            {avatarSrc ? (
+            {activeSrc ? (
                 <img 
-                    src={avatarSrc} 
+                    src={activeSrc} 
                     alt={employeeName} 
                     onClick={(e) => { e.stopPropagation(); onClick?.(); }}
                     className="w-full h-full rounded-full object-cover shadow-sm ring-2 ring-white dark:ring-slate-700 cursor-pointer hover:scale-110 transition-transform" 

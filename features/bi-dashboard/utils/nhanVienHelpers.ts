@@ -11,14 +11,36 @@ export interface CompetitionEmployeeRow {
     values: (number | null)[];
 }
 
+export const standardizeEmployeeName = (rawName: string): string => {
+    if (!rawName || !rawName.includes(' - ')) return rawName;
+    const parts = rawName.split(' - ').map(p => p.trim());
+    if (parts.length < 2) return rawName;
+    
+    let id = '';
+    let name = '';
+    
+    if (/^\d+$/.test(parts[0]) || parts[0].toLowerCase() === 'online' || parts[0].toLowerCase() === 'administrator') {
+        id = parts[0];
+        name = parts.slice(1).join(' - ');
+        return `${name} - ${id}`;
+    }
+    return rawName;
+};
+
 export const formatEmployeeName = (fullName: string): string => {
     const nameParts = fullName.split(' - ');
     if (nameParts.length < 2) return fullName;
     
-    const name = nameParts[0].trim();
-    const id = nameParts[1].trim();
+    let name = nameParts[0].trim();
+    let id = nameParts[1].trim();
+    
+    if (/^\d+$/.test(name) || name.toLowerCase() === 'online' || name.toLowerCase() === 'administrator') {
+        id = nameParts[0].trim();
+        name = nameParts[1].trim();
+    }
     
     const words = name.split(/\s+/).filter(Boolean);
+    if (words.length === 0) return fullName;
     if (words.length === 1) return `${id} - ${words[0]}`;
     
     // Lấy từ cuối cùng làm tên chính
@@ -44,66 +66,166 @@ export const isIgnoredDept = (name: string) => {
 
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     if (!danhSachData) return [];
-    
+    const rawLines = String(danhSachData).split(/\r?\n/).map(l => l.trim()).filter(l => l);
+    if (rawLines.length === 0) return [];
+
     const empMap = new Map<string, RevenueRow>();
     const deptMap = new Map<string, RevenueRow>();
     const totalRow: RevenueRow = { type: 'total', name: 'Tổng', dtlk: 0, dtqd: 0, hieuQuaQD: 0, soLuong: 0, donGia: 0 };
-    let currentDeptDS = '';
-    
+    let currentDeptDS = 'BP ALL IN ONE - DMX';
+
     const isValidEmployeeName = (name: string) => {
+        if (!name || typeof name !== 'string') return false;
         if (!name.includes(' - ')) return false;
-        const parts = name.split(' - ');
-        return /^\d+$/.test(parts[0].trim()) || /^\d+$/.test(parts[1].trim());
+        const parts = name.split(' - ').map(p => p.trim());
+        return (/^\d+$/.test(parts[0]) && parts[1].length > 0) || (/^\d+$/.test(parts[1]) && parts[0].length > 0) || name.toLowerCase().includes('online') || name.toLowerCase().includes('admin');
     };
 
-    for (const line of String(danhSachData).split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        const parts = trimmed.split('\t');
-        const name = parts[0]?.trim() || '';
-        const dtlkValue = parseNumber(parts[1]);
-        const dtqdValue = parseNumber(parts[2]);
+    const entries: { name: string; numbers: number[] }[] = [];
+
+    for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
         
-        if (name === 'Tổng') {
-            totalRow.dtlk! += dtlkValue;
-            totalRow.dtqd! += dtqdValue;
-            totalRow.soLuong! += parseNumber(parts[4]);
-            totalRow.donGia! += parseNumber(parts[5]);
-        } else if (trimmed.startsWith('BP ') && parts.length > 1 && !isNaN(parseNumber(parts[1]))) {
-            currentDeptDS = name;
-            if (!isIgnoredDept(currentDeptDS)) {
-                if (deptMap.has(name)) {
-                    const existing = deptMap.get(name)!;
-                    existing.dtlk! += dtlkValue;
-                    existing.dtqd! += dtqdValue;
-                } else {
-                    deptMap.set(name, { type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: 0 });
-                }
+        // Skip metadata / navigation
+        if (line.includes('http') || line.includes('Dashboards') || line.includes('Tìm báo cáo') ||
+            line.includes('Cập nhật lúc') || line.includes('webview') || line.includes('Xuất Excel') ||
+            line.includes('Toàn công ty') || line.includes('triệu đồng') || line.includes('Target trọn kỳ') ||
+            line.includes('TB3T cùng') || line.includes('TLPVTC') || line.includes('Tỉ trọng trả góp') ||
+            line.includes('Doanh thu theo cấp') || line.includes('✓') || line.includes('1-') || line.includes('/ trang') ||
+            line.includes('Đơn vị:') || line.includes('Đã copy')) {
+            continue;
+        }
+
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim()).filter(p => p !== '');
+            if (parts.length === 0) continue;
+            const firstLower = parts[0].toLowerCase();
+            if (firstLower === 'nhân viên' || firstLower === 'số lượng' || firstLower.includes('doanh thu qđ') || firstLower.includes('target')) {
+                continue;
             }
-        } else if (currentDeptDS && !isIgnoredDept(currentDeptDS) && isValidEmployeeName(name) && parts.length > 3) {
-            if (empMap.has(name)) {
-                const existing = empMap.get(name)!;
-                existing.dtlk! += dtlkValue;
-                existing.dtqd! += dtqdValue;
+
+            if (/^-?[\d.,]+%?$/.test(parts[0]) || parts[0] === '—' || parts[0] === '-') {
+                if (entries.length > 0 && entries[entries.length - 1].numbers.length === 0) {
+                    entries[entries.length - 1].numbers = parts.map(parseNumber);
+                }
             } else {
-                empMap.set(name, { type: 'employee', name: formatEmployeeName(name), originalName: name, department: currentDeptDS, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: 0 });
+                const name = parts[0];
+                const numbers = parts.slice(1).map(parseNumber);
+                entries.push({ name, numbers });
+            }
+        } else {
+            const lower = line.toLowerCase();
+            if (lower === 'nhân viên' || lower === 'số lượng' || lower === 'doanh thu qđ' || lower === '% tỉ trọng' || lower === 'doanh thu' || lower === 'target' || lower === '% ht target' || lower === 'tb 3 tháng' || lower === '% tt') {
+                continue;
+            }
+
+            if (/^-?[\d.,]+%?$/.test(line) || line === '—' || line === '-') {
+                if (entries.length > 0) {
+                    entries[entries.length - 1].numbers.push(parseNumber(line));
+                }
+            } else {
+                entries.push({ name: line, numbers: [] });
             }
         }
     }
-    
-    totalRow.hieuQuaQD = calculateHieuQuaQDFraction(totalRow.dtqd!, totalRow.dtlk!);
+
+    let hasExplicitTotal = false;
+
+    entries.forEach(entry => {
+        const { name: rawName, numbers } = entry;
+        if (numbers.length < 2) return;
+
+        const isTotal = rawName.toLowerCase().startsWith('tổng');
+        const isDept = rawName.startsWith('BP ');
+
+        let dtlkValue = 0;
+        let dtqdValue = 0;
+        let soLuongValue = 0;
+
+        // Check if new format (DOANH THU QĐ at idx 1, DOANH THU THỰC at idx 3) vs legacy (DTLK at idx 0, DTQD at idx 1)
+        if (numbers.length >= 4) {
+            soLuongValue = numbers[0];
+            dtqdValue = numbers[1];
+            dtlkValue = numbers[3];
+        } else if (numbers.length >= 2) {
+            dtlkValue = numbers[0];
+            dtqdValue = numbers[1];
+        }
+
+        if (isTotal) {
+            hasExplicitTotal = true;
+            totalRow.dtlk += dtlkValue;
+            totalRow.dtqd += dtqdValue;
+            totalRow.soLuong += soLuongValue;
+        } else if (isDept) {
+            currentDeptDS = rawName;
+            if (!isIgnoredDept(currentDeptDS)) {
+                if (!deptMap.has(rawName)) {
+                    deptMap.set(rawName, { type: 'department', name: rawName, dtlk: 0, dtqd: 0, hieuQuaQD: 0, soLuong: 0 });
+                }
+                const dept = deptMap.get(rawName)!;
+                dept.dtlk += dtlkValue;
+                dept.dtqd += dtqdValue;
+                dept.soLuong += soLuongValue;
+            }
+        } else if (isValidEmployeeName(rawName)) {
+            if (!isIgnoredDept(currentDeptDS)) {
+                const canonicalName = standardizeEmployeeName(rawName);
+                if (empMap.has(canonicalName)) {
+                    const existing = empMap.get(canonicalName)!;
+                    existing.dtlk += dtlkValue;
+                    existing.dtqd += dtqdValue;
+                    existing.soLuong += soLuongValue;
+                } else {
+                    empMap.set(canonicalName, {
+                        type: 'employee',
+                        name: formatEmployeeName(canonicalName),
+                        originalName: canonicalName,
+                        department: currentDeptDS,
+                        dtlk: dtlkValue,
+                        dtqd: dtqdValue,
+                        hieuQuaQD: 0,
+                        soLuong: soLuongValue
+                    });
+                }
+            }
+        }
+    });
+
+    if (!hasExplicitTotal && empMap.size > 0) {
+        totalRow.dtlk = Array.from(empMap.values()).reduce((sum, e) => sum + e.dtlk, 0);
+        totalRow.dtqd = Array.from(empMap.values()).reduce((sum, e) => sum + e.dtqd, 0);
+        totalRow.soLuong = Array.from(empMap.values()).reduce((sum, e) => sum + (e.soLuong || 0), 0);
+    }
+
+    if (deptMap.size === 0 && empMap.size > 0) {
+        const deptEmployees = Array.from(empMap.values());
+        const sumDtlk = deptEmployees.reduce((sum, e) => sum + e.dtlk, 0);
+        const sumDtqd = deptEmployees.reduce((sum, e) => sum + e.dtqd, 0);
+        const sumSoLuong = deptEmployees.reduce((sum, e) => sum + (e.soLuong || 0), 0);
+        deptMap.set(currentDeptDS, {
+            type: 'department',
+            name: currentDeptDS,
+            dtlk: sumDtlk,
+            dtqd: sumDtqd,
+            hieuQuaQD: 0,
+            soLuong: sumSoLuong
+        });
+    }
+
+    totalRow.hieuQuaQD = calculateHieuQuaQDFraction(totalRow.dtqd, totalRow.dtlk);
     for (const dept of deptMap.values()) {
-        dept.hieuQuaQD = calculateHieuQuaQDFraction(dept.dtqd!, dept.dtlk!);
+        dept.hieuQuaQD = calculateHieuQuaQDFraction(dept.dtqd, dept.dtlk);
     }
     for (const emp of empMap.values()) {
-        emp.hieuQuaQD = calculateHieuQuaQDFraction(emp.dtqd!, emp.dtlk!);
+        emp.hieuQuaQD = calculateHieuQuaQDFraction(emp.dtqd, emp.dtlk);
     }
-    
+
     const rows: RevenueRow[] = [];
-    if (totalRow.dtlk! > 0 || totalRow.dtqd! > 0) rows.push(totalRow);
+    if (totalRow.dtlk > 0 || totalRow.dtqd > 0) rows.push(totalRow);
     for (const dept of deptMap.values()) rows.push(dept);
     for (const emp of empMap.values()) rows.push(emp);
-    
+
     return rows;
 };
 
@@ -227,74 +349,129 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Recor
 
 export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: Record<string, string>): InstallmentRow[] => {
     if (!traGopData) return [];
-    const lines = String(traGopData).split('\n').map(l => l.trim()).filter(l => l);
-
-    const totalLine = lines.find(l => l.startsWith('Tổng\t') || l === 'Tổng' || l.startsWith('Tổng cộng\t'));
-    if (!totalLine) return [];
-    
-    const totalParts = totalLine.split('\t');
-    const numProviders = Math.floor((totalParts.length - 3) / 2);
+    const rawLines = String(traGopData).split(/\r?\n/).map(l => l.trim()).filter(l => l);
+    if (rawLines.length === 0) return [];
 
     const providerMapping: Record<string, string> = {
         'HomeCredit': 'HC', 'FECredit': 'FE', 'Shinhan': 'SHF', 'SMARTPOS': 'POS', 'HPL': 'HPL', 
-        'KREDIVO': 'KRE', 'Samsung': 'SSF', 'TPBANK': 'TPB', 'PAYLATER': 'MWG', 'EVO': 'EVO'
+        'KREDIVO': 'KRE', 'Samsung': 'SSF', 'TPBANK': 'TPB', 'PAYLATER': 'MWG', 'EVO': 'EVO', 'Payoo': 'PAY'
     };
 
-    let collectedNames: string[] = [];
-    const keywords = Object.keys(providerMapping);
-    
-    lines.forEach(l => {
-        if (collectedNames.length >= numProviders) return;
-        if (keywords.some(k => l.toUpperCase().includes(k.toUpperCase())) && !/\t\d+/.test(l)) {
-            const parts = l.split('\t');
+    const getShortProvider = (name: string): string => {
+        for (const [key, val] of Object.entries(providerMapping)) {
+            if (name.toUpperCase().includes(key.toUpperCase())) return val;
+        }
+        return name.slice(0, 4).toUpperCase();
+    };
+
+    const defaultProviders = [
+        { name: 'HomeCredit(HC)', short: 'HC' },
+        { name: 'Trả góp HPL-Home Credit', short: 'HPL' },
+        { name: 'Thẻ tín dụng - SMARTPOS', short: 'POS' },
+        { name: 'FECredit(FE)', short: 'FE' },
+        { name: 'Trả góp KREDIVO', short: 'KRE' },
+        { name: 'MWG PAYLATER', short: 'MWG' },
+        { name: 'Samsung Finance +', short: 'SSF' },
+        { name: 'Shinhan Finance', short: 'SHF' }
+    ];
+
+    // 1. Detect provider names from header
+    const headerKeywords = Object.keys(providerMapping);
+    const foundProviderNames: string[] = [];
+    rawLines.forEach(l => {
+        const tokens = l.includes('\t') ? l.split('\t') : [l];
+        tokens.forEach(t => {
+            const trimmed = t.trim();
+            if (headerKeywords.some(k => trimmed.toUpperCase().includes(k.toUpperCase())) && !/^-?[\d.,]+%?$/.test(trimmed)) {
+                if (!foundProviderNames.includes(trimmed) && trimmed.length < 50) {
+                    foundProviderNames.push(trimmed);
+                }
+            }
+        });
+    });
+
+    const detectedProviders = foundProviderNames.length > 0
+        ? foundProviderNames.map(name => ({ name, short: getShortProvider(name) }))
+        : defaultProviders;
+
+    // 2. Build smart employee name mapper
+    const nameToFullMap = new Map<string, string>();
+    for (const fullName of Object.keys(employeeDepartmentMap)) {
+        const normFull = normalizeText(fullName);
+        if (normFull) nameToFullMap.set(normFull, fullName);
+
+        if (fullName.includes(' - ')) {
+            const parts = fullName.split(' - ').map(p => p.trim());
             parts.forEach(p => {
-                const name = p.trim();
-                if (name && keywords.some(k => name.toUpperCase().includes(k.toUpperCase())) && !collectedNames.includes(name)) {
-                    if (collectedNames.length < numProviders) collectedNames.push(name);
+                const normP = normalizeText(p);
+                if (normP && !/^\d+$/.test(normP)) {
+                    nameToFullMap.set(normP, fullName);
                 }
             });
         }
-    });
+    }
 
-    const fallbackProviders = [
-        { name: 'HomeCredit(HC)', short: 'HC' },
-        { name: 'FECredit(FE)', short: 'FE' },
-        { name: 'Thẻ tín dụng - SMARTPOS', short: 'POS' },
-        { name: 'Trả góp HPL-Home Credit', short: 'HPL' },
-        { name: 'MWG PAYLATER', short: 'MWG' }
-    ];
-
-    const detectedProviders = Array.from({ length: numProviders }).map((_, i) => {
-        const fullName = collectedNames[i] || fallbackProviders[i]?.name || 'Khác';
-        let short = fallbackProviders[i]?.short || 'Khác';
-        for (const [key, val] of Object.entries(providerMapping)) {
-            if (fullName.toUpperCase().includes(key.toUpperCase())) { short = val; break; }
+    const findFullName = (rawName: string): string => {
+        const norm = normalizeText(rawName);
+        if (!norm) return rawName;
+        if (nameToFullMap.has(norm)) return nameToFullMap.get(norm)!;
+        
+        for (const [key, val] of nameToFullMap.entries()) {
+            if (key.includes(norm) || norm.includes(key)) return val;
         }
-        return { name: fullName, short };
-    });
+        return rawName;
+    };
 
-    const normalizedEmployeeMap: Record<string, string> = {};
-    // O(1) cache cho fallback "tên rút gọn" (không có hậu tố " - Mã số") — trước đây quét tuyến tính
-    // O(số nhân viên) cho MỖI dòng không khớp tên chính xác, nay tra cứu 1 lần đã build sẵn.
-    const shortNamePrefixMap = new Map<string, string>();
-    for (const fullName of Object.keys(employeeDepartmentMap)) {
-        const norm = normalizeText(fullName);
-        if (norm) normalizedEmployeeMap[norm] = fullName;
-        const dashIdx = norm.indexOf(' - ');
-        if (dashIdx > -1) {
-            const prefix = norm.slice(0, dashIdx);
-            if (!shortNamePrefixMap.has(prefix)) shortNamePrefixMap.set(prefix, fullName);
+    const isNumeric = (s: string): boolean => /^-?[\d.,]+%?$/.test(String(s).trim());
+
+    // 3. Normalize lines into standard structured entries: { name: string, numbers: number[] }
+    const entries: { name: string; numbers: number[] }[] = [];
+
+    for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        
+        // Skip header lines, navigation links, buttons, metadata
+        if (line.includes('http') || line.includes('Dashboards') || line.includes('Tìm báo cáo') ||
+            line.includes('Cập nhật lúc') || line.includes('webview') || line.includes('Xuất Excel') ||
+            line.includes('Tất cả vùng') || line.includes('1-') || line.includes('/ trang') ||
+            line.includes('Đang chọn') || line.includes('Đã copy')) {
+            continue;
+        }
+
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim()).filter(p => p !== '');
+            if (parts.length === 0) continue;
+
+            const firstLower = parts[0].toLowerCase();
+            if (firstLower === 'nhân viên' || firstLower === 'dt' || firstLower === '%' || firstLower.includes('tỷ trọng') || firstLower.includes('dt siêu thị')) {
+                continue;
+            }
+
+            if (isNumeric(parts[0])) {
+                if (entries.length > 0 && entries[entries.length - 1].numbers.length === 0) {
+                    entries[entries.length - 1].numbers = parts.map(parseNumber);
+                }
+            } else {
+                const name = parts[0];
+                const numbers = parts.slice(1).map(parseNumber);
+                entries.push({ name, numbers });
+            }
+        } else {
+            if (isNumeric(line)) {
+                if (entries.length > 0) {
+                    entries[entries.length - 1].numbers.push(parseNumber(line));
+                }
+            } else {
+                const lower = line.toLowerCase();
+                if (lower === 'nhân viên' || lower === 'dt' || lower === '%' || lower.includes('tỷ trọng') || lower.includes('dt trả góp') || lower.includes('dt siêu thị') || lower === 'xem' || lower === 'lũy kế' || lower === 'realtime') {
+                    continue;
+                }
+                entries.push({ name: line, numbers: [] });
+            }
         }
     }
 
-    const findFullName = (shortName: string) => {
-        const normalizedShort = normalizeText(shortName);
-        if (!normalizedShort) return null;
-        const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
-        if (exactMatch) return exactMatch;
-        return shortNamePrefixMap.get(normalizedShort) ?? null;
-    };
-
+    // 4. Build InstallmentRow objects
     const empMap = new Map<string, InstallmentRow>();
     const deptMap = new Map<string, InstallmentRow>();
     const totalRow: InstallmentRow = {
@@ -302,36 +479,70 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         department: undefined, providers: [], totalDtSieuThi: 0, totalPercent: 0
     };
 
-    for (const line of lines) {
-        const parts = line.split('\t');
-        if (parts.length < 3) continue;
+    let hasExplicitTotal = false;
 
-        const rawName = parts[0]?.trim() || '';
-        const isTotal = rawName === 'Tổng' || rawName === 'Tổng cộng';
+    entries.forEach(entry => {
+        const { name: rawName, numbers } = entry;
+        if (numbers.length < 2) return;
+
+        const isTotal = rawName.toLowerCase() === 'tổng' || rawName.toLowerCase() === 'tổng cộng';
         const isDept = rawName.startsWith('BP ');
-        
-        let originalName = isTotal ? 'Tổng' : (isDept ? rawName : findFullName(rawName));
-        if (!originalName) continue;
 
-        const resolvedDept = isDept ? rawName : employeeDepartmentMap[originalName];
-        if (resolvedDept && isIgnoredDept(resolvedDept)) continue;
-        if (isDept && isIgnoredDept(rawName)) continue;
-
-        const totalDtSieuThi = parseNumber(parts[parts.length - 2]);
-
+        let dtSieuThi = 0;
         const providers: InstallmentProvider[] = [];
-        for (let i = 0; i < detectedProviders.length; i++) {
-            const dtCol = 1 + i * 2;
-            providers.push({
-                name: detectedProviders[i].name,
-                shortName: detectedProviders[i].short,
-                dt: parseNumber(parts[dtCol]),
-                percent: 0 // Will be recalculated
-            });
+
+        // Determine format:
+        // Format A (New format from BI):
+        // numbers[0] = DT Trả góp, numbers[1] = DT Siêu thị, numbers[2] = Tỷ trọng %, numbers[3..] = Pairs of (DT, %)
+        if (numbers.length >= 3 + detectedProviders.length * 2) {
+            dtSieuThi = numbers[1];
+            for (let pIdx = 0; pIdx < detectedProviders.length; pIdx++) {
+                const dtVal = numbers[3 + pIdx * 2];
+                const pctVal = numbers[3 + pIdx * 2 + 1];
+                providers.push({
+                    name: detectedProviders[pIdx].name,
+                    shortName: detectedProviders[pIdx].short,
+                    dt: dtVal,
+                    percent: pctVal
+                });
+            }
+        } else if (numbers.length >= detectedProviders.length * 2 + 2) {
+            // Format B (Legacy format):
+            // numbers[0..2*N-1] = Pairs of (DT, %), numbers[2*N] = DT Siêu thị, numbers[2*N + 1] = Tỷ trọng %
+            dtSieuThi = numbers[numbers.length - 2];
+            for (let pIdx = 0; pIdx < detectedProviders.length; pIdx++) {
+                const dtVal = numbers[pIdx * 2];
+                const pctVal = numbers[pIdx * 2 + 1];
+                providers.push({
+                    name: detectedProviders[pIdx].name,
+                    shortName: detectedProviders[pIdx].short,
+                    dt: dtVal,
+                    percent: pctVal
+                });
+            }
+        } else {
+            // Fallback: take as many providers as possible
+            dtSieuThi = numbers[1] || numbers[numbers.length - 2] || 0;
+            for (let pIdx = 0; pIdx < detectedProviders.length; pIdx++) {
+                const dtCol = 3 + pIdx * 2 < numbers.length ? 3 + pIdx * 2 : (pIdx * 2 < numbers.length ? pIdx * 2 : -1);
+                const pctCol = dtCol >= 0 && dtCol + 1 < numbers.length ? dtCol + 1 : -1;
+                providers.push({
+                    name: detectedProviders[pIdx].name,
+                    shortName: detectedProviders[pIdx].short,
+                    dt: dtCol >= 0 ? numbers[dtCol] : 0,
+                    percent: pctCol >= 0 ? numbers[pctCol] : 0
+                });
+            }
         }
 
-        const updateRow = (target: InstallmentRow) => {
-            target.totalDtSieuThi! += totalDtSieuThi;
+        const matchedFullName = isTotal ? 'Tổng' : (isDept ? rawName : findFullName(rawName));
+        const resolvedDept = isDept ? rawName : (employeeDepartmentMap[matchedFullName] || employeeDepartmentMap[rawName] || 'BP Tiếp đón');
+
+        if (resolvedDept && isIgnoredDept(resolvedDept)) return;
+        if (isDept && isIgnoredDept(rawName)) return;
+
+        const updateTarget = (target: InstallmentRow) => {
+            target.totalDtSieuThi += dtSieuThi;
             providers.forEach(p => {
                 const existingP = target.providers.find(ep => ep.name === p.name);
                 if (existingP) {
@@ -343,7 +554,8 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         };
 
         if (isTotal) {
-            updateRow(totalRow);
+            hasExplicitTotal = true;
+            updateTarget(totalRow);
         } else if (isDept) {
             if (!deptMap.has(rawName)) {
                 deptMap.set(rawName, {
@@ -351,32 +563,53 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
                     providers: [], totalDtSieuThi: 0, totalPercent: 0
                 });
             }
-            updateRow(deptMap.get(rawName)!);
+            updateTarget(deptMap.get(rawName)!);
         } else {
-            if (!empMap.has(originalName)) {
-                empMap.set(originalName, {
-                    type: 'employee', name: formatEmployeeName(originalName), originalName: originalName, department: resolvedDept,
+            if (!empMap.has(matchedFullName)) {
+                empMap.set(matchedFullName, {
+                    type: 'employee',
+                    name: formatEmployeeName(matchedFullName),
+                    originalName: matchedFullName,
+                    department: resolvedDept,
                     providers: [], totalDtSieuThi: 0, totalPercent: 0
                 });
             }
-            updateRow(empMap.get(originalName)!);
+            updateTarget(empMap.get(matchedFullName)!);
         }
-    }
+    });
 
     const calcPct = (target: InstallmentRow) => {
         const totalTraCham = target.providers.reduce((sum, p) => sum + p.dt, 0);
         target.providers.forEach(p => {
             p.percent = totalTraCham > 0 ? (p.dt / totalTraCham) * 100 : 0;
         });
-        target.totalPercent = target.totalDtSieuThi! > 0 ? (totalTraCham / target.totalDtSieuThi!) * 100 : 0;
+        target.totalPercent = target.totalDtSieuThi > 0 ? (totalTraCham / target.totalDtSieuThi) * 100 : 0;
     };
 
-    calcPct(totalRow);
+    if (hasExplicitTotal) {
+        calcPct(totalRow);
+    } else if (empMap.size > 0) {
+        totalRow.totalDtSieuThi = Array.from(empMap.values()).reduce((sum, e) => sum + e.totalDtSieuThi, 0);
+        detectedProviders.forEach(dp => {
+            const sumDt = Array.from(empMap.values()).reduce((sum, e) => {
+                const p = e.providers.find(ep => ep.name === dp.name);
+                return sum + (p?.dt || 0);
+            }, 0);
+            totalRow.providers.push({
+                name: dp.name,
+                shortName: dp.short,
+                dt: sumDt,
+                percent: 0
+            });
+        });
+        calcPct(totalRow);
+    }
+
     deptMap.forEach(calcPct);
     empMap.forEach(calcPct);
 
     const rows: InstallmentRow[] = [];
-    if (totalRow.totalDtSieuThi! > 0) rows.push(totalRow);
+    if (totalRow.totalDtSieuThi > 0 || totalRow.providers.length > 0) rows.push(totalRow);
     deptMap.forEach(dept => rows.push(dept));
     empMap.forEach(emp => rows.push(emp));
 

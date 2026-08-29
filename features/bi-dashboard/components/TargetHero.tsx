@@ -7,6 +7,7 @@ import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { parseNumber, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi } from '../services/employeeParser';
+import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useDepartments } from '../hooks/useDepartments';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
@@ -20,14 +21,23 @@ interface TargetHeroProps {
     summaryLuyKeData: string;
 }
 
-const CreateDeptModal: React.FC<{ 
-    isOpen: boolean; 
-    onClose: () => void; 
-    onSave: (name: string, employeeNames: string[], hiddenEmps: string[]) => void;
-    allEmployees: { name: string; originalName: string }[];
+interface ManualDeptModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (deptName: string, employees: string[], hiddenEmployees: string[]) => void;
+    allEmployees: { originalName: string; name: string }[];
     existingMapping: ManualDeptMapping;
     editingDept?: { name: string; employees: string[] } | null;
-}> = ({ isOpen, onClose, onSave, allEmployees, existingMapping, editingDept }) => {
+}
+
+const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
+    isOpen,
+    onClose,
+    onSave,
+    allEmployees,
+    existingMapping,
+    editingDept
+}) => {
     const [name, setName] = useState('');
     const [selectedEmps, setSelectedEmps] = useState<Set<string>>(new Set());
     const [hiddenEmps, setHiddenEmps] = useState<Set<string>>(new Set());
@@ -37,7 +47,7 @@ const CreateDeptModal: React.FC<{
         if (isOpen) {
             if (editingDept) {
                 setName(editingDept.name);
-                setSelectedEmps(new Set(editingDept.employees));
+                setSelectedEmps(new Set(editingDept.employees.map(e => standardizeEmployeeName(e))));
             } else {
                 setName('');
                 setSelectedEmps(new Set());
@@ -52,11 +62,11 @@ const CreateDeptModal: React.FC<{
     const assignedInOtherDepts = new Set(
         Object.entries(existingMapping)
             .filter(([deptName]) => deptName !== editingDept?.name)
-            .flatMap(([_, emps]) => emps)
+            .flatMap(([_, emps]) => (Array.isArray(emps) ? emps.flatMap(e => [e, standardizeEmployeeName(e)]) : []))
     );
 
-    const availableEmps = allEmployees.filter(emp => !assignedInOtherDepts.has(emp.originalName) && !hiddenEmps.has(emp.originalName));
-    const filteredEmps = availableEmps.filter(emp => emp.originalName.toLowerCase().includes(searchTerm.toLowerCase()));
+    const availableEmps = allEmployees.filter(emp => !assignedInOtherDepts.has(emp.originalName) && !assignedInOtherDepts.has(standardizeEmployeeName(emp.originalName)) && !hiddenEmps.has(emp.originalName));
+    const filteredEmps = availableEmps.filter(emp => (emp.originalName.toLowerCase().includes(searchTerm.toLowerCase()) || emp.name.toLowerCase().includes(searchTerm.toLowerCase())));
 
     const removeEmp = (originalName: string) => {
         const nextSelected = new Set(selectedEmps);
