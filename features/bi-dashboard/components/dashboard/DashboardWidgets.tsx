@@ -29,7 +29,7 @@ export const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
 
     let colorClass = 'bg-indigo-500';
     if (value >= 100) colorClass = 'bg-emerald-500';
-    else if (value < 85) colorClass = 'bg-amber-500';
+    else if (value < 100) colorClass = 'bg-amber-500';
     if (value < 50) colorClass = 'bg-rose-500';
 
     return (

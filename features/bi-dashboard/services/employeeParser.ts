@@ -184,10 +184,27 @@ export const parseEmployeeCompetitionTargets = (
 
         // empWeights/totalW chỉ phụ thuộc departmentWeightsData (cố định theo sm), không đổi giữa
         // các dòng target khác nhau của cùng siêu thị — tính 1 lần/sm thay vì mỗi dòng khớp.
+        //
+        // departmentWeightsData[dept] là % target CỦA CẢ PHÒNG BAN (khớp định nghĩa ở
+        // TargetHero.tsx/useDepartments.ts và cách useRevenueData.ts tính đúng:
+        // empTarget = supermarketTarget*weight/empCount) — PHẢI chia đều cho số nhân viên
+        // trong phòng ban đó mới ra phần của từng người. Trước đây gán thẳng % phòng ban cho
+        // từng nhân viên rồi mới chuẩn hoá theo tổng, khiến phòng ban đông người bị thổi phồng
+        // target ảo (%HT bị dìm thấp), phòng ban ít người bị hụt target ảo (%HT bị đẩy cao ảo).
+        const deptCounts = new Map<string, number>();
+        allEmployees.forEach(emp => {
+            deptCounts.set(emp.department, (deptCounts.get(emp.department) || 0) + 1);
+        });
+
         let totalW = 0;
         const empWeights = new Map<string, number>();
         allEmployees.forEach(emp => {
-            const w = departmentWeightsData?.[emp.department] ?? (100 / allEmployees.length);
+            const deptWeight = departmentWeightsData?.[emp.department];
+            // Không có cấu hình weight riêng cho phòng ban này: fallback chia đều thẳng theo
+            // tổng số nhân viên (bản thân giá trị này đã là phần/người, không chia thêm).
+            const w = deptWeight !== undefined
+                ? deptWeight / (deptCounts.get(emp.department) || 1)
+                : (100 / allEmployees.length);
             empWeights.set(emp.originalName, w);
             totalW += w;
         });

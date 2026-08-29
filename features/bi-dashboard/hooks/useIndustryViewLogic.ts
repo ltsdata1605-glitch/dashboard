@@ -163,7 +163,8 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
 
     const collapseAll = useCallback(() => setExpandedRows(new Set()), []);
 
-    const hasTreeData = luykeData && luykeData.tree && luykeData.tree.length > 0;
+    const activeTreeForHasData = isRealtime ? realtimeData?.tree : luykeData?.tree;
+    const hasTreeData = !!activeTreeForHasData && activeTreeForHasData.length > 0;
     const hasAnyExpanded = expandedRows.size > 0;
     
     const orderedHeaders = useMemo(() => {

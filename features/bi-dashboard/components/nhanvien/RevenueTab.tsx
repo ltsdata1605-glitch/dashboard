@@ -256,6 +256,8 @@ const RevenueView: React.FC<{
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
+                    <Button variant="ghost" size="icon" onClick={() => setIsColorModalOpen(true)} title="Cấu hình màu hiển thị" className="text-slate-400"><CogIcon className="h-4 w-4"/></Button>
+                    <div className="h-4 w-px bg-slate-200 mx-0.5" />
                     <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-600' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
                     <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-600' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 mx-0.5" />

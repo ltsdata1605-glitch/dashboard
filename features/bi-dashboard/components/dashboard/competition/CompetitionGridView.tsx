@@ -71,11 +71,14 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
 
                                 let progressColorClass = theme.progress;
                                 if (percent >= 100) progressColorClass = 'bg-emerald-500';
-                                else if (percent < 85) progressColorClass = 'bg-amber-500';
+                                else if (percent < 100) progressColorClass = 'bg-amber-500';
                                 if (percent < 50) progressColorClass = 'bg-rose-500';
 
                                 const remainingColor = conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-                                const percentColor = percent >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (percent < 85 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400');
+                                // Cùng 3 ngưỡng với progressColorClass (>=100 emerald / [50,100) amber / <50 rose)
+                                // — trước đây percentColor dùng ngưỡng 2 bậc riêng (mốc 85) khiến chữ % và
+                                // thanh progress có thể hiển thị lệch màu nhau ở khoảng [50,85).
+                                const percentColor = percent >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (percent < 50 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400');
 
                                 return (
                                 <div key={program.name} className="bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden group">

@@ -1,80 +1,178 @@
-# Rà soát sâu toàn bộ module "Phân Tích" (root: components/ trừ shared/ui, hooks/, services/, contexts/, utils/)
+# Rà soát sâu toàn bộ module "Report BI" (features/bi-dashboard/, ~85 file/~22.000 dòng)
 
 ## Bối cảnh
-User yêu cầu "lần kiểm tra sâu và kỹ nhất": đồng nhất thiết kế (size chữ/font/icon/màu/spacing), đồng nhất cách lấy dữ liệu, dọn code thừa/chết, tìm lỗi. Đây là module "chuẩn vàng thiết kế" theo CLAUDE.md — quy mô ~42.700 dòng, lớn hơn Report BI đã audit trước đó.
+User yêu cầu lần 2 (lần đầu ~2026-08-11/12, xem memory `project_report_bi_audit_2026_08.md`):
+xoá code thừa/chức năng không dùng/code lỗi/xung đột, đồng nhất size chữ/màu sắc/font
+chữ/thiết kế toàn bộ module + mọi modal.
 
-Đã chạy 10 agent rà soát song song (10 góc nhìn: line-by-line, invariant/guard, cross-file tracer, React/TS pitfall, wrapper/proxy, reuse/duplication, altitude/bandaid, efficiency, CLAUDE.md conventions, simplification) — tổng ~50 phát hiện.
+Trước khi bắt đầu: phát hiện 9 file trong bi-dashboard có thay đổi CHƯA COMMIT (không
+phải của tôi) — xác nhận với user đây là việc đang làm dở của user, đã commit riêng
+(`79ea69d3`) làm checkpoint trước khi rà soát.
 
-**Lưu ý phụ**: phát hiện 34 file tài liệu/kế hoạch cũ (AUDIT.md, DESIGN_SYSTEM*.md, KE_HOACH_*.md, boltz_project_rules_md/, tasks/*.md) đã bị xoá khỏi đĩa nhưng CHƯA commit — không phải do tôi xoá, nghi là dọn dẹp từ phiên khác (có 1 Remote Control session khác). KHÔNG đụng vào (không commit, không khôi phục), chỉ commit riêng các thay đổi của tôi.
+Đã chạy 4 agent song song (dead code, logic bug/xung đột, design-system compliance,
+typography/spacing) đọc toàn bộ module. Tổng hợp bên dưới.
 
-## Tier 1 — Lỗi số liệu/tính toán nghiêm trọng (ưu tiên cao nhất)
+## Tier 1 — Bug/lỗi chức năng thật (ưu tiên cao nhất)
 
-1. **Đồng bộ cloud lệch field** (`services/firestoreService.ts`): `syncToCloud()` ghi `lastSync` vào doc gốc `users/{uid}`, nhưng `fetchFromCloud()` chỉ đọc sub-doc `setting/configuration` (có `updatedAt`, không có `lastSync`) → `cloudData.lastSync` luôn `undefined`/0 → `useDataManagement.ts` luôn nghĩ cloud cũ hơn local → thiết bị cũ có thể ghi đè cài đặt mới hơn từ thiết bị khác.
-2. **Race điều kiện đổi tài khoản khi đang ghi heavy key** (`firestoreService.ts:419`): `syncHeavySettingToCloudQueued` giữ closure `user` của LẦN GỌI ĐẦU; nếu đổi tài khoản trong lúc đang ghi, lần ghi lại (queued) vẫn dùng `user` cũ → ghi nhầm dữ liệu tài khoản B vào doc tài khoản A. Edge case hiếm (cần đổi user cùng tab không reload) nhưng hậu quả nặng.
-3. **Demo Mode rò dữ liệu** (`services/syncService.ts`): `initSyncListeners()` không kiểm tra `isDemoMode` (khác `useCloudSync.ts` có gate rõ ràng) → sửa cài đặt lúc đang xem Demo Mode vẫn bị đẩy lên Firestore tài khoản thật.
-4. **Cùng 1 cấu hình lọc giá → 3 số liệu khác nhau** ở Kho/Đối đầu/Thi đua: `ColumnConfigModal.tsx` không validate `priceValue1` cho nhánh "data" (khác nhánh target/calculated có validate) → lưu được config thiếu giá trị → `useWarehouseLogic.ts`/`useHeadToHeadLogic.ts` fallback `priceValue1 || 0` (áp dụng filter sai) trong khi `ContestTable.tsx` guard `typeof === 'number'` (bỏ qua filter hẳn) → 3 kết quả khác nhau từ cùng 1 config.
-5. **Logic "hàng hợp lệ" (`isValidSalesRow`) bị viết lại độc lập ở ≥5 nơi**: `TrendChart.tsx`, `SavedCalendarCard.tsx`, `ContestTable.tsx`, `useHeadToHeadLogic.ts`, `useIndustryAnalysisLogic.ts` — đã LỆCH THẬT: 2 file sau có thêm điều kiện `TRANG_THAI` (Trạng thái hồ sơ phải "mới"/bắt đầu "1") không có trong hàm chuẩn `isValidSalesRow()` (utils/dataUtils.ts) — vi phạm trực tiếp CLAUDE.md "CẤM tự ý viết lại công thức tính cục bộ".
-6. **`getHinhThucThanhToan()` vs `isTraCham` trong `calculateRowMetrics()`**: 2 cách tính riêng, guard khác nhau (`.length>0` vs `!== undefined`) — đã có thể lệch ở edge case.
-7. **`calculateRowMetrics()` dòng ~940**: `subgroup` tra cứu exact-match thô thay vì dùng `getSubgroup()` (có fallback lowercase + prefix số) như `group` 2 dòng trên — rủi ro sai `weightedQuantity` cho sản phẩm VieON có mã dạng "7161 - Dịch vụ VAS".
-8. **`isInsurance` thiếu `'Bảo Dưỡng'`**: `computeHeSoQuyDoi` gộp `Bảo hiểm`/`Bảo Dưỡng`/`Bảo hiểm ĐMX` cùng hệ số 4.18, nhưng `isInsurance` trong `calculateRowMetrics()` chỉ nhận diện 2/3 tên → `weightedQuantity` xử lý khác nhau giữa các biến thể tên giống hệt về bản chất.
-9. **`filterService.ts isKhoMatch`**: thiếu guard null trước `.toString()` → crash `TypeError` cho cả dataset nếu 1 dòng thiếu cột Kho.
-10. **`filterService.ts isXuatMatch`**: so khớp chuỗi thô (không qua `cleanAndNormalize`) → có thể bỏ sót dòng nếu Excel dùng Unicode NFD.
-11. **`employeeService.ts` dòng 254**: dùng `.toISOString()` (UTC) để tính `dateKey` xu hướng theo ngày, khác `toLocalISOString()`/`trendService.ts` (local) → đơn hàng sáng sớm có thể lệch ngày giữa biểu đồ xu hướng nhân viên và biểu đồ tổng.
-12. **`useWarehouseLogic.ts` dòng ~406**: `if (coreTotals.doanhThuThuc)` bỏ qua set `hieuQuaQD`/`traChamPercent` khi doanh thu đúng bằng 0 → để `undefined` thay vì `0`, hiển thị trống/NaN%.
-13. **Falsy-zero hiển thị sai** (nhiều file: `SummaryTableRow.tsx`, `MonthlyTrendTableRow.tsx`, `MonthlyTrendTable.tsx`, `RevenueCalendar.tsx`): % thật = 0 hiển thị `-` giống hệt "không có dữ liệu" — cần phân biệt rõ.
-14. **Gộp tuần lệch nhãn ở ranh giới năm** (`useDataManagement.ts` ~976): key tuần theo chuẩn ISO-8601 (UTC) nhưng nhãn hiển thị tính theo local → cuối tháng 12/đầu tháng 1 có thể trùng key khác nhãn, ghi đè nhãn cho nhau.
-15. **`useTrendChartLogic.ts`**: còn sót logic đọc `.dark` class (dark mode đã tắt toàn dự án) — mâu thuẫn với `TrendChart.tsx` đã gỡ bỏ observer tương tự; `isDark` không nằm trong dependency array của `useMemo`.
-16. **`handleBatchKhoExport` (`useExportLogic.ts`)**: đổi filter Kho trong vòng lặp rồi chờ cố định 1500ms trước khi chụp ảnh, không đợi tín hiệu Worker xử lý xong (`isFilterProcessing` không lộ ra qua Context) → có thể xuất nhầm ảnh Kho trước đó với dataset lớn.
-17. **`UncollectedOrdersModal.tsx`**: prop `onExportSheet` (có guard rỗng dữ liệu) không hề được gọi — nút "Sheet" dùng `handleExportGoogleSheet` cục bộ KHÔNG có guard → 0 đơn vẫn ép đăng nhập lại Google OAuth thay vì báo lỗi thân thiện.
-18. **`UncollectedOrdersModal.tsx`**: text copy/tiêu đề ghi nhầm "quá hạn XUẤT" (giao hàng) trong khi modal này là "chưa thu tiền" — copy-paste từ `UnshippedOrdersModal.tsx` quên đổi.
-19. **`useSummaryComparison.ts` dòng ~174**: 1 số nhánh guard sớm không reset `compTree`/`dateDisplay` như nhánh guard đầu effect → đổi lựa chọn thành combo không hợp lệ vẫn hiển thị dữ liệu cũ, không báo hiệu.
+1. **[REGRESSION nghiêm trọng]** `RevenueTab.tsx`: nút mở modal "Cấu hình màu hiển thị"
+   (`isColorModalOpen`) đã được thêm ở đợt audit trước (commit `32bedb90`, 2026-08-12)
+   nhưng bị XOÁ MẤT trong commit checkpoint `79ea69d3` (việc đang làm dở của user) —
+   tính năng hiện KHÔNG THỂ MỞ được từ UI. Cần thêm lại nút + `CogIcon`.
+2. **ProgressBar bỏ sót ngưỡng màu amber 85-99%** — copy-paste giống hệt ở 3 nơi:
+   `DashboardWidgets.tsx:30-33` (dùng ở `CompetitionListView.tsx:141`),
+   `IndividualCompetitionView.tsx:27-33` (bản duplicate riêng), `CompetitionGridView.tsx:72-78`
+   (inline duplicate). Giá trị [85,100) không khớp nhánh nào → rơi về màu mặc định
+   (ở CompetitionGridView có thể trùng màu với "đã đạt 100%"). `CompetitionGridView.tsx`
+   còn có `percentColor` dùng ngưỡng 2 bậc khác (`<85`/`>=85`, không có bậc 50%) → % chữ
+   và thanh bar có thể lệch màu nhau.
+3. **[Ảnh hưởng rộng] `parseEmployeeCompetitionTargets` (employeeParser.ts:185-225) bỏ
+   qua số nhân viên/phòng ban khi chia target** — gán thẳng `departmentWeights` (vốn là %
+   theo PHÒNG BAN) cho từng nhân viên rồi mới chuẩn hoá theo tổng trọng số nhân viên,
+   không chia cho `employeeCount` như `useRevenueData.ts:89-91` đã làm đúng. Kết quả:
+   nhân viên ở phòng ban đông người bị target thổi phồng (%HT bị dìm ảo thấp), phòng ban
+   ít người bị target hụt (%HT bị đẩy ảo cao). Ảnh hưởng toàn bộ tab "Nhân viên > Thi đua"
+   (CompetitionTab/IndividualCompetitionView/CompetitionGroupView/CompetitionSummaryView/
+   CompetitionCompareView).
+4. **`hasTreeData` (useIndustryViewLogic.ts:166) không xét `isRealtime`** — luôn đọc
+   `luykeData.tree`, trong khi các biến tree khác trong cùng hook (`allSubIndustries`,
+   `treeDisplayRows`, `expandAll`) đều đúng đắn switch theo `isRealtime`. Nếu user chỉ
+   dán "Ngành hàng Realtime" (chưa dán Luỹ kế) và đang xem tab Realtime: bảng cây hiện
+   đầy đủ nhưng nút Mở rộng/Thu gọn tất cả + dropdown "Lọc nhóm hàng" bị ẩn sai.
+5. **`CompetitionGridView.tsx:46-70` không guard `header === undefined`** như
+   `CompetitionListView.tsx` đã làm (fix cũ) cho cùng 1 causal bug ở
+   `parseCompetitionDataBySupermarket()` (headers bị ghi đè last-write-wins không đồng bộ
+   với `.data` của từng chương trình) — có thể đọc nhầm cột Target/Actual/%HT (sai số,
+   không crash, không cảnh báo).
 
-## Tier 2 — Vi phạm chuẩn thiết kế (CLAUDE.md)
+## Tier 1b — Tính năng dở dang/không thể dùng được (CẦN QUYẾT ĐỊNH: khôi phục hay xoá)
 
-20. **3 nơi tự dựng `<button>` bằng `document.createElement`** kèm hex cứng (`UncollectedOrdersModal.tsx`, `UnshippedOrdersModal.tsx`, `useExportLogic.ts`) — bypass `components/shared/ui/Button`.
-21. **`ProcessingLoader.tsx`** (nằm trong chính module chuẩn vàng!): dùng `rounded-3xl` (cấm theo CLAUDE.md) + màu `blue-*`/`cyan-*` ngoài palette (15+ chỗ).
-22. **`TrendChart.tsx`**: hex cứng `#FC8181`/`#68D391` cho tăng/giảm thay vì `rose`/`emerald`.
-23. **`DataColumnForm.tsx`/`TargetColumnForm.tsx`**: tự dựng toggle segment thay vì `<Tabs variant="segment">` có sẵn.
+6. `isMobile = false` hard-code ở `IndividualCompetitionView.tsx:498` (chết ~55 dòng
+   nhánh card mobile) và `BonusTab.tsx:87` (chết ~62 dòng + toàn bộ file
+   `BonusMobileCard.tsx` 39 dòng không bao giờ render).
+7. `Card.tsx` prop `rounded` bị destructure nhưng không dùng ở đâu trong hàm — 6 nơi gọi
+   `rounded={false}` kỳ vọng có tác dụng (IndustryView/CrossSellingTab/RevenueTab/
+   InstallmentTab/BonusTab/CompetitionTab) đều vô hiệu.
+8. Tính năng "ghim/highlight nhân viên" chỉ hoạt động ở RevenueTab (có
+   `handleHighlightToggle` + prop `onHighlightToggle`); CrossSellingTab/InstallmentTab
+   đọc `highlightedEmployees` nhưng KHÔNG có cách bật (thiếu setter + prop wiring).
+9. `DetailTab.tsx`: ô tìm kiếm cây sản phẩm/nhân viên hoàn toàn không có UI — state
+   `searchQuery`/filter logic tồn tại và hoạt động (dùng ở dòng 356/408/413) nhưng
+   `setSearchQuery` không được gọi ở đâu.
+10. `DetailTab.tsx`: `isAllExpanded` set nhưng không đọc ở đâu — có vẻ định dùng đổi icon
+    nút Mở rộng/Thu gọn nhưng chưa làm UI.
+11. `Settings.tsx`: toàn bộ tính năng "quản lý Snapshot" (state, effect fetch hết DB lúc
+    mount, handler xoá) tồn tại nhưng không có UI danh sách snapshot nào render — vừa là
+    code chết vừa gây đọc thừa toàn bộ IndexedDB mỗi lần mở Settings.
+12. `TargetHero.tsx`: `CompactTargetItem` nhận prop `onReset` nhưng không render nút gọi
+    nó — 3 handler reset (Tổng target/Trả góp/Quy đổi) không thể bấm được.
+13. `TargetHero.tsx`: prop `addUpdate` (ghi log "cập nhật gần đây") không được gọi ở đâu
+    trong file — khác `CompetitionTarget` (SupermarketConfig.tsx:391) có gọi đúng — sửa
+    target Doanh thu không được ghi log trong khi sửa target Thi đua thì có.
+14. `DataUpdater.tsx`: prop `onNavigateToDashboard` (BiWrapper truyền vào, chuyển tab
+    sang Dashboard) không được gọi ở đâu — có thể thiếu nút "Xong, xem Dashboard".
+15. `IndividualCompetitionView.tsx`: `exportProgress` được set đúng trong vòng lặp xuất
+    ảnh hàng loạt nhưng không render UI hiển thị tiến độ (vd "3/12 xuất ảnh...").
+16. `RevenueTab.tsx`: toàn bộ nhánh "snapshot-compare" (so sánh hiệu suất theo thời gian)
+    bị stub cứng từ `NhanVien.tsx:364` (mọi prop truyền `null`/no-op) từ lúc tạo file
+    (2026-05-24) — tồn đọng lâu dài, không phải regression mới.
 
-## Tier 3 — Code thừa/chết/trùng lặp
+## Tier 2 — Dead code an toàn xoá (export/import/local không ai dùng, xác nhận qua tsc + grep)
 
-24. **`calculateRevenueQD()`/`calculateWeightedQuantity()`** (utils/dataUtils.ts) — 0 nơi gọi, xác nhận độc lập bởi 3 agent — dead code kèm rủi ro bị dùng nhầm thay `calculateRowMetrics()`.
-25. **15 khối migration gần giống hệt** trong `useEmployeeAnalysisLogic.ts`.
-26. **`handleDeleteFile`/`handleViewReport`** (`useDashboardLogic.ts`) thân hàm giống hệt nhau.
-27. **`DashboardView.tsx`**: 1 ternary className 2 nhánh giống hệt nhau (dead logic) + 1 `useEffect` rỗng còn sót lại từ migrate icon library cũ.
-28. **`useIndustryAnalysisLogic.ts`**: gọi trùng `Promise.all([getIndustryVisibleGroups(), getIndustryVisibleGroups()])` — gọi 2 lần giống hệt, chỉ dùng kết quả đầu.
-29. **`useEmployeeAnalysisLogic.ts`**: logic chuẩn hoá cột bị lặp y hệt ở 2 chỗ (load ban đầu + cloud-sync listener).
-30. **`UncollectedOrdersModal.tsx` ~90% trùng `UnshippedOrdersModal.tsx`** (~700 dòng mỗi file).
-31. Nhiều file tự viết lại lookup alias cột (`row['Nhóm Hàng'] || ...`) thay vì `getRowValue()`.
-32. **`WarehouseSummary.tsx`**: `formatRevenueForKho`/`formatQuantityForKho` cục bộ trùng `formatRevenueForHeadToHead`/`formatQuantity` đã có sẵn.
-33. **9 nơi lặp regex sanitize tên file** — không có helper dùng chung.
-34. **`pullSettingsFromFirebase()`** (syncService.ts) dead code — `AuthContext.tsx` viết lại inline logic giống hệt thay vì gọi hàm này.
-35. **`PerformanceTable.tsx`**: `useDashboardContext() || {}` — dead defensive code (hook luôn throw hoặc trả về giá trị xác định, không bao giờ `undefined`).
+17. 8 icon export chết trong `Icons.tsx`: `DocumentDuplicateIcon`, `StoreIcon`,
+    `SunIcon`, `MoonIcon`, `PrinterIcon`, `FileTextIcon`, `CreditCardIcon`,
+    `LineChartIcon`.
+18. `NhanVien.tsx:2` — 4 import chết: `LineChartIcon`, `FilterIcon`, `CreditCardIcon`,
+    `SparklesIcon`.
+19. `types/nhanVienTypes.ts:26` — interface `CompetitionDataForCriterion` không ai dùng.
+20. `bonusTableHelpers.tsx` — `getMondayOfDate`/`getWeekDates` chết (import duy nhất ở
+    `useBonusViewData.ts:6` cũng chết).
+21. `useWorker.ts:1` — cả dòng import `useEffect, useRef, useCallback` chết (đã refactor
+    sang singleton module-scope, quên dọn import).
+22. `dashboardHelpers.ts:274` — biến local `tree` trong `buildIndustryTree()` chết (hàm
+    build/return `finalTree` riêng).
+23. ~30 chỗ unused import/local/param rải rác nhiều file (Dashboard.tsx, CompetitionView.tsx,
+    SummaryTableView.tsx, IndustryView.tsx, DataUpdater.tsx, BonusGroupListTable.tsx (props
+    sortField/sortDir chết — bảng không có chỉ báo cột đang sort!), CompetitionCompareView.tsx,
+    CompetitionTab.tsx, DetailTab.tsx, IndividualCompetitionView.tsx (gồm `donutSegments`
+    tính nhưng không render), InstallmentTab.tsx, RevenueTab.tsx, AvatarDisplay.tsx (prop
+    `supermarketName` không dùng — cache key avatar chỉ theo tên, có thể trùng avatar giữa
+    2 nhân viên cùng tên khác siêu thị), Settings.tsx, Slider.tsx, SupermarketConfig.tsx,
+    useDashboardLogic.ts, useIndustryViewLogic.ts, imageExport.ts, dashboardHelpers.ts.
 
-## Tier 4 — Hiệu năng (ngoài phạm vi yêu cầu, chỉ ghi nhận)
-`KpiCards.tsx` không tận dụng cache `row._metrics`/`row._parentGroup` đã có sẵn, tính lại `calculateRowMetrics()` mỗi card; `useIndustryGridLogic.ts` gọi `calculateRowMetrics()` dư 2-3 lần/dòng; `ContestTable.tsx`/`useHeadToHeadLogic.ts` quét lại toàn mảng O(n×cột)/O(n×config). Không sửa trong đợt này — không phải bug/code thừa như yêu cầu, rủi ro cao nếu sửa vội cho các hàm tính KPI cốt lõi.
+## Tier 3 — Vi phạm chuẩn thiết kế (CLAUDE.md) + trùng lặp
 
-## Kế hoạch thực thi — ĐÃ HOÀN THÀNH (2026-08-28)
-Xử lý theo lô, mỗi lô build + `npm run check` + commit riêng:
-- Lô 1: Tier 1 các mục an toàn/khoanh vùng rõ (9, 10, 12, 13, 27, 28). ✅ DONE (commit 2269dd5e)
-- Lô 2: Tier 1 các mục cần đọc kỹ thêm trước khi sửa (1, 2, 3, 6, 7, 8, 11, 14, 15). ✅ DONE (commit e7e39e9c)
-- Lô 3: Tier 1 mục cần quyết định nghiệp vụ — đã hỏi user qua AskUserQuestion:
-  - Item 4 (lọc giá 3 nơi lệch nhau): user chọn "sửa cả 2 phía". ✅ DONE (commit 2df40796) — validate bắt buộc priceValue1 khi có priceCondition (ColumnConfigModal.tsx, HeadToHeadConfigModal.tsx) + đồng bộ useWarehouseLogic.ts/useHeadToHeadLogic.ts theo đúng cách ContestTable.tsx (rỗng = bỏ qua filter).
-  - Item 5 (TRANG_THAI check ở Head-to-Head/Khai Thác): xác nhận có comment giải thích đây là CHỦ Ý (không phải lỗi) cho riêng 2 tab này. User chọn "để lại, không gộp". ⏸️ GIỮ NGUYÊN — đã ghi nhận, không đụng vào logic tính doanh thu.
-- Lô 4: Tier 1 phần còn lại (16-19) + Tier 2 (21, 22). ✅ DONE (commit d89205eb)
-  - Item 20 (3 nơi tự dựng `<button>` bằng document.createElement) — ⏸️ DEFERRED có chủ ý: rủi ro cao vì nằm trong luồng xuất Google Sheet nhiều bước qua OAuth, không thể test an toàn end-to-end trong phiên này.
-  - Item 23 (segment toggle tự dựng thay vì `<Tabs variant="segment">`) — ⏸️ DEFERRED, chưa làm trong đợt này.
-- Lô 5: Tier 3 dọn dẹp (24-35). ✅ DONE trừ item 30 — (commit cc9b0907, a243acbc, d1424067)
-  - 24 (dead code calculateRevenueQD/calculateWeightedQuantity): DONE — Lô 1.
-  - 25 (15 khối migration lặp): DONE — gộp thành vòng lặp for V10..V24.
-  - 26 (handleDeleteFile/handleViewReport trùng thân hàm): DONE — gộp resetFilterStateAfterFileChange().
-  - 27, 28: DONE — Lô 1.
-  - 29 (chuẩn hoá cột lặp 2 chỗ): DONE — gộp normalizeExploitationTabColumns().
-  - 30 (UncollectedOrdersModal ~90% trùng UnshippedOrdersModal, ~700 dòng/file): ⏸️ DEFERRED có chủ ý — rủi ro cao, không gộp trong đợt này (giống lý do item 20).
-  - 31 (tự viết lại lookup alias cột thay vì getRowValue()): DONE — KpiCards.tsx, KpiCardConfigModal.tsx, CrossSellingTable.tsx, DashboardView.tsx, Uncollected/UnshippedOrdersModal.tsx chuyển sang getRowValue()+COL; mở rộng COL.MA_NHOM_HANG/MA_NGANH_HANG/MANUFACTURER thêm biến thể không dấu đã thấy dùng cục bộ; thêm COL.NGAY_HEN_GIAO mới. KHÔNG đụng nhánh fallback vị trí cột __EMPTY_24/Column25 trong UnshippedOrdersModal (logic phòng thủ Excel thiếu header, rủi ro cao).
-  - 32 (WarehouseSummary formatRevenueForKho/formatQuantityForKho trùng): DONE — formatRevenueForKho alias sang formatRevenueForHeadToHead(); formatQuantityForKho GIỮ RIÊNG (không alias formatQuantity vì thiếu Math.round có thể lộ số lẻ).
-  - 33 (9 nơi lặp regex sanitize tên file): DONE — thêm sanitizeFilename() dùng chung.
-  - 34: DONE — Lô 2.
-  - 35 (PerformanceTable dead `|| {}`): DONE.
+24. **83 chỗ / 27 file** dùng `Button variant="ghost"` kèm className reset toàn bộ style
+    (`bg-transparent border-0 rounded-none h-auto w-auto p-0 ...`) thay vì dùng sẵn
+    `variant="unstyled" size="none"` (đã có, chỉ 9 nơi dùng đúng).
+25. **6+ dropdown tìm kiếm tự dựng** trùng `MultiSelectDropdown`/`Dropdown` đã có sẵn:
+    `DetailTab.tsx` (SearchableSelect), `CompetitionCompareView.tsx` (EmployeeSelector),
+    `SupermarketConfig.tsx` (GroupCombobox), `IndividualCompetitionView.tsx` (inline,
+    nằm ngay cạnh 1 chỗ dùng đúng MultiSelectDropdown trong cùng file),
+    `CompetitionTab.tsx` (panel "Highlight" mới, nằm ngay cạnh chỗ dùng đúng
+    MultiSelectDropdown trong cùng file — bằng chứng rõ nhất), `CompetitionSummaryView.tsx`,
+    `IndustryView.tsx` (2 chỗ), `SummaryTableView.tsx`.
+26. ~20 chỗ `<input>` thô thay vì `components/shared/ui/Input.tsx`, bo góc không đồng nhất
+    giữa các chỗ thô (`rounded-md`/`rounded`/`rounded-xl` lẫn lộn cho cùng vai trò).
+27. Hex màu lệch tông: `IndividualCompetitionView.tsx:226-229` dùng đỏ thô `#dc2626`
+    (Tailwind red-600, KHÔNG phải rose) trong khi `RevenueTab.tsx` (đã sửa đợt trước) dùng
+    đúng `#f43f5e` (rose-500) cho cùng khái niệm "kém/tốt/trung bình".
+28. Modal-modal lệch nhau: `SupermarketConfig.tsx` (BulkRenameModal) title tự custom khác
+    style mặc định của `Modal`; 6/9 modal tự dựng nút footer theo pattern reset ở mục 24
+    (3 modal dùng `Button` sạch: TargetHero/KpiOverview/AutoBonusRangePickerModal); nút
+    primary ở SupermarketConfig dùng gradient riêng khác các modal khác (flat `bg-sky-600`);
+    `ColorSettingsModal` nút phụ `text-xs` lệch cỡ chữ so với các modal khác đều `text-sm`.
+29. `dark:` class MỚI vẫn đang được thêm liên tục (317 dòng thêm trong tháng 8, 99 dòng
+    chỉ trong 10 ngày gần nhất, gồm cả trong code mới ở mục 25 CompetitionTab.tsx) — vi
+    phạm đang tiếp diễn, không phải cruft cũ.
+30. `z-[999999]` mới (panel "Highlight" ở CompetitionTab.tsx) lệch hẳn quy ước module
+    (`z-[100]`/`z-50`).
 
-Toàn bộ đã qua `npm run check` (typecheck + eslint + build + lint-ratchet) sạch trước mỗi lần commit.
+## Tier 4 — Đồng nhất size chữ/font/spacing (yêu cầu chính của user)
+
+Nguyên nhân gốc theo cả 2 agent: bi-dashboard KHÔNG có primitive `Table`/`TableHeaderCell`/
+`IconButton` dùng chung như `Card`/`Modal`/`Button`/`EmptyState` đã có — mọi nơi tự dựng
+`<thead>/<th>/<td>`/icon-button nên mỗi file chọn số px riêng.
+
+31. Header bảng: đa số dùng `text-[11px] font-black uppercase tracking-wider` (~11 file,
+    coi là chuẩn thực tế của module) — outlier: `SummaryTableView.tsx:436`
+    (`text-[10px] sm:text-[12px] font-bold`, có responsive lạ), `DetailTab.tsx:579`
+    (`font-bold` không phải `font-black`), `MultiMonthResultDetailModal.tsx`/
+    `AutoBonusErrorDetailModal.tsx` (không có size/uppercase/tracking gì cả).
+32. Cell dữ liệu: đa số `text-[13px]` — outlier `CompetitionGroupView.tsx`
+    (`text-[10px]`/`text-[11px]`), `MonthlyBonusTable.tsx` (`text-xs`), 2 modal ở mục 31
+    (không set size).
+33. Ô textarea "dán dữ liệu thô": 4 file, 4 size khác nhau (`text-[10px]`/`[11px]`/`[12px]`/
+    `text-xs sm:text-sm`).
+34. Tiêu đề "banner thi đua": 4 file, 4 tổ hợp size/leading/tracking khác nhau.
+35. Nhãn tiểu mục kiểu "vạch màu + chữ hoa nhỏ": 5 file, 5 tổ hợp size/tracking khác nhau.
+36. Icon cùng vai trò lệch size nhiều nơi: PencilIcon (3 size), TrashIcon (4 size, kể cả
+    lệch NGAY TRONG CÙNG 1 FILE ở TargetHero.tsx và DataUpdater.tsx), FilterIcon (3 size +
+    tự mâu thuẫn trong CompetitionSummaryView.tsx), ChevronDownIcon (3 size), ClockIcon
+    (3 size, lệch ngay trong SupermarketConfig.tsx). `CompetitionSummaryView.tsx` toàn bộ
+    toolbar icon to hơn 40-70% mọi tab "Nhân viên" khác.
+37. Icon stroke-width trộn 2 và 1.5 không theo quy tắc rõ ràng.
+38. Padding ô bảng: header cột "Nhân viên" dao động `py-1`→`py-3` (4 mức) cho cùng vai
+    trò; `RevenueDesktopRow.tsx` vs `BonusDesktopRow.tsx` lệch padding ngang 2x;
+    `CompetitionCompareView.tsx` cell padding ngang gấp 2-4x các bảng thi đua khác;
+    2 modal ở mục 31 padding rộng hơn hẳn mọi bảng khác trong module.
+39. `InstallmentTab.tsx`: viền dưới header cột "Nhân viên" mỏng/xám khác hẳn các cột khác
+    CÙNG DÒNG header (dày/có màu) — lệch ngay trong 1 file.
+40. Heading hierarchy: `SupermarketConfig.tsx` tiêu đề section nhỏ hẳn (`text-[11px]`) so
+    với chuẩn 3-file khác (`text-sm sm:text-base lg:text-lg`); `CompetitionGridView.tsx`
+    dùng `font-medium` (duy nhất) + border riêng.
+41. Modal: `AutoBonusRangePickerModal.tsx` footer dùng `Button` sạch → bo góc `rounded-md`
+    khác hẳn 6 modal còn lại dùng pattern reset → `rounded-xl`; `ColorSettingsModal.tsx`
+    nút phụ `text-xs` lệch; `BonusDataModal.tsx` title custom + badge lệch 6 modal còn lại
+    chỉ truyền string thường.
+
+## Kế hoạch thực thi
+Theo lô, mỗi lô build + `npm run check` + commit riêng:
+- Lô A: Tier 1 (fix bug thật, mục 1-5) — ưu tiên cao nhất, bắt đầu ngay.
+- Lô B: Hỏi user (AskUserQuestion) cách xử lý Tier 1b (mục 6-16) — khôi phục hay xoá từng
+  tính năng dở dang — vì đây là quyết định sản phẩm, không phải bug rõ ràng.
+- Lô C: Tier 2 dead code (mục 17-23) — an toàn, làm theo quyết định ở Lô B nếu liên quan.
+- Lô D: Tier 3 design-system (mục 24-30) — khối lượng lớn (83+6+20 chỗ), có thể cần chia
+  nhỏ theo loại vi phạm.
+- Lô E: Tier 4 đồng nhất size chữ/spacing/icon (mục 31-41) — yêu cầu chính của user; cân
+  nhắc tạo primitive `TableHeaderCell`/`IconButton` dùng chung nếu khối lượng sửa tay quá
+  lớn, thay vì sửa từng file lẻ tẻ.
