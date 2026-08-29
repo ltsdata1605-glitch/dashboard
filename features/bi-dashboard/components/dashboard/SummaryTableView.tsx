@@ -6,6 +6,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
@@ -331,12 +332,13 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
-                    <input
+                    <Input
                         type="text"
                         value={supermarketFilterSearch}
                         onChange={(e) => setSupermarketFilterSearch(e.target.value)}
                         placeholder="Tìm kiếm..."
-                        className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
+                        leftIcon="search"
+                        className="mb-2 text-xs"
                     />
                     <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                         {allSupermarketNames

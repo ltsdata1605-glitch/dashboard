@@ -8,6 +8,7 @@ import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { Input } from '../../../../components/shared/ui/Input';
 
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
@@ -220,12 +221,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 {isIndustryFilterOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
-                        <input
+                        <Input
                             type="text"
                             value={industryFilterSearch}
                             onChange={(e) => setIndustryFilterSearch(e.target.value)}
                             placeholder="Tìm kiếm..."
-                            className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
+                            leftIcon="search"
+                            className="mb-2 text-xs"
                         />
                         <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                             {allIndustries.filter(n => n.toLowerCase().includes(industryFilterSearch.toLowerCase())).map(industry => (
@@ -268,12 +270,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     {isSubIndustryFilterOpen && (
                         <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
-                            <input
+                            <Input
                                 type="text"
                                 value={subIndustryFilterSearch}
                                 onChange={(e) => setSubIndustryFilterSearch(e.target.value)}
                                 placeholder="Tìm kiếm..."
-                                className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-sky-500 focus:border-sky-500 dark:text-slate-200"
+                                leftIcon="search"
+                                className="mb-2 text-xs"
                             />
                             <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                                 {allSubIndustries.filter(n => n.toLowerCase().includes(subIndustryFilterSearch.toLowerCase())).map(sub => (

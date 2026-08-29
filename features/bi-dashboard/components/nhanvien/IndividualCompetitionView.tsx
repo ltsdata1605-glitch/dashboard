@@ -6,6 +6,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { calculateRunRate } from '../../services/metricService';
@@ -503,7 +504,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                             {isEmployeeSelectorOpen && (
                                 <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
                                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 sticky top-0">
-                                        <input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
+                                        <Input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." leftIcon="search" autoFocus />
                                     </div>
                                     <div className="overflow-y-auto flex-1">
                                         {filteredEmployees.length > 0 ? (

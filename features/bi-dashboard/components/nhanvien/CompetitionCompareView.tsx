@@ -4,6 +4,7 @@ import { shortenName } from '../../utils/nhanVienHelpers';
 import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { calculateRunRate } from '../../services/metricService';
@@ -111,7 +112,7 @@ const EmployeeSelector: React.FC<{
             {isOpen && (
                 <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
-                        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
+                        <Input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" autoFocus />
                     </div>
                     <div className="overflow-y-auto flex-1">
                         {filtered.length > 0 ? filtered.map(emp => (

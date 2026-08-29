@@ -161,12 +161,13 @@ const SearchableSelect: React.FC<{
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 min-w-[200px] w-max max-w-[280px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-64">
                     <div className="p-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
-                        <input
+                        <Input
                             type="text"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Tìm kiếm..."
-                            className="w-full px-2 py-1 text-[11px] border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-sky-300 bg-white dark:bg-slate-700 dark:text-slate-100 outline-none"
+                            leftIcon="search"
+                            className="text-[11px]"
                             autoFocus
                         />
                     </div>

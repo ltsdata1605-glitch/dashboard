@@ -10,6 +10,7 @@ import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useDepartments } from '../hooks/useDepartments';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -124,7 +125,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
             <div className="space-y-5">
                     <div>
                         <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
-                        <input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 text-sm placeholder:text-slate-400 placeholder:font-normal" />
+                        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="font-bold placeholder:font-normal" />
                     </div>
 
                     {/* Selected employees summary with remove buttons */}
@@ -170,7 +171,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                 <span className="text-[10px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
                             </div>
                         </div>
-                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 text-sm mb-3 outline-none transition-all font-medium placeholder:text-slate-400" />
+                        <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." leftIcon="search" className="mb-3 font-medium" />
                         <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-xl bg-slate-50/30 dark:bg-slate-900/30">
                             {filteredEmps.length > 0 ? filteredEmps.map(emp => (
                                 <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>

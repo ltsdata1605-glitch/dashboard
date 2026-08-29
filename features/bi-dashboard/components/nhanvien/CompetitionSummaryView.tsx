@@ -12,6 +12,7 @@ import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
 
@@ -578,11 +579,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         <div className="flex flex-col items-start leading-none py-1 w-full relative z-30">
             {isEditingName ? (
                 <div className="flex items-center gap-2 no-print">
-                    <input 
-                        type="text" 
-                        value={tempName} 
-                        onChange={(e) => setTempName(e.target.value)} 
-                        className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded focus:ring-1 focus:ring-sky-500 w-48 text-slate-800 dark:text-slate-100"
+                    <Input
+                        type="text"
+                        value={tempName}
+                        onChange={(e) => setTempName(e.target.value)}
+                        className="w-48"
+                        fullWidth={false}
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
@@ -622,12 +624,13 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     {isFilterOpen && (
                         <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
                             <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
-                                <input
+                                <Input
                                     type="text"
                                     value={filterSearch}
                                     onChange={(e) => setFilterSearch(e.target.value)}
                                     placeholder="Tìm tiêu chí..."
-                                    className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                    leftIcon="search"
+                                    className="text-xs"
                                     autoFocus
                                 />
                             </div>

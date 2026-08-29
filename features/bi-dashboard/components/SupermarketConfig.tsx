@@ -58,13 +58,13 @@ const GroupCombobox: React.FC<{
     return (
         <div ref={containerRef} className="relative w-full">
             <div className="relative flex items-center">
-                <input
+                <Input
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="w-full bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 placeholder:text-slate-300 text-slate-800 dark:text-slate-200 shadow-sm"
+                    className="text-xs font-bold pr-8 shadow-sm"
                 />
                 <Button
                     type="button"

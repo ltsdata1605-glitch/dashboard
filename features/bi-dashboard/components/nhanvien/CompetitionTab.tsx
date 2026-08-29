@@ -17,6 +17,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
@@ -504,7 +505,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     ))}
                     {activeVersionName === 'new' ? (
                         <div className="flex items-center gap-1.5">
-                            <input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-[11px] focus:ring-1 focus:ring-sky-500 w-28 bg-white dark:bg-slate-800" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
+                            <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="w-28 text-[11px]" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
                             <Button variant="ghost" onClick={handleSaveVersionAction} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto px-2 py-1 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
                             <Button variant="ghost" onClick={onCancelNewVersion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></Button>
                         </div>
@@ -584,7 +585,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                 className="fixed w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                                    <input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" />
+                                                    <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
                                                     <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="ghost" onClick={handleSelectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
