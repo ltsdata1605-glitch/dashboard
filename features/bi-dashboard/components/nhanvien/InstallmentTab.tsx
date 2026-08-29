@@ -11,6 +11,7 @@ import { ChevronDownIcon, ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XI
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
@@ -25,13 +26,14 @@ interface InstallmentDesktopRowProps {
     row: InstallmentDisplayRow;
     isTotal: boolean;
     isHighlighted: boolean;
+    onHighlightToggle: (name: string) => void;
     supermarketName: string;
     hidePercent: boolean;
     f: Intl.NumberFormat;
 }
 
 const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
-    row, isTotal, isHighlighted, supermarketName, hidePercent, f
+    row, isTotal, isHighlighted, onHighlightToggle, supermarketName, hidePercent, f
 }) => {
     const oldRow = row.oldRow;
     return (
@@ -40,7 +42,13 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
                 <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                     {!isTotal && <MedalBadge rank={row.rank} />}
                     {!isTotal && <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />}
-                    <div className="flex flex-col min-w-0">
+                    <div
+                        role={isTotal ? undefined : 'button'}
+                        tabIndex={isTotal ? undefined : 0}
+                        className="flex flex-col min-w-0"
+                        onClick={isTotal ? undefined : () => onHighlightToggle(row.originalName!)}
+                        onKeyDown={isTotal ? undefined : onActivateKey(() => onHighlightToggle(row.originalName!))}
+                    >
                         <span className={`font-bold ${isTotal ? '' : 'text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words'}`}>{row.name}</span>
                     </div>
                 </div>
@@ -92,6 +100,15 @@ const InstallmentTab: React.FC<{
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
+
+    const handleHighlightToggle = React.useCallback((originalName: string) => {
+        setHighlightedEmployees((prev: Set<string>) => {
+            const n = new Set(prev);
+            if (n.has(originalName)) n.delete(originalName);
+            else n.add(originalName);
+            return n;
+        });
+    }, [setHighlightedEmployees]);
 
     const displayList = useMemo(() => {
         if (isActive === false) return [];
@@ -348,6 +365,7 @@ const InstallmentTab: React.FC<{
                                                 row={row}
                                                 isTotal={isTotal}
                                                 isHighlighted={isHighlighted}
+                                                onHighlightToggle={handleHighlightToggle}
                                                 supermarketName={supermarketName}
                                                 hidePercent={hidePercent}
                                                 f={f}

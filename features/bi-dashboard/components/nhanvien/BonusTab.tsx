@@ -11,7 +11,6 @@ import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
 
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
-import { BonusMobileCard } from './bonus/BonusMobileCard';
 import TimeProgressBar from './shared/TimeProgressBar';
 import { AutoBonusPanel } from './bonus/AutoBonusPanel';
 import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
@@ -84,8 +83,6 @@ export const BonusView: React.FC<{
     const cardTitle = <span className="js-report-title">Hiệu suất làm việc {reportTitleSuffix}</span>;
     const cardSubtitle = <span className="js-report-title">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>;
 
-    const isMobile = false; // Always show table view, even on mobile
-
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -122,69 +119,7 @@ export const BonusView: React.FC<{
                     </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
-                        {isMobile ? (
-                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {displayList.map((item, idx) => {
-                                    if (item.type === 'department' || item.type === 'total') {
-                                        const isGrandTotal = item.type === 'total';
-                                        return (
-                                            <div key={`${item.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 border-t-2 border-slate-300 dark:border-slate-600' : 'bg-slate-50 dark:bg-slate-900/40'}`}>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className={`text-xs font-black uppercase tracking-wider ${isGrandTotal ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.name}</span>
-                                                    <div className="text-right">
-                                                        <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Dự Kiến</span>
-                                                        <span className={`text-sm font-black tabular-nums leading-none ${isGrandTotal ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-4 gap-1.5 mt-2">
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">DTQĐ</p>
-                                                        <p className="text-[11px] font-black tabular-nums">{f.format(item.sumDtqd)}</p>
-                                                    </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">ERP</p>
-                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumErp / 1000))}</p>
-                                                    </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">T.Nóng</p>
-                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTnong / 1000))}</p>
-                                                    </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">Tổng</p>
-                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTong / 1000))}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    const isHighlighted = highlightedEmployees.has(item.originalName);
-                                    const bonus = bonusData[item.originalName], rev = revenueMap.get(item.originalName);
-                                    const dtqdVal = rev?.dtqd || 0, hqqdVal = rev ? (rev.hieuQuaQD * 100) : 0, erpVal = bonus?.erp || 0, tnongVal = bonus?.tNong || 0, pnongVal = bonus?.pNong || 0, tongVal = bonus?.tong || 0, dkienVal = bonus?.dKien || 0;
-                                    const isStale = !isUpdatedToday(bonus?.updatedAt);
-
-                                    return (
-                                        <BonusMobileCard
-                                            key={item.originalName}
-                                            item={item}
-                                            isHighlighted={isHighlighted}
-                                            isStale={isStale}
-                                            dtqdVal={dtqdVal}
-                                            hqqdVal={hqqdVal}
-                                            erpVal={erpVal}
-                                            tnongVal={tnongVal}
-                                            pnongVal={pnongVal}
-                                            tongVal={tongVal}
-                                            dkienVal={dkienVal}
-                                            onEmployeeClick={onEmployeeClick}
-                                            getCellColor={getCellColor}
-                                            f={f}
-                                            supermarketName={supermarketName}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        ) : isMonthly ? (
+                        {isMonthly ? (
                             <MonthlyBonusTable
                                 employees={monthlyEmployees}
                                 months={monthlyArchive.months}

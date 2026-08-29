@@ -4,11 +4,12 @@ import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import Card from '../Card';
 import { SpinnerIcon, ChevronDownIcon } from '../Icons';
-import { Search, ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
+import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import * as dbService from '../../services/dbService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { Input } from '../../../../components/shared/ui/Input';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -495,6 +496,14 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             {/* Thanh bar toolbar — giống tab THƯỞNG */}
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex flex-wrap gap-2 items-center">
+                    {/* Tìm kiếm sản phẩm/nhân viên trong cây chi tiết */}
+                    <Input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Tìm sản phẩm, nhân viên..."
+                        leftIcon="search"
+                        className="w-40"
+                    />
                     {/* Filters */}
                     <SearchableSelect
                         value={filterNnh}
@@ -543,7 +552,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleExpandAll}
                         title="Mở rộng tất cả"
-                        className="text-slate-500 h-7.5 w-7.5 p-0 shrink-0"
+                        className={`h-7.5 w-7.5 p-0 shrink-0 ${isAllExpanded ? 'text-sky-600' : 'text-slate-500'}`}
                     >
                         <ChevronsUpDown className="h-3.5 w-3.5" />
                     </Button>
@@ -554,7 +563,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleCollapseAll}
                         title="Thu gọn tất cả"
-                        className="text-slate-500 h-7.5 w-7.5 p-0 shrink-0"
+                        className={`h-7.5 w-7.5 p-0 shrink-0 ${!isAllExpanded ? 'text-sky-600' : 'text-slate-500'}`}
                     >
                         <ChevronsDownUp className="h-3.5 w-3.5" />
                     </Button>

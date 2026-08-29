@@ -311,14 +311,6 @@
     "nonSemanticColor": 12,
     "missingMobileToolbar": 0
   },
-  "features/bi-dashboard/components/nhanvien/bonus/BonusMobileCard.tsx": {
-    "nonSemanticColor": 12,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
-    "nonSemanticColor": 4,
-    "missingMobileToolbar": 0
-  },
   "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
     "nonSemanticColor": 12,
     "missingMobileToolbar": 0

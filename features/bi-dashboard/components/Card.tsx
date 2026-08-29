@@ -41,7 +41,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon = 'bar-chart-3
   return (
     <SectionCard
       ref={ref}
-      className="flex flex-col flex-grow"
+      className={`flex flex-col flex-grow${rounded ? '' : ' rounded-none lg:rounded-none'}`}
     >
       {body}
     </SectionCard>

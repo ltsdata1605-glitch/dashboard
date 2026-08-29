@@ -10,6 +10,7 @@ import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadAllI
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { onActivateKey } from '../../../../components/shared/ui';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
@@ -23,12 +24,13 @@ type CrossSellingDisplayRow = CrossSellingRow & { rank?: number; oldRow?: CrossS
 interface CrossSellingDesktopRowProps {
     row: CrossSellingDisplayRow;
     isHighlighted: boolean;
+    onHighlightToggle: (name: string) => void;
     supermarketName: string;
     f: Intl.NumberFormat;
 }
 
 const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
-    row, isHighlighted, supermarketName, f
+    row, isHighlighted, onHighlightToggle, supermarketName, f
 }) => {
     const oldRow = row.oldRow;
     return (
@@ -37,7 +39,7 @@ const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
-                    <div className="flex flex-col min-w-0">
+                    <div role="button" tabIndex={0} className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
                         <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
                     </div>
                 </div>
@@ -98,6 +100,15 @@ const CrossSellingTab: React.FC<{
     const [exportDeptProgress, setExportDeptProgress] = useState({ current: 0, total: 0 });
 
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
+
+    const handleHighlightToggle = React.useCallback((originalName: string) => {
+        setHighlightedEmployees((prev: Set<string>) => {
+            const n = new Set(prev);
+            if (n.has(originalName)) n.delete(originalName);
+            else n.add(originalName);
+            return n;
+        });
+    }, [setHighlightedEmployees]);
 
     const displayList = useMemo(() => {
         if (isActive === false) return [];
@@ -376,6 +387,7 @@ const CrossSellingTab: React.FC<{
                                                     key={row.originalName || idx}
                                                     row={row}
                                                     isHighlighted={isHighlighted}
+                                                    onHighlightToggle={handleHighlightToggle}
                                                     supermarketName={supermarketName}
                                                     f={f}
                                                 />
