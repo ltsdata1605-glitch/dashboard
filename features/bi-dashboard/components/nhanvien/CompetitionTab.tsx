@@ -500,17 +500,17 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
                         <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={onActivateKey(() => onVersionTabClick(version))} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
-                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></Button>
+                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ))}
                     {activeVersionName === 'new' ? (
                         <div className="flex items-center gap-1.5">
                             <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="w-28 text-[11px]" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                            <Button variant="ghost" onClick={handleSaveVersionAction} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto px-2 py-1 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
-                            <Button variant="ghost" onClick={onCancelNewVersion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></Button>
+                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="px-2 py-1 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
+                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ) : (
-                        <Button variant="ghost" onClick={onStartNewVersion} disabled={!supermarket} title="Tạo mới" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"><PlusIcon className="h-4 w-4" /></Button>
+                        <Button variant="unstyled" size="none" onClick={onStartNewVersion} disabled={!supermarket} title="Tạo mới" className="p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"><PlusIcon className="h-4 w-4" /></Button>
                     )}
                 </div>
                 {/* Bên phải thanh bar — chế độ xem + export */}
@@ -586,7 +586,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                                     <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
-                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="ghost" onClick={handleSelectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
+                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="unstyled" size="none" onClick={handleSelectAllEmployees} className="p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="unstyled" size="none" onClick={handleDeselectAllEmployees} className="p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
                                                     {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {

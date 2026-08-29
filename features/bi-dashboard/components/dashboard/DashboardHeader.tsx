@@ -87,17 +87,17 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
                             <ClockIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setActiveMainTab('realtime')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Realtime
                             </Button>
                             <span className="text-slate-300 dark:text-slate-600">/</span>
                             <Button
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={() => setActiveMainTab('cumulative')}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Luỹ kế
                             </Button>

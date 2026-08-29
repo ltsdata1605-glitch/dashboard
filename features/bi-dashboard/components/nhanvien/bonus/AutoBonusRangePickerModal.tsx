@@ -214,9 +214,9 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                 {yearOptions.map(y => (
                                     <Button
                                         key={y.year}
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         onClick={() => setSelectedYear(y.year)}
-                                        className={`bg-transparent hover:bg-transparent h-auto w-auto text-inherit flex-1 px-3 py-2.5 rounded-lg border text-xs font-bold transition-all ${
+                                        className={`flex-1 px-3 py-2.5 rounded-lg border text-xs font-bold transition-all ${
                                             selectedYear === y.year
                                                 ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400'
                                                 : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'

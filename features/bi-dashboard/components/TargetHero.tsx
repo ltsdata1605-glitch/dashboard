@@ -138,7 +138,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                 {Array.from(selectedEmps).map(empName => (
                                     <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
-                                        <Button variant="ghost" onClick={() => toggleEmp(empName)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
+                                        <Button variant="unstyled" size="none" onClick={() => toggleEmp(empName)} className="p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
                                             <XIcon className="h-3 w-3" />
                                         </Button>
                                     </span>
@@ -155,7 +155,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                             <div className="flex items-center gap-2">
                                 {availableEmps.length > 0 && (
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         onClick={() => {
                                             if (selectedEmps.size === availableEmps.length) {
                                                 setSelectedEmps(new Set());
@@ -163,7 +163,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                                 setSelectedEmps(new Set(availableEmps.map(e => e.originalName)));
                                             }
                                         }}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[9px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
+                                        className="p-0 text-[9px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
                                     >
                                         {selectedEmps.size === availableEmps.length ? 'Bỏ tất cả' : 'Chọn tất cả'}
                                     </Button>
@@ -180,9 +180,9 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                         <span className={`text-sm font-medium truncate ${selectedEmps.has(emp.originalName) ? 'text-sky-800 dark:text-sky-300 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{emp.originalName}</span>
                                     </label>
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         onClick={() => removeEmp(emp.originalName)}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
                                         title="Xoá khỏi danh sách"
                                     >
                                         <TrashIcon className="h-3.5 w-3.5" />
@@ -355,7 +355,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                         </div>
-                        <Button variant="ghost" onClick={() => {
+                        <Button variant="unstyled" size="none" onClick={() => {
                             showConfirm({
                                 title: 'Khôi phục Target',
                                 message: 'Khôi phục hiển thị về mục tiêu mặc định?',
@@ -368,7 +368,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     closeConfirm();
                                 }
                             });
-                        }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                        }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                             <ResetIcon className="h-4 w-4" />
                         </Button>
                     </div>
@@ -385,7 +385,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="ghost" onClick={() => {
+                            <Button variant="unstyled" size="none" onClick={() => {
                                 showConfirm({
                                     title: 'Khôi phục Cấu hình',
                                     message: 'Đặt tất cả nhân sự và trọng số về mặc định?',
@@ -398,10 +398,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                         closeConfirm();
                                     }
                                 });
-                            }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                            }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
+                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
                                 <PlusIcon className="h-4 w-4" />
                             </Button>
                         </div>
@@ -450,8 +450,8 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></Button>
-                                                    <Button variant="ghost" onClick={() => {
+                                                    <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => {
                                                         showConfirm({
                                                             title: 'Xóa Bộ phận',
                                                             message: `Xóa bộ phận "${dept.name}"?`,
@@ -467,7 +467,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                                 closeConfirm();
                                                             }
                                                         });
-                                                    }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></Button>
+                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></Button>
                                                 </div>
                                             )}
                                         </div>

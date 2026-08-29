@@ -588,10 +588,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
-                    <Button type="button" variant="ghost" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-emerald-600">
+                    <Button type="button" variant="unstyled" size="none" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="p-0 text-emerald-600">
                         <CheckCircleIcon className="h-6 w-6" />
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-slate-400">
+                    <Button type="button" variant="unstyled" size="none" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="p-0 text-slate-400">
                         <XIcon className="h-6 w-6" />
                     </Button>
                 </div>
@@ -609,9 +609,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             {!readOnly && (
                 <div className="relative" ref={filterRef}>
                     <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                         title="Chọn cột hiển thị"
                     >
                         <FilterIcon className="h-5 w-5" />
@@ -656,9 +656,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             {!readOnly && (
                 <Button
                     type="button"
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={() => setIsEditingName(true)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     title="Đổi tên bảng"
                 >
                     <PencilIcon className="h-5 w-5" />
@@ -668,9 +668,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             {!readOnly && (
                 <Button
                     type="button"
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+                    className="p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
                     title="Xóa bảng"
                 >
                     <TrashIcon className="h-5 w-5" />
@@ -724,9 +724,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <div className="h-5 w-px bg-slate-200 dark:border-slate-700 mx-1" />
 
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}

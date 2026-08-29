@@ -335,12 +335,12 @@ const StatusTile: React.FC<{
             )}
             {hasData && !isPasting && (
                 <Button
-                    variant="ghost"
+                    variant="unstyled" size="none"
                     onClick={(e) => {
                         e.stopPropagation();
                         onClear(title);
                     }}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
+                    className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
                     title="Xoá"
                 >
                     <TrashIcon className="h-3.5 w-3.5" />
@@ -409,7 +409,7 @@ const CompetitionTarget: React.FC<{
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="ghost" onClick={() => {
+                    <Button variant="unstyled" size="none" onClick={() => {
                         showConfirm({
                             title: 'Khôi phục Target',
                             message: 'Khôi phục tất cả Target phụ về 100%?',
@@ -420,10 +420,10 @@ const CompetitionTarget: React.FC<{
                                 closeConfirm();
                             }
                         });
-                    }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" onClick={() => setIsRenameModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
+                    <Button variant="unstyled" size="none" onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
                         <PencilIcon className="h-4 w-4" />
                     </Button>
                 </div>
@@ -537,9 +537,9 @@ const CompetitionTarget: React.FC<{
                             const t = RATIO_CONTROL_THEME;
                             return (
                                 <Button
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     onClick={() => handleSaveAsPrevMonth(comp.name)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors`}
+                                    className={`p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors`}
                                     title="Lưu dữ liệu hiện tại làm mốc so sánh tháng trước"
                                 >
                                     <ClockIcon className="h-3.5 w-3.5" />

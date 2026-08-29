@@ -405,10 +405,10 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                                 {supermarkets.map((sm) => (
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         key={sm}
                                         onClick={() => setActiveSupermarket(sm)}
-                                        className={`bg-transparent hover:bg-transparent border-0 h-auto w-auto p-0 text-inherit shrink-0 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border ${
+                                        className={`shrink-0 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border ${
                                             activeSupermarket === sm
                                                 ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
                                                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'

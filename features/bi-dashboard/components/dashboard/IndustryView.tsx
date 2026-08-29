@@ -395,10 +395,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         {hasChildren && (
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="unstyled" size="none"
                                 onClick={(e) => { e.stopPropagation(); toggleRow(rowKey); }}
                                 onTouchEnd={(e) => { e.preventDefault(); toggleRow(rowKey); }}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none p-0 mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
+                                className="mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
                                 style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
                             >
                                 <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>

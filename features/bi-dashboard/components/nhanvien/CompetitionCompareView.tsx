@@ -116,7 +116,7 @@ const EmployeeSelector: React.FC<{
                     </div>
                     <div className="overflow-y-auto flex-1">
                         {filtered.length > 0 ? filtered.map(emp => (
-                            <Button variant="ghost" key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <Button variant="unstyled" size="none" key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                 {emp.name}
                             </Button>
                         )) : <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>}
