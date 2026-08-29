@@ -422,7 +422,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         <table className="w-full min-w-max text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
-                                <tr className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wider">
+                                <tr className="text-[11px] font-black uppercase tracking-wider">
                                     {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th

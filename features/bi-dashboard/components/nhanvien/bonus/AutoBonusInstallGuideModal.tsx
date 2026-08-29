@@ -59,8 +59,8 @@ export const AutoBonusInstallGuideModal: React.FC<{
             maxWidth="md"
             footer={
                 <div className="flex gap-3">
-                    <Button variant="unstyled" size="none" onClick={onDismiss} className="flex-1 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>
-                    <Button variant="unstyled" size="none" onClick={() => { onDismiss(); onUseManual(); }} className="flex-[2] py-2 bg-rose-600 dark:bg-rose-700 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-rose-700 dark:hover:bg-rose-800 active:scale-95 transition-all">Dùng Thủ công trong lúc chờ</Button>
+                    <Button variant="unstyled" size="none" onClick={onDismiss} className="flex-1 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">Đóng</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onDismiss(); onUseManual(); }} className="flex-[2] py-2 bg-rose-600 dark:bg-rose-700 text-white text-sm font-bold rounded-md shadow-sm hover:bg-rose-700 dark:hover:bg-rose-800 active:scale-95 transition-all">Dùng Thủ công trong lúc chờ</Button>
                 </div>
             }
         >

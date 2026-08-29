@@ -79,21 +79,21 @@ export const BonusDataModal: React.FC<{
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => onClose('stop')}
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-md hover:bg-rose-100 transition-colors"
                         >
                             Kết thúc
                         </Button>
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => onClose('skip')}
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Bỏ qua
                         </Button>
                         <Button
                             variant="unstyled" size="none"
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')}
-                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-sky-600 border border-transparent rounded-xl hover:bg-sky-700 shadow-sm transition-colors"
+                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-sky-600 border border-transparent rounded-md hover:bg-sky-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
                         </Button>

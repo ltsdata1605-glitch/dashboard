@@ -19,8 +19,8 @@ export const ImportPrevMonthModal: React.FC<{
             maxWidth="xl"
             footer={
                 <div className="flex gap-3">
-                    <Button variant="unstyled" size="none" onClick={onClose} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Huỷ</Button>
-                    <Button variant="unstyled" size="none" onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-2 bg-sky-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-sky-700 active:scale-95 transition-all">Lưu dữ liệu</Button>
+                    <Button variant="unstyled" size="none" onClick={onClose} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">Huỷ</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-2 bg-sky-600 text-white text-sm font-bold rounded-md shadow-sm hover:bg-sky-700 active:scale-95 transition-all">Lưu dữ liệu</Button>
                 </div>
             }
         >

@@ -180,8 +180,8 @@ const BulkRenameModal: React.FC<{
             }
             footer={
                 <div className="flex gap-3">
-                    <Button variant="unstyled" size="none" onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
-                    <Button variant="unstyled" size="none" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-md text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-sky-600 text-white rounded-md text-xs font-black hover:bg-sky-700 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
                 </div>
             }
         >

@@ -135,8 +135,8 @@ export const ColorSettingsModal: React.FC<{
             maxWidth="lg"
             footer={
                 <div className="flex gap-3">
-                    <Button variant="unstyled" size="none" onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</Button>
-                    <Button variant="unstyled" size="none" onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 active:scale-95 transition-all shadow-md shadow-sky-500/20">Lưu cấu hình</Button>
+                    <Button variant="unstyled" size="none" onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-md hover:bg-sky-700 active:scale-95 transition-all shadow-md shadow-sky-500/20">Lưu cấu hình</Button>
                 </div>
             }
         >

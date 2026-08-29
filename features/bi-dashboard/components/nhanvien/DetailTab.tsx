@@ -586,7 +586,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <table className="w-full border-collapse min-w-[700px]">
                                 <thead className="sticky top-0 z-20">
-                                    <tr className="text-[11px] font-bold uppercase tracking-wider">
+                                    <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
                                             Danh mục
                                         </th>
