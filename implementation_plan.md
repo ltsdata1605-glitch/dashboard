@@ -165,14 +165,68 @@ Nguyên nhân gốc theo cả 2 agent: bi-dashboard KHÔNG có primitive `Table`
     nút phụ `text-xs` lệch; `BonusDataModal.tsx` title custom + badge lệch 6 modal còn lại
     chỉ truyền string thường.
 
-## Kế hoạch thực thi
-Theo lô, mỗi lô build + `npm run check` + commit riêng:
-- Lô A: Tier 1 (fix bug thật, mục 1-5) — ưu tiên cao nhất, bắt đầu ngay.
-- Lô B: Hỏi user (AskUserQuestion) cách xử lý Tier 1b (mục 6-16) — khôi phục hay xoá từng
-  tính năng dở dang — vì đây là quyết định sản phẩm, không phải bug rõ ràng.
-- Lô C: Tier 2 dead code (mục 17-23) — an toàn, làm theo quyết định ở Lô B nếu liên quan.
-- Lô D: Tier 3 design-system (mục 24-30) — khối lượng lớn (83+6+20 chỗ), có thể cần chia
-  nhỏ theo loại vi phạm.
-- Lô E: Tier 4 đồng nhất size chữ/spacing/icon (mục 31-41) — yêu cầu chính của user; cân
-  nhắc tạo primitive `TableHeaderCell`/`IconButton` dùng chung nếu khối lượng sửa tay quá
-  lớn, thay vì sửa từng file lẻ tẻ.
+## Kế hoạch thực thi — ĐÃ HOÀN THÀNH (2026-08-29)
+
+- **Lô A** (commit `595018ae`): Tier 1 mục 1-4 ✅ DONE. Mục 5 (CompetitionGridView.tsx
+  thiếu guard header undefined) ⏸️ DEFERRED — sửa đúng cần đổi cấu trúc dữ liệu
+  `parseCompetitionDataBySupermarket()` (lưu header riêng theo từng chương trình thay vì
+  chung theo siêu thị), rủi ro cao hơn lợi ích, cùng logic đã quyết định KHÔNG sửa ở
+  `CompetitionListView.tsx` đợt audit trước.
+- **Lô B** (commit `7cf41666`, `01d4ae3f`): Hỏi user qua AskUserQuestion cho mục 6/11/16
+  — cả 3 chọn "xoá". Mục 6 ✅ xoá code card mobile chết + xoá file BonusMobileCard.tsx.
+  Mục 11 ✅ xoá toàn bộ tính năng Snapshot Settings chết. Mục 16 ✅ xoá toàn bộ plumbing
+  snapshot-compare chết (RevenueTab + useRevenueData + NhanVien + types). Mục 7,8,9,10,
+  12,13,14,15 ✅ DONE — nối lại UI còn thiếu cho state/logic đã có sẵn (rủi ro thấp, ý
+  định rõ ràng từ chính code + comment).
+- **Lô C** (commit `81527d15`): Tier 2 mục 17-23 ✅ DONE toàn bộ — dọn hết theo xác nhận
+  `tsc --noUnusedLocals --noUnusedParameters` (0 cảnh báo còn lại trong bi-dashboard/).
+  Tiện thể xoá luôn code donut chart cũ đã bị thay thế (giải quyết mục 27 hex màu sai
+  luôn), thêm chỉ báo sort ↑/↓ còn thiếu ở BonusGroupListTable.tsx.
+- **Lô D** (commit `bb48a63c`, `24e632a4`, `b4b9c201`, `71c817df`): Tier 3 + phần Tier 4:
+  - Mục 24 ✅ DONE — thực tế 84 chỗ / 30 file (không phải 83/27 như audit ban đầu ước
+    lượng, có nhiều biến thể cụm reset khác nhau chưa khớp hết lúc đếm sơ bộ). Xác nhận
+    0 kết quả còn lại khi grep `bg-transparent hover:bg-transparent`.
+  - Mục 25 ⏸️ DEFERRED có chủ ý sau khi điều tra kỹ từng trường hợp — KHÔNG phải "quên
+    dùng component chung" đơn thuần như audit ban đầu nghĩ:
+    - `DetailTab.tsx`/`CompetitionCompareView.tsx`/`IndividualCompetitionView.tsx`/
+      `SupermarketConfig.tsx` (GroupCombobox): đơn-chọn + tìm kiếm — không khớp hình dạng
+      `MultiSelectDropdown` (multi-chọn qua checkbox), không có component chung tương
+      đương — ĐÃ quyết định giữ nguyên ở đợt audit trước (xem memory), giữ nguyên quyết
+      định đó.
+    - `IndustryView.tsx` (2 chỗ): dùng `Switch` toggle ẩn/hiện theo từng dòng
+      (`hiddenIndustries`/`hiddenSubIndustries`) — khác hẳn ngữ nghĩa "chọn" của
+      `MultiSelectDropdown`, đổi sẽ đảo ngược logic + đổi hẳn kiểu control, rủi ro UX.
+    - `CompetitionTab.tsx` (panel "Highlight"): ĐÚNG là multi-chọn nhân viên (khớp
+      `MultiSelectDropdown` về mặt ngữ nghĩa) nhưng có chấm màu (`getEmployeeDotColor`)
+      cho từng nhân viên mà `MultiSelectDropdown` không hỗ trợ custom render theo từng
+      lựa chọn — chuyển sẽ mất tính năng này hoặc phải mở rộng API component dùng chung
+      toàn app (rủi ro lan rộng ngoài phạm vi Report BI). Đã nâng cấp riêng ô tìm kiếm
+      sang `Input` (Lô D phần 2) — phần dropdown/panel giữ nguyên.
+    - `CompetitionSummaryView.tsx`, `SummaryTableView.tsx`: đã nâng cấp ô tìm kiếm bên
+      trong sang `Input`, phần khung dropdown giữ nguyên tương tự lý do trên.
+  - Mục 26 ✅ DONE — 13 ô input tìm kiếm/tên chuyển sang `Input` dùng chung (không phải
+    ~20 như ước lượng ban đầu — phần còn lại xác nhận là type=number/range/date, không
+    có component chung tương đương, đúng như audit ghi chú).
+  - Mục 27 ✅ DONE (giải quyết trong Lô C khi xoá code donut chart chết chứa hex sai).
+  - Mục 28, 41 ✅ DONE một phần — bo góc rounded-xl→rounded-md cho 8 nút footer modal
+    (7 file), text-xs→text-sm nút phụ ColorSettingsModal, bỏ gradient riêng
+    SupermarketConfig.tsx. Title tự custom (`BulkRenameModal`, `BonusDataModal` có badge
+    "Batch Mode") GIỮ NGUYÊN — mang thông tin chức năng thật, không phải lệch ngẫu nhiên.
+  - Mục 29 (dark: class mới) — GHI NHẬN, không xử lý: CLAUDE.md chỉ cấm class MỚI, không
+    yêu cầu dọn class cũ; việc dọn hàng loạt dark: đang hoạt động (dù vô hiệu do dark mode
+    tắt) ngoài phạm vi yêu cầu lần này.
+  - Mục 30 (z-[999999]) — GHI NHẬN, không xử lý riêng (thuộc panel Highlight ở mục 25,
+    đã quyết định giữ nguyên phần đó).
+  - Mục 31, 39 (2 outlier header + border InstallmentTab) ✅ DONE.
+  - Mục 32-38, 40 (padding/icon-size/textarea/banner/tick-bar-label/heading còn lại)
+    ⏸️ DEFERRED — sau khi kiểm tra vài trường hợp cụ thể (VD TrashIcon 2 size trong
+    DataUpdater.tsx), phát hiện phần lớn là do KHÁC VAI TRÒ UI thật (icon-button độc lập
+    compact vs icon+label trong toolbar), không phải lệch ngẫu nhiên như audit ban đầu
+    liệt kê gộp chung — khối lượng còn lại rất lớn (~10 file icon, ~10 file padding, 4
+    file textarea, 4 file banner, 5 file tick-bar-label) và cần rà từng trường hợp riêng
+    lẻ để tránh "sửa nhầm" chỗ đang đúng theo ngữ cảnh. Nguyên nhân gốc (không có
+    primitive `TableHeaderCell`/`IconButton` dùng chung) vẫn đúng — nếu làm tiếp nên cân
+    nhắc tạo 2 primitive này trước thay vì sửa tay từng file.
+
+Toàn bộ 8 commit của Lô A-D đều qua `npm run check` (typecheck + eslint + build +
+lint-ratchet) sạch trước khi commit.
