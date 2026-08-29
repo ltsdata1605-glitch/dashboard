@@ -317,9 +317,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const supermarketFilterDropdown = (
         <div className="relative" ref={supermarketFilterRef}>
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
+                className={`p-1.5 transition-colors ${
                     hiddenSupermarkets.length > 0
                         ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -365,9 +365,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const columnSettingsDropdown = (
         <div className="relative" ref={selectorRef}>
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
+                className={`p-1.5 transition-colors ${
                     isColumnSelectorOpen
                         ? 'text-indigo-600 dark:text-indigo-400'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'

@@ -109,10 +109,10 @@ export const AutoBonusPanel: React.FC<{
     return (
         <div className="flex items-center gap-2">
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 disabled={isBusy}
                 onClick={() => setShowPicker(true)}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 text-[11px] font-bold border border-sky-200 dark:border-sky-800 hover:bg-sky-100 transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 text-[11px] font-bold border border-sky-200 dark:border-sky-800 hover:bg-sky-100 transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100"
             >
                 <span>⚡ Tự động</span>
             </Button>
@@ -132,7 +132,7 @@ export const AutoBonusPanel: React.FC<{
                         Tháng {monthProgress.monthIndex + 1}/{monthProgress.monthTotal} ({monthProgress.monthLabel}) — nhân viên {monthProgress.employeeDone}/{monthProgress.employeeTotal}
                         {monthStalled ? ' — chưa có cập nhật mới, kiểm tra tab MWG đã đăng nhập/còn mở chưa' : ''}
                     </span>
-                    <Button variant="ghost" onClick={stopYear} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-rose-600 dark:text-rose-400 hover:underline font-bold">Dừng lại</Button>
+                    <Button variant="unstyled" size="none" onClick={stopYear} className="text-rose-600 dark:text-rose-400 hover:underline font-bold">Dừng lại</Button>
                 </span>
             )}
 

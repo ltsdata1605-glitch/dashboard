@@ -21,7 +21,7 @@ export const MultiMonthResultDetailModal: React.FC<{
             onClose={onClose}
             title={summary.stoppedEarly ? 'Kết quả chạy Năm (đã dừng giữa chừng)' : 'Kết quả chạy Năm'}
             maxWidth="lg"
-            footer={<Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>}
+            footer={<Button variant="unstyled" size="none" onClick={onClose} className="w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>}
         >
             <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <Badge variant="success">{summary.monthsDone - errorMonths}/{summary.monthsTotal} tháng thành công</Badge>

@@ -180,8 +180,8 @@ const BulkRenameModal: React.FC<{
             }
             footer={
                 <div className="flex gap-3">
-                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
-                    <Button variant="ghost" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
                 </div>
             }
         >
@@ -296,7 +296,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">

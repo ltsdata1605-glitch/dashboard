@@ -263,9 +263,9 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-1 text-slate-400 hover:text-sky-600 transition-colors"
+                            className="export-button-component p-1 text-slate-400 hover:text-sky-600 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <CameraIcon className="h-4 w-4" />

@@ -46,10 +46,10 @@ export const CompactColorPicker: React.FC<{ selected: string; onSelect: (hex: st
     <div className="flex gap-1">
         {VIVID_COLORS.map(c => (
             <Button
-                variant="ghost"
+                variant="unstyled" size="none"
                 key={c.hex}
                 onClick={() => onSelect(c.hex)}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-5 h-5 rounded-full border transition-transform ${selected === c.hex ? 'border-slate-900 dark:border-white scale-125 z-10' : 'border-transparent hover:scale-110'}`}
+                className={`w-5 h-5 rounded-full border transition-transform ${selected === c.hex ? 'border-slate-900 dark:border-white scale-125 z-10' : 'border-transparent hover:scale-110'}`}
                 style={{ backgroundColor: c.hex }}
                 title={c.name}
             >{null}</Button>
@@ -135,8 +135,8 @@ export const ColorSettingsModal: React.FC<{
             maxWidth="lg"
             footer={
                 <div className="flex gap-3">
-                    <Button variant="ghost" onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</Button>
-                    <Button variant="ghost" onClick={() => { onSave(temp); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 active:scale-95 transition-all shadow-md shadow-sky-500/20">Lưu cấu hình</Button>
+                    <Button variant="unstyled" size="none" onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</Button>
+                    <Button variant="unstyled" size="none" onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 active:scale-95 transition-all shadow-md shadow-sky-500/20">Lưu cấu hình</Button>
                 </div>
             }
         >

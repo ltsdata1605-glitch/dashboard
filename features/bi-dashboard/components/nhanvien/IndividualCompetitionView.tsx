@@ -496,7 +496,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                             maxHeightClass="max-h-[80vh]"
                         />
                         <div className="relative" ref={employeeSelectorRef}>
-                            <Button variant="ghost" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
+                            <Button variant="unstyled" size="none" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
                                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
                                 <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400" />
                             </Button>
@@ -508,7 +508,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                     <div className="overflow-y-auto flex-1">
                                         {filteredEmployees.length > 0 ? (
                                             filteredEmployees.map(emp => (
-                                                <Button variant="ghost" key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                <Button variant="unstyled" size="none" key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                                     {emp.name}
                                                 </Button>
                                             ))

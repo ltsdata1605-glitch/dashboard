@@ -51,7 +51,7 @@ function fromApiInputValue(yyyymmdd: string): string {
     return `${m[3]}/${m[2]}/${m[1]}`;
 }
 
-const tabButtonClass = (active: boolean) => `bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+const tabButtonClass = (active: boolean) => `px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
     active
         ? 'bg-sky-600 dark:bg-sky-700 text-white'
         : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -158,7 +158,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                     {TABS.map(t => (
                         <Button
                             key={t.id}
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => setActiveTab(t.id)}
                             className={tabButtonClass(activeTab === t.id)}
                         >

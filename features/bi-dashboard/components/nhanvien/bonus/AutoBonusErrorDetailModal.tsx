@@ -25,7 +25,7 @@ export const AutoBonusErrorDetailModal: React.FC<{
             onClose={onClose}
             title={summary.stoppedEarly ? 'Kết quả (đã dừng giữa chừng)' : 'Kết quả cập nhật thưởng — Tự động'}
             maxWidth="lg"
-            footer={<Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>}
+            footer={<Button variant="unstyled" size="none" onClick={onClose} className="w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Đóng</Button>}
         >
             <div className="flex items-center gap-2 mb-4">
                 <Badge variant="success">{summary.successCount} thành công</Badge>

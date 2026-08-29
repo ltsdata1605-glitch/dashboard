@@ -4,13 +4,13 @@ import { Button } from '../../../../components/shared/ui/Button';
 
 export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: string }> = ({ checked, onChange, id }) => (
     <Button
-      variant="ghost"
+      variant="unstyled" size="none"
       type="button"
       role="switch"
       aria-checked={checked}
       id={id}
       onClick={onChange}
-      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start ${
+      className={`justify-start ${
         checked ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-600'
       } relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
     >

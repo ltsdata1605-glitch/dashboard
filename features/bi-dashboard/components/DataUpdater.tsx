@@ -119,7 +119,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
@@ -159,13 +159,13 @@ const StatusTile: React.FC<{
                         </a>
                     )}
                      <Button
-                        variant="ghost"
+                        variant="unstyled" size="none"
                         onClick={(e) => {
                             e.stopPropagation();
                             onClear(title);
                         }}
                         title="Xoá dữ liệu"
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
+                        className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
                     >
                         <TrashIcon className="h-3.5 w-3.5" />
                     </Button>

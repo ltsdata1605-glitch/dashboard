@@ -574,7 +574,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     />
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
-                                        <Button variant="ghost" onClick={handleToggleEmployeeFilter} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
+                                        <Button variant="unstyled" size="none" onClick={handleToggleEmployeeFilter} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
                                             <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
                                         {isEmployeeFilterOpen && createPortal(
@@ -666,11 +666,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         <div className="flex flex-wrap gap-1.5">
                                             {summaryTables.map((tableConfig) => (
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="unstyled" size="none"
                                                     key={tableConfig.id}
                                                     type="button"
                                                     onClick={() => setActiveSummaryTableId(tableConfig.id)}
-                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                                    className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
                                                         activeTableId === tableConfig.id
                                                             ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400 shadow-sm'
                                                             : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -683,10 +683,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
                                         {/* Right: Add Button */}
                                         <Button
-                                            variant="ghost"
+                                            variant="unstyled" size="none"
                                             type="button"
                                             onClick={handleAddSummaryTable}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-sky-700 transition-all shadow-md shadow-sky-500/10 active:scale-95 cursor-pointer"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-sky-700 transition-all shadow-md shadow-sky-500/10 active:scale-95 cursor-pointer"
                                         >
                                             <PlusIcon className="h-3.5 w-3.5" />
                                             <span>Thêm bảng</span>

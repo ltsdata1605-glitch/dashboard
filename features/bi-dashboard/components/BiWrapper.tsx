@@ -149,10 +149,10 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                             const isActive = activeView === tab.id;
                             return (
                                 <Button
-                                    variant="ghost"
+                                    variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center gap-1 py-1 px-1.5 rounded-full font-semibold text-[10px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded-full font-semibold text-[10px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                         isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                     }`}
                                     title={tab.label || tab.id}

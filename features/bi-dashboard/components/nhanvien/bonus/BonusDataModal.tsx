@@ -77,23 +77,23 @@ export const BonusDataModal: React.FC<{
 
                     <div className="flex gap-3 w-full sm:w-auto">
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => onClose('stop')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
                         >
                             Kết thúc
                         </Button>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={() => onClose('skip')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Bỏ qua
                         </Button>
                         <Button
-                            variant="ghost"
+                            variant="unstyled" size="none"
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-sky-600 border border-transparent rounded-xl hover:bg-sky-700 shadow-sm transition-colors"
+                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-sky-600 border border-transparent rounded-xl hover:bg-sky-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
                         </Button>

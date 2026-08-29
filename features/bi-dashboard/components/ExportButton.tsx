@@ -40,11 +40,11 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
   return (
     <Button
-      variant="ghost"
+      variant="unstyled" size="none"
       onClick={handleExport}
       disabled={disabled || isLoading}
       className={cn(
-        "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center",
+        "export-button-component p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center",
         className
       )}
       aria-label={ariaLabel}

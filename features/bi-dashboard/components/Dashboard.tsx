@@ -59,17 +59,17 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         onClick={onNavigate}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-800 shadow-md shadow-sky-600/20 transition-all active:scale-95"
+                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-800 shadow-md shadow-sky-600/20 transition-all active:scale-95"
                                     >
                                         Cập nhật dữ liệu
                                     </Button>
                                     <span className="text-slate-400 dark:text-slate-500 hidden sm:block text-[11px] font-medium uppercase tracking-wider">hoặc</span>
                                     <Button
-                                        variant="ghost"
+                                        variant="unstyled" size="none"
                                         onClick={onRestore}
-                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95"
+                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95"
                                     >
                                         <UploadIcon className="h-4 w-4" /> Khôi phục
                                     </Button>
