@@ -5,9 +5,7 @@ import { FilterIcon, ChevronDownIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
-import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
-import { onActivateKey } from '../../../../components/shared/ui';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { calculateRunRate } from '../../services/metricService';
@@ -66,15 +64,6 @@ export interface IndividualCompetitionViewHandle {
     exportProgress: { current: number; total: number } | null;
 }
 
-// ─── Mini KPI Stat ───
-const KpiStat: React.FC<{ label: string; value: string; sub?: string; accent?: string }> = ({ label, value, sub, accent = 'text-sky-600' }) => (
-    <div className="flex flex-col items-center min-w-0 px-2 py-1.5">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</span>
-        <span className={`text-base font-black ${accent} leading-tight mt-0.5`}>{value}</span>
-        {sub && <span className="text-[10px] text-slate-500 font-medium leading-tight">{sub}</span>}
-    </div>
-);
-
 // ─── Competition Stat Pill ───
 const StatPill: React.FC<{ count: number; label: string; color: string }> = ({ count, label, color }) => (
     <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded text-[11px] font-bold min-w-[52px] ${color}`}>
@@ -82,23 +71,6 @@ const StatPill: React.FC<{ count: number; label: string; color: string }> = ({ c
         <span>{label}</span>
     </div>
 );
-
-// ─── SVG Donut Chart ───
-const MiniDonut: React.FC<{ segments: { value: number; color: string }[]; centerText: string; size?: number }> = ({ segments, centerText, size = 64 }) => {
-    const r = 24, c = 2 * Math.PI * r, total = segments.reduce((s, seg) => s + seg.value, 0);
-    let offset = 0;
-    return (
-        <svg width={size} height={size} viewBox="0 0 64 64" className="flex-shrink-0">
-            <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="7" />
-            {total > 0 && segments.filter(s => s.value > 0).map((seg, i) => {
-                const d = (seg.value / total) * c, o = -offset; offset += d;
-                return <circle key={i} cx="32" cy="32" r={r} fill="none" stroke={seg.color} strokeWidth="7" strokeDasharray={`${d} ${c - d}`} strokeDashoffset={o} strokeLinecap="butt" transform="rotate(-90 32 32)" className="transition-all duration-700" />;
-            })}
-            <text x="32" y="30" textAnchor="middle" className="fill-white font-black" style={{ fontSize: '14px' }}>{centerText}</text>
-            <text x="32" y="41" textAnchor="middle" className="fill-white/50 font-bold" style={{ fontSize: '7px' }}>HOÀN THÀNH</text>
-        </svg>
-    );
-};
 
 // ─── DKHT Donut (Recharts) ───
 const DONUT_COLORS = ['#34d399', '#fbbf24', '#94a3b8', '#fb7185'];
@@ -160,7 +132,7 @@ const EmployeeProfileCard: React.FC<{
     banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     groupedPerformanceData: GroupedPerformanceData;
-}> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
+}> = ({ selectedEmployee, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
     const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${selectedEmployee.originalName}`, null);
     
     const empRevenue = useMemo(() => {
@@ -222,13 +194,6 @@ const EmployeeProfileCard: React.FC<{
 
     const f = (v?: number) => v != null && !isNaN(v) ? roundUp(v).toLocaleString('vi-VN') : '-';
     const pct = (v?: number) => v != null && !isNaN(v) ? `${Math.round(v)}%` : '-';
-
-    const donutSegments = [
-        { value: compStats.dkhtDat, color: '#059669' },
-        { value: compStats.dkhtGanDat, color: '#d97706' },
-        { value: compStats.dkhtChuaDat, color: '#dc2626' },
-        { value: compStats.noSale, color: '#94a3b8' },
-    ];
 
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
@@ -317,7 +282,10 @@ const EmployeeProfileCard: React.FC<{
 
 const PlaceholderContent: React.FC<{ title: string; message: string }> = ({ title, message }) => (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-6 mb-8">
-        <div className="mt-4 text-center py-12"><p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p></div>
+        <div className="mt-4 text-center py-12">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{title}</h3>
+            <p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p>
+        </div>
     </div>
 );
 

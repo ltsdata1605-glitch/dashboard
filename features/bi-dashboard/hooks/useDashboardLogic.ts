@@ -4,12 +4,10 @@ import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import * as dbService from '../services/dbService';
 import { 
-    MainTab, 
-    SubTab, 
-    SupermarketCompetitionData, 
-    parseSummaryData, 
-    parseCompetitionDataBySupermarket, 
-    parseIndustryRealtimeData, 
+    MainTab,
+    SubTab,
+    SupermarketCompetitionData,
+    parseIndustryRealtimeData,
     parseIndustryLuyKeData, 
     parseNumber,
     shortenSupermarketName,

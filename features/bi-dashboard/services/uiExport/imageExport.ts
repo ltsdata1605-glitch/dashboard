@@ -555,9 +555,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
     // 6. FIX CHART SVG RENDERING (convert Recharts SVGs to inline images for reliable export)
     // html-to-image has trouble with nested SVGs in foreignObject. Convert them to <img> tags.
-    const liveSvgs = element.querySelectorAll('svg');
     const cloneSvgs = clone.querySelectorAll('svg');
-    cloneSvgs.forEach((svg: SVGSVGElement, idx: number) => {
+    cloneSvgs.forEach((svg: SVGSVGElement) => {
         // Handle Google Charts SVGs
         if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
             const currentWidthStr = svg.getAttribute('width');

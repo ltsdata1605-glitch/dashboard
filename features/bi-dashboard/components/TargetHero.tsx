@@ -1,10 +1,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import { ChevronDownIcon, XIcon, PlusIcon, TrashIcon, CheckCircleIcon, CogIcon, PencilIcon, ResetIcon } from './Icons';
-import Slider from './Slider';
+import { XIcon, PlusIcon, TrashIcon, PencilIcon, ResetIcon } from './Icons';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
-import { parseNumber, shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi } from '../services/employeeParser';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';

@@ -271,7 +271,6 @@ export function buildIndustryTree(
     headers: string[],
     industryBiMap: Record<string, { parent: string; child: string }> | null | undefined
 ): { tree: IndustryTreeNode[]; tableRows: string[][]; totalRow: string[] | null } {
-    const tree: IndustryTreeNode[] = [];
     let totalRow: string[] | null = null;
     
     // Find the total row
@@ -375,7 +374,7 @@ export function buildIndustryTree(
             if (!nnhNode) {
                 nnhNode = {
                     name: parentName,
-                    values: headers.map((h, i) => i === 0 ? parentName : '0'),
+                    values: headers.map((_h, i) => i === 0 ? parentName : '0'),
                     children: [],
                     level: 0
                 };
@@ -389,7 +388,7 @@ export function buildIndustryTree(
             if (!nhomConNode) {
                 nhomConNode = {
                     name: childName,
-                    values: headers.map((h, i) => i === 0 ? childName : '0'),
+                    values: headers.map((_h, i) => i === 0 ? childName : '0'),
                     children: [],
                     level: 1
                 };
@@ -444,7 +443,7 @@ export function buildIndustryTree(
                 if (!nnhNode) {
                     nnhNode = {
                         name: fallbackParent,
-                        values: headers.map((h, i) => i === 0 ? fallbackParent : '0'),
+                        values: headers.map((_h, i) => i === 0 ? fallbackParent : '0'),
                         children: [],
                         level: 0
                     };
@@ -458,7 +457,7 @@ export function buildIndustryTree(
                 if (!nhomConNode) {
                     nhomConNode = {
                         name: fallbackChild,
-                        values: headers.map((h, i) => i === 0 ? fallbackChild : '0'),
+                        values: headers.map((_h, i) => i === 0 ? fallbackChild : '0'),
                         children: [],
                         level: 1
                     };

@@ -5,7 +5,7 @@ import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
+import { UsersIcon, XIcon, SpinnerIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
@@ -519,9 +519,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-700' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
                             <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
+                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
                             {highlightedEmployees.size > 0 && (
-                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={`Xuất Highlight (${highlightedEmployees.size} NV)`} className="text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
+                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
                             )}
                             <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
                         </>
@@ -536,7 +536,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="text-slate-400">
+                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="text-slate-400">
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
                         </>

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
-import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp } from '../../utils/dashboardHelpers';
+import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber } from '../../utils/dashboardHelpers';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
@@ -352,15 +352,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }
 
 
-    const htKey = isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
-    const dtqdKey = isRealtime ? 'DT Realtime (QĐ)' : 'DTQĐ';
-
-    const getHtColor = (pct: number) => {
-        if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
-        if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
-        return { bg: 'bg-rose-500', text: 'text-white', badge: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' };
-    };
-
     // --- Shared cell rendering logic ---
     const renderCell = (cell: string | number, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, childrenCount: number = 0) => {
         const numericValue = parseNumber(cell);
@@ -645,9 +636,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 
                                                 return displayRows.map((flatRow) => {
                                                     const isTotalRow = flatRow.level === -1;
-                                                    const isNNH = flatRow.level === 0;
-                                                    const isNhomHang = flatRow.level === 1;
-                                                    const isHang = flatRow.level === 2;
 
                                                     return (
                                                         <tr 

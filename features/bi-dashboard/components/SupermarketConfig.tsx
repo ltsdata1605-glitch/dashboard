@@ -1,6 +1,6 @@
 
 import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { DownloadIcon, XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
+import { XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
 import { ExternalLink } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';

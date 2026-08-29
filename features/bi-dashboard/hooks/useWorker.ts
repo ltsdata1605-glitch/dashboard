@@ -1,5 +1,3 @@
-import { useEffect, useRef, useCallback } from 'react';
-
 // Giữ một instance duy nhất (singleton) cho toàn app
 let workerInstance: Worker | null = null;
 let requestCounter = 0;

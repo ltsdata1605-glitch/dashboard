@@ -13,7 +13,6 @@ interface SliderProps {
     unit?: string;
     displayValue?: React.ReactNode;
     onReset?: () => void;
-    showInput?: boolean;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -25,8 +24,7 @@ const Slider: React.FC<SliderProps> = ({
     step = 1,
     unit = '%',
     displayValue,
-    onReset,
-    showInput = true
+    onReset
 }) => {
     return (
         <div className="group/slider">

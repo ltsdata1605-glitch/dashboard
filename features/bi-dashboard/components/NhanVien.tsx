@@ -1,5 +1,5 @@
 import { useWorker } from "../hooks/useWorker";import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, FilterIcon, CreditCardIcon, SparklesIcon, UsersIcon } from './Icons';
+import { ArchiveBoxIcon, BuildingStorefrontIcon, UsersIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -7,7 +7,7 @@ import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
 import { CompetitionTab } from './nhanvien/CompetitionTab';
 import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
-import { shortenSupermarketName, parseNumber } from '../utils/dashboardHelpers';
+import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -16,7 +16,7 @@ import { useBonusAutoBridge } from '../hooks/useBonusAutoBridge';
 import { useMultiMonthBonusRun } from '../hooks/useMultiMonthBonusRun';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { parseCompetitionData, CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
+import { CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Tabs } from '../../../components/shared/ui/Tabs';
@@ -73,7 +73,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         employeeDepartmentMap,
         installmentRows,
         banKemRows,
-        banKemMap,
         revenueRows,
         employeeInstallmentMap,
         allEmployees,

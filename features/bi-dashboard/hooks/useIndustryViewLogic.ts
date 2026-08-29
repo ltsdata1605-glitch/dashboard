@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
 import { parseNumber, IndustryTreeNode, parseIndustryRealtimeData, parseIndustryLuyKeData } from '../utils/dashboardHelpers';
 

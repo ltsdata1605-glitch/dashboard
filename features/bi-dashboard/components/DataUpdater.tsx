@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, UsersIcon, DocumentReportIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
+import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
 import SupermarketConfig from './SupermarketConfig';
 import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
-import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
+import { extractSupermarketList } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';

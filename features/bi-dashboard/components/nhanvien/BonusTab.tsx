@@ -15,7 +15,6 @@ import TimeProgressBar from './shared/TimeProgressBar';
 import { AutoBonusPanel } from './bonus/AutoBonusPanel';
 import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
 import { UseMultiMonthBonusRunResult } from '../../hooks/useMultiMonthBonusRun';
-import { getCellColor, isUpdatedToday } from './bonus/bonusTableHelpers';
 import { setHrmWindowRef } from './bonus/hrmWindow';
 import { useBonusViewData } from './bonus/useBonusViewData';
 import { BonusDailyTable } from './bonus/BonusDailyTable';

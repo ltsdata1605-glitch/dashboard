@@ -3,14 +3,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon } from '../Icons';
+import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon } from '../Icons';
 import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { parseRevenueData } from '../../utils/nhanVienHelpers';
 
 
-import { MedalBadge, DeltaBadge } from '../shared/Badges';
+import { DeltaBadge } from '../shared/Badges';
 import TimeProgressBar from './shared/TimeProgressBar';
 
 import { ColorSettingsModal, ColorSettings, DEFAULT_COLOR_SETTINGS, CriterionConfig } from './revenue/ColorSettingsModal';

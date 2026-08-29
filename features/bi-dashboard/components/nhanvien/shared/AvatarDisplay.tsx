@@ -12,7 +12,7 @@ interface AvatarDisplayProps {
     onClick?: () => void;
 }
 
-const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarketName, isHidden, onClick }) => {
+const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, onClick }) => {
     const canonicalName = standardizeEmployeeName(employeeName);
     const dbKey = `avatar-${canonicalName}`;
     const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);

@@ -1,12 +1,10 @@
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
-import Card from '../Card';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { SupermarketCompetitionData, Criterion, shortenName, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
+import { SupermarketCompetitionData, Criterion, shortenName, parseNumber } from '../../utils/dashboardHelpers';
 import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
-import { exportElementAsImage } from '../../services/uiService';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -34,15 +32,14 @@ interface CompetitionViewProps {
 }
 
 const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((props, ref) => {
-    const { data, isRealtime, activeSupermarket, updateTimestamp, onExport } = props;
-    
+    const { data, isRealtime, activeSupermarket } = props;
+
     const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>('global-selected-competitions', []);
     const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>('global-competition-sort-config', null);
     const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>('global-competition_view_hidden_columns', []);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
-    const [isExporting, setIsExporting] = useState(false);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);

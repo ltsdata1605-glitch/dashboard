@@ -18,11 +18,6 @@ export interface BonusMetrics {
     dailyData?: Record<string, number>;
 }
 
-export interface CompetitionDataForCriterion {
-    headers: CompetitionHeader[];
-    employees: { name: string; originalName: string; department: string; values: (number | null)[] }[];
-}
-
 export interface PrevCompData {
     dtlk: number;
     dtqd: number;

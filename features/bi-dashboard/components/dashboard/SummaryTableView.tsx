@@ -76,7 +76,7 @@ interface SummaryTableViewProps {
 }
 
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
-    const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
+    const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
         'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ<br/>QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ',
     };
@@ -401,19 +401,6 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     );
 
 
-
-    // Helper: lấy % HT key tuỳ loại báo cáo
-    const getHtKey = () => isCumulative
-        ? (processedTable.allHeaders.includes('%HT TARGET(QĐ) V.Trội') ? '%HT TARGET(QĐ) V.Trội' : '% HT Target Dự Kiến (QĐ)')
-        : (processedTable.allHeaders.includes('%HT V.Trội') ? '%HT V.Trội' : '% HT Target (QĐ)');
-
-    const htKey = getHtKey();
-
-    const getHtColor = (pct: number) => {
-        if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
-        if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
-        return { bg: 'bg-rose-500', text: 'text-white', badge: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' };
-    };
 
     // Find the portal target in the DashboardHeader action bar
     const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;

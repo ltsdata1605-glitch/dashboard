@@ -3,7 +3,6 @@ import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { useMonthlyBonusArchive } from '../../../hooks/useMonthlyBonusArchive';
 import { Employee, BonusMetrics, RevenueRow } from '../../../types/nhanVienTypes';
 import { BonusDisplayRow } from './BonusDisplayRow';
-import { getMondayOfDate, getWeekDates } from './bonusTableHelpers';
 
 interface UseBonusViewDataParams {
     employees: Employee[];

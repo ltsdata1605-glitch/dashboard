@@ -19,27 +19,6 @@ export const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong
     return 'text-slate-700 dark:text-slate-300';
 };
 
-export function getMondayOfDate(dateStr: string): string {
-    const [d, m, y] = dateStr.split('/').map(Number);
-    const date = new Date(y, m - 1, d);
-    const day = date.getDay();
-    const diff = date.getDate() - (day === 0 ? 6 : day - 1);
-    const monday = new Date(date.setDate(diff));
-    const pad = (num: number) => String(num).padStart(2, '0');
-    return `${pad(monday.getDate())}/${pad(monday.getMonth() + 1)}/${monday.getFullYear()}`;
-}
-
-export function getWeekDates(mondayStr: string): string[] {
-    const [d, m, y] = mondayStr.split('/').map(Number);
-    const dates: string[] = [];
-    const pad = (num: number) => String(num).padStart(2, '0');
-    for (let i = 0; i < 7; i++) {
-        const nextDate = new Date(y, m - 1, d + i);
-        dates.push(`${pad(nextDate.getDate())}/${pad(nextDate.getMonth() + 1)}/${nextDate.getFullYear()}`);
-    }
-    return dates;
-}
-
 export function getWeekdayAbbr(dateStr: string): string {
     const [d, m, y] = dateStr.split('/').map(Number);
     const dateObj = new Date(y, m - 1, d);

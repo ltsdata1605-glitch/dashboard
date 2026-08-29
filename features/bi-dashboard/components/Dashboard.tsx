@@ -1,9 +1,7 @@
 
 import React, { useRef, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import Card from './Card';
-import { UploadIcon, CogIcon } from './Icons';
-import { Switch } from './dashboard/DashboardWidgets';
+import { UploadIcon } from './Icons';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
 import CompetitionView from './dashboard/CompetitionView';
@@ -129,13 +127,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const competitionViewRef = useRef<HTMLDivElement>(null);
     const pageRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const columnSelectorRef = useRef<HTMLDivElement>(null);
     const exportOptions = useExportOptions();
     const exportOptionsContextValue = useMemo(
         () => ({ showExportOptions: exportOptions.showExportOptions }),
         [exportOptions.showExportOptions]
     );
-    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [isHeaderExporting, setIsHeaderExporting] = useState(false);
 
     // --- Restore Logic ---

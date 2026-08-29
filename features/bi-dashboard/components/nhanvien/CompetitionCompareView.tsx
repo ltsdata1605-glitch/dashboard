@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
-import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
-import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '../Icons';
-import { Switch } from '../dashboard/DashboardWidgets';
+import { shortenName } from '../../utils/nhanVienHelpers';
+import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
