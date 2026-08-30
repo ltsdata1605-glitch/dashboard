@@ -94,8 +94,39 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 }));
             }
         }
-        const headersToRemove = isRealtime ? ['Xếp hạng trong miền'] : ['Xếp hạng trong miền', 'Top/Bottom Trong Miền'];
-        const headerRenames: Record<string, string> = isRealtime ? { 'DT Realtime': 'Realtime', 'DT Realtime (QĐ)': 'Realtime (QĐ)', 'SL Realtime': 'Realtime', 'Target Ngày': 'Target', '% HT Target Ngày': '%HT', '%HT Target V.Trội': '%HT V.Trội' } : { 'DTLK': 'L.Kế', 'DTQĐ': 'L.Kế (QĐ)', 'SLLK': 'L.Kế', 'Target': 'Target', '% HT Target Tháng': '%HT', '% HT Dự Kiến': '%HTDK', 'Target V.Trội': 'Target V.Trội', '%HT Target V.Trội': '%HT V.Trội', '%HTDK V.Trội': '%HTDK V.Trội' };
+        const headersToRemove = isRealtime 
+            ? ['Xếp hạng trong miền', 'HẠNG VÙNG', 'TOP/BOTTOM VÙNG', 'Hạng vùng', 'Top/Bottom Vùng'] 
+            : ['Xếp hạng trong miền', 'Top/Bottom Trong Miền', 'HẠNG VÙNG', 'TOP/BOTTOM VÙNG', 'Hạng vùng', 'Top/Bottom Vùng'];
+        const headerRenames: Record<string, string> = isRealtime ? { 
+            'DOANH THU (RT)': 'Realtime',
+            'SỐ LƯỢNG (RT)': 'Realtime',
+            'DOANH THU': 'Realtime',
+            'SỐ LƯỢNG': 'Realtime',
+            'TARGET': 'Target',
+            '% HT NGÀY': '%HT',
+            '% DỰ BÁO': '%HTDK',
+            'DT Realtime': 'Realtime', 
+            'DT Realtime (QĐ)': 'Realtime (QĐ)', 
+            'SL Realtime': 'Realtime', 
+            'Target Ngày': 'Target', 
+            '% HT Target Ngày': '%HT', 
+            '%HT Target V.Trội': '%HT V.Trội' 
+        } : { 
+            'DOANH THU': 'L.Kế',
+            'SỐ LƯỢNG': 'L.Kế',
+            'TARGET': 'Target',
+            '% HT THÁNG': '%HT',
+            '% DỰ BÁO': '%HTDK',
+            'DTLK': 'L.Kế', 
+            'DTQĐ': 'L.Kế (QĐ)', 
+            'SLLK': 'L.Kế', 
+            'Target': 'Target', 
+            '% HT Target Tháng': '%HT', 
+            '% HT Dự Kiến': '%HTDK', 
+            'Target V.Trội': 'Target V.Trội', 
+            '%HT Target V.Trội': '%HT V.Trội', 
+            '%HTDK V.Trội': '%HTDK V.Trội' 
+        };
         const indicesToRemove: number[] = [];
         processedHeaders = processedHeaders.map((header, index) => { if (headersToRemove.includes(header)) indicesToRemove.push(index); return headerRenames[header] || header; }).filter((_, index) => !indicesToRemove.includes(index));
         processedPrograms = processedPrograms.map((program) => ({ ...program, data: program.data.filter((_, index) => !indicesToRemove.includes(index)) }));

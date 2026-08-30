@@ -3,6 +3,7 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
 import { parseRevenueData, standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { parseCompetitionDataBySupermarket } from '../utils/dashboardHelpers';
 
 export interface Employee {
     originalName: string;
@@ -34,36 +35,33 @@ export const parseBaseTargetQuyDoi = (summaryLuyKeData: string, supermarketName:
 
 export const parseCompetitions = (competitionLuyKeData: string): Competition[] => {
     if (!competitionLuyKeData) return [];
+    const smData = parseCompetitionDataBySupermarket(competitionLuyKeData);
     const competitionList: Competition[] = [];
     const seen = new Set<string>();
-    const valid = ['DTLK', 'DTQĐ', 'SLLK'];
-    for (const line of competitionLuyKeData.split('\n')) {
-        const parts = line.split('\t');
-        if (parts.length > 2 && valid.includes(parts[1]?.trim()) && parts[2]?.trim() === 'Target') {
-            const name = parts[0].trim();
-            if (name && !seen.has(name)) {
-                competitionList.push({ name, criteria: parts[1].trim() });
-                seen.add(name);
+    for (const sm in smData) {
+        smData[sm].programs.forEach(p => {
+            if (!seen.has(p.name)) {
+                seen.add(p.name);
+                competitionList.push({ name: p.name, criteria: p.metric || 'DTLK' });
             }
-        }
+        });
     }
     return competitionList;
 };
 
 export const parseBaseTargetsMap = (competitionLuyKeData: string, supermarketName: string | null): Record<string, number> => {
     if (!competitionLuyKeData || !supermarketName) return {};
-    const lines = String(competitionLuyKeData).split('\n');
+    const smData = parseCompetitionDataBySupermarket(competitionLuyKeData);
     const map: Record<string, number> = {};
-    let currentComp: string | null = null;
-    for (const line of lines) {
-        const parts = line.split('\t').map(p => p.trim());
-        if (parts.length > 2 && (parts[1] === 'DTLK' || parts[1] === 'DTQĐ' || parts[1] === 'SLLK') && parts[2] === 'Target') { 
-            currentComp = parts[0]; 
-            continue; 
-        }
-        if (currentComp && parts[0] === supermarketName) { 
-            map[currentComp] = parseNumber(parts[2]); 
-        }
+    const targetSm = Object.keys(smData).find(k => k.includes(supermarketName) || supermarketName.includes(k) || k === supermarketName);
+    if (targetSm && smData[targetSm]) {
+        const headers = smData[targetSm].headers;
+        const targetIdx = headers.findIndex(h => h.toUpperCase().includes('TARGET'));
+        smData[targetSm].programs.forEach(p => {
+            if (targetIdx !== -1 && p.data[targetIdx] !== undefined) {
+                map[p.name] = parseNumber(p.data[targetIdx]);
+            }
+        });
     }
     return map;
 };

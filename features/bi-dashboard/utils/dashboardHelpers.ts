@@ -85,43 +85,122 @@ export const parseSummaryData = (text: string) => {
 export const parseCompetitionDataBySupermarket = (text: string) => {
     if (!text) return {};
     const supermarketData: Record<string, SupermarketCompetitionData> = {};
-    const lines = text.split('\n');
+    const lines = String(text).split(/\r?\n/).map(l => l.trim()).filter(l => l);
+    
     let currentCompetition: string | null = null;
     let currentHeaders: string[] = [];
     let currentMetric: string = '';
-    const headerKeywords = ['Target Ngày', '% HT Target Ngày', 'Target', '% HT Target Tháng'];
+    let lastEntityName: string | null = null;
 
-    for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine) { currentCompetition = null; continue; }
-        const parts = trimmedLine.split('\t');
-        const firstCol = parts[0]?.trim() || '';
+    const isMetricHeader = (name: string) => {
+        const clean = name.trim().toUpperCase();
+        return clean === 'DOANH THU' || clean === 'DOANH THU (RT)' || 
+               clean === 'SỐ LƯỢNG' || clean === 'SỐ LƯỢNG (RT)' || 
+               clean === 'DTLK' || clean === 'DTQĐ' || clean === 'SLLK' || 
+               clean === 'DT REALTIME' || clean === 'SL REALTIME';
+    };
 
-        // Loại bỏ rác
-        if (firstCol.includes('(097.') || firstCol === '0%' || firstCol.includes('Hỗ trợ BI')) {
+    const isHeaderLine = (line: string) => {
+        const lower = line.toLowerCase();
+        return (lower.includes('target') || lower.includes('% ht')) && 
+               (lower.includes('doanh thu') || lower.includes('số lượng') || lower.includes('dt') || lower.includes('sl') || lower.includes('hạng') || lower.includes('dự báo'));
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Skip metadata
+        if (line.includes('http') || line.includes('Dashboards') || line.includes('Tìm báo cáo') ||
+            line.includes('Cập nhật lúc') || line.includes('webview') || line.includes('Xuất Excel') ||
+            line.includes('chương trình') || line.includes('Toàn công ty') || line.includes('Đang chọn') ||
+            (line.includes('Lũy kế') && line.length < 15) || (line.includes('Realtime') && line.length < 15) ||
+            line.includes('Danh sách') || line.includes('Ma trận') || line.includes('Tải lại') ||
+            line.includes('Xuất theo mẫu') || line.includes('Chép link') || line.includes('Chi phí chăm sóc') ||
+            line.includes('Lượt bill TGDĐ') || line.includes('Báo cáo') || line.includes('Employee') || line.includes('employee')) {
             continue;
         }
 
-        const isHeader = headerKeywords.some(kw => trimmedLine.includes(kw)) && parts.length > 2;
-
-        if (isHeader) {
-            currentCompetition = parts[0];
-            currentHeaders = parts.slice(1);
-            const firstHeader = parts[1].trim();
-            if (firstHeader.includes('DTQĐ') || firstHeader.includes('DT Realtime (QĐ)')) currentMetric = 'DTQĐ';
-            else if (firstHeader.includes('SLLK') || firstHeader.includes('SL Realtime')) currentMetric = 'SLLK';
-            else if (firstHeader.includes('DTLK') || firstHeader.includes('DT Realtime')) currentMetric = 'DTLK';
-            else currentMetric = '';
-        } else if (currentCompetition && (firstCol.startsWith('ĐM') || firstCol.startsWith('TGD') || firstCol.startsWith('Tổng') || (firstCol.includes(' - ') && !firstCol.includes(' liên hệ ')))) {
-            const supermarketName = parts[0];
-            const programData = parts.slice(1);
-            if (!supermarketData[supermarketName]) {
-                supermarketData[supermarketName] = { headers: [], programs: [] };
+        // Check if legacy format: Program Name and Headers on the SAME tab-separated line
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim());
+            if (parts.length > 2 && isHeaderLine(line) && !isMetricHeader(parts[0])) {
+                currentCompetition = parts[0];
+                currentHeaders = parts.slice(1);
+                const firstHeader = parts[1].toUpperCase();
+                if (firstHeader.includes('SL') || firstHeader.includes('SỐ LƯỢNG')) currentMetric = 'SLLK';
+                else if (firstHeader.includes('QĐ') || firstHeader.includes('QD')) currentMetric = 'DTQĐ';
+                else currentMetric = 'DTLK';
+                continue;
             }
-            supermarketData[supermarketName].headers = currentHeaders;
-            supermarketData[supermarketName].programs.push({ name: currentCompetition, data: programData, metric: currentMetric });
+        }
+
+        // Check if header in new format (e.g. "DOANH THU \t TARGET \t % HT THÁNG ...")
+        if (isHeaderLine(line)) {
+            const parts = line.split('\t').map(p => p.trim());
+            currentHeaders = parts;
+            const firstH = parts[0]?.toUpperCase() || '';
+            if (firstH.includes('SL') || firstH.includes('SỐ LƯỢNG')) currentMetric = 'SLLK';
+            else if (firstH.includes('QĐ') || firstH.includes('QD')) currentMetric = 'DTQĐ';
+            else currentMetric = 'DTLK';
+            continue;
+        }
+
+        // Check if this line is a Program Name (e.g. "Nồi cơm", "Sim Tổng", "Tivi")
+        if (i + 1 < lines.length && isHeaderLine(lines[i + 1])) {
+            currentCompetition = line;
+            continue;
+        }
+
+        // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương")
+        const isEntity = line.toUpperCase() === 'TỔNG' || 
+                         line.startsWith('ĐM') || 
+                         line.startsWith('TGD') || 
+                         /^\d+\s*-\s*ĐM/.test(line) ||
+                         (line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%'));
+
+        if (isEntity) {
+            // Check if tab-separated on same line with numbers
+            if (line.includes('\t')) {
+                const parts = line.split('\t').map(p => p.trim());
+                if (parts.length > 1 && (/^-?[\d.,]+%?$/.test(parts[1]) || parts[1] === '-')) {
+                    const smName = parts[0];
+                    if (currentCompetition) {
+                        if (!supermarketData[smName]) {
+                            supermarketData[smName] = { headers: currentHeaders, programs: [] };
+                        }
+                        supermarketData[smName].headers = currentHeaders;
+                        supermarketData[smName].programs.push({
+                            name: currentCompetition,
+                            data: parts.slice(1),
+                            metric: currentMetric
+                        });
+                    }
+                    continue;
+                }
+            }
+            lastEntityName = line;
+            continue;
+        }
+
+        // If line contains numbers/data (tab-separated or values)
+        if (currentCompetition && lastEntityName) {
+            const parts = line.split('\t').map(p => p.trim());
+            if (/^-?[\d.,]+%?$/.test(parts[0]) || parts[0] === '-' || parts[0] === '—') {
+                const smName = lastEntityName;
+                if (!supermarketData[smName]) {
+                    supermarketData[smName] = { headers: currentHeaders, programs: [] };
+                }
+                supermarketData[smName].headers = currentHeaders;
+                supermarketData[smName].programs.push({
+                    name: currentCompetition,
+                    data: parts,
+                    metric: currentMetric
+                });
+                lastEntityName = null;
+            }
         }
     }
+
     for (const sm in supermarketData) {
         supermarketData[sm].programs.sort((a, b) => a.name.localeCompare(b.name));
     }

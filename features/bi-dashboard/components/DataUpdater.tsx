@@ -19,8 +19,20 @@ const COMPETITION_LUYKE_REPORT_HEADER = 'Target	% HT Target Tháng	% HT Dự Ki�
 
 const validateSummaryRealtimeReport = (data: string): boolean => data.includes(SUMMARY_REALTIME_REPORT_HEADER);
 const validateSummaryLuyKeReport = (data: string): boolean => data.includes(SUMMARY_LUYKE_REPORT_HEADER);
-const validateCompetitionRealtimeReport = (data: string): boolean => data.includes(COMPETITION_REALTIME_REPORT_HEADER);
-const validateCompetitionLuyKeReport = (data: string): boolean => data.includes(COMPETITION_LUYKE_REPORT_HEADER);
+const validateCompetitionRealtimeReport = (data: string): boolean => {
+    if (!data) return false;
+    const lower = data.toLowerCase();
+    return data.includes(COMPETITION_REALTIME_REPORT_HEADER) || 
+           ((lower.includes('thi đua') || lower.includes('chương trình') || lower.includes('hạng vùng') || lower.includes('doanh thu (rt)') || lower.includes('số lượng (rt)')) && 
+            (lower.includes('target') || lower.includes('realtime') || lower.includes('% ht')));
+};
+const validateCompetitionLuyKeReport = (data: string): boolean => {
+    if (!data) return false;
+    const lower = data.toLowerCase();
+    return data.includes(COMPETITION_LUYKE_REPORT_HEADER) || 
+           ((lower.includes('thi đua') || lower.includes('chương trình') || lower.includes('hạng vùng') || lower.includes('% ht tháng')) && 
+            (lower.includes('target') || lower.includes('lũy kế') || lower.includes('luy ke') || lower.includes('% ht')));
+};
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -346,7 +358,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     lastUpdated={competitionRealtimeTs}
                                     value={competitionRealtime}
                                     error={errors.competitionRealtime}
-                                    downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=1&dm=2&mt=2"
+                                    downloadUrl="https://baocao.dienmayxanh.com/dashboard/thi-dua"
                                     icon={<SparklesIcon className="h-4 w-4" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
@@ -370,7 +382,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     lastUpdated={competitionLuyKeTs}
                                     value={competitionLuyKe}
                                     error={errors.competitionLuyKe}
-                                    downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=2&dm=2&mt=2"
+                                    downloadUrl="https://baocao.dienmayxanh.com/dashboard/thi-dua"
                                     icon={<ChartBarIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
                                     onChange={(val) => {

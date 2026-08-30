@@ -3,15 +3,16 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import * as dbService from '../services/dbService';
-import { 
+import {
     MainTab,
     SubTab,
     SupermarketCompetitionData,
     parseIndustryRealtimeData,
-    parseIndustryLuyKeData, 
+    parseIndustryLuyKeData,
     parseNumber,
     shortenSupermarketName,
-    extractSupermarketList
+    extractSupermarketList,
+    parseCompetitionDataBySupermarket
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
 
@@ -142,26 +143,16 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const parseCompetitionLuyKeBaseTargets = (text: string): Record<string, Record<string, number>> => {
         if (!text) return {};
-        const lines = text.split('\n');
+        const smData = parseCompetitionDataBySupermarket(text);
         const targets: Record<string, Record<string, number>> = {};
-        let currentCompetition: string | null = null;
-        const validCriterias = ['DTLK', 'DTQĐ', 'SLLK'];
-    
-        for (const line of lines) {
-            const parts = line.split('\t').map(p => p.trim());
-            if (parts.length > 2 && validCriterias.includes(parts[1]) && parts[2] === 'Target') {
-                currentCompetition = parts[0];
-                continue;
-            }
-            // Khớp đúng pattern nhận diện dòng siêu thị đã dùng ở dashboardHelpers.ts (parseSummaryData/
-            // parseCompetitionDataBySupermarket) — trước đây thiếu tiền tố "TGD" khiến siêu thị dạng
-            // này bị bỏ sót target thi đua ở tab Tổng quan dù tab Nhân viên (parseBaseTargetsMap) vẫn
-            // nhận đúng (so khớp chính xác tên, không hardcode tiền tố).
-            if (currentCompetition && (parts[0].startsWith('ĐM') || parts[0].startsWith('TGD') || parts[0] === 'Tổng' || (parts[0].includes(' - ') && !parts[0].includes(' liên hệ ')))) {
-                const supermarketName = parts[0];
-                const targetValue = parseNumber(parts[2]); 
-                if (!targets[supermarketName]) targets[supermarketName] = {};
-                targets[supermarketName][currentCompetition] = targetValue;
+        for (const smName in smData) {
+            const sm = smData[smName];
+            const targetIdx = sm.headers.findIndex(h => h.toUpperCase().includes('TARGET'));
+            if (targetIdx !== -1) {
+                if (!targets[smName]) targets[smName] = {};
+                for (const prog of sm.programs) {
+                    targets[smName][prog.name] = parseNumber(prog.data[targetIdx]);
+                }
             }
         }
         return targets;
