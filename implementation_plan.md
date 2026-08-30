@@ -230,3 +230,45 @@ Nguyên nhân gốc theo cả 2 agent: bi-dashboard KHÔNG có primitive `Table`
 
 Toàn bộ 8 commit của Lô A-D đều qua `npm run check` (typecheck + eslint + build +
 lint-ratchet) sạch trước khi commit.
+
+## Đợt 2 — Đánh giá độ hoàn thiện logic/tính năng + nâng cấp bảng (2026-08-29/30)
+
+User hỏi tiếp: logic/tính năng Report BI đã hoàn thiện production-grade chưa, cần nâng
+cấp gì; đồng thời muốn nâng cấp giao diện bảng hiện tại chuyên nghiệp hơn nhưng GIỮ
+NGUYÊN phong cách thiết kế đang có (không redesign toàn bộ).
+
+**Đánh giá độ hoàn thiện**: chạy agent rà soát riêng, tìm ra các khoảng trống chức năng
+(gaps). Hỏi user ưu tiên qua AskUserQuestion — user chọn làm ngay 2/16 mục có tác động cao
+nhất, phần còn lại chọn "chỉ ghi nhận vào kế hoạch, chưa làm ngay":
+
+- ✅ **DONE** (commit `c424e06e`) — Lưu lịch sử Thi đua Luỹ kế theo ngày: trước đây dán
+  dữ liệu Thi đua mới là mất trắng bảng xếp hạng cũ, không xem lại được thi đua hôm
+  qua/tuần trước. Đã thêm `features/bi-dashboard/utils/competitionHistory.ts` — tự động
+  lưu snapshot mỗi siêu thị vào IndexedDB theo ngày (upsert theo `getLocalDateKey()`,
+  giữ tối đa 60 ngày) ngay khi dán Luỹ kế mới; `CompetitionView.tsx` thêm nút "Lịch sử"
+  (view Luỹ kế) mở dropdown chọn ngày cũ xem lại, có banner "đang xem lịch sử" + nút "Về
+  trực tiếp". Đã kiểm thử end-to-end bằng Playwright (dán dữ liệu → xác nhận IndexedDB →
+  dán lại cùng ngày xác nhận upsert không nhân đôi → seed thêm 1 ngày cũ → xem qua UI →
+  quay lại trực tiếp) — không lỗi console.
+- ✅ **DONE** (commit `c424e06e`) — Sửa Auto Bonus bỏ sót nhân viên tên sai khuôn: nhân
+  viên có tên không đúng khuôn "Tên - Mã NV" trước đây bị `.filter()` loại khỏi job tính
+  điểm thưởng âm thầm, không xuất hiện trong summary, khiến toast "N/N thành công" sai
+  lệch so với tổng số nhân viên thật. Sửa ở `useBonusAutoBridge.ts` (chạy 1 tháng) và
+  `useMultiMonthBonusRun.ts` (chạy nhiều tháng) — vẫn tính các nhân viên này vào tổng,
+  đánh dấu `status: 'error'` kèm lý do rõ trong kết quả cuối; modal chi tiết nhiều tháng
+  (`MultiMonthResultDetailModal.tsx`) hiển thị danh sách tên bị bỏ qua.
+- ⏸️ **GHI NHẬN, CHƯA LÀM** (theo lựa chọn tường minh của user, không phải quên) — các
+  mục còn lại từ đánh giá độ hoàn thiện, liệt kê theo nhãn ngắn (chi tiết đầy đủ từng mục
+  nằm trong báo cáo agent gốc, không chép lại ở đây để tránh số liệu cũ/sai lệch theo thời
+  gian — cần đọc lại code hiện tại nếu triển khai về sau thay vì tin theo mô tả cũ):
+  audit trail (ai sửa gì khi nào), phân quyền theo từng siêu thị, safety net cho hành
+  động "Làm mới tất cả" (xoá toàn bộ dữ liệu không hoàn tác được), biểu đồ/trực quan hoá
+  xu hướng theo thời gian, so sánh tháng trước ở `DetailTab.tsx`, giới hạn lưu trữ lịch sử
+  Auto Bonus, banner cảnh báo dữ liệu đã "hỏng"/ported, xử lý edge-case target = 0 (empty
+  state), bảo vệ khỏi trôi tên phiên bản thi đua, xuất Excel/CSV, hỗ trợ in ấn.
+
+**Nâng cấp giao diện bảng**: đã dựng artifact so sánh 3 hướng thiết kế (Hiện tại /
+Enterprise Tinh Gọn / SaaS Hiện Đại) dùng đúng cấu trúc cột + dữ liệu mẫu thực tế của
+`RevenueTab`, tôn trọng palette/font hiện tại của app — gửi link cho user để chọn hướng.
+⏸️ **CHƯA TRIỂN KHAI VÀO CODE THẬT** — user chưa phản hồi chọn hướng nào; không tự ý áp
+dụng redesign khi chưa có lựa chọn.
