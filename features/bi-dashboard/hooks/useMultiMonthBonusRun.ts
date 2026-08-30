@@ -36,6 +36,9 @@ export interface MultiMonthSummary {
     monthsDone: number;
     stoppedEarly: boolean;
     monthResults: MultiMonthMonthResult[];
+    /** Nhân viên tên không đúng khuôn "Tên - Mã NV" — bị loại khỏi TẤT CẢ các tháng, không
+     * chạy job cho họ. Trước đây bị bỏ qua âm thầm, không đối chiếu với tổng số nhân viên thật. */
+    skippedNames: string[];
 }
 
 export interface UseMultiMonthBonusRunResult {
@@ -100,12 +103,14 @@ export function useMultiMonthBonusRun(
                 return;
             }
 
-            const jobEmployees = allEmployees
-                .map(e => {
-                    const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
-                    return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
-                })
-                .filter(e => e.employeeId);
+            const parsedEmployees = allEmployees.map(e => {
+                const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
+                return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
+            });
+            const jobEmployees = parsedEmployees.filter(e => e.employeeId);
+            // Xem chú thích tương tự ở useBonusAutoBridge.ts — trước đây loại âm thầm, không
+            // báo cho user biết N nhân viên nào đã bị bỏ qua suốt cả năm chạy.
+            const skippedNames = parsedEmployees.filter(e => !e.employeeId).map(e => e.originalName);
 
             if (jobEmployees.length === 0) {
                 setStatus('error');
@@ -153,7 +158,7 @@ export function useMultiMonthBonusRun(
                     });
                     if (toSave.length > 0) await handleSaveBonusMonthly(toSave, monthItem.yyyymm);
 
-                    monthResults.push({ yyyymm: monthItem.yyyymm, label: monthItem.label, total: results.length, successCount: toSave.length });
+                    monthResults.push({ yyyymm: monthItem.yyyymm, label: monthItem.label, total: results.length + skippedNames.length, successCount: toSave.length });
                 } catch (err) {
                     clearStallTimer();
                     monthResults.push({
@@ -169,7 +174,7 @@ export function useMultiMonthBonusRun(
             }
 
             setStatus('done');
-            setSummary({ monthsTotal: plan.length, monthsDone: monthResults.length, stoppedEarly, monthResults });
+            setSummary({ monthsTotal: plan.length, monthsDone: monthResults.length, stoppedEarly, monthResults, skippedNames });
         });
     }, [status, allEmployees, handleSaveBonusMonthly, armStallTimer]);
 

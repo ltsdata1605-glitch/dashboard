@@ -27,7 +27,14 @@ export const MultiMonthResultDetailModal: React.FC<{
                 <Badge variant="success">{summary.monthsDone - errorMonths}/{summary.monthsTotal} tháng thành công</Badge>
                 {errorMonths > 0 && <Badge variant="danger">{errorMonths} tháng lỗi</Badge>}
                 {summary.stoppedEarly && <Badge variant="warning">Đã dừng sớm — {summary.monthsDone}/{summary.monthsTotal} tháng đã xử lý</Badge>}
+                {summary.skippedNames.length > 0 && <Badge variant="warning">{summary.skippedNames.length} nhân viên bị bỏ qua</Badge>}
             </div>
+            {summary.skippedNames.length > 0 && (
+                <div className="mb-4 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-800 dark:text-amber-300">
+                    <p className="font-bold mb-1">Tên không đúng khuôn "Tên - Mã NV", đã bỏ qua ở mọi tháng:</p>
+                    <p className="leading-relaxed">{summary.skippedNames.join(', ')}</p>
+                </div>
+            )}
             <div className="max-h-80 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
                 <table className="w-full">
                     <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">

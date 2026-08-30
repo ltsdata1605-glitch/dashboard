@@ -5,11 +5,12 @@ import { SupermarketCompetitionData, Criterion, shortenName, parseNumber } from 
 import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
-import { CogIcon, FilterIcon } from '../Icons';
+import { CogIcon, FilterIcon, ClockIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
+import { getCompetitionHistory, getLocalDateKey, CompetitionHistorySnapshot } from '../../utils/competitionHistory';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
@@ -44,6 +45,36 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
 
+    // Lịch sử Thi đua Luỹ kế theo ngày (features/bi-dashboard/utils/competitionHistory.ts) —
+    // chỉ áp dụng cho tab Luỹ kế, không có khái niệm "lịch sử Realtime".
+    const [historySnapshots, setHistorySnapshots] = useState<CompetitionHistorySnapshot[]>([]);
+    const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const historyRef = useRef<HTMLDivElement>(null);
+    const todayKey = getLocalDateKey();
+
+    useEffect(() => {
+        setSelectedHistoryDate(null);
+        if (isRealtime) { setHistorySnapshots([]); return; }
+        let cancelled = false;
+        getCompetitionHistory(activeSupermarket).then(list => {
+            if (!cancelled) setHistorySnapshots(list);
+        });
+        return () => { cancelled = true; };
+    }, [activeSupermarket, isRealtime]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (historyRef.current && !historyRef.current.contains(event.target as Node)) {
+                setIsHistoryOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedSnapshot = selectedHistoryDate ? historySnapshots.find(s => s.date === selectedHistoryDate) : null;
+
     // Click outside handler for column selector
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -74,12 +105,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         return Array.from(names).sort();
     }, [data]);
     const supermarketData = useMemo(() => {
+        // Đang xem lịch sử ngày cũ — ưu tiên snapshot đã lưu thay vì dữ liệu sống.
+        if (selectedSnapshot) return selectedSnapshot;
         if (data[activeSupermarket]) return data[activeSupermarket];
         // Fuzzy fallback: trim-based matching for edge cases
         const trimmedActive = activeSupermarket.trim();
         const matchKey = Object.keys(data).find(k => k.trim() === trimmedActive);
         return matchKey ? data[matchKey] : undefined;
-    }, [data, activeSupermarket]);
+    }, [data, activeSupermarket, selectedSnapshot]);
 
     const processedSupermarketData = useMemo((): { headers: string[]; programs: ProcessedProgram[] } | undefined => {
         if (!supermarketData || !supermarketData.headers) return undefined;
@@ -216,6 +249,48 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 </h3>
                 {/* Filter + Column settings — in title bar */}
                 <div className="hide-on-export flex items-center gap-1">
+                    {/* Lịch sử theo ngày — chỉ có ở tab Luỹ kế (features/bi-dashboard/utils/competitionHistory.ts) */}
+                    {!isRealtime && (
+                        <div className="relative" ref={historyRef}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsHistoryOpen(p => !p)}
+                                className={`h-7 w-7 ${selectedHistoryDate ? 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                title="Xem lịch sử theo ngày"
+                            >
+                                <ClockIcon className="h-4 w-4" />
+                            </Button>
+                            {isHistoryOpen && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-[100] max-h-[360px] overflow-y-auto text-left">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lịch sử theo ngày</p>
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={() => { setSelectedHistoryDate(null); setIsHistoryOpen(false); }}
+                                        className={`justify-start w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${!selectedHistoryDate ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+                                    >
+                                        Hôm nay (trực tiếp)
+                                    </Button>
+                                    {historySnapshots.filter(s => s.date !== todayKey).length === 0 && (
+                                        <p className="text-[11px] text-slate-400 px-2 py-2">Chưa có ngày trước để xem lại — quay lại vào ngày mai.</p>
+                                    )}
+                                    {historySnapshots.filter(s => s.date !== todayKey).map(s => {
+                                        const [y, m, d] = s.date.split('-');
+                                        return (
+                                            <Button
+                                                key={s.date}
+                                                variant="unstyled" size="none"
+                                                onClick={() => { setSelectedHistoryDate(s.date); setIsHistoryOpen(false); }}
+                                                className={`justify-start w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedHistoryDate === s.date ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+                                            >
+                                                {`${d}/${m}/${y}`}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
                     {/* Program filter — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
                         style với các bộ lọc khác trong dự án (VD "Lọc nhóm" ở Tab Nhân viên > Thi đua) */}
                     <MultiSelectDropdown
@@ -268,6 +343,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     </div>
                 </div>
             </div>
+            {selectedHistoryDate && (() => {
+                const [y, m, d] = selectedHistoryDate.split('-');
+                return (
+                    <div className="mx-4 mt-3 px-4 py-2 flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-bold">
+                        <ClockIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span>Đang xem lịch sử ngày {d}/{m}/{y} — không phải dữ liệu trực tiếp.</span>
+                        <Button variant="unstyled" size="none" onClick={() => setSelectedHistoryDate(null)} className="ml-auto underline hover:no-underline">Về trực tiếp</Button>
+                    </div>
+                );
+            })()}
             {/* Scrollable table content */}
             <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className={`px-4 pb-4 pt-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>

@@ -96,12 +96,15 @@ export function useBonusAutoBridge(
                 return;
             }
 
-            const jobEmployees = allEmployees
-                .map(e => {
-                    const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
-                    return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
-                })
-                .filter(e => e.employeeId);
+            const parsedEmployees = allEmployees.map(e => {
+                const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
+                return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
+            });
+            const jobEmployees = parsedEmployees.filter(e => e.employeeId);
+            // Nhân viên tên không đúng khuôn "Tên - Mã NV" trước đây bị loại âm thầm khỏi job,
+            // không hề xuất hiện trong summary — khiến toast "N/N thành công" không đối chiếu
+            // đúng tổng số nhân viên thật. Giữ lại để báo rõ trong kết quả cuối cùng.
+            const skippedEmployees = parsedEmployees.filter(e => !e.employeeId);
 
             if (jobEmployees.length === 0) {
                 setStatus('error');
@@ -148,8 +151,12 @@ export function useBonusAutoBridge(
 
                 if (toSave.length > 0) await handleSaveBonusBatch(toSave);
 
+                skippedEmployees.forEach(e => {
+                    items.push({ originalName: e.originalName, employeeId: '', status: 'error', reason: 'Tên không đúng khuôn "Tên - Mã NV" — đã bỏ qua, không lấy được điểm thưởng.' });
+                });
+
                 setStatus('done');
-                setSummary({ total: results.length, successCount: toSave.length, stoppedEarly, items });
+                setSummary({ total: results.length + skippedEmployees.length, successCount: toSave.length, stoppedEarly, items });
             }).catch((err: Error) => {
                 clearStallTimer();
                 setStatus('error');

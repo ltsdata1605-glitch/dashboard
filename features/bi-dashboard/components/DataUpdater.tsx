@@ -7,6 +7,7 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
 import { extractSupermarketList } from '../utils/dashboardHelpers';
+import { archiveCompetitionLuyKeSnapshot } from '../utils/competitionHistory';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
@@ -391,6 +392,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionLuyKe(val);
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
                                             addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
+                                            archiveCompetitionLuyKeSnapshot(val).catch(err => console.error('Lỗi lưu lịch sử Thi đua', err));
                                         } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
                                     }}
                                     onClear={(title) => {
