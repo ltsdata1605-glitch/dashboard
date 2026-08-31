@@ -427,7 +427,7 @@ sạch. Do khối lượng lớn (18 file), test trực quan bằng Playwright t
 file để tiết kiệm thời gian, ưu tiên test kỹ các file "phức tạp" có tương tác (drag-drop,
 expand cây, heatmap).
 
-## Đợt 4 — Thiết kế phân quyền theo siêu thị (CHƯA CODE — đang chờ duyệt kế hoạch)
+## Đợt 4 — Phân quyền theo siêu thị (ĐÃ DUYỆT, ĐANG CODE — commit `2aa6928f`, `5d612a86`)
 
 ### Mô hình nghiệp vụ đã chốt với user (2026-08-31)
 1. Mỗi nhân viên có **tài khoản Google riêng** (không dùng chung tài khoản/thiết bị).
@@ -545,3 +545,61 @@ uid như hiện tại cho tới khi có yêu cầu mở rộng tiếp, KHÔNG đ
 **Trạng thái: thiết kế đã chốt đủ 8 điểm nghiệp vụ/kỹ thuật ở trên. Sẵn sàng bắt tay code
 khi user xác nhận bắt đầu — vẫn còn 2 chi tiết nhỏ (UI quản lý bảng map, hành vi khi tên
 chưa được map) có thể quyết định luôn lúc bắt đầu code thay vì hỏi thêm 1 vòng riêng.**
+
+### Tiến độ triển khai (2026-08-31)
+
+**✅ DONE — Nền tảng (commit `2aa6928f`)**
+- `firestore.rules`: block `biData/{maKho}` (mirror `khoData`, tái dùng `myKhos()`) +
+  block `biSupermarketMap/{doc}` (đọc: mọi user đăng nhập, ghi: chỉ admin). **CHƯA DEPLOY**
+  — deploy rules là việc thủ công của user (`npm run deploy:rules`, cần `firebase login`),
+  không tự động hoá theo CLAUDE.md.
+- `eslint.config.js`: ngoại lệ cách ly thứ 3 — bi-dashboard được import `services/firebase.ts`
+  gốc (chỉ `db`/`auth`), đã verify biên bằng file test tạm (xoá sau khi verify).
+- `features/bi-dashboard/services/biDataService.ts` (mới): tách/gộp Summary Luỹ kế theo
+  raw-text fragment/Kho; Thi đua Luỹ kế parse 1 lần qua `parseCompetitionDataBySupermarket()`
+  rồi lưu OBJECT đã parse/Kho (raw text Thi đua KHÔNG tách được theo siêu thị vì header/tên
+  chương trình chia sẻ giữa nhiều siêu thị trong cùng 1 lần dán — xem lại hàm gốc trước khi
+  đổi hướng này).
+- `features/bi-dashboard/services/biSupermarketMapService.ts` (mới): bảng map lưu ở
+  `biSupermarketMap/config` — KHÔNG dùng `shared_configs` như bản nháp ban đầu ở mục 2 phía
+  trên (đã đọc `services/firestoreService.ts`, xác nhận `shared_configs` thiết kế cho chia sẻ
+  cấu hình tuỳ ý nhiều document, sai ngữ nghĩa cho 1 bảng tra cứu cố định duy nhất).
+- `features/bi-dashboard/hooks/useReportBiAuth.ts` (mới): cầu nối `departmentId`/`userRole`/
+  `employeeName` từ `AuthContext` gốc, tính `allowedKhos`/`canManageSharedBiData`/`isAdmin`.
+
+**✅ DONE — Gắn vào luồng đọc/ghi + UI admin (commit `5d612a86`)**
+- `useDashboardLogic.ts`: hợp nhất Summary Luỹ kế (ưu tiên text cục bộ, rỗng thì dùng bản
+  dùng chung tái dựng từ fragment) + Thi đua Luỹ kế (gộp theo tên siêu thị, shared trước
+  local đè lên — bù đúng phần chưa dán trên máy này). Không đổi shape trả về của hook.
+- `DataUpdater.tsx`: 2 StatusTile "Luỹ kế" (Báo cáo Tổng hợp + Thi đua Cụm) readOnly với
+  nhân viên thường; admin/manager dán xong tự động ghi thêm lên `biData/{maKho}`, tên siêu
+  thị chưa có trong bảng map → toast cảnh báo (skippedNames), không chặn dán cục bộ.
+- `BiSupermarketMapAdmin.tsx` (mới): trả lời câu hỏi "UI đặt ở đâu" ở mục "Việc còn cần làm
+  rõ" phía trên — đặt ngay trong `DataUpdater.tsx`, phía trên card "Dữ Liệu Báo Cáo Cụm",
+  chỉ admin thấy (gate `isAdmin`). Thêm/sửa/xoá từng dòng map qua `biSupermarketMapService.ts`.
+- Trả lời câu hỏi còn lại "hành vi khi tên chưa được map": dán được bình thường ở local
+  (không chặn), phần KHÔNG map được chỉ bị loại khỏi lượt ghi lên `biData` (không chia sẻ
+  cho tới khi admin thêm vào bảng map) — cảnh báo mềm qua toast, đúng tinh thần các validator
+  khác trong `DataUpdater.tsx`.
+- Verify: `tsc --noEmit` + `eslint features/bi-dashboard` + `npm run build` + `lint:ratchet`
+  đều sạch trong phạm vi bi-dashboard (1 vi phạm ratchet còn lại ở `features/phan-ca/
+  Legend.tsx` — không liên quan, không đụng tới, thuộc việc khác của user).
+
+**⏳ CHƯA LÀM**
+1. **Deploy `firestore.rules`** — thủ công, cần user tự chạy `npm run deploy:rules` với tài
+   khoản Google có quyền trên project `dashboa-7e20b`. Không deploy thì `biData`/
+   `biSupermarketMap` vẫn bị Firestore mặc định từ chối mọi read/write.
+2. **Test Playwright 2 tài khoản khác Kho** — xác nhận nhân viên Kho B thật sự KHÔNG đọc
+   được dữ liệu Kho A (server-side, không chỉ UI). Cần rules đã deploy trước mới test được
+   đúng nghĩa "chặn thật". Có thể dùng tài khoản test đã có sẵn (xem memory
+   `reference_sticker_event_test_accounts` — nhưng đó là sticker-event, cần tài khoản test
+   riêng cho root/bi-dashboard, hoặc tạo mới 2 tài khoản với `departmentId` khác nhau qua
+   `UserManagementView.tsx`).
+3. **Áp dụng sang Phân Tích** (mục 7 quyết định nghiệp vụ) — CHƯA làm, đợi Report BI ổn định
+   qua bước test ở trên trước, theo đúng thứ tự đã chốt với user.
+4. Biết trước, có thể chấp nhận là giới hạn của đợt đầu (không phải bug):
+   - Manager quản lý ≥2 Kho, chỉ dán dữ liệu phủ 1 phần số Kho đó trên 1 thiết bị → phần
+     Summary Luỹ kế của (các) Kho còn lại sẽ không tự bù từ bản dùng chung (Thi đua Luỹ kế
+     THÌ có bù, vì gộp theo object; Summary gộp theo "ưu tiên local toàn phần" đơn giản hơn).
+   - Admin sửa bảng map trong lúc đang mở sẵn `DataUpdater.tsx` ở tab khác → tab đó phải
+     tải lại trang mới thấy map mới (không tự đồng bộ real-time).
