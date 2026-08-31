@@ -200,8 +200,27 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     });
 
     const handleSaveVersionAction = () => {
-        onSaveVersion(newVersionName);
+        // Trim trước khi lưu — trước đây "Máy lạnh" và "Máy lạnh " (thừa khoảng trắng cuối)
+        // bị coi là 2 tên khác nhau, tạo phiên bản trùng lặp ngoài ý muốn ("trôi tên").
+        const trimmedName = newVersionName.trim();
+        if (!trimmedName) return;
+        onSaveVersion(trimmedName);
         setNewVersionName('');
+    };
+
+    // Phiên bản đang xem (nếu có) + có thay đổi chưa lưu hay không — so bộ lọc nhóm hiện tại
+    // với bộ lọc đã lưu của chính phiên bản đó. Trước đây không có cách nào biết đã "chỉnh
+    // sửa nhưng quên lưu lại", dễ tưởng nhầm phiên bản đã cập nhật trong khi IndexedDB vẫn
+    // giữ dữ liệu cũ.
+    const activeVersion = activeVersionName && activeVersionName !== 'new'
+        ? versions.find(v => v.name === activeVersionName)
+        : null;
+    const hasUnsavedVersionChanges = !!activeVersion && (
+        activeVersion.selectedCompetitions.length !== selectedCompetitions.size ||
+        activeVersion.selectedCompetitions.some(c => !selectedCompetitions.has(c))
+    );
+    const handleUpdateActiveVersion = () => {
+        if (activeVersionName && activeVersionName !== 'new') onSaveVersion(activeVersionName);
     };
 
     const handleSelectAllEmployees = () => setHighlightedEmployees(new Set(allEmployees.map(e => e.originalName)));
@@ -500,9 +519,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
                         <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={onActivateKey(() => onVersionTabClick(version))} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
+                            {activeVersionName === version.name && hasUnsavedVersionChanges && (
+                                <span title="Bộ lọc đã đổi, chưa lưu lại" className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                            )}
                             <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ))}
+                    {hasUnsavedVersionChanges && (
+                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="px-2 py-1 bg-amber-500 text-white rounded text-[11px] font-bold hover:bg-amber-600">Cập nhật</Button>
+                    )}
                     {activeVersionName === 'new' ? (
                         <div className="flex items-center gap-1.5">
                             <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="w-28 text-[11px]" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />

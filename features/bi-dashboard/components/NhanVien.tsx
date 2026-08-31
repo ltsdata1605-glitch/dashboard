@@ -236,6 +236,19 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [versions, setVersions] = useIndexedDBState<Version[]>('nhanvien-competition-versions', []);
     const [activeVersionName, setActiveVersionName] = useIndexedDBState<string | 'new' | null>('nhanvien-active-version', null);
 
+    // Version KHÔNG scope theo siêu thị (key lưu trữ dùng chung toàn app) — nếu giữ nguyên
+    // activeVersionName khi đổi siêu thị, tab đang "active" có thể tham chiếu tới bộ lọc
+    // nhóm thi đua không còn khớp ngữ cảnh siêu thị mới, dễ gây hiểu nhầm "trôi" dữ liệu.
+    // Reset về Tổng khi danh sách siêu thị active THỰC SỰ đổi — bỏ qua lần chạy đầu (mount)
+    // để không xoá mất lựa chọn đã lưu từ phiên trước khi user chỉ đơn thuần tải lại trang.
+    const prevActiveSupermarketsRef = React.useRef(activeSupermarkets);
+    useEffect(() => {
+        if (prevActiveSupermarketsRef.current !== activeSupermarkets) {
+            setActiveVersionName(null);
+        }
+        prevActiveSupermarketsRef.current = activeSupermarkets;
+    }, [activeSupermarkets, setActiveVersionName]);
+
     const handleVersionTabClick = useCallback((version: Version) => {
         setActiveVersionName(version.name);
         setSelectedCompetitions(new Set(version.selectedCompetitions));
