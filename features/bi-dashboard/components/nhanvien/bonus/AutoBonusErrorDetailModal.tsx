@@ -34,19 +34,19 @@ export const AutoBonusErrorDetailModal: React.FC<{
             </div>
             <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
                 <table className="w-full">
-                    <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
+                    <thead className="bg-white dark:bg-slate-900 sticky top-0 border-b border-slate-300 dark:border-slate-700">
                         <tr className="text-[11px] font-black uppercase tracking-wider">
-                            <th className="text-left px-2 py-1 text-slate-500 dark:text-slate-400">Nhân viên</th>
-                            <th className="text-left px-2 py-1 text-slate-500 dark:text-slate-400">Mã NV</th>
-                            <th className="text-right px-2 py-1 text-slate-500 dark:text-slate-400">Điểm thực lãnh / Lý do</th>
+                            <th className="text-left px-3 py-2.5 text-slate-500 dark:text-slate-400">Nhân viên</th>
+                            <th className="text-left px-3 py-2.5 text-slate-500 dark:text-slate-400">Mã NV</th>
+                            <th className="text-right px-3 py-2.5 text-slate-500 dark:text-slate-400">Điểm thực lãnh / Lý do</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {summary.items.map((item, idx) => (
                             <tr key={`${item.employeeId}-${idx}`}>
-                                <td className="px-2 py-1 text-[13px] text-slate-700 dark:text-slate-300">{item.originalName}</td>
-                                <td className="px-2 py-1 text-[13px] text-slate-500 dark:text-slate-400 tabular-nums">{item.employeeId}</td>
-                                <td className="px-2 py-1 text-[13px] text-right tabular-nums">
+                                <td className="px-3 py-2.5 text-[13px] text-slate-700 dark:text-slate-300">{item.originalName}</td>
+                                <td className="px-3 py-2.5 text-[13px] text-slate-500 dark:text-slate-400 tabular-nums">{item.employeeId}</td>
+                                <td className="px-3 py-2.5 text-[13px] text-right tabular-nums">
                                     {item.status === 'ok' ? (
                                         <span className="font-bold text-slate-800 dark:text-slate-100">
                                             {item.diemThucLanh === null || item.diemThucLanh === undefined

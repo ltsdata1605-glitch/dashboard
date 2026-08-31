@@ -37,17 +37,17 @@ export const MultiMonthResultDetailModal: React.FC<{
             )}
             <div className="max-h-80 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
                 <table className="w-full">
-                    <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
+                    <thead className="bg-white dark:bg-slate-900 sticky top-0 border-b border-slate-300 dark:border-slate-700">
                         <tr className="text-[11px] font-black uppercase tracking-wider">
-                            <th className="text-left px-2 py-1 text-slate-500 dark:text-slate-400">Tháng</th>
-                            <th className="text-right px-2 py-1 text-slate-500 dark:text-slate-400">Kết quả</th>
+                            <th className="text-left px-3 py-2.5 text-slate-500 dark:text-slate-400">Tháng</th>
+                            <th className="text-right px-3 py-2.5 text-slate-500 dark:text-slate-400">Kết quả</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {summary.monthResults.map(m => (
                             <tr key={m.yyyymm}>
-                                <td className="px-2 py-1 text-[13px] font-bold text-slate-700 dark:text-slate-300">{m.label}</td>
-                                <td className="px-2 py-1 text-[13px] text-right tabular-nums">
+                                <td className="px-3 py-2.5 text-[13px] font-bold text-slate-700 dark:text-slate-300">{m.label}</td>
+                                <td className="px-3 py-2.5 text-[13px] text-right tabular-nums">
                                     {m.error ? (
                                         <span className="text-rose-600 dark:text-rose-400">{m.error}</span>
                                     ) : (
