@@ -3,7 +3,6 @@ import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber } from '../../utils/dashboardHelpers';
-import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -439,8 +438,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     return <span className="text-slate-400 font-bold">-</span>;
                 }
                 return (
-                    <div className="flex justify-center items-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
+                    <div className="flex justify-end items-center">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
                             {rounded}%
                         </span>
                     </div>
@@ -459,11 +458,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         };
 
         let cellClasses = `
-            px-2 whitespace-nowrap 
-            border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0 
+            px-3 whitespace-nowrap
+            border-b border-slate-100 dark:border-slate-800/60
             tabular-nums align-middle
-            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-slate-900'}`}
-            ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
+            ${originalCellIndex > 0 ? 'text-right' : `text-left sticky left-0 z-[5] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-slate-900'}`}
+            ${isHang ? 'py-1.5 text-[11px]' : 'py-1.5 text-[13px]'}
         `;
         
         if (isTotalRow) {
@@ -512,11 +511,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 <th
                                                     rowSpan={2}
                                                     className={`
-                                                        px-3 py-1 text-left text-[11px] font-black
-                                                        text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
-                                                        border-b-2 border-b-slate-100 dark:border-b-slate-700
-                                                        border-r border-slate-200 dark:border-slate-700
+                                                        px-3 py-2.5 text-left text-[11px] font-black
+                                                        text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900
+                                                        border-b border-slate-300 dark:border-slate-700
                                                         sticky left-0 z-20 align-middle
+                                                        shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)]
                                                         uppercase tracking-wider min-w-[120px]
                                                     `}
                                                 >
@@ -532,11 +531,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             key={`group-${idx}`}
                                                             rowSpan={2}
                                                             className={`
-                                                                py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
+                                                                py-2.5 px-3 text-[11px] font-black uppercase tracking-wider text-right
                                                                 align-middle whitespace-nowrap cursor-pointer
-                                                                border-b-2 border-r border-slate-200 dark:border-slate-700
-                                                                hover:opacity-80 transition-opacity select-none
-                                                                ${g.bg} ${g.text}
+                                                                border-b border-slate-300 dark:border-slate-700
+                                                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
+                                                                bg-white dark:bg-slate-900 ${g.text}
                                                                 ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
                                                             `}
                                                             onClick={() => handleColumnSort(g.singleHeader)}
@@ -552,9 +551,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={`group-${idx}`}
                                                         colSpan={g.colspan}
                                                         className={`
-                                                            py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
-                                                            border-b border-r border-slate-200 dark:border-slate-700
-                                                            ${g.bg} ${g.text}
+                                                            py-1 px-3 text-[9px] font-black uppercase tracking-widest text-right
+                                                            bg-white dark:bg-slate-900 ${g.text}
                                                         `}
                                                     >
                                                         {g.label}
@@ -578,12 +576,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={h}
                                                         scope="col"
                                                         className={`
-                                                            px-1.5 py-1 text-[11px] font-bold uppercase
-                                                            tracking-wider border-r border-slate-200 dark:border-slate-700
-                                                            border-b-[3px] !${getBorderAccentFromColorClass(g.bg)}
-                                                            text-center align-middle whitespace-nowrap
-                                                            cursor-pointer hover:opacity-80 transition-opacity select-none
-                                                            ${g.bg} ${g.text}
+                                                            px-3 py-2.5 text-[11px] font-bold uppercase
+                                                            tracking-wider border-b border-slate-300 dark:border-slate-700
+                                                            text-right align-middle whitespace-nowrap
+                                                            cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
+                                                            bg-white dark:bg-slate-900 ${g.text}
                                                             ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
                                                         `}
                                                         onClick={() => handleColumnSort(h)}
