@@ -55,6 +55,7 @@ export type BIKey =
   | `prev-month-installment-${string}`
   | `prev-month-bankem-${string}`
   | `prev-month-target-${string}`
+  | `prev-month-detail-${string}`
   | `avatar-${string}`
   | `avatar-src-${string}`
   | `targethero-${string}-tragop`

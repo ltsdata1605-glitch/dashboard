@@ -3,13 +3,16 @@ import { parseDetailDataV2, DetailNode } from '../../utils/detailDataParser';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import Card from '../Card';
-import { ChevronDownIcon } from '../Icons';
+import { ChevronDownIcon, ClockIcon, XIcon } from '../Icons';
 import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 import { exportElementAsImage } from '../../services/uiService';
 import * as dbService from '../../services/dbService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
+import { DeltaBadge } from '../shared/Badges';
+import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
+import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -50,9 +53,10 @@ interface DetailRowProps {
     toggleExpand: (key: string) => void;
     fInt: Intl.NumberFormat;
     f: Intl.NumberFormat;
+    prevData?: { dtlk: number; dtqd: number };
 }
 
-const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggleExpand, fInt, f }) => {
+const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggleExpand, fInt, f, prevData }) => {
     const style = LEVEL_STYLES[node.level] || LEVEL_STYLES.hang;
     const hasChildren = node.children.length > 0;
 
@@ -97,11 +101,13 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             </td>
             {/* DTLK */}
             <td className={`px-2 py-1.5 text-right ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
-                {f.format(node.dtlk)}
+                <div>{f.format(node.dtlk)}</div>
+                {prevData && <DeltaBadge current={node.dtlk} previous={prevData.dtlk} isCurrency />}
             </td>
             {/* DTQD */}
             <td className={`px-2 py-1.5 text-right ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
-                {f.format(node.dtqd)}
+                <div>{f.format(node.dtqd)}</div>
+                {prevData && <DeltaBadge current={node.dtqd} previous={prevData.dtqd} isCurrency />}
             </td>
             {/* Hiệu quả QĐ */}
             <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
@@ -210,6 +216,8 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
     const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
+    const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
+    const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-detail-${supermarketName}`, '');
 
     useEffect(() => {
         let isMounted = true;
@@ -235,6 +243,26 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         if (isActive === false) return [];
         return parseDetailDataV2(rawData, industryBiMap);
     }, [rawData, isActive, industryBiMap]);
+
+    // So sánh tháng trước — CHỈ cấp Phòng ban/Nhân viên (đã chốt với user): cây 6 cấp có thể
+    // trùng tên sản phẩm/nhóm hàng ở nhiều nhánh khác nhau, match theo path phức tạp hơn nhiều
+    // giá trị mang lại so với 2 cấp trên cùng vốn đã đủ ý nghĩa để theo dõi tăng trưởng.
+    const prevMonthMap = useMemo(() => {
+        const map = new Map<string, { dtlk: number; dtqd: number }>();
+        if (!prevMonthRaw) return map;
+        const prevTree = parseDetailDataV2(prevMonthRaw, industryBiMap);
+        for (const node of prevTree) {
+            const depts = node.level === 'total' ? node.children : [node];
+            depts.forEach(dept => {
+                if (dept.level !== 'department') return;
+                map.set(`department:${dept.name}`, { dtlk: dept.dtlk, dtqd: dept.dtqd });
+                dept.children.forEach(emp => {
+                    if (emp.level === 'employee') map.set(`employee:${emp.name}`, { dtlk: emp.dtlk, dtqd: emp.dtqd });
+                });
+            });
+        }
+        return map;
+    }, [prevMonthRaw, industryBiMap]);
 
     // Remove 'Tổng' level and filter departments by activeDepartments
     const hiddenSet = useMemo(() => new Set(hiddenEmployees || []), [hiddenEmployees]);
@@ -472,6 +500,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             const hasChildren = node.children.length > 0;
             const isExpanded = displayTree.expanded.has(key);
 
+            const prevData = (node.level === 'department' || node.level === 'employee')
+                ? prevMonthMap.get(`${node.level}:${node.name}`)
+                : undefined;
+
             rows.push(
                 <DetailRow
                     key={key}
@@ -481,6 +513,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     toggleExpand={toggleExpand}
                     fInt={fInt}
                     f={f}
+                    prevData={prevData}
                 />
             );
 
@@ -570,9 +603,30 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center shrink-0">
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsPrevMonthModalOpen(true)}
+                        className={`gap-1.5 ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
+                    >
+                        <ClockIcon className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Cùng kỳ</span>
+                        {prevMonthRaw && (
+                            <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200">
+                                <XIcon className="h-3 w-3" />
+                            </Button>
+                        )}
+                    </Button>
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
             </div>
+            <ImportPrevMonthModal
+                isOpen={isPrevMonthModalOpen}
+                onClose={() => setIsPrevMonthModalOpen(false)}
+                onSave={setPrevMonthRaw}
+                description='Dán dữ liệu báo cáo "Chi tiết" của tháng trước vào đây để so sánh tăng trưởng (chỉ áp dụng ở cấp Phòng ban/Nhân viên).'
+            />
             <div ref={cardRef}>
                 <Card
                     noPadding
