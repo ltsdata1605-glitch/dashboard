@@ -291,7 +291,7 @@ tay code. Kết quả khảo sát quan trọng cần nhớ nếu quay lại dở
 - **Xuất Excel/CSV, Hỗ trợ in ấn**: KHÔNG được chọn ở vòng hỏi ưu tiên lần 2 (chỉ chọn 9
   mục + redesign bảng) — vẫn ở trạng thái ghi nhận, chưa làm.
 
-### Lô 1 — An toàn dữ liệu, rủi ro thấp, độc lập
+### Lô 1 — An toàn dữ liệu, rủi ro thấp, độc lập ✅ DONE (commit `3004f125`)
 1. **Safety net khôi phục từ file**: `Settings.tsx` và `Dashboard.tsx` có 2 luồng "Khôi
    phục từ File" TRÙNG LẶP (copy-paste), cả 2 gọi `db.clearStore()` NGAY khi file JSON
    hợp lệ về cấu trúc, KHÔNG qua `ConfirmDialog` nào — khác với nút "Làm mới tất cả"
@@ -307,7 +307,14 @@ tay code. Kết quả khảo sát quan trọng cần nhớ nếu quay lại dở
    Thêm `pruneOldBonusMonthlyKeys()` (giữ 12 tháng, dư so với `monthsWindow=6` đang hiển
    thị), gọi 1 lần lúc mount `BiWrapper.tsx` cạnh `migrateClusterDataToMain()` sẵn có.
 
-### Lô 2 — Chống trôi tên phiên bản thi đua (cần migration, rủi ro trung bình)
+### Lô 2 — Chống trôi tên phiên bản thi đua ✅ DONE (commit `17f00b03`)
+Làm nhẹ hơn kế hoạch gốc — KHÔNG cần thêm `id` ổn định/migration (rủi ro migration
+không xứng đáng so với lợi ích): trim + nút "Cập nhật" trực tiếp + badge "chưa lưu"
+đã giải quyết triệt để 2/3 nguyên nhân gốc (trim, thiếu đường cập nhật) mà không cần
+đổi mô hình định danh. Nguyên nhân gốc còn lại (key không scope siêu thị) xử lý bằng
+reset `activeVersionName` khi đổi siêu thị thay vì đổi cấu trúc key lưu trữ.
+
+<!-- kế hoạch gốc, tham khảo nếu cần làm thêm id/migration về sau -->
 3 nguyên nhân gốc xác nhận qua code: (a) `Version.name` không có `id` ổn định, so khớp
 bằng chuỗi thô; (b) tên không `.trim()` trước khi lưu (`CompetitionTab.tsx:203`) nên
 `"Máy lạnh"` và `"Máy lạnh "` tạo 2 bản ghi khác nhau; (c) key lưu trữ
@@ -318,7 +325,7 @@ cũ sẽ tạo bản trùng, bản cũ mồ côi im lặng. Sửa: thêm `id` �
 trong `utils/dbMigration.ts`), trim + validate trùng tên khi lưu, scope key theo siêu
 thị hoặc reset khi đổi siêu thị, thêm badge "• chưa lưu" khi filter khác bản đã lưu.
 
-### Lô 3 — Audit trail (giá trị dài hạn, triển khai theo giai đoạn)
+### Lô 3 — Audit trail ✅ DONE (commit `f3b89726`)
 `last-updates-list` hiện có KHÔNG phải audit trail thật — không có trường "ai", cap
 cứng 10 mục/1-slot-mỗi-id (ghi đè, không phải log), và **quan trọng: chưa từng được đọc
 ở bất kỳ đâu trong toàn bộ repo** (chỉ set, không get). Thêm
@@ -331,7 +338,7 @@ KHÔNG upsert-theo-ngày). Bridge danh tính user: `BiWrapper.tsx` thêm
 quan trọng (xoá tất cả, khôi phục backup, lưu/xoá phiên bản thi đua, lưu Auto Bonus...).
 UI hiển thị: panel mới trong `Settings.tsx`.
 
-### Lô 4 — Phân tích & hiển thị
+### Lô 4 — Phân tích & hiển thị ✅ DONE (commit `427a2d69`, `8e361fa9`, `a03dc642`)
 3. **Biểu đồ xu hướng theo thời gian**: recharts đã có sẵn trong bundle (dùng 1 chỗ duy
    nhất hiện nay — donut chart tĩnh ở `IndividualCompetitionView.tsx`, KHÔNG phải time
    series). `CompetitionView.tsx` đã có sẵn `historySnapshots` trong state (từ tính
@@ -370,7 +377,18 @@ UI hiển thị: panel mới trong `Settings.tsx`.
    "Chưa có Target" thay vì "0%" đỏ. Làm đồng loạt cả 5-6 file trong 1 lượt để tránh UX
    không nhất quán (nơi sửa nơi chưa).
 
-### Lô 5 — Redesign 18 bảng sang "Enterprise Tinh Gọn"
+### Lô 5 — Redesign 18 bảng sang "Enterprise Tinh Gọn" ✅ DONE (18/18, commit `615e50f2`
+→ `af280e73`, 8 commit nhỏ theo từng nhóm bảng)
+
+Toàn bộ 18 bảng đã redesign, mỗi bảng verify bằng `npx tsc --noEmit` + `eslint` +
+`npm run build`, phần lớn có kiểm thử trực quan bằng Playwright với dữ liệu thật.
+**1 quyết định có chủ đích lệch khỏi pattern chung**: `CompetitionSummaryView.tsx`
+GIỮ NGUYÊN nền màu 2 lớp nhóm/cột (HEADER_GROUP_THEMES/HEADER_COLUMN_THEMES) —
+đây là tính năng user đã trực tiếp yêu cầu/tinh chỉnh ở đợt audit trước, không
+phải phần "mặc định chưa tinh chỉnh" nên không áp nền trắng đồng nhất; chỉ bỏ
+viền dọc (border-r) như các bảng khác. Xem chi tiết ở [[project_report_bi_deep_audit_lo_a_d_2026_08]] (memory) hoặc `git log` từng file.
+
+### Lô 5 — Kế hoạch gốc (tham khảo, đã thực thi ở trên)
 User chọn làm toàn bộ 18 bảng trong 1 đợt (không tách 2 giai đoạn). Spec đích (từ
 artifact, đối chiếu Tailwind tương đương): bỏ `border-b-[3px] border-b-{màu}-400` +
 `border-r` giữa mọi cột (chỉ còn viền ngang mỏng giữa các dòng), header nền trắng đồng
