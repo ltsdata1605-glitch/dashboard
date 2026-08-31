@@ -20,6 +20,19 @@ interface RevenueDesktopRowProps {
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
+// "Enterprise Tinh Gọn" — %HT/HQQĐ/%T.Góp/%B.Kèm hiển thị dạng pill (viên thuốc) nền
+// bán-trong-suốt thay vì chỉ tô chữ, dễ quét mắt hơn khi liếc nhanh nhiều dòng. Giữ nguyên
+// giá trị màu hex trả về từ getHtColor/getDynamicColor (không đổi logic ngưỡng màu) — chỉ
+// bọc thêm nền mờ cùng tông.
+const Pill: React.FC<{ color?: string; children: React.ReactNode }> = ({ color, children }) => (
+    <span
+        className="inline-flex min-w-[42px] items-center justify-center rounded-full px-2 py-0.5 text-[12px] font-bold"
+        style={color ? { color, backgroundColor: `${color}1A` } : undefined}
+    >
+        {children}
+    </span>
+);
+
 export const RevenueDesktopRow = React.memo(({
     row,
     isHighlighted,
@@ -34,38 +47,38 @@ export const RevenueDesktopRow = React.memo(({
     const hasTarget = (row.calculatedTarget || 0) > 0;
 
     return (
-        <tr className={`transition-all group cursor-pointer text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'odd:bg-slate-50/60 hover:bg-slate-100 dark:odd:bg-slate-800/20 dark:hover:bg-slate-800/40'}`}>
-            <td className="px-2 py-1 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-800/60">
+        <tr className={`transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
+            <td className="px-3 py-2.5 whitespace-nowrap min-w-[180px]">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
-                    <div role="button" tabIndex={0} className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
-                        <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
+                    <div role="button" tabIndex={0} className="flex flex-col min-w-0 cursor-pointer" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
+                        <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px] whitespace-normal break-words">{row.name}</span>
                     </div>
                 </div>
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
+            <td className="px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
+            <td className="px-3 py-2.5 text-[13px] text-right font-bold tabular-nums" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
                 <div>{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-medium text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
+            <td className="px-3 py-2.5 text-[13px] text-right font-medium text-slate-400 dark:text-slate-500 tabular-nums">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion, hasTarget) }}>
-                <div>{hasTarget ? `${roundUp(row.calculatedCompletion)}%` : '—'}</div>
+            <td className="px-3 py-2.5 text-right tabular-nums">
+                <Pill color={getHtColor(row.calculatedCompletion, hasTarget)}>{hasTarget ? `${roundUp(row.calculatedCompletion)}%` : '—'}</Pill>
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
             </td>
             {isShowRemaining && (
                 <>
-                    <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
+                    <td className="px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
-                    <td className={`px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60 bg-amber-50/10 dark:bg-amber-950/5 ${
+                    <td className={`px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums bg-amber-50/10 dark:bg-amber-950/5 ${
                         row.type === 'employee' && row.remaining_daily_status === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                         row.type === 'employee' && row.remaining_daily_status === 'success' ? 'text-emerald-600 dark:text-emerald-400' :
                         'text-amber-700 dark:text-amber-400'
@@ -74,19 +87,19 @@ export const RevenueDesktopRow = React.memo(({
                     </td>
                 </>
             )}
-            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
-                <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
+            <td className="px-3 py-2.5 text-right tabular-nums">
+                <Pill color={getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60">
-                <div style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</div>
+            <td className="px-3 py-2.5 text-right tabular-nums">
+                <Pill color={getDynamicColor(row.calculatedInstallment, colorSettings.tragop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
-                <div>{roundUp(row.pctBillBk)}%</div>
+            <td className="px-3 py-2.5 text-right tabular-nums">
+                <Pill color={getDynamicColor(row.pctBillBk, colorSettings.bankem)}>{roundUp(row.pctBillBk)}%</Pill>
                 <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
             </td>
-            <td className={`px-3 py-1 text-center ${
+            <td className={`px-3 py-2.5 text-right tabular-nums ${
                 !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
                 row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
                 row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :

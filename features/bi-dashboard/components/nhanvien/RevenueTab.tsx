@@ -262,39 +262,40 @@ const RevenueView: React.FC<{
                             <div className="border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
-                                        {/* Tier 1: Group Headers */}
+                                        {/* Tier 1: Group Headers — "Enterprise Tinh Gọn": nhãn nhóm chỉ còn chữ màu nhạt trên
+                                            nền trắng đồng nhất, không còn nền màu đậm theo nhóm */}
                                         <tr>
-                                            <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('name')}>
+                                            <th rowSpan={2} className="px-3 py-2.5 text-left align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-slate-200 dark:border-slate-700">
+                                            <th colSpan={4} className="px-3 py-1 text-right text-[9px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900">
                                                 Doanh thu
                                             </th>
                                             {isShowRemaining && (
-                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/50 border-b border-r border-slate-200 dark:border-slate-700">
+                                                <th colSpan={2} className="px-3 py-1 text-right text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-white dark:bg-slate-900">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={4} className="px-3 py-1 text-right text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900">
                                                 Hiệu suất
                                             </th>
                                         </tr>
-                                        {/* Tier 2: Column Headers — nền trung tính đồng nhất, viền dưới màu theo nhóm (implementation_plan.md mục 61) */}
+                                        {/* Tier 2: Column Headers — nền trắng đồng nhất, viền dưới mỏng, không viền dọc */}
                                         <tr>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-sky-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
                                             {isShowRemaining && (
                                                 <>
-                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-amber-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
-                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-amber-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
                                                 </>
                                             )}
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 border-r border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b-[3px] border-b-emerald-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
+                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-slate-900 font-black">
@@ -304,47 +305,47 @@ const RevenueView: React.FC<{
                                             const prev = row.prevCompData;
                                             const hasTarget = (row.calculatedTarget || 0) > 0;
                                             return (
-                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
-                                                    <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-300 dark:border-slate-700`}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-left uppercase tracking-wider ${isGrandTotal ? 'font-black' : 'font-extrabold'}`}>{row.name}</td>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-extrabold`}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-extrabold`}>
                                                         <div style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-500 font-bold`}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums text-slate-500 font-bold`}>
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion, hasTarget) }}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion, hasTarget) }}>
                                                         <div>{hasTarget ? `${roundUp(row.calculatedCompletion)}%` : '—'}</div>
                                                         <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
                                                     </td>
                                                     {isShowRemaining && (
                                                         <>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
+                                                            <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                                                             </td>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-amber-700 dark:text-amber-400 font-bold`}>
+                                                            <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums bg-amber-50/10 dark:bg-amber-950/5 text-amber-700 dark:text-amber-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
                                                             </td>
                                                         </>
                                                     )}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`}>
                                                         <div style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
                                                         <div>{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                         <div>{roundUp(row.pctBillBk)}%</div>
                                                         <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                    <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums font-bold`}>
                                                         <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
                                                     </td>
                                                 </tr>
