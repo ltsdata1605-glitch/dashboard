@@ -461,83 +461,87 @@ retention/chunk theo giới hạn 1MiB Firestore), và `functions/src/admin.ts`
 claim `departmentId`). Thiết kế bên dưới **nhân bản gần như nguyên trạng pattern này**
 cho "siêu thị" thay vì tự nghĩ ra kiến trúc mới — giảm rủi ro, giảm thời gian thiết kế.
 
-### Kiến trúc đề xuất
+### Quyết định cuối (2026-08-31, vòng hỏi thứ 2) — ĐƠN GIẢN HOÁ đáng kể so với bản nháp đầu
+4. **1 Kho = 1 Siêu thị, luôn khớp nhau** trong thực tế công ty user → **KHÔNG cần custom
+   claim mới `allowedSupermarkets`, KHÔNG cần hệ thống mã riêng cho Report BI**. Dùng lại
+   NGUYÊN VẸN `departmentId`/`myKhos()` đã có sẵn (đang gate module Phân Tích) làm cơ chế
+   phân quyền chung cho CẢ Report BI. Việc này đúng tinh thần CLAUDE.md mục 1.1 (không đổi
+   ý nghĩa field `departmentId`) vì đây vẫn là cùng 1 field, chỉ SỬ DỤNG LẠI giá trị claim
+   đã có ở tầng Auth token — không phải import code TypeScript giữa 2 zone (không vi phạm
+   quy tắc cách ly 4 khu vực, vốn cấm cross-import code, không cấm đọc chung 1 claim JWT).
+5. Admin tạo danh sách mã siêu thị cố định trước, map "tên trong báo cáo dán" → mã — nay
+   cụ thể hoá thành: map "tên trong báo cáo Report BI" → **đúng Mã Kho đã tồn tại sẵn**
+   (không phải mã mới), nhiều khả năng admin đã thuộc/có sẵn danh sách này từ trước.
+6. Đồng ý đổi luồng: chỉ manager/admin được dán dữ liệu dùng chung, nhân viên chỉ đọc.
+7. Phạm vi: làm xong ở Report BI trước, kiểm chứng ổn định, MỚI áp dụng tương tự sang
+   Phân Tích sau (không làm 2 module song song). Vì Phân Tích vốn đã dùng `departmentId`/
+   `myKhos()` từ trước, "áp dụng sang Phân Tích" gần như không cần việc gì thêm ở đó — chủ
+   yếu là việc ở Report BI.
+8. Ngoại lệ cách ly: đồng ý thêm `services/firebase.ts` làm ngoại lệ dùng chung thứ 3
+   (cạnh `components/shared/ui/*` và `utils/dataUtils.ts`).
 
-**1. Custom claim mới `allowedSupermarkets`** (chuỗi các mã siêu thị nối dấu phẩy, giống
-hệt cách `departmentId` đang lưu nhiều mã Kho) — set qua `resolveSession`/`adminUpdateUser`
-mở rộng (functions/src/*.ts), mirror đúng cách `departmentId` đang làm. **KHÔNG dùng
-chung field `departmentId`** — "Kho" và "Siêu thị" là 2 khái niệm khác nhau theo đúng
-CLAUDE.md mục 1.1, không được lẫn.
+### Kiến trúc đề xuất (bản đã chốt)
 
-**2. Firestore collection mới `biData/{maSieuThi}/{reportType}/…`**, rule mirror
-`myKhos()`:
+**1. KHÔNG cần Cloud Function mới cho việc set claim** — `departmentId` đã được set sẵn
+qua `resolveSession`/`adminUpdateUser` hiện có. Chỉ cần đảm bảo admin gán đúng Mã Kho cho
+từng nhân viên Report BI (UI đã có sẵn ở `UserManagementView.tsx`).
+
+**2. Bảng map "tên siêu thị trong báo cáo" → "Mã Kho"** — dữ liệu nhỏ, ít thay đổi, admin
+tự khai báo. Đề xuất lưu ở Firestore `shared_configs/{id}` (collection đã có sẵn, rule đã
+cho phép `isManager()` ghi/`isSignedIn()` đọc — xem `firestore.rules` dòng 60-63, KHÔNG
+cần thêm rule mới cho riêng việc này) hoặc 1 doc con mới `shared_configs/bi-supermarket-map`.
+Cấu trúc: `{ "ĐM_TEST - 99 Test Street": "58614", ... }`.
+
+**3. Firestore collection mới `biData/{maKho}/{reportType}/…`** (tái dùng đúng path
+`maKho` — không phải `maSieuThi` — để rule mirror thẳng `khoData` không cần hàm mới):
 ```
-function mySupermarkets() {
-  return isSignedIn() && request.auth.token.allowedSupermarkets is string
-    ? request.auth.token.allowedSupermarkets.replace('\\s+', '').split(',')
-    : [];
-}
-match /biData/{maSieuThi} {
+match /biData/{maKho} {
   match /{document=**} {
-    allow read:  if isSignedIn() && maSieuThi in mySupermarkets();
-    allow write: if isSignedIn() && isManager() && maSieuThi in mySupermarkets();
+    allow read:  if isSignedIn() && maKho in myKhos();
+    allow write: if isSignedIn() && isManager() && maKho in myKhos();
   }
 }
 ```
+(`myKhos()` dùng lại y nguyên hàm đã có ở dòng 16-20 `firestore.rules` — không viết hàm mới.)
 
-**3. Service client mới** `features/bi-dashboard/services/biDataService.ts` (đặt TRONG
-bi-dashboard, không phải root — giữ đúng cách ly 4 khu vực), mirror `khoDataService.ts`:
-- `uploadBiDataIfManager()` — khi manager/admin dán báo cáo, PARSE trước bằng
-  `parseCompetitionDataBySupermarket()`/`extractSupermarketList()` đã có sẵn (tách 1 lần
-  dán thành nhiều siêu thị), rồi ghi riêng từng siêu thị lên `biData/{maSieuThi}/…` —
-  mirror đúng cách `syncDataToKhoIfManager()` tách `DataRow[]` theo "Mã kho tạo".
-- `fetchAllowedBiData()` — tải + gộp dữ liệu từ mọi `maSieuThi` trong claim
-  `allowedSupermarkets`, có cache cục bộ theo từng siêu thị (mirror
-  `fetchAllowedKhoData()`/`fetchKhoDataCached()`).
+**4. Service client mới** `features/bi-dashboard/services/biDataService.ts` (trong
+bi-dashboard, giữ cách ly code — chỉ dùng chung CLAIM qua Auth token, không import code
+root), mirror `khoDataService.ts`:
+- `uploadBiDataIfManager()` — manager/admin dán báo cáo → parse bằng
+  `parseCompetitionDataBySupermarket()`/`extractSupermarketList()` có sẵn → map tên siêu
+  thị sang Mã Kho qua bảng ở mục 2 → ghi từng phần lên `biData/{maKho}/{reportType}`.
+- `fetchAllowedBiData()` — đọc + gộp dữ liệu từ mọi `maKho` trong claim `departmentId`
+  của user hiện tại (đã có sẵn qua `useAuth()`/`AuthContext`, KHÔNG cần đọc `allowedSupermarkets`
+  nào khác), cache cục bộ theo từng Kho (mirror `fetchAllowedKhoData()`).
+- Tên siêu thị hiển thị trong UI vẫn dùng chuỗi gốc/rút gọn như hiện tại (không đổi UX
+  hiển thị) — chỉ tầng LƯU TRỮ/PHÂN QUYỀN chuyển sang khoá theo Mã Kho.
 
-### ❓ 3 điểm CẦN USER QUYẾT ĐỊNH trước khi viết code thật (chưa có câu trả lời)
+**5. Phạm vi dữ liệu đợt đầu**: Thi đua Luỹ kế + Summary Luỹ kế (đã có sẵn hàm parse theo
+từng siêu thị, rủi ro thấp nhất, dùng làm mẫu) — các loại dữ liệu Report BI còn lại (cấu
+hình từng siêu thị, Auto Bonus, Trả góp, Bán kèm…) VẪN GIỮ NGUYÊN mô hình riêng tư theo
+uid như hiện tại cho tới khi có yêu cầu mở rộng tiếp, KHÔNG đổi trong đợt này.
 
-1. **"Mã siêu thị" lấy từ đâu, có ổn định không?** — Khác "Mã Kho" (mã nghiệp vụ cố định,
-   luôn có sẵn trong dữ liệu gốc), Report BI hiện KHÔNG có mã siêu thị chính thức — tên
-   siêu thị chỉ là chuỗi tự do trong báo cáo dán vào, được rút gọn qua
-   `shortenSupermarketName()` (VD "ĐM_TEST - 99 Test Street" → "Test Street"). Nếu 2 lần
-   dán có cách viết tên hơi khác nhau, `maSieuThi` suy ra có thể LỆCH, khiến quyền truy
-   cập gán nhầm hoặc dữ liệu bị tách thành 2 "siêu thị" khác nhau dù thực ra là 1. Cần
-   quyết định: (a) admin tự tạo danh sách mã siêu thị cố định trước (giống Mã Kho), rồi
-   map tên báo cáo → mã đó, hay (b) chấp nhận rủi ro lệch tên và xử lý bằng cách chuẩn
-   hoá chuỗi chặt hơn?
-2. **Đổi luồng "ai được dán dữ liệu"** — theo kiến trúc trên, CHỈ manager/admin được dán
-   dữ liệu dùng chung; nhân viên thường chuyển sang CHỈ ĐỌC. Hiện tại mọi người có thể tự
-   dán. User có đồng ý đổi luồng này không, hay muốn nhân viên vẫn được tự dán dữ liệu của
-   riêng siêu thị mình (phức tạp hơn — cần thêm quyền "dán nhưng chỉ dán cho đúng siêu thị
-   được cấp")?
-3. **Phạm vi migrate đợt đầu** — Report BI có ~15 loại dữ liệu khác nhau (Summary RT/LK,
-   Thi đua RT/LK, cấu hình mỗi siêu thị, Auto Bonus…). Đề xuất bắt đầu với **Thi đua Luỹ
-   kế + Summary Luỹ kế** trước (2 loại dữ liệu cốt lõi nhất, đã có sẵn hàm parse theo
-   từng siêu thị) thay vì chuyển hết 1 lần — các loại còn lại vẫn giữ nguyên riêng tư
-   theo uid cho tới khi có yêu cầu mở rộng tiếp. User có đồng ý phạm vi thu hẹp này không?
+### Việc còn cần làm rõ trước khi code (nhỏ, không chặn hẳn — có thể vừa làm vừa hỏi)
+- UI cho admin quản lý bảng map "tên báo cáo → Mã Kho" (mục 2) — thêm màn hình nhỏ ở đâu
+  (trong `UserManagementView.tsx`, hay trang cấu hình riêng)?
+- Khi 1 tên trong báo cáo dán vào KHÔNG có trong bảng map (siêu thị mới/tên viết khác) —
+  hành vi mong muốn: chặn hẳn không cho dán, hay dán được nhưng cảnh báo "chưa gán Mã
+  Kho, tạm ẩn với nhân viên khác cho tới khi admin map"?
 
-### ❓ 1 điểm kỹ thuật CẦN NGOẠI LỆ QUY TẮC CÁCH LY (CLAUDE.md mục 1)
-`features/bi-dashboard/` từ trước tới nay **chưa từng gọi Firestore SDK trực tiếp**
-(100% qua IndexedDB cục bộ + đồng bộ ngầm qua cơ chế `bi_` prefix ở root). Để đọc/ghi
-`biData/{maSieuThi}` theo thời gian thực, bi-dashboard cần truy cập instance `db`/`auth`
-của Firebase — nhưng file khởi tạo (`services/firebase.ts`) nằm trong `services/` ở
-root, mà CLAUDE.md mục 1 CẤM `features/*` import `services/*` ở gốc. Cần user xác nhận
-1 trong 2 hướng: (a) thêm `services/firebase.ts` làm ngoại lệ dùng chung thứ 3 (cạnh
-`components/shared/ui/*` và `utils/dataUtils.ts`), hay (b) mọi thao tác `biData` đi qua
-Cloud Function callable (an toàn hơn về mặt cách ly nhưng chậm hơn cho việc đọc dữ liệu
-lớn thường xuyên).
+### Ước lượng khối lượng (đã đơn giản hoá — không cần Cloud Function/claim mới)
+- Firestore Rules: thêm block `biData` (mirror `khoData`, tái dùng `myKhos()`) — rất nhỏ
+  (~0.25 ngày).
+- Bảng map tên→Mã Kho + UI quản lý cho admin — nhỏ (~0.5-1 ngày).
+- `biDataService.ts` mới + tích hợp vào Thi đua Luỹ kế/Summary Luỹ kế (DataUpdater.tsx
+  paste flow đổi luồng dán cho manager/admin, useDashboardLogic.ts đọc dữ liệu qua
+  `fetchAllowedBiData()` thay vì IndexedDB riêng tư) — trung bình, có mẫu `khoDataService.ts`
+  để theo sát (~1.5-2 ngày kể cả test kỹ vì đụng luồng dữ liệu cốt lõi).
+- Thêm `services/firebase.ts` vào danh sách ngoại lệ dùng chung — rất nhỏ, chỉ cập nhật
+  CLAUDE.md mục 1 (~0.1 ngày).
+- **Tổng ước lượng đợt đầu: ~2.5-3.5 ngày làm việc** (giảm gần 1 nửa so với ước lượng ban
+  đầu 4-5 ngày, nhờ dùng lại `departmentId`/`myKhos()` có sẵn thay vì dựng hệ thống mã +
+  claim song song).
 
-### Ước lượng khối lượng (khi đã chốt đủ 3+1 điểm trên)
-- Cloud Functions: mở rộng `adminUpdateUser` + rule mới — nhỏ, theo mẫu có sẵn (~0.5 ngày).
-- Firestore Rules: thêm block `biData` — nhỏ (~0.5 ngày).
-- `biDataService.ts` mới + tích hợp vào 2 loại dữ liệu đợt đầu (DataUpdater.tsx paste
-  flow, useDashboardLogic.ts đọc dữ liệu) — trung bình, có mẫu để theo (~2-3 ngày kể cả
-  test kỹ vì đụng luồng dữ liệu cốt lõi).
-- UI quản lý cấp quyền theo siêu thị cho admin (thêm vào UserManagementView.tsx hoặc màn
-  hình riêng) — nhỏ-trung bình (~1 ngày).
-- Tổng ước lượng đợt đầu (2 loại dữ liệu): **~4-5 ngày làm việc**, CHƯA tính các loại dữ
-  liệu còn lại nếu mở rộng tiếp.
-
-**Trạng thái: đang chờ user trả lời 3 câu hỏi nghiệp vụ + 1 câu hỏi kỹ thuật ở trên.
-Chưa viết bất kỳ dòng code Cloud Functions/Firestore Rules/client nào.**
+**Trạng thái: thiết kế đã chốt đủ 8 điểm nghiệp vụ/kỹ thuật ở trên. Sẵn sàng bắt tay code
+khi user xác nhận bắt đầu — vẫn còn 2 chi tiết nhỏ (UI quản lý bảng map, hành vi khi tên
+chưa được map) có thể quyết định luôn lúc bắt đầu code thay vì hỏi thêm 1 vòng riêng.**
