@@ -15,17 +15,58 @@ import {
     parseCompetitionDataBySupermarket
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
+import { useReportBiAuth } from './useReportBiAuth';
+import { fetchAllowedSummaryLuyKeText, fetchAllowedCompetitionLuyKeData } from '../services/biDataService';
+import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 
 export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
     const [activeMainTab, setActiveMainTab] = useIndexedDBState<MainTab>('dashboard-main-tab', 'realtime');
     const [activeSubTab, setActiveSubTab] = useIndexedDBState<SubTab>('dashboard-sub-tab', 'revenue');
     const [activeSupermarket, setActiveSupermarket] = useIndexedDBState<string>('dashboard-active-supermarket', 'Tổng');
-    
+
     const [summaryRealtime] = useIndexedDBState('summary-realtime', '');
-    const [summaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
+    const [localSummaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
     const [competitionRealtime] = useIndexedDBState('competition-realtime', '');
-    const [competitionLuyKe] = useIndexedDBState('competition-luy-ke', '');
+    const [localCompetitionLuyKe] = useIndexedDBState('competition-luy-ke', '');
+
+    // Đợt 4 (implementation_plan.md) — phân quyền theo siêu thị: dữ liệu Luỹ kế DÙNG CHUNG
+    // trong biData/{maKho}, đọc theo đúng Mã Kho user được cấp quyền (departmentId/myKhos()).
+    // Nhân viên không có quyền dán (canManageSharedBiData=false) sẽ có localSummaryLuyKe/
+    // localCompetitionLuyKe rỗng — 2 biến "shared*" dưới đây lấp đầy chỗ trống đó. Quản lý vẫn
+    // ưu tiên dữ liệu vừa dán tại chỗ (không đợi round-trip Firestore), shared chỉ bổ sung
+    // phần họ CHƯA dán trên thiết bị này.
+    const { allowedKhos } = useReportBiAuth();
+    const [sharedSummaryLuyKeText, setSharedSummaryLuyKeText] = useState('');
+    const [sharedCompetitionLuyKeBySupermarket, setSharedCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
+    useEffect(() => {
+        if (isActive === false || allowedKhos.length === 0) return;
+        let isMounted = true;
+        (async () => {
+            try {
+                const [text, competitionByKho, nameToKho] = await Promise.all([
+                    fetchAllowedSummaryLuyKeText(allowedKhos),
+                    fetchAllowedCompetitionLuyKeData(allowedKhos),
+                    fetchSupermarketMap(),
+                ]);
+                if (!isMounted) return;
+                setSharedSummaryLuyKeText(text);
+                const khoToName: Record<string, string> = {};
+                Object.entries(nameToKho).forEach(([name, maKho]) => { khoToName[maKho] = name; });
+                const bySupermarketName: Record<string, SupermarketCompetitionData> = {};
+                Object.entries(competitionByKho).forEach(([maKho, data]) => {
+                    bySupermarketName[khoToName[maKho] || maKho] = data;
+                });
+                setSharedCompetitionLuyKeBySupermarket(bySupermarketName);
+            } catch (err) {
+                console.error('[useDashboardLogic] Lỗi tải dữ liệu BI dùng chung theo siêu thị:', err);
+            }
+        })();
+        return () => { isMounted = false; };
+    }, [allowedKhos.join(','), isActive]);
+
+    const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;
+    const competitionLuyKe = localCompetitionLuyKe;
     const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
@@ -72,15 +113,22 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, [competitionRealtime, isActive]);
 
-    const [competitionLuyKeBySupermarket, setCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
+    const [localCompetitionLuyKeBySupermarket, setLocalCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
         if (!competitionLuyKe || isActive === false) return;
         let isMounted = true;
         runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionLuyKe).then(res => {
-            if (isMounted && res) setCompetitionLuyKeBySupermarket(res);
+            if (isMounted && res) setLocalCompetitionLuyKeBySupermarket(res);
         }).catch(err => console.error('[useDashboardLogic] Lỗi parse thi đua luỹ kế:', err));
         return () => { isMounted = false; };
     }, [competitionLuyKe, isActive]);
+
+    // Gộp theo tên siêu thị: shared trước, local đè lên (local luôn mới nhất trên thiết bị
+    // đang dán) — bù đúng phần siêu thị nhân viên/quản lý CHƯA dán trên thiết bị này.
+    const competitionLuyKeBySupermarket = useMemo(
+        () => ({ ...sharedCompetitionLuyKeBySupermarket, ...localCompetitionLuyKeBySupermarket }),
+        [sharedCompetitionLuyKeBySupermarket, localCompetitionLuyKeBySupermarket]
+    );
 
     const [industryRealtimeParsed, setIndustryRealtimeParsed] = useState<ReturnType<typeof parseIndustryRealtimeData> | null>(null);
     const [industryLuyKeParsed, setIndustryLuyKeParsed] = useState<ReturnType<typeof parseIndustryLuyKeData> | null>(null);
@@ -171,6 +219,22 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const newAugmentedData = structuredClone(competitionRealtimeBySupermarket);
             const programTotalTargets: Record<string, number> = {};
 
+            const getBaseTarget = (smName: string, progName: string) => {
+                if (baseTargets[smName]?.[progName] !== undefined) return baseTargets[smName][progName];
+                const safeSm = shortenSupermarketName(smName);
+                for (const key in baseTargets) {
+                    if (shortenSupermarketName(key) === safeSm || key === smName) {
+                        const normProg = progName.trim().toLowerCase();
+                        for (const pKey in baseTargets[key]) {
+                            if (pKey.trim().toLowerCase() === normProg) {
+                                return baseTargets[key][pKey];
+                            }
+                        }
+                    }
+                }
+                return 0;
+            };
+
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
             const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
@@ -193,7 +257,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
                     while (program.data.length < originalHeaderCount) program.data.push('');
                     program.data.length = originalHeaderCount;
                     const dtRealtime = parseNumber(program.data[0]);
-                    const baseTarget = baseTargets[supermarketName]?.[program.name] ?? 0;
+                    const baseTarget = getBaseTarget(supermarketName, program.name);
                     const adjustmentPercent = adjustments[program.name] ?? 100;
                     const adjustedMonthTarget = baseTarget * (adjustmentPercent / 100);
                     const targetVT = adjustedMonthTarget > 0 ? adjustedMonthTarget / daysInMonth : 0;
@@ -240,6 +304,22 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const newAugmentedData = structuredClone(competitionLuyKeBySupermarket);
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
 
+            const getBaseTarget = (smName: string, progName: string) => {
+                if (baseTargets[smName]?.[progName] !== undefined) return baseTargets[smName][progName];
+                const safeSm = shortenSupermarketName(smName);
+                for (const key in baseTargets) {
+                    if (shortenSupermarketName(key) === safeSm || key === smName) {
+                        const normProg = progName.trim().toLowerCase();
+                        for (const pKey in baseTargets[key]) {
+                            if (pKey.trim().toLowerCase() === normProg) {
+                                return baseTargets[key][pKey];
+                            }
+                        }
+                    }
+                }
+                return 0;
+            };
+
             const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
             const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
@@ -260,10 +340,13 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 if (headersToAdd.length > 0) supermarketData.headers.push(...headersToAdd);
                 for (const program of supermarketData.programs) {
                     program.data.length = originalHeaderCount;
-                    const baseTarget = baseTargets[supermarketName]?.[program.name] ?? 0;
+                    const baseTarget = getBaseTarget(supermarketName, program.name);
                     const adjustmentPercent = adjustments[program.name] ?? 100;
                     const targetVT = baseTarget * (adjustmentPercent / 100);
-                    const luyKeIndex = supermarketData.headers.slice(0, originalHeaderCount).findIndex((h: string) => h === 'DTLK' || h === 'DTQĐ' || h === 'SLLK');
+                    const luyKeIndex = supermarketData.headers.slice(0, originalHeaderCount).findIndex((h: string) => {
+                        const clean = h.toUpperCase();
+                        return clean === 'DTLK' || clean === 'DTQĐ' || clean === 'SLLK' || clean === 'DOANH THU' || clean === 'SỐ LƯỢNG' || clean === 'L.KẾ';
+                    });
                     const luyKeValue = luyKeIndex !== -1 ? parseNumber(program.data[luyKeIndex]) : 0;
                     let htdkVT = 0;
                     if (daysPassed > 0 && targetVT > 0) {

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
 import SupermarketConfig from './SupermarketConfig';
+import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
@@ -12,6 +13,9 @@ import { logAuditEvent } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
+import { useReportBiAuth } from '../hooks/useReportBiAuth';
+import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
+import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -70,7 +74,9 @@ const StatusTile: React.FC<{
     downloadUrl?: string;
     icon?: React.ReactNode;
     colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo' | 'slate';
-}> = ({ title, lastUpdated, value, onChange, onClear, error, downloadUrl, icon, colorTheme = 'sky' }) => {
+    readOnly?: boolean;
+    readOnlyHint?: string;
+}> = ({ title, lastUpdated, value, onChange, onClear, error, downloadUrl, icon, colorTheme = 'sky', readOnly = false, readOnlyHint }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
 
@@ -117,13 +123,14 @@ const StatusTile: React.FC<{
 
     return (
         <div className="relative group w-full">
-            <div 
-                onClick={() => !isPasting && setIsPasting(true)}
+            <div
+                onClick={() => !isPasting && !readOnly && setIsPasting(true)}
                 className={`
-                    cursor-pointer min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden group/tile border hover:scale-[1.01] active:scale-[0.99] shadow-sm
-                    ${isPasting 
+                    min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden group/tile border hover:scale-[1.01] active:scale-[0.99] shadow-sm
+                    ${readOnly ? 'cursor-default' : 'cursor-pointer'}
+                    ${isPasting
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
-                        : hasData 
+                        : hasData
                             ? currentTheme.wrapper
                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}
                 `}
@@ -158,7 +165,9 @@ const StatusTile: React.FC<{
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate">Click để cập nhật</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate">
+                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để cập nhật'}
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -169,28 +178,30 @@ const StatusTile: React.FC<{
             {hasData && !isPasting && (
                 <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1 z-10 cursor-default">
                     {downloadUrl && (
-                         <a 
-                            href={downloadUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            onClick={(e) => e.stopPropagation()} 
+                         <a
+                            href={downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
                             className={`p-1.5 rounded-lg transition-colors border shadow-sm bg-white dark:bg-slate-800 ${currentTheme.text} hover:bg-sky-100 hover:text-sky-600 hover:border-sky-300 dark:hover:bg-sky-900/40 dark:hover:text-sky-300 border-white/50`}
                             title="Tải báo cáo gốc"
                         >
                             <LinkIcon className="h-3.5 w-3.5" />
                         </a>
                     )}
-                     <Button
-                        variant="unstyled" size="none"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onClear(title);
-                        }}
-                        title="Xoá dữ liệu"
-                        className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
-                    >
-                        <TrashIcon className="h-3.5 w-3.5" />
-                    </Button>
+                    {!readOnly && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClear(title);
+                            }}
+                            title="Xoá dữ liệu"
+                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
+                        >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
                 </div>
             )}
             {error && (
@@ -216,6 +227,22 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
     const [, setLastUpdates] = useIndexedDBState<Update[]>('last-updates-list', []);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
+
+    // Đợt 4 (implementation_plan.md) — phân quyền theo siêu thị: chỉ manager/admin được dán
+    // Luỹ kế (Báo cáo Tổng hợp + Thi đua Cụm), dữ liệu sẽ ghi thêm lên biData/{maKho} dùng
+    // chung. Nhân viên (readOnly=true) chỉ xem, 2 ô này bị khoá thao tác dán ở component
+    // StatusTile phía trên.
+    const { user, userRole, allowedKhos, canManageSharedBiData, employeeName, isAdmin } = useReportBiAuth();
+    const isReadOnlySharedTile = !(userRole === 'admin' || userRole === 'manager');
+    const [supermarketNameToKho, setSupermarketNameToKho] = useState<Record<string, string>>({});
+    useEffect(() => {
+        fetchSupermarketMap().then(setSupermarketNameToKho).catch(err => console.error('[DataUpdater] Lỗi tải bảng map siêu thị:', err));
+    }, []);
+
+    const notifySkippedNames = (skippedNames: string[]) => {
+        if (skippedNames.length === 0) return;
+        toast(`Chưa cấu hình Mã Kho cho: ${skippedNames.join(', ')} — dữ liệu các siêu thị này CHƯA được chia sẻ.`, { icon: '⚠️', duration: 8000 });
+    };
 
     const addUpdate = (id: string, message: string, category: UpdateCategory) => {
         const timestamp = getDetailedTimestamp();
@@ -299,6 +326,12 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 </div>
             </div>
 
+            {isAdmin && (
+                <div className="relative z-10">
+                    <BiSupermarketMapAdmin />
+                </div>
+            )}
+
             <div className="relative z-10">
                 <Card title="Dữ Liệu Báo Cáo Cụm" icon="upload-cloud">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -341,12 +374,19 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
                                     icon={<ChartPieIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
+                                    readOnly={isReadOnlySharedTile}
+                                    readOnlyHint="Nhân viên chỉ xem — quản lý/admin cập nhật dữ liệu này"
                                     onChange={(val) => {
                                         if (validateSummaryLuyKeReport(val)) {
                                             setErrors(p => ({...p, summaryLuyKe: null}));
                                             setSummaryLuyKe(val);
                                             setSummaryLuyKeTs(getDetailedTimestamp());
                                             addUpdate('summary-luy-ke', 'Luỹ kế tháng', 'BC Tổng hợp');
+                                            if (canManageSharedBiData && user) {
+                                                uploadSummaryLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)
+                                                    .then(({ skippedNames }) => notifySkippedNames(skippedNames))
+                                                    .catch(err => { console.error('[DataUpdater] Lỗi chia sẻ Summary Luỹ kế:', err); toast.error('Dán thành công cục bộ nhưng lỗi khi chia sẻ lên Kho — thử dán lại.'); });
+                                            }
                                         } else setErrors(p => ({...p, summaryLuyKe: 'Sai định dạng báo cáo Luỹ kế.'}));
                                     }}
                                     onClear={(title) => {
@@ -400,6 +440,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     downloadUrl="https://baocao.dienmayxanh.com/dashboard/thi-dua"
                                     icon={<ChartBarIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
+                                    readOnly={isReadOnlySharedTile}
+                                    readOnlyHint="Nhân viên chỉ xem — quản lý/admin cập nhật dữ liệu này"
                                     onChange={(val) => {
                                         if (validateCompetitionLuyKeReport(val)) {
                                             setErrors(p => ({...p, competitionLuyKe: null}));
@@ -408,6 +450,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
                                             archiveCompetitionLuyKeSnapshot(val).catch(err => console.error('Lỗi lưu lịch sử Thi đua', err));
                                             if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
+                                            if (canManageSharedBiData && user) {
+                                                uploadCompetitionLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)
+                                                    .then(({ skippedNames }) => notifySkippedNames(skippedNames))
+                                                    .catch(err => { console.error('[DataUpdater] Lỗi chia sẻ Thi đua Luỹ kế:', err); toast.error('Dán thành công cục bộ nhưng lỗi khi chia sẻ lên Kho — thử dán lại.'); });
+                                            }
                                         } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
                                     }}
                                     onClear={(title) => {

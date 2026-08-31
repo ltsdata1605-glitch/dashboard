@@ -8,7 +8,7 @@
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const useReportBiAuth = () => {
-    const { user, userRole, departmentId } = useAuth();
+    const { user, userRole, departmentId, employeeName } = useAuth();
 
     const allowedKhos = (departmentId || '')
         .split(',')
@@ -23,5 +23,5 @@ export const useReportBiAuth = () => {
     const canManageSharedBiData = (userRole === 'admin' || userRole === 'manager') && allowedKhos.length > 0;
     const isAdmin = userRole === 'admin';
 
-    return { user, userRole, departmentId, allowedKhos, canManageSharedBiData, isAdmin };
+    return { user, userRole, departmentId, employeeName, allowedKhos, canManageSharedBiData, isAdmin };
 };
