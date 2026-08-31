@@ -64,9 +64,10 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
         <tr
             className={`${style.bg} ${style.border || ''} border-b border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`}
         >
-            {/* Name column */}
-            <td 
-                className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit ${hasChildren ? 'cursor-pointer' : ''}`}
+            {/* Name column — sticky nên giữ shadow bên phải thay cho border-r để báo hiệu ranh
+                giới khi nội dung cuộn bên dưới (bỏ hẳn border sẽ làm chữ đè lên nhau khi cuộn) */}
+            <td
+                className={`py-1.5 pr-3 pl-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap sticky left-0 z-10 bg-inherit shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)] ${hasChildren ? 'cursor-pointer' : ''}`}
                 onClick={() => hasChildren && toggleExpand(rowKey)}
             >
                 <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
@@ -96,22 +97,22 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                 </div>
             </td>
             {/* Số lượng */}
-            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+            <td className={`px-3 py-1.5 text-right ${style.size} tabular-nums text-slate-600 dark:text-slate-400`}>
                 {fInt.format(node.soLuong)}
             </td>
             {/* DTLK */}
-            <td className={`px-2 py-1.5 text-right ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+            <td className={`px-3 py-1.5 text-right ${style.size} ${style.font} tabular-nums text-slate-600 dark:text-slate-400`}>
                 <div>{f.format(node.dtlk)}</div>
                 {prevData && <DeltaBadge current={node.dtlk} previous={prevData.dtlk} isCurrency />}
             </td>
             {/* DTQD */}
-            <td className={`px-2 py-1.5 text-right ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
+            <td className={`px-3 py-1.5 text-right ${style.size} font-bold tabular-nums text-sky-700 dark:text-sky-400`}>
                 <div>{f.format(node.dtqd)}</div>
                 {prevData && <DeltaBadge current={node.dtqd} previous={prevData.dtqd} isCurrency />}
             </td>
             {/* Hiệu quả QĐ */}
-            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+            <td className={`px-3 py-1.5 text-right ${style.size} tabular-nums`}>
+                <span className={`inline-flex min-w-[42px] items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                             : 'text-slate-400 dark:text-slate-500'
                     }`}>
@@ -119,7 +120,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                 </span>
             </td>
             {/* Đơn giá */}
-            <td className={`px-2 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
+            <td className={`px-3 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
                 {f.format(node.donGia)}
             </td>
         </tr>
@@ -641,22 +642,22 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             <table className="w-full border-collapse min-w-[700px]">
                                 <thead className="sticky top-0 z-20">
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
-                                        <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
+                                        <th className="px-3 py-2.5 text-left bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-b border-slate-300 dark:border-slate-700 sticky left-0 z-30 min-w-[260px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)]">
                                             Danh mục
                                         </th>
-                                        <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-amber-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
+                                        <th className="px-3 py-2.5 text-right bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 border-b border-slate-300 dark:border-slate-700 min-w-[70px]">
                                             SL
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-sky-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-3 py-2.5 text-right bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 border-b border-slate-300 dark:border-slate-700 min-w-[90px]">
                                             DTLK
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-sky-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-3 py-2.5 text-right bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 border-b border-slate-300 dark:border-slate-700 min-w-[90px]">
                                             DTQĐ
                                         </th>
-                                        <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-emerald-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
+                                        <th className="px-3 py-2.5 text-right bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 border-b border-slate-300 dark:border-slate-700 min-w-[80px]">
                                             HQ QĐ
                                         </th>
-                                        <th className="px-2 py-3 text-right bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-amber-400 dark:border-b-slate-600 min-w-[80px]">
+                                        <th className="px-3 py-2.5 text-right bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 border-b border-slate-300 dark:border-slate-700 min-w-[80px]">
                                             Đơn giá
                                         </th>
                                     </tr>
