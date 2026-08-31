@@ -5,12 +5,13 @@ import { SupermarketCompetitionData, Criterion, shortenName, parseNumber } from 
 import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
-import { CogIcon, FilterIcon, ClockIcon } from '../Icons';
+import { CogIcon, FilterIcon, ClockIcon, ChartBarIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { getCompetitionHistory, getLocalDateKey, CompetitionHistorySnapshot } from '../../utils/competitionHistory';
+import { CompetitionTrendChart } from './competition/CompetitionTrendChart';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
@@ -50,6 +51,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [historySnapshots, setHistorySnapshots] = useState<CompetitionHistorySnapshot[]>([]);
     const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isTrendOpen, setIsTrendOpen] = useState(false);
     const historyRef = useRef<HTMLDivElement>(null);
     const todayKey = getLocalDateKey();
 
@@ -291,6 +293,19 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                             )}
                         </div>
                     )}
+                    {/* Xu hướng theo thời gian — tái dùng chính dữ liệu historySnapshots ở trên,
+                        chỉ áp dụng cho tab Luỹ kế (giống nút Lịch sử) */}
+                    {!isRealtime && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsTrendOpen(p => !p)}
+                            className={`h-7 w-7 ${isTrendOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            title="Xem xu hướng theo thời gian"
+                        >
+                            <ChartBarIcon className="h-4 w-4" />
+                        </Button>
+                    )}
                     {/* Program filter — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
                         style với các bộ lọc khác trong dự án (VD "Lọc nhóm" ở Tab Nhân viên > Thi đua) */}
                     <MultiSelectDropdown
@@ -353,6 +368,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     </div>
                 );
             })()}
+            {isTrendOpen && !isRealtime && (
+                <div className="mx-4 mt-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    <CompetitionTrendChart
+                        historySnapshots={historySnapshots}
+                        todayData={data[activeSupermarket]}
+                        todayKey={todayKey}
+                        programNames={validSelectedPrograms.length > 0 ? validSelectedPrograms : allProgramNames.slice(0, 3)}
+                    />
+                </div>
+            )}
             {/* Scrollable table content */}
             <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className={`px-4 pb-4 pt-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>
