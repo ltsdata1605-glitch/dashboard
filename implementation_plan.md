@@ -270,5 +270,141 @@ nhất, phần còn lại chọn "chỉ ghi nhận vào kế hoạch, chưa làm
 **Nâng cấp giao diện bảng**: đã dựng artifact so sánh 3 hướng thiết kế (Hiện tại /
 Enterprise Tinh Gọn / SaaS Hiện Đại) dùng đúng cấu trúc cột + dữ liệu mẫu thực tế của
 `RevenueTab`, tôn trọng palette/font hiện tại của app — gửi link cho user để chọn hướng.
-⏸️ **CHƯA TRIỂN KHAI VÀO CODE THẬT** — user chưa phản hồi chọn hướng nào; không tự ý áp
-dụng redesign khi chưa có lựa chọn.
+✅ User đã chọn hướng **Enterprise Tinh Gọn** — xem chi tiết triển khai ở "Đợt 3" bên dưới.
+
+## Đợt 3 — Triển khai toàn bộ hạng mục còn treo của Đợt 2 (2026-08-31)
+
+User yêu cầu "thực hiện các công việc còn treo chưa làm". Trước khi code, chạy 4 agent
+khảo sát song song (đọc code thật hiện tại, KHÔNG dựa vào nhãn ngắn cũ) để có kế hoạch
+chính xác, sau đó hỏi lại 4 quyết định thật sự cần user (AskUserQuestion) trước khi bắt
+tay code. Kết quả khảo sát quan trọng cần nhớ nếu quay lại dở dang:
+
+- **Phân quyền theo siêu thị**: KHÔNG có nền móng nào sẵn có (không field user, không
+  collection Firestore/`khoData`-tương-đương, không mapping user↔siêu thị). Report BI
+  dùng chung 100% Auth/Firestore project với root nhưng dữ liệu riêng tư tuyệt đối theo
+  từng UID — không có khái niệm "nhiều người cùng xem 1 bộ dữ liệu bị giới hạn theo siêu
+  thị" như hiện tại. Muốn làm bảo mật thật phải sửa Cloud Functions + Firestore Rules +
+  dựng lại tầng lưu trữ dữ liệu dùng chung (kiến trúc mới, nhiều ngày). User chọn **tách
+  thành yêu cầu riêng sau, KHÔNG làm trong đợt này** — cần chốt mô hình nghiệp vụ thật
+  (1 tài khoản dùng chung nhiều nhân viên hay mỗi người 1 tài khoản cần bảo mật thật)
+  trước khi lên kế hoạch tiếp.
+- **Xuất Excel/CSV, Hỗ trợ in ấn**: KHÔNG được chọn ở vòng hỏi ưu tiên lần 2 (chỉ chọn 9
+  mục + redesign bảng) — vẫn ở trạng thái ghi nhận, chưa làm.
+
+### Lô 1 — An toàn dữ liệu, rủi ro thấp, độc lập
+1. **Safety net khôi phục từ file**: `Settings.tsx` và `Dashboard.tsx` có 2 luồng "Khôi
+   phục từ File" TRÙNG LẶP (copy-paste), cả 2 gọi `db.clearStore()` NGAY khi file JSON
+   hợp lệ về cấu trúc, KHÔNG qua `ConfirmDialog` nào — khác với nút "Làm mới tất cả"
+   (`DataUpdater.tsx`) vốn ĐÃ an toàn từ trước. Gộp 2 luồng thành
+   `features/bi-dashboard/utils/backupRestore.ts`, thêm `ConfirmDialog` xác nhận trước
+   khi ghi đè (hiện số mục sẽ mất), validate thêm `metadata.appName` để tránh restore
+   nhầm file JSON khác cấu trúc tình cờ khớp mảng object.
+2. **Giới hạn lưu trữ Auto Bonus**: `bonus-history-${sm}-${name}` đã có cap 30 phần tử
+   nhưng logic lặp lại y hệt ở 2 nơi (`useNhanVienData.ts`, `BonusDataModal.tsx`) — gộp
+   thành 1 hàm dùng chung trong `utils/bonusHistory.ts`. `bonus-monthly-${sm}-${yyyymm}`
+   HOÀN TOÀN KHÔNG có giới hạn — mỗi tháng tạo thêm N key mới vĩnh viễn (N = số siêu
+   thị), các key này đều `isHeavySyncKey=true` nên phình cả Firestore theo thời gian.
+   Thêm `pruneOldBonusMonthlyKeys()` (giữ 12 tháng, dư so với `monthsWindow=6` đang hiển
+   thị), gọi 1 lần lúc mount `BiWrapper.tsx` cạnh `migrateClusterDataToMain()` sẵn có.
+
+### Lô 2 — Chống trôi tên phiên bản thi đua (cần migration, rủi ro trung bình)
+3 nguyên nhân gốc xác nhận qua code: (a) `Version.name` không có `id` ổn định, so khớp
+bằng chuỗi thô; (b) tên không `.trim()` trước khi lưu (`CompetitionTab.tsx:203`) nên
+`"Máy lạnh"` và `"Máy lạnh "` tạo 2 bản ghi khác nhau; (c) key lưu trữ
+(`nhanvien-competition-versions`/`nhanvien-active-version`) KHÔNG scope theo siêu thị
+(khác hầu hết key khác trong `db.ts`), đổi siêu thị không reset version đang active; (d)
+không có đường "cập nhật phiên bản đang xem" — sửa filter rồi quên bấm lưu lại đúng tên
+cũ sẽ tạo bản trùng, bản cũ mồ côi im lặng. Sửa: thêm `id` ổn định (migrate dữ liệu cũ
+trong `utils/dbMigration.ts`), trim + validate trùng tên khi lưu, scope key theo siêu
+thị hoặc reset khi đổi siêu thị, thêm badge "• chưa lưu" khi filter khác bản đã lưu.
+
+### Lô 3 — Audit trail (giá trị dài hạn, triển khai theo giai đoạn)
+`last-updates-list` hiện có KHÔNG phải audit trail thật — không có trường "ai", cap
+cứng 10 mục/1-slot-mỗi-id (ghi đè, không phải log), và **quan trọng: chưa từng được đọc
+ở bất kỳ đâu trong toàn bộ repo** (chỉ set, không get). Thêm
+`features/bi-dashboard/utils/auditTrail.ts` (`logAuditEvent`, log nhiều-sự-kiện/ngày,
+cap kép theo ngày 60 + theo số dòng tuyệt đối 2000, khác `competitionHistory.ts` ở chỗ
+KHÔNG upsert-theo-ngày). Bridge danh tính user: `BiWrapper.tsx` thêm
+`import { useAuth } from '../../../contexts/AuthContext'` (có tiền lệ hợp lệ — file này
+đã import `contexts/LayoutContext` gốc; CLAUDE.md chỉ cấm cross-import `hooks/*`/
+`services/*` gốc, không cấm `contexts/*`). Thêm `logAuditEvent` tại ~10 điểm mutation
+quan trọng (xoá tất cả, khôi phục backup, lưu/xoá phiên bản thi đua, lưu Auto Bonus...).
+UI hiển thị: panel mới trong `Settings.tsx`.
+
+### Lô 4 — Phân tích & hiển thị
+3. **Biểu đồ xu hướng theo thời gian**: recharts đã có sẵn trong bundle (dùng 1 chỗ duy
+   nhất hiện nay — donut chart tĩnh ở `IndividualCompetitionView.tsx`, KHÔNG phải time
+   series). `CompetitionView.tsx` đã có sẵn `historySnapshots` trong state (từ tính
+   năng Lịch sử Thi đua vừa làm ở Đợt 2) — dữ liệu chuỗi ngày thật, không cần nguồn mới.
+   Thêm `components/dashboard/competition/CompetitionTrendChart.tsx` dùng
+   `AreaChart`/`LineChart`, trục X = ngày, trục Y = giá trị L.Kế/%HTDK của chương trình
+   đang chọn, đặt cạnh nút "Lịch sử". EmptyState khi &lt;2 ngày dữ liệu.
+4. **So sánh tháng trước ở DetailTab**: hiện tại 0% — có sẵn key `prev-month-target-*`
+   trong `db.ts` nhưng KHÔNG liên quan (dùng cho Target Thi đua ở `SupermarketConfig.tsx`
+   khác hẳn ngữ cảnh). Cần thêm `prev-month-detail-${string}` mới, tái dùng
+   `ImportPrevMonthModal` (đã generic sẵn) + `DeltaBadge`, parse bằng
+   `parseDetailDataV2` có sẵn. **User chọn**: chỉ hiện delta ở cấp Phòng ban/Nhân viên
+   (khớp độ chi tiết RevenueTab đang dùng), KHÔNG hiện ở 4 cấp sâu hơn (ngành hàng/nhóm
+   hàng/hàng/sản phẩm) — matching theo path ghép do cây 6 cấp có thể trùng tên ở nhánh
+   khác nhau, nhưng chỉ cần match tới cấp employee là đủ theo phạm vi đã chốt.
+5. **Banner cảnh báo dữ liệu "ported" (định dạng BI cũ)**: **User xác nhận nghĩa** = dữ
+   liệu dán vào dùng định dạng báo cáo cũ (trước khi user tự đổi sang định dạng BI mới
+   tuần trước). Đã tìm ra chữ ký phân biệt CHÍNH XÁC qua code:
+   `COMPETITION_REALTIME_REPORT_HEADER`/`COMPETITION_LUYKE_REPORT_HEADER`
+   (`DataUpdater.tsx:18-19`) là chuỗi header CHÍNH XÁC của định dạng CŨ — validator hiện
+   tại chấp nhận CẢ 2 (match chuỗi cũ chính xác HOẶC match heuristic từ khoá cho định
+   dạng mới) vì header thật của định dạng mới không còn khớp chuỗi cũ nữa (lý do ban đầu
+   user phải nới lỏng validator). → Banner kích hoạt khi
+   `data.includes(COMPETITION_REALTIME_REPORT_HEADER)` hoặc
+   `data.includes(COMPETITION_LUYKE_REPORT_HEADER)` (match chuỗi cũ CHÍNH XÁC, không
+   phải nhánh heuristic) ngay sau khi dán ở `DataUpdater.tsx` (cạnh dòng 366/390), gợi ý
+   dán lại từ nguồn mới `https://baocao.dienmayxanh.com/dashboard/thi-dua` (URL mới user
+   đã tự cập nhật vào `downloadUrl` của chính StatusTile này). Chỉ áp dụng cho 2 tile
+   Thi Đua Cụm — 2 tile Báo Cáo Tổng Hợp dùng validator strict-only, không bị ảnh hưởng.
+6. **Edge-case target = 0**: khảo sát xác nhận đây KHÔNG phải lỗi tính toán — mọi phép
+   chia cho target đã có guard đúng ở toàn bộ ~25 vị trí đã rà. Vấn đề thật là UX: khi
+   target=0 (chưa cấu hình), UI hiển thị y hệt "0% hoàn thành" và tô màu ĐỎ như đang
+   underperform nặng, gây hiểu nhầm. Thêm tham số `hasTarget` cho `getHtColor`/hàm màu
+   tương tự ở `RevenueTab.tsx`, `RevenueDesktopRow.tsx`, `CompetitionGroupView.tsx`,
+   `CompetitionSummaryView.tsx`, `IndividualCompetitionView.tsx` — hiện "—"/badge xám
+   "Chưa có Target" thay vì "0%" đỏ. Làm đồng loạt cả 5-6 file trong 1 lượt để tránh UX
+   không nhất quán (nơi sửa nơi chưa).
+
+### Lô 5 — Redesign 18 bảng sang "Enterprise Tinh Gọn"
+User chọn làm toàn bộ 18 bảng trong 1 đợt (không tách 2 giai đoạn). Spec đích (từ
+artifact, đối chiếu Tailwind tương đương): bỏ `border-b-[3px] border-b-{màu}-400` +
+`border-r` giữa mọi cột (chỉ còn viền ngang mỏng giữa các dòng), header nền trắng đồng
+nhất (bỏ `bg-slate-50`/`bg-{màu}-50` theo nhóm), chữ header xám nhạt uppercase nhỏ, số
+liệu canh phải, cột tên canh trái có avatar tròn nhỏ, %HT/trạng thái đổi từ tô chữ màu
+sang "pill" bo tròn nền bán-trong-suốt (`bg-{màu}-100 text-{màu}-700`), dòng
+TỔNG/TRUNG BÌNH nền xám nhạt + border-top đậm hơn.
+
+Danh sách đầy đủ 18 file (đường dẫn, độ phức tạp) — làm theo thứ tự từ đơn giản/làm
+khuôn mẫu trước:
+- **Khuôn mẫu (làm đầu tiên)**: `nhanvien/revenue/RevenueDesktopRow.tsx` +
+  `nhanvien/RevenueTab.tsx` (Doanh thu) — pattern chuẩn để đối chiếu khi làm các file
+  còn lại.
+- **Đơn giản** (2): `nhanvien/bonus/AutoBonusErrorDetailModal.tsx`,
+  `nhanvien/bonus/MultiMonthResultDetailModal.tsx` — đã gần khớp spec sẵn.
+- **Trung bình** (8, không kể RevenueTab đã tính ở khuôn mẫu):
+  `nhanvien/InstallmentTab.tsx` (header colSpan/rowSpan động theo NCC),
+  `nhanvien/CrossSellingTab.tsx`, `nhanvien/bonus/BonusDesktopRow.tsx` +
+  `nhanvien/bonus/BonusGroupListTable.tsx` (1 cặp), `nhanvien/IndividualCompetitionView.tsx`,
+  `nhanvien/CompetitionCompareView.tsx`, `nhanvien/CompetitionGroupView.tsx`.
+- **Phức tạp** (7 — cần xử lý riêng từng đặc thù, KHÔNG copy-paste đơn thuần):
+  `dashboard/IndustryView.tsx` (colSpan/rowSpan runtime + cây luỹ kế + sticky column),
+  `dashboard/SummaryTableView.tsx` (tương tự, sticky column dùng `shadow` giả viền dọc
+  — cần bỏ shadow đó theo tinh thần spec), `dashboard/competition/CompetitionListView.tsx`
+  (nhiều `tbody` lặp theo tiêu chí), `nhanvien/CompetitionSummaryView.tsx` (1065 dòng,
+  CÓ kéo-thả cột — giữ nguyên hành vi drag-drop, chỉ đổi style), `nhanvien/bonus/
+  BonusDailyTable.tsx` (tô màu HEATMAP theo ngưỡng — khác hẳn "pill", cần quyết định
+  cách áp dụng riêng khi tới file này, có thể giữ heatmap nền ô nhưng đổi viền/header
+  theo spec chung), `nhanvien/bonus/MonthlyBonusTable.tsx` (có `&lt;tfoot&gt;` thật),
+  `nhanvien/DetailTab.tsx` (cây 7 cấp, cột %HQQĐ ĐÃ dùng pill sẵn — tham khảo ngược làm
+  mẫu pill cho các bảng khác).
+
+Mỗi file redesign xong cần kiểm tra: không đổi cấu trúc dữ liệu/logic tính toán (chỉ
+đổi className/style), sort/drag-drop/expand-collapse vẫn hoạt động, `npm run check`
+sạch. Do khối lượng lớn (18 file), test trực quan bằng Playwright theo lô thay vì từng
+file để tiết kiệm thời gian, ưu tiên test kỹ các file "phức tạp" có tương tác (drag-drop,
+expand cây, heatmap).
