@@ -27,6 +27,11 @@ const featureBoundaryRules = FEATURES.map((feature) => {
           {
             target: `./features/${feature}`,
             from: './services',
+            // Ngoại lệ cách ly thứ 3 (CLAUDE.md mục 1, bổ sung 2026-08-31): bi-dashboard được
+            // phép import services/firebase.ts (chỉ instance db/auth, không phải logic nghiệp
+            // vụ) — cần cho tính năng phân quyền theo siêu thị (biData/{maKho}, xem
+            // implementation_plan.md mục "Đợt 4"). phan-ca/sticker-event KHÔNG có ngoại lệ này.
+            ...(feature === 'bi-dashboard' ? { except: ['./firebase.ts', './firebase'] } : {}),
             message: 'features/* không được import services/ gốc — dùng services riêng của feature (RULES.md §2.0).',
           },
         ],
