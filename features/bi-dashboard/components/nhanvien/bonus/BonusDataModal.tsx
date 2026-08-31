@@ -3,7 +3,7 @@ import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { parseBonusBlock } from '../../../utils/bonusParser';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { Modal } from '../../../../../components/shared/ui/Modal';
-import * as db from '../../../utils/db';
+import { appendBonusHistory } from '../../../utils/bonusHistory';
 import { focusHrmWindow } from './hrmWindow';
 import toast from 'react-hot-toast';
 
@@ -37,9 +37,7 @@ export const BonusDataModal: React.FC<{
         if ('error' in result) { setError(result.error); return false; }
         const { metrics } = result;
 
-        const historyKey = `bonus-history-${supermarketName}-${employee.originalName}`;
-        const currentHistory = await db.get<BonusMetrics[]>(historyKey) || [];
-        await db.set(historyKey, [...currentHistory, metrics].slice(-30));
+        await appendBonusHistory(supermarketName, employee.originalName, metrics);
 
         onSave(employee.originalName, metrics);
         return true;

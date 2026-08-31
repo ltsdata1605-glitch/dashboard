@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
+import { appendBonusHistory } from '../utils/bonusHistory';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
 import { formatEmployeeName, standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useWorker } from './useWorker';
@@ -445,12 +446,9 @@ export function useNhanVienData(isActive?: boolean) {
 
         // Ghi lịch sử từng nhân viên, đúng key scheme BonusDataModal đang dùng (bonus-history-*),
         // để chế độ Tự động không tạo khoảng trống dữ liệu so với dán tay.
-        await Promise.all(entries.map(async ({ originalName, metrics }) => {
-            const historySupermarket = resolveEmployeeSupermarket(originalName);
-            const historyKey = `bonus-history-${historySupermarket}-${originalName}` as const;
-            const currentHistory = await db.get<BonusMetrics[]>(historyKey) || [];
-            await db.set(historyKey, [...currentHistory, metrics].slice(-30));
-        }));
+        await Promise.all(entries.map(({ originalName, metrics }) =>
+            appendBonusHistory(resolveEmployeeSupermarket(originalName), originalName, metrics)
+        ));
     }, [resolveEmployeeSupermarket]);
 
     // Ghi kho lưu trữ theo THÁNG (phục vụ "Xem theo tháng") — 1 key/(siêu thị, tháng),

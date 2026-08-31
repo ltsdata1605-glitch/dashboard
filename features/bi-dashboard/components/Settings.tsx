@@ -2,20 +2,17 @@
 import React, { useState, useRef } from 'react';
 import { UploadIcon, SpinnerIcon, SaveIcon } from './Icons';
 import * as db from '../utils/db';
+import { parseBackupFile, restoreFromBackup, BackupMetadata as SharedBackupMetadata } from '../utils/backupRestore';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
 
-interface BackupMetadata {
-    appName: string;
-    version: string;
-    timestamp: string;
-    deviceInfo: string;
+interface BackupMetadata extends SharedBackupMetadata {
     stats: {
         totalItems: number;
         snapshots: number;
-        targets: number; 
-        configs: number; 
-        reports: number; 
+        targets: number;
+        configs: number;
+        reports: number;
         bonus: number;
     };
 }
@@ -134,41 +131,43 @@ const Settings: React.FC = () => {
         }
 
         setIsLoading('restore');
-        
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const content = e.target?.result;
                 if (typeof content !== 'string') throw new Error('Không thể đọc nội dung file.');
-                
-                let parsedContent = JSON.parse(content);
-                let dataToRestore: { key: string; value: unknown }[] = [];
 
-                if (Array.isArray(parsedContent)) {
-                    dataToRestore = parsedContent;
-                } else if (parsedContent.data && Array.isArray(parsedContent.data)) {
-                    dataToRestore = parsedContent.data;
-                } else {
-                    throw new Error('Cấu trúc file backup không hợp lệ.');
-                }
+                const { data: dataToRestore, metadata } = parseBackupFile(content);
+                setIsLoading(null);
 
-                if (dataToRestore.length === 0) throw new Error('File backup rỗng.');
-
-                await db.clearStore();
-                await db.setMany(dataToRestore);
-                
-                const navState = {
-                    'main-active-view': 'dashboard',
-                    'dashboard-main-tab': 'realtime',
-                    'dashboard-sub-tab': 'revenue',
-                    'dashboard-active-supermarket': 'Tổng'
-                };
-                for (const [key, value] of Object.entries(navState)) {
-                    await db.set(key, value);
-                }
-                
-                setIsLoading(null); 
-                window.location.reload();
+                const backupTime = metadata?.timestamp ? new Date(metadata.timestamp).toLocaleString('vi-VN') : null;
+                showConfirm({
+                    title: 'Khôi phục dữ liệu?',
+                    message: `Thao tác này sẽ GHI ĐÈ toàn bộ dữ liệu Report BI hiện có trên thiết bị này bằng ${dataToRestore.length} mục từ file đã chọn${backupTime ? ` (sao lưu lúc ${backupTime})` : ''}.\n\nDữ liệu hiện tại sẽ KHÔNG thể khôi phục lại sau khi ghi đè. Hãy chắc chắn đây đúng là file bạn muốn dùng.`,
+                    variant: 'danger',
+                    confirmText: 'Khôi phục, ghi đè',
+                    onConfirm: async () => {
+                        closeConfirm();
+                        setIsLoading('restore');
+                        try {
+                            await restoreFromBackup(dataToRestore);
+                            setIsLoading(null);
+                            window.location.reload();
+                        } catch (error) {
+                            console.error('Restore failed:', error);
+                            setIsLoading(null);
+                            showConfirm({
+                                title: 'Khôi phục thất bại',
+                                message: `Lỗi khôi phục: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`,
+                                variant: 'danger',
+                                confirmText: 'Đóng',
+                                singleButton: true,
+                                onConfirm: closeConfirm
+                            });
+                        }
+                    }
+                });
 
             } catch (error) {
                 console.error('Restore failed:', error);

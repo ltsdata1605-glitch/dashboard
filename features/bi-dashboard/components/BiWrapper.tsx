@@ -4,6 +4,7 @@ import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
+import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { Button } from '../../../components/shared/ui/Button';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
@@ -66,6 +67,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         migrateClusterDataToMain()
             .then(() => migrateOldAvatars())
             .catch(err => console.warn('[BI Migration] Error:', err));
+        pruneOldBonusMonthlyKeys().catch(err => console.warn('[BI Migration] Prune bonus-monthly error:', err));
     }, []);
 
     const handleTabChange = useCallback((id: string) => {
