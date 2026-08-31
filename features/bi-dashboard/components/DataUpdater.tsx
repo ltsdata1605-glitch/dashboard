@@ -31,10 +31,18 @@ const validateCompetitionRealtimeReport = (data: string): boolean => {
 const validateCompetitionLuyKeReport = (data: string): boolean => {
     if (!data) return false;
     const lower = data.toLowerCase();
-    return data.includes(COMPETITION_LUYKE_REPORT_HEADER) || 
-           ((lower.includes('thi đua') || lower.includes('chương trình') || lower.includes('hạng vùng') || lower.includes('% ht tháng')) && 
+    return data.includes(COMPETITION_LUYKE_REPORT_HEADER) ||
+           ((lower.includes('thi đua') || lower.includes('chương trình') || lower.includes('hạng vùng') || lower.includes('% ht tháng')) &&
             (lower.includes('target') || lower.includes('lũy kế') || lower.includes('luy ke') || lower.includes('% ht')));
 };
+
+// Header CHÍNH XÁC của định dạng BI CŨ (trước khi đổi sang định dạng mới) — validator ở trên
+// phải nới lỏng thêm nhánh heuristic vì header thật của định dạng MỚI không còn khớp 2 chuỗi
+// này nữa. Match đúng chuỗi cũ = dữ liệu vừa dán được copy từ nguồn BI cũ (portal cũ hoặc
+// tab trình duyệt còn mở từ trước), có thể thiếu cột mới so với định dạng hiện tại.
+const isPortedCompetitionRealtimeFormat = (data: string): boolean => data.includes(COMPETITION_REALTIME_REPORT_HEADER);
+const isPortedCompetitionLuyKeFormat = (data: string): boolean => data.includes(COMPETITION_LUYKE_REPORT_HEADER);
+const PORTED_FORMAT_WARNING = 'Dữ liệu vừa dán có vẻ dùng định dạng báo cáo Thi đua CŨ, có thể thiếu một số cột mới. Vui lòng lấy lại báo cáo mới nhất từ https://baocao.dienmayxanh.com/dashboard/thi-dua.';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -373,6 +381,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionRealtime(val);
                                             setCompetitionRealtimeTs(getDetailedTimestamp());
                                             addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
+                                            if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                         } else setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
                                     }}
                                     onClear={(title) => {
@@ -398,6 +407,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
                                             addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
                                             archiveCompetitionLuyKeSnapshot(val).catch(err => console.error('Lỗi lưu lịch sử Thi đua', err));
+                                            if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                         } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
                                     }}
                                     onClear={(title) => {

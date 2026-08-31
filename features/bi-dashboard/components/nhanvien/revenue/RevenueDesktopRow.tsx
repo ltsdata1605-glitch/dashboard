@@ -13,7 +13,7 @@ interface RevenueDesktopRowProps {
     onHighlightToggle: (name: string) => void;
     supermarketName: string;
     colorSettings: ColorSettings;
-    getHtColor: (val: number) => string;
+    getHtColor: (val: number, hasTarget?: boolean) => string;
     getDynamicColor: (val: number, config: CriterionConfig) => string | undefined;
     isShowRemaining?: boolean;
 }
@@ -31,6 +31,7 @@ export const RevenueDesktopRow = React.memo(({
     isShowRemaining = false
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
+    const hasTarget = (row.calculatedTarget || 0) > 0;
 
     return (
         <tr className={`transition-all group cursor-pointer text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'odd:bg-slate-50/60 hover:bg-slate-100 dark:odd:bg-slate-800/20 dark:hover:bg-slate-800/40'}`}>
@@ -47,7 +48,7 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
                 <div>{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
@@ -55,8 +56,8 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion) }}>
-                <div>{roundUp(row.calculatedCompletion)}%</div>
+            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion, hasTarget) }}>
+                <div>{hasTarget ? `${roundUp(row.calculatedCompletion)}%` : '—'}</div>
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
             </td>
             {isShowRemaining && (
@@ -73,7 +74,7 @@ export const RevenueDesktopRow = React.memo(({
                     </td>
                 </>
             )}
-            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-semibold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
                 <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>

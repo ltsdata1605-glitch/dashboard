@@ -570,8 +570,10 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                </tr>
                                                {items.map((item, index) => {
                                                    const remainingColor = item.remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-                                                   const dkht = item.target > 0 ? (calculateRunRate(item.actual, daysPassed, daysInMonth) / item.target) * 100 : 0;
-                                                   const dkhtColor = dkht >= 100 ? 'text-emerald-600 dark:text-emerald-400' : dkht >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+                                                   const hasTarget = item.target > 0;
+                                                   const dkht = hasTarget ? (calculateRunRate(item.actual, daysPassed, daysInMonth) / item.target) * 100 : 0;
+                                                   // Chưa cấu hình target thì trung tính (xám), không phải "đang tệ" (đỏ) như khi target=0 vì actual thấp thật.
+                                                   const dkhtColor = !hasTarget ? 'text-slate-400 dark:text-slate-500' : dkht >= 100 ? 'text-emerald-600 dark:text-emerald-400' : dkht >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
                                                    return (
                                                        <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
                                                            <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
