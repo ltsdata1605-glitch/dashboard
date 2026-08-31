@@ -1,4 +1,5 @@
 import * as db from './db';
+import { logAuditEvent } from './auditTrail';
 
 export interface BackupMetadata {
     appName: string;
@@ -63,4 +64,7 @@ export const restoreFromBackup = async (data: BackupDataEntry[]): Promise<void> 
     for (const [key, value] of Object.entries(NAV_STATE_AFTER_RESTORE)) {
         await db.set(key, value);
     }
+    // Ghi log SAU khi ghi đè xong — audit-trail-log cũng bị clearStore() xoá nên ghi trước
+    // sẽ mất dấu vết ngay lập tức.
+    await logAuditEvent({ action: 'restore-backup', label: `Khôi phục từ file backup (${data.length} mục)` });
 };

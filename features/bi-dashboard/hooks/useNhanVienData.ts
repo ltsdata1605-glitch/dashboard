@@ -3,6 +3,7 @@ import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboa
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
+import { logAuditEvent } from '../utils/auditTrail';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
 import { formatEmployeeName, standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useWorker } from './useWorker';
@@ -449,6 +450,7 @@ export function useNhanVienData(isActive?: boolean) {
         await Promise.all(entries.map(({ originalName, metrics }) =>
             appendBonusHistory(resolveEmployeeSupermarket(originalName), originalName, metrics)
         ));
+        logAuditEvent({ action: 'bonus:save-batch', label: `Lưu điểm thưởng cho ${entries.length} nhân viên` });
     }, [resolveEmployeeSupermarket]);
 
     // Ghi kho lưu trữ theo THÁNG (phục vụ "Xem theo tháng") — 1 key/(siêu thị, tháng),
@@ -474,6 +476,8 @@ export function useNhanVienData(isActive?: boolean) {
             groupEntries.forEach(({ originalName, metrics }) => { monthlyData[originalName] = metrics; });
             await db.set(monthlyKey, monthlyData);
         }));
+
+        logAuditEvent({ action: 'bonus:save-monthly', label: `Lưu điểm thưởng tháng ${yyyymm} cho ${entries.length} nhân viên` });
 
         const now = new Date();
         const currentYYYYMM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;

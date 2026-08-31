@@ -1,10 +1,12 @@
 
-import React, { useState, useRef } from 'react';
-import { UploadIcon, SpinnerIcon, SaveIcon } from './Icons';
+import React, { useState, useRef, useEffect } from 'react';
+import { UploadIcon, SpinnerIcon, SaveIcon, ClockIcon } from './Icons';
 import * as db from '../utils/db';
 import { parseBackupFile, restoreFromBackup, BackupMetadata as SharedBackupMetadata } from '../utils/backupRestore';
+import { getAuditLog, AuditEntry } from '../utils/auditTrail';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
+import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface BackupMetadata extends SharedBackupMetadata {
     stats: {
@@ -22,9 +24,24 @@ interface BackupFileContent {
     data: { key: string; value: unknown }[];
 }
 
+const ACTION_LABELS: Record<string, string> = {
+    'clear-all': 'Xoá tất cả dữ liệu',
+    'restore-backup': 'Khôi phục từ backup',
+    'competition-version:save': 'Lưu phiên bản thi đua',
+    'competition-version:delete': 'Xoá phiên bản thi đua',
+    'bonus:save-batch': 'Lưu điểm thưởng',
+    'bonus:save-monthly': 'Lưu điểm thưởng theo tháng',
+};
+
 const Settings: React.FC = () => {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+    const [isAuditLoading, setIsAuditLoading] = useState(true);
+
+    useEffect(() => {
+        getAuditLog().then(log => { setAuditLog(log); setIsAuditLoading(false); });
+    }, []);
 
     // Confirm Dialog State
     const [confirmDialog, setConfirmDialog] = useState<{
@@ -231,8 +248,58 @@ const Settings: React.FC = () => {
                     </div>
                 </div>
             </section>
-            
-            <ConfirmDialog 
+
+            {/* Section 2: Lịch sử hoạt động (audit trail) — các thao tác quan trọng gần đây,
+                giữ tối đa 60 ngày / 2000 dòng (utils/auditTrail.ts) */}
+            <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <ClockIcon className="h-4 w-4 text-sky-500" />
+                    <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Lịch sử hoạt động</h2>
+                </div>
+                <div className="p-5">
+                    {isAuditLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <SpinnerIcon className="h-5 w-5 animate-spin text-slate-400" />
+                        </div>
+                    ) : auditLog.length === 0 ? (
+                        <EmptyState
+                            compact
+                            icon={<ClockIcon className="h-5 w-5" />}
+                            title="Chưa có hoạt động nào được ghi nhận"
+                            description="Các thao tác quan trọng (dán dữ liệu, xoá, khôi phục, lưu thưởng...) sẽ hiện ở đây."
+                        />
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                                        <th className="py-2 pr-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Thời điểm</th>
+                                        <th className="py-2 pr-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Người thực hiện</th>
+                                        <th className="py-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {auditLog.slice(0, 100).map((entry, idx) => {
+                                        const [y, m, d] = entry.date.split('-');
+                                        return (
+                                            <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 last:border-b-0">
+                                                <td className="py-2 pr-3 text-[12px] text-slate-500 dark:text-slate-400 whitespace-nowrap">{entry.time} {d}/{m}/{y}</td>
+                                                <td className="py-2 pr-3 text-[12px] text-slate-600 dark:text-slate-300 whitespace-nowrap">{entry.actor || <span className="text-slate-400 italic">Không xác định</span>}</td>
+                                                <td className="py-2 text-[12px] text-slate-700 dark:text-slate-200">{entry.label || ACTION_LABELS[entry.action] || entry.action}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                            {auditLog.length > 100 && (
+                                <p className="text-[11px] text-slate-400 mt-3">Đang hiển thị 100 hoạt động gần nhất trên tổng {auditLog.length}.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            <ConfirmDialog
                 isOpen={confirmDialog.isOpen}
                 onClose={closeConfirm}
                 onConfirm={confirmDialog.onConfirm}

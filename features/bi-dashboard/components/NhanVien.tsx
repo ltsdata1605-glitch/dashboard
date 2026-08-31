@@ -18,6 +18,7 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
+import { logAuditEvent } from '../utils/auditTrail';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../components/shared/ui/MultiSelectDropdown';
@@ -272,6 +273,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         };
         setVersions(prev => [...(prev || []).filter(v => v.name !== name), newVersion]);
         setActiveVersionName(name);
+        logAuditEvent({ action: 'competition-version:save', label: `Lưu phiên bản thi đua "${name}"` });
     }, [selectedCompetitions, setVersions, setActiveVersionName]);
 
     const handleDeleteVersion = useCallback((name: string) => {
@@ -284,6 +286,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             if (activeVersionName === versionToDelete) {
                 setActiveVersionName(null);
             }
+            logAuditEvent({ action: 'competition-version:delete', label: `Xoá phiên bản thi đua "${versionToDelete}"` });
             setVersionToDelete(null);
         }
     }, [versionToDelete, setVersions, activeVersionName, setActiveVersionName]);

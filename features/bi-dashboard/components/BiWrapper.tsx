@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Icon } from '../../../components/common/Icon';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
+import { setAuditActor } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
@@ -48,6 +50,15 @@ const TabSpinner = () => (
  */
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
+    const { user } = useAuth();
+
+    // Bridge danh tính user vào audit trail nội bộ của bi-dashboard (utils/auditTrail.ts) —
+    // đọc contexts/AuthContext ở root, có tiền lệ hợp lệ (component này đã import
+    // contexts/LayoutContext gốc); CLAUDE.md chỉ cấm cross-import hooks/*|services/* gốc,
+    // không cấm contexts/*.
+    useEffect(() => {
+        setAuditActor(user?.email);
+    }, [user]);
     const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
