@@ -426,3 +426,118 @@ Mỗi file redesign xong cần kiểm tra: không đổi cấu trúc dữ liệu
 sạch. Do khối lượng lớn (18 file), test trực quan bằng Playwright theo lô thay vì từng
 file để tiết kiệm thời gian, ưu tiên test kỹ các file "phức tạp" có tương tác (drag-drop,
 expand cây, heatmap).
+
+## Đợt 4 — Thiết kế phân quyền theo siêu thị (CHƯA CODE — đang chờ duyệt kế hoạch)
+
+### Mô hình nghiệp vụ đã chốt với user (2026-08-31)
+1. Mỗi nhân viên có **tài khoản Google riêng** (không dùng chung tài khoản/thiết bị).
+2. Cần **bảo mật thật** — nhân viên siêu thị A cố tình sửa URL/mở console phải KHÔNG
+   xem/sửa được dữ liệu siêu thị B. Lọc chỉ ở client KHÔNG được coi là đạt yêu cầu này.
+3. User muốn **lập kế hoạch/thiết kế chi tiết trước**, duyệt xong mới bắt tay code.
+
+### Phát hiện quan trọng — vì sao "chỉ lọc UI" KHÔNG BAO GIỜ đạt được mục 2 ở trên
+Kiến trúc Report BI hiện tại: mỗi nhân viên **tự dán** báo cáo BI thô vào **tài khoản
+riêng của họ** (`users/{uid}/setting`, `users/{uid}/configs` — Firestore Rules đã chặn
+đúng `isSelf(uid)`, không ai đọc được dữ liệu Firestore của người khác). Nghĩa là: nếu 1
+nhân viên tự dán 1 báo cáo BÊN NGOÀI (từ portal công ty) có chứa NHIỀU siêu thị (vì bản
+thân báo cáo gốc vốn phủ cả cụm/miền, không phải lỗi của app), thì dữ liệu đó vốn đã nằm
+100% trong máy/tài khoản của CHÍNH họ — không có Firestore Rule nào "chặn" được việc họ
+đọc lại chính dữ liệu họ vừa dán, vì đó là dữ liệu họ SỞ HỮU hợp lệ trên thiết bị của họ.
+→ Muốn "chặn được thật sự" theo đúng nghĩa mục 2, bắt buộc phải đổi cách dữ liệu ĐI VÀO
+hệ thống: không còn "mỗi người tự dán bản riêng của mình" nữa, mà chuyển sang **"quản
+lý/admin dán 1 lần vào kho dữ liệu DÙNG CHUNG theo từng siêu thị, nhân viên chỉ ĐỌC đúng
+(các) siêu thị được cấp quyền"** — dữ liệu ngoài phạm vi được cấp quyền sẽ KHÔNG BAO GIỜ
+tải xuống trình duyệt của nhân viên đó, nên không có gì để mở console mà xem được.
+**Đây là thay đổi luồng làm việc thật sự (ai được phép dán dữ liệu), không chỉ là thêm 1
+lớp kiểm tra quyền — cần user xác nhận lại có chấp nhận đổi luồng này không** (xem mục
+"Cần user quyết định" bên dưới).
+
+### Tin tốt: đã có sẵn 1 pattern gần như giống hệt, đã chạy production — `khoData/{maKho}`
+Module Phân Tích ở root đã giải quyết ĐÚNG bài toán này cho "Kho" (kho hàng), chỉ khác
+tên miền là "siêu thị": xem `firestore.rules` dòng 65-80 (`khoData/{maKho}/salesFiles/…`,
+hàm `myKhos()`), `services/khoDataService.ts` (365 dòng, đầy đủ upload/download/cache/
+retention/chunk theo giới hạn 1MiB Firestore), và `functions/src/admin.ts`
+(`adminUpdateUser` — manager chỉ sửa được user thuộc đúng Kho của mình, dựa vào custom
+claim `departmentId`). Thiết kế bên dưới **nhân bản gần như nguyên trạng pattern này**
+cho "siêu thị" thay vì tự nghĩ ra kiến trúc mới — giảm rủi ro, giảm thời gian thiết kế.
+
+### Kiến trúc đề xuất
+
+**1. Custom claim mới `allowedSupermarkets`** (chuỗi các mã siêu thị nối dấu phẩy, giống
+hệt cách `departmentId` đang lưu nhiều mã Kho) — set qua `resolveSession`/`adminUpdateUser`
+mở rộng (functions/src/*.ts), mirror đúng cách `departmentId` đang làm. **KHÔNG dùng
+chung field `departmentId`** — "Kho" và "Siêu thị" là 2 khái niệm khác nhau theo đúng
+CLAUDE.md mục 1.1, không được lẫn.
+
+**2. Firestore collection mới `biData/{maSieuThi}/{reportType}/…`**, rule mirror
+`myKhos()`:
+```
+function mySupermarkets() {
+  return isSignedIn() && request.auth.token.allowedSupermarkets is string
+    ? request.auth.token.allowedSupermarkets.replace('\\s+', '').split(',')
+    : [];
+}
+match /biData/{maSieuThi} {
+  match /{document=**} {
+    allow read:  if isSignedIn() && maSieuThi in mySupermarkets();
+    allow write: if isSignedIn() && isManager() && maSieuThi in mySupermarkets();
+  }
+}
+```
+
+**3. Service client mới** `features/bi-dashboard/services/biDataService.ts` (đặt TRONG
+bi-dashboard, không phải root — giữ đúng cách ly 4 khu vực), mirror `khoDataService.ts`:
+- `uploadBiDataIfManager()` — khi manager/admin dán báo cáo, PARSE trước bằng
+  `parseCompetitionDataBySupermarket()`/`extractSupermarketList()` đã có sẵn (tách 1 lần
+  dán thành nhiều siêu thị), rồi ghi riêng từng siêu thị lên `biData/{maSieuThi}/…` —
+  mirror đúng cách `syncDataToKhoIfManager()` tách `DataRow[]` theo "Mã kho tạo".
+- `fetchAllowedBiData()` — tải + gộp dữ liệu từ mọi `maSieuThi` trong claim
+  `allowedSupermarkets`, có cache cục bộ theo từng siêu thị (mirror
+  `fetchAllowedKhoData()`/`fetchKhoDataCached()`).
+
+### ❓ 3 điểm CẦN USER QUYẾT ĐỊNH trước khi viết code thật (chưa có câu trả lời)
+
+1. **"Mã siêu thị" lấy từ đâu, có ổn định không?** — Khác "Mã Kho" (mã nghiệp vụ cố định,
+   luôn có sẵn trong dữ liệu gốc), Report BI hiện KHÔNG có mã siêu thị chính thức — tên
+   siêu thị chỉ là chuỗi tự do trong báo cáo dán vào, được rút gọn qua
+   `shortenSupermarketName()` (VD "ĐM_TEST - 99 Test Street" → "Test Street"). Nếu 2 lần
+   dán có cách viết tên hơi khác nhau, `maSieuThi` suy ra có thể LỆCH, khiến quyền truy
+   cập gán nhầm hoặc dữ liệu bị tách thành 2 "siêu thị" khác nhau dù thực ra là 1. Cần
+   quyết định: (a) admin tự tạo danh sách mã siêu thị cố định trước (giống Mã Kho), rồi
+   map tên báo cáo → mã đó, hay (b) chấp nhận rủi ro lệch tên và xử lý bằng cách chuẩn
+   hoá chuỗi chặt hơn?
+2. **Đổi luồng "ai được dán dữ liệu"** — theo kiến trúc trên, CHỈ manager/admin được dán
+   dữ liệu dùng chung; nhân viên thường chuyển sang CHỈ ĐỌC. Hiện tại mọi người có thể tự
+   dán. User có đồng ý đổi luồng này không, hay muốn nhân viên vẫn được tự dán dữ liệu của
+   riêng siêu thị mình (phức tạp hơn — cần thêm quyền "dán nhưng chỉ dán cho đúng siêu thị
+   được cấp")?
+3. **Phạm vi migrate đợt đầu** — Report BI có ~15 loại dữ liệu khác nhau (Summary RT/LK,
+   Thi đua RT/LK, cấu hình mỗi siêu thị, Auto Bonus…). Đề xuất bắt đầu với **Thi đua Luỹ
+   kế + Summary Luỹ kế** trước (2 loại dữ liệu cốt lõi nhất, đã có sẵn hàm parse theo
+   từng siêu thị) thay vì chuyển hết 1 lần — các loại còn lại vẫn giữ nguyên riêng tư
+   theo uid cho tới khi có yêu cầu mở rộng tiếp. User có đồng ý phạm vi thu hẹp này không?
+
+### ❓ 1 điểm kỹ thuật CẦN NGOẠI LỆ QUY TẮC CÁCH LY (CLAUDE.md mục 1)
+`features/bi-dashboard/` từ trước tới nay **chưa từng gọi Firestore SDK trực tiếp**
+(100% qua IndexedDB cục bộ + đồng bộ ngầm qua cơ chế `bi_` prefix ở root). Để đọc/ghi
+`biData/{maSieuThi}` theo thời gian thực, bi-dashboard cần truy cập instance `db`/`auth`
+của Firebase — nhưng file khởi tạo (`services/firebase.ts`) nằm trong `services/` ở
+root, mà CLAUDE.md mục 1 CẤM `features/*` import `services/*` ở gốc. Cần user xác nhận
+1 trong 2 hướng: (a) thêm `services/firebase.ts` làm ngoại lệ dùng chung thứ 3 (cạnh
+`components/shared/ui/*` và `utils/dataUtils.ts`), hay (b) mọi thao tác `biData` đi qua
+Cloud Function callable (an toàn hơn về mặt cách ly nhưng chậm hơn cho việc đọc dữ liệu
+lớn thường xuyên).
+
+### Ước lượng khối lượng (khi đã chốt đủ 3+1 điểm trên)
+- Cloud Functions: mở rộng `adminUpdateUser` + rule mới — nhỏ, theo mẫu có sẵn (~0.5 ngày).
+- Firestore Rules: thêm block `biData` — nhỏ (~0.5 ngày).
+- `biDataService.ts` mới + tích hợp vào 2 loại dữ liệu đợt đầu (DataUpdater.tsx paste
+  flow, useDashboardLogic.ts đọc dữ liệu) — trung bình, có mẫu để theo (~2-3 ngày kể cả
+  test kỹ vì đụng luồng dữ liệu cốt lõi).
+- UI quản lý cấp quyền theo siêu thị cho admin (thêm vào UserManagementView.tsx hoặc màn
+  hình riêng) — nhỏ-trung bình (~1 ngày).
+- Tổng ước lượng đợt đầu (2 loại dữ liệu): **~4-5 ngày làm việc**, CHƯA tính các loại dữ
+  liệu còn lại nếu mở rộng tiếp.
+
+**Trạng thái: đang chờ user trả lời 3 câu hỏi nghiệp vụ + 1 câu hỏi kỹ thuật ở trên.
+Chưa viết bất kỳ dòng code Cloud Functions/Firestore Rules/client nào.**
