@@ -41,7 +41,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                     <th 
                         rowSpan={2} 
                         scope="col" 
-                        className="w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900"
+                        className="w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900"
                     >
                         DANH MỤC
                     </th>
@@ -50,7 +50,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                             key={h.key} 
                             colSpan={trendData.months.length} 
                             scope="col" 
-                            className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${h.colorClass} border-r border-slate-200 dark:border-slate-700`}
+                            className={`px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider border-b ${h.colorClass} border-r border-slate-200 dark:border-slate-700`}
                         >
                             {h.label}
                         </th>
@@ -62,7 +62,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                             <th 
                                 key={`${h.key}-${m.id}`} 
                                 scope="col" 
-                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase border-b-[3px] !border-b-${h.borderColor}-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 ${h.colorClass}`}
+                                className={`px-2 py-1 text-center text-[11px] font-bold uppercase border-b-[3px] !border-b-${h.borderColor}-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 ${h.colorClass}`}
                             >
                                 {`${parseInt(m.id.split('-')[1], 10)}.${m.id.split('-')[0]}`}
                             </th>

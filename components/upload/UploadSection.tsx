@@ -51,7 +51,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             id="config-url"
                             value={configUrl}
                             onChange={(e) => onConfigUrlChange(e.target.value)}
-                            className="w-full p-2.5 text-[13px] font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
+                            className="w-full p-2.5 text-[13px] font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                             placeholder="https://docs.google.com/..."
                         />
                     </div>

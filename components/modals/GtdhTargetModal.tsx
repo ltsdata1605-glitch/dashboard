@@ -110,7 +110,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                     setTargetValue(raw);
                                 }}
                                 placeholder="Ví dụ: 9.5"
-                                className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
+                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
                             />
                         </div>
                         <div className="w-full">

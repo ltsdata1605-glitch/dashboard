@@ -1354,7 +1354,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 value={editingTargetKho?.valueDTThuc || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
                                 placeholder="VD: 1,500"
                             />
                         </div>
@@ -1369,7 +1369,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-amber-200 dark:border-amber-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base sm:text-lg font-bold text-amber-700 dark:text-amber-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-amber-200 dark:border-amber-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base sm:text-lg font-bold text-amber-700 dark:text-amber-300 transition-all"
                                 placeholder="VD: 2,000"
                             />
                         </div>

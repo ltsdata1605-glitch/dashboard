@@ -131,7 +131,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                 placeholder="Tìm kiếm..." 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
                             />
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
@@ -172,7 +172,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                     <div 
                         onClick={stopPropagation}
                         onMouseDown={stopPropagation}
-                        className="hidden sm:block rounded-lg shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-2.5 cursor-default text-left"
+                        className="hidden sm:block rounded-xl shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-2.5 cursor-default text-left"
                         style={desktopStyle}
                     >
                         <div className="mb-2">
@@ -181,7 +181,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                 placeholder="Tìm kiếm..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500 outline-none"
                             />
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">

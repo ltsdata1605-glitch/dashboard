@@ -94,7 +94,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                 type="button"
                 variant="unstyled" size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                className={`w-full flex items-center justify-between rounded-md border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
                     variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     hasSelection || isOpen
@@ -140,7 +140,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                         handleSelectOption(filteredOptions[0].value);
                                     }
                                 }}
-                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-2 flex-1 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 py-2 flex-1 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>

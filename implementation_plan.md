@@ -639,3 +639,69 @@ nghiệm hiển thị (đã hết ý nghĩa "kiểm tra có chặn thật không
   THÌ có bù, vì gộp theo object; Summary gộp theo "ưu tiên local toàn phần" đơn giản hơn).
 - Admin sửa bảng map trong lúc đang mở sẵn `DataUpdater.tsx` ở tab khác → tab đó phải
   tải lại trang mới thấy map mới (không tự đồng bộ real-time).
+
+---
+
+# [MODULE KHÁC] Audit + sửa module "Phân Tích" (root: components/, hooks/, services/,
+# utils/ — KHÔNG phải Report BI/bi-dashboard, xem memory `project_phan_tich_audit_2026_09.md`)
+
+## Bối cảnh (2026-09-01)
+User yêu cầu kiểm tra lại module "Phân Tích" tìm lỗ hổng/bug + xác nhận các khu vực
+tính toán đồng nhất + đồng nhất thiết kế UI (bảng/modal/font/màu). Dùng 2 Explore agent
+song song khảo sát (1 hướng tính toán/bug, 1 hướng UI), sau đó TỰ ĐIỀU TRA SÂU từng
+phát hiện trước khi sửa (không tin thẳng báo cáo agent — xem
+`feedback_audit_before_trusting_plan_numbers.md` mục 5, đã cập nhật thêm case này).
+
+## Kết quả điều tra — nhiều phát hiện ban đầu của agent là FALSE POSITIVE sau khi truy hết chuỗi gọi hàm/đọc hết ngữ cảnh:
+1. "Bug" cache `row._metrics` stale ở So Sánh giai đoạn — KHÔNG PHẢI BUG. `_metrics`
+   chỉ được ghi trong Web Worker (`services/filterService.ts`, chỉ gọi được từ
+   `services/analytics.worker.ts`); dữ liệu main-thread (`baseFilteredData` mà
+   `useSummaryComparison.ts` dùng) không bao giờ có `_metrics` do ranh giới
+   postMessage/structured-clone tách biệt object — luôn rơi vào fallback tính mới
+   (`calculateRowMetrics()`). Không sửa.
+2. `WarehouseSummary.tsx` "2 bảng font-size khác nhau" — KHÔNG PHẢI BUG. Đọc hết cả 2
+   bảng (dòng 749-926 + 994-1185) lộ ra hệ thống scale responsive 4 tầng nhất quán,
+   lặp lại y hệt ở cả 2 bảng. Không sửa.
+3. "Card/toast bo góc chẻ 3 kiểu" — KHÔNG PHẢI BUG. 3 kiểu = 3 ngữ cảnh layout khác
+   nhau (full-bleed section / popover nổi / toast-card nhỏ), mỗi kiểu tự nhất quán
+   trong ngữ cảnh của nó. Không sửa.
+4. Modal danh sách đơn hàng (`PerformanceModal`/`UnshippedOrdersModal`/
+   `UncollectedOrdersModal`) header style khác bảng pivot — KHÔNG PHẢI BUG, khác thể
+   loại nội dung (danh sách đơn hàng thô vs bảng tổng hợp KPI), nhất quán ở cả 3 file.
+   Không sửa.
+5. `EmployeeManagerModal`/`UnconfiguredGroupsModal` header size lệch nhẹ — mức độ quá
+   nhỏ, modal CRUD/utility ít người dùng, rủi ro sửa > lợi ích. Không sửa.
+
+Chi tiết đầy đủ + trích code cho từng mục xem memory `project_phan_tich_audit_2026_09.md`.
+
+## Đã sửa (commit sẽ ghi hash sau khi commit)
+- **Bo góc input text** → thống nhất `rounded-md` (CLAUDE.md mục 2): sửa trigger +
+  search-input trong `components/common/SingleSelectDropdown.tsx`,
+  `components/common/MultiSelectDropdown.tsx` (kèm sửa panel dropdown về `rounded-xl`
+  đúng rule card/popover), `components/tables/summary/FilterPopover.tsx` (2 input +
+  panel), `components/modals/GtdhTargetModal.tsx`, `components/upload/
+  UploadSection.tsx`, `components/modals/FileNamingModal.tsx`,
+  `components/summary/WarehouseSummary.tsx` (2 input target Kho, KHÔNG đụng font-size
+  của file này — xem mục "không phải bug" #2 ở trên).
+- **Màu hex cứng** → `components/employees/industry/IndustryTableUtils.tsx:57`:
+  `text-[#46505e]` → `text-slate-600` (khớp CLAUDE.md mục 2, palette semantic).
+- **Font-size header bảng lệch thật** (3 kiểu scale KHÔNG khớp nhau trong 1 file, khác
+  hẳn case WarehouseSummary ở trên — đây LÀ bug thật) → hội tụ về `text-[11px]` cố
+  định (khớp quy ước đa số toàn app, vd `ContestTable.tsx`):
+  `components/tables/SummaryTable.tsx` (10 chỗ, cả 2 header — chế độ so sánh và chế độ
+  thường) và `components/tables/MonthlyTrendTable.tsx` (3 chỗ).
+
+## Verify
+- `tsc --noEmit`: sạch (0 lỗi liên quan file đã sửa; lỗi còn lại 100% thuộc
+  `features/phan-ca/` — việc khác của user, không đụng tới).
+- `eslint` toàn bộ 10 file đã sửa: sạch.
+- `npm run build`: thành công.
+- `npm run lint:ratchet`: không phát sinh vi phạm mới (vi phạm còn lại vẫn là
+  `features/phan-ca/Legend.tsx`, không liên quan).
+- **Giới hạn đã biết**: KHÔNG test trực quan bằng dữ liệu Excel thật trên trình duyệt
+  (không có file mẫu sẵn trong repo, tạo file .xlsx giả cần đúng schema nhiều sheet/cột
+  — rủi ro tự tạo lỗi mới). Đã xác nhận bằng đọc code: cả `SummaryTable.tsx` và
+  `MonthlyTrendTable.tsx` đều nằm trong wrapper `overflow-x-auto` (dòng 211) — tăng
+  font-size chỉ có thể làm bảng cần cuộn ngang nhiều hơn, KHÔNG thể làm vỡ layout/cắt
+  chữ. Khuyến nghị user tự soi mắt 1 lần trên trình duyệt với dữ liệu thật sau khi
+  deploy, đặc biệt bảng So Sánh giai đoạn (nhiều cột nhất).

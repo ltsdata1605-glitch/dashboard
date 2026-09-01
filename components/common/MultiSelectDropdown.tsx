@@ -186,7 +186,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                         top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 4 : 0,
                         left: containerRef.current ? Math.min(containerRef.current.getBoundingClientRect().left, window.innerWidth - 260) : 0,
                     }}
-                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col w-max max-w-[85vw] sm:max-w-[90vw]"
+                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col w-max max-w-[85vw] sm:max-w-[90vw]"
                 >
                     {/* Search Field */}
                     <div className="p-1.5 sm:p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -206,7 +206,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                         }
                                     }
                                 }}
-                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
