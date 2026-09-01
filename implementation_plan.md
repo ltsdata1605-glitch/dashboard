@@ -427,7 +427,7 @@ sạch. Do khối lượng lớn (18 file), test trực quan bằng Playwright t
 file để tiết kiệm thời gian, ưu tiên test kỹ các file "phức tạp" có tương tác (drag-drop,
 expand cây, heatmap).
 
-## Đợt 4 — Phân quyền theo siêu thị (ĐÃ DUYỆT, ĐANG CODE — commit `2aa6928f`, `5d612a86`)
+## Đợt 4 — Phân quyền theo siêu thị (✅ HOÀN TẤT, ĐÃ DEPLOY PRODUCTION 2026-09-01)
 
 ### Mô hình nghiệp vụ đã chốt với user (2026-08-31)
 1. Mỗi nhân viên có **tài khoản Google riêng** (không dùng chung tài khoản/thiết bị).
@@ -610,23 +610,28 @@ KhoFileManager.tsx` — nghĩa là phân quyền theo Kho ở Phân Tích **đã
 độc lập với Đợt 4. Mục 7 quyết định nghiệp vụ ("áp dụng sang Phân Tích sau") thực chất không
 còn việc gì phải làm thêm — Phân Tích vốn đã dùng đúng `departmentId`/`myKhos()` từ lâu.
 
-**⏳ CHƯA LÀM — chỉ còn 1 việc, và nó PHẢI do user thực hiện**
-1. **Deploy `firestore.rules`** (`npm run deploy:rules`, cần `firebase login` bằng tài khoản
-   Google có quyền trên project `dashboa-7e20b`). Đây là ranh giới cố ý trong CLAUDE.md mục 0.7
-   ("không tự động hoá, không phải việc agent tự chạy") — không phải giới hạn kỹ thuật. Agent
-   ĐÃ kiểm chứng logic rules đúng 100% qua emulator ở trên; việc còn lại thuần tuý là "bấm nút
-   xuất bản" lên project thật, y hệt quyết định `khoData/{maKho}` trước đây cũng do user tự
-   deploy. Sau khi deploy, tính năng hoạt động ngay — không cần thêm bước nào khác.
-   - Nếu muốn agent tự deploy được ở phiên sau (tuỳ chọn, KHÔNG bắt buộc): agent có thể chạy
-     `firebase login` ngay trong terminal này — user vẫn phải tự bấm qua màn hình đăng nhập
-     Google 1 lần (agent không thể tự động click OAuth thay người), nhưng sau đó phiên CLI được
-     lưu lại cục bộ và agent chạy `firebase deploy --only firestore:rules` được luôn không cần
-     hỏi lại. Đây là cách AN TOÀN hơn tạo service account key mới (không tạo thêm 1 secret tĩnh
-     nằm trong máy) — nhưng vẫn là đổi 1 chính sách đã ghi rõ trong CLAUDE.md, nên cần user xác
-     nhận rõ ràng mới làm, không tự ý đổi.
-2. Test 2 tài khoản Google thật (khác `departmentId`) qua UI thật — CHỈ còn ý nghĩa kiểm tra
-   UX/trải nghiệm (đã hết ý nghĩa "kiểm tra có chặn thật không", vì emulator test ở trên đã trả
-   lời dứt điểm câu đó rồi). Không bắt buộc trước khi deploy.
+**✅ DONE — Deploy `firestore.rules` lên production (2026-09-01)**
+User hỏi "có cách nào cho agent tự quyền test/deploy" → thử `firebase login` qua Bash của agent
+trước, THẤT BẠI ("Cannot run login in non-interactive mode" — môi trường chạy lệnh của agent
+không có TTY, `login`/`login:ci` đều cần). Kiểm tra lại thì phát hiện máy đã sẵn có credential
+Firebase CLI hợp lệ từ trước (`~/.config/configstore/firebase-tools.json`, không phải agent vừa
+tạo), `firebase projects:list` xác nhận đã trỏ đúng `dashboa-7e20b`. Sau khi hỏi lại user 1 lần
+nữa cho rõ ràng (đây là deploy thật lên production, không phải bước phụ) và được xác nhận "Có,
+deploy ngay" — agent chạy `firebase deploy --only firestore:rules` trực tiếp:
+```
+✔  firestore: released rules firestore.rules to cloud.firestore
+✔  Deploy complete!
+```
+(Cảnh báo compile "Unused function: isAdmin" thuộc `firestore.stickerevent.rules` dòng 9 — file
+rules khác, không liên quan `firestore.rules` của Đợt 4, không phải lỗi mới.)
+**Tính năng phân quyền theo siêu thị đã hoạt động THẬT trên production kể từ đây** — kết hợp
+với 10/10 test emulator ở trên (verify cùng nội dung rules trước khi đẩy lên), đã đủ bằng chứng
+"chặn được thật" theo đúng yêu cầu ban đầu của user, không chỉ dừng ở code review bằng mắt.
+
+**Còn lại — không bắt buộc, thuần UX**
+Test 2 tài khoản Google thật (khác `departmentId`) qua UI thật — chỉ còn ý nghĩa kiểm tra trải
+nghiệm hiển thị (đã hết ý nghĩa "kiểm tra có chặn thật không", câu đó emulator + deploy ở trên
+đã trả lời dứt điểm rồi). Làm khi nào user có 2 tài khoản thật để thử, không chặn việc gì khác.
 
 **Biết trước, có thể chấp nhận là giới hạn của đợt đầu (không phải bug):**
 - Manager quản lý ≥2 Kho, chỉ dán dữ liệu phủ 1 phần số Kho đó trên 1 thiết bị → phần
