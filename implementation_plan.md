@@ -585,21 +585,52 @@ chưa được map) có thể quyết định luôn lúc bắt đầu code thay 
   đều sạch trong phạm vi bi-dashboard (1 vi phạm ratchet còn lại ở `features/phan-ca/
   Legend.tsx` — không liên quan, không đụng tới, thuộc việc khác của user).
 
-**⏳ CHƯA LÀM**
-1. **Deploy `firestore.rules`** — thủ công, cần user tự chạy `npm run deploy:rules` với tài
-   khoản Google có quyền trên project `dashboa-7e20b`. Không deploy thì `biData`/
-   `biSupermarketMap` vẫn bị Firestore mặc định từ chối mọi read/write.
-2. **Test Playwright 2 tài khoản khác Kho** — xác nhận nhân viên Kho B thật sự KHÔNG đọc
-   được dữ liệu Kho A (server-side, không chỉ UI). Cần rules đã deploy trước mới test được
-   đúng nghĩa "chặn thật". Có thể dùng tài khoản test đã có sẵn (xem memory
-   `reference_sticker_event_test_accounts` — nhưng đó là sticker-event, cần tài khoản test
-   riêng cho root/bi-dashboard, hoặc tạo mới 2 tài khoản với `departmentId` khác nhau qua
-   `UserManagementView.tsx`).
-3. **Áp dụng sang Phân Tích** (mục 7 quyết định nghiệp vụ) — CHƯA làm, đợi Report BI ổn định
-   qua bước test ở trên trước, theo đúng thứ tự đã chốt với user.
-4. Biết trước, có thể chấp nhận là giới hạn của đợt đầu (không phải bug):
-   - Manager quản lý ≥2 Kho, chỉ dán dữ liệu phủ 1 phần số Kho đó trên 1 thiết bị → phần
-     Summary Luỹ kế của (các) Kho còn lại sẽ không tự bù từ bản dùng chung (Thi đua Luỹ kế
-     THÌ có bù, vì gộp theo object; Summary gộp theo "ưu tiên local toàn phần" đơn giản hơn).
-   - Admin sửa bảng map trong lúc đang mở sẵn `DataUpdater.tsx` ở tab khác → tab đó phải
-     tải lại trang mới thấy map mới (không tự đồng bộ real-time).
+**✅ DONE — Kiểm chứng "chặn thật" bằng Firebase Local Emulator Suite (2026-09-01)**
+User hỏi "có cách nào cho agent tự quyền test không" — giải pháp không cần cấp quyền production
+gì cả: `@firebase/rules-unit-testing` (đã có sẵn trong `node_modules`, không cần cài mới) chạy
+`firestore.rules` thật trên Firestore Emulator cục bộ (Java lấy qua `brew --prefix openjdk`,
+máy chưa link `java` mặc định), giả lập token Auth với custom claim `role`/`departmentId` tuỳ ý
+— hoàn toàn không cần tài khoản Google thật, không đụng dữ liệu production. Script tạm chạy 10
+assertion (`assertSucceeds`/`assertFails`), xoá ngay sau khi chạy xong — không phải file lưu lại
+trong repo:
+- managerA (Kho A) ghi được `biData/KHO_A` ✅ / employeeA (Kho A) đọc được, GHI thì bị chặn ✅
+- **employeeB (Kho B, KHÁC Kho) đọc `biData/KHO_A` bị chặn ✅ — đúng phép thử cốt lõi "nhân
+  viên siêu thị khác không đọc được dữ liệu siêu thị này", server-side thật (log emulator có
+  `PERMISSION_DENIED` tại đúng dòng rule trong `firestore.rules`, không phải giả lập suông)**
+- employeeB ghi `biData/KHO_A` bị chặn ✅ / user chưa đăng nhập đọc bị chặn ✅
+- adminX ghi `biSupermarketMap` được ✅ / managerA (không phải admin) ghi bị chặn ✅ / user
+  đăng nhập bất kỳ đọc được ✅ / chưa đăng nhập đọc bị chặn ✅
+- **Kết quả: 10/10 PASS.** Đây là bằng chứng độc lập (không dựa vào đọc code bằng mắt) rằng
+  `firestore.rules` mục Đợt 4 hoạt động đúng thiết kế — miễn là được DEPLOY (xem mục dưới).
+
+**✅ Xác nhận — module Phân Tích KHÔNG cần việc gì thêm**
+Grep xác nhận `khoDataService.ts` đã được gọi thật (không phải code chết) từ
+`hooks/useFileUploadLogic.ts`, `hooks/useDataManagement.ts`, `components/upload/
+KhoFileManager.tsx` — nghĩa là phân quyền theo Kho ở Phân Tích **đã chạy production từ trước**,
+độc lập với Đợt 4. Mục 7 quyết định nghiệp vụ ("áp dụng sang Phân Tích sau") thực chất không
+còn việc gì phải làm thêm — Phân Tích vốn đã dùng đúng `departmentId`/`myKhos()` từ lâu.
+
+**⏳ CHƯA LÀM — chỉ còn 1 việc, và nó PHẢI do user thực hiện**
+1. **Deploy `firestore.rules`** (`npm run deploy:rules`, cần `firebase login` bằng tài khoản
+   Google có quyền trên project `dashboa-7e20b`). Đây là ranh giới cố ý trong CLAUDE.md mục 0.7
+   ("không tự động hoá, không phải việc agent tự chạy") — không phải giới hạn kỹ thuật. Agent
+   ĐÃ kiểm chứng logic rules đúng 100% qua emulator ở trên; việc còn lại thuần tuý là "bấm nút
+   xuất bản" lên project thật, y hệt quyết định `khoData/{maKho}` trước đây cũng do user tự
+   deploy. Sau khi deploy, tính năng hoạt động ngay — không cần thêm bước nào khác.
+   - Nếu muốn agent tự deploy được ở phiên sau (tuỳ chọn, KHÔNG bắt buộc): agent có thể chạy
+     `firebase login` ngay trong terminal này — user vẫn phải tự bấm qua màn hình đăng nhập
+     Google 1 lần (agent không thể tự động click OAuth thay người), nhưng sau đó phiên CLI được
+     lưu lại cục bộ và agent chạy `firebase deploy --only firestore:rules` được luôn không cần
+     hỏi lại. Đây là cách AN TOÀN hơn tạo service account key mới (không tạo thêm 1 secret tĩnh
+     nằm trong máy) — nhưng vẫn là đổi 1 chính sách đã ghi rõ trong CLAUDE.md, nên cần user xác
+     nhận rõ ràng mới làm, không tự ý đổi.
+2. Test 2 tài khoản Google thật (khác `departmentId`) qua UI thật — CHỈ còn ý nghĩa kiểm tra
+   UX/trải nghiệm (đã hết ý nghĩa "kiểm tra có chặn thật không", vì emulator test ở trên đã trả
+   lời dứt điểm câu đó rồi). Không bắt buộc trước khi deploy.
+
+**Biết trước, có thể chấp nhận là giới hạn của đợt đầu (không phải bug):**
+- Manager quản lý ≥2 Kho, chỉ dán dữ liệu phủ 1 phần số Kho đó trên 1 thiết bị → phần
+  Summary Luỹ kế của (các) Kho còn lại sẽ không tự bù từ bản dùng chung (Thi đua Luỹ kế
+  THÌ có bù, vì gộp theo object; Summary gộp theo "ưu tiên local toàn phần" đơn giản hơn).
+- Admin sửa bảng map trong lúc đang mở sẵn `DataUpdater.tsx` ở tab khác → tab đó phải
+  tải lại trang mới thấy map mới (không tự đồng bộ real-time).
