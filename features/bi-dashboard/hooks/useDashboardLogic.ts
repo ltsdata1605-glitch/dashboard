@@ -11,8 +11,7 @@ import {
     parseIndustryLuyKeData,
     parseNumber,
     shortenSupermarketName,
-    extractSupermarketList,
-    parseCompetitionDataBySupermarket
+    extractSupermarketList
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
 import { useReportBiAuth } from './useReportBiAuth';
@@ -66,7 +65,6 @@ export const useDashboardLogic = (isActive?: boolean) => {
     }, [allowedKhos.join(','), isActive]);
 
     const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;
-    const competitionLuyKe = localCompetitionLuyKe;
     const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
@@ -115,13 +113,13 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const [localCompetitionLuyKeBySupermarket, setLocalCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
-        if (!competitionLuyKe || isActive === false) return;
+        if (!localCompetitionLuyKe || isActive === false) return;
         let isMounted = true;
-        runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionLuyKe).then(res => {
+        runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', localCompetitionLuyKe).then(res => {
             if (isMounted && res) setLocalCompetitionLuyKeBySupermarket(res);
         }).catch(err => console.error('[useDashboardLogic] Lỗi parse thi đua luỹ kế:', err));
         return () => { isMounted = false; };
-    }, [competitionLuyKe, isActive]);
+    }, [localCompetitionLuyKe, isActive]);
 
     // Gộp theo tên siêu thị: shared trước, local đè lên (local luôn mới nhất trên thiết bị
     // đang dán) — bù đúng phần siêu thị nhân viên/quản lý CHƯA dán trên thiết bị này.
@@ -189,12 +187,16 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => window.removeEventListener('indexeddb-change', handleDbChange as EventListener);
     }, []);
 
-    const parseCompetitionLuyKeBaseTargets = (text: string): Record<string, Record<string, number>> => {
-        if (!text) return {};
-        const smData = parseCompetitionDataBySupermarket(text);
+    // Đọc thẳng từ competitionLuyKeBySupermarket (đã merge local + shared) thay vì tự parse lại
+    // raw text — raw text competitionLuyKe chỉ có ở thiết bị VỪA dán (manager/admin), luôn RỖNG
+    // với nhân viên chỉ-đọc (đọc dữ liệu dùng chung qua biData/{maKho}, không có bản raw text
+    // cục bộ) khiến baseTargets luôn {} → cột "Target V.Trội"/"%HTDK V.Trội" luôn = 0 cho toàn bộ
+    // nhân viên đọc dữ liệu chung (Đợt 4). competitionLuyKeBySupermarket cùng shape
+    // SupermarketCompetitionData nên đọc trực tiếp được, không cần raw text.
+    const computeCompetitionBaseTargets = (bySupermarket: Record<string, SupermarketCompetitionData>): Record<string, Record<string, number>> => {
         const targets: Record<string, Record<string, number>> = {};
-        for (const smName in smData) {
-            const sm = smData[smName];
+        for (const smName in bySupermarket) {
+            const sm = bySupermarket[smName];
             const targetIdx = sm.headers.findIndex(h => h.toUpperCase().includes('TARGET'));
             if (targetIdx !== -1) {
                 if (!targets[smName]) targets[smName] = {};
@@ -209,13 +211,13 @@ export const useDashboardLogic = (isActive?: boolean) => {
     useEffect(() => {
         if (isActive === false) return;
         const augmentData = async () => {
-            if (Object.keys(competitionRealtimeBySupermarket).length === 0 || !competitionLuyKe) {
+            if (Object.keys(competitionRealtimeBySupermarket).length === 0 || Object.keys(competitionLuyKeBySupermarket).length === 0) {
                 setAugmentedRealtimeData(competitionRealtimeBySupermarket);
                 return;
             }
             const now = new Date();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe);
+            const baseTargets = computeCompetitionBaseTargets(competitionLuyKeBySupermarket);
             const newAugmentedData = structuredClone(competitionRealtimeBySupermarket);
             const programTotalTargets: Record<string, number> = {};
 
@@ -288,7 +290,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             setAugmentedRealtimeData(newAugmentedData);
         };
         augmentData();
-    }, [competitionRealtimeBySupermarket, competitionLuyKe, dataVersion, isActive]);
+    }, [competitionRealtimeBySupermarket, competitionLuyKeBySupermarket, dataVersion, isActive]);
 
     useEffect(() => {
         if (isActive === false) return;
@@ -300,7 +302,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const now = new Date();
             const daysPassed = now.getDate();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe);
+            const baseTargets = computeCompetitionBaseTargets(competitionLuyKeBySupermarket);
             const newAugmentedData = structuredClone(competitionLuyKeBySupermarket);
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
 
@@ -382,7 +384,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             setAugmentedLuyKeData(newAugmentedData);
         };
         augmentData();
-    }, [competitionLuyKeBySupermarket, competitionLuyKe, dataVersion, isActive]);
+    }, [competitionLuyKeBySupermarket, dataVersion, isActive]);
 
     useEffect(() => {
         if (isActive === false) return;

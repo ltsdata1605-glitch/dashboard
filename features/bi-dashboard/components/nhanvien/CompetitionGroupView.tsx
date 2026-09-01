@@ -7,6 +7,7 @@ import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
+import { Pill } from '../shared/Pill';
 
 interface CompetitionGroupCardProps {
     header: CompetitionHeader;
@@ -162,9 +163,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         return { averageActual: avg, rankedByActual: byActual, rankedByCompletion: byCompletion };
     }, [sortedEmployeesForCard, employeeDataMap, employeeCompetitionTargets, header]);
 
-    // Top 3 color: green for T.HIỆN
+    // Top 3 color: emerald cho T.HIỆN (đổi từ rgb(34,197,94)/green-500 ngoài palette sang
+    // emerald-600 — khớp CLAUDE.md mục 2, đúng tông đã dùng cho pill %HT ở các bảng đã redesign)
     const getTopActualStyle = (rank: number) => {
-        if (rank >= 1 && rank <= 3) return { color: 'rgb(34, 197, 94)', fontWeight: 900 } as React.CSSProperties;
+        if (rank >= 1 && rank <= 3) return { color: '#059669', fontWeight: 900 } as React.CSSProperties;
         return null;
     };
 
@@ -180,18 +182,18 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         
         const completionVal = roundUp(completion);
         
-        // %HT coloring: TOP 1-3 green, between budget and top3 yellow, below budget red
+        // %HT dạng Pill (Đợt 3 Lô 5 — "Enterprise Tinh Gọn"): TOP 1-3 emerald, chưa đạt tiến độ
+        // thời gian rose, đạt/vượt tiến độ nhưng chưa TOP3 amber — giữ NGUYÊN 3 ngưỡng gốc, chỉ
+        // đổi rgb(34,197,94)/rgb(239,68,68)/rgb(234,179,8) (green/red/yellow ngoài palette) sang
+        // đúng hex emerald-600/rose-600/amber-600 (khớp CLAUDE.md mục 2).
         const completionRank = rankedByCompletion.get(employee.originalName) ?? -1;
-        let percentClass = 'font-bold';
-        let percentInlineStyle: React.CSSProperties = {};
+        let percentPillColor: string | undefined;
         if (completionRank >= 1 && completionRank <= 3) {
-            percentInlineStyle = { color: 'rgb(34, 197, 94)', fontWeight: 900 };
+            percentPillColor = '#059669';
         } else if (completionVal > 0 && completionVal < timeProgress.percentage) {
-            percentInlineStyle = { color: 'rgb(239, 68, 68)', fontWeight: 700 };
+            percentPillColor = '#e11d48';
         } else if (completionVal >= timeProgress.percentage) {
-            percentInlineStyle = { color: 'rgb(234, 179, 8)', fontWeight: 700 };
-        } else {
-            percentClass = 'text-slate-700 dark:text-slate-300 font-bold';
+            percentPillColor = '#d97706';
         }
         
         // T.HIỆN coloring: TOP 1-3 green, below average red
@@ -212,8 +214,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         
         // When highlighted, clear conditional colors so highlight style shines through
         if (isHighlighted) {
-            percentClass = 'font-bold';
-            percentInlineStyle = {};
+            percentPillColor = undefined;
             actualClass = 'font-bold';
             actualInlineStyle = {};
         }
@@ -234,8 +235,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 <td className={`px-2 py-1.5 text-right text-[11px] whitespace-nowrap tabular-nums ${actualClass}`} style={actualInlineStyle}>
                     {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
                 </td>
-                <td className={`px-2 py-1.5 text-right text-[11px] whitespace-nowrap tabular-nums ${percentClass}`} style={percentInlineStyle}>
-                    {(!actual || actual === 0) ? '-' : `${roundUp(completion).toFixed(0)}%`}
+                <td className="px-2 py-1.5 text-right text-[11px] whitespace-nowrap tabular-nums">
+                    {(!actual || actual === 0) ? '-' : <Pill color={percentPillColor}>{`${roundUp(completion).toFixed(0)}%`}</Pill>}
                 </td>
                 <td className={`px-2 py-1.5 text-right text-[11px] font-bold whitespace-nowrap tabular-nums ${isHighlighted ? '' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
             </tr>

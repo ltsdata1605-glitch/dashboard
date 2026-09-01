@@ -8,6 +8,7 @@ import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
+import { Pill } from '../shared/Pill';
 
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
@@ -439,9 +440,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 }
                 return (
                     <div className="flex justify-end items-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
+                        <Pill color={rounded >= 100 ? '#059669' : rounded >= 85 ? '#d97706' : '#e11d48'}>
                             {rounded}%
-                        </span>
+                        </Pill>
                     </div>
                 );
             }

@@ -136,7 +136,7 @@ const BiSupermarketMapAdmin: React.FC = () => {
             ) : rows.length === 0 ? (
                 <EmptyState title="Chưa có siêu thị nào trong bảng map" description="Thêm siêu thị đầu tiên ở form phía trên." />
             ) : (
-                <DataTable columns={columns} data={rows} rowKey={(row) => row.name} compact stickyHeader={false} columnDividers />
+                <DataTable columns={columns} data={rows} rowKey={(row) => row.name} compact stickyHeader={false} className="rounded-none" />
             )}
 
             <ConfirmDialog

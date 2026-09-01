@@ -139,6 +139,10 @@ export async function uploadCompetitionLuyKeIfManager(
     const batch = writeBatch(db);
     let hasWrites = false;
     for (const [name, data] of Object.entries(bySupermarket)) {
+        // Bỏ qua dòng "Tổng" (tổng hợp toàn cụm, không phải 1 siêu thị thật) — parseCompetitionDataBySupermarket()
+        // luôn sinh ra key này (xem isEntity trong dashboardHelpers.ts), không bao giờ có trong nameToKho nên
+        // trước đây bị đẩy vào skippedNames mỗi lần dán, che mất cảnh báo thật (siêu thị thật sự thiếu map).
+        if (name.toUpperCase() === 'TỔNG') continue;
         if (!data.programs || data.programs.length === 0) continue;
         const maKho = nameToKho[name];
         if (!maKho) { skippedNames.push(name); continue; }

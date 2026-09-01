@@ -8,6 +8,7 @@ import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 import { exportElementAsImage } from '../../services/uiService';
 import * as dbService from '../../services/dbService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Pill } from '../shared/Pill';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
 import { DeltaBadge } from '../shared/Badges';
@@ -110,14 +111,11 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                 <div>{f.format(node.dtqd)}</div>
                 {prevData && <DeltaBadge current={node.dtqd} previous={prevData.dtqd} isCurrency />}
             </td>
-            {/* Hiệu quả QĐ */}
+            {/* Hiệu quả QĐ — Pill dùng chung (Đợt 3 Lô 5), thay pill tự viết trước đây */}
             <td className={`px-3 py-1.5 text-right ${style.size} tabular-nums`}>
-                <span className={`inline-flex min-w-[42px] items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'text-slate-400 dark:text-slate-500'
-                    }`}>
+                <Pill color={node.hieuQuaQD >= 0.3 ? '#059669' : node.hieuQuaQD > 0 ? '#d97706' : '#94a3b8'}>
                     {Math.round(node.hieuQuaQD * 100)}%
-                </span>
+                </Pill>
             </td>
             {/* Đơn giá */}
             <td className={`px-3 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
