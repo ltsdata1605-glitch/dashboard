@@ -705,3 +705,94 @@ Chi tiết đầy đủ + trích code cho từng mục xem memory `project_phan_
   font-size chỉ có thể làm bảng cần cuộn ngang nhiều hơn, KHÔNG thể làm vỡ layout/cắt
   chữ. Khuyến nghị user tự soi mắt 1 lần trên trình duyệt với dữ liệu thật sau khi
   deploy, đặc biệt bảng So Sánh giai đoạn (nhiều cột nhất).
+
+---
+
+# [MODULE Report BI, tiếp tục] Rà soát vòng 2 sau Đợt 4 (2026-09-01, commit `89901a44`,
+# `7074b4a6`)
+
+## Bối cảnh
+User yêu cầu "tiếp tục rà soát Report BI" — vòng rà soát MỚI, tập trung vào code mới
+nhất (Đợt 3 Lô 5 + Đợt 4 phân quyền siêu thị, vừa deploy production). Dùng 2 Explore
+agent song song (1 hướng bug/tính toán, 1 hướng đồng nhất UI 18 bảng đã redesign), sau
+đó tự điều tra sâu từng phát hiện trước khi sửa.
+
+## Đã sửa (commit `89901a44`)
+1. **Bug thật — cảnh báo giả "Tổng" khi dán Thi đua Luỹ kế**: `biDataService.ts`
+   `uploadCompetitionLuyKeIfManager()` luôn đẩy key "Tổng" (do
+   `parseCompetitionDataBySupermarket()` luôn sinh ra, không bao giờ có trong bảng map)
+   vào `skippedNames` — mọi lần admin/manager dán đều nhận cảnh báo giả, che mất cảnh
+   báo thật. Đã thêm điều kiện bỏ qua "Tổng" trước khi đối chiếu map.
+2. **Bug thật — cột "Target V.Trội"/"%HTDK V.Trội" luôn = 0 cho nhân viên chỉ-đọc**:
+   `useDashboardLogic.ts` `parseCompetitionLuyKeBaseTargets()` tự parse lại RAW TEXT
+   `competitionLuyKe` (luôn rỗng với nhân viên không dán local, vì Thi đua Luỹ kế được
+   thiết kế lưu OBJECT đã parse chứ không phải raw text — xem lý do ở mục Đợt 4 phía
+   trên). Đổi hàm (đổi tên `computeCompetitionBaseTargets`) sang đọc trực tiếp
+   `competitionLuyKeBySupermarket` (object đã merge local+shared, cùng shape) — vừa
+   fix bug, vừa bỏ được 1 lượt re-parse thừa. Dọn luôn biến `competitionLuyKe` alias
+   không còn cần thiết.
+3. **UI — 4 file lệch chuẩn "Enterprise Tinh Gọn"**: `CompetitionGroupView.tsx` (màu
+   RGB `rgb(34,197,94)`/`rgb(239,68,68)`/`rgb(234,179,8)` ngoài palette → hex
+   emerald-600/rose-600/amber-600, cột %HT chuyển sang `<Pill>`), `DetailTab.tsx` +
+   `IndustryView.tsx` (pill tự viết bằng `bg-{color}-100`+`dark:` → dùng chung
+   `<Pill>` có sẵn từ Lô 5 — 2 file này bị sót khi `Pill.tsx` ra đời sau),
+   `BiSupermarketMapAdmin.tsx` (Đợt 4, code MỚI NHẤT nhưng lại dùng `DataTable` mặc
+   định `rounded-xl`+`columnDividers` — đi ngược đúng 2 điểm cốt lõi Lô 5 vừa chuẩn
+   hoá — thêm `className="rounded-none"`, bỏ `columnDividers`).
+
+## Đã sửa (commit `7074b4a6`) — bug nghiêm trọng nhất, cần hỏi user trước khi sửa
+**Phát hiện**: nhân viên chỉ-đọc (chưa dán local) mở Dashboard thấy **KPI card trống**
+và **mất dòng "Tổng"** ở Summary Luỹ kế — vì `biData/{maKho}` chỉ lưu fragment từng
+Kho, không lưu dòng "Tổng"/khối KPI gốc (2 thứ đó vốn là số liệu tổng hợp TOÀN CỤM,
+không tách theo Kho được). Đây là lựa chọn nghiệp vụ thật (Tổng nên là gì khi dữ liệu
+chỉ có 1 phần?), đã hỏi user qua AskUserQuestion — **user chọn: "Tự tính Tổng = tổng
+(các) Kho họ thấy được"**.
+
+Đã triển khai: `biDataService.ts` thêm `buildSyntheticTotalLine()` — tự dựng 1 dòng
+"Tổng" (cộng dồn) sau khi gộp fragment các Kho, nối vào cuối text trả về từ
+`fetchAllowedSummaryLuyKeText()`. Cột có "%" trong header hoặc thiếu giá trị ở dòng
+nào → để trống (an toàn hơn hiển thị % sai do cộng dồn tỷ lệ). Vì dòng "Tổng" nối vào
+đúng ĐỊNH DẠNG RAW TEXT gốc, `parseSummaryData()` (vốn đã nhận diện `firstCol==='Tổng'`
+là dòng hợp lệ) và `SummaryTableView.tsx` (`tRowIdx = tempRows.findIndex(r =>
+r[nameIndex]==='Tổng')`) hoạt động đúng KHÔNG CẦN sửa gì thêm.
+
+**Hiệu ứng phụ tốt phát hiện khi điều tra**: `getKpiData()` không CHỈ đọc từ
+`sourceData.kpis` (khối regex-extract toàn báo cáo, vẫn rỗng) — với
+`activeSupermarket==='Tổng'`, phần lớn field (`dtlk`, `dtqd`, `dtDuKien`, `lkhach`,
+`tlpv`, `tyTrongTraGop`...) đọc TRỰC TIẾP từ dòng bảng khớp tên siêu thị đang chọn, nên
+tự động được lấp đầy đúng theo dòng "Tổng" tổng hợp mới — không cần sửa `getKpiData()`.
+
+**Gap còn sót lại (nhỏ, chưa xử lý)**: 1 vài field %-based cụ thể không nằm trong
+`mapping` của `getKpiData()` (vd `htTargetQD`/`targetQD` riêng cho view LuyKe, hoặc cột
+%-header bị để trống trong dòng Tổng tổng hợp) vẫn hiển thị "0%" thay vì ẩn/ghi chú —
+vì `KpiOverview.tsx` dùng `parseNumber(kpiData.xxx)` cho hầu hết card, mà
+`parseNumber(undefined)` trả về `0` (không phải "N/A"). Phạm vi ảnh hưởng nhỏ hơn nhiều
+so với đánh giá ban đầu (đã tự sửa được phần lớn qua fix dòng Tổng) — CHƯA xử lý tiếp
+vì cần đọc/hiểu hết ~15 KPI card trong `KpiOverview.tsx` (chưa đọc toàn bộ), rủi ro
+sửa vội gây thêm bug mới cho 1 component chưa quen thuộc — để user quyết định có cần
+xử lý tiếp không.
+
+## Đã điều tra, KHÔNG sửa — false positive
+- `Settings.tsx` audit-trail table "thiếu viền `border`" (agent nêu) — thực ra bảng
+  nằm trong `<section>` đã có border riêng bao ngoài (title bar + nội dung), thêm viền
+  cho bảng sẽ tạo viền đôi — đúng pattern nhất quán với section "Sao lưu & Khôi phục"
+  cạnh đó trong CÙNG file.
+- `BonusDesktopRow.tsx`/`BonusGroupListTable.tsx` pill tự viết (không dùng `Pill`) —
+  có comment tự giải thích lý do kỹ thuật hợp lý (hàm màu trả class rời rạc chứ không
+  phải hex) — giữ nguyên, không phải lỗi.
+- Sticky-column shadow 2 công thức khác nhau (`shadow-[2px_0_4px_-2px_...]` vs
+  `shadow-[4px_0_6px_-4px_...]`) — mức độ quá thấp (cosmetic, gần như không nhận ra
+  bằng mắt thường), 4 vs 3 chỗ dùng không rõ bên nào là "chuẩn" — không sửa, ghi nhận
+  nếu sau này cần dọn.
+- Race condition nhẹ ở `BiSupermarketMapAdmin.tsx` (2 admin sửa map cùng lúc,
+  last-write-wins) — rủi ro thấp (thường chỉ 1 admin thao tác), không sửa.
+- Audit trail (Đợt 3) chưa mở rộng ghi log cho hành động Đợt 4 (sửa bảng map, kết quả
+  upload biData) — khoảng trống thật nhưng không phải bug/không ảnh hưởng người dùng
+  cuối, để dành cho yêu cầu riêng nếu user cần.
+
+## Verify
+`tsc --noEmit`, `eslint features/bi-dashboard`, `npm run build`, `npm run
+lint:ratchet` đều sạch. Fix dòng "Tổng" tổng hợp đã test độc lập bằng script Node
+ngoài repo (không phải Playwright — không cần trình duyệt để verify logic thuần hàm)
+xác nhận: tổng đúng, cột % để trống đúng, trường hợp chỉ 1 Kho ra kết quả hợp lý
+(Tổng = chính dòng đó).
