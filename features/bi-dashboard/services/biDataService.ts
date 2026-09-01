@@ -24,7 +24,7 @@ import {
     doc, getDoc, writeBatch, serverTimestamp
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { parseCompetitionDataBySupermarket, SupermarketCompetitionData } from '../utils/dashboardHelpers';
+import { parseCompetitionDataBySupermarket, SupermarketCompetitionData, parseNumber } from '../utils/dashboardHelpers';
 
 const SUMMARY_LUYKE_HEADER_MARKER = 'Tên miền\tDT Hôm Qua\tDTLK\tDT Dự Kiến\tDTQĐ';
 
@@ -103,9 +103,31 @@ export async function uploadSummaryLuyKeIfManager(
     return { skippedNames, uploadedKhos: entries.map(([maKho]) => maKho) };
 }
 
+/** Dựng dòng "Tổng" tổng hợp CHỈ (các) Kho mà user đang xem thấy được — KHÔNG PHẢI Tổng toàn
+ * cụm/công ty gốc (biData không lưu số đó, vì nó vốn không tách được theo từng Kho). User đã
+ * chọn phương án này 2026-09-01 (xem implementation_plan.md mục "Đợt 4" — bug "mất dòng Tổng
+ * cho nhân viên chỉ-đọc"): tự tính từ dữ liệu đã có, thay vì lưu số toàn cụm dùng chung cho
+ * mọi Kho (rủi ro lộ số liệu ngoài phạm vi được cấp quyền). Cột nào có "%" trong header hoặc
+ * thiếu giá trị ở bất kỳ dòng nào thì để trống — an toàn hơn hiển thị % sai do cộng dồn tỷ lệ. */
+function buildSyntheticTotalLine(headerLine: string, dataLines: string[]): string {
+    const headers = headerLine.split('\t');
+    const nameIdx = headers.indexOf('Tên miền');
+    const rows = dataLines.map(l => l.split('\t'));
+
+    return headers.map((h, colIdx) => {
+        if (colIdx === nameIdx) return 'Tổng';
+        if (h.includes('%')) return '';
+        const values = rows.map(r => r[colIdx]);
+        if (values.some(v => v === undefined || v === '')) return '';
+        const sum = values.reduce((acc, v) => acc + parseNumber(v), 0);
+        return Math.round(sum).toLocaleString('vi-VN');
+    }).join('\t');
+}
+
 /** Đọc + gộp lại Summary Luỹ kế của mọi Mã Kho user được cấp quyền, dựng lại đúng định dạng
  * raw text mà parseSummaryData()/extractSupermarketList() đang mong đợi — KHÔNG cần sửa 2 hàm
- * đó, chỉ tái tạo lại đúng input của chúng. */
+ * đó, chỉ tái tạo lại đúng input của chúng (kể cả dòng "Tổng" — parseSummaryData() vốn đã nhận
+ * diện đúng dòng bắt đầu bằng "Tổng" là 1 dòng dữ liệu hợp lệ). */
 export async function fetchAllowedSummaryLuyKeText(allowedKhos: string[]): Promise<string> {
     if (allowedKhos.length === 0) return '';
     const snaps = await Promise.all(allowedKhos.map(maKho => getDoc(summaryDocRef(maKho))));
@@ -118,7 +140,8 @@ export async function fetchAllowedSummaryLuyKeText(allowedKhos: string[]): Promi
         dataLines.push(data.dataLine);
     });
     if (!headerLine || dataLines.length === 0) return '';
-    return [headerLine, ...dataLines].join('\n');
+    const totalLine = buildSyntheticTotalLine(headerLine, dataLines);
+    return [headerLine, ...dataLines, totalLine].join('\n');
 }
 
 /** Ghi dữ liệu Thi đua Luỹ kế lên biData/{maKho} — parse 1 lần bằng
