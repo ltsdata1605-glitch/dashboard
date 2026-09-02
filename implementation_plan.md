@@ -860,18 +860,39 @@ trước — xác nhận lại qua agent, không cần sửa gì thêm ở phầ
 - `.filter-pill` tên "pill" nhưng `border-radius:0` (hình chữ nhật) — sửa `9999px`.
 - 2 bảng trong modal xếp hạng thiếu `font-bold` ở header — đã thêm.
 
+## Đã xử lý tiếp — commit `826734a7` (2026-09-02, theo yêu cầu "hoàn thiện chức năng")
+
+**1. `validateDataStructure()` lệch vị trí cột** — ĐÃ THÊM CẢNH BÁO MỀM (không phải
+refactor lớn như đánh giá ban đầu): giữ nguyên `validateDataStructure()` (0 rủi ro
+regression cho file đang chạy đúng), thêm hàm `warnIfColumnsMisaligned()` gọi ngay
+sau khi tìm thấy dòng tiêu đề — `console.warn` khi cột ở đúng vị trí `COLS` mong đợi
+(`SIÊU_THỊ`, `NGANH_HANG`, `TONG_THUONG`) không khớp từ khoá tương ứng. Không chặn,
+không đổi hành vi cho end-user — chỉ giúp người quản lý template phát hiện sớm qua
+DevTools nếu Excel gốc đổi cấu trúc cột.
+
+**2. Modal "Lịch Sử Phiên Bản" mồ côi** — ĐÃ KHÔI PHỤC. Thêm 2 nút trigger dùng chung
+class `.version-info-trigger`: 1 trong `landingPage` (badge nhỏ cạnh "Local
+Processing/Instant Speed/Smart UI"), 1 dạng cố định góc màn hình
+`#versionInfoPersistent` (`position:fixed`, luôn hiện bất kể trạng thái landing/đã
+tải file). **Phát hiện phụ quan trọng trong lúc làm**: thử đặt nút thứ 2 bên trong
+`#searchSection` trước — Playwright báo "element not visible" dù element tồn tại
+đúng trong DOM, truy ra nguyên nhân: `#searchSection` có `style="display:none
+!important"` INLINE, JS chỉ `classList.remove('hidden')` (không đủ thắng inline
+`!important`) nên section này (chứa input mã Kho, nút tra cứu/đổi file bên trong
+iframe) **không bao giờ thật sự hiện ra được** — cực nhiều khả năng đây là cách "ẩn
+tạm" có chủ đích sau khi thêm thanh tìm kiếm tương đương ở header cha qua React
+portal (`CheckThuongView.tsx` → `#global-header-actions`, cùng gửi postMessage
+`CHECK_THUONG_SEARCH`/`CHECK_THUONG_CHANGE_FILE`), không phải lỗi quên. KHÔNG sửa
+(gỡ style có thể lộ ra 2 thanh tìm kiếm trùng lặp — cần quyết định thiết kế trước) —
+đã ghi chú tại chỗ trong code, chuyển nút version sang vị trí khác không phụ thuộc
+section này.
+
 ## Đã điều tra, KHÔNG sửa — cần quyết định thêm hoặc rủi ro > lợi ích
-- **`validateDataStructure()` chỉ check tên cột (substring), không check VỊ TRÍ cột**
-  trong khi `COLS` dùng index CỨNG (`NGANH_HANG:5, TONG_THUONG:13`...) — nếu Excel có
-  đúng từ khoá tiêu đề nhưng cột bị đảo vị trí, validate vẫn PASS nhưng dữ liệu map
-  sai cột, không cảnh báo. Sửa an toàn cần đổi cách tham chiếu cột (từ index cứng
-  sang tra theo tên) — refactor lớn động tới rất nhiều nơi dùng `COLS.*`, rủi ro cao
-  hơn lợi ích trong 1 lần sửa nhỏ. Để dành cho yêu cầu riêng nếu cần.
-- **Modal "Lịch Sử Phiên Bản" mồ côi hoàn toàn** — `versionInfo = document.getElementById('versionInfo')`
-  nhưng KHÔNG có phần tử nào mang `id="versionInfo"` trong HTML, nên nút mở modal
-  không tồn tại — toàn bộ `versionHistory` (~200 dòng nội dung thật, có vẻ từng hoạt
-  động) không ai mở được. Đây là QUYẾT ĐỊNH THIẾT KẾ (khôi phục ở đâu, có muốn hiển
-  thị lịch sử phiên bản cho người dùng cuối không) — không tự đoán vị trí/thêm nút.
+- **`#searchSection` có `style="display:none !important"` inline không bao giờ được
+  gỡ** — xem phát hiện phụ ở mục "Đã xử lý tiếp" ngay trên. Chức năng tương đương đã
+  hoạt động qua React portal nên KHÔNG ảnh hưởng người dùng cuối — chỉ là dead code
+  bên trong iframe. Cần quyết định thiết kế (giữ nguyên làm dự phòng, hay xoá hẳn
+  HTML chết) trước khi động vào.
 - Công thức "nearly/cơ hội vàng" lặp lại y hệt ở 3 nơi — hiện nhất quán, chỉ là rủi ro
   bảo trì (sửa 1 chỗ quên chỗ khác), không phải bug hiện tại — không sửa.
 - Race condition chọn 2 file liên tiếp cực nhanh (FileReader cũ không bị huỷ) — xác
