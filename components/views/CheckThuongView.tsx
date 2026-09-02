@@ -39,6 +39,16 @@ export const CheckThuongView: React.FC = () => {
                         toast.error('Không lưu được thay đổi Check Thưởng vào máy. Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-save-failed', duration: 6000 });
                     });
                 }
+            } else if (e.data?.type === 'CHECK_THUONG_SAVE_ERROR') {
+                // BUG FIX: bên trong iframe (public/check-thuong.html) còn 1 lượt ghi IndexedDB RIÊNG
+                // (idb-keyval, dùng để tự khôi phục khi mở lại) trước đây chỉ console.warn khi thất
+                // bại — cùng loại lỗi "âm thầm mất dữ liệu" đã sửa ở nhánh CHECK_THUONG_STATE_CHANGED
+                // trên, nhưng là 1 điểm ghi khác nên cần báo riêng.
+                console.error('[CheckThuong] Lưu dữ liệu trong iframe thất bại:', e.data.message);
+                toast.error('Không lưu được thay đổi Check Thưởng (bộ nhớ tạm bảng tra cứu). Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-iframe-save-failed', duration: 6000 });
+            } else if (e.data?.type === 'CHECK_THUONG_LOAD_ERROR') {
+                console.error('[CheckThuong] Tải dữ liệu đã lưu trong iframe thất bại:', e.data.message);
+                toast.error('Không tải được dữ liệu Check Thưởng đã lưu trước đó. Vui lòng tải lại file Excel.', { id: 'checkthuong-iframe-load-failed', duration: 6000 });
             }
         };
 

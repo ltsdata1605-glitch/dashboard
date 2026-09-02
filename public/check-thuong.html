@@ -82,10 +82,10 @@
         .summary-banner::before { content: ''; position: absolute; top: -40%; right: -20%; width: 300px; height: 300px; border-radius: 50%; background: rgba(255,255,255,0.06); }
         .summary-banner::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.04); }
         /* Store card */
-        .s-card { border: 1px solid rgba(0,0,0,0.06); border-radius: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%; background: #fff; transition: all 0.15s; }
+        .s-card { border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 100%; background: #fff; transition: all 0.15s; }
         .s-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         /* Filter pill */
-        .filter-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; background: #f1f5f9; color: #475569; transition: all 0.2s; }
+        .filter-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; background: #f1f5f9; color: #475569; transition: all 0.2s; }
         .filter-pill:hover { background: #e2e8f0; }
         .filter-pill.active { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
         /* ===== MOBILE RESPONSIVE ===== */
@@ -133,7 +133,7 @@
             /* Top 10 info card */
             #top10InfoCard { padding: 8px 10px !important; font-size: 11px !important; }
             /* Modal */
-            #rankingModal > div { max-height: 95vh !important; border-radius: 12px !important; }
+            #rankingModal > div { max-height: 95vh !important; }
             #rankingModal h3 { font-size: 14px !important; }
             #modalBody { padding: 8px !important; }
             #modalBody table { font-size: 9px !important; }
@@ -234,7 +234,7 @@
                                 </div>
                             </div>
 
-                            <label for="fileInput" class="relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed border-slate-200 hover:border-sky-400/50 rounded-xl cursor-pointer bg-slate-50/50 hover:bg-sky-50/30 transition-all duration-300 overflow-hidden">
+                            <label id="fileDropzone" for="fileInput" class="relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed border-slate-200 hover:border-sky-400/50 rounded-xl cursor-pointer bg-slate-50/50 hover:bg-sky-50/30 transition-all duration-300 overflow-hidden">
                                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
                                 <div class="flex flex-col items-center justify-center p-4 relative z-10">
                                     <div class="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 group-hover/dropzone:border-sky-200 text-slate-400 group-hover/dropzone:text-sky-500">
@@ -355,7 +355,7 @@
 
     <!-- Ranking Modal -->
     <div id="rankingModal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50">
-        <div class="bg-white shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div class="bg-white shadow-xl rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 id="modalTitle" class="text-xl font-bold text-[#0f172a]">Bảng Xếp Hạng</h3>
                 <div class="flex items-center gap-2 no-print">
@@ -373,7 +373,7 @@
 
     <!-- Version History Modal -->
     <div id="versionModal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50">
-        <div class="bg-white shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="bg-white shadow-xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 id="versionModalTitle" class="text-xl font-bold text-[#0f172a]">Lịch Sử Phiên Bản</h3>
                 <button id="closeVersionModalButton" class="text-slate-400 hover:text-slate-600 no-print">
@@ -436,7 +436,7 @@
             }
 
             // All element selectors
-            const fileInput = document.getElementById('fileInput'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionInfo = document.getElementById('versionInfo'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
+            const fileInput = document.getElementById('fileInput'), fileDropzone = document.getElementById('fileDropzone'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionInfo = document.getElementById('versionInfo'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
             
             // State variables
             let competitionData = [], currentStoreData = [], noFundGroups = new Set();
@@ -466,7 +466,17 @@
                                 payload: payload
                             }, '*');
                         }
-                    }).catch(e => console.warn('IDB Save Error:', e));
+                    }).catch(e => {
+                        // BUG FIX: trước đây chỉ console.warn — người dùng thao tác tìm kiếm/đổi view
+                        // trong Check Thưởng có thể mất trạng thái (hết quota, Private Browsing chặn
+                        // IndexedDB, DB hỏng...) mà không hề biết, giống lỗi đã sửa ở phía React
+                        // (CheckThuongView.tsx dùng saveSettingOrThrow). Báo lên parent để hiện toast
+                        // thật (iframe này không có sẵn thư viện toast riêng).
+                        console.warn('IDB Save Error:', e);
+                        if (window.parent) {
+                            window.parent.postMessage({ type: 'CHECK_THUONG_SAVE_ERROR', message: String((e && e.message) || e) }, '*');
+                        }
+                    });
                 }
             };
 
@@ -512,7 +522,12 @@
                         changeFileButton.classList.add('hidden');
                         mainContent.classList.add('hidden');
                     }
-                }).catch(e => console.warn('IDB Load Error:', e));
+                }).catch(e => {
+                    console.warn('IDB Load Error:', e);
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'CHECK_THUONG_LOAD_ERROR', message: String((e && e.message) || e) }, '*');
+                    }
+                });
             };
 
             // Load saved state on init
@@ -529,28 +544,37 @@
                 if (str === '-' || str === '') return 0;
                 // Remove spaces and currency symbols
                 str = str.replace(/[^\d.,-]/g, '');
-                // Handle Vietnamese format (1.000.000,50) vs US format (1,000,000.50)
-                const lastDot = str.lastIndexOf('.');
-                const lastComma = str.lastIndexOf(',');
-                if (lastComma > lastDot) {
-                    // Comma is decimal separator: 1.000.000,50 -> 1000000.50
-                    str = str.replace(/\./g, '').replace(',', '.');
-                } else if (lastDot > lastComma) {
-                    // Dot is decimal separator: 1,000,000.50 -> 1000000.50
-                    str = str.replace(/,/g, '');
-                } else {
+                // Handle Vietnamese format (1.000.000,50) vs US format (1,000,000.50).
+                // BUG FIX: trước đây so sánh lastIndexOf('.')/lastIndexOf(',') trực tiếp — khi chuỗi
+                // chỉ có 1 LOẠI dấu (rất phổ biến: "1.234.567" kiểu VN thuần nghìn, không phần thập
+                // phân), dấu duy nhất đó luôn có index >= 0 trong khi dấu vắng mặt = -1, nên 2 nhánh
+                // "coi là dấu thập phân" phía trên LUÔN thắng — nhánh "chỉ có 1 loại dấu" bên dưới
+                // (có heuristic phân biệt đúng nghìn/thập phân) không bao giờ chạy tới được. Hệ quả:
+                // parseNumber("1.234.567") trả về 1.234 (sai gấp ~1 triệu lần) thay vì 1234567.
+                // Sửa: chỉ dùng "dấu cuối cùng là thập phân" khi CẢ HAI loại dấu cùng xuất hiện.
+                const hasDot = str.includes('.');
+                const hasComma = str.includes(',');
+                if (hasDot && hasComma) {
+                    const lastDot = str.lastIndexOf('.');
+                    const lastComma = str.lastIndexOf(',');
+                    if (lastComma > lastDot) {
+                        // Comma is decimal separator: 1.000.000,50 -> 1000000.50
+                        str = str.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        // Dot is decimal separator: 1,000,000.50 -> 1000000.50
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (hasComma) {
                     // Only one type of separator
-                    if (str.includes(',')) {
-                        // If multiple commas or 3 digits after comma, it's likely a thousand separator
-                        if (str.split(',').length > 2 || str.match(/,\d{3}$/)) {
-                            str = str.replace(/,/g, '');
-                        } else {
-                            str = str.replace(',', '.');
-                        }
-                    } else if (str.includes('.')) {
-                        if (str.split('.').length > 2 || str.match(/\.\d{3}$/)) {
-                            str = str.replace(/\./g, '');
-                        }
+                    // If multiple commas or 3 digits after comma, it's likely a thousand separator
+                    if (str.split(',').length > 2 || str.match(/,\d{3}$/)) {
+                        str = str.replace(/,/g, '');
+                    } else {
+                        str = str.replace(',', '.');
+                    }
+                } else if (hasDot) {
+                    if (str.split('.').length > 2 || str.match(/\.\d{3}$/)) {
+                        str = str.replace(/\./g, '');
                     }
                 }
                 return parseFloat(str) || 0;
@@ -845,8 +869,12 @@
                 bestAwardedByGroup = bestAwardedByGroupNew;
             }
             
-            function handleFileSelect(event) {
-                const file = event.target.files[0];
+            // BUG FIX: khu vực chọn file hiển thị chữ "hoặc thả các file Excel vào đây" nhưng trước
+            // đây KHÔNG có listener dragover/drop nào — kéo-thả file thật sự sẽ bị trình duyệt tự xử
+            // lý (mở file trong tab mới/điều hướng rời khỏi app), không phải lỗi hiển thị mà là tính
+            // năng được quảng cáo nhưng không hoạt động. Tách phần xử lý file ra processFile(file) để
+            // dùng chung cho cả 2 nguồn (input change VÀ drop).
+            function processFile(file) {
                 if (!file) return;
                 fileUploadTime = new Date().toISOString();
                 const reader = new FileReader();
@@ -1444,7 +1472,7 @@
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
 
                 let tableHtml = `<h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
-                                 <div class="overflow-x-auto"><table class="text-sm text-left text-slate-500 tabular-nums"><thead class="text-xs text-slate-700 uppercase bg-slate-100"><tr>`;
+                                 <div class="overflow-x-auto"><table class="text-sm text-left text-slate-500 tabular-nums"><thead class="text-xs font-bold text-slate-700 uppercase bg-slate-100"><tr>`;
                 
                 Object.entries(sortKeys).forEach(([key, col]) => {
                     const isSortable = col !== null;
@@ -1766,7 +1794,7 @@
                 const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
                 let tableHtml = `<div class="p-4 bg-white"><h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
-                                 <div class="overflow-x-auto"><table class="w-full text-sm text-left text-slate-500 tabular-nums"><thead class="text-xs text-slate-700 uppercase bg-slate-100"><tr>
+                                 <div class="overflow-x-auto"><table class="w-full text-sm text-left text-slate-500 tabular-nums"><thead class="text-xs font-bold text-slate-700 uppercase bg-slate-100"><tr>
                                     <th scope="col" class="px-4 py-1 text-center">SIÊU THỊ</th>
                                     <th scope="col" class="px-4 py-1 text-center">%DKHT</th>
                                     <th scope="col" class="px-4 py-1 text-center">D.KIẾN DT/SL</th>
@@ -1951,7 +1979,27 @@
 
             // --- Event Listeners ---
             changeFileButton.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', handleFileSelect);
+            fileInput.addEventListener('change', (event) => processFile(event.target.files[0]));
+
+            // Kéo-thả file thật (xem comment ở processFile()) — preventDefault trên dragover là bắt
+            // buộc để trình duyệt cho phép drop thay vì tự mở/điều hướng file.
+            const dropzoneActiveClass = ['border-sky-400', 'bg-sky-50/30'];
+            fileDropzone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                fileDropzone.classList.add(...dropzoneActiveClass);
+            });
+            fileDropzone.addEventListener('dragleave', (event) => {
+                if (event.target === fileDropzone) fileDropzone.classList.remove(...dropzoneActiveClass);
+            });
+            fileDropzone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                fileDropzone.classList.remove(...dropzoneActiveClass);
+                processFile(event.dataTransfer.files[0]);
+            });
+            // Chặn hành vi mặc định của trình duyệt (mở file/điều hướng rời trang) nếu người dùng
+            // thả file NGOÀI vùng dropzone nhưng vẫn trong trang này.
+            document.addEventListener('dragover', (event) => event.preventDefault());
+            document.addEventListener('drop', (event) => { if (event.target !== fileDropzone) event.preventDefault(); });
 
             // PERF FIX: gõ mã kho chạy lại toàn bộ pipeline tìm-kiếm+render (competitionData có
             // thể hàng nghìn dòng) trên MỖI ký tự — debounce 200ms để chỉ chạy sau khi người dùng
@@ -2467,7 +2515,7 @@
                     if (e.data.payload) {
                         idbKeyval.set('checkthuong_data', e.data.payload).then(() => {
                             reloadFromIDB();
-                        });
+                        }).catch(err => console.warn('IDB Sync From Cloud Error:', err));
                     }
                 }
             });
