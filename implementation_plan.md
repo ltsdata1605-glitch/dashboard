@@ -917,3 +917,54 @@ server (`npm run dev`, cổng 5173) mà user đã yêu cầu chạy trước đ�
 trước đó trong phiên)**: KHÔNG bao giờ `kill` theo PID lấy từ `lsof -ti:<port>` nếu
 không chắc chắn 100% đó là tiến trình vừa tự khởi động trong CÙNG 1 lệnh — nên lưu
 lại PID ngay lúc `nohup ... &` thay vì tra lại qua port sau đó.
+
+---
+
+# [BUG THẬT USER BÁO CÁO KHI DÙNG] Toast "cập nhật ở nơi khác" nổ sai khi tự upload
+# (2026-09-02, commit `415923b4`) — KHÔNG nằm trong `public/check-thuong.html`
+
+## Bối cảnh
+User tự tay dùng thử ngay sau đợt sửa trên: "Tôi vừa up file lên thì hệ thống lại
+thông báo có file dữ liệu mới cần cập nhật" — toast "Dữ liệu Check Thưởng vừa được
+cập nhật ở nơi khác (tab hoặc thiết bị khác)" (`CheckThuongView.tsx`) nổ SAI ngay sau
+khi TỰ MÌNH upload, không hề có tab/thiết bị nào khác.
+
+**Quan trọng: bug này KHÔNG nằm trong `check-thuong.html`** — nằm ở cơ chế đồng bộ
+Cloud CHUNG cho mọi "khóa nặng" (`hooks/useCloudSync.ts` + `services/
+firestoreService.ts` + `services/dbService/core.ts`), chỉ lộ rõ nhất qua
+`checkthuong_data` vì đây là payload lớn nhất (~4MB, ghi chunked nhiều batch) nên cửa
+sổ đua (race window) dài nhất, dễ trúng nhất.
+
+## Phát hiện qua git history — đây là lần thứ 3
+Đọc code phát hiện bug này đã được "vá" 2 LẦN TRƯỚC, cả 2 đều ghi rõ trong comment là
+đang sửa CHÍNH bug user vừa báo cáo lần này:
+1. Commit `67df4f76` (2026-08-11): thêm `isInitialSnapshot` — sửa case "mở app 1 tab
+   bình thường cũng nổ toast" (đồng bộ khởi động bị hiểu nhầm thành tab khác).
+2. `services/dbService/core.ts` hàm `touchLastModified()` (không rõ ngày qua git
+   blame nhanh, đọc comment): thêm sau khi "user báo cáo LẠI" — chốt lại
+   `lastModified_` cục bộ ngay sau khi ghi Firestore xong, để lần so sánh
+   `cloudTime > localTime` kế tiếp không còn lệch nhiều giây.
+
+Cả 2 lớp đều là SUY LUẬN GIÁN TIẾP qua so sánh mốc thời gian — vẫn còn cửa sổ đua do
+lệch đồng hồ client/server + độ trễ round-trip mạng, không đóng được TRIỆT ĐỂ.
+
+## Đã sửa — dùng tín hiệu TRỰC TIẾP từ Firestore SDK thay vì suy luận
+`hooks/useCloudSync.ts`: thêm guard MỚI làm lớp chặn ĐẦU TIÊN (trước cả 2 lớp cũ, giữ
+nguyên không xoá): kiểm tra `docChange.doc.metadata.hasPendingWrites`. Đây là cờ do
+chính Firestore SDK quản lý — `true` nghĩa là snapshot đến từ cache cục bộ của CHÍNH
+TAB này cho 1 lượt ghi CHƯA được server xác nhận, tức chắc chắn là tiếng vọng của
+chính mình (không phải suy luận qua so sánh số). Đã xác nhận `services/firebase.ts`
+KHÔNG bật multi-tab IndexedDB persistence (`enableIndexedDbPersistence`/
+`enableMultiTabIndexedDbPersistence`/`persistentMultipleTabManager` — 0 kết quả grep)
+nên cache của tab/thiết bị khác không thể lẫn vào cache "pending" của tab này — tín
+hiệu này đáng tin cậy 100% cho đúng use-case cần phân biệt.
+
+## Verify — GIỚI HẠN QUAN TRỌNG, CẦN USER TỰ XÁC NHẬN
+`tsc --noEmit`, `eslint`, `npm run build` đều sạch. **CHƯA test trực tiếp với
+Firestore thật** — cần tài khoản đăng nhập thật + thao tác upload file lớn để quan
+sát hành vi `onSnapshot` sống, không có sẵn trong môi trường agent (không tự đăng
+nhập OAuth thay user được, và dựng Firestore Emulator cho riêng test này là việc lớn
+hơn cần thiết cho 1 fix đã có cơ sở lý thuyết vững). Fix dựa trên hiểu biết chuẩn về
+Firestore JS SDK (`hasPendingWrites` là cơ chế được thiết kế đúng mục đích này, tài
+liệu chính thức) + lập luận đã ghi đầy đủ trong comment code. **Đề nghị user tự thử
+lại đúng thao tác đã gặp bug (upload file Check Thưởng) để xác nhận đã hết.**
