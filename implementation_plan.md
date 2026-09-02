@@ -796,3 +796,103 @@ lint:ratchet` đều sạch. Fix dòng "Tổng" tổng hợp đã test độc l�
 ngoài repo (không phải Playwright — không cần trình duyệt để verify logic thuần hàm)
 xác nhận: tổng đúng, cột % để trống đúng, trường hợp chỉ 1 Kho ra kết quả hợp lý
 (Tổng = chính dòng đó).
+
+---
+
+# [MODULE Check Thưởng] Rà soát toàn diện (2026-09-02, commit `ae9cfe49`)
+
+## Bối cảnh — kiến trúc khác hẳn phần còn lại của app
+User yêu cầu "kiểm tra lại toàn bộ chức năng Check Thưởng". Phát hiện quan trọng: đây
+KHÔNG phải React component thông thường như Phân Tích/Report BI — toàn bộ logic
+nghiệp vụ nằm trong `public/check-thuong.html` (2477 dòng, ~186KB, vanilla JavaScript
+viết inline, dùng CDN cho xlsx.js/html-to-image/idb-keyval), nhúng vào app React qua
+`<iframe>` sandbox trong `components/views/CheckThuongView.tsx`, giao tiếp 2 chiều
+bằng `postMessage`. File này KHÔNG qua `tsc`/`eslint`/`npm run build` (là static asset
+trong `public/`, Vite chỉ copy nguyên văn) — mọi kiểm chứng phải làm thủ công (Node
+`--check` cho cú pháp, Playwright cho hành vi thật).
+
+**Phát hiện kỹ thuật quan trọng cho lần sau**: `check-thuong.html` DÙNG THẬT class
+Tailwind (`rounded-xl`, `hidden`, `fixed`...) dù không tự load Tailwind — vì
+`CheckThuongView.tsx` copy toàn bộ `<style>`/`<link>` của app cha vào iframe lúc
+`onLoad` (dùng để áp font người dùng chọn, nhưng tiện thể mang theo cả Tailwind CSS
+đã compile). Hệ quả: mở trực tiếp `check-thuong.html` (không qua iframe thật) khiến
+MỌI class Tailwind vô hiệu — phải test qua đúng luồng `?tab=check-thuong` → click
+"Dùng Thử" → `page.frameLocator(...)` mới đo được style thật.
+
+Dùng 2 Explore agent song song (bug/tính toán, đồng nhất UI), sau đó tự verify từng
+phát hiện bằng Node script độc lập + Playwright qua đúng luồng iframe thật trước khi
+sửa (đúng kỷ luật đã áp dụng xuyên suốt các đợt audit trước).
+
+## Đã sửa (commit `ae9cfe49`)
+
+**Bug nghiêm trọng nhất — `parseNumber()` sai số kiểu VN thuần nghìn**:
+`parseNumber("1.234.567")` trả về `1.234` thay vì `1234567` (sai ~1 triệu lần).
+Nguyên nhân thật (khác mô tả ban đầu của agent — đã tự trace lại bằng tay + Node):
+so sánh `lastIndexOf('.')`/`lastIndexOf(',')` trực tiếp — khi chuỗi chỉ có 1 LOẠI
+dấu, dấu đó luôn có index ≥ 0 còn dấu vắng mặt = -1, nên nhánh "dấu cuối là thập
+phân" LUÔN thắng, nhánh heuristic phân biệt đúng nghìn/thập phân (đã viết sẵn, đúng
+logic) không bao giờ chạy tới được — dead code do lỗi so sánh, không phải dead code
+đúng nghĩa. Chỉ ảnh hưởng khi ô Excel là **text** (không phải number cell) hoặc
+**upload CSV**. Sửa: chỉ dùng "dấu cuối là thập phân" khi CẢ HAI loại dấu cùng xuất
+hiện — verify bằng Node script độc lập, 15 test case đều pass.
+
+**Bug mất dữ liệu âm thầm trong iframe** (cùng loại bug đã sửa ở `CheckThuongView.tsx`
+phía React trước đây — chưa áp dụng bên trong iframe): `saveState()`/`reloadFromIDB()`
+chỉ `console.warn` khi `idb-keyval` ghi/đọc thất bại. Thêm postMessage
+`CHECK_THUONG_SAVE_ERROR`/`CHECK_THUONG_LOAD_ERROR` → `CheckThuongView.tsx` hiện
+`toast.error` thật (iframe không có sẵn thư viện toast riêng).
+
+**UX hứa nhưng không hoạt động — kéo-thả file**: UI ghi "hoặc thả các file Excel vào
+đây" nhưng không có listener `dragover`/`drop` — thả file thật bị trình duyệt tự điều
+hướng mở file (rời khỏi app). Tách `handleFileSelect(event)` → `processFile(file)`
+dùng chung, thêm listener kéo-thả đầy đủ + chặn hành vi mặc định ở `document`. Verify
+qua Playwright: giả lập kéo-thả CSV qua đúng iframe thật (`?tab=check-thuong` → Dùng
+Thử → `frameLocator`), xử lý đúng ("Đã tải: test.csv", chuyển đúng sang màn hình tìm
+kiếm), 0 lỗi console.
+
+**UI lệch chuẩn** (màu sắc/font-family/`window.alert` đã SẠCH 100% từ đợt chuẩn hoá
+trước — xác nhận lại qua agent, không cần sửa gì thêm ở phần đó):
+- `#rankingModal`/`#versionModal` không bo góc trên desktop (chỉ có override 12px
+  riêng cho mobile) — thêm `rounded-xl overflow-hidden`, verify qua Playwright đúng
+  luồng iframe thật: `getComputedStyle().borderRadius = "12px"`.
+- `.s-card` (thẻ ngành hàng) `border-radius:0` trên desktop trong khi mobile override
+  8px — sửa base về 12px (khớp `.stat-mini` cùng "họ" thẻ nhỏ trong file).
+- `.filter-pill` tên "pill" nhưng `border-radius:0` (hình chữ nhật) — sửa `9999px`.
+- 2 bảng trong modal xếp hạng thiếu `font-bold` ở header — đã thêm.
+
+## Đã điều tra, KHÔNG sửa — cần quyết định thêm hoặc rủi ro > lợi ích
+- **`validateDataStructure()` chỉ check tên cột (substring), không check VỊ TRÍ cột**
+  trong khi `COLS` dùng index CỨNG (`NGANH_HANG:5, TONG_THUONG:13`...) — nếu Excel có
+  đúng từ khoá tiêu đề nhưng cột bị đảo vị trí, validate vẫn PASS nhưng dữ liệu map
+  sai cột, không cảnh báo. Sửa an toàn cần đổi cách tham chiếu cột (từ index cứng
+  sang tra theo tên) — refactor lớn động tới rất nhiều nơi dùng `COLS.*`, rủi ro cao
+  hơn lợi ích trong 1 lần sửa nhỏ. Để dành cho yêu cầu riêng nếu cần.
+- **Modal "Lịch Sử Phiên Bản" mồ côi hoàn toàn** — `versionInfo = document.getElementById('versionInfo')`
+  nhưng KHÔNG có phần tử nào mang `id="versionInfo"` trong HTML, nên nút mở modal
+  không tồn tại — toàn bộ `versionHistory` (~200 dòng nội dung thật, có vẻ từng hoạt
+  động) không ai mở được. Đây là QUYẾT ĐỊNH THIẾT KẾ (khôi phục ở đâu, có muốn hiển
+  thị lịch sử phiên bản cho người dùng cuối không) — không tự đoán vị trí/thêm nút.
+- Công thức "nearly/cơ hội vàng" lặp lại y hệt ở 3 nơi — hiện nhất quán, chỉ là rủi ro
+  bảo trì (sửa 1 chỗ quên chỗ khác), không phải bug hiện tại — không sửa.
+- Race condition chọn 2 file liên tiếp cực nhanh (FileReader cũ không bị huỷ) — xác
+  suất thấp, không sửa.
+- `.pastel-violet`/`.pastel-teal`/`.pastel-orange` đã đổi đúng hex sang
+  indigo/sky/rose nhưng giữ tên class cũ — chỉ là nợ đặt tên, không ảnh hưởng hiển
+  thị, không sửa.
+- `postMessage(..., '*')` không kiểm tra `event.origin` — rủi ro thấp vì đã sandbox
+  iframe, không sửa.
+
+## Verify
+`node --check` xác nhận cú pháp JS hợp lệ sau khi sửa (file không qua tsc/eslint vì
+là static asset). 0 `id` trùng lặp trong HTML. Playwright qua ĐÚNG luồng
+`?tab=check-thuong` → "Dùng Thử" → `frameLocator` (không phải mở file trực tiếp — xem
+lưu ý Tailwind ở trên): xác nhận bo góc modal = 12px thật, kéo-thả file hoạt động
+đúng end-to-end, 0 lỗi console.
+
+**Sự cố ngoài ý muốn trong lúc audit**: lúc dọn tiến trình test, đã lỡ tắt nhầm dev
+server (`npm run dev`, cổng 5173) mà user đã yêu cầu chạy trước đó — nhận diện qua
+`lsof -ti:5173` trả về 2 PID không rõ PID nào là của lệnh vừa chạy, kill nhầm 1 trong
+2. Đã khởi động lại ngay khi phát hiện. **Bài học nhắc lại (đã từng mắc lỗi này 1 lần
+trước đó trong phiên)**: KHÔNG bao giờ `kill` theo PID lấy từ `lsof -ti:<port>` nếu
+không chắc chắn 100% đó là tiến trình vừa tự khởi động trong CÙNG 1 lệnh — nên lưu
+lại PID ngay lúc `nohup ... &` thay vì tra lại qua port sau đó.
