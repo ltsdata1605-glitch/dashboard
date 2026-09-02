@@ -269,6 +269,16 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
                     <span class="text-[10px] font-semibold text-slate-500">Smart UI</span>
                 </div>
+                <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+                <!-- BUG FIX: nút mở "Lịch Sử Phiên Bản" trước đây bị thiếu hoàn toàn trong HTML (JS
+                     đọc document.getElementById('versionInfo') nhưng không phần tử nào mang id này) —
+                     ~200 dòng nội dung versionHistory không ai mở được. Đặt cùng hàng với 3 badge tin
+                     cậy phía trên (nơi duy nhất luôn hiện trước khi tải file, không đụng tới UI phức
+                     tạp hơn ở màn hình đã có dữ liệu). -->
+                <button id="versionInfo" type="button" class="version-info-trigger flex items-center gap-1.5 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                    <span class="text-[10px] font-semibold">Phiên bản V10.6</span>
+                </button>
             </div>
 
         </div>
@@ -276,6 +286,16 @@
 
     <div class="app-shell">
         <!-- Search Section (shown after file load) -->
+        <!-- PHÁT HIỆN (chưa sửa, ngoài phạm vi đợt rà soát này): style="display:none !important"
+             inline có độ ưu tiên CSS cao nhất, KHÔNG bị gỡ khi JS chỉ classList.remove('hidden')
+             (dòng ~514/970) — toàn bộ nội dung bên trong (input mã Kho, nút tra cứu/tải file khác)
+             không bao giờ thật sự hiện ra được. Không phải bug ảnh hưởng người dùng: chức năng
+             tương đương đã có sẵn qua thanh tìm kiếm React portal vào #global-header-actions
+             (components/views/CheckThuongView.tsx, gửi cùng postMessage CHECK_THUONG_SEARCH/
+             CHECK_THUONG_CHANGE_FILE mà section này lắng nghe) — nhiều khả năng đây là cách "ẩn
+             tạm" có chủ đích sau khi thêm thanh tìm kiếm ở header cha, không phải lỗi ai đó quên.
+             Gỡ style inline này có thể làm lộ ra 2 thanh tìm kiếm trùng lặp (1 ở header cha, 1 ở
+             đây) — cần quyết định thiết kế trước khi động vào, không tự sửa. -->
         <div id="searchSection" class="hidden" style="display: none !important;">
             <div class="mod-card" style="padding:16px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
                 <div style="display:flex;gap:16px;align-items:flex-end">
@@ -343,6 +363,20 @@
         <!-- Comparison Content Area -->
         <div id="comparisonContent" class="hidden"></div>
     </div>
+
+    <!-- BUG FIX: nút "Lịch Sử Phiên Bản" gốc (#versionInfo) chỉ nằm trong landingPage, biến mất
+         hoàn toàn sau khi tải file (trạng thái phổ biến nhất khi dùng thật, nhờ IndexedDB tự khôi
+         phục lần mở sau). Từng thử đặt thêm 1 bản trong #searchSection nhưng section đó có lỗi CSS
+         riêng (style="display:none !important" không bao giờ được gỡ dù JS đã remove class hidden,
+         xem thẻ #searchSection) khiến TOÀN BỘ nội dung bên trong luôn ẩn — không phải chỗ để đặt
+         thêm UI, đã bỏ; sửa lỗi CSS đó không thuộc phạm vi lần này (rủi ro lộ ra UI trùng lặp với
+         thanh tìm kiếm React đã portal vào header cha). Đặt bản sao thứ 2 ở đây thay thế: NGOÀI
+         .app-shell, không phụ thuộc trạng thái landing/loaded nào, luôn hiện diện dù nhỏ gọn ở góc
+         màn hình. -->
+    <button id="versionInfoPersistent" title="Lịch sử phiên bản" class="version-info-trigger no-print" style="position:fixed;bottom:10px;right:10px;z-index:40;display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:9999px;background:rgba(255,255,255,0.85);backdrop-filter:blur(4px);border:1px solid #e2e8f0;color:#94a3b8;font-size:10px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        V10.6
+    </button>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center transition-all duration-300">
@@ -436,7 +470,7 @@
             }
 
             // All element selectors
-            const fileInput = document.getElementById('fileInput'), fileDropzone = document.getElementById('fileDropzone'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionInfo = document.getElementById('versionInfo'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
+            const fileInput = document.getElementById('fileInput'), fileDropzone = document.getElementById('fileDropzone'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
             
             // State variables
             let competitionData = [], currentStoreData = [], noFundGroups = new Set();
@@ -829,12 +863,37 @@
             }
 
 
-            function validateDataStructure(headerRow) { 
-                if (!headerRow) return false; 
+            function validateDataStructure(headerRow) {
+                if (!headerRow) return false;
                 const headerString = headerRow.join(',').toLowerCase();
-                return EXPECTED_HEADERS.every(header => headerString.includes(header)); 
+                return EXPECTED_HEADERS.every(header => headerString.includes(header));
             }
-            
+
+            // BUG FIX (cảnh báo mềm, KHÔNG chặn dữ liệu): validateDataStructure() ở trên chỉ check
+            // từ khoá có xuất hiện ĐÂU ĐÓ trong dòng tiêu đề, không kiểm tra đúng CỘT — trong khi
+            // COLS (khai báo ở trên) map dữ liệu theo INDEX CỨNG. Nếu file Excel có đủ từ khoá
+            // nhưng cột bị đảo thứ tự, validate vẫn PASS nhưng dữ liệu bị map sai cột mà không ai
+            // biết. KHÔNG đổi validateDataStructure() (giữ nguyên hành vi cho file đang chạy đúng,
+            // tránh rủi ro chặn nhầm file hợp lệ nếu đoán không khớp 100% chữ ở từng cột) — chỉ
+            // console.warn khi cột ở đúng vị trí COLS mong đợi không khớp từ khoá tương ứng, để
+            // người quản lý template phát hiện sớm qua DevTools nếu có gì bất thường.
+            function warnIfColumnsMisaligned(headerRow) {
+                const cell = (idx) => String(headerRow[idx] || '').toLowerCase();
+                const expectedAtPosition = [
+                    [COLS.SIÊU_THỊ, 'siêu thị'],
+                    [COLS.NGANH_HANG, 'ngành hàng'],
+                    [COLS.TONG_THUONG, 'thưởng'],
+                ];
+                const mismatches = expectedAtPosition.filter(([idx, keyword]) => !cell(idx).includes(keyword));
+                if (mismatches.length > 0) {
+                    console.warn(
+                        '[Check Thưởng] Cảnh báo: cột ở vị trí mong đợi không khớp từ khoá tương ứng — ' +
+                        'dữ liệu CÓ THỂ bị map sai cột nếu file Excel đã đổi thứ tự cột so với mẫu chuẩn.',
+                        mismatches.map(([idx, keyword]) => `Cột ${idx} (mong đợi chứa "${keyword}"): thực tế = "${headerRow[idx]}"`)
+                    );
+                }
+            }
+
             function preProcessData(data) {
                 const fundStatusByGroup = {};
                 const bestAwardedByGroupNew = {};
@@ -914,6 +973,8 @@
                         
                         if (headerRowIndex === -1) {
                             console.warn("Không tìm thấy dòng tiêu đề chuẩn. Sẽ đọc toàn bộ dữ liệu.", debugInfo);
+                        } else {
+                            warnIfColumnsMisaligned(dataArray[headerRowIndex]);
                         }
                         
                         // Lấy dữ liệu ngay sau dòng tiêu đề (nếu tìm thấy), ngược lại lấy từ dòng đầu tiên
@@ -2488,7 +2549,9 @@
                 if (th) { sortRankingData(th.dataset.sortKey); }
             });
 
-            if (versionInfo) versionInfo.addEventListener('click', () => { renderVersionHistory(); versionModal.classList.remove('hidden'); });
+            document.querySelectorAll('.version-info-trigger').forEach(btn => {
+                btn.addEventListener('click', () => { renderVersionHistory(); versionModal.classList.remove('hidden'); });
+            });
             closeVersionModalButton.addEventListener('click', () => versionModal.classList.add('hidden'));
             versionModal.addEventListener('click', (event) => { if (event.target === event.currentTarget) { versionModal.classList.add('hidden'); } });
 
