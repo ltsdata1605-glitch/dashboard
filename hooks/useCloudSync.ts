@@ -197,7 +197,25 @@ export const useCloudSync = () => {
                         const key = docSnap.id;
                         
                         if (!isHeavySyncKey(key)) continue;
-                        
+
+                        // BUG FIX (self-echo — user báo cáo LẠI lần 3 dù đã có 2 lớp phòng thủ dưới
+                        // đây): cả `heavyTimeoutsRef`/`isHeavyKeyInFlight` (so sánh trạng thái "đang
+                        // ghi") lẫn `touchLastModified` (so sánh mốc thời gian, xem
+                        // services/dbService/core.ts) đều là giải pháp SUY LUẬN GIÁN TIẾP, vẫn còn cửa
+                        // sổ đua do lệch đồng hồ client/server hoặc độ trễ round-trip — với payload lớn
+                        // (checkthuong_data, ghi chunked nhiều batch) cửa sổ đua này lộ rõ nhất.
+                        // `docChange.doc.metadata.hasPendingWrites` là tín hiệu TRỰC TIẾP từ chính SDK
+                        // Firestore: `true` nghĩa là snapshot NÀY đến từ cache cục bộ của CHÍNH TAB này
+                        // cho 1 lượt ghi CHƯA được server xác nhận — tức chắc chắn 100% đây là tiếng
+                        // vọng của chính mình, không phải tab/thiết bị khác (ứng dụng KHÔNG bật
+                        // multi-tab IndexedDB persistence — đã xác nhận trong services/firebase.ts —
+                        // nên cache của tab khác không lẫn vào đây). Kiểm tra cờ này TRƯỚC, đáng tin
+                        // cậy hơn nên đặt làm lớp chặn đầu tiên; 2 lớp cũ bên dưới giữ nguyên làm dự
+                        // phòng cho trường hợp hiếm `includeMetadataChanges` hành xử khác dự kiến.
+                        if (docSnap.metadata.hasPendingWrites) {
+                            continue;
+                        }
+
                         // Skip updating if a local write for this heavy key is debounced/pending —
                         // hoặc ĐANG BAY lên Firestore (isHeavyKeyInFlight). `heavyTimeoutsRef` chỉ phủ
                         // được lúc CHỜ debounce (2s); sau khi debounce bắn, updatedAt thật sự ghi vào
@@ -211,7 +229,7 @@ export const useCloudSync = () => {
                             console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending or in flight.`);
                             continue;
                         }
-                        
+
                         const data = docSnap.data();
                         if (!data) continue;
                         if (!data.chunked && data.value === undefined) continue;
