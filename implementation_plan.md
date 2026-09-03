@@ -968,3 +968,39 @@ hơn cần thiết cho 1 fix đã có cơ sở lý thuyết vững). Fix dựa t
 Firestore JS SDK (`hasPendingWrites` là cơ chế được thiết kế đúng mục đích này, tài
 liệu chính thức) + lập luận đã ghi đầy đủ trong comment code. **Đề nghị user tự thử
 lại đúng thao tác đã gặp bug (upload file Check Thưởng) để xác nhận đã hết.**
+
+---
+
+# [MODULE In Sticker / features/sticker-event/] Bug "Lưu danh sách" + audit toàn diện
+# (2026-09-03, commit `7ca50d94`, rules đã deploy production)
+
+## Bug user báo cáo — ĐÃ SỬA + ĐÃ VERIFY BẰNG TEST THẬT
+
+"Event - Tồn kho": admin lưu danh sách sau khi xử lý tồn kho "không lưu được" (luôn
+thất bại), nhân viên "lúc lưu được lúc không". Nguyên nhân: `saveListToFirestore()`
+nhét toàn bộ items vào 1 field của 1 document Firestore — vượt giới hạn cứng 1MiB khi
+danh sách đủ lớn (đặc biệt admin lưu TOÀN BỘ tồn kho chưa lọc). Bằng chứng gốc rễ:
+file `services/firebaseService.ts` đã có SẴN pattern chunking cho products/inventory
+(`CHUNK_SIZE` 400/300) — đội ngũ trước đã biết cần chunk, nhưng bỏ sót tính năng "Lưu
+danh sách".
+
+**Đã sửa**: `saveListToFirestore()` tự chunk khi `items.length > 3000` vào
+subcollection `itemChunks/` (tương thích ngược 100% với danh sách nhỏ/cũ),
+`fetchSavedListsFromFirestore()` tự ráp lại đúng cho cả 2 dạng lưu trữ (vẫn trả kèm
+`items` đầy đủ như cũ — KHÔNG đổi sang lazy-load vì phát hiện `useStickerPrinterData.ts`
+dùng ngay `c.items` lúc liệt kê tổng quan để build preview sticker, đổi sẽ phá luồng
+đó), `deleteSavedListFromFirestore()` dọn thêm subcollection khi xoá. Thêm rule
+Firestore cho subcollection mới (thiếu sẽ rơi xuống rule wildcard chặt hơn, gây
+permission-denied im lặng).
+
+**Verify bằng test end-to-end THẬT** (không chỉ đọc code): dùng tài khoản
+`admin_test_claude_qa2`/kho `TESTCLAUDEQA` qua Playwright — đăng nhập → thêm sản phẩm
+test → Lưu DS → alert xác nhận thành công → **danh sách xuất hiện NGAY trong "DS đã
+lưu"** (đúng phần bug user báo cáo, nay đã hoạt động đúng) → bấm Mở → nạp lại đúng nội
+dung → 0 lỗi console. Đã hỏi + được xác nhận deploy `firestore.stickerevent.rules` lên
+production ngay trong phiên. **Chưa test được nhánh chunk thật** (cần file tồn kho
+hàng nghìn dòng, không có sẵn) — tự tin dựa trên: pattern tái dùng y hệt code đã chạy
+production cho products/inventory, tsc/eslint/build sạch.
+
+## Còn lại — audit toàn diện theo yêu cầu "kiểm tra toàn bộ chức năng In Sticker và
+## module đi kèm" — xem tiếp bên dưới sau khi hoàn tất.
