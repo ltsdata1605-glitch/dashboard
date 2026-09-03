@@ -1002,5 +1002,110 @@ production ngay trong phiên. **Chưa test được nhánh chunk thật** (cần
 hàng nghìn dòng, không có sẵn) — tự tin dựa trên: pattern tái dùng y hệt code đã chạy
 production cho products/inventory, tsc/eslint/build sạch.
 
-## Còn lại — audit toàn diện theo yêu cầu "kiểm tra toàn bộ chức năng In Sticker và
-## module đi kèm" — xem tiếp bên dưới sau khi hoàn tất.
+## Bug rò rỉ dữ liệu chéo project phát hiện thêm khi audit (ĐÃ SỬA)
+
+Trong lúc audit sâu luồng lưu/tải danh sách, phát hiện `'stickerSavedLists'` nằm
+trong `HEAVY_SYNC_KEYS` (`services/firestoreService.ts`, khu vực ROOT). Cùng lớp bug
+đã gặp nhiều lần ở module này (cached_dept_id/cached_emp_name, sessionStorage stale
+cache): sticker-event dùng Firebase project CÁCH LY riêng nhưng `dbService.ts` của nó
+bắn CHUNG sự kiện window `'ycx-setting-changed'` với root (2 zone chia sẻ 1 IndexedDB
+vật lý — `BI_HUB_DATABASE_V2/settings`), nên root tưởng đây là setting của chính nó
+và tự đồng bộ 2 chiều với Firebase project GỐC — vừa rò rỉ dữ liệu sang project không
+nên chứa, vừa có nguy cơ đọc ngược dữ liệu cũ ghi đè lên đúng key IndexedDB cục bộ mà
+sticker-event đang dùng. Đã bỏ khỏi `HEAVY_SYNC_KEYS`, thêm vào `excludedKeys` ở cả 2
+nơi trong `hooks/useCloudSync.ts` (commit `b2e50c18`).
+
+## Bug tính sai % giảm giá + giá hiển thị trên tem (ĐÃ SỬA)
+
+`stickerprinter/excelParsers.ts` (`parseTemplateExcelData`, luồng tạo tem Giá Sốc/Giờ
+Vàng từ file Excel mẫu): giá bán đọc từ Excel KHÔNG được chuẩn hoá qua
+`normalizeStickerPriceUnit()` trước khi dùng — trong khi cùng file này đã dùng đúng
+chuẩn hoá đó ở luồng khác (`parseErpPriceExcelData` qua `formatPriceChangePercent`).
+Lỗi nhập liệu phổ biến (thiếu 3 số 0, VD gõ "1500" thay vì "1500000") khiến cả giá
+hiển thị trên tem lẫn % giảm giá tự động chọn ngưỡng (`isSelected`) sai lệch nặng.
+Đã gọi `normalizeStickerPriceUnit(retailPrice, salePrice)` ngay sau khi parse, dùng
+chung cho cả giá hiển thị và % tính sau đó (commit `34c6e6e4`).
+
+Đã kiểm tra vị trí thứ 2 agent nghi ngờ trùng lặp (`StickerPrintPreview.tsx`,
+`autoCalcPercentForContainer`) — **false positive**, file này ĐÃ gọi
+`normalizeStickerPriceUnit(oldVal, newVal)` đúng chuẩn trước khi tính, không cần sửa.
+
+## Bug saveUserState() vượt giới hạn 1MiB Firestore (ĐÃ SỬA)
+
+Cùng lớp lỗi với `saveListToFirestore()` nhưng ở tính năng khác: `saveUserState()`
+(tự động lưu debounce 1s mỗi khi `displayedProducts` đổi, để khôi phục phiên làm việc
+giữa các thiết bị) ghi toàn bộ `Product[]` đầy đủ vào 1 field — cùng dữ liệu đã phải
+chunk 400/doc ở `uploadProductsToFirestore`. Trước đây `setDoc()` throw khi vượt giới
+hạn khiến CẢ `displayedProducts` LẪN `inventoryFilters` đều không được lưu, lỗi bị
+nuốt hoàn toàn (`catch` chỉ `console.error`, comment ghi rõ "Silent fail... not
+interrupt UX") nên người dùng không hề biết đồng bộ đa thiết bị đã âm thầm ngừng hoạt
+động.
+
+**Chọn chiến lược KHÁC** `saveListToFirestore()` (chunk): vì hàm này chạy tự động rất
+thường xuyên (debounce 1s), chunk theo subcollection sẽ tạo khối lượng write Firestore
+lớn không cần thiết cho 1 tính năng phụ (không quan trọng bằng "Lưu danh sách" chủ
+động). Thay vào đó: nếu `displayedProducts.length > 3000`, bỏ qua riêng phần đó (ghi
+`displayedProductsTooLarge: true`), vẫn lưu `inventoryFilters` bình thường, có
+`console.warn` rõ ràng thay vì nuốt lỗi (commit `34c6e6e4`).
+
+## Sửa UI theo đúng CLAUDE.md (ĐÃ SỬA, commit `4afb64cf`)
+
+- `StickerPrintControls.tsx`: nút "BẤM ĐỂ IN" dùng hex cứng `#fbbc04`/`#f0b400` — vi
+  phạm trực tiếp CLAUDE.md §2 ("Cấm khai báo custom property màu sắc mới trong
+  features/*") → đổi sang `amber-400`/`amber-500` (màu ramp đã duyệt, thị giác gần
+  như không đổi).
+- `StickerPrintControls.tsx`: 2 nút chọn "Nền in" (ĐMX/TGĐ) viết `<button>` thô +
+  màu `blue-600` → đổi sang `<Button variant="unstyled">` (RULES.md §2.5 — ESLint
+  `no-restricted-syntax` xác nhận hết cảnh báo sau khi sửa) + đổi `blue`→`sky` theo
+  bảng màu semantic chuẩn.
+- `StickerManualQueue.tsx`: `text-slate-750` là class Tailwind KHÔNG TỒN TẠI (thang
+  màu slate chỉ có 50-900/950) — âm thầm không áp dụng màu chữ nào cho ô tìm kiếm
+  (no-op, không phải lỗi hiển thị rõ rệt nhưng là dead code gây hiểu nhầm) → sửa
+  thành `text-slate-700`.
+
+## Thêm cảnh báo file Excel rỗng/sai định dạng (ĐÃ SỬA, commit `4afb64cf`)
+
+`useStickerPrinterData.ts` → `handleExcelUpload` (luồng "File giá ĐSD - TBBM"):
+`parseBatchItemsFromExcelRows` âm thầm trả về `[]` khi file rỗng hoặc không khớp cấu
+trúc cột cố định (đọc thẳng theo index cột, không có header-matching) — người dùng
+không biết upload có thành công hay không. Đã thêm `toast.error` khi `items.length ===
+0`, giống cách `handleTemplateUpload` đã báo lỗi qua `parsed.error` từ trước.
+
+*Lưu ý: phát hiện gốc của agent audit ghi nhầm đây là lỗi "thiếu validate cho luồng
+Phiếu Rút Thăm (draw)" — SAI, đã tự kiểm chứng: `handleExcelUpload` chỉ được dùng ở
+nhánh gia_soc/gio_vang trong `StickerPrintControls.tsx` (nút "File giá ĐSD - TBBM"),
+luồng draw không có nút upload Excel này. Root cause thật là thiếu cảnh báo chung cho
+mọi lần upload rỗng, không riêng draw.*
+
+## Cố ý CHƯA sửa (ghi nhận lý do, theo đúng thói quen phiên làm việc này)
+
+- **`hooks/useStickerEventPrint.ts`: key setting không có prefix** (`'modernPositions'`,
+  `'printSettings'`) — cùng cơ chế IndexedDB vật lý chung với root (`BI_HUB_DATABASE_V2/
+  settings`) nên về lý thuyết có nguy cơ trùng key với root trong tương lai (đúng lớp
+  bug vừa sửa ở mục `stickerSavedLists` trên). **Đã kiểm tra: KHÔNG có collision thật ở
+  thời điểm hiện tại** (grep toàn repo, root không dùng 2 tên key này). Không sửa ngay
+  vì đổi tên key persisted cần xử lý migration cho dữ liệu người dùng cũ đã lưu (nếu
+  không, người dùng hiện tại sẽ bị reset về layout/print settings mặc định khi mở app
+  sau khi deploy) — rủi ro thực hiện cao hơn lợi ích phòng ngừa 1 nguy cơ chưa xảy ra.
+  Nếu về sau root app cần thêm setting trùng tên, xử lý migration lúc đó.
+- **`services/uiService.ts`: nhánh `isDark` chết** (dòng ~440, ~900, ~965) — đọc
+  `document.documentElement.classList.contains('dark')`, luôn `false` vì dark mode đã
+  tắt toàn dự án. Đúng diện CLAUDE.md §2 đã nêu rõ: "Các class `dark:` cũ trong code
+  được giữ nguyên (vô hiệu, không cần dọn dẹp)" — áp dụng tương tự cho logic JS đọc
+  class `dark`, không phải bug (không gây sai kết quả, chỉ là nhánh không bao giờ vào)
+  nên không dọn.
+- **190 occurrence class `dark:` còn lại trong 8 file** (chủ yếu `stickerprinter/`) —
+  tương tự trên, vô hiệu do dark mode đã tắt toàn dự án, không dọn theo đúng chính
+  sách CLAUDE.md. *(Sửa lại hiểu biết cũ trong memory: trước đây từng ghi nhận nhầm
+  sticker-event "light-only, 0 dark mode" — SAI, đã đếm lại thực tế.)*
+
+## Verify
+
+`tsc --noEmit`, `eslint`, `npm run build` sạch cho toàn bộ các thay đổi trên (lỗi tsc
+hiện có trong `features/phan-ca` là thay đổi CÓ SẴN của user trước phiên làm việc,
+không liên quan). Bug "Lưu danh sách" đã test end-to-end thật qua Playwright + tài
+khoản production thật (xem mục trên). Các fix còn lại trong đợt audit này (chuẩn hoá
+giá Excel, saveUserState, UI màu/button, cảnh báo file rỗng) **chưa test tay trực
+tiếp trên UI** — xác nhận qua đọc code + build/lint sạch, do không có sẵn file Excel
+mẫu đúng định dạng cột cố định để tái tạo trong môi trường agent. Đề nghị user tự thử
+lại nếu có nghi ngờ, đặc biệt luồng "File giá ĐSD - TBBM".
