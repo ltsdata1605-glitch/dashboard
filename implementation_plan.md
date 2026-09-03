@@ -1200,3 +1200,33 @@ trong bản kế hoạch triển khai (`/Users/ltson/.claude/plans/wobbly-huggin
 
 **CHƯA deploy `firestore.rules` lên production** — cần user xác nhận trước khi
 `npm run deploy:rules` (theo đúng quy trình mọi lần deploy trong dự án này).
+
+## Fix bổ sung — user dùng thử ngay sau khi làm xong, phát hiện 3 bug UI (commit `b429b601`)
+
+User bấm thử UI mới (Admin) ngay trong phiên, báo cáo 2 vấn đề, đọc code phát hiện
+thêm 1 vấn đề thứ 3 liên quan:
+
+1. **"Vừa gõ 1 số bị văng ra" (mất focus mỗi ký tự)** — root cause: `KhoInput` (ô
+   chọn Mã Kho dùng chung cho 3 chỗ) bị định nghĩa LỒNG bên trong component
+   `BiSupermarketMapAdmin`. Mỗi keystroke → state đổi → component cha re-render →
+   React tạo function reference MỚI cho `KhoInput` → coi là 1 loại component khác →
+   unmount/mount lại `<input>` DOM → mất focus. Đây là bug kinh điển của React
+   ("component định nghĩa lồng bên trong component khác") — **cần nhớ khi viết code
+   React trong dự án này về sau: KHÔNG BAO GIỜ định nghĩa 1 component (kể cả nhỏ,
+   kể cả chỉ dùng nội bộ 1 file) bên trong function body của component khác**, luôn
+   hoist ra module scope, truyền props thay vì đóng gói qua closure. Đã sửa.
+2. **Vùng trống lớn vô hình sau ô Mã Kho** — `Input`/`Select` mặc định
+   `fullWidth=true` (div wrapper `w-full`), trong khi class `w-24`/`w-28` truyền qua
+   `className` chỉ áp cho `<input>` bên trong, không áp cho wrapper — dư khoảng trắng
+   chiếm hết flex-basis còn lại trước nút "Lưu". Thiếu `fullWidth={false}` ở nhánh
+   admin (đã có sẵn ở nhánh Select cho manager, chỉ quên ở nhánh Input). Đã sửa.
+3. **"Mã kho chỉ cho phép nhập số"** — thêm `.replace(/\D/g, '')` lọc ký tự không
+   phải chữ số ngay khi gõ (chỉ áp dụng cho ô Mã Kho tự do của Admin — Quản lý dùng
+   Badge/Select nên không cần lọc).
+4. **"Tên siêu thị không xuống dòng, căng đều ra"** — đổi layout dòng "chưa có Mã
+   Kho" từ `flex` sang CSS Grid 3 cột cố định, tên dùng `truncate` + `title` (1 dòng,
+   hiện đầy đủ khi hover) thay vì tự xuống dòng theo nội dung.
+
+Đã verify tsc/eslint/build sạch. **Chưa test lại bằng UI thật sau fix** (agent không
+mở được browser tương tác) — đề nghị user gõ thử lại Mã Kho để xác nhận hết mất
+focus.
