@@ -84,7 +84,9 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
     const [isLoading, setIsLoading] = useState(true);
     const [savingKey, setSavingKey] = useState<string | null>(null);
 
-    const [showGuide, setShowGuide] = useState(false);
+    // Mặc định thu gọn toàn bộ khu vực cấu hình — chỉ hiện 1 dòng trạng thái (cảnh báo đỏ nếu
+    // có siêu thị chưa khai báo Mã Kho, im lặng nếu đã đủ), bấm vào mới mở ra để cấu hình.
+    const [isExpanded, setIsExpanded] = useState(false);
     const [manualOpen, setManualOpen] = useState(false);
     const [tableOpen, setTableOpen] = useState(false);
 
@@ -247,76 +249,72 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
         },
     ];
 
+    const hasUnmapped = unmappedNames.length > 0;
+
     return (
-        <Card
-            title="Bảng map Siêu thị → Mã Kho"
-            icon="settings-2"
-            subtitle="Map tên siêu thị trong báo cáo BI ↔ Mã Kho — dùng khi chia sẻ dữ liệu Luỹ kế."
-            actionButton={
-                <Button variant="ghost" size="sm" onClick={() => setShowGuide(v => !v)}>
-                    {showGuide ? 'Ẩn hướng dẫn' : 'Hướng dẫn'}
+        <Card title="Bảng map Siêu thị → Mã Kho" icon="settings-2" noPadding>
+            <div className="p-2.5">
+                <Button
+                    variant="unstyled"
+                    size="none"
+                    onClick={() => setIsExpanded(v => !v)}
+                    className="w-full flex items-center justify-between gap-2 py-1"
+                >
+                    <span className={`text-[11px] font-bold ${hasUnmapped ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {isLoading ? 'Đang tải...' : hasUnmapped ? `${unmappedNames.length} siêu thị chưa có Mã Kho` : 'Đã cấu hình đủ Mã Kho'}
+                    </span>
+                    {isExpanded ? <ChevronUpIcon className="h-3 w-3 text-slate-400 shrink-0" /> : <ChevronDownIcon className="h-3 w-3 text-slate-400 shrink-0" />}
                 </Button>
-            }
-        >
-            {showGuide && (
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3 -mt-1">
-                    Dùng để dán dữ liệu Luỹ kế đúng Kho khi chia sẻ cho nhân viên cùng siêu thị — tên phải khớp nguyên văn cột đầu tiên trong báo cáo BI (vd: "ĐM_HCM - 123 Nguyễn Trãi"). {isAdmin ? 'Admin cấu hình được mọi Mã Kho.' : 'Bạn chỉ cấu hình được đúng (các) Mã Kho mình quản lý.'}
-                </p>
-            )}
 
-            {isLoading ? (
-                <div className="text-[11px] text-slate-400 py-4 text-center">Đang tải...</div>
-            ) : (
-                <>
-                    {unmappedNames.length > 0 && (
-                        <div className="mb-4 rounded-md border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/10 p-3 space-y-2">
-                            <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                                {unmappedNames.length} tên siêu thị trong dữ liệu vừa dán chưa có Mã Kho:
-                            </p>
-                            {unmappedNames.map(name => (
-                                <div key={name} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
-                                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate" title={name}>{name}</span>
-                                    <KhoInput
-                                        isAdmin={isAdmin}
-                                        allowedKhos={allowedKhos}
-                                        value={unmappedKho[name] ?? ''}
-                                        onChange={(v) => setUnmappedKho(prev => ({ ...prev, [name]: v }))}
-                                        disabled={savingKey === name}
-                                    />
-                                    <Button size="sm" variant="primary" onClick={() => handleSaveUnmapped(name)} disabled={savingKey === name} className="shrink-0">
-                                        Lưu
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                {isExpanded && !isLoading && (
+                    <div className="mt-2 space-y-2">
+                        {hasUnmapped && (
+                            <div className="rounded-md border border-rose-200 dark:border-rose-800/40 bg-rose-50 dark:bg-rose-900/10 p-2 space-y-1.5">
+                                {unmappedNames.map(name => (
+                                    <div key={name} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-1.5">
+                                        <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate" title={name}>{name}</span>
+                                        <KhoInput
+                                            isAdmin={isAdmin}
+                                            allowedKhos={allowedKhos}
+                                            value={unmappedKho[name] ?? ''}
+                                            onChange={(v) => setUnmappedKho(prev => ({ ...prev, [name]: v }))}
+                                            disabled={savingKey === name}
+                                        />
+                                        <Button size="sm" variant="primary" onClick={() => handleSaveUnmapped(name)} disabled={savingKey === name} className="shrink-0 h-8">
+                                            Lưu
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
-                    <Button variant="ghost" size="sm" onClick={() => setManualOpen(v => !v)} leftIcon={<PlusIcon className="h-3.5 w-3.5" />} className="mb-2">
-                        {manualOpen ? 'Ẩn thêm thủ công' : 'Thêm siêu thị khác (không có trong dữ liệu vừa dán)'}
-                    </Button>
-                    {manualOpen && (
-                        <div className="flex flex-col sm:flex-row gap-2 mb-3">
-                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Tên siêu thị (đúng nguyên văn báo cáo BI)" className="text-xs" />
-                            <KhoInput isAdmin={isAdmin} allowedKhos={allowedKhos} value={newKho} onChange={setNewKho} disabled={savingKey !== null} />
-                            <Button variant="primary" size="sm" onClick={handleAdd} disabled={savingKey !== null} className="shrink-0">Thêm</Button>
-                        </div>
-                    )}
+                        <Button variant="ghost" size="sm" onClick={() => setManualOpen(v => !v)} leftIcon={<PlusIcon className="h-3.5 w-3.5" />}>
+                            {manualOpen ? 'Ẩn thêm thủ công' : 'Thêm siêu thị khác'}
+                        </Button>
+                        {manualOpen && (
+                            <div className="flex flex-col sm:flex-row gap-1.5">
+                                <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Tên siêu thị (đúng nguyên văn báo cáo BI)" className="text-xs h-8" />
+                                <KhoInput isAdmin={isAdmin} allowedKhos={allowedKhos} value={newKho} onChange={setNewKho} disabled={savingKey !== null} />
+                                <Button variant="primary" size="sm" onClick={handleAdd} disabled={savingKey !== null} className="shrink-0 h-8">Thêm</Button>
+                            </div>
+                        )}
 
-                    {rows.length === 0 && unmappedNames.length === 0 ? (
-                        <EmptyState compact title="Chưa có siêu thị nào trong bảng map" description="Dán dữ liệu Báo cáo để tự nhận diện, hoặc thêm thủ công ở trên." />
-                    ) : rows.length > 0 && (
-                        <>
-                            <Button variant="unstyled" size="none" onClick={() => setTableOpen(v => !v)} className="flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 py-1.5">
-                                {tableOpen ? <ChevronUpIcon className="h-3 w-3" /> : <ChevronDownIcon className="h-3 w-3" />}
-                                {tableOpen ? 'Thu gọn' : `Xem tất cả ${rows.length} dòng đã map`}
-                            </Button>
-                            {tableOpen && (
-                                <DataTable columns={columns} data={rows} rowKey={(row) => row.name} compact maxHeight="360px" className="rounded-none" />
-                            )}
-                        </>
-                    )}
-                </>
-            )}
+                        {rows.length === 0 ? (
+                            <EmptyState compact title="Chưa có siêu thị nào trong bảng map" description="Dán dữ liệu Báo cáo để tự nhận diện, hoặc thêm thủ công ở trên." />
+                        ) : (
+                            <>
+                                <Button variant="unstyled" size="none" onClick={() => setTableOpen(v => !v)} className="flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 py-1">
+                                    {tableOpen ? <ChevronUpIcon className="h-3 w-3" /> : <ChevronDownIcon className="h-3 w-3" />}
+                                    {tableOpen ? 'Thu gọn' : `Xem tất cả ${rows.length} dòng đã map`}
+                                </Button>
+                                {tableOpen && (
+                                    <DataTable columns={columns} data={rows} rowKey={(row) => row.name} compact maxHeight="300px" className="rounded-none" />
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+            </div>
 
             <ConfirmDialog
                 isOpen={!!deletingName}
