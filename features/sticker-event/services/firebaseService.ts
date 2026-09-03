@@ -234,26 +234,51 @@ export const clearAllUsers = async (storeId: string) => {
 
 
 
+// BUG FIX (user báo cáo: admin lưu danh sách sau khi xử lý toàn bộ tồn kho "không lưu được",
+// nhân viên "lúc lưu được lúc không"): trước đây LUÔN nhét toàn bộ items vào 1 field của 1
+// document — Firestore giới hạn cứng 1MiB/document, danh sách đủ lớn (đặc biệt khi admin lưu
+// TOÀN BỘ tồn kho chưa lọc ngay sau khi xử lý file, hoặc nhân viên tình cờ đang xem 1 tập lớn)
+// khiến setDoc() throw lỗi MỌI LẦN (không phải lỗi mạng tạm thời — "thử lại" không bao giờ
+// thành công) — người dùng chỉ thấy thông báo chung chung "Có lỗi xảy ra khi lưu danh sách".
+// Áp dụng ĐÚNG pattern chunking đã có sẵn cho products/inventory (uploadProductsToFirestore/
+// uploadInventoryToFirestore ở trên) — items ở đây rất nhỏ (chỉ {msp, quantity}, không phải
+// Product đầy đủ) nên chunk lớn hơn nhiều (3000) vẫn an toàn dưới ngưỡng 1MiB.
+const SAVED_LIST_CHUNK_SIZE = 3000;
+
 export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: any[], stickerMeta?: { stickerType?: string; headerTextContent?: string; pages?: any[] }) => {
   if (!userId) throw new Error("User ID là bắt buộc.");
   const targetStoreId = storeId || 'SUPERADMIN';
   const currentUid = auth.currentUser?.uid || '';
-  
+
   const listsRef = collection(db, 'stores', targetStoreId, 'savedLists');
   const newListRef = doc(listsRef);
-  
+
+  const baseDoc = {
+    id: newListRef.id,
+    name: listName,
+    userId,
+    authUid: currentUid,
+    storeId: targetStoreId,
+    createdAt: new Date().toISOString(),
+    totalItems: items.length,
+    ...(stickerMeta ? { stickerMeta: JSON.stringify(stickerMeta) } : {})
+  };
+
   try {
-    await setDoc(newListRef, {
-      id: newListRef.id,
-      name: listName,
-      userId,
-      authUid: currentUid,
-      storeId: targetStoreId,
-      createdAt: new Date().toISOString(),
-      items: JSON.stringify(items),
-      totalItems: items.length,
-      ...(stickerMeta ? { stickerMeta: JSON.stringify(stickerMeta) } : {})
-    });
+    if (items.length > SAVED_LIST_CHUNK_SIZE) {
+      await setDoc(newListRef, { ...baseDoc, itemsChunked: true });
+      const chunksRef = collection(newListRef, 'itemChunks');
+      for (let i = 0; i < items.length; i += SAVED_LIST_CHUNK_SIZE) {
+        const chunk = items.slice(i, i + SAVED_LIST_CHUNK_SIZE);
+        const chunkId = `chunk_${Math.floor(i / SAVED_LIST_CHUNK_SIZE)}`;
+        await setDoc(doc(chunksRef, chunkId), {
+          items: JSON.stringify(chunk),
+          count: chunk.length
+        });
+      }
+    } else {
+      await setDoc(newListRef, { ...baseDoc, items: JSON.stringify(items) });
+    }
     return newListRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `stores/${targetStoreId}/savedLists`);
@@ -278,42 +303,72 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
       // client đã có sẵn cuối hàm (Array.from(map.values()).sort(...)) để không phụ thuộc index nào.
       const q = query(listsRef, limit(500));
       const snapshot = await getDocs(q);
-      
-      const lists: SavedList[] = snapshot.docs
-        .map(doc => {
-          const data = doc.data();
-          let parsedItems = [];
+
+      // Lọc theo quyền xem TRƯỚC khi giải mã items — tránh tốn thêm lượt đọc subcollection
+      // itemChunks (danh sách lớn đã chunk, xem saveListToFirestore) cho các danh sách sẽ bị lọc
+      // bỏ ngay sau đó (vd nhân viên chỉ xem danh sách của chính mình).
+      const filteredDocs = snapshot.docs.filter(doc => {
+        if (!userIdentifier) return true; // Admin / SuperAdmin xem toàn bộ danh sách
+        const data = doc.data();
+        const itemUserId = String(data.userId || '').toLowerCase();
+        const itemAuthUid = String(data.authUid || '').toLowerCase();
+        const targetId = String(userIdentifier || '').toLowerCase();
+        const targetUid = String(currentUid).toLowerCase();
+
+        return (
+          itemUserId === targetId ||
+          itemAuthUid === targetId ||
+          (targetUid && itemAuthUid === targetUid) ||
+          (targetUid && itemUserId === targetUid)
+        );
+      });
+
+      // BUG FIX: danh sách lớn (vd admin lưu toàn bộ tồn kho chưa lọc) được chunk vào subcollection
+      // riêng thay vì nhét thẳng vào field `items` (xem saveListToFirestore — tránh vượt giới hạn
+      // 1MiB/document của Firestore, nguyên nhân chính khiến "Lưu DS" thất bại). Ở đây phải nhận
+      // diện + ráp lại đúng để KHÔNG phá hành vi hiện có: fetchSavedListsFromFirestore() vẫn trả
+      // kèm `items` đầy đủ cho mọi danh sách như trước (useStickerPrinterData.ts dùng ngay `c.items`
+      // lúc liệt kê tổng quan để build preview, không tải lazy riêng).
+      const lists: SavedList[] = await Promise.all(filteredDocs.map(async (docSnap) => {
+        const data = docSnap.data();
+        let parsedStickerMeta = undefined;
+        if (data.stickerMeta) {
+          try {
+            parsedStickerMeta = JSON.parse(data.stickerMeta);
+          } catch (e) {}
+        }
+
+        let parsedItems: SavedListItem[] = [];
+        if (data.itemsChunked) {
+          try {
+            const chunksSnap = await getDocs(collection(docSnap.ref, 'itemChunks'));
+            chunksSnap.docs.forEach(chunkDoc => {
+              const chunkData = chunkDoc.data();
+              if (chunkData.items) {
+                try {
+                  parsedItems = parsedItems.concat(JSON.parse(chunkData.items));
+                } catch (e) {
+                  console.error('Error parsing saved list chunk:', e);
+                }
+              }
+            });
+          } catch (e) {
+            console.error('Error fetching saved list chunks:', e);
+          }
+        } else {
           try {
             parsedItems = JSON.parse(data.items || '[]');
           } catch (e) {
-            console.error("Error parsing items JSON:", e);
+            console.error('Error parsing items JSON:', e);
           }
-          let parsedStickerMeta = undefined;
-          if (data.stickerMeta) {
-            try {
-              parsedStickerMeta = JSON.parse(data.stickerMeta);
-            } catch (e) {}
-          }
-          return {
-            ...data,
-            items: parsedItems,
-            stickerMeta: parsedStickerMeta
-          } as SavedList & { stickerMeta?: any };
-        })
-        .filter(item => {
-          if (!userIdentifier) return true; // Admin / SuperAdmin xem toàn bộ danh sách
-          const itemUserId = String(item.userId || '').toLowerCase();
-          const itemAuthUid = String((item as any).authUid || '').toLowerCase();
-          const targetId = String(userIdentifier || '').toLowerCase();
-          const targetUid = String(currentUid).toLowerCase();
+        }
 
-          return (
-            itemUserId === targetId ||
-            itemAuthUid === targetId ||
-            (targetUid && itemAuthUid === targetUid) ||
-            (targetUid && itemUserId === targetUid)
-          );
-        });
+        return {
+          ...data,
+          items: parsedItems,
+          stickerMeta: parsedStickerMeta
+        } as SavedList & { stickerMeta?: any };
+      }));
 
       combinedLists = combinedLists.concat(lists);
     } catch (error) {
@@ -329,10 +384,21 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
 
 export const deleteSavedListFromFirestore = async (storeId: string, listId: string) => {
   if (!storeId || !listId) throw new Error("Mã kho và List ID là bắt buộc.");
-  
+
   const listRef = doc(db, 'stores', storeId, 'savedLists', listId);
   try {
-    await deleteDoc(listRef);
+    // Dọn luôn subcollection itemChunks (nếu danh sách này đã bị chunk lúc lưu, xem
+    // saveListToFirestore) — Firestore KHÔNG tự xoá subcollection khi xoá doc cha, để sót sẽ tồn
+    // tại vĩnh viễn dù không còn ai đọc/tham chiếu tới. Xoá theo tên dự đoán được (chunk_0..49,
+    // cùng cách clearStoreDataOnFirestore() ở trên) — xoá doc không tồn tại là no-op, không tốn
+    // phí, nên không cần đọc trước để biết chính xác có bao nhiêu chunk.
+    const MAX_CHUNKS = 50;
+    const batch = writeBatch(db);
+    for (let i = 0; i < MAX_CHUNKS; i++) {
+      batch.delete(doc(listRef, 'itemChunks', `chunk_${i}`));
+    }
+    batch.delete(listRef);
+    await batch.commit();
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `stores/${storeId}/savedLists/${listId}`);
   }

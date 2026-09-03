@@ -32,6 +32,19 @@ service cloud.firestore {
 
     match /stores/{storeId}/savedLists/{listId} {
       allow read, write: if isSignedIn();
+
+      // Danh sách lớn (vd admin lưu toàn bộ tồn kho chưa lọc) được chunk vào subcollection
+      // riêng (xem saveListToFirestore trong features/sticker-event/services/firebaseService.ts)
+      // thay vì nhét hết vào 1 field, tránh vượt giới hạn 1MiB/document của Firestore. match
+      // ở dòng trên KHÔNG tự áp dụng cho subcollection con (Firestore Rules không kế thừa theo
+      // chiều sâu) — thiếu block này sẽ rơi xuống rule wildcard chặt hơn ở dưới
+      // (match /stores/{storeId}/{document=**}, yêu cầu đúng myStoreId()), gây
+      // permission-denied im lặng khi ghi/đọc chunk dù doc cha savedLists/{listId} vẫn
+      // đọc/ghi bình thường — giữ ĐÚNG mức permissive như doc cha (isSignedIn() thôi, không
+      // check storeId) để không đổi hành vi phân quyền hiện có của tính năng lưu danh sách.
+      match /itemChunks/{chunkId} {
+        allow read, write: if isSignedIn();
+      }
     }
 
     match /stores/{storeId}/{document=**} {
