@@ -26,6 +26,50 @@ interface BiSupermarketMapAdminProps {
     competitionLuyKe: string;
 }
 
+interface KhoInputProps {
+    isAdmin: boolean;
+    allowedKhos: string[];
+    value: string;
+    onChange: (v: string) => void;
+    disabled?: boolean;
+}
+
+/**
+ * Ô chọn Mã Kho theo role — component ĐỘC LẬP ở module scope (KHÔNG được định nghĩa lồng bên
+ * trong BiSupermarketMapAdmin — nếu lồng bên trong, mỗi lần component cha re-render (VD mỗi
+ * keystroke khi gõ) sẽ tạo ra 1 function reference MỚI cho "KhoInput", khiến React coi đây là
+ * 1 loại component khác, unmount rồi mount lại <input> DOM — mất focus ngay sau khi gõ đúng 1
+ * ký tự. Bug này đã xảy ra thật, user báo cáo "vừa gõ 1 số bị văng ra").
+ */
+const KhoInput: React.FC<KhoInputProps> = ({ isAdmin, allowedKhos, value, onChange, disabled }) => {
+    if (isAdmin) {
+        return (
+            <Input
+                value={value}
+                onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
+                placeholder="Mã Kho"
+                inputMode="numeric"
+                fullWidth={false}
+                className="text-xs w-24"
+                disabled={disabled}
+            />
+        );
+    }
+    if (allowedKhos.length <= 1) {
+        return <Badge variant="info" size="md">{allowedKhos[0] ?? '—'}</Badge>;
+    }
+    return (
+        <Select
+            value={value || allowedKhos[0]}
+            onChange={(e) => onChange(e.target.value)}
+            options={allowedKhos.map(k => ({ value: k, label: k }))}
+            fullWidth={false}
+            className="text-xs w-24"
+            disabled={disabled}
+        />
+    );
+};
+
 /**
  * Màn quản trị bảng map "tên siêu thị trong báo cáo Report BI" → "Mã Kho" — hiển thị cho
  * admin/manager (gate canManageSharedBiData ở component cha DataUpdater.tsx). Admin sửa/xoá
@@ -79,25 +123,6 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
     // Manager chỉ chọn được trong đúng (các) Kho đã đăng ký (departmentId) — không gõ tay tự do
     // như admin, tránh gõ nhầm Mã Kho không phải của mình.
     const resolveKhoForManager = (typed: string) => (isAdmin ? typed.trim() : (typed || allowedKhos[0] || ''));
-
-    const KhoInput: React.FC<{ value: string; onChange: (v: string) => void; disabled?: boolean }> = ({ value, onChange, disabled }) => {
-        if (isAdmin) {
-            return <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Mã Kho" className="text-xs sm:w-28" disabled={disabled} />;
-        }
-        if (allowedKhos.length <= 1) {
-            return <Badge variant="info" size="md">{allowedKhos[0] ?? '—'}</Badge>;
-        }
-        return (
-            <Select
-                value={value || allowedKhos[0]}
-                onChange={(e) => onChange(e.target.value)}
-                options={allowedKhos.map(k => ({ value: k, label: k }))}
-                fullWidth={false}
-                className="text-xs sm:w-28"
-                disabled={disabled}
-            />
-        );
-    };
 
     const handleSaveUnmapped = async (name: string) => {
         const maKho = resolveKhoForManager(unmappedKho[name] ?? '');
@@ -193,7 +218,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
             header: 'Mã Kho',
             width: '160px',
             cell: (row) => editingName === row.name ? (
-                <KhoInput value={editingKho} onChange={setEditingKho} disabled={savingKey === row.name} />
+                <KhoInput isAdmin={isAdmin} allowedKhos={allowedKhos} value={editingKho} onChange={setEditingKho} disabled={savingKey === row.name} />
             ) : (
                 <span className="text-[11px] font-black tabular-nums text-sky-700 dark:text-sky-400">{row.maKho}</span>
             ),
@@ -249,9 +274,11 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
                                 {unmappedNames.length} tên siêu thị trong dữ liệu vừa dán chưa có Mã Kho:
                             </p>
                             {unmappedNames.map(name => (
-                                <div key={name} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 flex-1">{name}</span>
+                                <div key={name} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
+                                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate" title={name}>{name}</span>
                                     <KhoInput
+                                        isAdmin={isAdmin}
+                                        allowedKhos={allowedKhos}
                                         value={unmappedKho[name] ?? ''}
                                         onChange={(v) => setUnmappedKho(prev => ({ ...prev, [name]: v }))}
                                         disabled={savingKey === name}
@@ -270,7 +297,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
                     {manualOpen && (
                         <div className="flex flex-col sm:flex-row gap-2 mb-3">
                             <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Tên siêu thị (đúng nguyên văn báo cáo BI)" className="text-xs" />
-                            <KhoInput value={newKho} onChange={setNewKho} disabled={savingKey !== null} />
+                            <KhoInput isAdmin={isAdmin} allowedKhos={allowedKhos} value={newKho} onChange={setNewKho} disabled={savingKey !== null} />
                             <Button variant="primary" size="sm" onClick={handleAdd} disabled={savingKey !== null} className="shrink-0">Thêm</Button>
                         </div>
                     )}
