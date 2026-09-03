@@ -160,7 +160,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             <div className="flex gap-2 mb-3 shrink-0">
                 <Button 
                     onClick={handlePrint}
-                    className="flex-1 !bg-[#fbbc04] hover:!bg-[#f0b400] !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-yellow-500/10 border-transparent"
+                    className="flex-1 !bg-amber-400 hover:!bg-amber-500 !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-amber-500/10 border-transparent"
                     leftIcon={<Printer size={16} />}
                 >
                     BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
@@ -243,28 +243,32 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         Nền in
                                     </label>
                                     <div className="flex gap-2">
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="unstyled"
+                                            size="none"
                                             onClick={() => setBgImage('/frame/bg_phieu.png')}
                                             className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieu.png'
-                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                                                    ? 'bg-sky-600 text-white border-sky-600 shadow-md'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
                                             }`}
                                         >
                                             ĐMX
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                             type="button"
+                                            variant="unstyled"
+                                            size="none"
                                             onClick={() => setBgImage('/frame/bg_phieutgd.png')}
                                             className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieutgd.png'
-                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                                                    ? 'bg-sky-600 text-white border-sky-600 shadow-md'
+                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
                                             }`}
                                         >
                                             TGĐ
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 

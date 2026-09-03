@@ -715,6 +715,11 @@ export function useStickerPrinterData() {
                     setPreviewOldPrice(first.oldPrice);
                     setPreviewNewPrice(first.newPrice);
                     setBarcodeImei(first.imei);
+                } else {
+                    // BUG FIX: file rỗng/sai định dạng cột trước đây không báo gì — người dùng
+                    // không biết upload có thành công hay không (parseBatchItemsFromExcelRows
+                    // âm thầm trả về [] nếu không khớp cấu trúc cột cố định của file "giá ĐSD - TBBM").
+                    toast.error("Không tìm thấy dữ liệu hợp lệ trong file. Kiểm tra lại đúng định dạng file giá ĐSD - TBBM.");
                 }
             } catch (err) {
                 toast.error("Lỗi đọc file Excel");

@@ -304,7 +304,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             placeholder="Tìm theo tên hoặc mã sản phẩm..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-8 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 placeholder-slate-400 text-slate-750 dark:text-slate-350"
+                            className="h-8 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 placeholder-slate-400 text-slate-700 dark:text-slate-350"
                             fullWidth={true}
                             rightIcon={searchQuery ? "x" : undefined}
                             onRightIconClick={searchQuery ? () => setSearchQuery('') : undefined}
