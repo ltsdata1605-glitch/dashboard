@@ -204,6 +204,22 @@ export const fetchScheduleFromCloud = async (user: User, key: string) => {
     return null;
 };
 
+// BUG FIX: 'stickerSavedLists' từng nằm trong danh sách này — đây là dữ liệu RIÊNG của
+// features/sticker-event/ (đã có sync Firestore ĐÚNG đắn qua saveListToFirestore/
+// fetchSavedListsFromFirestore, dùng Firebase project CÁCH LY riêng, xem
+// firebase-applet-config.json). Vì dbService.ts của sticker-event bắn CHUNG sự kiện
+// window 'ycx-setting-changed' với root app (2 zone chia sẻ 1 IndexedDB vật lý —
+// BI_HUB_DATABASE_V2/settings), liệt kê key này vào HEAVY_SYNC_KEYS khiến
+// hooks/useCloudSync.ts (root) tưởng đây là setting của CHÍNH NÓ, tự động đồng bộ
+// 2 CHIỀU với Firebase project GỐC (dashboa-7e20b): (1) mỗi lần sticker-event lưu list
+// cục bộ, dữ liệu bị ghi thêm vào users/{uid}/configs/stickerSavedLists của project gốc
+// — rò rỉ dữ liệu sang project không nên chứa nó; (2) onSnapshot lắng nghe cùng
+// collection đó có thể ĐỌC NGƯỢC dữ liệu cũ/của tài khoản gốc rồi ghi ĐÈ vào ĐÚNG key
+// IndexedDB cục bộ mà sticker-event đang dùng (chung DB vật lý) — nguy cơ danh sách
+// sticker-event "tự đổi" không rõ nguyên nhân, đúng lớp bug im lặng đã gặp nhiều lần ở
+// module này (xem BUG FIX cached_dept_id/cached_emp_name ở StickerEventApp.tsx). Bỏ hẳn
+// khỏi HEAVY_SYNC_KEYS — đã thêm vào excludedKeys ở CẢ 2 nơi trong hooks/useCloudSync.ts
+// (giống cách 'stickerPrinterState'/'stickerPrintHistory' đã được loại trừ đúng).
 export const HEAVY_SYNC_KEYS = new Set([
     'productConfig',
     'departmentMap',
@@ -214,7 +230,6 @@ export const HEAVY_SYNC_KEYS = new Set([
     'industryAnalysisCustomTabs',
     'topSellerAnalysisHistory',
     'checkthuong_data',
-    'stickerSavedLists',
     'originalDepartmentMap',
     'customExploitationTabs',
     'efficiencyExploitationTabs'

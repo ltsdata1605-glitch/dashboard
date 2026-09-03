@@ -88,6 +88,7 @@ export const useCloudSync = () => {
                 'last-updates-list',
                 'stickerPrinterState',
                 'stickerPrintHistory',
+                'stickerSavedLists',
                 'salesFilesRegistry'
             ]);
             const settingsToSync: Record<string, unknown> = {};
@@ -334,6 +335,7 @@ export const useCloudSync = () => {
                 'last-updates-list',
                 'stickerPrinterState',
                 'stickerPrintHistory',
+                'stickerSavedLists',
                 'salesFilesRegistry'
             ]);
             if (
