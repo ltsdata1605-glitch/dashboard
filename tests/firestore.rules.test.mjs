@@ -1,14 +1,17 @@
 /**
  * Test hồi quy cho firestore.rules — collection khoData/{maKho}/salesFiles (mục 37
- * implementation_plan.md, "Chia sẻ dữ liệu doanh số theo Kho"). Chạy hoàn toàn LOCAL qua
- * Firestore Emulator (@firebase/rules-unit-testing) — không đụng gì đến Firebase production.
+ * implementation_plan.md, "Chia sẻ dữ liệu doanh số theo Kho") + collection
+ * biSupermarketMap/{maKho} (mục "Quản lý tự cấu hình bảng map Siêu thị → Mã Kho"). Chạy hoàn
+ * toàn LOCAL qua Firestore Emulator (@firebase/rules-unit-testing) — không đụng gì đến Firebase
+ * production.
  *
  * Chạy: npm run test:rules
  * (cần Java Runtime cho Firestore Emulator — nếu máy chưa có: `brew install openjdk`,
  * xem Caveats khi cài để biết cách thêm vào PATH nếu `java -version` báo không tìm thấy)
  *
- * Khi sửa firestore.rules (đặc biệt block khoData hoặc hàm myKhos()/isManager()), hãy chạy
- * lại file này để chắc chắn không vô tình mở/khoá nhầm quyền.
+ * Khi sửa firestore.rules (đặc biệt block khoData/biSupermarketMap hoặc hàm
+ * myKhos()/isManager()/isAdmin()), hãy chạy lại file này để chắc chắn không vô tình mở/khoá
+ * nhầm quyền.
  */
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -128,6 +131,37 @@ async function main() {
         assertFails(seedDoc(managerOther).delete()));
     await check('Manager A xoá được file của Kho mình',
         assertSucceeds(fileDoc(managerA, 'file2').delete()));
+
+    // --- Seed data (bypass rules) cho biSupermarketMap/TESTKHO ---
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await ctx.firestore().doc('biSupermarketMap/TESTKHO').set({ names: ['ĐM_TEST - 1 Test Street'] });
+    });
+
+    const khoMapDoc = (ctx, maKho = 'TESTKHO') => ctx.firestore().doc(`biSupermarketMap/${maKho}`);
+
+    console.log('\n=== BI SUPERMARKET MAP — GHI (write), khác biệt CỐ Ý với KHO DATA: admin ghi được mọi maKho ===');
+    await check('Manager A ghi được vào đúng Kho của mình (TESTKHO)',
+        assertSucceeds(khoMapDoc(managerA).set({ names: ['ĐM_TEST - 1 Test Street', 'ĐM_TEST - 2 New Street'] })));
+    await check('Manager Kho khác (OTHERKHO) KHÔNG ghi được vào TESTKHO',
+        assertFails(khoMapDoc(managerOther).set({ names: ['hack'] })));
+    await check('Nhân viên KHÔNG được ghi (chỉ đọc)',
+        assertFails(khoMapDoc(employeeSame).set({ names: ['hack'] })));
+    await check('Admin ghi được vào TESTKHO dù departmentId không map Kho này (bảng tra cứu toàn hệ thống)',
+        assertSucceeds(khoMapDoc(adminUser).set({ names: ['ĐM_TEST - 1 Test Street'] })));
+    await check('Admin ghi được vào Kho hoàn toàn mới (OTHERKHO2, chưa từng có ai map)',
+        assertSucceeds(khoMapDoc(adminUser, 'OTHERKHO2').set({ names: ['ĐM_KHÁC - 3 Another Street'] })));
+    await check('Manager A KHÔNG ghi được vào Kho khác (OTHERKHO) dù chỉ thêm 1 tên',
+        assertFails(khoMapDoc(managerA, 'OTHERKHO').set({ names: ['hack'] })));
+    await check('Chưa đăng nhập KHÔNG ghi được',
+        assertFails(khoMapDoc(anon).set({ names: ['hack'] })));
+
+    console.log('\n=== BI SUPERMARKET MAP — ĐỌC (get) — ai đăng nhập cũng đọc được, kể cả Kho không phải của mình ===');
+    await check('Manager Kho khác vẫn đọc được map của TESTKHO (đọc công khai cho user đăng nhập)',
+        assertSucceeds(khoMapDoc(managerOther).get()));
+    await check('Nhân viên đọc được',
+        assertSucceeds(khoMapDoc(employeeSame).get()));
+    await check('Chưa đăng nhập KHÔNG đọc được',
+        assertFails(khoMapDoc(anon).get()));
 
     await testEnv.cleanup();
 

@@ -326,9 +326,14 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 </div>
             </div>
 
-            {isAdmin && (
+            {canManageSharedBiData && (
                 <div className="relative z-10">
-                    <BiSupermarketMapAdmin />
+                    <BiSupermarketMapAdmin
+                        isAdmin={isAdmin}
+                        allowedKhos={allowedKhos}
+                        summaryLuyKe={summaryLuyKe}
+                        competitionLuyKe={competitionLuyKe}
+                    />
                 </div>
             )}
 
