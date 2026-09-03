@@ -1,7 +1,7 @@
 import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
 import { StickerPage, BatchItem } from './types';
 import { cleanWaterPurifierName, generatePageHtml } from './pageHtmlUtils';
-import { formatPriceChangePercent } from '../utils/format';
+import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
 
 export const parsePercentValue = (percentStr: string | undefined): number => {
     if (!percentStr) return 0;
@@ -247,7 +247,15 @@ export function parseTemplateExcelData(
         if (!name) continue;
 
         const retailPrice = retailPriceIndex !== -1 ? parsePrice(row[retailPriceIndex]) : 0;
-        const salePrice = salePriceIndex !== -1 ? parsePrice(row[salePriceIndex]) : 0;
+        let salePrice = salePriceIndex !== -1 ? parsePrice(row[salePriceIndex]) : 0;
+        // BUG FIX: chuẩn hoá đơn vị giá bán trước khi dùng — file Excel nhập tay đôi khi
+        // thiếu 3 số 0 (VD "1500" thay vì "1500000"), y hệt lỗi normalizeStickerPriceUnit
+        // đã xử lý ở luồng khác trong cùng file (parseErpPriceExcelData qua formatPriceChangePercent).
+        // Thiếu bước này khiến cả giá hiển thị trên tem lẫn % giảm giá tự động chọn ngưỡng
+        // (isSelected bên dưới) đều sai lệch nặng.
+        if (retailPrice > 0 && salePrice > 0) {
+            salePrice = normalizeStickerPriceUnit(retailPrice, salePrice);
+        }
 
         const oldPrice = retailPrice ? retailPrice.toLocaleString('vi-VN') : '';
         const newPrice = salePrice ? Number(Math.floor(salePrice / 1000)).toLocaleString('vi-VN') : '';

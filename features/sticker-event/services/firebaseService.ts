@@ -404,16 +404,33 @@ export const deleteSavedListFromFirestore = async (storeId: string, listId: stri
   }
 };
 
+// BUG FIX: cùng lớp lỗi với saveListToFirestore() đã sửa (vượt giới hạn 1MiB/document của
+// Firestore) — displayedProducts ở đây là Product[] ĐẦY ĐỦ (cùng shape đã phải chunk 400/doc ở
+// uploadProductsToFirestore), không rút gọn như saveListToFirestore (chỉ {msp, quantity}). Hàm
+// này tự động chạy debounce 1s MỖI LẦN displayedProducts đổi (xem hooks/useStickerEventState.ts)
+// + lúc đóng tab/ẩn tab — chunk theo đúng cách "Lưu danh sách" (ghi từng đợt setDoc riêng) sẽ
+// tạo RẤT NHIỀU write Firestore không cần thiết cho 1 tính năng chỉ để tiện khôi phục phiên làm
+// việc giữa các thiết bị (không quan trọng bằng "Lưu danh sách" chủ động của người dùng). Chọn
+// cách an toàn hơn: nếu danh sách quá lớn để lưu an toàn trong 1 document, bỏ qua riêng phần
+// displayedProducts (không throw, không chặn lưu inventoryFilters) — trước đây setDoc() throw
+// khiến CẢ HAI đều không được lưu, và lỗi bị nuốt hoàn toàn ("Silent fail... not interrupt UX")
+// nên người dùng không hề biết đồng bộ đa thiết bị đã âm thầm ngừng hoạt động từ lúc đó.
+const USER_STATE_MAX_PRODUCTS = 3000;
+
 export const saveUserState = async (userId: string, state: { displayedProducts: Product[], inventoryFilters: InventoryFilters }) => {
   if (!userId) return;
-  
+
   const stateRef = doc(db, 'users', userId, 'state', 'current');
+  const tooLarge = state.displayedProducts.length > USER_STATE_MAX_PRODUCTS;
   try {
     await setDoc(stateRef, {
-      displayedProducts: JSON.stringify(state.displayedProducts),
+      ...(tooLarge ? { displayedProductsTooLarge: true } : { displayedProducts: JSON.stringify(state.displayedProducts) }),
       inventoryFilters: JSON.stringify(state.inventoryFilters),
       updatedAt: Timestamp.now()
     });
+    if (tooLarge) {
+      console.warn(`[Cloud Sync Sticker] displayedProducts quá lớn (${state.displayedProducts.length} sản phẩm) để đồng bộ trạng thái phiên — chỉ lưu bộ lọc, dùng "Lưu danh sách" nếu cần lưu chắc chắn.`);
+    }
   } catch (error) {
     console.error("Error saving user state:", error);
     // Silent fail for state sync to not interrupt UX
@@ -429,6 +446,9 @@ export const fetchUserState = async (userId: string): Promise<{ displayedProduct
     
     if (docSnap.exists()) {
       const data = docSnap.data();
+      // data.displayedProducts vắng mặt khi saveUserState() đã bỏ qua vì quá lớn
+      // (displayedProductsTooLarge=true) — fallback '[]' là đúng hành vi mong muốn (session
+      // restore không có sẵn danh sách, người dùng lọc lại), không phải lỗi.
       return {
         displayedProducts: JSON.parse(data.displayedProducts || '[]'),
         inventoryFilters: JSON.parse(data.inventoryFilters || '{}'),
