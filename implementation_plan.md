@@ -1109,3 +1109,94 @@ giá Excel, saveUserState, UI màu/button, cảnh báo file rỗng) **chưa test
 tiếp trên UI** — xác nhận qua đọc code + build/lint sạch, do không có sẵn file Excel
 mẫu đúng định dạng cột cố định để tái tạo trong môi trường agent. Đề nghị user tự thử
 lại nếu có nghi ngờ, đặc biệt luồng "File giá ĐSD - TBBM".
+
+---
+
+# [MODULE Report BI] Quản lý tự cấu hình bảng map Siêu thị → Mã Kho + auto-detect tên
+# (2026-09-03, commit `93d5f4b0`, CHƯA deploy production)
+
+## Bối cảnh
+
+Bảng "Map Siêu thị → Mã Kho" (`BiSupermarketMapAdmin.tsx`) — dùng để biết dán dữ liệu
+Báo cáo Tổng hợp/Thi đua Luỹ kế (gộp nhiều siêu thị 1 lần dán) vào đúng
+`biData/{maKho}` khi chia sẻ cho nhân viên cùng Kho — trước đây chỉ Admin cấu hình
+được. Quản lý các Kho mới/siêu thị mới phải nhờ Admin thêm hộ, dù chính họ đã biết
+rõ Mã Kho của mình (field `departmentId` khai báo lúc đăng ký tài khoản, xem màn
+"Cài Đặt Hệ Thống > Phân Quyền"). User yêu cầu 4 phần: (1) mở quyền cấu hình cho
+Quản lý, (2) tận dụng `departmentId` có sẵn để giới hạn/pre-fill Mã Kho, (3) tự động
+liệt kê tên siêu thị đã xuất hiện trong dữ liệu vừa dán thay vì gõ tay, (4) thiết kế
+gọn lại UI.
+
+## Quyết định kiến trúc quan trọng — đã hỏi user qua AskUserQuestion
+
+Bảng map cũ là **1 Firestore document DUY NHẤT** `biSupermarketMap/config` (field
+`map: Record<name,maKho>`) chứa mapping của TOÀN BỘ hệ thống, không tách theo Kho.
+Nếu chỉ đổi 1 dòng Rules (`isAdmin()` → `isManager()`) thì BẤT KỲ Quản lý nào cũng có
+toàn quyền sửa/xoá mapping của MỌI siêu thị, kể cả siêu thị không thuộc Kho họ quản
+lý — rủi ro 1 Quản lý vô tình ghi đè/xoá nhầm mapping của Kho khác, ảnh hưởng dữ liệu
+chia sẻ của người khác.
+
+**Đã hỏi user chọn giữa 2 phương án** (an toàn hơn nhưng cần đổi cấu trúc lưu trữ,
+hay đơn giản hơn nhưng rủi ro cross-Kho) — **user chọn phương án an toàn**: đổi sang
+**1 Firestore document CHO MỖI Mã Kho** (`biSupermarketMap/{maKho}`, field
+`names: string[]`) để Rules kiểm tra quyền TRỰC TIẾP qua path param, mirror đúng
+pattern đã có sẵn cho `biData/{maKho}` (dùng `myKhos()`) — không cần Cloud Function
+mới. `fetchSupermarketMap()` (hàm đọc, dùng ở nhiều nơi khác: `DataUpdater.tsx`,
+`useDashboardLogic.ts`) giữ nguyên contract cũ 100% (vẫn trả `Record<name,maKho>`,
+đọc gộp từ toàn bộ collection) — không phải sửa bất kỳ nơi gọi nào khác.
+
+## Đã làm
+
+1. **`firestore.rules`**: `biSupermarketMap/{maKho}` — `write: if isAdmin() ||
+   (isManager() && maKho in myKhos())`. Khác biệt CỐ Ý so với `biData/{maKho}`: Admin
+   bypass hoàn toàn `myKhos()` (ghi được mọi Mã Kho, kể cả Kho không thuộc quyền quản
+   lý trực tiếp của họ) vì đây vẫn là bảng tra cứu toàn hệ thống Admin cần vận hành
+   được hết; Quản lý chỉ `maKho in myKhos()`.
+2. **`biSupermarketMapService.ts`**: viết lại hoàn toàn. Xoá `saveSupermarketMap()`
+   cũ (ghi đè cả object — dễ mất dữ liệu khi 2 người sửa gần đồng thời). Thêm 3 hàm
+   dùng `arrayUnion`/`arrayRemove` (không đọc-rồi-ghi-đè cả mảng, tránh race
+   condition): `addSupermarketNameToKho`, `removeSupermarketNameFromKho`,
+   `moveSupermarketNameToKho` (đổi Kho 1 dòng = xoá khỏi doc cũ + thêm vào doc mới,
+   gộp 1 `writeBatch` atomic).
+3. **`BiSupermarketMapAdmin.tsx`**: viết lại. Nhận props `isAdmin`/`allowedKhos`/
+   `summaryLuyKe`/`competitionLuyKe` từ `DataUpdater.tsx`. Ô chọn Mã Kho theo role:
+   Admin tự do gõ; Quản lý 1 Kho → Badge cố định; Quản lý nhiều Kho → `Select` giới
+   hạn đúng `allowedKhos`. Nút Sửa/Xoá chỉ hiện ở dòng thuộc đúng Kho người dùng
+   (`canEditRow`). Tự động liệt kê `unmappedNames` = tên trong
+   `extractSupermarketList(summaryLuyKe)` ∪ `parseCompetitionDataBySupermarket(
+   competitionLuyKe)` (đã có sẵn, không viết logic parse mới) mà chưa có trong map —
+   hiển thị nổi bật, chỉ cần điền Mã Kho + Lưu từng dòng. Gọn UI: hướng dẫn dài/form
+   thêm thủ công/bảng đầy đủ đều ẩn sau toggle, đóng mặc định — 0 tên cần cấu hình
+   thì Card chỉ còn 1 dòng subtitle + nút thu gọn.
+4. **`DataUpdater.tsx`**: gate hiển thị đổi từ `isAdmin` sang `canManageSharedBiData`
+   (admin hoặc manager có ≥1 Kho), truyền thêm 4 props trên.
+5. **`tests/firestore.rules.test.mjs`**: thêm nhóm test `biSupermarketMap/{maKho}`,
+   mirror nhóm `KHO DATA` đã có — có case riêng xác nhận Admin bypass `myKhos()`
+   thành công (điểm khác biệt cố ý so với `biData`).
+
+## Migration dữ liệu cũ
+
+`biSupermarketMap/config` (schema cũ) chỉ có ĐÚNG 1 dòng thật:
+`"ĐML_STR_STR - 99 Hùng Vương" → "910"`. Quyết định KHÔNG viết script migration (chi
+phí/rủi ro cao hơn hẳn 1 thao tác thủ công) — **sau khi deploy, cần Admin nhập lại
+tay đúng 1 dòng này qua UI mới** (nút "Thêm siêu thị khác", < 30 giây, đồng thời là
+bước UAT xác nhận luồng thêm thủ công hoạt động đúng). Doc `config` cũ để nguyên
+không xoá — `fetchSupermarketMap()` mới bỏ qua an toàn doc nào không có field
+`names` dạng mảng, không tạo entry rác.
+
+## Verify — giới hạn cần lưu ý
+
+`tsc`/`eslint`/`build` sạch cho toàn bộ file đã sửa (`npm run check` đầy đủ vẫn bị
+chặn bởi lỗi tsc/ratchet sẵn có trong `features/phan-ca` — thay đổi dở dang riêng của
+user, không liên quan). **Test `tests/firestore.rules.test.mjs` viết xong nhưng CHƯA
+CHẠY ĐƯỢC** — máy không có Java Runtime cho Firestore Emulator (`npm run test:rules`
+báo lỗi "Unable to locate a Java Runtime"). Code test mirror chính xác cấu trúc nhóm
+`KHO DATA` đang PASS sẵn có trong cùng file, tự tin về mặt cú pháp/logic nhưng **chưa
+có xác nhận chạy thật**. Đề nghị: cài Java (`brew install openjdk`) rồi chạy
+`npm run test:rules` trước khi deploy rules lên production, hoặc deploy rules trước
+rồi verify bằng tài khoản Quản lý thật theo đúng 11 kịch bản thủ công đã liệt kê
+trong bản kế hoạch triển khai (`/Users/ltson/.claude/plans/wobbly-hugging-raccoon.md`
+— các mục Migration/Thứ tự thực hiện/Verify).
+
+**CHƯA deploy `firestore.rules` lên production** — cần user xác nhận trước khi
+`npm run deploy:rules` (theo đúng quy trình mọi lần deploy trong dự án này).
