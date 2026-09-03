@@ -1230,3 +1230,21 @@ thêm 1 vấn đề thứ 3 liên quan:
 Đã verify tsc/eslint/build sạch. **Chưa test lại bằng UI thật sau fix** (agent không
 mở được browser tương tác) — đề nghị user gõ thử lại Mã Kho để xác nhận hết mất
 focus.
+
+## Fix bổ sung lần 2 — thu gọn UI theo yêu cầu tiếp theo (commit `e6532f21`)
+
+Sau khi bấm thử UI, user yêu cầu thêm: bỏ hẳn "Hướng dẫn"; thu gọn bảng/khu vực;
+**mặc định đóng toàn bộ khu vực cấu hình, chỉ hiện 1 dòng trạng thái** — cảnh báo
+màu đỏ nếu có siêu thị chưa khai báo Mã Kho, im lặng (không thông báo) nếu đã đủ.
+
+Đã sửa: bỏ hẳn nút "Hướng dẫn" + đoạn text hướng dẫn + subtitle Card. Thêm state
+`isExpanded` (mặc định `false`) — khu vực cấu hình (danh sách chưa map/thêm thủ
+công/bảng đầy đủ) giờ nằm trong 1 khối ẩn/hiện, đóng mặc định. Dòng trạng thái luôn
+hiện (kể cả lúc đóng): `rose` (đỏ, đúng yêu cầu "cảnh báo đỏ") + số lượng nếu
+`unmappedNames.length > 0`, `slate-400` (xám, im lặng) "Đã cấu hình đủ Mã Kho" nếu
+không. Đồng thời giảm padding/gap/chiều cao các phần tử (Input/Select/Button đồng
+bộ `h-8`) và đổi màu box "chưa có Mã Kho" từ `amber` sang `rose` để khớp đúng "cảnh
+báo đỏ" thay vì "cảnh báo vàng" như thiết kế lần đầu.
+
+Verify: tsc/eslint/build sạch. Vẫn **chưa test lại bằng UI thật** — cùng giới hạn
+môi trường agent như lần fix trước.
