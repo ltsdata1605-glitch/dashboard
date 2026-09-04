@@ -1248,3 +1248,67 @@ báo đỏ" thay vì "cảnh báo vàng" như thiết kế lần đầu.
 
 Verify: tsc/eslint/build sạch. Vẫn **chưa test lại bằng UI thật** — cùng giới hạn
 môi trường agent như lần fix trước.
+
+---
+
+# [MODULE Phân Tích] Bỏ bo góc rounded-xl/2xl ở toàn bộ khu vực (2026-09-04)
+
+## Đợt 1 — 2 điểm user tự chỉ ra qua ảnh chụp (commit `743a0532`)
+
+User gửi ảnh chụp module Phân Tích, khoanh đỏ 2 góc bo tròn không mong muốn trên
+desktop (lg breakpoint):
+1. `components/summary/WarehouseSummary.tsx:589` — card "CHI TIẾT THEO KHO" (bọc 1
+   bảng biểu thật). Class cũ `rounded-none lg:rounded-2xl` → bỏ hẳn `lg:rounded-2xl`,
+   giữ `rounded-none` mọi kích thước. Component này chỉ có đúng 1 nơi gọi trong toàn
+   repo (`DashboardView.tsx`) nên sửa thẳng an toàn.
+2. `SectionCard` (component dùng chung `components/shared/ui/SectionCard.tsx`) bọc
+   banner "ĐƠN HÀNG QUÁ HẠN XUẤT" ở `DashboardView.tsx:461` — **KHÔNG sửa default
+   của `SectionCard`** (dùng chung nhiều module khác: `features/phan-ca`,
+   `features/bi-dashboard` qua `Card.tsx` riêng, `features/sticker-event`) — chỉ
+   override đúng 1 lần gọi bằng `className="relative lg:rounded-none"`
+   (tailwind-merge tự áp đúng, không đụng các `SectionCard` khác).
+
+## Đợt 2 — "áp dụng cho TẤT CẢ khu vực" (commit `fc9504c7`)
+
+User yêu cầu mở rộng ra toàn bộ module thay vì chỉ 2 điểm. Dùng Explore agent rà
+137 file trong cây import THẬT của `DashboardView.tsx` (BFS qua import, chỉ theo
+`components/`, `hooks/`, `services/`, `contexts/`, `utils/` ở gốc — không vào
+`features/*`), phân loại rõ "khu vực/card lớn" (cần sửa) vs "phần tử nhỏ"
+(button/input/badge/dropdown/toast/overlay tạm thời — không sửa). Đã sửa 10 file:
+
+- 3 nơi dùng `SectionCard` dùng chung còn lại: `TrendChart.tsx:386`,
+  `IndustryGrid.tsx:224`, `EmployeeAnalysis.tsx:187` — cùng cách override
+  `lg:rounded-none` qua `className` như Đợt 1, không đụng default component.
+- 5 nơi hardcode đúng mẫu `rounded-none lg:rounded-2xl`/`rounded-b-none
+  lg:rounded-b-2xl` như `WarehouseSummary` đã sửa: `SummaryTable.tsx` (2 chỗ — card
+  ngoài dòng 126 + phần thân dòng 201), `ContestTable.tsx:400`,
+  `HeadToHeadTable.tsx:145`, `IndustryAnalysisTab.tsx:376`.
+- `IndustryGrid.tsx`: 2 card con lồng bên trong (lưới ngành hàng dòng 308, pie chart
+  dòng 409) + 1 khối nền lồng trong card pie (dòng 425, `rounded-xl lg:rounded-2xl`)
+  — cùng đổi để nhất quán với card cha đã flat.
+- `DashboardView.tsx:400` — banner marquee "Thông báo" Super Admin, `rounded-xl` →
+  `rounded-none`.
+- `LoadingOverlay.tsx` + `SkeletonLoader.tsx` (3 khung `ChartSkeleton`/
+  `TableSkeleton`/`TabbedTableSkeleton`) — sửa DEFAULT trực tiếp (không qua
+  className override) vì cả 2 file này chỉ có ĐÚNG 1 nơi gọi trong toàn repo
+  (`WarehouseSummary.tsx` và `DashboardView.tsx` tương ứng) — không rủi ro lan sang
+  module khác. Lý do sửa `LoadingOverlay`: nó phủ `absolute inset-0` ngay trong card
+  `WarehouseSummary` đã flat từ Đợt 1 — nếu không sửa, overlay loading sẽ lộ góc bo
+  tròn đè lên card vuông góc, lệch rõ.
+
+## Quyết định quan trọng — CHỦ ĐÍCH KHÔNG sửa modal
+
+CLAUDE.md quy định rõ: "Bo góc: rounded-md (cho input/button), rounded-xl (cho
+card/modal)... Bảng biểu dùng rounded-none (phẳng)." Modal là 1 LOẠI UI KHÁC với
+"khu vực"/bảng biểu theo đúng design system đã duyệt — user cũng chưa từng chỉ vào
+modal nào trong các yêu cầu trước, chỉ luôn chỉ vào card/section cố định trên trang.
+`components/shared/ui/Modal.tsx` có sẵn prop `noRounded` để override từng lần gọi
+nếu về sau user muốn áp dụng cho modal — nhưng KHÔNG tự ý làm việc này khi chưa được
+yêu cầu rõ.
+
+## Verify
+
+`tsc --noEmit`, `eslint`, `npm run build` sạch cho toàn bộ 12 file đã sửa qua cả 2
+đợt. **Chưa test lại bằng UI thật** (agent không mở được browser tương tác trong
+môi trường này) — đề nghị user tự kiểm tra trực quan trên `http://127.0.0.1:5173`
+(dev server đang chạy sẵn).
