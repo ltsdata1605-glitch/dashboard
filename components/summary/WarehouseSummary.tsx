@@ -586,7 +586,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
     return (
         <>
-            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none lg:rounded-2xl border-y lg:border shadow-sm lg:hover:shadow-md'}`} ref={summaryRef}>
+            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none border-y lg:border shadow-sm lg:hover:shadow-md'}`} ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />

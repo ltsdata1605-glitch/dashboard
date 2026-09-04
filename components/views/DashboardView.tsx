@@ -458,7 +458,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     )}
 
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
-                                        <SectionCard ref={kpiCardsOnlyRef} className="relative">
+                                        <SectionCard ref={kpiCardsOnlyRef} className="relative lg:rounded-none">
                                             {/* Unconfigured Groups Warning Banner */}
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
                                                 <div
