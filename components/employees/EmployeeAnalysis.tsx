@@ -184,7 +184,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         : undefined;
 
     return (
-        <SectionCard className="mb-8 flex flex-col flex-grow">
+        <SectionCard className="mb-8 flex flex-col flex-grow lg:rounded-none">
             {/* BEGIN: Header Section */}
             <SectionHeader
                 title={(

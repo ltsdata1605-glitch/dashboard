@@ -397,7 +397,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                     {/* Super Admin Announcement Marquee */}
                                     {announcement && announcement.active && announcement.content && (
-                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[10px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
+                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[10px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-none shadow-md border border-rose-500/25 mb-2 no-print">
                                             <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-lg z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
                                                 <Icon name="megaphone" size={4} className="animate-bounce shrink-0" />
                                                 <span className="uppercase tracking-wider text-[10px] font-black">Thông báo</span>

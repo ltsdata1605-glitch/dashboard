@@ -385,7 +385,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   return (
     <SectionCard
       ref={chartCardRef}
-      className="mb-3 lg:mb-8 relative z-0"
+      className="mb-3 lg:mb-8 relative z-0 lg:rounded-none"
     >
       <SectionHeader
         title={(

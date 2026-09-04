@@ -32,7 +32,7 @@ export const KpiCardsSkeleton: React.FC = () => (
 
 // Skeleton for chart-like components (TrendChart, IndustryGrid)
 export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-[442px]' }) => (
-    <div className={`bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col ${height}`}>
+    <div className={`bg-white dark:bg-slate-900 rounded-none border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col ${height}`}>
         <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <div>
                 <SkeletonPulse className="h-5 lg:h-6 w-40 lg:w-48 mb-2" />
@@ -51,7 +51,7 @@ export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-[442p
 
 // Generic Skeleton for table-like components (SummaryTable, WarehouseSummary)
 export const TableSkeleton: React.FC<{rows?: number}> = ({ rows = 5 }) => (
-    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8">
+    <div className="bg-white dark:bg-slate-900 rounded-none border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8">
         <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
             <div>
                 <SkeletonPulse className="h-6 lg:h-7 w-44 lg:w-56 mb-2" />
@@ -82,7 +82,7 @@ export const TableSkeleton: React.FC<{rows?: number}> = ({ rows = 5 }) => (
 
 // A more specific skeleton for the EmployeeAnalysis component which has tabs
 export const TabbedTableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) => (
-    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col flex-grow">
+    <div className="bg-white dark:bg-slate-900 rounded-none border-y lg:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-3 lg:mb-8 flex flex-col flex-grow">
         {/* Tab headers */}
         <div className="flex justify-between items-center gap-y-2 border-b-2 border-slate-200 dark:border-slate-700 px-2 lg:px-4 pt-3 lg:pt-4">
             <div className="flex items-center gap-4">

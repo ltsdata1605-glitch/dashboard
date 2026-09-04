@@ -123,7 +123,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const fullScreenClasses = isFullScreen
         ? "fixed inset-0 z-[1000] bg-white dark:bg-slate-900 overflow-y-auto w-full h-full p-4 custom-scrollbar"
-        : `bg-white dark:bg-slate-900 shadow-sm lg:hover:shadow-md border-y lg:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none lg:rounded-2xl overflow-visible mb-8 transition-all duration-300`;
+        : `bg-white dark:bg-slate-900 shadow-sm lg:hover:shadow-md border-y lg:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
 
     return (
         <>
@@ -198,7 +198,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                 />
 
 
-           <div className={`relative p-2 sm:p-6 bg-white dark:bg-slate-800 rounded-b-none lg:rounded-b-2xl transition-opacity duration-200 ${isPending || isExpanding ? 'opacity-60' : 'opacity-100'}`}>
+           <div className={`relative p-2 sm:p-6 bg-white dark:bg-slate-800 rounded-b-none transition-opacity duration-200 ${isPending || isExpanding ? 'opacity-60' : 'opacity-100'}`}>
               {isExpanding && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]">
                       <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">

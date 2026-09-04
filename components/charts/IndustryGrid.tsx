@@ -223,7 +223,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     return (
         <SectionCard
             ref={cardRef}
-            className="mb-3 lg:mb-8"
+            className="mb-3 lg:mb-8 lg:rounded-none"
         >
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
@@ -305,7 +305,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
                     {/* ══════ LEFT 50%: CARD GRID ══════ */}
-                    <div className="w-full lg:w-1/2 lg:shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={gridRef}>
+                    <div className="w-full lg:w-1/2 lg:shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-none" ref={gridRef}>
                         {/* Left Side Header (Level indicator) - always rendered for export, hidden on mobile screen only */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
                             {currentLevelLabel && (
@@ -406,7 +406,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-full lg:w-1/2 flex flex-col gap-1.5 lg:gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={pieRef}>
+                    <div className="w-full lg:w-1/2 flex flex-col gap-1.5 lg:gap-3 bg-white dark:bg-slate-900 rounded-none" ref={pieRef}>
                         {/* Right Side Header (Pie Chart Title) - always rendered for export */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
                             <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             </div>
                         </div>
 
-                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col justify-center">
+                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-none border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col justify-center">
                             {pieChartData.length > 0 ? (
                                 <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 py-1.5 lg:py-3 flex-grow min-h-[150px]">
                                     {/* Cột trái: Biểu đồ */}
