@@ -7,7 +7,7 @@ import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
-import { Pill } from '../shared/Pill';
+import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
@@ -422,12 +422,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         <table className="w-full min-w-max text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
-                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                <tr className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wider">
                                     {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th
                                             rowSpan={2}
-                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-left text-[10px] sm:text-[12px] font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
+                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
                                         >
                                             SIÊU THỊ
                                         </th>
@@ -439,7 +439,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-right align-middle bg-white dark:bg-slate-900 ${g.text}`}
+                                                    className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
                                                 />
                                             );
@@ -449,7 +449,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
-                                                className={`px-1.5 sm:px-2.5 py-1 ${g.text} bg-white dark:bg-slate-900 uppercase tracking-widest text-[9px] font-black text-right align-middle`}
+                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px] sm:text-[12px] font-bold border-r text-center align-middle`}
                                             >
                                                 {g.label}
                                             </th>
@@ -457,7 +457,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     })}
                                 </tr>
 
-                                {/* TIER 2: COLUMN HEADERS */}
+                                {/* TIER 2: COLUMN HEADERS — sub-headers with pastel bg + thick bottom border */}
                                 <tr>
                                     {orderedHeaders.map(h => {
                                         if (!visibleColumns.has(h)) return null;
@@ -469,7 +469,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         return (
                                             <th
                                                 key={h}
-                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-right align-middle bg-white dark:bg-slate-900 ${g.text}`}
+                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                 dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                             />
                                         );
@@ -505,8 +505,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 tabular-nums align-middle
                                                                 bg-slate-100 dark:bg-slate-800
                                                                 ${h === 'Tên miền'
-                                                                    ? 'uppercase tracking-tight sticky left-0 z-10 text-left shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
-                                                                    : 'text-right'}
+                                                                    ? 'uppercase tracking-tight sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
+                                                                    : 'text-center'}
                                                             `}
                                                         >
                                                             {cell?.isMerged ? (
@@ -543,11 +543,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
                                                 const isHqqd = h === '%HQQĐ' && !isNaN(val);
                                                 const smKey = row[nameIdx];
-    
-                                                let pillColor: string | undefined;
-                                                if (isHtCol) pillColor = val >= 100 ? '#059669' : val >= 85 ? '#d97706' : '#e11d48';
-                                                if (isHqqd) pillColor = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? '#059669' : '#e11d48';
+
                                                 let colorCls = '';
+                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
+                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
                                                 if (h === 'DTQĐ') colorCls = ' text-indigo-700 dark:text-indigo-400 font-semibold';
 
                                                 return (
@@ -557,12 +556,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                             tabular-nums align-middle whitespace-nowrap
                                                             ${h === 'Tên miền'
-                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`
-                                                                : `text-right text-[11px] sm:text-[13px] ${colorCls || ''}`}
+                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`
+                                                                : `text-center text-[11px] sm:text-[13px] ${colorCls || ''}`}
                                                         `}
                                                     >
                                                         {cell?.isMerged ? (
-                                                            <div className="flex flex-col items-end leading-tight justify-center">
+                                                            <div className="flex flex-col items-center leading-tight justify-center">
                                                                 <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
                                                                 <span className={`text-[8px] font-black ${
                                                                     parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
@@ -574,7 +573,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             h === 'Tên miền'
                                                                 ? shortenSupermarketName(String(cell)).toUpperCase()
                                                                 : (isHtCol || isHqqd)
-                                                                    ? <Pill color={pillColor}>{roundUp(val)}%</Pill>
+                                                                    ? (
+                                                                        <span className={`font-bold ${colorCls}`}>
+                                                                            {roundUp(val)}%
+                                                                        </span>
+                                                                    )
                                                                 : h === 'DTQĐ' ? <span className="font-semibold text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
                                                                 : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                         )}

@@ -8,7 +8,6 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { calculateRunRate } from '../../services/metricService';
-import { Pill } from '../shared/Pill';
 
 interface CompetitionCompareViewProps {
     allEmployees: Employee[];
@@ -433,12 +432,12 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-white dark:bg-slate-900 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 w-10 text-center">#</th>
-                                    <th className="px-3 py-2.5 border-b border-slate-300 dark:border-slate-700">Chương trình thi đua</th>
-                                    <th className="px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 text-right text-sky-600 dark:text-sky-400 w-24">{empA.name.split(' ').pop()}</th>
-                                    <th className="px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 text-center w-28">Chênh Lệch</th>
-                                    <th className="px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 text-right text-rose-600 dark:text-rose-400 w-24">{empB.name.split(' ').pop()}</th>
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400 w-10 text-center">#</th>
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400">Chương trình thi đua</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-sky-400 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-400 text-center w-28">Chênh Lệch</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-rose-400 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -450,28 +449,28 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                         return (
                                             <React.Fragment key={crit}>
                                                 <tr className={`${cStyle.bg}`}>
-                                                    <td colSpan={5} className={`px-3 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
+                                                    <td colSpan={5} className={`px-4 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
                                                         <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {crit}
                                                     </td>
                                                 </tr>
                                                 {critRows.map((row, idx) => (
                                                     <tr key={`${row.criterion}-${row.originalTitle}`} className="border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                                                        <td className="px-3 py-2.5 text-[11px] font-bold text-slate-400 text-center">{idx + 1}</td>
-                                                        <td className="px-3 py-2.5">
+                                                        <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">{idx + 1}</td>
+                                                        <td className="px-4 py-1 border-r border-slate-100 dark:border-slate-800/50">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200">{row.name}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-2.5 text-right">
-                                                            <Pill color="#0284c7">{displayMode === 'pct' ? `${row.pctA.toFixed(0)}%` : fMoney.format(row.actualA)}</Pill>
+                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
+                                                            {displayMode === 'pct' ? `${row.pctA.toFixed(0)}%` : fMoney.format(row.actualA)}
                                                         </td>
-                                                        <td className="px-3 py-2.5 text-center">
+                                                        <td className="px-2 py-1 text-center">
                                                             <div className="flex justify-center">
                                                                 <DeltaBadge a={displayMode === 'pct' ? row.pctA : row.actualA} b={displayMode === 'pct' ? row.pctB : row.actualB} mode={displayMode} />
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-2.5 text-right">
-                                                            <Pill color="#e11d48">{displayMode === 'pct' ? `${row.pctB.toFixed(0)}%` : fMoney.format(row.actualB)}</Pill>
+                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
+                                                            {displayMode === 'pct' ? `${row.pctB.toFixed(0)}%` : fMoney.format(row.actualB)}
                                                         </td>
                                                     </tr>
                                                 ))}

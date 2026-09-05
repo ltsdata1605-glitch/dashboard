@@ -12,7 +12,6 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
-import { Pill } from '../shared/Pill';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
@@ -35,27 +34,27 @@ const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
 }) => {
     const oldRow = row.oldRow;
     return (
-        <tr className={`transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-            <td className="px-3 py-2.5 whitespace-nowrap min-w-[180px]">
+        <tr className={`transition-all group cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'odd:bg-slate-50/60 hover:bg-slate-100 dark:odd:bg-slate-800/20 dark:hover:bg-slate-800/40'}`}>
+            <td className="px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 min-w-[180px]">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
                     <div role="button" tabIndex={0} className="flex flex-col min-w-0 cursor-pointer" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
-                        <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px] whitespace-normal break-words">{row.name}</span>
+                        <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
                     </div>
                 </div>
             </td>
-            <td className="px-3 py-2.5 text-[13px] text-right tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(Math.round(row.dtlk))}</td>
-            <td className="px-3 py-2.5 text-[13px] text-right tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.totalSl)}</td>
-            <td className="px-3 py-2.5 text-[13px] text-right tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.slBk)}</td>
-            <td className="px-3 py-2.5 text-right tabular-nums">
-                <Pill color={row.pctSpBk >= 25 ? '#059669' : (row.pctSpBk < 15 ? '#e11d48' : '#d97706')}>{Math.round(row.pctSpBk)}%</Pill>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(Math.round(row.dtlk))}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.totalSl)}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.slBk)}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-500' : 'text-amber-600')}`}>
+                <div>{Math.round(row.pctSpBk)}%</div>
                 <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
             </td>
-            <td className="px-3 py-2.5 text-[13px] text-right tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.totalBill)}</td>
-            <td className="px-3 py-2.5 text-[13px] text-right tabular-nums font-semibold text-sky-700 dark:text-sky-400">{f.format(row.billBk)}</td>
-            <td className="px-3 py-2.5 text-right tabular-nums">
-                <Pill color={row.pctBillBk >= 20 ? '#059669' : (row.pctBillBk < 10 ? '#e11d48' : '#d97706')}>{Math.round(row.pctBillBk)}%</Pill>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold text-slate-700 dark:text-slate-300">{f.format(row.totalBill)}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-semibold text-sky-700 dark:text-sky-400">{f.format(row.billBk)}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${row.pctBillBk >= 20 ? 'text-emerald-600' : (row.pctBillBk < 10 ? 'text-rose-500' : 'text-amber-600')}`}>
+                <div>{Math.round(row.pctBillBk)}%</div>
                 <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
             </td>
         </tr>
@@ -333,29 +332,29 @@ const CrossSellingTab: React.FC<{
                         <div className="overflow-x-auto scrollbar-hide">
                                 <table className="min-w-full text-[13px] border-collapse border border-slate-200 dark:border-slate-700">
                                     <thead className="sticky top-0 z-10">
-                                        {/* Tier 1: Group Headers — nền trắng đồng nhất, chỉ còn viền ngang mỏng */}
+                                        {/* Tier 1: Group Headers */}
                                         <tr>
-                                            <th rowSpan={2} className="px-3 py-2.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => handleSort('name')}>
+                                            <th rowSpan={2} className="px-3 py-2 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th rowSpan={2} className="px-3 py-2.5 text-right text-[11px] font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('dtlk')}>
+                                            <th rowSpan={2} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-sky-400 cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => handleSort('dtlk')}>
                                                 <div>D.THU</div><div>THỰC</div>
                                             </th>
-                                            <th colSpan={3} className="px-3 py-1 text-right text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-white dark:bg-slate-900">
+                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-r border-b border-slate-200 dark:border-slate-700">
                                                 Sản phẩm bán kèm
                                             </th>
-                                            <th colSpan={3} className="px-3 py-1 text-right text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900">
+                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-b border-slate-200 dark:border-slate-700">
                                                 Hiệu quả bill bán kèm
                                             </th>
                                         </tr>
-                                        {/* Tier 2: Column Headers — nền trắng đồng nhất, viền dưới mỏng */}
+                                        {/* Tier 2: Column Headers — nền trung tính, viền dưới màu theo nhóm (implementation_plan.md mục 61) */}
                                         <tr>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('totalSl')}>LKSP</th>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('slBk')}>B.Kèm</th>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('pctSpBk')}>%SPBK</th>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('totalBill')}>Tổng</th>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('billBk')}>B.Kèm</th>
-                                            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort('pctBillBk')}>%B.Kèm</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-amber-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('totalSl')}>LKSP</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-amber-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('slBk')}>B.Kèm</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-amber-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('pctSpBk')}>%SPBK</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('totalBill')}>Tổng</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('billBk')}>B.Kèm</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 dark:bg-slate-800 border-b-[3px] border-b-emerald-400 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('pctBillBk')}>%B.Kèm</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-slate-900">
@@ -364,18 +363,18 @@ const CrossSellingTab: React.FC<{
                                                 const isGrandTotal = row.type === 'total';
                                                 const oldRow = row.oldRow;
                                                 return (
-                                                    <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-300 dark:border-slate-700`}>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-left uppercase tracking-wider ${isGrandTotal ? 'font-black' : 'font-extrabold'}`}>{row.name}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>{f.format(Math.round(row.dtlk))}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>{f.format(row.totalSl)}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>{f.format(row.slBk)}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>
+                                                    <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
+                                                        <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.round(row.dtlk))}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.totalSl)}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.slBk)}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>
                                                             <div>{Math.round(row.pctSpBk)}%</div>
                                                             <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
                                                         </td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>{f.format(row.totalBill)}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums`}>{f.format(row.billBk)}</td>
-                                                        <td className={`px-3 ${isGrandTotal ? 'py-2.5 text-[13px]' : 'py-2.5 text-[12px]'} text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-extrabold`}>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.totalBill)}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.billBk)}</td>
+                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-extrabold`}>
                                                             <div>{Math.round(row.pctBillBk)}%</div>
                                                             <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
                                                         </td>
