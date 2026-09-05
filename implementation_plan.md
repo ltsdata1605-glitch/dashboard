@@ -1312,3 +1312,99 @@ yêu cầu rõ.
 đợt. **Chưa test lại bằng UI thật** (agent không mở được browser tương tác trong
 môi trường này) — đề nghị user tự kiểm tra trực quan trên `http://127.0.0.1:5173`
 (dev server đang chạy sẵn).
+
+---
+
+# [MODULE Report BI] Khôi phục style tab/bảng về bản backup 08/17 (2026-09-05)
+
+## Yêu cầu
+
+"Tất cả các style thiết kế tab, bảng: sẽ lấy lại thiết kế ở bản backup cũ:
+`archive/125. dashboardycx_backup_20260817_203212.zip`" — chỉ khôi phục STYLE thị
+giác (màu/border/canh lề/bo góc/kiểu hiển thị %), giữ nguyên 100% logic/tính năng/
+bug-fix đã làm từ 08/17 tới nay (Đợt 4 phân quyền siêu thị, audit trail, Custom
+Target KPI, lịch sử Thi đua, redesign 18 bảng, nhiều bug fix).
+
+## Cách làm
+
+Giải nén backup, dùng Explore agent đối chiếu 44 file `.tsx` khác nhau trong
+`features/bi-dashboard/`, phân 3 nhóm: **A** (thuần style, 6 file — sau khi loại
+`Card.tsx` vì chỉ thêm prop mới không phải style thật), **B** (trộn style+logic,
+xử lý thủ công từng hunk), **C** (thuần logic, bỏ qua — 4 file:
+`CompetitionGridView.tsx`, `bonusTableHelpers.tsx`, `Icons.tsx`, `KpiOverview.tsx`).
+
+**2 nguyên tắc loại trừ quan trọng** (đã hỏi + được user xác nhận qua
+AskUserQuestion trước khi làm):
+1. **"Button pattern"** (`variant="ghost"`+className dài → `variant="unstyled"
+   size="none"`+className ngắn) — render HỆT NHAU trên màn hình, không phải style
+   thị giác — GIỮ NGUYÊN bản hiện tại ở mọi file, không revert.
+2. **Đổi widget** (`<input>`→`<Input leftIcon="search">`, dropdown tự chế→
+   `<MultiSelectDropdown>`) — nâng cấp chức năng thật (icon tìm kiếm, chọn nhiều),
+   không phải style — GIỮ NGUYÊN.
+3. (Tự đặt thêm) Hunk "cũ" mâu thuẫn trực tiếp luật CLAUDE.md hiện hành (VD nút
+   `rounded-xl` trong khi CLAUDE.md quy định `rounded-md`) — KHÔNG revert.
+
+## Đã sửa — 16 file (3 đợt commit)
+
+**Nhóm A (commit `f5436595`)**: `ColorSettingsModal.tsx`,
+`AutoBonusErrorDetailModal.tsx`, `Badges.tsx` (MedalBadge quay lại huy hiệu tròn
+ring thay vì chữ phẳng "#1/#2/#3"), `BonusDesktopRow.tsx`, `BonusDailyTable.tsx`
+(copy thẳng từ backup — xác nhận diff 100% chỉ xoá `border-r`), `CompetitionGroupView.tsx`
+(màu rgb() gốc thay vì hex emerald/rose/amber, bỏ Pill, khôi phục zebra-striping).
+
+**Nhóm B (commit `502468f7`, `2144c308`, `c6aa22d7`, `6f10ccf8`)**:
+`MultiMonthResultDetailModal.tsx`, `MonthlyBonusTable.tsx` (giữ bug fix
+`formatMillionShort`), `BonusGroupListTable.tsx` (giữ mũi tên chỉ hướng sort mới),
+`CompetitionListView.tsx` (giữ bug fix `isDash`), `InstallmentTab.tsx` (giữ tính
+năng bấm-tên-highlight qua bàn phím), `CrossSellingTab.tsx` (tương tự), `SummaryTableView.tsx`
+(giữ nguyên `<Input leftIcon="search">`), `CompetitionCompareView.tsx` (giữ bug fix
+epsilon 1e-9), `RevenueTab.tsx` (**đặc biệt cẩn thận** — file này truyền props
+xuống `RevenueDesktopRow.tsx` nơi user đang sửa dở; giữ nguyên 100% logic
+`hasTarget`/`getHtColor`, chỉ đổi className), `DetailTab.tsx` (bảng pivot đa cấp,
+giữ nguyên `DeltaBadge`/cấp "Sản phẩm" mới/`filterSanPham`).
+
+Mọi commit đều verify `tsc`/`eslint`/`build` sạch riêng lẻ trước khi sang file tiếp
+theo — không dồn hết rồi mới kiểm tra 1 lần.
+
+## Cố ý KHÔNG sửa — có lý do rõ ràng
+
+- **`RevenueDesktopRow.tsx`, `services/employeeParser.ts`**: user đang sửa dở,
+  chưa commit — tuyệt đối không đụng theo yêu cầu bảo toàn.
+- **`DashboardHeader.tsx`**: đã hỏi user qua AskUserQuestion — widget đã đổi hẳn
+  (select→MultiSelectDropdown, Tabs→2 Button rời, tab "Báo cáo" đã bị xoá logic từ
+  lâu), không tách được style khỏi việc đổi widget, dựng lại có rủi ro layout/hành
+  vi lệch. User chọn bỏ qua.
+- **`NhanVien.tsx`** (phần header icon-box/subtitle): kiểm tra thấy đoạn code liền
+  kề có comment ghi rõ đây là **bug fix z-index** (`z-50`, tránh dropdown
+  `MultiSelectDropdown` bị `overflow-hidden` của pill cha cắt mất — user từng báo
+  cáo lỗi này). Không tách an toàn được style khỏi bug fix → bỏ qua toàn bộ, không
+  sửa gì trong file này.
+- **7 file kiểm tra kỹ, xác nhận KHÔNG còn hunk style thật nào** sau khi áp 2
+  nguyên tắc loại trừ ở trên (toàn bộ "style" trong diff của các file này chỉ là
+  Button-pattern hoặc widget-swap): `TargetHero.tsx`, `BonusDataModal.tsx`,
+  `CompetitionTab.tsx`, `CompetitionView.tsx`, `CompetitionSummaryView.tsx`,
+  `IndividualCompetitionView.tsx`, `SupermarketConfig.tsx`. Không cần sửa gì —
+  không phải "bỏ sót", đã kiểm tra kỹ.
+- **`Dashboard.tsx`, `Settings.tsx`, `DataUpdater.tsx`**: tương tự trên — style
+  trong diff chỉ có 2 hunk Button-pattern mỗi file, không còn gì để revert.
+
+## Còn treo — CHƯA xử lý, cần đợt sau
+
+- **`components/dashboard/IndustryView.tsx`**: có genuine style content (~12 dấu
+  hiệu border-r/text-right/Pill/bg-màu qua kiểm tra nhanh) nhưng cấu trúc phức tạp
+  — class Tailwind được sinh bằng template string nhiều dòng lồng nhau qua nhiều
+  tầng pivot (Ngành hàng > Nhóm hàng > Hàng), rủi ro làm sai cao hơn các bảng khác
+  nếu vội. **Chưa động vào file này** — cần 1 đợt riêng, đọc kỹ toàn bộ hàm sinh
+  class trước khi sửa.
+- **`BonusTab.tsx`**: chỉ 1 hunk rất nhỏ (tên file export đổi từ
+  `Bonus_Report_{sm}.png` → `Báo Cáo Thưởng - {sm}.png`) — không ảnh hưởng giao
+  diện, bỏ qua vì không đáng công sức riêng 1 dòng.
+
+## Verify
+
+`tsc --noEmit`, `eslint`, `npm run build` sạch sau MỖI commit (không chỉ lần cuối).
+Với các file rủi ro cao (`RevenueTab.tsx`, `CompetitionGroupView.tsx`), sau khi sửa
+đã `diff` lại với backup để xác nhận phần còn khác biệt 100% là logic, không sót
+style. **Chưa test bằng UI thật** (giới hạn môi trường agent) — đề nghị user tự
+soi từng bảng đã liệt kê trên `http://127.0.0.1:5173`, đặc biệt các bảng Thi
+đua/Thưởng/Doanh thu Nhân viên/Chi tiết Ngành hàng.
