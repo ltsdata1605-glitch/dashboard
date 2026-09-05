@@ -140,24 +140,24 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
         );
     }
 
-    const thBase = 'px-3 py-2.5 text-right text-[11px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors';
-    const tdBase = 'px-3 py-2.5 text-right text-[13px] tabular-nums';
+    const thBase = 'px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
+    const tdBase = 'px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-100 dark:border-slate-800';
 
     return (
         <div>
             <table className="w-full border-collapse compact-export-table">
                 <thead className="sticky top-0 z-10">
                     <tr>
-                        <th className="px-3 py-2.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700">Nhân viên</th>
+                        <th className="px-2 py-1.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700">Nhân viên</th>
                         {orderedMonths.map(m => (
-                            <th key={m.yyyymm} onClick={() => handleSort(m.yyyymm)} className={`${thBase} text-sky-600 dark:text-sky-400`}>
+                            <th key={m.yyyymm} onClick={() => handleSort(m.yyyymm)} className={`${thBase} text-sky-700 dark:text-sky-400`}>
                                 T{m.label.split('/')[0]} {sortField === m.yyyymm ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                             </th>
                         ))}
-                        <th onClick={() => handleSort('average')} className={`${thBase} text-emerald-600 dark:text-emerald-400`}>
+                        <th onClick={() => handleSort('average')} className={`${thBase} text-emerald-700 dark:text-emerald-400`}>
                             T.Bình {sortField === 'average' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                         </th>
-                        <th onClick={() => handleSort('total')} className={`${thBase} text-sky-600 dark:text-sky-400`}>
+                        <th onClick={() => handleSort('total')} className={`${thBase} text-sky-700 dark:text-sky-400 border-r-0`}>
                             Tổng {sortField === 'total' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                         </th>
                     </tr>
@@ -165,7 +165,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {sortedEmployees.map((emp, idx) => (
                         <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <td className="px-3 py-2.5">
+                            <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-2 min-w-0">
                                     <RankBadge rank={idx + 1} />
                                     <AvatarDisplay employeeName={emp.originalName} supermarketName={supermarketName} />
@@ -184,31 +184,31 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
                             <td className={`${tdBase} font-black ${rankColorClass(averageRankMap.get(emp.originalName))}`}>
                                 {formatMillionShort(getAverage(emp.originalName))}
                             </td>
-                            <td className={`px-3 py-2.5 text-right text-[13px] tabular-nums font-black ${rankColorClass(totalRankMap.get(emp.originalName))}`}>
+                            <td className={`px-2 py-1 text-center text-[13px] tabular-nums font-black ${rankColorClass(totalRankMap.get(emp.originalName))}`}>
                                 {formatMillionShort(getTotal(emp.originalName))}
                             </td>
                         </tr>
                     ))}
                 </tbody>
                 <tfoot>
-                    <tr className="bg-slate-50 dark:bg-slate-900/60 font-black border-t-2 border-slate-300 dark:border-slate-700">
-                        <td className="px-3 py-2.5 text-xs text-left text-slate-700 dark:text-slate-200">TỔNG BỘ PHẬN</td>
+                    <tr className="bg-slate-100 dark:bg-slate-800 font-black">
+                        <td className="px-2 py-1.5 text-xs text-slate-700 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">TỔNG BỘ PHẬN</td>
                         {orderedMonths.map(m => {
                             const sum = employees.reduce((s, e) => s + (getMonthValue(e.originalName, m.yyyymm) || 0), 0);
                             return (
-                                <td key={m.yyyymm} className="px-3 py-2.5 text-right text-xs tabular-nums text-slate-700 dark:text-slate-200">
+                                <td key={m.yyyymm} className="px-2 py-1.5 text-center text-xs tabular-nums text-slate-700 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">
                                     {formatMillionShort(sum)}
                                 </td>
                             );
                         })}
-                        <td className="px-3 py-2.5 text-right text-xs tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <td className="px-2 py-1.5 text-center text-xs tabular-nums text-emerald-700 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700">
                             {(() => {
                                 const activeMonths = orderedMonths.filter(m => monthHasData(m.yyyymm)).length;
                                 const deptTotal = employees.reduce((s, e) => s + getTotal(e.originalName), 0);
                                 return formatMillionShort(activeMonths > 0 ? deptTotal / activeMonths : 0);
                             })()}
                         </td>
-                        <td className="px-3 py-2.5 text-right text-xs tabular-nums text-sky-600 dark:text-sky-400">
+                        <td className="px-2 py-1.5 text-center text-xs tabular-nums text-sky-700 dark:text-sky-400">
                             {formatMillionShort(employees.reduce((s, e) => s + getTotal(e.originalName), 0))}
                         </td>
                     </tr>
