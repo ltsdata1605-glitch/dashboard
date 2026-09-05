@@ -225,8 +225,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             return;
         }
         
-        // Target elements with truncate class or matching employee name pattern
-        if (el.classList.contains('truncate') || isEmployeeNamePattern(text)) {
+        // Target elements with truncate class or matching employee name pattern.
+        // Chỉ xét pattern tên nhân viên trên phần tử LÁ (không có element con): textContent của
+        // một div bọc gộp cả text các con, nên div cha/ông chứa 1 nhãn "12345 - Tên NV" ở đâu đó
+        // cũng khớp pattern và bị ép `white-space: nowrap` + `min-width: max-content`, khiến toàn
+        // bộ khối nội dung nở ngang vượt bề rộng chụp và bị cắt mất phần bên phải.
+        const matchesEmployeeName = isEmployeeNamePattern(text) && el.children.length === 0;
+        if (el.classList.contains('truncate') || matchesEmployeeName) {
             el.classList.remove('truncate');
             el.style.setProperty('white-space', 'nowrap', 'important');
             el.style.setProperty('overflow', 'visible', 'important');

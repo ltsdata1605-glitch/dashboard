@@ -182,13 +182,20 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
             return true;
         }
 
-        for (let k = 1; k <= MIN_GAP; k++) {
-            const prev = staff.schedule[dayIdx - k];
-            const next = staff.schedule[dayIdx + k];
+        // Không làm ca đặc biệt 2 ngày liên tiếp nhau (cách ít nhất 1 ngày)
+        const prev = staff.schedule[dayIdx - 1];
+        const next = staff.schedule[dayIdx + 1];
+        if (dayIdx - 1 !== ignoreDayIdx && isSpecial(prev)) return false;
+        if (dayIdx + 1 !== ignoreDayIdx && isSpecial(next)) return false;
 
-            // Nếu ngày kiểm tra trùng với ignoreDayIdx (ngày đang chứa ca special mà ta định chuyển đi), thì coi như ngày đó trống/an toàn
-            if (dayIdx - k !== ignoreDayIdx && isSpecial(prev)) return false;
-            if (dayIdx + k !== ignoreDayIdx && isSpecial(next)) return false;
+        // Cách ca CÙNG LOẠI ít nhất MIN_GAP (2 ngày)
+        if (roleTag) {
+            for (let k = 1; k <= MIN_GAP; k++) {
+                const p = staff.schedule[dayIdx - k];
+                const n = staff.schedule[dayIdx + k];
+                if (dayIdx - k !== ignoreDayIdx && p?.role.includes(`(${roleTag})`)) return false;
+                if (dayIdx + k !== ignoreDayIdx && n?.role.includes(`(${roleTag})`)) return false;
+            }
         }
         return true;
     };
@@ -773,9 +780,15 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     balanceSpecificRole('Kho', 'Nu');
 
     // 4. Cân bằng tổng thể giờ công (SBH)
+    const boost = config.sbhGenderBoost;
+    const boostGender = boost?.gender;
+    const boostHours = (boostGender && boost.hours > 0) ? boost.hours : 0;
+    // targetDelta: mức độ Nữ cao hơn Nam (dương nếu Nữ cao hơn, âm nếu Nam cao hơn)
+    const targetDelta = boostGender === 'Nu' ? boostHours : (boostGender === 'Nam' ? -boostHours : 0);
+
     const balanceTotalSpecialLoad = () => {
-        // Cân bằng giờ công trung bình giữa Nam và Nữ trước
-        for (let pass = 0; pass < 10; pass++) {
+        // Cân bằng giờ công trung bình giữa Nam và Nữ trước (có tính đến sbhGenderBoost)
+        for (let pass = 0; pass < 25; pass++) {
             refreshAllStats();
             const nams = allInOneStaff.filter(s => s.gender === 'Nam');
             const nus = allInOneStaff.filter(s => s.gender === 'Nu');
@@ -784,11 +797,13 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
             const avgNam = nams.reduce((sum, s) => sum + calculateSpecialHours(s, includeTn), 0) / nams.length;
             const avgNu = nus.reduce((sum, s) => sum + calculateSpecialHours(s, includeTn), 0) / nus.length;
             
-            if (Math.abs(avgNam - avgNu) < 1) break;
+            const currentDelta = avgNu - avgNam;
+            if (Math.abs(currentDelta - targetDelta) < 1.5) break;
             
-            const isNamOverloaded = avgNam > avgNu;
-            const sourceGroup = isNamOverloaded ? nams : nus;
-            const targetGroup = isNamOverloaded ? nus : nams;
+            // Nếu currentDelta < targetDelta (VD Nữ cần nhiều hơn): chuyển ca SBH từ Nam sang Nữ
+            const needMoreNu = currentDelta < targetDelta;
+            const sourceGroup = needMoreNu ? nams : nus;
+            const targetGroup = needMoreNu ? nus : nams;
             
             sourceGroup.sort((a, b) => calculateSpecialHours(b, includeTn) - calculateSpecialHours(a, includeTn));
             targetGroup.sort((a, b) => calculateSpecialHours(a, includeTn) - calculateSpecialHours(b, includeTn));
@@ -801,13 +816,13 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                         const sSched = sourceStaff.schedule[d];
                         const tSched = targetStaff.schedule[d];
                         
-                        if (sSched && (sSched.role.includes('(Kho)') || (includeTn && sSched.role.includes('(TN)'))) &&
+                        if (sSched && (sSched.role.includes('(Kho)') || (includeTn && sSched.role.includes('(TN)')) || (sSched.role.includes('(GH)') && targetStaff.gender === 'Nam')) &&
                             tSched && !tSched.role.includes('(') && tSched.role !== 'OFF') {
                             const roleTag = sSched.role.match(/\(([^)]+)\)/)?.[1];
                             
                             // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
                             const dayOfWeek = dayOfWeekCache[d];
-                            if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4)) continue;
+                            if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && sourceStaff.gender !== targetStaff.gender) continue;
 
                             const isSafe = roleTag === 'Kho' ? isSafeForKho(targetStaff, d) : isSafeForSpecial(targetStaff, d, undefined, roleTag);
                             if (!isSafe) continue;
@@ -824,51 +839,62 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
         }
 
         // Cân bằng chi tiết từng cá nhân (Iterative Individual Balancing)
-        for (let pass = 0; pass < 30; pass++) {
-            refreshAllStats();
-            allInOneStaff.sort((a, b) => calculateSpecialHours(b, includeTn) - calculateSpecialHours(a, includeTn));
-            const high = allInOneStaff[0];
-            const low = allInOneStaff[allInOneStaff.length - 1];
-            const currentDiff = calculateSpecialHours(high, includeTn) - calculateSpecialHours(low, includeTn);
+        const balanceIndividualGroup = (group: StaffMember[]) => {
+            if (group.length < 2) return;
+            for (let pass = 0; pass < 30; pass++) {
+                refreshAllStats();
+                group.sort((a, b) => calculateSpecialHours(b, includeTn) - calculateSpecialHours(a, includeTn));
+                const high = group[0];
+                const low = group[group.length - 1];
+                const currentDiff = calculateSpecialHours(high, includeTn) - calculateSpecialHours(low, includeTn);
 
-            if (currentDiff <= 3) break; // Đạt mục tiêu chênh lệch tối đa 3h
+                if (currentDiff <= 3) break; // Đạt mục tiêu chênh lệch tối đa 3h trong nhóm
 
-            let swapped = false;
-            // Thử đổi ca để giảm chênh lệch
-            for (let d = 1; d <= duration; d++) {
-                const hSched = high.schedule[d];
-                const lSched = low.schedule[d];
+                let swapped = false;
+                for (let d = 1; d <= duration; d++) {
+                    const hSched = high.schedule[d];
+                    const lSched = low.schedule[d];
 
-                if (hSched && isSpecial(hSched) && lSched && !isSpecial(lSched) && lSched.role !== 'OFF') {
-                    const roleTag = hSched.role.match(/\(([^)]+)\)/)?.[1];
-                    if (roleTag === 'GH') {
-                        if (low.gender !== 'Nam') continue;
-                        // KHÔNG CHO PHÉP nếu việc đổi GH làm lố chênh lệch GH đã được cân bằng
-                        if (high.stats.gh <= low.stats.gh) continue;
-                    }
+                    if (hSched && isSpecial(hSched) && lSched && !isSpecial(lSched) && lSched.role !== 'OFF') {
+                        const roleTag = hSched.role.match(/\(([^)]+)\)/)?.[1];
+                        if (roleTag === 'GH') {
+                            if (low.gender !== 'Nam') continue;
+                            // KHÔNG CHO PHÉP nếu việc đổi GH làm lố chênh lệch GH đã được cân bằng
+                            if (high.stats.gh <= low.stats.gh) continue;
+                        }
 
-                    // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
-                    const dayOfWeek = dayOfWeekCache[d];
-                    if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && high.gender !== low.gender) continue;
+                        // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
+                        const dayOfWeek = dayOfWeekCache[d];
+                        if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && high.gender !== low.gender) continue;
 
-                    const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
-                    if (!isSafe) continue;
+                        const isSafe = roleTag === 'Kho' ? isSafeForKho(low, d) : isSafeForSpecial(low, d, undefined, roleTag);
+                        if (!isSafe) continue;
 
-                    const hHours = hSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
-                    const lHours = lSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
-                    
-                    // Chỉ đổi nếu chênh lệch mới nhỏ hơn chênh lệch cũ
-                    const newH = calculateSpecialHours(high, includeTn) - hHours;
-                    const newL = calculateSpecialHours(low, includeTn) + hHours;
-                    if (Math.abs(newH - newL) < currentDiff) {
-                        high.schedule[d] = { shift: lSched.shift, role: lSched.shift, isManual: true };
-                        low.schedule[d] = { shift: hSched.shift, role: `${hSched.shift} (${roleTag})`, isManual: true };
-                        swapped = true;
-                        break;
+                        const hHours = hSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+                        const lHours = lSched.shift.split('').reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+                        
+                        // Chỉ đổi nếu chênh lệch mới nhỏ hơn chênh lệch cũ
+                        const newH = calculateSpecialHours(high, includeTn) - hHours;
+                        const newL = calculateSpecialHours(low, includeTn) + hHours;
+                        if (Math.abs(newH - newL) < currentDiff) {
+                            high.schedule[d] = { shift: lSched.shift, role: lSched.shift, isManual: true };
+                            low.schedule[d] = { shift: hSched.shift, role: `${hSched.shift} (${roleTag})`, isManual: true };
+                            swapped = true;
+                            break;
+                        }
                     }
                 }
+                if (!swapped) break;
             }
-            if (!swapped) break;
+        };
+
+        if (boostHours > 0) {
+            const nams = allInOneStaff.filter(s => s.gender === 'Nam');
+            const nus = allInOneStaff.filter(s => s.gender === 'Nu');
+            balanceIndividualGroup(nams);
+            balanceIndividualGroup(nus);
+        } else {
+            balanceIndividualGroup(allInOneStaff);
         }
     };
 
@@ -880,13 +906,11 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
      * Thử mọi cặp nhân viên và mọi ngày để xem có thể đổi ca nhằm giảm độ lệch chuẩn không.
      * Cập nhật: Ưu tiên giảm chênh lệch cực đại (Max - Min) xuống dưới 3h.
      */
-    const greedyPolish = () => {
+    const greedyPolishGroup = (group: StaffMember[]) => {
+        if (group.length < 2) return;
         for (let pass = 0; pass < 20; pass++) {
             let improved = false;
             refreshAllStats();
-            // Cache giờ đặc biệt theo nhân viên 1 lần/pass thay vì gọi lại calculateSpecialHours
-            // (duyệt toàn bộ schedule của nhân viên đó) cho mỗi lần so sánh trong sort() và mỗi
-            // cặp (i,j) — lịch của 1 nhân viên chỉ đổi khi có swap, mà swap thì thoát hết pass ngay.
             const specialHoursCache = new Map<string, number>();
             const getSpecialHours = (s: StaffMember) => {
                 let h = specialHoursCache.get(s.id);
@@ -896,12 +920,12 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 }
                 return h;
             };
-            allInOneStaff.sort((a, b) => getSpecialHours(b) - getSpecialHours(a));
+            group.sort((a, b) => getSpecialHours(b) - getSpecialHours(a));
 
-            for (let i = 0; i < allInOneStaff.length; i++) {
-                for (let j = allInOneStaff.length - 1; j > i; j--) {
-                    const sHigh = allInOneStaff[i];
-                    const sLow = allInOneStaff[j];
+            for (let i = 0; i < group.length; i++) {
+                for (let j = group.length - 1; j > i; j--) {
+                    const sHigh = group[i];
+                    const sLow = group[j];
 
                     const hHigh = getSpecialHours(sHigh);
                     const hLow = getSpecialHours(sLow);
@@ -945,6 +969,17 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                 if (improved) break;
             }
             if (!improved) break;
+        }
+    };
+
+    const greedyPolish = () => {
+        if (boostHours > 0) {
+            const nams = allInOneStaff.filter(s => s.gender === 'Nam');
+            const nus = allInOneStaff.filter(s => s.gender === 'Nu');
+            greedyPolishGroup(nams);
+            greedyPolishGroup(nus);
+        } else {
+            greedyPolishGroup(allInOneStaff);
         }
     };
 

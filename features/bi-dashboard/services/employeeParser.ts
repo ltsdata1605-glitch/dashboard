@@ -108,62 +108,45 @@ export const parseAllEmployees = (allEmployeesRaw: string, hiddenEmployees: stri
 export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: string[] = []): DepartmentInfo[] => {
     if (!allEmployeesRaw) return [];
     
+    const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
     const lines = allEmployeesRaw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
     const departmentList: DepartmentInfo[] = [];
-    let currentDept: DepartmentInfo | null = null;
-    let totalEmployees = 0;
+    let currentDept: { name: string; employees: Set<string> } | null = null;
     
     for (const line of lines) {
         const parts = line.split('\t');
         const namePart = parts[0].trim();
         
         if (namePart.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
-            if (currentDept) departmentList.push(currentDept);
-            currentDept = { name: namePart, employeeCount: 0, isManual: false };
+            if (currentDept) {
+                departmentList.push({ name: currentDept.name, employeeCount: currentDept.employees.size, isManual: false });
+            }
+            currentDept = { name: namePart, employees: new Set() };
         } else if (currentDept && (parts.length > 1 || namePart.includes(' - '))) {
-            if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo')) {
+            if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo') && !namePart.includes('Dashboards')) {
                 const canonical = standardizeEmployeeName(namePart);
-                if (!hiddenEmployees.includes(namePart) && !hiddenEmployees.includes(canonical)) {
-                    currentDept.employeeCount++;
+                if (!hiddenSet.has(namePart) && !hiddenSet.has(canonical)) {
+                    currentDept.employees.add(canonical);
                 }
             }
-        } else if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo') && !namePart.includes('Dashboards')) {
-            totalEmployees++;
         }
     }
     
-    if (currentDept) departmentList.push(currentDept);
-    if (departmentList.length === 0 && totalEmployees > 0) {
-        departmentList.push({ name: 'BP ALL IN ONE - DMX', employeeCount: totalEmployees, isManual: false });
+    if (currentDept) {
+        departmentList.push({ name: currentDept.name, employeeCount: currentDept.employees.size, isManual: false });
+    }
+    
+    if (departmentList.length === 0) {
+        const validEmployees = parseAllEmployees(allEmployeesRaw, hiddenEmployees);
+        if (validEmployees.length > 0) {
+            departmentList.push({ name: 'BP ALL IN ONE - DMX', employeeCount: validEmployees.length, isManual: false });
+        }
     }
     return departmentList;
 };
 
 export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] => {
-    if (!danhSachData) return [];
-    
-    const lines = danhSachData.split(/\r?\n/).map(l => l.trim()).filter(l => l);
-    const departmentList: DepartmentInfo[] = [];
-    let currentDept: DepartmentInfo | null = null;
-    let totalEmployees = 0;
-    
-    for (const line of lines) {
-        const parts = line.split('\t');
-        if (line.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
-            if (currentDept) departmentList.push(currentDept);
-            currentDept = { name: parts[0].trim(), employeeCount: 0 };
-        } else if (currentDept && (parts.length > 1 || line.includes(' - '))) {
-            currentDept.employeeCount++;
-        } else if (line.includes(' - ') && !line.includes('http') && !line.includes('Báo cáo') && !line.includes('Dashboards')) {
-            totalEmployees++;
-        }
-    }
-    
-    if (currentDept) departmentList.push(currentDept);
-    if (departmentList.length === 0 && totalEmployees > 0) {
-        departmentList.push({ name: 'BP ALL IN ONE - DMX', employeeCount: totalEmployees });
-    }
-    return departmentList;
+    return parseDepartments(danhSachData, []);
 };
 
 export const parseEmployeeCompetitionTargets = (

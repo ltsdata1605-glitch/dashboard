@@ -520,7 +520,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             <div className="relative z-10 pt-1 lg:pt-3">
                                                 <SectionHeader
                                                     title="TỔNG QUAN DOANH THU"
-                                                    icon="bar-chart-3"
                                                     subtitle={<>
                                                         <span className="hidden md:inline">{processedData.reportSubTitle}</span>
                                                         {/* Mobile: truncated subtitle + inline Chờ Xuất */}

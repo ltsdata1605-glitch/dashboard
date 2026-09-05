@@ -1408,3 +1408,172 @@ Với các file rủi ro cao (`RevenueTab.tsx`, `CompetitionGroupView.tsx`), sau
 style. **Chưa test bằng UI thật** (giới hạn môi trường agent) — đề nghị user tự
 soi từng bảng đã liệt kê trên `http://127.0.0.1:5173`, đặc biệt các bảng Thi
 đua/Thưởng/Doanh thu Nhân viên/Chi tiết Ngành hàng.
+
+---
+
+# Xuất ảnh "Phân Tích Hiệu Quả Cá Nhân" — xuất đủ thông tin (2026-09-05)
+
+**Yêu cầu**: nút camera trong modal Phân Tích Hiệu Quả Cá Nhân (`components/modals/PerformanceModal.tsx`)
+phải xuất ĐỦ thông tin. User xác nhận ảnh cũ thiếu 2 thứ: (1) tiêu đề + tên nhân viên,
+(2) bảng bị cắt cột bên phải.
+
+**Đã sửa**
+
+1. `components/modals/PerformanceModal.tsx`
+   - Thêm header chỉ-dành-cho-ảnh vào đầu `modalContent`: `hidden export-always-show`
+     (uiService ép `display:flex` cho `.export-always-show` khi clone, và không xoá phần tử
+     `.hidden` nào đã bị ép display). Bỏ qua khi `isBatchExporting` vì nhánh batch tự dựng
+     header riêng — tránh 2 tiêu đề chồng nhau.
+   - `forcedWidth` khi xuất lẻ: 640 → 960 trên desktop (giữ 640 cho viewport < 768px),
+     khớp với `handleBatchExport` vốn đã dùng 960. 640px là nguyên nhân bảng "Chi Tiết Theo
+     Khách Hàng" bị dồn chữ/cắt cột.
+   - Màu tên NV trong header ảnh dùng `text-sky-700` (palette semantic) thay vì `indigo`
+     của header modal, để không tăng `nonSemanticColor` trong lint-ratchet.
+
+2. `services/uiService.ts` — `exportElementAsImage()`
+   - Pattern "tên nhân viên" (`text.includes(' - ') && /\d+/`) chỉ còn áp dụng cho phần tử LÁ
+     (`el.children.length === 0`). Trước đây `textContent` của div bọc gộp text của mọi con,
+     nên chỉ cần 1 nhãn `12345 - Tên NV` ở đâu đó là cả khối cha bị ép
+     `white-space: nowrap` + `min-width: max-content` → nội dung nở ngang vượt bề rộng chụp và
+     bị cắt bên phải. Ảnh hưởng chung mọi ảnh xuất của khu vực Root (không riêng modal này).
+
+**Verify**: `eslint` sạch trên 2 file sửa, `npm run build` OK, `lint:ratchet` không phát sinh
+vi phạm mới ở 2 file này. `tsc --noEmit` còn 24 lỗi CÓ SẴN ở `features/phan-ca/*` và
+`features/bi-dashboard/.../DashboardHeader.tsx` — đến từ thay đổi chưa commit trong working tree
+của user (`features/phan-ca/types.ts`, `PhanCaView.tsx`...), không liên quan đợt sửa này.
+**Chưa test bằng UI thật** — cần user mở modal 1 nhân viên, bấm nút camera và soi ảnh: phải có
+tiêu đề + tên NV ở đầu ảnh, và bảng chi tiết không mất cột Doanh Thu bên phải.
+
+## Bổ sung cùng ngày — rút gọn tên sản phẩm trong ảnh xuất
+
+**Triệu chứng còn lại sau bản sửa trên**: ảnh đã có header và đủ nội dung, nhưng vài dòng có tên
+sản phẩm rất dài (vd "Pin sạc dự phòng Polymer 20000mAh Type C PD QC 3.0 22.5W Xmobile CarryOn
+Y112 Xám kèm Cáp Lightning và Type C" — 108 ký tự) vẫn kéo bảng bung ngang, đẩy cột Doanh Thu
+ra ngoài khung ảnh.
+
+**Nguyên nhân**: bảng chi tiết dùng `rowSpan` cho ô "Mã ĐH", nên ở các dòng bán kèm (dòng thứ
+2, 3... của cùng đơn) ô **Sản phẩm** trở thành `td` đầu tiên. Bước 7 của
+`exportElementAsImage()` coi cột đầu là cột "nhóm/tên" và ép `white-space: nowrap` +
+`min-width: max-content` cho nó → tên dài không xuống dòng, kéo giãn cả bảng.
+
+**Cách xử lý** (`components/modals/PerformanceModal.tsx`): rút gọn tên sản phẩm **chỉ trong ảnh
+xuất** (`isExporting || isBatchExporting`), cắt tại ranh giới từ gần nhất rồi thêm "…".
+Ngưỡng: 60 ký tự cho ảnh 960px (desktop + xuất hàng loạt), 40 ký tự cho ảnh 640px (xuất lẻ từ
+điện thoại). Giao diện vẫn hiển thị tên đầy đủ, và thuộc tính `title` của ô giữ nguyên tên gốc.
+
+**Đã cân nhắc nhưng KHÔNG làm**: sửa heuristic "cột đầu = nowrap" trong `uiService.ts` — nó
+dùng chung cho mọi bảng xuất ảnh của khu vực Root, sửa ở đó rủi ro hồi quy cao hơn nhiều so với
+lợi ích, trong khi yêu cầu của user đúng là "rút gọn tên sản phẩm".
+
+## Bổ sung lần 2 — thu hẹp bề rộng ảnh cho vừa nội dung
+
+Ảnh 960px để lại khoảng trống lớn giữa cột "Sản phẩm" và cột "SL" (đo trên ảnh user gửi:
+phần dư ≈ 190px CSS), và thanh tỷ trọng ngành hàng bị kéo quá dài.
+
+- `PerformanceModal.handleExport`: `forcedWidth` desktop 960 → **800** (mobile giữ 640).
+- `useExportLogic.handleBatchExport`: `forcedWidth` 960 → **800** để ảnh xuất lẻ và xuất hàng
+  loạt của cùng modal giống hệt nhau.
+- `EXPORT_PRODUCT_NAME_MAX_LENGTH`: 60 → **55** ký tự cho khớp bề rộng mới (ngưỡng hẹp 40 giữ
+  nguyên cho ảnh 640px).
+
+Không ép được bảng co về `width: auto` trong ảnh: bước 7 của `exportElementAsImage()` set
+`width: 100% !important` cho MỌI `table`, và `onCloneReady` chạy TRƯỚC bước đó nên không đè
+được — nên cách khả thi là chỉnh bề rộng khung chụp như trên.
+
+---
+
+# Thay biểu đồ "Tỷ Trọng Doanh Thu Ngành Hàng" bằng bảng Phụ kiện / Dịch vụ / Gia dụng (2026-09-05)
+
+**Yêu cầu**: bỏ khối "Tỷ Trọng Doanh Thu Ngành Hàng" trong modal Phân Tích Hiệu Quả Cá Nhân, thay
+bằng bảng số lượng Phụ kiện & ĐGD "giống như Chi Tiết Theo Kho" (ảnh user khoanh trọn 3 nhóm cột:
+SL PHỤ KIỆN, SL DỊCH VỤ, SL GIA DỤNG).
+
+**File mới**: `components/modals/EmployeeCategoryTable.tsx`
+- `useCategoryColumns()` đọc cấu hình cột người dùng đã lưu cho bảng Kho
+  (`getWarehouseColumnConfig()` — IndexedDB), giữ nguyên định nghĩa cột chuẩn từ
+  `DEFAULT_WAREHOUSE_COLUMNS` và chỉ tôn trọng `isVisible` của người dùng (cùng cách
+  `migrateColumns()` trong `WarehouseSummary.tsx` làm). Trong lúc chờ IndexedDB / khi đọc lỗi thì
+  dùng cấu hình mặc định. **Cột custom bị bỏ qua** — chúng cần bộ lọc riêng của `useWarehouseLogic`,
+  không tính được từ metrics theo nhóm.
+- Số liệu: gọi LẠI `calculateWarehouseSummary()` (services/summaryService.ts) trên đúng tập dòng
+  của nhân viên rồi cộng các nhóm — không viết công thức mới, nên từng con số khớp bảng Kho (cùng
+  bộ lọc hợp lệ, cùng `weightedQuantity` từ `calculateRowMetrics`). Hàm đó gom theo Mã Kho nên
+  nhân viên bán ở nhiều kho được cộng lại.
+- Cách đọc giá trị cột (`byIndustry`/`byGroup`/`byProduct`, `categoryName` nhiều nhóm ngăn bởi dấu
+  phẩy, doanh thu quy về triệu) sao đúng `getColumnValue()` của `useWarehouseLogic`.
+
+**`components/modals/PerformanceModal.tsx`**
+- Xoá khối biểu đồ tỷ trọng + phần tính `industryBreakdown` (không còn nơi dùng).
+- Thêm `employeeRevenueRows` = dòng hợp lệ của nhân viên **không lọc `price > 0`** — dịch vụ/quà
+  tặng giá 0 vẫn phải được đếm số lượng (khác `employeeSalesData` vốn dùng cho phần khách hàng).
+
+**Bề rộng ảnh xuất**: `getCategoryExportWidth()` + `CATEGORY_TABLE_CLASS` đặt trong `constants.ts`
+(nơi trung lập để `hooks/useExportLogic.ts` không phải import 1 component). Bảng nhiều cột cần
+rộng hơn 800px vì `services/uiService.ts` ép mỗi `th` sub-header tối thiểu 55px (cột đầu 100px)
+lúc chụp → công thức `clamp(minWidth, 150 + số_cột × 56, 1150)`. Xuất hàng loạt đếm số cột ngay
+trên DOM đã render (nó chụp thẳng `.modal-content`, không đi qua `handleExport`).
+
+**Verify**: eslint sạch, tsc không lỗi ở các file này, build OK, lint-ratchet không phát sinh vi
+phạm mới. **Chưa chạy UI thật** — cần user mở modal 1 nhân viên đối chiếu số của bảng mới với dòng
+tương ứng ở bảng "Chi Tiết Theo Kho" (khi lọc đúng nhân viên đó), và xuất ảnh xem bảng có bị cắt
+cột không.
+
+## Bổ sung — đồng bộ tuyệt đối cột với bảng "Chi Tiết Theo Kho"
+
+User chốt nguyên tắc: siêu thị quan tâm cột nào thì nhân viên cũng vậy — ẩn 1 cột ở bảng Kho là
+bảng trong modal nhân viên ẩn theo. Rà lại thì bản đầu còn 3 chỗ có thể lệch:
+
+1. Điều kiện lọc: modal dùng `isVisible !== false`, bảng Kho dùng `filter(c => c.isVisible)` →
+   cấu hình lưu thiếu field `isVisible` sẽ hiện ở modal nhưng ẩn ở bảng Kho. Đã đổi thành
+   `isVisible === true`.
+2. Thứ tự cột: modal sắp theo thứ tự trong `DEFAULT_WAREHOUSE_COLUMNS`, bảng Kho sắp theo `order`
+   người dùng đã kéo. Đã đổi sang `order`, và giữ `order`/`isVisible` của cấu hình lưu (chỉ lấy
+   lại phần *định nghĩa* cột từ default, đúng như `migrateColumns()`).
+3. Version cấu hình: `WarehouseSummary` reset về mặc định khi `warehouseColumnConfigVersion`
+   không khớp `'v3'`; modal trước đây không kiểm tra nên có thể bám cấu hình cũ. Đã tách hằng
+   `WAREHOUSE_COLUMN_CONFIG_VERSION` trong `constants.ts` cho cả 2 nơi dùng chung, và modal áp
+   dụng cùng luật reset.
+
+**Còn khác biệt có chủ ý**: cột **custom** (do người dùng tự tạo trong 3 nhóm đó) không hiển thị ở
+modal — giá trị của chúng cần bộ lọc riêng trong `useWarehouseLogic` (industries/subgroups/
+manufacturers/productCodes/priceCondition), không đọc được từ metrics theo nhóm. Nếu cần, sẽ làm
+riêng một đợt.
+
+---
+
+# Report BI — 2 cột "M.TIÊU V.TRỘI" / "%HTDK V.TRỘI" luôn trống (2026-09-05)
+
+**Triệu chứng**: bảng "Luỹ kế Thi đua" hiển thị "-" ở 2 cột này cho MỌI chương trình, trong khi các
+cột khác (L.KẾ, %HTDK, C.LẠI) vẫn đúng.
+
+**Đối chiếu backup** `archive/105. dashboardycx_backup_20260807_094503.zip`: 2 cột này KHÔNG đến từ
+dữ liệu dán mà do `useDashboardLogic.ts` tự tính (`augmentData`):
+`Target V.Trội = base target × % điều chỉnh` (`comptarget-{kho}-targets` trong IndexedDB, mặc định
+100%), `%HTDK V.Trội = (luỹ kế / ngày đã qua × ngày trong tháng) / Target V.Trội × 100`. Bản hiện
+tại vẫn còn nguyên phần tính đó (chỉ đổi nguồn base target sang `computeCompetitionBaseTargets`
+theo Đợt 4 — đọc từ dữ liệu đã parse thay vì raw text, để nhân viên chỉ-đọc cũng có số).
+
+**Nguyên nhân**: cả 4 khối augment (realtime/luỹ kế × siêu thị/dòng Tổng) đều theo mẫu
+
+```
+if (!headers.includes('Target V.Trội')) headersToAdd.push(...)   // chỉ thêm khi CHƯA có
+...
+program.data.length = originalHeaderCount;
+program.data.push(targetVT); program.data.push(htdkVT);          // luôn ghi vào CUỐI
+```
+
+Dữ liệu dán từ BI hiện đã kèm sẵn 2 cột đó (bỏ trống), nên `headersToAdd` rỗng → 2 giá trị tính
+được rơi vào vị trí **không có header tương ứng** → `CompetitionListView` bỏ qua
+(`header === undefined → return null`), còn ô hiển thị vẫn là ô trống của nguồn ⇒ luôn "-".
+(Trường hợp nguồn chỉ có 1 trong 2 cột còn tệ hơn: `originalHeaderCount` lệch 1 → cắt mất ô cuối
+rồi ghi lệch cột.)
+
+**Sửa** (`features/bi-dashboard/hooks/useDashboardLogic.ts`): thêm `ensureColumnIndex()` (lấy index
+cột, tạo cột nếu thiếu) + `writeProgramCells()` (chuẩn hoá độ dài data bằng ô '' — tránh lỗ mảng bị
+`Array.map` bỏ qua làm thiếu ô — rồi ghi theo index). Cả 4 khối chuyển từ `push` sang ghi theo
+index, nên đúng cho cả nguồn có sẵn 2 cột lẫn nguồn chưa có.
+
+**Verify**: eslint + tsc sạch cho file này, build OK, ratchet không phát sinh vi phạm mới.
+**Chưa test dữ liệu thật** — cần user mở lại tab Thi đua (Luỹ kế và Realtime) xem 2 cột đã ra số.
+Nếu ra "0" thì nguyên nhân tiếp theo là base target/% điều chỉnh chưa cấu hình cho siêu thị đó
+(SupermarketConfig → target thi đua), không phải lỗi ghi cột nữa.

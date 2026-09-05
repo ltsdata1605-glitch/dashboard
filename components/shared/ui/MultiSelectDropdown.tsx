@@ -33,6 +33,7 @@ export interface MultiSelectDropdownGroup {
 export interface MultiSelectDropdownProps {
   icon?: React.ReactNode;
   triggerLabel: string;
+  iconOnly?: boolean;
   count?: number;
   allLabel?: string;
   allChecked?: boolean;
@@ -88,6 +89,7 @@ const OptionRow: React.FC<{ option: MultiSelectDropdownOption; onToggle: (key: s
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   icon,
   triggerLabel,
+  iconOnly = false,
   count,
   allLabel,
   allChecked = false,
@@ -211,23 +213,45 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
   return (
     <div ref={containerRef} className={cn('relative w-full sm:w-auto min-w-0', className)}>
-      <Button
-        variant="unstyled"
-        size="none"
-        onClick={toggle}
-        className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-      >
-        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-          {icon}
-          <span className="truncate text-left max-w-[80px] sm:max-w-[160px]">{triggerLabel}</span>
-        </div>
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1.5 sm:ml-2">
-          {typeof count === 'number' && (
-            <span className="text-[9px] sm:text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+      {iconOnly ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggle}
+          title={triggerLabel}
+          className={cn(
+            'relative h-7 w-7 transition-colors',
+            isOpen || (typeof count === 'number' && count > 0)
+              ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+              : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
           )}
-          <ChevronDown size={14} className={cn('text-slate-400 transition-transform duration-200 sm:w-4 sm:h-4 w-3.5 h-3.5', isOpen && 'rotate-180')} />
-        </div>
-      </Button>
+        >
+          {icon}
+          {typeof count === 'number' && count > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sky-500 text-[8px] font-black text-white">
+              {count}
+            </span>
+          )}
+        </Button>
+      ) : (
+        <Button
+          variant="unstyled"
+          size="none"
+          onClick={toggle}
+          className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+        >
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+            {icon}
+            <span className="truncate text-left max-w-[80px] sm:max-w-[160px]">{triggerLabel}</span>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1.5 sm:ml-2">
+            {typeof count === 'number' && (
+              <span className="text-[9px] sm:text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+            )}
+            <ChevronDown size={14} className={cn('text-slate-400 transition-transform duration-200 sm:w-4 sm:h-4 w-3.5 h-3.5', isOpen && 'rotate-180')} />
+          </div>
+        </Button>
+      )}
       {isOpen && (usePortal ? createPortal(panelContent, document.body) : panelContent)}
     </div>
   );

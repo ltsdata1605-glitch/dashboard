@@ -257,10 +257,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             <div className="mb-3 sm:mb-4">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
-                            <Icon name={activeTable?.icon || "calendar-days"} size={4} className="lg:hidden" />
-                            <Icon name={activeTable?.icon || "calendar-days"} size={5} className="hidden lg:block" />
-                        </div>
                         <div className="min-w-0">
                             <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                                 {activeTable ? activeTable.tableName : '7 Ngày'}

@@ -198,8 +198,6 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         </span>
                     </div>
                 )}
-                icon="users"
-
             >
                 <div className="flex items-center gap-2 hide-on-export">
                     <EmployeeAnalysisFilters 

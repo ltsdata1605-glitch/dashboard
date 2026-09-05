@@ -229,10 +229,6 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                     <div ref={exportRef}>
                         <div className="flex justify-between items-center mb-3 sm:mb-6">
                             <div className="flex items-center gap-2 sm:gap-4">
-                                <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
-                                    <Icon name={customTab.icon || 'folder'} size={4} className="lg:hidden" />
-                                    <Icon name={customTab.icon || 'folder'} size={5} className="hidden lg:block" />
-                                </div>
                                 <div className="min-w-0">
                                     <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{customTab.name}</h3>
                                     <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>

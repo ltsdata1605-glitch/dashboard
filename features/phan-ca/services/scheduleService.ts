@@ -376,10 +376,16 @@ function generateSchedule(
 
                     // 1. Ưu tiên số lượng giờ công: Người có ít giờ công đặc biệt loại này hơn được ưu tiên
                     const tag = roleType === 'gh' ? 'GH' : (roleType === 'kho' ? 'Kho' : 'TN');
-                    const currentHoursA = getSpecialRoleHours(a, tag);
-                    const currentHoursB = getSpecialRoleHours(b, tag);
+                    let currentHoursA = getSpecialRoleHours(a, tag);
+                    let currentHoursB = getSpecialRoleHours(b, tag);
                     
-                    if (Math.abs(currentHoursA - currentHoursB) >= 4) {
+                    const boost = config.sbhGenderBoost;
+                    if (boost?.gender && boost.hours > 0) {
+                        if (a.gender === boost.gender) currentHoursA -= boost.hours;
+                        if (b.gender === boost.gender) currentHoursB -= boost.hours;
+                    }
+                    
+                    if (Math.abs(currentHoursA - currentHoursB) >= 2) {
                         return currentHoursA - currentHoursB;
                     }
 
@@ -399,11 +405,16 @@ function generateSchedule(
                     const matchB = b.schedule[d]?.shift === shiftCode ? 1 : 0;
                     if (matchA !== matchB) return matchB - matchA;
 
-                    // 4. Xét tổng số giờ đặc biệt khác
+                    // 4. Xét tổng số giờ đặc biệt khác (có tính đến sbhGenderBoost)
                     if (roleType !== 'kho') {
-                        const totalHoursA = calculateSpecialHours(a, true);
-                        const totalHoursB = calculateSpecialHours(b, true);
-                        if (Math.abs(totalHoursA - totalHoursB) >= 4) return totalHoursA - totalHoursB;
+                        const boost = config.sbhGenderBoost;
+                        let totalHoursA = calculateSpecialHours(a, true);
+                        let totalHoursB = calculateSpecialHours(b, true);
+                        if (boost?.gender && boost.hours > 0) {
+                            if (a.gender === boost.gender) totalHoursA -= boost.hours;
+                            if (b.gender === boost.gender) totalHoursB -= boost.hours;
+                        }
+                        if (Math.abs(totalHoursA - totalHoursB) >= 2) return totalHoursA - totalHoursB;
                     }
                     
                     return 0;

@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
-import { COL } from '../constants';
+import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 
 // Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
@@ -131,7 +131,11 @@ export const useExportLogic = ({
                 const modalContent = offscreenContainer.querySelector('.modal-content');
                 if (modalContent) {
                     const filename = `Phân Tích Hiệu Quả - ${sanitizeFilename(employee.name)}.png`;
-                    await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: 960 });
+                    // Bề rộng ảnh khớp với xuất lẻ ở PerformanceModal.handleExport: 800px, nới thêm
+                    // nếu bảng Phụ kiện/ĐGD đang bật nhiều cột. Đếm cột ngay trên DOM vừa render vì
+                    // luồng này chụp thẳng .modal-content, không đi qua handleExport của modal.
+                    const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
+                    await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length) });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports
                 root.render(null);

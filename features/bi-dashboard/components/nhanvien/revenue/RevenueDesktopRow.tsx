@@ -2,6 +2,7 @@ import React from 'react';
 import { RevenueRow } from '../../../types/nhanVienTypes';
 import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
+import { Pill } from '../../shared/Pill';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import { onActivateKey } from '../../../../../components/shared/ui';
 
@@ -19,19 +20,6 @@ interface RevenueDesktopRowProps {
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-
-// "Enterprise Tinh Gọn" — %HT/HQQĐ/%T.Góp/%B.Kèm hiển thị dạng pill (viên thuốc) nền
-// bán-trong-suốt thay vì chỉ tô chữ, dễ quét mắt hơn khi liếc nhanh nhiều dòng. Giữ nguyên
-// giá trị màu hex trả về từ getHtColor/getDynamicColor (không đổi logic ngưỡng màu) — chỉ
-// bọc thêm nền mờ cùng tông.
-const Pill: React.FC<{ color?: string; children: React.ReactNode }> = ({ color, children }) => (
-    <span
-        className="inline-flex min-w-[42px] items-center justify-center rounded-full px-2 py-0.5 text-[12px] font-bold"
-        style={color ? { color, backgroundColor: `${color}1A` } : undefined}
-    >
-        {children}
-    </span>
-);
 
 export const RevenueDesktopRow = React.memo(({
     row,

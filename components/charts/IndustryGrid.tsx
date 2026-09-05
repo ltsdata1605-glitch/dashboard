@@ -264,7 +264,6 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         </span>
                     </div>
                 )}
-                icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">
                     <Button

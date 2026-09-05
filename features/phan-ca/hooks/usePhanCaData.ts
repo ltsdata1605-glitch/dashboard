@@ -13,7 +13,8 @@ import {
   UnresolvedConflict,
   ShiftDefinitions,
   BusySchedule,
-  PhanCaUiState
+  PhanCaUiState,
+  SbhGenderBoost
 } from '../types';
 import { calculateSpecialHours } from '../utils/scheduleUtils';
 import { DEFAULT_SHIFT_DEFINITIONS, getDefaultMonthYear, DEFAULT_RULES, ZERO_REQUIREMENTS } from '../constants';
@@ -46,6 +47,7 @@ export function usePhanCaData() {
   const [includeTnInSbh, setIncludeTnInSbh] = useState<boolean>(false);
   const [autoAddWeekendShifts, setAutoAddWeekendShifts] = useState<boolean>(false);
   const [autoAddWeekendShift1, setAutoAddWeekendShift1] = useState<boolean>(false);
+  const [sbhGenderBoost, setSbhGenderBoost] = useState<SbhGenderBoost>({ gender: null, hours: 5 });
   const [shiftDefinitions, setShiftDefinitions] = useState<ShiftDefinitions>(DEFAULT_SHIFT_DEFINITIONS);
   const [unresolvedConflicts, setUnresolvedConflicts] = useState<UnresolvedConflict[]>([]);
   const [isDbLoaded, setIsDbLoaded] = useState(false);
@@ -139,6 +141,7 @@ export function usePhanCaData() {
         setIncludeTnInSbh(savedUiState.includeTnInSbh !== undefined ? savedUiState.includeTnInSbh : false);
         setAutoAddWeekendShifts(savedUiState.autoAddWeekendShifts !== undefined ? savedUiState.autoAddWeekendShifts : false);
         setAutoAddWeekendShift1(savedUiState.autoAddWeekendShift1 !== undefined ? savedUiState.autoAddWeekendShift1 : false);
+        setSbhGenderBoost(savedUiState.sbhGenderBoost || { gender: null, hours: 5 });
       }
       setIsDbLoaded(true);
     };
@@ -221,8 +224,18 @@ export function usePhanCaData() {
                   !s.department.toLowerCase().includes('kế toán')
               );
               if (allInOneStaff.length > 1) {
-                  const hours = allInOneStaff.map(s => calculateSpecialHours(s, includeTnInSbh));
-                  sbhDiff = Math.max(...hours) - Math.min(...hours);
+                  if (sbhGenderBoost?.gender && sbhGenderBoost.hours > 0) {
+                      const namsInGroup = allInOneStaff.filter(s => s.gender === 'Nam');
+                      const nusInGroup = allInOneStaff.filter(s => s.gender === 'Nu');
+                      const namHours = namsInGroup.map(s => calculateSpecialHours(s, includeTnInSbh));
+                      const nuHours = nusInGroup.map(s => calculateSpecialHours(s, includeTnInSbh));
+                      const namDiff = namHours.length > 1 ? Math.max(...namHours) - Math.min(...namHours) : 0;
+                      const nuDiff = nuHours.length > 1 ? Math.max(...nuHours) - Math.min(...nuHours) : 0;
+                      sbhDiff = Math.max(namDiff, nuDiff);
+                  } else {
+                      const hours = allInOneStaff.map(s => calculateSpecialHours(s, includeTnInSbh));
+                      sbhDiff = Math.max(...hours) - Math.min(...hours);
+                  }
               }
           }
           const newTargets: ScheduleTargets = {
@@ -253,9 +266,9 @@ export function usePhanCaData() {
     idb.saveData(busyScheduleKey, busySchedule);
     const unresolvedKey = getKey(`unresolved-${monthYear}`);
     idb.saveData(unresolvedKey, unresolvedConflicts);
-    const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket };
+    const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, lastSupermarket: currentSupermarket };
     idb.saveData('uiState', uiState);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, currentSupermarket, getKey, unresolvedConflicts]);
 
   // Hiệu ứng tự động đồng bộ đám mây (debounced 3s)
   useEffect(() => {
@@ -272,7 +285,7 @@ export function usePhanCaData() {
         }
       };
       await syncIfChanged('meta_supermarkets', supermarkets);
-      await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket });
+      await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, lastSupermarket: currentSupermarket });
       await syncIfChanged(getKey('nams'), nams);
       await syncIfChanged(getKey('nus'), nus);
       await syncIfChanged(getKey('rules'), rules);
@@ -285,7 +298,7 @@ export function usePhanCaData() {
       await syncIfChanged(getKey(`unresolved-${monthYear}`), unresolvedConflicts);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts, user, db, supermarkets]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, currentSupermarket, getKey, unresolvedConflicts, user, db, supermarkets]);
 
   useEffect(() => {
     if (monthYear) {
@@ -360,6 +373,7 @@ export function usePhanCaData() {
     includeTnInSbh, setIncludeTnInSbh,
     autoAddWeekendShifts, setAutoAddWeekendShifts,
     autoAddWeekendShift1, setAutoAddWeekendShift1,
+    sbhGenderBoost, setSbhGenderBoost,
     shiftDefinitions, setShiftDefinitions,
     unresolvedConflicts, setUnresolvedConflicts,
     isDbLoaded,

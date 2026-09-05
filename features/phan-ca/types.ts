@@ -66,6 +66,11 @@ export interface ShiftDefinitions {
   [key: string]: ShiftDefinition; // '1', '2', '3', '4', '5', '6'
 }
 
+export interface SbhGenderBoost {
+  gender: 'Nu' | 'Nam' | null;
+  hours: number;
+}
+
 export interface ScheduleConfig {
     year: number;
     month: number;
@@ -75,6 +80,7 @@ export interface ScheduleConfig {
     shiftDefinitions?: ShiftDefinitions;
     autoAddWeekendShifts?: boolean;
     autoAddWeekendShift1?: boolean;
+    sbhGenderBoost?: SbhGenderBoost;
 }
 
 export interface ScheduleTargets {
@@ -118,18 +124,36 @@ export interface SolutionAction {
 }
 
 // Cập nhật Solution để bao gồm cả đề xuất bổ sung ca và tách ca
-export type Solution = 
-  | { type: 'replace', staff: StaffMember } 
-  | { type: 'swap', staff: StaffMember, swapDay: number } 
-  | { type: 'extend', staff: StaffMember, newShift: ScheduleInfo, originalShift: ScheduleInfo }
-  | { type: 'split_cover', actions: SolutionAction[] } // New type for multi-person solutions
-  | { type: 'pure_swap', partner: StaffMember, partnerShift: ScheduleInfo } // Dành cho hoán đổi ca thường
-  | null;
+export interface Solution {
+  type: 'swap' | 'direct' | 'add' | 'split' | 'reassign';
+  actions: SolutionAction[];
+  description: string;
+  isRecommended?: boolean;
+  score?: number; // Điểm đánh giá độ tối ưu của giải pháp (càng cao càng tốt)
+  changesRequired?: number; // Số ca cần thay đổi
+  affectedStaffCount?: number; // Số nhân viên bị ảnh hưởng
+}
 
+export interface ConflictDetails {
+  dayIndex: number;
+  date: string;
+  missingRole: string; // e.g., 'GH', 'Kho', 'TN'
+  shiftCode: string;   // e.g., '1', '2', '24'
+  solutions: Solution[];
+  unassignedStaff?: StaffMember[]; // Nhân viên rảnh có thể gán trực tiếp
+  excessStaff?: { staff: StaffMember; shift: string }[]; // Nhân viên thừa ở ca khác có thể chuyển sang
+  isSplittable?: boolean; // Ca thiếu có thể tách từ các ca con (VD: ca 24 tách từ ca 2 và 4)
+  splitOptions?: { morningShift: string; afternoonShift: string }[];
+}
 
-export interface NormalShiftSolution {
-  cut?: ScheduleInfo;
-  swap?: { partner: StaffMember; partnerShift: ScheduleInfo };
+export interface WarningItem {
+  staffId: string;
+  staffName: string;
+  dayIndex: number;
+  date: string;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  type: 'double-shift' | 'consecutive-days' | 'gender-mismatch' | 'invalid-shift';
 }
 
 export type BusyStatus = 'morning' | 'afternoon' | 'off';
@@ -207,5 +231,6 @@ export interface PhanCaUiState {
   includeTnInSbh?: boolean;
   autoAddWeekendShifts?: boolean;
   autoAddWeekendShift1?: boolean;
+  sbhGenderBoost?: SbhGenderBoost;
   lastSupermarket?: string;
 }

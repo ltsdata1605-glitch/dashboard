@@ -64,6 +64,7 @@ const App: React.FC = () => {
     includeTnInSbh, setIncludeTnInSbh,
     autoAddWeekendShifts, setAutoAddWeekendShifts,
     autoAddWeekendShift1, setAutoAddWeekendShift1,
+    sbhGenderBoost, setSbhGenderBoost,
     shiftDefinitions, setShiftDefinitions,
     unresolvedConflicts, setUnresolvedConflicts,
     isDbLoaded,
@@ -148,8 +149,9 @@ const App: React.FC = () => {
     nusOverride?: StaffInitialData[];
     autoAddWeekendShiftsOverride?: boolean;
     autoAddWeekendShift1Override?: boolean;
+    sbhGenderBoostOverride?: SbhGenderBoost;
   } = {}) => {
-      const { forDepartment, busyScheduleOverride, patternsOverride, rulesOverride, namsOverride, nusOverride, autoAddWeekendShiftsOverride, autoAddWeekendShift1Override } = options;
+      const { forDepartment, busyScheduleOverride, patternsOverride, rulesOverride, namsOverride, nusOverride, autoAddWeekendShiftsOverride, autoAddWeekendShift1Override, sbhGenderBoostOverride } = options;
       const currentNams = namsOverride || nams;
       const currentNus = nusOverride || nus;
       if (!monthYear || isNaN(startDay) || isNaN(duration) || !(rulesOverride || rules) || (currentNams.length === 0 && currentNus.length === 0)) return;
@@ -166,7 +168,8 @@ const App: React.FC = () => {
             duration, 
             includeTn: includeTnInSbh,
             autoAddWeekendShifts: autoAddWeekendShiftsOverride !== undefined ? autoAddWeekendShiftsOverride : autoAddWeekendShifts,
-            autoAddWeekendShift1: autoAddWeekendShift1Override !== undefined ? autoAddWeekendShift1Override : autoAddWeekendShift1
+            autoAddWeekendShift1: autoAddWeekendShift1Override !== undefined ? autoAddWeekendShift1Override : autoAddWeekendShift1,
+            sbhGenderBoost: sbhGenderBoostOverride !== undefined ? sbhGenderBoostOverride : sbhGenderBoost
         };
         const targetDepartment = forDepartment || departmentFilter;
         const effectiveRules = rulesOverride || rules;
@@ -196,7 +199,7 @@ const App: React.FC = () => {
         await idb.saveData(currentStatsKey, currentStatsToSave);
         setBalancingFeedback(generateBalancingFeedback(currentStatsToSave, previousMonthStats));
       })();
-  }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, staffList, departmentFilter, getKey]);
+  }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, staffList, departmentFilter, getKey]);
   useEffect(() => {
     if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current);
     if (isDbLoaded && (nams.length > 0 || nus.length > 0)) { 
@@ -251,7 +254,12 @@ const App: React.FC = () => {
     setAutoAddWeekendShift1(checked);
     logHistory(checked ? "Tự động tăng ca 1 T7-CN" : "Gỡ tự động tăng ca 1 T7-CN");
     generateNewSchedule({ autoAddWeekendShift1Override: checked });
-  }, [generateNewSchedule, logHistory]);
+  }, [generateNewSchedule, logHistory, setAutoAddWeekendShift1]);
+  const handleSbhGenderBoostChange = useCallback((boost: SbhGenderBoost) => {
+    setSbhGenderBoost(boost);
+    logHistory(boost.gender ? `Ưu tiên SBH ${boost.gender === 'Nu' ? 'Nữ' : 'Nam'} (+${boost.hours}h)` : "Bỏ ưu tiên SBH giới tính");
+    generateNewSchedule({ sbhGenderBoostOverride: boost });
+  }, [generateNewSchedule, logHistory, setSbhGenderBoost]);
   // --- XUẤT ẢNH ---
   const handleExportAll = async () => {
     setIsExportingImage(true);
@@ -628,6 +636,8 @@ const App: React.FC = () => {
                    onAutoAddWeekendShiftsChange={handleAutoAddWeekendShiftsChange}
                    autoAddWeekendShift1={autoAddWeekendShift1}
                    onAutoAddWeekendShift1Change={handleAutoAddWeekendShift1Change}
+                   sbhGenderBoost={sbhGenderBoost}
+                   onSbhGenderBoostChange={handleSbhGenderBoostChange}
                  />
               </div>
             )}

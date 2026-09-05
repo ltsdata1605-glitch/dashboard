@@ -8,7 +8,6 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
 import { extractSupermarketList } from '../utils/dashboardHelpers';
-import { archiveCompetitionLuyKeSnapshot } from '../utils/competitionHistory';
 import { logAuditEvent } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -261,7 +260,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     };
 
     const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
-    const [activeSupermarket, setActiveSupermarket] = useState<string | null>(null);
+    const [activeSupermarket, setActiveSupermarket] = useIndexedDBState<string | null>('updater-active-supermarket', null);
 
     useEffect(() => {
         if (supermarkets.length > 0 && (!activeSupermarket || !supermarkets.includes(activeSupermarket))) {
@@ -269,7 +268,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         } else if (supermarkets.length === 0) {
             setActiveSupermarket(null);
         }
-    }, [supermarkets, activeSupermarket]);
+    }, [supermarkets, activeSupermarket, setActiveSupermarket]);
 
     const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
@@ -453,7 +452,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionLuyKe(val);
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
                                             addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
-                                            archiveCompetitionLuyKeSnapshot(val).catch(err => console.error('Lỗi lưu lịch sử Thi đua', err));
                                             if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                             if (canManageSharedBiData && user) {
                                                 uploadCompetitionLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)
@@ -477,7 +475,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             </div>
 
             {/* PHẦN CẤU HÌNH CHI TIẾT SIÊU THỊ */}
-            <div className="pt-2">
+            <div id="supermarket-config-section" className="pt-2">
                 {activeSupermarket ? (
                     <Card
                         title="Cấu hình siêu thị chi tiết"

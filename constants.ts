@@ -70,6 +70,23 @@ export const WAREHOUSE_HEADER_COLORS: Record<string, { border: string; sub: stri
     'DEFAULT': { border: 'border-slate-200 dark:border-slate-700', sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' },
 };
 
+/** Phiên bản cấu hình cột bảng Kho. Đổi giá trị này = buộc mọi nơi bỏ cấu hình đã lưu và quay
+ *  về DEFAULT_WAREHOUSE_COLUMNS (WarehouseSummary lưu lại bản mới). Bảng "Phụ kiện & Điện gia
+ *  dụng" trong modal nhân viên đọc cùng cấu hình nên phải kiểm tra cùng version. */
+export const WAREHOUSE_COLUMN_CONFIG_VERSION = 'v3';
+
+/** Class đánh dấu khối bảng "Phụ kiện & Điện gia dụng" trong modal phân tích nhân viên — luồng
+ *  xuất ảnh hàng loạt chụp thẳng DOM nên cần selector này để đếm số cột đang bật. */
+export const CATEGORY_TABLE_CLASS = 'category-summary-table';
+
+/** Bề rộng ảnh xuất cần thiết để bảng đó không bị cắt cột: services/uiService.ts ép mỗi `th` ở
+ *  hàng sub-header tối thiểu 55px (cột đầu 100px) lúc chụp, nên khung hẹp hơn tổng đó sẽ cắt mất
+ *  các cột bên phải. `minWidth` là bề rộng "vừa nội dung" của phần còn lại trong modal. */
+export const getCategoryExportWidth = (columnCount: number, minWidth = 800): number => {
+    if (columnCount === 0) return minWidth;
+    return Math.min(1150, Math.max(minWidth, 150 + columnCount * 56));
+};
+
 export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     // --- DOANH THU ---
     { id: 'dt_thuc', order: 1, isVisible: false, isCustom: false, metric: 'doanhThuThuc', mainHeader: 'Doanh Thu', subHeader: 'DT' },

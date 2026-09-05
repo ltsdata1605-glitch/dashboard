@@ -301,10 +301,6 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400`}>
-                        <Icon name="gantt-chart-square" size={4} className="lg:hidden" />
-                        <Icon name="gantt-chart-square" size={5} className="hidden lg:block" />
-                    </div>
                     <div className="min-w-0">
                         <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Phân Tích Khai Thác</h3>
                         <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>

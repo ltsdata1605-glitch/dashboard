@@ -58,7 +58,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 });
                 setSharedCompetitionLuyKeBySupermarket(bySupermarketName);
             } catch (err) {
-                console.error('[useDashboardLogic] Lỗi tải dữ liệu BI dùng chung theo siêu thị:', err);
+                console.warn('[useDashboardLogic] Không thể tải dữ liệu BI dùng chung (chế độ offline/hạn chế quyền):', (err as any)?.message || err);
             }
         })();
         return () => { isMounted = false; };
@@ -193,6 +193,27 @@ export const useDashboardLogic = (isActive?: boolean) => {
     // cục bộ) khiến baseTargets luôn {} → cột "Target V.Trội"/"%HTDK V.Trội" luôn = 0 cho toàn bộ
     // nhân viên đọc dữ liệu chung (Đợt 4). competitionLuyKeBySupermarket cùng shape
     // SupermarketCompetitionData nên đọc trực tiếp được, không cần raw text.
+    // BUG (phát hiện 2026-09-05): 4 khối augment bên dưới trước đây chỉ thêm 2 cột "vượt trội" khi
+    // headers CHƯA có, rồi luôn `data.push()` 2 giá trị vào CUỐI mảng. Dữ liệu dán từ BI hiện đã
+    // kèm sẵn 2 cột đó (thường bỏ trống), nên headers coi như "đã có" → giá trị tính được rơi vào
+    // vị trí KHÔNG có header tương ứng và bị CompetitionListView bỏ qua, còn ô hiển thị vẫn là ô
+    // trống của nguồn ⇒ 2 cột "M.TIÊU V.TRỘI"/"%HTDK V.TRỘI" luôn hiện "-". Ghi theo INDEX của cột
+    // (tạo cột nếu thiếu) thay cho push để đúng trong cả 2 trường hợp.
+    const ensureColumnIndex = (headers: string[], name: string): number => {
+        const index = headers.indexOf(name);
+        if (index !== -1) return index;
+        headers.push(name);
+        return headers.length - 1;
+    };
+
+    /** Chuẩn hoá độ dài data về đúng số cột (đệm ô thiếu bằng '' thay vì tạo lỗ mảng — lỗ sẽ bị
+     *  Array.map bỏ qua khiến bảng thiếu ô), rồi ghi giá trị vào đúng index cột. */
+    const writeProgramCells = (data: (string | number)[], headerCount: number, cells: [number, number][]) => {
+        while (data.length < headerCount) data.push('');
+        data.length = headerCount;
+        cells.forEach(([index, value]) => { data[index] = value; });
+    };
+
     const computeCompetitionBaseTargets = (bySupermarket: Record<string, SupermarketCompetitionData>): Record<string, Record<string, number>> => {
         const targets: Record<string, Record<string, number>> = {};
         for (const smName in bySupermarket) {
@@ -250,14 +271,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 const adjustments = adjustmentsMap.get(supermarketName) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
-                const headersToAdd: string[] = [];
-                if (!supermarketData.headers.includes('Target V.Trội')) headersToAdd.push('Target V.Trội');
-                if (!supermarketData.headers.includes('%HT Target V.Trội')) headersToAdd.push('%HT Target V.Trội');
-                if (headersToAdd.length > 0) supermarketData.headers.push(...headersToAdd);
+                const targetVTIndex = ensureColumnIndex(supermarketData.headers, 'Target V.Trội');
+                const htTargetVTIndex = ensureColumnIndex(supermarketData.headers, '%HT Target V.Trội');
                 for (const program of supermarketData.programs) {
-                    const originalHeaderCount = supermarketData.headers.length - headersToAdd.length;
-                    while (program.data.length < originalHeaderCount) program.data.push('');
-                    program.data.length = originalHeaderCount;
                     const dtRealtime = parseNumber(program.data[0]);
                     const baseTarget = getBaseTarget(supermarketName, program.name);
                     const adjustmentPercent = adjustments[program.name] ?? 100;
@@ -266,25 +282,24 @@ export const useDashboardLogic = (isActive?: boolean) => {
                     if (!programTotalTargets[program.name]) programTotalTargets[program.name] = 0;
                     programTotalTargets[program.name] += targetVT;
                     const htTargetVT = targetVT > 0 ? (dtRealtime / targetVT) * 100 : 0;
-                    program.data.push(targetVT);
-                    program.data.push(Math.ceil(htTargetVT));
+                    writeProgramCells(program.data, supermarketData.headers.length, [
+                        [targetVTIndex, targetVT],
+                        [htTargetVTIndex, Math.ceil(htTargetVT)],
+                    ]);
                 }
             }
             if (newAugmentedData['Tổng']) {
                 const totalData = newAugmentedData['Tổng'];
-                const headersToAdd: string[] = [];
-                if (!totalData.headers.includes('Target V.Trội')) headersToAdd.push('Target V.Trội');
-                if (!totalData.headers.includes('%HT Target V.Trội')) headersToAdd.push('%HT Target V.Trội');
-                if (headersToAdd.length > 0) totalData.headers.push(...headersToAdd);
+                const targetVTIndex = ensureColumnIndex(totalData.headers, 'Target V.Trội');
+                const htTargetVTIndex = ensureColumnIndex(totalData.headers, '%HT Target V.Trội');
                 for (const program of totalData.programs) {
-                    const originalHeaderCount = totalData.headers.length - headersToAdd.length;
-                    while (program.data.length < originalHeaderCount) program.data.push('');
-                    program.data.length = originalHeaderCount;
                     const dtRealtime = parseNumber(program.data[0]);
                     const totalTargetVT = programTotalTargets[program.name] ?? 0;
                     const totalHtTargetVT = totalTargetVT > 0 ? (dtRealtime / totalTargetVT) * 100 : 0;
-                    program.data.push(totalTargetVT);
-                    program.data.push(Math.ceil(totalHtTargetVT));
+                    writeProgramCells(program.data, totalData.headers.length, [
+                        [targetVTIndex, totalTargetVT],
+                        [htTargetVTIndex, Math.ceil(totalHtTargetVT)],
+                    ]);
                 }
             }
             setAugmentedRealtimeData(newAugmentedData);
@@ -335,20 +350,16 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 const adjustments = adjustmentsMap.get(supermarketName) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
-                const headersToAdd: string[] = [];
-                if (!supermarketData.headers.includes('Target V.Trội')) headersToAdd.push('Target V.Trội');
-                if (!supermarketData.headers.includes('%HTDK V.Trội')) headersToAdd.push('%HTDK V.Trội');
-                const originalHeaderCount = supermarketData.headers.length;
-                if (headersToAdd.length > 0) supermarketData.headers.push(...headersToAdd);
+                const luyKeIndex = supermarketData.headers.findIndex((h: string) => {
+                    const clean = h.toUpperCase();
+                    return clean === 'DTLK' || clean === 'DTQĐ' || clean === 'SLLK' || clean === 'DOANH THU' || clean === 'SỐ LƯỢNG' || clean === 'L.KẾ';
+                });
+                const targetVTIndex = ensureColumnIndex(supermarketData.headers, 'Target V.Trội');
+                const htdkVTIndex = ensureColumnIndex(supermarketData.headers, '%HTDK V.Trội');
                 for (const program of supermarketData.programs) {
-                    program.data.length = originalHeaderCount;
                     const baseTarget = getBaseTarget(supermarketName, program.name);
                     const adjustmentPercent = adjustments[program.name] ?? 100;
                     const targetVT = baseTarget * (adjustmentPercent / 100);
-                    const luyKeIndex = supermarketData.headers.slice(0, originalHeaderCount).findIndex((h: string) => {
-                        const clean = h.toUpperCase();
-                        return clean === 'DTLK' || clean === 'DTQĐ' || clean === 'SLLK' || clean === 'DOANH THU' || clean === 'SỐ LƯỢNG' || clean === 'L.KẾ';
-                    });
                     const luyKeValue = luyKeIndex !== -1 ? parseNumber(program.data[luyKeIndex]) : 0;
                     let htdkVT = 0;
                     if (daysPassed > 0 && targetVT > 0) {
@@ -358,27 +369,27 @@ export const useDashboardLogic = (isActive?: boolean) => {
                     if (!programTotals[program.name]) programTotals[program.name] = { totalVT: 0, totalLK: 0 };
                     programTotals[program.name].totalVT += targetVT;
                     programTotals[program.name].totalLK += luyKeValue;
-                    program.data.push(targetVT);
-                    program.data.push(htdkVT);
+                    writeProgramCells(program.data, supermarketData.headers.length, [
+                        [targetVTIndex, targetVT],
+                        [htdkVTIndex, htdkVT],
+                    ]);
                 }
             }
             if (newAugmentedData['Tổng']) {
                 const totalData = newAugmentedData['Tổng'];
-                const headersToAdd: string[] = [];
-                if (!totalData.headers.includes('Target V.Trội')) headersToAdd.push('Target V.Trội');
-                if (!totalData.headers.includes('%HTDK V.Trội')) headersToAdd.push('%HTDK V.Trội');
-                const originalHeaderCount = totalData.headers.length;
-                if (headersToAdd.length > 0) totalData.headers.push(...headersToAdd);
+                const targetVTIndex = ensureColumnIndex(totalData.headers, 'Target V.Trội');
+                const htdkVTIndex = ensureColumnIndex(totalData.headers, '%HTDK V.Trội');
                 for (const program of totalData.programs) {
-                    program.data.length = originalHeaderCount;
                     const totals = programTotals[program.name] || { totalVT: 0, totalLK: 0 };
                     let totalHtdkVT = 0;
                     if (daysPassed > 0 && totals.totalVT > 0) {
                         const totalProjected = (totals.totalLK / daysPassed) * daysInMonth;
                         totalHtdkVT = (totalProjected / totals.totalVT) * 100;
                     }
-                    program.data.push(totals.totalVT);
-                    program.data.push(totalHtdkVT);
+                    writeProgramCells(program.data, totalData.headers.length, [
+                        [targetVTIndex, totals.totalVT],
+                        [htdkVTIndex, totalHtdkVT],
+                    ]);
                 }
             }
             setAugmentedLuyKeData(newAugmentedData);

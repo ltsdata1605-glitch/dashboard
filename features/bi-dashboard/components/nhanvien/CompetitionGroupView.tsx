@@ -15,6 +15,7 @@ interface CompetitionGroupCardProps {
     employeeCompetitionTargets: Map<string, Map<string, number>>;
     highlightColorMap: Record<string, string>;
     viewMode?: 'group' | 'list';
+    isRealtime?: boolean;
 }
 
 // Exclude store-level summary rows (e.g. "ĐMX - I.One") from employee lists
@@ -26,7 +27,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     employeeDataMap,
     employeeCompetitionTargets,
     highlightColorMap,
-    viewMode = 'group'
+    viewMode = 'group',
+    isRealtime = false
 }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     type SortKey = 'name' | 'target' | 'actual' | 'completion' | 'remaining';
@@ -38,11 +40,22 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     // Time budget calculation
     const timeProgress = useMemo(() => {
         const now = new Date();
+        if (isRealtime) {
+            const startMinutes = 8 * 60; // 8h00
+            const endMinutes = 21 * 60 + 30; // 21h30 (9h30 tối)
+            const totalMinutes = endMinutes - startMinutes;
+            const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+            let pct = 0;
+            if (nowMinutes <= startMinutes) pct = 0;
+            else if (nowMinutes >= endMinutes) pct = 100;
+            else pct = ((nowMinutes - startMinutes) / totalMinutes) * 100;
+            return { label: '(8h00 - 21h30)', percentage: Math.min(100, Math.max(0, pct)) };
+        }
         const dayPassed = now.getDate();
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         const percentage = ((dayPassed - 1) / daysInMonth) * 100;
-        return { dayPassed, daysInMonth, percentage };
-    }, []);
+        return { label: `(${dayPassed} / ${daysInMonth} ngày)`, percentage };
+    }, [isRealtime]);
 
     const handleCardSort = (key: SortKey) => {
         setSortConfig(prev => {
@@ -277,7 +290,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     <div className="flex justify-between items-end">
                         <div className="flex items-center gap-1.5">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
-                            <span className="text-[9px] font-bold text-slate-400 italic">({timeProgress.dayPassed} / {timeProgress.daysInMonth} ngày)</span>
+                            <span className="text-[9px] font-bold text-slate-400 italic">{timeProgress.label}</span>
                         </div>
                         <span className="text-[10px] font-black text-sky-600 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
                     </div>

@@ -57,12 +57,20 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
 
-    // Chỉ hiển thị mốc ngày cập nhật — chế độ Realtime/Luỹ kế và Doanh thu/Thi đua
-    // đã được thể hiện rõ qua các tab đang active phía trên, không cần nhắc lại.
+    // Tiêu đề cập nhật động theo chế độ Realtime / Luỹ kế / Báo cáo và tab Doanh thu / Thi đua
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
-        return `CẬP NHẬT ĐẾN NGÀY ${getDateLabel(isRealtime)}`;
-    }, [activeMainTab]);
+        const isReport = activeMainTab === 'report';
+        const subTabLabel = activeSubTab === 'competition' ? 'THI ĐUA' : 'DOANH THU';
+
+        if (isRealtime) {
+            return `REALTIME ${subTabLabel} NGÀY ${getDateLabel(true)}`;
+        }
+        if (isReport) {
+            return `BÁO CÁO ${subTabLabel} ĐẾN NGÀY ${getDateLabel(true)}`;
+        }
+        return `LUỸ KẾ ${subTabLabel} ĐẾN NGÀY ${getDateLabel(false)}`;
+    }, [activeMainTab, activeSubTab]);
 
     return (
         <div className="space-y-0">
@@ -121,7 +129,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none lg:rounded-2xl shadow-sm">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 hide-on-export">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
@@ -133,57 +141,56 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     />
                 </div>
 
-                {/* Action bar — matching NhanVien toolbar */}
-                <div className="flex items-center justify-end px-4 py-2 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 relative z-10">
-
-                    {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}
-                    <div className="flex items-center gap-1">
-                        {/* Column settings portal target */}
-                        <div id="column-settings-portal" />
-
-                        {/* Column settings slot (injected per tab) */}
-                        {toolbarSlot}
-
-                        {/* Divider */}
-                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-
-                        {/* Batch export */}
-                        <Button
-                            onClick={onBatchExport}
-                            disabled={isBatchExporting}
-                            variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
-                            title="Xuất tất cả ảnh"
-                        >
-                            {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
-                        </Button>
-
-                        {/* Single export */}
-                        {onExport && (
-                            <Button
-                                onClick={onExport}
-                                disabled={isExporting}
-                                variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
-                                title="Xuất ảnh"
-                            >
-                                {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Content Title + Quote + TimeProgressBar — like NhanVien's RevenueTab */}
+                {/* Content Title + Inline Actions + Quote + TimeProgressBar */}
                 <div className="px-4 sm:px-5 py-3 sm:py-4">
                     <div className="flex items-start justify-between gap-2">
-                        <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
-                            {contentTitle}
-                        </h2>
-                        {/* Portal target for inline filter/settings buttons from SummaryTableView */}
-                        <div id="summary-table-inline-actions" className="flex items-center gap-0.5 no-print shrink-0" />
+                        <div className="min-w-0">
+                            <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
+                                {contentTitle}
+                            </h2>
+                            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
+                                {QUOTES[activeSubTab]}
+                            </p>
+                        </div>
+
+                        {/* Right: Inline Actions [Lọc] [⚙️ Cột] [Công cụ thi đua] | [🖼️] [📷] */}
+                        <div className="flex items-center gap-1 no-print shrink-0 mt-0.5">
+                            {/* Portal target for inline filter from SummaryTableView */}
+                            <div id="summary-table-inline-actions" className="flex items-center gap-0.5" />
+
+                            {/* Column settings / extra controls portal target (for CompetitionView & SummaryTableView) */}
+                            <div id="column-settings-portal" />
+
+                            {/* Column settings slot (injected per tab) */}
+                            {toolbarSlot}
+
+                            {/* Divider */}
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+                            {/* Batch export */}
+                            <Button
+                                onClick={onBatchExport}
+                                disabled={isBatchExporting}
+                                variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                title="Xuất tất cả ảnh"
+                            >
+                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                            </Button>
+
+                            {/* Single export */}
+                            {onExport && (
+                                <Button
+                                    onClick={onExport}
+                                    disabled={isExporting}
+                                    variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    title="Xuất ảnh"
+                                >
+                                    {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                    <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
-                        {QUOTES[activeSubTab]}
-                    </p>
-                    <TimeProgressBar className="mt-2.5" />
+                    <TimeProgressBar className="mt-2.5" isRealtime={activeMainTab === 'realtime'} />
                 </div>
 
                 {/* Children content (e.g. merged SummaryTableView) */}

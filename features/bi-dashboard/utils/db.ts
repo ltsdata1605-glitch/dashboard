@@ -28,7 +28,6 @@ export type BIKey =
   | 'competition-name-overrides'
   | 'competition-group-overrides'
   | 'competition-view-mode'
-  | 'competition_view_mode'
   | 'global-selected-competitions'
   | 'nhanvien-summary-tables-v1'
   | 'rev-colors-v4'

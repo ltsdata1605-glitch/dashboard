@@ -3,11 +3,12 @@ import type { Employee, DataRow, ProductConfig } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
-import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO } from '../../constants';
+import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO, getCategoryExportWidth } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
+import EmployeeCategoryTable, { useCategoryColumns } from './EmployeeCategoryTable';
 
 
 
@@ -46,6 +47,23 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
     );
 };
 
+/** Số ký tự tối đa của tên sản phẩm trong ẢNH XUẤT, theo bề rộng ảnh (`forcedWidth` ở
+ *  handleExport / handleBatchExport). Ô "Sản phẩm" nằm ở cột đầu trên các dòng bán kèm (dòng
+ *  có ô "Mã ĐH" gộp rowSpan ở trên) nên bị uiService ép `white-space: nowrap` lúc clone —
+ *  tên quá dài kéo bảng bung ngang vượt khung chụp và mất cột Doanh Thu bên phải. */
+const EXPORT_PRODUCT_NAME_MAX_LENGTH = 55;      // ảnh 800px (desktop + xuất hàng loạt)
+const EXPORT_PRODUCT_NAME_MAX_LENGTH_NARROW = 40; // ảnh 640px (xuất lẻ từ điện thoại)
+
+/** Cắt tên sản phẩm tại ranh giới từ gần nhất rồi thêm dấu "…" — chỉ dùng cho ảnh xuất,
+ *  giao diện vẫn hiển thị tên đầy đủ. */
+const truncateProductNameForExport = (name: string, maxLength: number): string => {
+    if (name.length <= maxLength) return name;
+    const cut = name.slice(0, maxLength);
+    const lastSpace = cut.lastIndexOf(' ');
+    const kept = lastSpace > maxLength * 0.6 ? cut.slice(0, lastSpace) : cut;
+    return `${kept.trimEnd()}…`;
+};
+
 const PerformanceModal: React.FC<PerformanceModalProps> = ({ 
     isOpen, 
     onClose, 
@@ -66,6 +84,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
     const [isExporting, setIsExporting] = useState(false);
 
+    // Bật cho cả xuất lẻ (nút camera) lẫn xuất hàng loạt — dùng để rút gọn tên sản phẩm trong ảnh.
+    const isExportingView = isExporting || isBatchExporting;
+    // Xuất hàng loạt luôn chụp ở 800px nên giữ ngưỡng rộng, xuất lẻ theo bề rộng đã chọn ở handleExport.
+    const exportProductNameMaxLength = !isBatchExporting && typeof window !== 'undefined' && window.innerWidth < 768
+        ? EXPORT_PRODUCT_NAME_MAX_LENGTH_NARROW
+        : EXPORT_PRODUCT_NAME_MAX_LENGTH;
+
     const [isAllCustomersExpanded, setIsAllCustomersExpanded] = useState(false);
     const customerDetailsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +109,14 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 && (Number(getRowValue(row, COL.PRICE)) || 0) > 0;
         });
     }, [validSalesData, employeeName, productConfig]);
+
+    // Bảng Phụ kiện/ĐGD cần TẤT CẢ dòng hợp lệ của nhân viên, kể cả dòng giá 0 (dịch vụ, quà tặng
+    // kèm) — employeeSalesData ở trên đã lọc price > 0 nên không dùng lại được cho số lượng.
+    const employeeRevenueRows = useMemo(() => {
+        return validSalesData.filter(row => getRowValue(row, COL.NGUOI_TAO) === employeeName);
+    }, [validSalesData, employeeName]);
+
+    const categoryColumns = useCategoryColumns();
 
     const attachOrdersMetrics = useMemo(() => {
         const revenueEligibleRows = employeeSalesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
@@ -108,8 +141,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         };
     }, [employeeSalesData]);
 
-    const { topProducts, industryBreakdown, customerBreakdown } = useMemo(() => {
-        if (!productConfig) return { topProducts: [], industryBreakdown: {}, customerBreakdown: [] };
+    const { topProducts, customerBreakdown } = useMemo(() => {
+        if (!productConfig) return { topProducts: [], customerBreakdown: [] };
 
         const productSummary = employeeSalesData.reduce((acc, row) => {
             const productName = getRowValue(row, COL.PRODUCT) || 'N/A';
@@ -125,15 +158,6 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             .map(([name, data]: [string, { revenue: number, quantity: number }]) => ({ name, ...data }))
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 5);
-
-        const industryBreakdown = employeeSalesData.reduce((acc, row) => {
-            const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Khác';
-            const price = Number(getRowValue(row, COL.PRICE)) || 0;
-            if (!acc[parentGroup]) acc[parentGroup] = 0;
-            acc[parentGroup] += price;
-            return acc;
-        }, {} as { [key: string]: number });
 
         const groupedByCustomer = employeeSalesData.reduce((acc, order) => {
             const customer = getRowValue(order, COL.CUSTOMER_NAME) || 'Khách lẻ';
@@ -221,7 +245,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             };
         }).sort((a, b) => b.totalRevenue - a.totalRevenue);
         
-        return { topProducts, industryBreakdown, customerBreakdown };
+        return { topProducts, customerBreakdown };
 
     }, [employeeSalesData, productConfig]);
 
@@ -232,7 +256,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         if (elementToExport) {
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${employeeName}`);
-            await onExport(elementToExport, `Phân Tích Hiệu Quả - ${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 640 });
+            // Bề rộng ảnh bám theo nội dung: 800px (640px trên điện thoại) là vừa đủ cho bảng
+            // "Chi Tiết Theo Khách Hàng" sau khi tên sản phẩm được rút gọn (xem
+            // EXPORT_PRODUCT_NAME_MAX_LENGTH), nhưng bảng Phụ kiện/ĐGD nhiều cột có thể cần rộng
+            // hơn — getCategoryExportWidth() nới đúng phần thiếu để không cắt cột.
+            const isMobileViewport = window.innerWidth < 768;
+            const forcedWidth = getCategoryExportWidth(categoryColumns.length, isMobileViewport ? 640 : 800);
+            await onExport(elementToExport, `Phân Tích Hiệu Quả - ${employeeName}.png`, { forceOpenDetails: true, forcedWidth });
             setIsExporting(false);
             hideExportOverlay();
         }
@@ -264,6 +294,17 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         <p>Không tìm thấy dữ liệu cho nhân viên này.</p>
     ) : (
         <div className="space-y-3 sm:space-y-6">
+            {/* Header chỉ xuất hiện trong ảnh (class .export-always-show được uiService ép hiển thị
+                lúc clone) — trên giao diện đã có header của <Modal />, còn nhánh xuất hàng loạt
+                tự dựng header riêng nên bỏ qua để tránh lặp 2 tiêu đề. */}
+            {!isBatchExporting && (
+                <div className="hidden export-always-show items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <p className="text-xs text-slate-500">Phân Tích Hiệu Quả Cá Nhân</p>
+                        <h3 className="text-xl font-bold text-sky-700 leading-tight">{employeeName}</h3>
+                    </div>
+                </div>
+            )}
             {/* KPIs */}
             <div className="grid grid-cols-5 gap-1 sm:gap-2.5">
                 <KpiCard icon="dollar-sign" label="Tổng DTQĐ" value={formatCurrency(employeeData.doanhThuQD)} color="indigo">
@@ -295,60 +336,14 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </KpiCard>
             </div>
             
-            <div className="w-full">
-                <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
-                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-sky-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-sky-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
-                    <div className="flex-1">
-                    {(() => {
-                        const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
-                        const sortedIndustries = Object.entries(industryBreakdown)
-                            .filter(([name]) => name !== 'Khác' && name !== 'Không xác định')
-                            .sort(([, a], [, b]) => b - a)
-                            .slice(0, 5);
-                        
-                        const barColors = [
-                            'bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
-                            'bg-sky-500', 'bg-indigo-500', 'bg-amber-500', 'bg-emerald-500',
-                            'bg-rose-500', 'bg-sky-500', 'bg-emerald-500', 'bg-rose-500'
-                        ];
-                        const dotColors = [
-                            'bg-indigo-400', 'bg-emerald-400', 'bg-amber-400', 'bg-rose-400',
-                            'bg-sky-400', 'bg-indigo-400', 'bg-amber-400', 'bg-emerald-400',
-                            'bg-rose-400', 'bg-sky-400', 'bg-emerald-400', 'bg-rose-400'
-                        ];
-
-                        if (sortedIndustries.length === 0) {
-                            return <p className="text-center text-slate-500 dark:text-slate-400 py-4">Không có dữ liệu ngành hàng.</p>;
-                        }
-
-                        return (
-                            <ul className="space-y-1 mt-0.5">
-                                {sortedIndustries.map(([name, revenue], i) => {
-                                    const percent = totalIndustryRevenue > 0 ? (revenue / totalIndustryRevenue) * 100 : 0;
-                                    return (
-                                        <li key={name}>
-                                            <div className="flex items-center justify-between mb-0.5">
-                                                <span className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
-                                                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
-                                                    {name}
-                                                </span>
-                                                <span className="text-[10px] sm:text-xs font-black text-slate-700 dark:text-slate-200 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                    <div className={`h-full rounded-full ${barColors[i % barColors.length]} transition-all duration-500`} style={{ width: `${percent}%` }}></div>
-                                                </div>
-                                                <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 w-8 text-right">{percent.toFixed(0)}%</span>
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        );
-                    })()}
-                    </div>
-                </div>
-            </div>
+            {/* Bảng SL Phụ kiện / Dịch vụ / Gia dụng — cùng bộ cột và cùng cách tính với bảng
+                "Chi Tiết Theo Kho", nhưng lọc riêng theo nhân viên (thay cho biểu đồ Tỷ Trọng
+                Doanh Thu Ngành Hàng trước đây). */}
+            <EmployeeCategoryTable
+                rows={employeeRevenueRows}
+                productConfig={productConfig}
+                columns={categoryColumns}
+            />
 
              {/* Customer Breakdown */}
             <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4">
@@ -451,7 +446,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                              <td className="py-1 px-1 text-left text-[10px] sm:text-xs border-b border-dashed border-slate-300 dark:border-slate-700">
                                                                  <div className="flex items-center gap-1.5 min-w-0 w-full">
                                                                      <span className="text-slate-700 dark:text-slate-300 break-words leading-tight" title={getRowValue(order, COL.PRODUCT) as string}>
-                                                                         {getRowValue(order, COL.PRODUCT)}
+                                                                         {isExportingView
+                                                                             ? truncateProductNameForExport(String(getRowValue(order, COL.PRODUCT) ?? ''), exportProductNameMaxLength)
+                                                                             : getRowValue(order, COL.PRODUCT)}
                                                                      </span>
                                                                      {isInstallment && (
                                                                          <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex-shrink-0 whitespace-nowrap leading-none">

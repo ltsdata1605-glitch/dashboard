@@ -403,10 +403,6 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     className="px-2 py-1.5 lg:px-4 lg:py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
                 >
                     <div className="flex items-center gap-2 lg:gap-3 min-w-0">
-                        <div className={`w-6 h-6 lg:w-10 lg:h-10 rounded-md lg:rounded-xl flex items-center justify-center shrink-0 ${tableColorTheme.header}`}>
-                            <Icon name={config.icon || "target"} size={4} className="lg:hidden" />
-                            <Icon name={config.icon || "target"} size={5} className="hidden lg:block" />
-                        </div>
                         <div className="min-w-0">
                             <h3 className="text-[11px] lg:text-lg font-black uppercase text-slate-800 dark:text-white tracking-tight truncate leading-tight">{config.tableName}</h3>
                             <p className="text-[8px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>

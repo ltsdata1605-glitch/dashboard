@@ -1,17 +1,16 @@
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import { Settings, Search } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import * as db from '../../utils/db';
 import { SupermarketCompetitionData, Criterion, shortenName, parseNumber } from '../../utils/dashboardHelpers';
-import CompetitionControlBar from './competition/CompetitionControlBar';
-import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
-import { CogIcon, FilterIcon, ClockIcon, ChartBarIcon } from '../Icons';
+import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
-import { getCompetitionHistory, getLocalDateKey, CompetitionHistorySnapshot } from '../../utils/competitionHistory';
-import { CompetitionTrendChart } from './competition/CompetitionTrendChart';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
@@ -31,51 +30,33 @@ interface CompetitionViewProps {
     isBatchExporting: boolean; 
     updateTimestamp?: string | null;
     onExport?: () => Promise<void>;
+    onNavigateToUpdater?: () => void;
 }
 
 const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((props, ref) => {
     const { data, isRealtime, activeSupermarket } = props;
 
-    const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
-    const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>('global-selected-competitions', []);
-    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>('global-competition-sort-config', null);
-    const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>('global-competition_view_hidden_columns', []);
+    const modeKey = isRealtime ? 'realtime' : 'luyke';
+    const defaultHiddenCols = useMemo(() => isRealtime ? ['%HTDK', '%HTDK V.Trội'] : [], [isRealtime]);
+
+    const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
+    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}`, null);
+    const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition-hidden-cols-${modeKey}`, defaultHiddenCols);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
 
-    // Lịch sử Thi đua Luỹ kế theo ngày (features/bi-dashboard/utils/competitionHistory.ts) —
-    // chỉ áp dụng cho tab Luỹ kế, không có khái niệm "lịch sử Realtime".
-    const [historySnapshots, setHistorySnapshots] = useState<CompetitionHistorySnapshot[]>([]);
-    const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
-    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [isTrendOpen, setIsTrendOpen] = useState(false);
-    const historyRef = useRef<HTMLDivElement>(null);
-    const todayKey = getLocalDateKey();
+    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(() => {
+        return typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
+    });
 
     useEffect(() => {
-        setSelectedHistoryDate(null);
-        if (isRealtime) { setHistorySnapshots([]); return; }
-        let cancelled = false;
-        getCompetitionHistory(activeSupermarket).then(list => {
-            if (!cancelled) setHistorySnapshots(list);
-        });
-        return () => { cancelled = true; };
-    }, [activeSupermarket, isRealtime]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (historyRef.current && !historyRef.current.contains(event.target as Node)) {
-                setIsHistoryOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const selectedSnapshot = selectedHistoryDate ? historySnapshots.find(s => s.date === selectedHistoryDate) : null;
+        if (!portalTarget && typeof document !== 'undefined') {
+            setPortalTarget(document.getElementById('column-settings-portal'));
+        }
+    }, [portalTarget]);
 
     // Click outside handler for column selector
     useEffect(() => {
@@ -106,15 +87,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         });
         return Array.from(names).sort();
     }, [data]);
+
     const supermarketData = useMemo(() => {
-        // Đang xem lịch sử ngày cũ — ưu tiên snapshot đã lưu thay vì dữ liệu sống.
-        if (selectedSnapshot) return selectedSnapshot;
         if (data[activeSupermarket]) return data[activeSupermarket];
         // Fuzzy fallback: trim-based matching for edge cases
         const trimmedActive = activeSupermarket.trim();
         const matchKey = Object.keys(data).find(k => k.trim() === trimmedActive);
         return matchKey ? data[matchKey] : undefined;
-    }, [data, activeSupermarket, selectedSnapshot]);
+    }, [data, activeSupermarket]);
 
     const processedSupermarketData = useMemo((): { headers: string[]; programs: ProcessedProgram[] } | undefined => {
         if (!supermarketData || !supermarketData.headers) return undefined;
@@ -237,161 +217,201 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         .filter(name => shortenName(name, nameOverrides).toLowerCase().includes(programFilterSearch.toLowerCase()))
         .map(name => ({ key: name, label: shortenName(name, nameOverrides), checked: selectedPrograms.includes(name) }));
 
-    return (
-        <div ref={ref} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
-            {/* Portal view mode controls into DashboardHeader action bar */}
-            <CompetitionControlBar 
-                viewMode={viewMode} 
-                setViewMode={setViewMode} 
-            />
-            {/* Title bar — phẳng, không lặp tên siêu thị (đã hiển thị ở ô chọn trong DashboardHeader) */}
-            <div className="py-2.5 px-4 mx-4 mt-4 flex justify-between items-center bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 relative z-50">
-                <h3 className="text-[11px] sm:text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
-                    Chương trình thi đua
-                </h3>
-                {/* Filter + Column settings — in title bar */}
-                <div className="hide-on-export flex items-center gap-1">
-                    {/* Lịch sử theo ngày — chỉ có ở tab Luỹ kế (features/bi-dashboard/utils/competitionHistory.ts) */}
-                    {!isRealtime && (
-                        <div className="relative" ref={historyRef}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsHistoryOpen(p => !p)}
-                                className={`h-7 w-7 ${selectedHistoryDate ? 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                                title="Xem lịch sử theo ngày"
-                            >
-                                <ClockIcon className="h-4 w-4" />
-                            </Button>
-                            {isHistoryOpen && (
-                                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-[100] max-h-[360px] overflow-y-auto text-left">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lịch sử theo ngày</p>
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        onClick={() => { setSelectedHistoryDate(null); setIsHistoryOpen(false); }}
-                                        className={`justify-start w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${!selectedHistoryDate ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+    const handleOpenTargetThiDua = async () => {
+        await db.set('supermarket-config-active-tab', 'competitionTarget');
+        if (activeSupermarket && activeSupermarket !== 'Tổng') {
+            await db.set('updater-active-supermarket', activeSupermarket);
+        }
+        if (props.onNavigateToUpdater) {
+            props.onNavigateToUpdater();
+        } else {
+            const updaterBtn = document.querySelector('button[title="Cập nhật"]') as HTMLButtonElement;
+            if (updaterBtn) updaterBtn.click();
+        }
+        setTimeout(() => {
+            const el = document.getElementById('supermarket-config-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+    };
+
+    const toolbarControls = (
+        <div id="competition-view-controls" className="flex items-center gap-1">
+            {/* Bộ lọc tích hợp 2 cột: Lọc chương trình & Cột hiển thị */}
+            <div className="relative" ref={columnSelectorRef}>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsColumnSelectorOpen(p => !p)}
+                    className={`relative h-7 w-7 transition-colors ${
+                        isColumnSelectorOpen || isProgramFiltered || (processedSupermarketData && hiddenColumns.length > 0)
+                            ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}
+                    title="Bộ lọc thi đua (Chương trình & Cột hiển thị)"
+                >
+                    <FilterIcon className="h-4 w-4" />
+                    {isProgramFiltered && (
+                        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sky-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                            {validSelectedPrograms.length}
+                        </span>
+                    )}
+                </Button>
+
+                {isColumnSelectorOpen && (
+                    <div className="absolute right-0 mt-2 w-[540px] max-w-[92vw] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[100] overflow-hidden text-left animate-in fade-in-50 zoom-in-95 duration-150">
+                        {/* Header của Popup */}
+                        <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80">
+                            <div className="flex items-center gap-2">
+                                <FilterIcon className="h-3.5 w-3.5 text-sky-500" />
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">Bộ lọc bảng thi đua</span>
+                            </div>
+                            <span className="text-[11px] text-slate-400 font-medium">
+                                {isRealtime ? 'Chế độ Realtime' : 'Chế độ Luỹ kế'}
+                            </span>
+                        </div>
+
+                        {/* Layout 2 cột */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-700/60">
+                            {/* CỘT 1: LỌC CHƯƠNG TRÌNH */}
+                            <div className="p-3 flex flex-col h-80">
+                                <div className="flex items-center justify-between mb-2 px-1">
+                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        Chương trình ({validSelectedPrograms.length}/{allProgramNames.length})
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={toggleAllPrograms}
+                                        className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                     >
-                                        Hôm nay (trực tiếp)
-                                    </Button>
-                                    {historySnapshots.filter(s => s.date !== todayKey).length === 0 && (
-                                        <p className="text-[11px] text-slate-400 px-2 py-2">Chưa có ngày trước để xem lại — quay lại vào ngày mai.</p>
-                                    )}
-                                    {historySnapshots.filter(s => s.date !== todayKey).map(s => {
-                                        const [y, m, d] = s.date.split('-');
-                                        return (
-                                            <Button
-                                                key={s.date}
-                                                variant="unstyled" size="none"
-                                                onClick={() => { setSelectedHistoryDate(s.date); setIsHistoryOpen(false); }}
-                                                className={`justify-start w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedHistoryDate === s.date ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+                                        {validSelectedPrograms.length === allProgramNames.length ? 'Bỏ chọn hết' : 'Chọn tất cả'}
+                                    </button>
+                                </div>
+
+                                {/* Ô tìm kiếm chương trình */}
+                                <div className="relative mb-2">
+                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        value={programFilterSearch}
+                                        onChange={(e) => setProgramFilterSearch(e.target.value)}
+                                        placeholder="Tìm tên chương trình..."
+                                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-sky-500 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                                    />
+                                </div>
+
+                                {/* Danh sách chương trình có thể cuộn */}
+                                <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 scrollbar-thin">
+                                    {programOptions.length > 0 ? (
+                                        programOptions.map(opt => (
+                                            <div
+                                                key={opt.key}
+                                                onClick={() => toggleProgram(opt.key)}
+                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
                                             >
-                                                {`${d}/${m}/${y}`}
-                                            </Button>
+                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate pr-2" title={opt.label}>
+                                                    {opt.label}
+                                                </span>
+                                                <Switch
+                                                    checked={opt.checked}
+                                                    onChange={() => toggleProgram(opt.key)}
+                                                />
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-6 text-center text-xs text-slate-400">
+                                            Không tìm thấy chương trình phù hợp
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* CỘT 2: CỘT HIỂN THỊ */}
+                            <div className="p-3 flex flex-col h-80">
+                                <div className="flex items-center justify-between mb-2 px-1">
+                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        Cột hiển thị ({((processedSupermarketData?.headers || []).length - hiddenColumns.length)}/{processedSupermarketData?.headers?.length || 0})
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setHiddenColumns([])}
+                                        className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                                        title="Hiện tất cả các cột"
+                                    >
+                                        Hiện tất cả
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 scrollbar-thin mt-1">
+                                    {(processedSupermarketData?.headers || []).map(header => {
+                                        const isVisible = !hiddenColumns.includes(header);
+                                        return (
+                                            <div
+                                                key={header}
+                                                onClick={() => setHiddenColumns(prev => {
+                                                    const s = new Set(prev);
+                                                    if (s.has(header)) s.delete(header); else s.add(header);
+                                                    return Array.from(s);
+                                                })}
+                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
+                                            >
+                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate pr-2">
+                                                    {header}
+                                                </span>
+                                                <Switch
+                                                    checked={isVisible}
+                                                    onChange={() => setHiddenColumns(prev => {
+                                                        const s = new Set(prev);
+                                                        if (s.has(header)) s.delete(header); else s.add(header);
+                                                        return Array.from(s);
+                                                    })}
+                                                />
+                                            </div>
                                         );
                                     })}
                                 </div>
-                            )}
-                        </div>
-                    )}
-                    {/* Xu hướng theo thời gian — tái dùng chính dữ liệu historySnapshots ở trên,
-                        chỉ áp dụng cho tab Luỹ kế (giống nút Lịch sử) */}
-                    {!isRealtime && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsTrendOpen(p => !p)}
-                            className={`h-7 w-7 ${isTrendOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                            title="Xem xu hướng theo thời gian"
-                        >
-                            <ChartBarIcon className="h-4 w-4" />
-                        </Button>
-                    )}
-                    {/* Program filter — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
-                        style với các bộ lọc khác trong dự án (VD "Lọc nhóm" ở Tab Nhân viên > Thi đua) */}
-                    <MultiSelectDropdown
-                        icon={<FilterIcon className="h-4 w-4 text-slate-400" />}
-                        triggerLabel="Lọc chương trình"
-                        count={isProgramFiltered ? validSelectedPrograms.length : undefined}
-                        allLabel="Chọn tất cả"
-                        allChecked={validSelectedPrograms.length === allProgramNames.length}
-                        onToggleAll={toggleAllPrograms}
-                        options={programOptions}
-                        onToggleOption={toggleProgram}
-                        searchValue={programFilterSearch}
-                        onSearchChange={setProgramFilterSearch}
-                        searchPlaceholder="Tìm kiếm chương trình..."
-                        panelWidthClass="w-80"
-                        maxHeightClass="max-h-96"
-                    />
-                    {/* Column selector */}
-                    <div className="relative" ref={columnSelectorRef}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsColumnSelectorOpen(p => !p)}
-                            className={`h-7 w-7 ${isColumnSelectorOpen ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                            title="Cột hiển thị"
-                        >
-                            <CogIcon className="h-4 w-4" />
-                        </Button>
-                        {isColumnSelectorOpen && (
-                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto text-left">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>
-                                <div className="grid gap-0.5">
-                                    {(processedSupermarketData?.headers || []).map(header => (
-                                        <div key={header} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <label
-                                                className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                                onClick={() => setHiddenColumns((prev: string[]) => { const s = new Set(prev); if (s.has(header)) s.delete(header); else s.add(header); return Array.from(s); })}
-                                            >
-                                                {header}
-                                            </label>
-                                            <Switch 
-                                                checked={!hiddenColumns.includes(header)} 
-                                                onChange={() => setHiddenColumns((prev: string[]) => { const s = new Set(prev); if (s.has(header)) s.delete(header); else s.add(header); return Array.from(s); })} 
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
-            {selectedHistoryDate && (() => {
-                const [y, m, d] = selectedHistoryDate.split('-');
-                return (
-                    <div className="mx-4 mt-3 px-4 py-2 flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-bold">
-                        <ClockIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span>Đang xem lịch sử ngày {d}/{m}/{y} — không phải dữ liệu trực tiếp.</span>
-                        <Button variant="unstyled" size="none" onClick={() => setSelectedHistoryDate(null)} className="ml-auto underline hover:no-underline">Về trực tiếp</Button>
-                    </div>
-                );
-            })()}
-            {isTrendOpen && !isRealtime && (
-                <div className="mx-4 mt-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-                    <CompetitionTrendChart
-                        historySnapshots={historySnapshots}
-                        todayData={data[activeSupermarket]}
-                        todayKey={todayKey}
-                        programNames={validSelectedPrograms.length > 0 ? validSelectedPrograms : allProgramNames.slice(0, 3)}
-                    />
-                </div>
-            )}
+
+            {/* Nút cấu hình Target Thi đua (Lucide Settings) */}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleOpenTargetThiDua}
+                className="h-7 w-7 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors"
+                title="Cấu hình Target Thi đua"
+            >
+                <Settings className="h-4 w-4" />
+            </Button>
+        </div>
+    );
+
+    return (
+        <div ref={ref} className="relative z-10">
+            {/* Portal controls into DashboardHeader action bar */}
+            {portalTarget && ReactDOM.createPortal(toolbarControls, portalTarget)}
+
             {/* Scrollable table content */}
             <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <div className={`px-4 pb-4 pt-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>
-                <div className="p-0">
-                    {processedSupermarketData && sortedPrograms.length > 0 ? (
-                        viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
-                        : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
-                    ) : (
-                        <EmptyState
-                            title={!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}"` : 'Không có chương trình thi đua nào được chọn'}
-                            description={!supermarketData ? 'Vui lòng cập nhật dữ liệu.' : undefined}
-                        />
-                    )}
-                </div>
+                <div className="p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2 min-w-fit">
+                    <div className="p-0">
+                        {processedSupermarketData && sortedPrograms.length > 0 ? (
+                            <CompetitionListView
+                                groupedAndSortedPrograms={groupedAndSortedPrograms}
+                                headers={processedSupermarketData.headers}
+                                hiddenColumns={hiddenColumns}
+                                isRealtime={isRealtime}
+                                handleSort={handleSort}
+                            />
+                        ) : (
+                            <EmptyState
+                                title={!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}"` : 'Không có chương trình thi đua nào được chọn'}
+                                description={!supermarketData ? 'Vui lòng cập nhật dữ liệu.' : undefined}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

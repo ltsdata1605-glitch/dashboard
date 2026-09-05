@@ -1,5 +1,5 @@
 
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
 import { ExternalLink } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
@@ -39,7 +39,10 @@ const GroupCombobox: React.FC<{
     onChange: (val: string) => void;
     placeholder: string;
     availableGroups: string[];
-}> = ({ value, onChange, placeholder, availableGroups }) => {
+    onDeleteGroup?: (group: string) => void;
+    onResetGroups?: () => void;
+    hasDeletedGroups?: boolean;
+}> = ({ value, onChange, placeholder, availableGroups, onDeleteGroup, onResetGroups, hasDeletedGroups }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -64,14 +67,14 @@ const GroupCombobox: React.FC<{
                     onChange={(e) => onChange(e.target.value)}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="text-xs font-bold pr-8 shadow-sm"
+                    className="h-8 py-1 px-2.5 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
                 />
                 <Button
                     type="button"
                     variant="unstyled"
                     tabIndex={-1}
                     onClick={() => setIsOpen(prev => !prev)}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded"
                     title="Xem tất cả các nhóm có sẵn"
                 >
                     <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-600' : ''}`} viewBox="0 0 20 20" fill="currentColor">
@@ -81,47 +84,87 @@ const GroupCombobox: React.FC<{
             </div>
 
             {isOpen && (
-                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden py-1 max-h-48 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="absolute left-0 right-0 top-[calc(100%+2px)] z-50 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden py-1 max-h-48 overflow-y-auto">
+                    <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
                         <span>Nhóm có sẵn ({availableGroups.length})</span>
-                        {value && (
-                            <Button
-                                type="button"
-                                variant="unstyled"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onChange('');
-                                }}
-                                className="text-rose-500 hover:underline lowercase font-normal"
-                            >
-                                xoá
-                            </Button>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {hasDeletedGroups && onResetGroups && (
+                                <Button
+                                    type="button"
+                                    variant="unstyled"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onResetGroups();
+                                    }}
+                                    className="text-sky-500 hover:underline text-[10px] font-normal"
+                                    title="Khôi phục lại các nhóm mặc định đã xoá"
+                                >
+                                    Khôi phục
+                                </Button>
+                            )}
+                            {value && (
+                                <Button
+                                    type="button"
+                                    variant="unstyled"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onChange('');
+                                    }}
+                                    className="text-rose-500 hover:underline text-[10px] font-normal"
+                                    title="Xoá nhóm đã chọn"
+                                >
+                                    Bỏ chọn
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                    {availableGroups.map((group) => {
-                        const isSelected = value === group;
-                        return (
-                            <Button
-                                key={group}
-                                type="button"
-                                variant="unstyled"
-                                onClick={() => {
-                                    onChange(group);
-                                    setIsOpen(false);
-                                }}
-                                className={`w-full text-left px-3 py-1.5 text-xs font-bold flex items-center justify-between transition-colors ${
-                                    isSelected
-                                        ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
-                                        : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                                }`}
-                            >
-                                <span className="truncate">{group}</span>
-                                {isSelected && (
-                                    <span className="text-[10px] text-sky-500 font-bold ml-2">✓</span>
-                                )}
-                            </Button>
-                        );
-                    })}
+                    {availableGroups.length > 0 ? (
+                        availableGroups.map((group) => {
+                            const isSelected = value === group;
+                            return (
+                                <div
+                                    key={group}
+                                    onClick={() => {
+                                        onChange(group);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`group/item w-full text-left px-2.5 py-1.5 text-xs font-normal flex items-center justify-between transition-colors cursor-pointer ${
+                                        isSelected
+                                            ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 font-medium'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                                    }`}
+                                >
+                                    <span className="truncate flex-1">{group}</span>
+                                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                        {isSelected && (
+                                            <span className="text-[10px] text-sky-600 font-bold">✓</span>
+                                        )}
+                                        {onDeleteGroup && (
+                                            <Button
+                                                type="button"
+                                                variant="unstyled"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDeleteGroup(group);
+                                                    if (value === group) onChange('');
+                                                }}
+                                                className="p-1 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
+                                                title={`Xoá nhóm "${group}" khỏi danh sách`}
+                                            >
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="px-2.5 py-3 text-center text-[11px] text-slate-400">
+                            Không còn nhóm nào
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -139,6 +182,7 @@ const BulkRenameModal: React.FC<{
     const [tempName, setTempName] = useState<Record<string, string>>(nameOverrides);
     const [tempGroup, setTempGroup] = useState<Record<string, string>>(groupOverrides);
     const [searchQuery, setSearchQuery] = useState('');
+    const [deletedGroups, setDeletedGroups] = useIndexedDBState<string[]>('competition-deleted-preset-groups', []);
     
     useEffect(() => { 
         if (isOpen) {
@@ -149,15 +193,36 @@ const BulkRenameModal: React.FC<{
     }, [isOpen]); // Execute only when modal opens/closes
 
     const availableGroups = useMemo(() => {
-        const set = new Set<string>(DEFAULT_PRESET_GROUPS);
+        const deletedSet = new Set(deletedGroups || []);
+        const set = new Set<string>();
+        DEFAULT_PRESET_GROUPS.forEach(g => {
+            if (!deletedSet.has(g)) set.add(g);
+        });
         competitions.forEach(c => {
             const defaultGroup = getDefaultGroupLabel(c.criteria);
-            if (defaultGroup) set.add(defaultGroup);
-            if (tempGroup[c.name]) set.add(tempGroup[c.name]);
-            if (groupOverrides[c.name]) set.add(groupOverrides[c.name]);
+            if (defaultGroup && !deletedSet.has(defaultGroup)) set.add(defaultGroup);
+            if (tempGroup[c.name] && !deletedSet.has(tempGroup[c.name])) set.add(tempGroup[c.name]);
+            if (groupOverrides[c.name] && !deletedSet.has(groupOverrides[c.name])) set.add(groupOverrides[c.name]);
         });
         return Array.from(set).filter(Boolean);
-    }, [competitions, tempGroup, groupOverrides]);
+    }, [competitions, tempGroup, groupOverrides, deletedGroups]);
+
+    const handleDeleteGroup = (groupToDelete: string) => {
+        setDeletedGroups(prev => Array.from(new Set([...(prev || []), groupToDelete])));
+        setTempGroup(prev => {
+            const updated = { ...prev };
+            Object.keys(updated).forEach(k => {
+                if (updated[k] === groupToDelete) {
+                    delete updated[k];
+                }
+            });
+            return updated;
+        });
+    };
+
+    const handleResetGroups = () => {
+        setDeletedGroups([]);
+    };
 
     const filteredComps = competitions.filter(comp => comp.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -165,8 +230,8 @@ const BulkRenameModal: React.FC<{
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={<span className="font-black text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</span>}
-            subTitle="Cấu hình tên hiển thị và tái định vị các nhóm. Thông tin sẽ đồng bộ toàn báo cáo."
+            title={<span className="font-semibold text-base text-slate-800 dark:text-slate-100">Sửa cấu hình nhóm thi đua</span>}
+            subTitle="Cấu hình tên hiển thị và phân loại nhóm tiêu chí đồng bộ toàn báo cáo"
             maxWidth="2xl"
             controls={
                 <Input
@@ -175,46 +240,84 @@ const BulkRenameModal: React.FC<{
                     placeholder="Tìm kiếm nhóm BI..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-40 sm:w-64 bg-white dark:bg-slate-900 rounded-xl border-sky-200 dark:border-sky-800 text-sm focus-visible:ring-sky-500/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                    className="h-8 w-44 sm:w-60 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs font-normal focus-visible:ring-1 focus-visible:ring-sky-500 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 shadow-none"
                 />
             }
             footer={
-                <div className="flex gap-3">
-                    <Button variant="unstyled" size="none" onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-md text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
-                    <Button variant="unstyled" size="none" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-sky-600 text-white rounded-md text-xs font-black hover:bg-sky-700 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
+                <div className="flex justify-between items-center w-full">
+                    <span className="text-xs text-slate-400 font-normal">
+                        Hiển thị {filteredComps.length} / {competitions.length} nhóm
+                    </span>
+                    <div className="flex gap-2">
+                        <Button 
+                            variant="unstyled" 
+                            size="none" 
+                            onClick={() => { setTempName({}); setTempGroup({}); setDeletedGroups([]); }} 
+                            className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-xs font-medium transition-colors"
+                        >
+                            Mặc định
+                        </Button>
+                        <Button 
+                            variant="unstyled" 
+                            size="none" 
+                            onClick={() => { onSave(tempName, tempGroup); onClose(); }} 
+                            className="px-4 py-1.5 bg-sky-600 text-white rounded-md text-xs font-medium hover:bg-sky-700 transition-colors"
+                        >
+                            Lưu cập nhật
+                        </Button>
+                    </div>
                 </div>
             }
         >
-            <div className="-m-5 p-3 space-y-2">
-                {filteredComps.length > 0 ? filteredComps.map(comp => (
-                        <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên gốc trong BI</p>
-                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{comp.name}</p>
+            <div className="-mx-6 -my-4 border-t border-slate-200 dark:border-slate-700">
+                {/* Header hàng */}
+                <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <div className="col-span-4">Tên gốc trong BI</div>
+                    <div className="col-span-4">Tên hiển thị mới</div>
+                    <div className="col-span-4">Nhóm tiêu chí</div>
+                </div>
+
+                {/* Danh sách các hàng */}
+                <div className="max-h-[58vh] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredComps.length > 0 ? (
+                        filteredComps.map(comp => (
+                            <div 
+                                key={comp.name} 
+                                className="grid grid-cols-12 gap-3 px-4 py-2 items-center hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors text-xs"
+                            >
+                                <div className="col-span-4 min-w-0 pr-1">
+                                    <p className="font-normal text-slate-700 dark:text-slate-200 truncate" title={comp.name}>
+                                        {comp.name}
+                                    </p>
+                                </div>
+                                <div className="col-span-4">
+                                    <Input
+                                        value={tempName[comp.name] ?? ''}
+                                        onChange={e => setTempName({ ...tempName, [comp.name]: e.target.value })}
+                                        placeholder={shortenName(comp.name)}
+                                        className="h-8 py-1 px-2.5 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs font-normal focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 shadow-none"
+                                    />
+                                </div>
+                                <div className="col-span-4">
+                                    <GroupCombobox
+                                        value={tempGroup[comp.name] ?? ''}
+                                        onChange={val => setTempGroup({ ...tempGroup, [comp.name]: val })}
+                                        placeholder={getDefaultGroupLabel(comp.criteria)}
+                                        availableGroups={availableGroups}
+                                        onDeleteGroup={handleDeleteGroup}
+                                        onResetGroups={handleResetGroups}
+                                        hasDeletedGroups={(deletedGroups || []).length > 0}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Tên hiển thị mới</p>
-                                <Input
-                                    value={tempName[comp.name] ?? ''}
-                                    onChange={e => setTempName({...tempName, [comp.name]: e.target.value})}
-                                    placeholder={shortenName(comp.name)}
-                                    className="bg-white dark:bg-slate-950 rounded-xl border-slate-200 dark:border-slate-700 text-xs font-bold focus-visible:ring-sky-500/10 focus-visible:border-sky-400 placeholder:text-slate-300"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
-                                <GroupCombobox
-                                    value={tempGroup[comp.name] ?? ''}
-                                    onChange={val => setTempGroup({...tempGroup, [comp.name]: val})}
-                                    placeholder={getDefaultGroupLabel(comp.criteria)}
-                                    availableGroups={availableGroups}
-                                />
-                            </div>
+                        ))
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                            <XIcon className="h-5 w-5 mb-1.5 opacity-60" />
+                            <p className="text-xs font-normal">Không có nhóm nào để sửa.</p>
                         </div>
-                    )) : <div className="flex flex-col items-center justify-center py-10 opacity-60">
-                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
-                            <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Không có nhóm nào để sửa.</p>
-                        </div>}
+                    )}
+                </div>
             </div>
         </Modal>
     );
@@ -614,7 +717,7 @@ interface SupermarketConfigProps {
 }
 
 const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, addUpdate, removeUpdate, competitionLuyKeData, summaryLuyKeData, onThiDuaDataChange }) => {
-    const [activeTab, setActiveTab] = useState<ConfigTab>('data');
+    const [activeTab, setActiveTab] = useIndexedDBState<ConfigTab>('supermarket-config-active-tab', 'data');
 
     const bookmarkletRef = useRef<HTMLAnchorElement>(null);
 

@@ -90,7 +90,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const [isSupermarketFilterOpen, setIsSupermarketFilterOpen] = useState(false);
     const supermarketFilterRef = useRef<HTMLDivElement>(null);
     const [supermarketFilterSearch, setSupermarketFilterSearch] = useState('');
-    const [hiddenSupermarkets, setHiddenSupermarkets] = useIndexedDBState<string[]>('hidden-supermarkets-summary', []);
+    const [hiddenSupermarkets, setHiddenSupermarkets] = useIndexedDBState<string[]>(`hidden-supermarkets-summary-${isCumulative ? 'luyke' : 'realtime'}`, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

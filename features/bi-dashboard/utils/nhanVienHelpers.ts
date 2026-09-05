@@ -242,16 +242,20 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Recor
         if (norm) normalizedEmployeeMap[norm] = fullName;
         const dashIdx = norm.indexOf(' - ');
         if (dashIdx > -1) {
-            const prefix = norm.slice(0, dashIdx);
+            const prefix = norm.slice(0, dashIdx).trim();
+            const suffix = norm.slice(dashIdx + 3).trim();
             if (!shortNamePrefixMap.has(prefix)) shortNamePrefixMap.set(prefix, fullName);
+            if (!shortNamePrefixMap.has(suffix)) shortNamePrefixMap.set(suffix, fullName);
         }
     }
 
     const findFullName = (shortName: string) => {
+        const canonical = standardizeEmployeeName(shortName);
+        const normCanonical = normalizeText(canonical);
+        if (normCanonical && normalizedEmployeeMap[normCanonical]) return normalizedEmployeeMap[normCanonical];
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
-        if (exactMatch) return exactMatch;
+        if (normalizedEmployeeMap[normalizedShort]) return normalizedEmployeeMap[normalizedShort];
         return shortNamePrefixMap.get(normalizedShort) ?? null;
     };
 
@@ -412,6 +416,10 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     }
 
     const findFullName = (rawName: string): string => {
+        const canonical = standardizeEmployeeName(rawName);
+        const normCanonical = normalizeText(canonical);
+        if (normCanonical && nameToFullMap.has(normCanonical)) return nameToFullMap.get(normCanonical)!;
+
         const norm = normalizeText(rawName);
         if (!norm) return rawName;
         if (nameToFullMap.has(norm)) return nameToFullMap.get(norm)!;
@@ -670,7 +678,8 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         let department = "";
         
         // 1. Tìm O(1) trong map doanh thu
-        const match = fastDeptMap.get(normalizedName);
+        const canonicalName = standardizeEmployeeName(namePart);
+        const match = fastDeptMap.get(normalizeText(canonicalName)) || fastDeptMap.get(normalizedName);
         if (match) {
             matchedOriginalName = match.orig;
             department = match.dept;

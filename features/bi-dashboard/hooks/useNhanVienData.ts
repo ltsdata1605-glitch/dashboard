@@ -208,30 +208,16 @@ export function useNhanVienData(isActive?: boolean) {
         if (isActive === false) return {} as Record<string, string>;
         const map: Record<string, string> = {};
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
-            map[r.originalName!] = r.department!;
             const canonical = standardizeEmployeeName(r.originalName!);
             map[canonical] = r.department!;
-            if (r.originalName!.includes(' - ')) {
-                const parts = r.originalName!.split(' - ').map(p => p.trim());
-                map[`${parts[1]} - ${parts[0]}`] = r.department!;
-                map[parts[0]] = r.department!;
-                map[parts[1]] = r.department!;
-            }
         });
 
         Object.entries(aggregatedData.manualMapping).forEach(([deptName, employees]) => {
             if (Array.isArray(employees)) {
                 employees.forEach(empName => {
                     if (!hiddenEmployeesSet.has(empName)) {
-                        map[empName] = deptName;
                         const canonical = standardizeEmployeeName(empName);
                         map[canonical] = deptName;
-                        if (empName.includes(' - ')) {
-                            const parts = empName.split(' - ').map(p => p.trim());
-                            map[`${parts[1]} - ${parts[0]}`] = deptName;
-                            map[parts[0]] = deptName;
-                            map[parts[1]] = deptName;
-                        }
                     }
                 });
             }
@@ -387,11 +373,35 @@ export function useNhanVienData(isActive?: boolean) {
 
     const allEmployees = useMemo(() => {
         if (isActive === false) return [];
-        return Array.from(Object.entries(employeeDepartmentMap as Record<string, string>)).map(([originalName, department]) => ({
-            name: formatEmployeeName(originalName),
-            originalName,
-            department
-        })).sort((a,b) => a.name.localeCompare(b.name));
+        const seen = new Set<string>();
+        const list: { name: string; originalName: string; department: string }[] = [];
+
+        // Ưu tiên tên đầy đủ trước (chuỗi dài hơn) nếu có trường hợp trùng lặp
+        const entries = Object.entries(employeeDepartmentMap as Record<string, string>)
+            .sort(([a], [b]) => b.length - a.length);
+
+        for (const [originalName, department] of entries) {
+            const canonical = standardizeEmployeeName(originalName);
+            let empId = '';
+            if (canonical.includes(' - ')) {
+                const parts = canonical.split(' - ').map(p => p.trim());
+                empId = /^\d+$/.test(parts[1]) ? parts[1] : (/^\d+$/.test(parts[0]) ? parts[0] : canonical);
+            } else if (/^\d+$/.test(canonical)) {
+                empId = canonical;
+            }
+
+            const dedupKey = empId || canonical;
+            if (!seen.has(dedupKey)) {
+                seen.add(dedupKey);
+                list.push({
+                    name: formatEmployeeName(originalName),
+                    originalName,
+                    department
+                });
+            }
+        }
+
+        return list.sort((a, b) => a.name.localeCompare(b.name));
     }, [employeeDepartmentMap, isActive]);
 
     const deptEmployeeCounts = useMemo(() => {

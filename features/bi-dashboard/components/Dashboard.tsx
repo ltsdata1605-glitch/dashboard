@@ -330,6 +330,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                         {activeSubTab === 'revenue' && (
                             <div>
                                 <SummaryTableView
+                                    key={isRealtimeView ? 'summary-realtime' : 'summary-luyke'}
                                     ref={summaryTableRef}
                                     data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table}
                                     isCumulative={!isRealtimeView}
@@ -342,6 +343,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 />
                             </div>
                         )}
+
+                        {/* Competition tab: CompetitionView merges into header container */}
+                        {activeSubTab === 'competition' && (
+                            <CompetitionView
+                                key={isRealtimeView ? 'competition-realtime' : 'competition-luyke'}
+                                ref={competitionViewRef}
+                                data={isRealtimeView ? augmentedRealtimeData : augmentedLuyKeData}
+                                isRealtime={isRealtimeView}
+                                activeSupermarket={activeSupermarket}
+                                setActiveSupermarket={setActiveSupermarket}
+                                onBatchExport={() => runBatchExport('competition')}
+                                isBatchExporting={isBatchExportingCompetition}
+                                updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
+                                onExport={async () => { await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
+                                onNavigateToUpdater={onNavigateToUpdater}
+                            />
+                        )}
                     </DashboardHeader>
 
                     {activeSubTab === 'revenue' && (
@@ -353,22 +371,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 supermarketDailyTargets={supermarketDailyTargets}
                                 supermarketMonthlyTargets={supermarketMonthlyTargets}
                                 activeSupermarket={activeSupermarket}
-                            />
-                        </div>
-                    )}
-
-                    {activeSubTab === 'competition' && (
-                        <div className="mt-3 sm:mt-4">
-                            <CompetitionView
-                                ref={competitionViewRef}
-                                data={isRealtimeView ? augmentedRealtimeData : augmentedLuyKeData}
-                                isRealtime={isRealtimeView}
-                                activeSupermarket={activeSupermarket}
-                                setActiveSupermarket={setActiveSupermarket}
-                                onBatchExport={() => runBatchExport('competition')}
-                                isBatchExporting={isBatchExportingCompetition}
-                                updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
-                                onExport={async () => { await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
                             />
                         </div>
                     )}

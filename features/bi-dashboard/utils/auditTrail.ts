@@ -1,5 +1,11 @@
-import { getLocalDateKey } from './competitionHistory';
 import * as db from './db';
+
+export const getLocalDateKey = (d: Date = new Date()): string => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+};
 
 export interface AuditEntry {
     /** YYYY-MM-DD theo giờ địa phương. */

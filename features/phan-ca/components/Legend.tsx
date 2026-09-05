@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScheduleTargets } from '../types';
+import { ScheduleTargets, SbhGenderBoost } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface LegendProps {
@@ -12,6 +12,8 @@ interface LegendProps {
     onAutoAddWeekendShiftsChange?: (checked: boolean) => void;
     autoAddWeekendShift1?: boolean;
     onAutoAddWeekendShift1Change?: (checked: boolean) => void;
+    sbhGenderBoost?: SbhGenderBoost;
+    onSbhGenderBoostChange?: (boost: SbhGenderBoost) => void;
 }
 
 const Legend: React.FC<LegendProps> = ({ 
@@ -23,7 +25,9 @@ const Legend: React.FC<LegendProps> = ({
     autoAddWeekendShifts = false, 
     onAutoAddWeekendShiftsChange,
     autoAddWeekendShift1 = false,
-    onAutoAddWeekendShift1Change
+    onAutoAddWeekendShift1Change,
+    sbhGenderBoost = { gender: null, hours: 5 },
+    onSbhGenderBoostChange
 }) => {
     return (
         <div className="mt-4">
@@ -101,6 +105,53 @@ const Legend: React.FC<LegendProps> = ({
                                     </svg>
                                 ) : (
                                     <span className="text-[10px] font-bold bg-rose-600 text-white px-1.5 py-px uppercase">≤ 3h</span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Gender SBH Boost Control */}
+                        {onSbhGenderBoostChange && (
+                            <div className={`flex items-center gap-1.5 h-9 px-3 border text-xs transition-colors select-none ${
+                                sbhGenderBoost.gender 
+                                ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-800 dark:text-purple-300' 
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                            }`}>
+                                <span className="font-bold uppercase tracking-wider whitespace-nowrap">Ưu tiên SBH:</span>
+                                <select
+                                    value={sbhGenderBoost.gender || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value as 'Nu' | 'Nam' | '';
+                                        onSbhGenderBoostChange({
+                                            gender: val ? val : null,
+                                            hours: sbhGenderBoost.hours || 5
+                                        });
+                                    }}
+                                    className="bg-transparent text-xs font-bold focus:outline-none cursor-pointer border-b border-dashed border-current pb-0.5"
+                                >
+                                    <option value="" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Không</option>
+                                    <option value="Nu" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Nữ cao hơn</option>
+                                    <option value="Nam" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Nam cao hơn</option>
+                                </select>
+
+                                {sbhGenderBoost.gender && (
+                                    <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-purple-200 dark:border-purple-700">
+                                        <span className="font-bold text-purple-600 dark:text-purple-400">+</span>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={50}
+                                            value={sbhGenderBoost.hours}
+                                            onChange={(e) => {
+                                                const val = Math.max(1, Math.min(50, parseInt(e.target.value) || 1));
+                                                onSbhGenderBoostChange({
+                                                    ...sbhGenderBoost,
+                                                    hours: val
+                                                });
+                                            }}
+                                            className="w-10 h-6 text-center font-black bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-600 rounded px-0.5 text-purple-900 dark:text-purple-200 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs"
+                                        />
+                                        <span className="font-bold text-purple-600 dark:text-purple-400">h</span>
+                                    </div>
                                 )}
                             </div>
                         )}

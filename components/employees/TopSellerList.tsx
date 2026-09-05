@@ -81,10 +81,6 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
         <div ref={ref}>
             <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
-                        <Icon name="trophy" size={4} className="lg:hidden" />
-                        <Icon name="trophy" size={5} className="hidden lg:block" />
-                    </div>
                     <div className="min-w-0">
                         <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Top Nhân Viên</h3>
                         <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>

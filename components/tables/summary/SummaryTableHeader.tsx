@@ -39,11 +39,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
         <header className="px-3 sm:px-6 py-2 sm:py-5 border-b border-slate-100 dark:border-slate-800">
             <div className="flex flex-col gap-4 sm:gap-6">
                 <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shadow-sm shrink-0">
-                            <Icon name="table" size={4.5} className="sm:hidden" />
-                            <Icon name="table" size={5} className="hidden sm:block" />
-                        </div>
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                         <div className="min-w-0">
                             {/* Mobile: fixed title + comparison subtitle */}
                             <h1 className="sm:hidden text-sm font-bold tracking-tight text-slate-800 dark:text-white uppercase truncate">

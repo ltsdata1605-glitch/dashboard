@@ -424,7 +424,6 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                 </span>
             </div>
         )}
-        icon="trending-up"
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
           {displayMode === 'calendar' ? (

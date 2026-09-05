@@ -4,7 +4,7 @@ import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
-import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
+import { COL, DEFAULT_WAREHOUSE_COLUMNS, WAREHOUSE_COLUMN_CONFIG_VERSION } from '../../constants';
 import { getRowValue, formatCurrency, formatRevenueForHeadToHead, getExportFilenamePrefix, getBorderAccentFromColorClass } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
@@ -172,10 +172,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         sortConfig
     });
 
-    // Cấu hình Giờ Mở/Đóng Cửa Siêu thị (Mặc định 07:30 -> 21:30)
-    const [storeHours, setStoreHours] = useState<{ open: string; close: string }>({ open: '07:30', close: '21:30' });
+    // Cấu hình Giờ Mở/Đóng Cửa Siêu thị (Mặc định 08:00 -> 21:30)
+    const [storeHours, setStoreHours] = useState<{ open: string; close: string }>({ open: '08:00', close: '21:30' });
     const [isStoreHoursModalOpen, setIsStoreHoursModalOpen] = useState(false);
-    const [tempOpenHour, setTempOpenHour] = useState('07:30');
+    const [tempOpenHour, setTempOpenHour] = useState('08:00');
     const [tempCloseHour, setTempCloseHour] = useState('21:30');
 
     useEffect(() => {
@@ -351,7 +351,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     useEffect(() => {
         let cancelled = false;
         const loadConfig = async () => {
-            const CURRENT_VERSION = 'v3'; // Increment version to force clear old columns cache
+            const CURRENT_VERSION = WAREHOUSE_COLUMN_CONFIG_VERSION; // Increment version to force clear old columns cache
             const savedVersion = await getSetting<string>('warehouseColumnConfigVersion');
             
             let config = await getWarehouseColumnConfig();
@@ -596,7 +596,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 {/* BEGIN: Header Section */}
                 <SectionHeader 
                     title="Chi Tiết Theo Kho" 
-                    icon="layout-grid" 
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
