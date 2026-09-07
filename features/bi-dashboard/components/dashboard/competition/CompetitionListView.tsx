@@ -2,6 +2,7 @@
 import React from 'react';
 import { Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel } from '../../../utils/dashboardHelpers';
 import { ProgressBar } from '../DashboardWidgets';
+import { renderHeaderText } from '../SafeHeaderText';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import type { ProcessedProgram } from '../CompetitionView';
 
@@ -76,8 +77,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
                                                 className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass(column)}`}
-                                                dangerouslySetInnerHTML={{ __html: getFormattedHeader(column) }}
-                                            />
+                                            >
+                                                {renderHeaderText(getFormattedHeader(column))}
+                                            </th>
                                         );
                                     })}
                                 </tr>

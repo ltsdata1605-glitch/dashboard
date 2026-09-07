@@ -5,6 +5,7 @@ import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
+import { renderHeaderText } from './SafeHeaderText';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
@@ -387,8 +388,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 <label
                                     htmlFor={`col-toggle-sum-${h}`}
                                     className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                    dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
-                                />
+                                >
+                                    {headerMapping[h]?.replace(/<br\/>/g, ' ') || h}
+                                </label>
                                 <Switch
                                     id={`col-toggle-sum-${h}`}
                                     checked={visibleColumns.has(h)}
@@ -440,8 +442,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
                                                     className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
-                                                    dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
-                                                />
+                                                >
+                                                    {renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}
+                                                </th>
                                             );
                                         }
                                         /* Multi-column group: normal colSpan header */
@@ -470,8 +473,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 key={h}
                                                 className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
-                                                dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
-                                            />
+                                            >
+                                                {renderHeaderText(headerMapping[h] || h)}
+                                            </th>
                                         );
                                     })}
                                 </tr>

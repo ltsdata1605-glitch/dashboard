@@ -4,6 +4,7 @@ import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber } from '../../utils/dashboardHelpers';
 import { Switch } from './DashboardWidgets';
+import { renderHeaderText } from './SafeHeaderText';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
@@ -322,8 +323,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                     <label
                                         htmlFor={`col-toggle-ind-${h}`}
                                         className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                        dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
-                                    />
+                                    >
+                                        {headerMapping[h]?.replace(/<br\/>/g, ' ') || h}
+                                    </label>
                                     <Switch
                                         id={`col-toggle-ind-${h}`}
                                         checked={visibleColumns.has(h)}
@@ -542,7 +544,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             onClick={() => handleColumnSort(g.singleHeader)}
                                                             title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                         >
-                                                            <span dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }} />
+                                                            <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
                                                             {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
                                                         </th>
                                                     );
@@ -587,7 +589,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         onClick={() => handleColumnSort(h)}
                                                         title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                                     >
-                                                        <span dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }} />
+                                                        <span>{renderHeaderText(headerMapping[h] || h)}</span>
                                                         {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
                                                     </th>
                                                 );

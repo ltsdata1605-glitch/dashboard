@@ -1848,3 +1848,37 @@ gốc — `services/worker.ts` ĐÃ chạy trong Worker sẵn (luồng chính: P
 (`dataService.ts` ×3 cho config/legacy, `fileParser.ts` ×2 cho sticker-event) chạy ở main thread.
 Việc dời sang Worker là refactor có rủi ro riêng (cần dây postMessage), không phải sửa bảo mật cấp
 thiết — để lại cho đợt "Dọn code" (KE_HOACH_TONG_THE.md mục 4) khi có test đơn vị bao phủ đủ hơn.
+
+---
+
+# Đợt 2 (phần 1/3) — Đóng lỗ XSS lưu trữ ở 3 file Report BI (KE_HOACH_TONG_THE.md mục 2.3) — 2026-09-07
+
+**Rủi ro**: 7/15 chỗ dùng `dangerouslySetInnerHTML` trong repo render tên cột theo mẫu
+`mapping[header] || header` — khi tên cột (đọc từ dữ liệu Thi đua/Báo cáo Tổng hợp NGƯỜI DÙNG DÁN
+VÀO) không khớp bảng ánh xạ cố định trong code (luôn đúng với bất kỳ nội dung lạ nào), chuỗi THÔ
+được render thẳng làm HTML — XSS lưu trữ. 8/15 chỗ còn lại đã an toàn từ trước (6 chỗ ở
+`DrawTicketBlock.tsx` dùng DOMPurify, 1 chỗ ở `Scanner.tsx` là CSS tĩnh không có biến).
+
+**Đã sửa**: `features/bi-dashboard/components/dashboard/SafeHeaderText.tsx` (mới) — hàm
+`renderHeaderText()` tách chuỗi theo đúng dấu phân cách `"<br/>"` bằng `String.split` (không parse
+HTML), chèn phần tử `<br/>` THẬT giữa các đoạn; mọi ký tự khác luôn đi qua làm children React (tự
+động escape). Áp dụng cho `CompetitionListView.tsx` (1 chỗ), `SummaryTableView.tsx` (3 chỗ),
+`IndustryView.tsx` (3 chỗ) — thay hẳn `dangerouslySetInnerHTML` bằng children JSX thường.
+
+**Verify (đã tự chứng minh lỗ hổng CÓ THẬT, không chỉ suy đoán)**:
+- `SafeHeaderText.test.ts` (4 test đơn vị): xác nhận payload độc luôn ở dạng `string` trong
+  `props.children`, không có React element nào được "dựng" từ nội dung input.
+- `tests/e2e/xss-header-sanitization.spec.ts`: dán 1 payload thật
+  (`<img src=x onerror="window.__xssFired=...">`) làm tên cột qua UI thật (ClipboardEvent), rồi:
+  1. **Chạy trên code CŨ** (tạm `git stash` riêng file `CompetitionListView.tsx`) → test THẤT BẠI
+     với `window.__xssFired === 1` — **script độc THẬT SỰ đã chạy**, xác nhận lỗ hổng có thật và
+     khai thác được qua đúng luồng dán dữ liệu thông thường.
+  2. **Khôi phục bản đã vá** (`git stash pop`) → test PASS, `window.__xssFired === undefined`,
+     không có dialog, không có `<img src="x">` nào được tạo ra trong DOM.
+  Đây là bằng chứng "đỏ trước khi sửa — xanh sau khi sửa", không chỉ tin vào suy luận code.
+- `npx vitest run`: 80/80 pass. `eslint .`: 0 lỗi. `npm run build` OK. `npm run test:e2e`:
+  17/17 pass (1 skip theo thiết kế). `lint:ratchet`: không phát sinh vi phạm mới ở file của Đợt 2.
+- `npm run typecheck`: vẫn 3 lỗi có sẵn từ trước (ngoài phạm vi, xem Đợt 0/1).
+
+**Còn lại của Đợt 2** (mục 2.3 phần CSP + 2.4 gom cấu hình Firebase + 2.5 App Check) — làm tiếp
+theo các phần riêng, ghi log sau.
