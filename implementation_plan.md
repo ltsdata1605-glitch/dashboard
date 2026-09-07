@@ -1788,3 +1788,63 @@ sẵn từ công việc "đồng bộ icon/kích thước toolbar" đang dở c�
 `0be9889d`). `npm run check` vì vậy dừng ở bước typecheck — không phải do Đợt 0. 8 test E2E liên
 quan (`smoke`, `bi-competition` x4, `phan-tich-performance-modal` x2, `real-data` trên dữ liệu
 thật) chạy lại vẫn pass, xác nhận việc cài vitest không ảnh hưởng runtime app.
+
+---
+
+# Đợt 1 — Bảo mật P0 (KE_HOACH_TONG_THE.md) — 2026-09-07
+
+**Mục tiêu**: xử lý lỗ hổng nghiêm trọng nhất đã khảo sát — `xlsx@0.18.5` (Prototype Pollution +
+ReDoS, không có bản vá trên npm) và các lỗ hổng phụ thuộc khác.
+
+**Đã làm**
+1. **Thay `xlsx@0.18.5` → `xlsx@0.20.3`** (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`
+   trong `package.json` — SheetJS đã rời npm, bản chính thức chỉ còn phân phối qua CDN của họ).
+   0.20.3 là bản mới nhất hiện có (đã dò tuần tự 0.20.4→0.21.1, đều 404) và **vá cả 2 CVE**:
+   Prototype Pollution (CVE-2023-30533, vá từ 0.19.3) và ReDoS (CVE-2024-22363, vá từ 0.20.2).
+2. **`npm audit fix`** (không dùng `--force`): 26 lỗ hổng (9 high, 1 critical trước đó) → còn
+   **9 moderate, 0 high, 0 critical**. Nâng `dompurify` 3.4.11 → 3.4.15 trong phạm vi `^3.4.11` đã
+   khai báo — đây là gói DUY NHẤT trong nhóm còn lại thực sự chạy ở trình duyệt (dùng sanitize HTML
+   ở `features/sticker-event/stickerprinter/ticketSanitize.ts`).
+   **Cố ý KHÔNG chạy `--force`**: 9 lỗ hổng còn lại (`stream-json`, `uuid`, `@opentelemetry/core`,
+   `qs`, `body-parser`, `express`...) đều là phụ thuộc bắc cầu của `firebase-tools` (CLI deploy,
+   devDependency, không đóng gói vào bundle trình duyệt) — `--force` sẽ **hạ cấp `firebase-tools`
+   xuống 10.1.1** (bản rất cũ, phá vỡ lệnh deploy). Rủi ro thực tế thấp (chỉ chạy trên máy dev khi
+   gõ `firebase deploy`), đổi lại cái giá quá đắt — không đáng.
+3. **Xác minh phạm vi rủi ro thật trước khi hành động** (không suy đoán):
+   - `@grpc/grpc-js` (high) đến từ cả `firebase` (client SDK) lẫn `firebase-tools` — nhưng
+     `grep -rl "grpc" dist/assets/*.js` sau `npm run build` **rỗng**: không lọt vào bundle trình
+     duyệt (Vite tree-shake nhánh Node-only của `@firebase/firestore`).
+   - `fast-uri`/`hono`/`@hono/node-server` đến từ `@google/genai` — nhưng gói này **chỉ được
+     import ở `functions/src/gemini.ts`** (Cloud Function, project TS riêng, không qua Vite build).
+     Xác nhận bằng `grep -rln "@google/genai" . | grep -v functions/` → rỗng.
+4. **Xác minh `set_fs()` — phát hiện phụ, không phải lỗi ứng dụng**: sau khi nâng cấp, script Node
+   viết file test (`tests/e2e/helpers/salesFixture.ts`) báo lỗi "cannot save file". Nguyên nhân:
+   bản ESM (`.mjs`) của `xlsx` >= 0.19 **không tự dò `fs` của Node** như bản CJS cũ (đọc source
+   `node_modules/xlsx/xlsx.mjs` xác nhận `write_dl()` yêu cầu gọi `XLSX.set_fs(fs)` tường minh).
+   Đã rà toàn bộ 8 chỗ gọi `XLSX.writeFile` trong repo — **7/8 chạy ở trình duyệt** (Blob/download,
+   không cần `set_fs`), chỉ helper test Node cần sửa. Thêm 1 dòng `XLSX.set_fs(fs)` vào
+   `tests/e2e/helpers/salesFixture.ts`.
+5. **Tự sửa 1 lỗi hiểu sai của chính mình khi viết test Đợt 0** (không phải do Đợt 1 gây ra): test
+   `parseCompetitionDataBySupermarket` kỳ vọng `metric: 'SLLK'` nhưng code hiện tại GỘP SLLK vào
+   DTLK có chủ đích (comment "cùng kết quả, khác đơn vị đo") — tôi đọc sót dòng comment này lúc
+   viết test lần đầu. Đã sửa test khớp đúng hành vi thật, không sửa code.
+
+**Verify (tự chạy thật, không chỉ tin build/typecheck)**:
+- `npm run build` OK. `vendor-excel` tăng 420KB→500KB (bản xlsx mới lớn hơn — đánh đổi hợp lý,
+  việc tách bundle để lại cho Đợt 3 "hiệu năng bundle").
+- `npx vitest run`: **76/76 pass**, ổn định qua 3 lần chạy liên tiếp.
+- **E2E trên CẢ dữ liệu giả lẫn dữ liệu thật** — quan trọng nhất vì đây là kiểm chứng thật sự
+  rằng nâng cấp xlsx không làm hỏng luồng đọc/ghi Excel: `npm run test:e2e` toàn bộ 16/17 pass
+  (1 test `perf-audit` skip theo thiết kế, cần cờ `PERF=1`). 1 lần chạy đơn lẻ gặp 1 test flaky
+  (`vẫn có nút xuất ảnh...`) — chạy lại riêng và chạy lại toàn bộ đều pass, xác nhận không liên
+  quan tới thay đổi của Đợt 1.
+- `eslint .`: 0 lỗi (8 cảnh báo có sẵn, không liên quan).
+- `npm run typecheck`: vẫn còn đúng 3 file lỗi có sẵn từ trước Đợt 0 (`EditShiftModal.tsx`,
+  `PhanCaView.tsx`, `DashboardHeader.tsx`) — chưa ai xử lý, ngoài phạm vi Đợt 0/1.
+
+**Chưa làm trong Đợt 1 (đã cân nhắc, cố ý hoãn — không phải bỏ sót)**: "parse Excel trong Worker"
+(mục P0 trong KE_HOACH_TONG_THE.md) chỉ còn ý nghĩa phòng thủ-theo-chiều-sâu sau khi đã vá cả 2 CVE
+gốc — `services/worker.ts` ĐÃ chạy trong Worker sẵn (luồng chính: Phân Tích), 3 điểm còn lại
+(`dataService.ts` ×3 cho config/legacy, `fileParser.ts` ×2 cho sticker-event) chạy ở main thread.
+Việc dời sang Worker là refactor có rủi ro riêng (cần dây postMessage), không phải sửa bảo mật cấp
+thiết — để lại cho đợt "Dọn code" (KE_HOACH_TONG_THE.md mục 4) khi có test đơn vị bao phủ đủ hơn.

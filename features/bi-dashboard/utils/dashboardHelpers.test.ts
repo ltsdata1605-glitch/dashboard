@@ -18,8 +18,11 @@ describe('parseCompetitionDataBySupermarket', () => {
         const result = parseCompetitionDataBySupermarket(text);
         expect(Object.keys(result)).toEqual(['ĐML_STR_STR - 99 Hùng Vương']);
         expect(result['ĐML_STR_STR - 99 Hùng Vương'].headers).toEqual(['SLLK', 'Target', '% HT Target Tháng']);
+        // metric 'SLLK' được GỘP vào 'DTLK' có chủ đích (comment trong dashboardHelpers.ts:
+        // "SỐ LƯỢNG gộp vào DTLK — cùng kết quả, khác đơn vị đo") — chỉ 'QĐ'/'QD' mới tách riêng
+        // thành 'DTQĐ'. Cột hiển thị (headers) vẫn giữ nguyên "SLLK", chỉ nhãn PHÂN LOẠI nội bộ gộp.
         expect(result['ĐML_STR_STR - 99 Hùng Vương'].programs).toEqual([
-            { name: 'VAS', data: ['224', '39', '574'], metric: 'SLLK' },
+            { name: 'VAS', data: ['224', '39', '574'], metric: 'DTLK' },
         ]);
     });
 
