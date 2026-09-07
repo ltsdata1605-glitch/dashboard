@@ -1734,3 +1734,57 @@ nhập Google một lần. Không đụng profile Chrome cá nhân; không ai đ
 **Ghi nhận**: ô "tên tiêu chí" trong `SupermarketConfig.tsx` hiện là `<div onDoubleClick>` (title
 "Nhấp đúp để sửa tên hiển thị"), khác bản `<Button onClick>` đợt trước — file đã được sửa ngoài
 phiên làm việc này, test đã bám theo trạng thái hiện tại.
+
+---
+
+# Đợt 0 — Lưới an toàn cho tầng tính toán (KE_HOACH_TONG_THE.md) — 2026-09-07
+
+**Mục tiêu**: cài `vitest`, viết test đơn vị cho 4 hàm/khu vực tính toán cốt lõi trước khi bất kỳ
+đợt sửa nào sau đó (Đợt 1-8) được phép chạm vào tầng số liệu.
+
+**Đã làm**
+- Cài `vitest` + `@vitest/coverage-v8` (devDependencies). `vitest.config.ts` riêng (không dùng
+  chung `vite.config.ts` vì test đơn vị là TS thuần, không cần plugin react/tailwind), quét
+  `**/*.test.ts`, loại trừ `tests/e2e/` (Playwright) để 2 bộ test không giẫm lên nhau.
+- Thêm script `test:unit`/`test:unit:watch`/`test:unit:coverage`. **Đưa `test:unit` vào
+  `npm run check`** (giữa `lint:eslint` và `build`) — từ giờ không đổi nào chạm tầng tính toán mà
+  phá vỡ test đơn vị có thể lọt qua `npm run check`.
+- 4 file test, colocated cạnh source, **76 test, toàn bộ pass**:
+  - `utils/dataUtils.test.ts` (40 test): `getRowValue`, `parseNumber`, `roundUp`, `getParentGroup`/
+    `getSubgroup`, `getHinhThucThanhToan`, `getHeSoQuyDoi`, `calculateRowMetrics` (nguồn chân lý
+    DTQĐ theo CLAUDE.md mục 1), `isValidSalesRow`, `isUncollectedOrder`.
+  - `services/filterService.test.ts` (17 test): `isXuatMatch`, `isTrangThaiMatch`/`isNguoiTaoMatch`/
+    `isKhoMatch`/`isDepartmentMatch` (null/mảng/Set), `getCreatorDepartment`, `isDateMatch`.
+  - `features/bi-dashboard/utils/dashboardHelpers.test.ts` (9 test): `parseCompetitionDataBySupermarket`
+    — cả 2 định dạng (cũ: tên+header cùng dòng; mới: tên dòng riêng trước header), bỏ qua dòng
+    metadata, sắp xếp chương trình theo tên.
+  - `services/summaryService.test.ts` (10 test): `calculateWarehouseSummary` — DT Thực/DTQĐ/Hiệu
+    Quả QĐ, trả góp +30%, loại "Đã hủy"/"Đã trả"/"Không tính doanh thu", thu hộ không tính doanh
+    thu nhưng đếm `slThuHo`, `slTiepCan` dùng Set khách hàng, sắp xếp nhiều Kho theo DTQĐ giảm dần.
+
+**2 phát hiện THẬT trong lúc viết test — CHƯA sửa, ngoài phạm vi Đợt 0/1, cần user quyết định:**
+
+1. **Bug mất dữ liệu ở `parseCompetitionDataBySupermarket`** (dòng ~156-160
+   `features/bi-dashboard/utils/dashboardHelpers.ts`): nhánh "dòng đứng ngay TRƯỚC 1 dòng header
+   = tên chương trình mới" được kiểm tra TRƯỚC nhánh nhận diện siêu thị. Hệ quả: nếu dòng số liệu
+   của 1 siêu thị đứng ngay trước dòng header của chương trình kế tiếp (không có dòng đệm ở giữa),
+   dòng số liệu đó bị hiểu nhầm thành "tên chương trình" và **mất luôn, im lặng, không lỗi**. Test
+   `'BUG THẬT...'` trong `dashboardHelpers.test.ts` tái hiện chính xác điều kiện này. Ảnh hưởng
+   thực tế phụ thuộc định dạng dữ liệu BI thật khi dán — nếu định dạng dán từ baocao.dienmayxanh.com
+   không chèn dòng đệm (như "Tổng") giữa các khối chương trình, một số chương trình có thể bị thiếu
+   số liệu trong bảng Thi đua mà không ai nhận ra.
+2. **Bất đối xứng chuẩn hoá hoa/thường** giữa `isValidSalesRow` và `isUncollectedOrder`
+   (`utils/dataUtils.ts`): `isValidSalesRow` so khớp Hình thức xuất qua `cleanAndNormalize()`
+   (không nhạy hoa/thường). Nhánh fallback tĩnh của `isUncollectedOrder` (khi không có
+   `revenueEligibleHTX`) so khớp trực tiếp với hằng số gốc, KHÔNG chuẩn hoá — một biến thể
+   hoa/thường thật trong Excel (phổ biến) có thể khiến đơn "chưa thu" bị phân loại sai.
+
+**Verify**: `npx vitest run` 76/76 pass. `eslint .` 0 lỗi (8 cảnh báo có sẵn, không liên quan).
+`npm run build` OK. `npm run lint:ratchet` không phát sinh vi phạm mới ở file của Đợt 0.
+`npm run typecheck` **FAIL** — nhưng lỗi hoàn toàn nằm ở `features/phan-ca/EditShiftModal.tsx`,
+`features/phan-ca/PhanCaView.tsx`, `features/bi-dashboard/.../DashboardHeader.tsx` — 3 file
+**chưa từng bị Đợt 0 đụng tới** (xác nhận bằng `git diff --stat HEAD -- <3 file>` rỗng), lỗi có
+sẵn từ công việc "đồng bộ icon/kích thước toolbar" đang dở của user trước phiên này (commit
+`0be9889d`). `npm run check` vì vậy dừng ở bước typecheck — không phải do Đợt 0. 8 test E2E liên
+quan (`smoke`, `bi-competition` x4, `phan-tich-performance-modal` x2, `real-data` trên dữ liệu
+thật) chạy lại vẫn pass, xác nhận việc cài vitest không ảnh hưởng runtime app.
