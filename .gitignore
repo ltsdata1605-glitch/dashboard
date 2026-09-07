@@ -37,3 +37,15 @@ backup_dashboard.zip
 
 # Claude Code local settings (per-machine, không chia sẻ qua git)
 .claude/settings.local.json
+
+# Playwright (kết quả chạy test, không commit)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Profile Chrome riêng cho test E2E trên dữ liệu thật — chứa phiên đăng nhập, TUYỆT ĐỐI không commit
+/.e2e-chrome-profile/
+
+# Price scraper server
+price-scraper-server/node_modules/

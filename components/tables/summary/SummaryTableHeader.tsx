@@ -36,17 +36,16 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
     setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen, dateDisplay
 }) => {
     return (
-        <header className="px-3 sm:px-6 py-2 sm:py-5 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex flex-col gap-4 sm:gap-6">
-                <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <header className="px-2 py-1.5 lg:px-4 lg:py-2.5 border-b border-slate-100 dark:border-slate-800" style={{ borderImage: 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(14,165,233,0.1), transparent) 1' }}>
+            <div className="flex flex-col gap-2 sm:gap-3">
+                <div className="flex flex-row justify-between items-center gap-1.5 lg:gap-2">
+                    <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
                         <div className="min-w-0">
-                            {/* Mobile: fixed title + comparison subtitle */}
-                            <h1 className="sm:hidden text-sm font-bold tracking-tight text-slate-800 dark:text-white uppercase truncate">
-                                {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : 'CHI TIẾT NGÀNH HÀNG'}
-                            </h1>
+                            <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
+                                {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : displayTitle}
+                            </h2>
                             {isComparisonMode && (
-                                <p className="sm:hidden text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                <p className="text-[10px] lg:text-[11px] font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                     {({
                                         day_adjacent: 'Ngày (Liền kề)',
                                         day_same_period: 'Ngày (CK tháng trước)',
@@ -70,57 +69,51 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     })()}
                                 </p>
                             )}
-                            {/* Desktop: original dynamic title */}
-                            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
-                                {displayTitle}
-                            </h1>
                             {displayDescription && (
-                                <p className="hidden sm:block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+                                <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                     {displayDescription}
                                 </p>
                             )}
-                            {/* Dùng chung đúng processedData.reportSubTitle (services/filterService.ts) —
-                                cùng nguồn với dòng phụ đề "TỔNG QUAN DOANH THU" (Kho/Xuất), tránh 2 nơi tự
-                                viết lại logic khác nhau. Ghép thêm khoảng ngày riêng cho bảng này (bảng
-                                Tổng Quan Doanh Thu không cần hiện khoảng ngày, nhưng bảng này cần giữ). */}
-                            <p className="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                                {reportSubTitle} | {filterState.dateRange !== 'all'
+                            <div className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                {reportSubTitle ? `${reportSubTitle} | ` : ''}{filterState.dateRange !== 'all'
                                     ? `Từ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} đến ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
-                                    : 'Tất cả thời gian'}
-                            </p>
+                                    : 'TẤT CẢ THỜI GIAN'}
+                            </div>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-                        <div className="flex items-center hide-on-export">
+                    <div className="flex items-center gap-1 lg:gap-1.5 flex-wrap sm:flex-nowrap">
+                        <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export">
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('standard')}
-                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+                                className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'standard'
-                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                    : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="Tiêu chuẩn"
                             >
                                 <Icon name="table" size={4} className="lg:hidden" />
-                                <Icon name="table" size={5} className="hidden lg:block" />
+                                <Icon name="table" size={4.5} className="hidden lg:block" />
                             </Button>
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('comparison')}
-                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+                                className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'comparison'
-                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                    : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="So sánh"
                             >
                                 <Icon name="columns-2" size={4} className="lg:hidden" />
-                                <Icon name="columns-2" size={5} className="hidden lg:block" />
+                                <Icon name="columns-2" size={4.5} className="hidden lg:block" />
                             </Button>
                         </div>
                         
+                        <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1 hide-on-export"></div>
+
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
                                 <Button
@@ -128,24 +121,32 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     onClick={handleExport}
                                     disabled={isExporting}
                                     title="Xuất Ảnh"
-                                    className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                 >
-                                    {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                                    {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                                    {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
                                 </Button>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 lg:gap-1.5">
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <Icon name="settings-2" size={4} className="lg:hidden"/>
-                                            <Icon name="settings-2" size={5} className="hidden lg:block"/>
+                                            <Icon name="settings-2" size={4.5} className="hidden lg:block"/>
                                         </Button>
-                                        <Button variant="unstyled" size="none" onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                                            {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                                        <Button
+                                            variant="unstyled" size="none"
+                                            onClick={handleExport}
+                                            disabled={isExporting}
+                                            title="Xuất Ảnh"
+                                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                        >
+                                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                                            {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
                                         </Button>
                                     </div>
 

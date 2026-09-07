@@ -72,6 +72,12 @@ export interface DataTableProps<T = unknown> {
   className?: string;
   /** Max height with scroll */
   maxHeight?: string;
+  /** Cho phép phần tử con (như dropdown/popover) overflow tự do, không sinh thanh cuộn */
+  overflowVisible?: boolean;
+  /** Cố định layout bảng (table-fixed) để các cột luôn thẳng hàng tuyệt đối giữa các bảng khác nhau */
+  fixedLayout?: boolean;
+  /** Custom className cho thẻ table */
+  tableClassName?: string;
 }
 
 /* Group header color map */
@@ -111,6 +117,9 @@ export function DataTable<T>({
   columnDividers = false,
   className,
   maxHeight,
+  overflowVisible = false,
+  fixedLayout = false,
+  tableClassName,
 }: DataTableProps<T>) {
   // Build group headers
   const groups = React.useMemo(() => {
@@ -151,11 +160,15 @@ export function DataTable<T>({
 
   return (
     <div
-      className={cn('w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50', className)}
+      className={cn(
+        'w-full rounded-xl border border-slate-200 dark:border-slate-700/50',
+        overflowVisible ? 'overflow-visible' : 'overflow-hidden',
+        className
+      )}
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full border-collapse">
+      <div className={overflowVisible ? 'overflow-visible' : 'overflow-x-auto custom-scrollbar'}>
+        <table className={cn('w-full border-collapse', fixedLayout && 'table-fixed', tableClassName)}>
           <thead>
             {/* Group Headers */}
             {hasGroups && (

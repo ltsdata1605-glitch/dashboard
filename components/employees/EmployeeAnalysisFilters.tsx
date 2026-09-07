@@ -20,20 +20,20 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
     };
 
     return (
-        <div className="relative flex items-center gap-2 hide-on-export">
+        <div className="relative flex items-center hide-on-export">
             <Button
                 type="button"
                 variant="unstyled" size="none"
                 onClick={handleToggle}
-                className={`p-1.5 lg:p-2 rounded-lg transition-all ${
+                className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                     hideZeroRevenue
-                    ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 font-bold'
+                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title={hideZeroRevenue ? 'Đang ẩn nhân viên No Sale — Nhấn để hiện' : 'Đang hiện tất cả — Nhấn để ẩn No Sale'}
             >
                 <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4} className="lg:hidden" />
-                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={5} className="hidden lg:block" />
+                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4.5} className="hidden lg:block" />
             </Button>
         </div>
     );

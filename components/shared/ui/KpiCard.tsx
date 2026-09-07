@@ -121,23 +121,23 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
             {/* Layout cho desktop (lg trở lên) */}
-            <div className="hidden lg:flex flex-col justify-between flex-1 px-3 py-2">
-                {/* Hàng 1: Icon + Title bên trái, Giá trị (Value) bên phải */}
-                <div className="flex items-center justify-between gap-1.5">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                            <Icon name={icon} size={3} />
-                        </div>
-                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{title}</h3>
+            <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">
+                {/* Hàng 1: Icon + Title (chiếm trọn chiều ngang, không bị Value chèn ép) */}
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                        <Icon name={icon} size={3} />
                     </div>
-                    <div className="text-right shrink-0">
-                        {children}
-                    </div>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate flex-1 min-w-0" title={title}>{title}</h3>
                 </div>
 
-                {/* Hàng 2: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
+                {/* Hàng 2: Giá trị chính (Value) */}
+                <div className="mt-1 mb-0.5">
+                    {children}
+                </div>
+
+                {/* Hàng 3: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
                 {(clampedProgress !== undefined || trendLabel || trendValue) && (
-                    <div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-0.5">
+                    <div className="mt-0.5 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
                         {clampedProgress !== undefined && (
                             <div className="flex items-center gap-1.5">
                                 <div className={`flex-1 h-1.5 rounded-full ${style.progressBg} overflow-hidden`}>
@@ -152,8 +152,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                             </div>
                         )}
                         {(trendLabel || trendValue) && (
-                            <div className="flex items-center justify-between gap-1 text-[9px] leading-none">
-                                <span className="text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
+                            <div className="flex items-center justify-between gap-1 text-[9.5px] leading-none">
+                                <span className="text-slate-400 dark:text-slate-500 font-semibold tracking-wide truncate">{trendLabel}</span>
                                 <div className="font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
                                     {trendValue}
                                 </div>

@@ -18,7 +18,8 @@ import {
     HelpCircle,
     Shield,
     Wrench,
-    ChevronLeft
+    ChevronLeft,
+    ArrowUpDown
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -29,6 +30,7 @@ const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
+const PriceComparisonView = lazy(() => import('./components/views/PriceComparisonView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
@@ -74,6 +76,7 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
+        { id: 'tools-price-compare', className: 'w-full h-full', component: <PriceComparisonView /> },
     ], []);
 
     return (
@@ -102,7 +105,7 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Fallback for any tab not handled above */}
-            {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax'].includes(activeTab) && (
+            {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax', 'tools-price-compare'].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
@@ -121,6 +124,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
+    'tools-price-compare': { main: 'So sánh', highlight: 'Giá' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
 
     'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },
@@ -179,6 +183,7 @@ function AppContent() {
             case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
             case 'tools-tax': return <Calculator size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-price-compare': return <ArrowUpDown size={18} color="white" strokeWidth={2.5} />;
             case 'settings': return <Settings size={18} color="white" strokeWidth={2.5} />;
             case 'help': return <HelpCircle size={18} color="white" strokeWidth={2.5} />;
             case 'pending-approval': return <Shield size={18} color="white" strokeWidth={2.5} />;

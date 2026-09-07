@@ -199,20 +199,20 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     </div>
                 )}
             >
-                <div className="flex items-center gap-2 hide-on-export">
+                <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
                     <EmployeeAnalysisFilters 
                         hideZeroRevenue={hideZeroRevenue}
                         setHideZeroRevenue={setHideZeroRevenue}
                     />
                     <div ref={settingsRef} className="relative">
                         <Button
-                            variant="ghost" size="icon"
+                            variant="unstyled" size="none"
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="h-7 w-7 lg:h-9 lg:w-9 text-slate-500 dark:text-slate-400"
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
                             <Icon name="settings-2" size={4} className="lg:hidden"/>
-                            <Icon name="settings-2" size={5} className="hidden lg:block"/>
+                            <Icon name="settings-2" size={4.5} className="hidden lg:block"/>
                         </Button>
                         {isSettingsOpen && (
                             <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">

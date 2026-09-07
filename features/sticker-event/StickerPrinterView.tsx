@@ -123,7 +123,7 @@ export default function StickerPrinterView() {
                     setStickerType('draw');
                     setBgImage('/frame/bg_phieu.png');
                     updateSubQueryParam('draw');
-                    setActiveField('drawContentTopLeft');
+                    setActiveField('drawContentBottomLeft');
                 }}
                 onSelectEvent={() => {
                     setStickerMode('event');

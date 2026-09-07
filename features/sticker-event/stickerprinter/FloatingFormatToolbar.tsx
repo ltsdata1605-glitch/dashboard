@@ -10,12 +10,99 @@ interface FloatingFormatToolbarProps {
 export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () => {
     const [toolbarPos, setToolbarPos] = useState<{ top: number; left: number } | null>(null);
     const [activeMenu, setActiveMenu] = useState<'font' | 'size' | null>(null);
+    const [fontSizeInput, setFontSizeInput] = useState<string>('3.5');
+    const [lineHeightInput, setLineHeightInput] = useState<string>('1.3');
+
     const savedRangeRef = useRef<Range | null>(null);
+    // Ref mirror của activeMenu — dùng trong selectionchange handler để biết dropdown có đang mở hay không.
+    const activeMenuRef = useRef<'font' | 'size' | null>(null);
+    // Cờ báo người dùng đang focus gõ trong ô input trên toolbar để tránh selectionchange đóng toolbar
+    const isTypingRef = useRef<boolean>(false);
+
+    // Sync ref khi state thay đổi
+    useEffect(() => { activeMenuRef.current = activeMenu; }, [activeMenu]);
+
+    const getEditableContainer = (node: Node | null): HTMLElement | null => {
+        let current: Node | null = node;
+        while (current) {
+            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
+                return current as HTMLElement;
+            }
+            current = current.parentNode;
+        }
+        return null;
+    };
+
+    const detectFieldName = (editableEl: HTMLElement | null): string | undefined => {
+        if (!editableEl) return undefined;
+        const cl = editableEl.classList;
+        if (cl.contains('input-title-single')) return 'drawTitle';
+        if (cl.contains('input-content-top-left')) return 'drawContentTopLeft';
+        if (cl.contains('input-content-top-right')) return 'drawContentTopRight';
+        if (cl.contains('input-code-left')) return 'drawCode';
+        if (cl.contains('input-content-bottom-left')) return 'drawContentBottomLeft';
+        if (cl.contains('input-content-bottom-right')) return 'drawContentBottomRight';
+        if (cl.contains('input-footer-left')) return 'drawFooter';
+        return undefined;
+    };
+
+    const getSelectedFontSize = (explicitRange?: Range | null): number => {
+        const range = explicitRange || savedRangeRef.current || (window.getSelection()?.rangeCount ? window.getSelection()?.getRangeAt(0) : null);
+        if (!range) return 3.5;
+        let parent: HTMLElement | null = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+            ? range.commonAncestorContainer.parentElement
+            : (range.commonAncestorContainer as HTMLElement);
+        
+        // 1. Tìm span gần nhất có inline style font-size
+        const span = parent?.closest('span[style*="font-size"]');
+        if (span) {
+            const fs = (span as HTMLElement).style.fontSize;
+            const match = fs.match(/([\d.]+)/);
+            if (match) return parseFloat(match[1]);
+        }
+
+        // 2. Tìm container contenteditable để đọc font-size của ô
+        const el = getEditableContainer(parent);
+        if (el) {
+            const fs = el.style.fontSize;
+            const match = fs?.match(/([\d.]+)/);
+            if (match) return parseFloat(match[1]);
+            
+            if (el.className.includes('bottom')) return 2.2;
+            if (el.className.includes('title')) return 2.5;
+            if (el.className.includes('code')) return 3.8;
+            return 3.5;
+        }
+        return 3.5;
+    };
+
+    const getSelectedLineHeight = (explicitRange?: Range | null): number => {
+        const range = explicitRange || savedRangeRef.current || (window.getSelection()?.rangeCount ? window.getSelection()?.getRangeAt(0) : null);
+        if (!range) return 1.3;
+        let parent: HTMLElement | null = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+            ? range.commonAncestorContainer.parentElement
+            : (range.commonAncestorContainer as HTMLElement);
+        const span = parent?.closest('span[style*="line-height"]');
+        if (span) {
+            const lh = (span as HTMLElement).style.lineHeight;
+            const match = lh.match(/([\d.]+)/);
+            if (match) return parseFloat(match[1]);
+        }
+        if (parent) {
+            const computed = window.getComputedStyle(parent);
+            const fs = parseFloat(computed.fontSize);
+            const lh = parseFloat(computed.lineHeight);
+            if (!isNaN(fs) && !isNaN(lh) && fs > 0) return parseFloat((lh / fs).toFixed(2));
+        }
+        return 1.3;
+    };
 
     useEffect(() => {
         const handleSelectionChange = () => {
+            if (isTypingRef.current) return;
             const selection = window.getSelection();
             if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+                if (activeMenuRef.current) return;
                 setToolbarPos(null);
                 setActiveMenu(null);
                 return;
@@ -23,21 +110,12 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
             const range = selection.getRangeAt(0);
             
-            // Kiểm tra xem selection có nằm trong phần tử có contenteditable="true" không,
-            // đồng thời giữ lại chính phần tử đó để dùng làm mốc kẹp toạ độ bên dưới.
             let parent = range.commonAncestorContainer;
             if (parent.nodeType === 3) parent = parent.parentNode || parent;
-            let current: Node | null = parent;
-            let editableEl: HTMLElement | null = null;
-            while (current) {
-                if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
-                    editableEl = current as HTMLElement;
-                    break;
-                }
-                current = current.parentNode;
-            }
+            const editableEl = getEditableContainer(parent);
 
             if (!editableEl) {
+                if (activeMenuRef.current) return;
                 setToolbarPos(null);
                 setActiveMenu(null);
                 return;
@@ -46,20 +124,15 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             // Cache range
             savedRangeRef.current = range.cloneRange();
 
+            // Cập nhật giá trị hiển thị trên toolbar
+            const fs = getSelectedFontSize(range);
+            setFontSizeInput(fs.toFixed(1));
+            const lh = getSelectedLineHeight(range);
+            setLineHeightInput(lh.toFixed(1));
+
             const rects = range.getClientRects();
             if (rects.length > 0) {
                 const rect = rects[0];
-                // Ô nội dung ticket có overflow: hidden + kích thước cố định (theo % chiều
-                // cao ticket) để khớp khổ in. Khi cỡ chữ vượt sức chứa của ô, phần chữ tràn
-                // bị CẮT khỏi màn hình, nhưng Range.getClientRects() vẫn trả toạ độ "lý
-                // thuyết" bỏ qua phần bị cắt đó — khiến toolbar tính lệch xa khỏi nơi thực
-                // sự nhìn thấy. Kẹp toạ độ mốc trong phạm vi khung ô đang sửa (editableEl,
-                // vốn luôn ổn định vì có kích thước cố định) để toolbar luôn bám sát ô đang
-                // thao tác, không "bay" đến vị trí không liên quan.
-                // Toolbar dùng position: fixed (toạ độ viewport) — getClientRects() đã trả
-                // toạ độ viewport sẵn, KHÔNG được cộng thêm window.scrollX/scrollY (đó là
-                // công thức cho position: absolute), nếu không toolbar sẽ lệch đúng bằng
-                // độ cuộn trang hiện tại so với vùng chọn thật.
                 const containerRect = editableEl.getBoundingClientRect();
                 const anchorTop = Math.min(Math.max(rect.top, containerRect.top), containerRect.bottom);
                 const anchorLeft = Math.min(Math.max(rect.left + rect.width / 2, containerRect.left), containerRect.right);
@@ -68,6 +141,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     left: anchorLeft,
                 });
             } else {
+                if (activeMenuRef.current) return;
                 setToolbarPos(null);
                 setActiveMenu(null);
             }
@@ -79,7 +153,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         };
     }, []);
 
-    const applyStyleToSelection = (styleName: 'fontSize' | 'fontFamily', styleValue: string) => {
+    const applyStyleToSelection = (styleName: 'fontSize' | 'fontFamily', styleValue: string, refocus: boolean = true) => {
         let range = savedRangeRef.current;
         const selection = window.getSelection();
         
@@ -91,30 +165,27 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
         let parent = range.commonAncestorContainer;
         if (parent.nodeType === 3) parent = parent.parentNode || parent;
-        let current: Node | null = parent;
-        let editableContainer: HTMLElement | null = null;
-        while (current) {
-            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
-                editableContainer = current as HTMLElement;
-                break;
-            }
-            current = current.parentNode;
-        }
+        const editableContainer = getEditableContainer(parent);
 
         if (!editableContainer) return;
 
-        // Focus lại container soạn thảo
-        editableContainer.focus();
+        // Chỉ focus lại container soạn thảo nếu không phải đang gõ trong ô input trên toolbar
+        if (refocus) {
+            editableContainer.focus();
+        }
 
         let cleanValue = styleValue;
         if (styleName === 'fontFamily') {
             cleanValue = styleValue.replace(/['"]/g, '');
         }
 
+        const styleProp = styleName === 'fontFamily' ? 'font-family' : 'font-size';
+        const selectedText = range.toString();
+
         if (range.collapsed) {
             try {
                 const currentHTML = editableContainer.innerHTML;
-                const propName = styleName === 'fontFamily' ? 'font-family' : styleName;
+                const propName = styleName === 'fontFamily' ? 'font-family' : 'font-size';
                 editableContainer.innerHTML = `<span style="${propName}: ${styleValue}">${currentHTML}</span>`;
                 
                 const event = new Event('input', { bubbles: true });
@@ -122,7 +193,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 
                 const newRange = document.createRange();
                 newRange.selectNodeContents(editableContainer);
-                if (selection) {
+                if (selection && refocus) {
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                 }
@@ -133,27 +204,29 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             }
         }
 
-        // Nếu vùng chọn hiện tại nằm gọn trong 1 <span> đã có sẵn thuộc tính này (trường hợp
-        // bấm +/- liên tiếp để chỉnh cỡ chữ đã set trước đó) — cập nhật TRỰC TIẾP span đó
-        // và gỡ (unwrap) mọi span cha lồng bên ngoài cùng thuộc tính + cùng đúng nội dung,
-        // thay vì luôn bọc thêm 1 lớp span mới. Nếu không, mỗi lần bấm sẽ lồng thêm 1 <span>
-        // quanh span cũ — DOM phình to dần theo số lần bấm, và line-height của dòng chữ bị
-        // tính theo font-size LỚN NHẤT trong chuỗi lồng đó (không phải giá trị mới nhất),
-        // gây khoảng trống bất thường giữa các dòng dù chữ hiển thị đã nhỏ lại.
-        const styleProp = styleName === 'fontFamily' ? 'font-family' : 'font-size';
-        const selectedText = range.toString();
         let startEl: HTMLElement | null = range.commonAncestorContainer.nodeType === 3
             ? range.commonAncestorContainer.parentElement
             : range.commonAncestorContainer as HTMLElement;
         const innerMatch = startEl?.closest(`span[style*="${styleProp}"]`) as HTMLElement | null;
 
-        if (innerMatch && editableContainer.contains(innerMatch) && innerMatch.textContent === selectedText) {
+        // Nếu span hiện tại bao quanh toàn bộ vùng chọn, chỉ cần cập nhật style của nó
+        // và dọn dẹp các span con lồng bên trong
+        if (innerMatch && editableContainer.contains(innerMatch) && (
+            innerMatch.textContent?.trim() === selectedText.trim() || 
+            innerMatch === range.commonAncestorContainer
+        )) {
             innerMatch.style[styleName] = cleanValue;
 
+            // Xoá styleProp khỏi tất cả span con lồng bên trong để tránh conflict CSS
+            innerMatch.querySelectorAll(`span[style*="${styleProp}"]`).forEach(child => {
+                (child as HTMLElement).style.removeProperty(styleProp);
+            });
+
+            // Gỡ các span cha cùng styleProp thừa nếu có
             let ancestor = innerMatch.parentElement;
             while (
                 ancestor && ancestor !== editableContainer && ancestor.tagName === 'SPAN' &&
-                ancestor.style.getPropertyValue(styleProp) && ancestor.textContent === selectedText
+                ancestor.style.getPropertyValue(styleProp) && ancestor.textContent?.trim() === selectedText.trim()
             ) {
                 const toRemove = ancestor;
                 ancestor = ancestor.parentElement;
@@ -166,7 +239,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
             const flatRange = document.createRange();
             flatRange.selectNodeContents(innerMatch);
-            if (selection) {
+            if (selection && refocus) {
                 selection.removeAllRanges();
                 selection.addRange(flatRange);
             }
@@ -177,7 +250,8 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             return;
         }
 
-        if (selection) {
+        // Trường hợp wrap vùng chọn vào span mới:
+        if (selection && refocus) {
             selection.removeAllRanges();
             selection.addRange(range);
         }
@@ -186,12 +260,26 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         span.style[styleName] = cleanValue;
 
         try {
-            span.appendChild(range.extractContents());
+            const fragment = range.extractContents();
+            // CỰC KỲ QUAN TRỌNG: Dọn sạch mọi span lồng có cùng styleProp bên trong fragment!
+            // Tránh việc span con (vd font-size: 0.5cqw) ghi đè lên span cha mới (font-size: 0.6cqw)
+            fragment.querySelectorAll(`span[style*="${styleProp}"]`).forEach(child => {
+                (child as HTMLElement).style.removeProperty(styleProp);
+            });
+
+            span.appendChild(fragment);
             range.insertNode(span);
             
+            // Dọn dẹp bất kỳ span rỗng nào trong container
+            editableContainer.querySelectorAll('span').forEach(s => {
+                if ((!s.getAttribute('style') || s.getAttribute('style')?.trim() === '') && s.childNodes.length === 0) {
+                    s.remove();
+                }
+            });
+
             const newRange = document.createRange();
             newRange.selectNodeContents(span);
-            if (selection) {
+            if (selection && refocus) {
                 selection.removeAllRanges();
                 selection.addRange(newRange);
             }
@@ -224,43 +312,26 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         const newRange = newSelection.getRangeAt(0);
         let parent = newRange.commonAncestorContainer;
         if (parent.nodeType === 3) parent = parent.parentNode || parent;
-        let current: Node | null = parent;
-        while (current) {
-            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
-                const event = new Event('input', { bubbles: true });
-                (current as HTMLElement).dispatchEvent(event);
-                break;
-            }
-            current = current.parentNode;
+        const editableContainer = getEditableContainer(parent);
+        if (editableContainer) {
+            const event = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(event);
         }
-    };
-
-    const getSelectedFontSize = (): number => {
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return 3.5;
-        const range = selection.getRangeAt(0);
-        let parent: HTMLElement | null = range.commonAncestorContainer as HTMLElement;
-        if (parent.nodeType === Node.TEXT_NODE) {
-            parent = parent.parentElement;
-        }
-        
-        const span = parent?.closest('span[style*="font-size"]');
-        if (span) {
-            const fs = (span as HTMLElement).style.fontSize;
-            const match = fs.match(/([\d.]+)/);
-            if (match) return parseFloat(match[1]);
-        }
-        return 3.5;
     };
 
     const adjustFontSize = (amount: number) => {
-        const current = getSelectedFontSize();
+        const parsed = parseFloat(fontSizeInput);
+        const current = (!isNaN(parsed) && parsed > 0) ? parsed : getSelectedFontSize();
         const newVal = Math.max(0.5, Math.min(8, parseFloat((current + amount).toFixed(1))));
-        applyStyleToSelection('fontSize', `${newVal}cqw`);
+        
+        setFontSizeInput(newVal.toFixed(1));
+        applyStyleToSelection('fontSize', `${newVal}cqw`, true);
 
-        // Thông báo cho React state (drawContentTopLeftSize v.v.) cập nhật
-        // để các ticket #2-#4 (dùng style từ state) cũng thay đổi size.
-        document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: newVal } }));
+        // Phát hiện field đang sửa để event mang đúng field
+        const parent = savedRangeRef.current?.commonAncestorContainer;
+        const fieldName = detectFieldName(getEditableContainer(parent?.nodeType === 3 ? parent.parentNode : (parent || null)));
+
+        document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: newVal, field: fieldName } }));
         
         if (savedRangeRef.current) {
             const selection = window.getSelection();
@@ -271,15 +342,129 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         }
     };
 
-    const handleFontSizeInputChange = (valStr: string) => {
-        const val = parseFloat(valStr);
-        if (!isNaN(val) && val > 0) {
-            // Giới hạn giống hệt adjustFontSize (nút +/-) để gõ tay không thể tạo ra
-            // cỡ chữ vượt tầm kiểm soát (vd. gõ nhầm "30.6" thay vì "3.6").
-            const clampedVal = Math.max(0.5, Math.min(8, val));
-            applyStyleToSelection('fontSize', `${clampedVal}cqw`);
-            document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: clampedVal } }));
+    // --- Line Height ---
+    const applyLineHeightToSelection = (value: string, refocus: boolean = true) => {
+        let range = savedRangeRef.current;
+        const selection = window.getSelection();
+        if (!range && selection && selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
         }
+        if (!range) return;
+
+        let parent = range.commonAncestorContainer;
+        if (parent.nodeType === 3) parent = parent.parentNode || parent;
+        const editableContainer = getEditableContainer(parent);
+        if (!editableContainer) return;
+        if (refocus) {
+            editableContainer.focus();
+        }
+
+        if (range.collapsed) {
+            editableContainer.style.lineHeight = value;
+            const event = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(event);
+            return;
+        }
+
+        const selectedText = range.toString();
+        let startEl: HTMLElement | null = range.commonAncestorContainer.nodeType === 3
+            ? range.commonAncestorContainer.parentElement
+            : range.commonAncestorContainer as HTMLElement;
+        const innerMatch = startEl?.closest('span[style*="line-height"]') as HTMLElement | null;
+
+        if (innerMatch && editableContainer.contains(innerMatch) && (
+            innerMatch.textContent?.trim() === selectedText.trim() ||
+            innerMatch === range.commonAncestorContainer
+        )) {
+            innerMatch.style.lineHeight = value;
+            innerMatch.querySelectorAll('span[style*="line-height"]').forEach(child => {
+                (child as HTMLElement).style.removeProperty('line-height');
+            });
+            const flatEvent = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(flatEvent);
+            return;
+        }
+
+        if (selection && refocus) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        const span = document.createElement('span');
+        span.style.lineHeight = value;
+        try {
+            const fragment = range.extractContents();
+            fragment.querySelectorAll('span[style*="line-height"]').forEach(child => {
+                (child as HTMLElement).style.removeProperty('line-height');
+            });
+            span.appendChild(fragment);
+            range.insertNode(span);
+            const newRange = document.createRange();
+            newRange.selectNodeContents(span);
+            if (selection && refocus) {
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+            savedRangeRef.current = newRange;
+            const event = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(event);
+        } catch (e) {
+            console.error('Error applying line-height:', e);
+        }
+    };
+
+    const adjustLineHeight = (amount: number) => {
+        const parsed = parseFloat(lineHeightInput);
+        const current = (!isNaN(parsed) && parsed > 0) ? parsed : getSelectedLineHeight();
+        const newVal = Math.max(0.6, Math.min(3.0, parseFloat((current + amount).toFixed(2))));
+        
+        setLineHeightInput(newVal.toFixed(1));
+        applyLineHeightToSelection(String(newVal), true);
+
+        if (savedRangeRef.current) {
+            const selection = window.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            }
+        }
+    };
+
+    const handleFontSizeInputChange = (valStr: string) => {
+        setFontSizeInput(valStr);
+        const val = parseFloat(valStr);
+        if (!isNaN(val) && val >= 0.5 && val <= 8) {
+            applyStyleToSelection('fontSize', `${val}cqw`, false);
+            const parent = savedRangeRef.current?.commonAncestorContainer;
+            const fieldName = detectFieldName(getEditableContainer(parent?.nodeType === 3 ? parent.parentNode : (parent || null)));
+            document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: val, field: fieldName } }));
+        }
+    };
+
+    const handleFontSizeBlur = () => {
+        isTypingRef.current = false;
+        const val = parseFloat(fontSizeInput);
+        const clamped = isNaN(val) ? 3.5 : Math.max(0.5, Math.min(8, val));
+        setFontSizeInput(clamped.toFixed(1));
+        applyStyleToSelection('fontSize', `${clamped}cqw`, false);
+        const parent = savedRangeRef.current?.commonAncestorContainer;
+        const fieldName = detectFieldName(getEditableContainer(parent?.nodeType === 3 ? parent.parentNode : (parent || null)));
+        document.dispatchEvent(new CustomEvent('draw-font-size-change', { detail: { size: clamped, field: fieldName } }));
+    };
+
+    const handleLineHeightInputChange = (valStr: string) => {
+        setLineHeightInput(valStr);
+        const val = parseFloat(valStr);
+        if (!isNaN(val) && val >= 0.6 && val <= 3.0) {
+            applyLineHeightToSelection(String(val), false);
+        }
+    };
+
+    const handleLineHeightBlur = () => {
+        isTypingRef.current = false;
+        const val = parseFloat(lineHeightInput);
+        const clamped = isNaN(val) ? 1.3 : Math.max(0.6, Math.min(3.0, val));
+        setLineHeightInput(clamped.toFixed(1));
+        applyLineHeightToSelection(String(clamped), false);
     };
 
     const showDropdownBelow = toolbarPos ? (toolbarPos.top - window.scrollY < 180) : false;
@@ -354,7 +539,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 <Button
                     variant="ghost"
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => adjustFontSize(-0.2)}
+                    onClick={() => adjustFontSize(-0.1)}
                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
                     title="Giảm size chữ"
                 >
@@ -364,17 +549,63 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     type="text"
                     onMouseDown={(e) => e.stopPropagation()} 
                     onClick={(e) => e.stopPropagation()}
-                    value={getSelectedFontSize().toFixed(1)}
+                    onFocus={() => { isTypingRef.current = true; }}
+                    value={fontSizeInput}
                     onChange={(e) => handleFontSizeInputChange(e.target.value)}
+                    onBlur={handleFontSizeBlur}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            (e.target as HTMLInputElement).blur();
+                        }
+                    }}
                     className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
-                    title="Kích thước cqw"
+                    title="Kích thước cqw (gõ số hoặc dùng +/-)"
                 />
                 <Button
                     variant="ghost"
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => adjustFontSize(0.2)}
+                    onClick={() => adjustFontSize(0.1)}
                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
                     title="Tăng size chữ"
+                >
+                    +
+                </Button>
+            </div>
+
+            {/* Line Height controls: ↕ - [value] + */}
+            <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
+                <span className="text-[9px] text-slate-400 font-bold select-none" title="Khoảng cách dòng">↕</span>
+                <Button
+                    variant="ghost"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => adjustLineHeight(-0.05)}
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    title="Giảm khoảng cách dòng"
+                >
+                    -
+                </Button>
+                <input
+                    type="text"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={() => { isTypingRef.current = true; }}
+                    value={lineHeightInput}
+                    onChange={(e) => handleLineHeightInputChange(e.target.value)}
+                    onBlur={handleLineHeightBlur}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            (e.target as HTMLInputElement).blur();
+                        }
+                    }}
+                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                    title="Khoảng cách dòng (gõ số hoặc dùng +/-)"
+                />
+                <Button
+                    variant="ghost"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => adjustLineHeight(0.05)}
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    title="Tăng khoảng cách dòng"
                 >
                     +
                 </Button>

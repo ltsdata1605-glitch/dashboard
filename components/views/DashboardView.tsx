@@ -427,10 +427,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     variant="unstyled" size="none"
                                                     onClick={() => logic.hasRealtimeData ? logic.handleClearRealtimeData() : logic.handleClearData()}
                                                     title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
-                                                    className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                                    className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[10px] uppercase tracking-widest transition-colors"
                                                 >
-                                                    <Icon name="trash-2" size={4} className="text-rose-500 animate-pulse lg:hidden" />
-                                                    <Icon name="trash-2" size={5} className="text-rose-500 animate-pulse hidden lg:block" />
+                                                    <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
                                                     <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA YCX LŨY KẾ"}</span>
                                                 </Button>
                                             )}
@@ -538,18 +537,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         </span>
                                                     </>}
                                                 >
-                                                    <div className="flex items-center gap-0.5 lg:gap-1 hide-on-export">
-                                                        <Button variant="ghost" size="icon" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
+                                                    <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
+                                                        <Button variant="unstyled" size="none" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
-                                                            <Icon name="settings-2" size={5} className="hidden lg:block" />
+                                                            <Icon name="settings-2" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
+                                                        <Button variant="unstyled" size="none" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="download" size={4} className="lg:hidden" />
-                                                            <Icon name="download" size={5} className="hidden lg:block" />
+                                                            <Icon name="download" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="h-8 w-8 lg:h-9 lg:w-9 text-slate-400 dark:text-slate-500">
+                                                        <Button variant="unstyled" size="none" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
-                                                            <Icon name="camera" size={5} className="hidden lg:block" />
+                                                            <Icon name="camera" size={4.5} className="hidden lg:block" />
                                                         </Button>
                                                     </div>
                                                 </SectionHeader>

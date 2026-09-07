@@ -302,33 +302,33 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className="min-w-0">
-                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Phân Tích Khai Thác</h3>
-                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Phân Tích Khai Thác</h3>
+                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
-                    <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Chi tiết">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
                                 <Icon name="list" size={4} className="lg:hidden" />
-                                <Icon name="list" size={5} className="hidden lg:block" />
+                                <Icon name="list" size={4.5} className="hidden lg:block" />
                                 <span className="hidden sm:inline">Chi tiết</span>
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Hiệu quả">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
                                 <Icon name="percent" size={4} className="lg:hidden" />
-                                <Icon name="percent" size={5} className="hidden lg:block" />
+                                <Icon name="percent" size={4.5} className="hidden lg:block" />
                                 <span className="hidden sm:inline">Hiệu quả</span>
                             </Button>
                         </div>
-                        <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1 shrink-0"></div>
-                         <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                        <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1 shrink-0"></div>
+                        <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
                             <Icon name="images" size={4} className="lg:hidden" />
-                            <Icon name="images" size={5} className="hidden lg:block" />
+                            <Icon name="images" size={4.5} className="hidden lg:block" />
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
                                 {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
+                                {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                             </Button>
                         )}
                     </div>

@@ -82,33 +82,53 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
             <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
-                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Top Nhân Viên</h3>
-                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
+                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Top Nhân Viên</h3>
+                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
-                        <div className="inline-flex gap-0.5 sm:gap-1">
-                            <Button onClick={() => setIsExpanded(false)} variant="ghost" size="icon" className={`transition-all w-8 h-8 lg:w-10 lg:h-10 ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
-                                <><Icon name="percent" size={4} className="lg:hidden" /><Icon name="percent" size={5} className="hidden lg:block" /></>
-                            </Button>
-                            <Button onClick={() => setIsExpanded(true)} variant="ghost" size="icon" className={`transition-all w-8 h-8 lg:w-10 lg:h-10 ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
-                                <><Icon name="layout-list" size={4} className="lg:hidden" /><Icon name="layout-list" size={5} className="hidden lg:block" /></>
-                            </Button>
-                        </div>
-                        <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                        <Button 
-                            onClick={handleBatchExportClick}
-                            variant="ghost" size="icon"
-                            className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 lg:w-10 lg:h-10"
-                            title="Xuất hàng loạt báo cáo chi tiết"
+                <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export shrink-0">
+                    <div className="inline-flex gap-0.5 sm:gap-1">
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => setIsExpanded(false)}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            title="Top/Bot 20%"
                         >
-                            <><Icon name="images" size={4} className="lg:hidden" /><Icon name="images" size={5} className="hidden lg:block" /></>
+                            <Icon name="percent" size={4} className="lg:hidden" />
+                            <Icon name="percent" size={4.5} className="hidden lg:block" />
                         </Button>
-                        {onExport && (
-                            <Button onClick={onExport} disabled={isExporting} isLoading={isExporting} variant="ghost" size="icon" title="Xuất Ảnh" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 lg:w-10 lg:h-10">
-                                {!isExporting && <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
-                            </Button>
-                        )}
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => setIsExpanded(true)}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            title="Tất cả"
+                        >
+                            <Icon name="layout-list" size={4} className="lg:hidden" />
+                            <Icon name="layout-list" size={4.5} className="hidden lg:block" />
+                        </Button>
+                    </div>
+                    <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
+                    <Button 
+                        variant="unstyled" size="none"
+                        onClick={handleBatchExportClick}
+                        className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Xuất hàng loạt báo cáo chi tiết"
+                    >
+                        <Icon name="images" size={4} className="lg:hidden" />
+                        <Icon name="images" size={4.5} className="hidden lg:block" />
+                    </Button>
+                    {onExport && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onExport}
+                            disabled={isExporting}
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                            title="Xuất Ảnh"
+                        >
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                        </Button>
+                    )}
                 </div>
             </div>
             <div className="space-y-2 sm:space-y-4">

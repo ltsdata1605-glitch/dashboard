@@ -9,7 +9,11 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: str
       role="switch"
       aria-checked={checked}
       id={id}
-      onClick={onChange}
+      // Chặn nổi bọt: ở Bộ lọc bảng Thi đua, Switch nằm TRONG một <div onClick> bật/tắt cả dòng —
+      // để sự kiện nổi lên thì 1 cú bấm chạy onChange rồi chạy tiếp handler của dòng, đảo trạng
+      // thái 2 lần và trông như nút không phản ứng. Các nơi khác đặt nhãn là phần tử anh em nên
+      // không phụ thuộc việc nổi bọt này.
+      onClick={(e) => { e.stopPropagation(); onChange(); }}
       className={`justify-start ${
         checked ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-600'
       } relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}

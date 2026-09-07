@@ -8,6 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL } from '../constants';
 import toast from 'react-hot-toast';
 import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS, computeRbacFilteredData, isValidSalesRow, isUncollectedOrder, getRowValue, parseNumber } from '../utils/dataUtils';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import type { SalesDataMeta } from '../services/cloudDataService';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -41,6 +44,58 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
+
+    const latestActiveSalesMetaRef = useRef<{ savedAt: number; fileLastModified: number } | null>(null);
+    const isCloudSyncingRef = useRef(false);
+
+    const applyCloudSalesData = useCallback(async (cloudData: DataRow[], cloudMeta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean }) => {
+        try {
+            console.warn(`[CloudSync] Tự động nạp dữ liệu đám mây (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)...`);
+            
+            // 1. Lưu vào IndexedDB cục bộ
+            if (cloudMeta.isRealtime) {
+                await dbService.saveSyncCloudRealtimeData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
+            } else {
+                await dbService.saveSyncCloudData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
+            }
+
+            latestActiveSalesMetaRef.current = {
+                savedAt: cloudMeta.savedAt,
+                fileLastModified: cloudMeta.fileLastModified
+            };
+
+            setFileInfo({ 
+                filename: cloudMeta.filename, 
+                savedAt: new Date(cloudMeta.savedAt).toLocaleString('vi-VN') 
+            });
+
+            setPendingCloudSync(null);
+
+            const srcData = normalizeSalesData(cloudData);
+
+            startTransition(() => {
+                setAppState('processing');
+                setOriginalData(srcData);
+            });
+
+            // Cập nhật registry ngầm để FileHistoryModal nhận thông tin tệp mới
+            dbService.getSalesFilesRegistry().then(reg => {
+                dbService.getTempRealtimeData().then(tempRealtime => {
+                    setHasRealtimeData(!!(tempRealtime && tempRealtime.data && tempRealtime.data.length > 0));
+                    setFileRegistry(reg.map(file => ({ ...file, isMissingLocalData: false })));
+                });
+            }).catch(console.error);
+
+            toast.success(`Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`, {
+                id: 'auto-cloud-sync',
+                duration: 3500,
+                icon: '☁️'
+            });
+        } catch (e: unknown) {
+            console.error('Lỗi khi tự động nạp dữ liệu từ đám mây:', e);
+            toast.error(`⚠️ Lỗi tự động nạp dữ liệu đám mây: ${getErrorMessage(e)}`);
+        }
+    }, [setAppState]);
 
 // Initial data loading
     useEffect(() => {
@@ -169,6 +224,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 
                 // Mount Local Data right away
                 if (savedSalesReq && savedSalesReq.data.length > 0) {
+                    latestActiveSalesMetaRef.current = {
+                        savedAt: savedSalesReq.savedAt.getTime(),
+                        fileLastModified: savedSalesReq.fileLastModified || 0
+                    };
                     setStatus({ message: 'Nạp dữ liệu đã lưu lên bảng điều khiển...', type: 'info', progress: 25 });
                     setFileInfo({ filename: savedSalesReq.filename, savedAt: savedSalesReq.savedAt.toLocaleString('vi-VN') });
 
@@ -331,8 +390,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             const cloudMeta = await getCloudDataMeta(user);
                             if (!cloudMeta) return;
 
-                            const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
-                            const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
+                            const currentLocal = latestActiveSalesMetaRef.current;
+                            const localSavedAt = currentLocal ? currentLocal.savedAt : (savedSalesReq ? savedSalesReq.savedAt.getTime() : 0);
+                            const localFileTs = currentLocal ? currentLocal.fileLastModified : (savedSalesReq ? savedSalesReq.fileLastModified : 0);
 
                             // Skip if same file
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
@@ -340,29 +400,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                 return;
                             }
 
-                            // Only prompt if cloud is newer
-                            if (cloudMeta.savedAt > localSavedAt + 15000) {
+                            // Tự động nạp dữ liệu đám mây mới hơn ngay lập tức (không cần bấm xác nhận)
+                            if (cloudMeta.savedAt > localSavedAt + 5000) {
                                 console.warn(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
-                                const cloudResult = await downloadProcessedData(user, cloudMeta);
-                                if (cloudResult && cloudResult.data.length > 0) {
-                                    if (localSavedAt === 0) {
-                                        console.warn('[CloudSync] Tự động nạp dữ liệu đám mây vì local trống');
-                                        setAppState('loading');
-                                        setStatus({ message: `📊 Tự động nạp dữ liệu đám mây (${cloudResult.meta.totalRows.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
-                                        
-                                        if (cloudResult.meta.isRealtime) {
-                                            await dbService.saveSyncCloudRealtimeData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
-                                        } else {
-                                            await dbService.saveSyncCloudData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
-                                        }
-                                        setFileInfo({ filename: cloudResult.meta.filename, savedAt: new Date(cloudResult.meta.savedAt).toLocaleString('vi-VN') });
-                                        
-                                        const srcData = normalizeSalesData(cloudResult.data);
-                                        setAppState('processing');
-                                        setOriginalData(srcData);
-                                    } else {
-                                        setPendingCloudSync({ data: cloudResult.data, meta: cloudResult.meta });
+                                if (isCloudSyncingRef.current) return;
+                                isCloudSyncingRef.current = true;
+                                try {
+                                    const cloudResult = await downloadProcessedData(user, cloudMeta);
+                                    if (cloudResult && cloudResult.data.length > 0) {
+                                        await applyCloudSalesData(cloudResult.data, cloudResult.meta);
                                     }
+                                } finally {
+                                    isCloudSyncingRef.current = false;
                                 }
                             }
                         } catch (e: unknown) {
@@ -493,6 +542,72 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
         return () => { cancelled = true; };
     }, [user, userRole, departmentId, isDemoMode, setStatus, setAppState]);
+
+    // Realtime Sales Data Listener — Tự động đồng bộ tức thì khi Firestore có bản ghi mới (không cần bấm thủ công)
+    useEffect(() => {
+        if (!user || isDemoMode) return;
+
+        let isMounted = true;
+        const metaDocRef = doc(db, 'users', user.uid, 'salesData', 'meta');
+
+        // Lắng nghe sự kiện upload cục bộ để tránh re-download chính file vừa tải lên từ tab này
+        const handleLocalUpload = (e: Event) => {
+            const customEvent = e as CustomEvent<{ savedAt: number; fileLastModified: number }>;
+            if (customEvent.detail) {
+                latestActiveSalesMetaRef.current = {
+                    savedAt: customEvent.detail.savedAt,
+                    fileLastModified: customEvent.detail.fileLastModified
+                };
+            }
+        };
+        window.addEventListener('ycx-sales-data-uploaded', handleLocalUpload);
+
+        const unsub = onSnapshot(metaDocRef, async (snapshot) => {
+            if (!isMounted) return;
+            if (snapshot.metadata.hasPendingWrites) return; // Lượt ghi in-flight của tab này
+            if (!snapshot.exists()) return;
+
+            const cloudMeta = snapshot.data() as SalesDataMeta;
+            if (!cloudMeta || !cloudMeta.savedAt) return;
+
+            const currentLocal = latestActiveSalesMetaRef.current;
+            const localSavedAt = currentLocal ? currentLocal.savedAt : 0;
+            const localFileTs = currentLocal ? currentLocal.fileLastModified : 0;
+
+            // Bỏ qua nếu trùng file
+            if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
+                return;
+            }
+
+            // Chỉ tự động tải khi bản ghi trên mây mới hơn bản hiện tại
+            if (cloudMeta.savedAt <= localSavedAt + 5000) {
+                return;
+            }
+
+            if (isCloudSyncingRef.current) return;
+            isCloudSyncingRef.current = true;
+
+            try {
+                const { downloadProcessedData } = await import('../services/cloudDataService');
+                const cloudResult = await downloadProcessedData(user, cloudMeta);
+                if (isMounted && cloudResult && cloudResult.data.length > 0) {
+                    await applyCloudSalesData(cloudResult.data, cloudResult.meta);
+                }
+            } catch (err) {
+                console.warn('[CloudData] Tự động đồng bộ realtime thất bại:', err);
+            } finally {
+                isCloudSyncingRef.current = false;
+            }
+        }, (err) => {
+            console.warn('[CloudData] Lỗi onSnapshot salesData/meta:', err);
+        });
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener('ycx-sales-data-uploaded', handleLocalUpload);
+            unsub();
+        };
+    }, [user, isDemoMode, applyCloudSalesData]);
 
     const refreshRegistry = useCallback(async () => {
         try {
@@ -1051,33 +1166,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
     const handleAcceptCloudSync = async () => {
         if (!pendingCloudSync) return;
-        try {
-            setStatus({ message: `📊 Đang nạp dữ liệu từ đám mây (${pendingCloudSync.meta.totalRows} dòng)...`, type: 'info', progress: 50 });
-            setAppState('loading');
-            
-            const cloudData = pendingCloudSync.data;
-            const cloudMeta = pendingCloudSync.meta;
-            
-            // Save to local IDB
-            if (cloudMeta.isRealtime) {
-                await dbService.saveSyncCloudRealtimeData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
-            } else {
-                await dbService.saveSyncCloudData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
-            }
-            setFileInfo({ filename: cloudMeta.filename, savedAt: new Date(cloudMeta.savedAt).toLocaleString('vi-VN') });
-            
-            setPendingCloudSync(null);
-            
-            const srcData = normalizeSalesData(cloudData);
-            
-            setAppState('processing');
-            setOriginalData(srcData);
-            await refreshRegistry();
-        } catch (e: unknown) {
-            console.error('Lỗi khi nạp dữ liệu từ đám mây:', e);
-            setStatus({ message: `⚠️ Lỗi nạp dữ liệu đám mây: ${getErrorMessage(e)}. Dữ liệu trên máy không bị ảnh hưởng.`, type: 'error', progress: 0 });
-            setAppState('dashboard');
-        }
+        await applyCloudSalesData(pendingCloudSync.data, pendingCloudSync.meta);
     };
 
     return {

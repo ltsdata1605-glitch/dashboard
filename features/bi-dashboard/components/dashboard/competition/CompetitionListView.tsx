@@ -1,14 +1,16 @@
 
 import React from 'react';
-import { Criterion, shortenName, parseNumber, roundUp } from '../../../utils/dashboardHelpers';
+import { Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel } from '../../../utils/dashboardHelpers';
 import { ProgressBar } from '../DashboardWidgets';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionListViewProps {
     groupedAndSortedPrograms: Partial<Record<Criterion, ProcessedProgram[]>>;
+    /** Toàn bộ cột của dữ liệu — dùng để tra chỉ số ô trong `program.data`. */
     headers: string[];
-    hiddenColumns: string[];
+    /** Các cột đang bật, THEO ĐÚNG THỨ TỰ người dùng bật ở Bộ lọc bảng Thi đua (gồm cả 'Còn Lại'). */
+    visibleColumns: string[];
     isRealtime: boolean;
     handleSort: (col: number | 'conLai' | 'htdkVT' | -1) => void;
 }
@@ -19,7 +21,7 @@ const CRITERIA_THEMES: Record<string, { main: string; light: string; text: strin
     'SLLK': { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', accent: 'border-l-rose-500' },
 };
 
-const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSortedPrograms, headers, hiddenColumns, isRealtime, handleSort }) => {
+const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSortedPrograms, headers, visibleColumns, isRealtime, handleSort }) => {
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
 
     const getFormattedHeader = (header: string) => {
@@ -38,7 +40,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
             'SLLK': 'S.LƯỢNG',
             'Số lượng': 'S.LƯỢNG'
         };
-        return mapping[header] || header;
+        return mapping[header] || getCompetitionColumnLabel(header);
     };
 
     // NhanVien-style header color mapping — thick bottom-border with colored backgrounds
@@ -46,7 +48,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
         if (h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
         if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('%HTDK')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
+        if (h.includes('%HTDK') || h.includes('%DKHT')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
         if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
         return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
@@ -65,25 +67,19 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     >
                                         NHÓM THI ĐUA
                                     </th>
-                                    {headers.map((header, index) => {
-                                        if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
+                                    {visibleColumns.map(column => {
+                                        // 'Còn Lại' không nằm trong program.data (tính riêng ở CompetitionView) nên sắp
+                                        // xếp bằng khoá 'conLai'; các cột khác sắp theo chỉ số ô trong data.
+                                        const isConLai = column === 'Còn Lại';
                                         return (
                                             <th
-                                                key={index}
-                                                onClick={() => handleSort(index)}
-                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass(header)}`}
-                                                dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
+                                                key={column}
+                                                onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
+                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass(column)}`}
+                                                dangerouslySetInnerHTML={{ __html: getFormattedHeader(column) }}
                                             />
-                                        )
+                                        );
                                     })}
-
-                                    { !hiddenColumns.includes('Còn Lại') && (
-                                            <th
-                                            onClick={() => handleSort('conLai')}
-                                            className="px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors text-[13px] align-middle bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400"
-                                            dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
-                                        />
-                                    )}
                                 </tr>
                             </thead>
                             {(['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map(criterion => {
@@ -109,13 +105,20 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     <td className="px-2 py-1 text-[13px] font-bold text-sky-600 dark:text-sky-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>
-                                                    {program.data.map((cell, cIdx: number) => {
-                                                        const header = headers[cIdx];
+                                                    {visibleColumns.map(header => {
+                                                        if (header === 'Còn Lại') {
+                                                            return (
+                                                                <td key={header} className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}`}>
+                                                                    {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
+                                                                </td>
+                                                            );
+                                                        }
                                                         // Một số chương trình thi đua trong cùng 1 lần dán có số cột khác nhau (VD có/không
                                                         // có cột "%HTDK V.Trội") — parseCompetitionDataBySupermarket() lưu headers dùng
-                                                        // chung cho cả siêu thị nên có thể ngắn hơn data của 1 vài chương trình cụ thể.
-                                                        // Bỏ qua cột thừa thay vì crash toàn trang.
-                                                        if (header === undefined || hiddenColumns.includes(header) || header === 'Còn Lại') return null;
+                                                        // chung cho cả siêu thị nên data của 1 vài chương trình có thể thiếu ô: đọc theo
+                                                        // chỉ số của cột trong headers và coi ô thiếu là trống thay vì crash/lệch cột.
+                                                        const cIdx = headers.indexOf(header);
+                                                        const cell = cIdx === -1 ? '' : program.data[cIdx];
 
                                                         const isNumericToRound = numericHeadersToRound.has(header);
                                                         const isPercentToRound = percentHeadersToRound.has(header);
@@ -133,7 +136,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                         }
 
                                                         const cellContent = () => {
-                                                            const headerKey = headers[cIdx];
+                                                            const headerKey = header;
                                                             if (isDash) {
                                                                 return <span className="text-slate-400 dark:text-slate-500 font-bold">-</span>;
                                                             }
@@ -168,17 +171,12 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                         };
 
                                                         return (
-                                                            <td key={cIdx} className="px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums">
+                                                            <td key={header} className="px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums">
                                                                 {cellContent()}
                                                             </td>
                                                         )
                                                     })}
 
-                                                    { !hiddenColumns.includes('Còn Lại') && (
-                                                        <td className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}`}>
-                                                            {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
-                                                        </td>
-                                                    )}
                                                 </tr>
                                             );
                                         })}

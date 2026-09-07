@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { Settings, Search } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
-import { SupermarketCompetitionData, Criterion, shortenName, parseNumber } from '../../utils/dashboardHelpers';
+import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, getCompetitionColumnLabel } from '../../utils/dashboardHelpers';
 import CompetitionListView from './competition/CompetitionListView';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
@@ -37,11 +37,22 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const { data, isRealtime, activeSupermarket } = props;
 
     const modeKey = isRealtime ? 'realtime' : 'luyke';
-    const defaultHiddenCols = useMemo(() => isRealtime ? ['%HTDK', '%HTDK V.Trội'] : [], [isRealtime]);
+    // Cột bật MẶC ĐỊNH, theo đúng thứ tự muốn thấy trên bảng. Lưu danh sách cột BẬT (thay cho danh
+    // sách cột ẩn trước đây) vì thứ tự trong danh sách này chính là thứ tự cột trên bảng: bật thêm
+    // cột nào thì cột đó xuống cuối bảng.
+    const defaultVisibleCols = useMemo(
+        () => isRealtime
+            ? ['Target V.Trội', 'Realtime', '%HT V.Trội', 'Còn Lại']
+            : ['Target V.Trội', 'L.Kế', '%HTDK', 'Còn Lại'],
+        [isRealtime]
+    );
 
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
-    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}`, null);
-    const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition-hidden-cols-${modeKey}`, defaultHiddenCols);
+    // Hậu tố -v2 ở 2 khoá dưới: đổi khoá = bỏ cấu hình cũ đang lưu trên máy người dùng, để bộ cột
+    // và kiểu sắp xếp mặc định mới thực sự có hiệu lực (cấu hình cũ luôn khác null nên mặc định
+    // mới sẽ không bao giờ được áp).
+    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v2`, null);
+    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v2`, defaultVisibleCols);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -163,7 +174,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     useEffect(() => {
         if (isSortConfigLoaded && processedSupermarketData && processedSupermarketData.headers && !defaultSortSet) {
             if (sortConfig === null) {
-                const sortHeader = isRealtime ? 'Realtime' : 'L.Kế';
+                const sortHeader = isRealtime ? '%HT' : '%HTDK';
                 const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
                 if (sortIndex !== -1) {
                     setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
@@ -201,6 +212,18 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             return acc;
         }, {} as Partial<Record<Criterion, ProcessedProgram[]>>);
     }, [sortedPrograms]);
+
+    const allColumns = useMemo(() => processedSupermarketData?.headers || [], [processedSupermarketData]);
+    // Bỏ những cột đã lưu nhưng không còn trong dữ liệu hiện tại; thứ tự giữ nguyên như lúc bật.
+    const visibleColumns = useMemo(
+        () => visibleColumnOrder.filter(col => allColumns.includes(col)),
+        [visibleColumnOrder, allColumns]
+    );
+    const hasHiddenColumn = allColumns.length > 0 && visibleColumns.length < allColumns.length;
+    /** Bật cột thì đưa xuống CUỐI danh sách — cột mới bật luôn nằm cuối bảng. */
+    const toggleColumn = (header: string) => setVisibleColumnOrder(prev => (
+        prev.includes(header) ? prev.filter(h => h !== header) : [...prev, header]
+    ));
 
     const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
     const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));
@@ -243,7 +266,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     size="icon"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
                     className={`relative h-7 w-7 transition-colors ${
-                        isColumnSelectorOpen || isProgramFiltered || (processedSupermarketData && hiddenColumns.length > 0)
+                        isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
@@ -329,11 +352,11 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                             <div className="p-3 flex flex-col h-80">
                                 <div className="flex items-center justify-between mb-2 px-1">
                                     <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                                        Cột hiển thị ({((processedSupermarketData?.headers || []).length - hiddenColumns.length)}/{processedSupermarketData?.headers?.length || 0})
+                                        Cột hiển thị ({visibleColumns.length}/{allColumns.length})
                                     </span>
                                     <button
                                         type="button"
-                                        onClick={() => setHiddenColumns([])}
+                                        onClick={() => setVisibleColumnOrder(allColumns)}
                                         className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                         title="Hiện tất cả các cột"
                                     >
@@ -342,28 +365,26 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 scrollbar-thin mt-1">
-                                    {(processedSupermarketData?.headers || []).map(header => {
-                                        const isVisible = !hiddenColumns.includes(header);
+                                    {allColumns.map(header => {
+                                        const order = visibleColumns.indexOf(header);
                                         return (
                                             <div
                                                 key={header}
-                                                onClick={() => setHiddenColumns(prev => {
-                                                    const s = new Set(prev);
-                                                    if (s.has(header)) s.delete(header); else s.add(header);
-                                                    return Array.from(s);
-                                                })}
+                                                onClick={() => toggleColumn(header)}
                                                 className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
                                             >
-                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate pr-2">
-                                                    {header}
+                                                <span className="flex items-center gap-1.5 min-w-0 pr-2">
+                                                    {/* Số thứ tự = vị trí cột trên bảng, giúp thấy ngay thứ tự đang bật */}
+                                                    <span className={`w-4 text-[10px] font-bold tabular-nums ${order === -1 ? 'text-transparent' : 'text-sky-600 dark:text-sky-400'}`}>
+                                                        {order === -1 ? '' : order + 1}
+                                                    </span>
+                                                    <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
+                                                        {getCompetitionColumnLabel(header)}
+                                                    </span>
                                                 </span>
                                                 <Switch
-                                                    checked={isVisible}
-                                                    onChange={() => setHiddenColumns(prev => {
-                                                        const s = new Set(prev);
-                                                        if (s.has(header)) s.delete(header); else s.add(header);
-                                                        return Array.from(s);
-                                                    })}
+                                                    checked={order !== -1}
+                                                    onChange={() => toggleColumn(header)}
                                                 />
                                             </div>
                                         );
@@ -401,7 +422,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                             <CompetitionListView
                                 groupedAndSortedPrograms={groupedAndSortedPrograms}
                                 headers={processedSupermarketData.headers}
-                                hiddenColumns={hiddenColumns}
+                                visibleColumns={visibleColumns}
                                 isRealtime={isRealtime}
                                 handleSort={handleSort}
                             />

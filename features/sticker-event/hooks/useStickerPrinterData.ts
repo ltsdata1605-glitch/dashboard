@@ -12,70 +12,79 @@ const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
 const STICKER_SAVED_LISTS_KEY = 'stickerSavedLists';
 
+/** ID cố định cho entry lịch sử mặc định — không xoá được. */
+export const DEFAULT_HISTORY_ID = '__default_draw_template__';
+
+/** Nội dung phiếu rút thăm mặc định — dùng làm giá trị khởi tạo và entry lịch sử cố định. */
+const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
+    id: '1',
+    title: 'PHIẾU RÚT THĂM TRÚNG THƯỞNG 19 & 26/9',
+    code: '1',
+    footer: 'HÙNG VƯƠNG',
+    contentTop: 'RÚT THĂM 19H<div>MIỄN PHÍ 370 SUẤT:</div>',
+    contentTopRight: 'MIỄN PHÍ',
+    contentBottom: '<div>- 150 Bộ 3 hộp (75 Suất/ngày)</div><div>- 8 Tủ sấy quần áo (4 Suất/ngày)</div><div>- 8 Nồi cơm (4 Suất/ngày)</div>',
+    contentBottomRight: '2 Máy giặt 8kg<div>(1 suất/ ngày)</div>',
+};
+
+/** Entry lịch sử mặc định — luôn hiển thị ở cuối tab Lịch sử, không thể xoá. */
+export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
+    id: DEFAULT_HISTORY_ID,
+    timestamp: 0, // epoch 0 → luôn nằm cuối khi sort theo thời gian
+    label: 'Phiếu Rút Thăm — Mẫu mặc định',
+    pageCount: 1000,
+    stickerType: 'draw',
+    bgImage: '/frame/bg_phieu.png',
+    headerTextSize: 8,
+    subHeaderTextSize: 13,
+    percentTextSize: 36.9,
+    oldPriceTextSize: 14.2,
+    nameTextSize: 3.6,
+    newPriceTextSize: 26.5,
+    footerTextSize: 3.2,
+    batchItems: [],
+    headerTextContent: '',
+    subHeaderTextContent: '',
+    footerTextContent: '',
+    showBarcode: false,
+    manualPages: [],
+    drawContentTopLeftSize: 3.5,
+    drawContentTopRightSize: 3.5,
+    drawContentBottomLeftSize: 1.7,
+    drawContentBottomRightSize: 2.2,
+    drawTitleSize: 2.5,
+    drawCodeSize: 3.8,
+    drawFooterSize: 3.8,
+};
+
 export function useStickerPrinterData() {
     const [stickerMode, setStickerMode] = useState<'sticker' | 'event'>('sticker');
     const [eventEverOpened, setEventEverOpened] = useState(false);
-    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'draw'>('gia_soc');
-    const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
+    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'draw'>('draw');
+    const [bgImage, setBgImage] = useState('/frame/bg_phieu.png');
     const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
     
-    // Ticket draw state
+    // Ticket draw state — khởi tạo từ mẫu mặc định
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { 
-            id: '1', 
-            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
-            code: '1', 
-            footer: '', 
-            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
-            contentTopRight: 'TRÚNG', 
-            contentBottom: '', 
-            contentBottomRight: '1 MÁY GIẶT' 
-        },
-        { 
-            id: '2', 
-            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
-            code: '2', 
-            footer: '', 
-            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
-            contentTopRight: 'TRÚNG', 
-            contentBottom: '', 
-            contentBottomRight: '1 MÁY GIẶT' 
-        },
-        { 
-            id: '3', 
-            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
-            code: '3', 
-            footer: '', 
-            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
-            contentTopRight: 'TRÚNG', 
-            contentBottom: '', 
-            contentBottomRight: '1 MÁY GIẶT' 
-        },
-        { 
-            id: '4', 
-            title: 'PHIẾU RÚT THĂM 11/7 - ĐƯỢC BẢO LƯU CHO 18/7', 
-            code: '4', 
-            footer: '', 
-            contentTop: 'Rút thăm 18h<div>Bán giá sốc 17h:</div><div>+ 30 Suất chảo giá 10k</div><div>+ 10 Suất nồi inox giá 50k</div>', 
-            contentTopRight: 'TRÚNG', 
-            contentBottom: '', 
-            contentBottomRight: '1 MÁY GIẶT' 
-        },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
     ]);
     const [drawStartNumber, setDrawStartNumber] = useState<number>(1);
-    const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4);
+    const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4000);
     const [drawAutoIncrement, setDrawAutoIncrement] = useState<boolean>(true);
 
     const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(3.5);
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
-    const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.2);
+    const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(1.7);
     const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(2.2);
     const [drawTitleSize, setDrawTitleSize] = useState(2.5);
     const [drawCodeSize, setDrawCodeSize] = useState(3.8);
     const [drawFooterSize, setDrawFooterSize] = useState(3.8);
     
     // Dynamic Font Sizes and Active Field Trackers
-    const [activeField, setActiveField] = useState<string>('header');
+    const [activeField, setActiveField] = useState<string>('drawContentBottomLeft');
     const [headerTextSize, setHeaderTextSize] = useState(8);
     const [subHeaderTextSize, setSubHeaderTextSize] = useState(13);
     const [percentTextSize, setPercentTextSize] = useState(36.9);
@@ -281,9 +290,24 @@ export function useStickerPrinterData() {
     // ticket #2-#4 (dùng style từ state) cũng thay đổi size đồng bộ.
     useEffect(() => {
         const handler = (e: Event) => {
-            const size = (e as CustomEvent).detail?.size;
+            const detail = (e as CustomEvent).detail;
+            const size = detail?.size;
+            const field = detail?.field;
             if (typeof size === 'number' && stickerType === 'draw') {
-                setDrawActiveFontSize(size);
+                if (field) {
+                    switch (field) {
+                        case 'drawTitle': setDrawTitleSize(size); break;
+                        case 'drawContentTopLeft': setDrawContentTopLeftSize(size); break;
+                        case 'drawContentTopRight': setDrawContentTopRightSize(size); break;
+                        case 'drawContentBottomLeft': setDrawContentBottomLeftSize(size); break;
+                        case 'drawContentBottomRight': setDrawContentBottomRightSize(size); break;
+                        case 'drawCode': setDrawCodeSize(size); break;
+                        case 'drawFooter': setDrawFooterSize(size); break;
+                        default: setDrawActiveFontSize(size);
+                    }
+                } else {
+                    setDrawActiveFontSize(size);
+                }
             }
         };
         document.addEventListener('draw-font-size-change', handler);
@@ -327,8 +351,8 @@ export function useStickerPrinterData() {
         const urlParams = new URLSearchParams(window.location.search);
         let sub = urlParams.get('sub');
         if (!sub) {
-            sub = 'event';
-            updateSubQueryParam('event');
+            sub = 'draw';
+            updateSubQueryParam('draw');
         }
         
         if (sub === 'gia-soc') {
@@ -347,6 +371,7 @@ export function useStickerPrinterData() {
             setStickerMode('sticker');
             setStickerType('draw');
             setBgImage('/frame/bg_phieu.png');
+            setActiveField('drawContentBottomLeft');
         } else if (sub === 'event') {
             setStickerMode('event');
             setEventEverOpened(true);
@@ -372,8 +397,9 @@ export function useStickerPrinterData() {
                     const currentSub = urlParams.get('sub');
                     
                     if (!currentSub) {
-                        if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
-                        if (savedState.stickerType) setStickerType(savedState.stickerType);
+                        setStickerMode('sticker');
+                        setStickerType('draw');
+                        setBgImage('/frame/bg_phieu.png');
                     } else {
                         if (currentSub === 'gia-soc') {
                             setStickerMode('sticker');
@@ -460,13 +486,31 @@ export function useStickerPrinterData() {
                     if (savedState.newPriceTextSize != null) setNewPriceTextSize(savedState.newPriceTextSize);
                     if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
 
-                    if (savedState.drawTickets) setDrawTickets(savedState.drawTickets);
+                    if (savedState.drawTickets) {
+                        // Tự động nâng cấp nếu dữ liệu cũ còn lưu mẫu cũ (12/9, 420 suất, hoặc 40 suất)
+                        if (savedState.drawTickets[0]?.title?.includes('12/9') || savedState.drawTickets[0]?.contentTop?.includes('420') || savedState.drawTickets[0]?.contentTop?.includes('40 SUẤT')) {
+                            setDrawTickets(prev => [
+                                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+                                ...prev.slice(1)
+                            ]);
+                        } else {
+                            setDrawTickets(savedState.drawTickets);
+                        }
+                    }
                     if (savedState.drawStartNumber != null) setDrawStartNumber(savedState.drawStartNumber);
-                    if (savedState.drawTotalTickets != null) setDrawTotalTickets(savedState.drawTotalTickets);
+                    if (savedState.drawTotalTickets != null) {
+                        setDrawTotalTickets(savedState.drawTotalTickets === 4 ? 4000 : savedState.drawTotalTickets);
+                    } else {
+                        setDrawTotalTickets(4000);
+                    }
                     if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
                     if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
                     if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
-                    if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
+                    if (savedState.drawContentBottomLeftSize != null) {
+                        setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize === 2.2 ? 1.7 : savedState.drawContentBottomLeftSize);
+                    } else {
+                        setDrawContentBottomLeftSize(1.7);
+                    }
                     if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
                     if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                     if (savedState.drawCodeSize != null) setDrawCodeSize(savedState.drawCodeSize);
@@ -1106,9 +1150,32 @@ export function useStickerPrinterData() {
         if (entry.discountDisplayMode) setDiscountDisplayMode(entry.discountDisplayMode);
         setShowHistory(false);
         setActiveQueuePageId(null);
+
+        // Khôi phục drawTickets & draw font sizes khi restore entry mặc định
+        if (entry.id === DEFAULT_HISTORY_ID) {
+            setDrawTickets([
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
+            ]);
+            setDrawStartNumber(1);
+            setDrawTotalTickets(4000);
+            setDrawAutoIncrement(true);
+            setDrawContentBottomLeftSize(1.7);
+            if (entry.drawContentTopLeftSize != null) setDrawContentTopLeftSize(entry.drawContentTopLeftSize);
+            if (entry.drawContentTopRightSize != null) setDrawContentTopRightSize(entry.drawContentTopRightSize);
+            if (entry.drawContentBottomRightSize != null) setDrawContentBottomRightSize(entry.drawContentBottomRightSize);
+            if (entry.drawTitleSize != null) setDrawTitleSize(entry.drawTitleSize);
+            if (entry.drawCodeSize != null) setDrawCodeSize(entry.drawCodeSize);
+            if (entry.drawFooterSize != null) setDrawFooterSize(entry.drawFooterSize);
+            toast.success('Đã khôi phục phiếu mẫu mặc định!');
+        }
     };
 
     const deleteHistory = (id: string) => {
+        // Không cho xoá entry mặc định
+        if (id === DEFAULT_HISTORY_ID) return;
         setPrintHistory(prev => {
             const next = prev.filter(h => h.id !== id);
             saveSetting(STICKER_HISTORY_KEY, next).catch(() => {});
@@ -1123,6 +1190,19 @@ export function useStickerPrinterData() {
         setFooterTextContent('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
         setHeaderTextSize(8);
         setActiveQueuePageId(null);
+        // Khi reset ở chế độ draw, khôi phục phiếu mẫu mặc định
+        if (stickerType === 'draw') {
+            setDrawTickets([
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
+            ]);
+            setDrawStartNumber(1);
+            setDrawTotalTickets(4000);
+            setDrawAutoIncrement(true);
+            setDrawContentBottomLeftSize(1.7);
+        }
     };
 
     const handlePrint = () => {

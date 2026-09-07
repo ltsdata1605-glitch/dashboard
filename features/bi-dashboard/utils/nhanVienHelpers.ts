@@ -624,120 +624,358 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     return rows;
 };
 
+export const validateThiDuaData = (data: string): boolean => {
+    if (!data) return false;
+    const lower = data.toLowerCase();
+    const upper = data.toUpperCase();
+    return lower.includes('phòng ban') ||
+           ((upper.includes('DOANH THU') || upper.includes('SỐ LƯỢNG') || lower.includes('thi đua')) &&
+            (upper.includes('HẠNG TRONG ST') || upper.includes('TOP/BOTTOM') || lower.includes('chương trình') || upper.includes('BỘ PHẬN') || upper.includes('TỔNG')));
+};
+
 export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: Record<string, string>): Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> => {
     const emptyResult: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = { DTLK: { headers: [], employees: [] }, DTQĐ: { headers: [], employees: [] }, SLLK: { headers: [], employees: [] } };
     if (!thiDuaData) return emptyResult;
-    const lines = thiDuaData.split('\n').filter(line => line.trim() !== '');
-    const metricsRowIndex = lines.findIndex(l => { const parts = l.split('\t').map(p => p.trim().toUpperCase()); return parts.some(p => ['DTLK', 'DTQĐ', 'SLLK', 'SL REALTIME'].includes(p)); });
-    if (metricsRowIndex === -1) return emptyResult;
-    const phongBanIndex = lines.findIndex(l => l.toLowerCase().includes('phòng ban'));
-    if (phongBanIndex === -1 || phongBanIndex >= metricsRowIndex) return emptyResult;
-    const titles = lines.slice(phongBanIndex + 1, metricsRowIndex).map(t => t.trim());
-    const metrics = lines[metricsRowIndex].trim().split('\t');
-    const allHeaders: CompetitionHeader[] = [];
-    const count = Math.min(titles.length, metrics.length);
-    for (let i = 0; i < count; i++) {
-        const metricRaw = metrics[i]?.trim().toUpperCase();
-        let metric = '';
-        if (metricRaw === 'DTLK') metric = 'DTLK'; else if (metricRaw === 'DTQĐ') metric = 'DTQĐ'; else if (metricRaw === 'SLLK' || metricRaw === 'SL REALTIME') metric = 'SLLK';
-        if (metric) allHeaders.push({ title: shortenName(titles[i] || `Unnamed ${i}`), originalTitle: titles[i], metric });
-    }
-    const result: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
-        DTLK: { headers: allHeaders.filter(h => h.metric === 'DTLK'), employees: [] },
-        DTQĐ: { headers: allHeaders.filter(h => h.metric === 'DTQĐ'), employees: [] },
-        SLLK: { headers: allHeaders.filter(h => h.metric === 'SLLK'), employees: [] },
-    };
-    
-    // Cấu trúc mới để lưu thông tin nhân viên kèm bộ phận
-    const employeeData = new Map<string, { 
-        department: string, 
-        originalName: string, 
-        values: { [key in Criterion]: (number | null)[] } 
-    }>();
-    
-    let currentDeptFallback = 'BP Khác';
+    const rawLines = thiDuaData.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    if (rawLines.length === 0) return emptyResult;
 
-        // O(1) Cache cho bảng thi đua
-    const fastDeptMap = new Map<string, {orig: string, dept: string}>();
-    for (const [fullName, dept] of Object.entries(employeeDepartmentMap)) {
-        fastDeptMap.set(normalizeText(fullName), {orig: fullName, dept});
-    }
+    // 1. Kiểm tra nếu là định dạng BI Cũ (Bảng ngang có dòng 'phòng ban' và dòng metrics DTLK/DTQĐ/SLLK)
+    const phongBanIndex = rawLines.findIndex(l => l.toLowerCase().includes('phòng ban'));
+    const legacyMetricsRowIndex = rawLines.findIndex(l => {
+        const parts = l.split('\t').map(p => p.trim().toUpperCase());
+        return parts.some(p => ['DTLK', 'DTQĐ', 'SLLK', 'SL REALTIME'].includes(p));
+    });
 
-    for (const line of lines.slice(metricsRowIndex + 1)) {
-        const parts = line.split('\t');
-        const namePart = parts[0]?.trim();
-        if (!namePart) continue;
+    if (phongBanIndex !== -1 && legacyMetricsRowIndex !== -1 && phongBanIndex < legacyMetricsRowIndex) {
+        const titles = rawLines.slice(phongBanIndex + 1, legacyMetricsRowIndex).map(t => t.trim());
+        const metrics = rawLines[legacyMetricsRowIndex].trim().split('\t');
+        const allHeaders: CompetitionHeader[] = [];
+        const count = Math.min(titles.length, metrics.length);
+        for (let i = 0; i < count; i++) {
+            const metricRaw = metrics[i]?.trim().toUpperCase();
+            let metric = '';
+            if (metricRaw === 'DTLK') metric = 'DTLK'; else if (metricRaw === 'DTQĐ') metric = 'DTQĐ'; else if (metricRaw === 'SLLK' || metricRaw === 'SL REALTIME') metric = 'SLLK';
+            if (metric) allHeaders.push({ title: shortenName(titles[i] || `Unnamed ${i}`), originalTitle: titles[i], metric });
+        }
+        const legacyResult: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
+            DTLK: { headers: allHeaders.filter(h => h.metric === 'DTLK'), employees: [] },
+            DTQĐ: { headers: allHeaders.filter(h => h.metric === 'DTQĐ'), employees: [] },
+            SLLK: { headers: allHeaders.filter(h => h.metric === 'SLLK'), employees: [] },
+        };
+        
+        const employeeData = new Map<string, { 
+            department: string, 
+            originalName: string, 
+            values: { [key in Criterion]: (number | null)[] } 
+        }>();
+        
+        let currentDeptFallback = 'BP Khác';
 
-        // Cập nhật bộ phận hiện tại nếu gặp dòng BP
-        if (namePart.startsWith('BP ')) {
-            currentDeptFallback = namePart;
+        const fastDeptMap = new Map<string, {orig: string, dept: string}>();
+        for (const [fullName, dept] of Object.entries(employeeDepartmentMap)) {
+            fastDeptMap.set(normalizeText(fullName), {orig: fullName, dept});
         }
 
-        const normalizedName = normalizeText(namePart);
-        let matchedOriginalName = "";
-        let department = "";
-        
-        // 1. Tìm O(1) trong map doanh thu
-        const canonicalName = standardizeEmployeeName(namePart);
-        const match = fastDeptMap.get(normalizeText(canonicalName)) || fastDeptMap.get(normalizedName);
-        if (match) {
-            matchedOriginalName = match.orig;
-            department = match.dept;
-        }
+        for (const line of rawLines.slice(legacyMetricsRowIndex + 1)) {
+            const parts = line.split('\t');
+            const namePart = parts[0]?.trim();
+            if (!namePart) continue;
 
-        // 2. Nếu không có trong map nhưng là dòng nhân viên (có dấu -), dùng bộ phận fallback vừa quét được
-        if (!department && namePart.includes(' - ')) {
-            department = currentDeptFallback;
-            matchedOriginalName = namePart;
-        }
-
-        // 3. Xử lý dòng Tổng hoặc dòng BP
-        if (!department) {
-            if (namePart === 'Tổng') department = 'Tổng';
-            else if (namePart.startsWith('BP ')) department = namePart;
-            else continue; // Bỏ qua nếu không xác định được gì
-        }
-        
-        if (isIgnoredDept(department)) continue;
-        
-        const formattedName = namePart === 'Tổng' ? 'Tổng' : formatEmployeeName(matchedOriginalName || namePart);
-        
-        if (!employeeData.has(formattedName)) {
-            employeeData.set(formattedName, { 
-                department: department,
-                originalName: matchedOriginalName || namePart,
-                values: { DTLK: [], DTQĐ: [], SLLK: [] }
-            });
-            allHeaders.forEach((header, index) => {
-                const metric = header.metric as Criterion;
-                employeeData.get(formattedName)!.values[metric][index] = null;
-            });
-        }
-        
-        const record = employeeData.get(formattedName)!;
-        const headerIndexMap: Record<Criterion, number> = { DTLK: 0, DTQĐ: 0, SLLK: 0 };
-        
-        allHeaders.forEach((header, colIndex) => { 
-            const metric = header.metric as Criterion;
-            const val = parseNumber(parts[colIndex + 1]); 
-            const idx = headerIndexMap[metric]++;
-            if (val > 0) {
-                record.values[metric][idx] = (record.values[metric][idx] || 0) + val;
+            if (namePart.startsWith('BP ')) {
+                currentDeptFallback = namePart;
             }
+
+            const normalizedName = normalizeText(namePart);
+            let matchedOriginalName = "";
+            let department = "";
+            
+            const canonicalName = standardizeEmployeeName(namePart);
+            const match = fastDeptMap.get(normalizeText(canonicalName)) || fastDeptMap.get(normalizedName);
+            if (match) {
+                matchedOriginalName = match.orig;
+                department = match.dept;
+            }
+
+            if (!department && namePart.includes(' - ')) {
+                department = currentDeptFallback;
+                matchedOriginalName = namePart;
+            }
+
+            if (!department) {
+                if (namePart === 'Tổng') department = 'Tổng';
+                else if (namePart.startsWith('BP ')) department = namePart;
+                else continue;
+            }
+            
+            if (isIgnoredDept(department)) continue;
+            
+            const formattedName = namePart === 'Tổng' ? 'Tổng' : formatEmployeeName(matchedOriginalName || namePart);
+            
+            if (!employeeData.has(formattedName)) {
+                employeeData.set(formattedName, { 
+                    department: department,
+                    originalName: matchedOriginalName || namePart,
+                    values: { DTLK: [], DTQĐ: [], SLLK: [] }
+                });
+                allHeaders.forEach((header, index) => {
+                    const metric = header.metric as Criterion;
+                    employeeData.get(formattedName)!.values[metric][index] = null;
+                });
+            }
+            
+            const record = employeeData.get(formattedName)!;
+            const headerIndexMap: Record<Criterion, number> = { DTLK: 0, DTQĐ: 0, SLLK: 0 };
+            
+            allHeaders.forEach((header, colIndex) => { 
+                const metric = header.metric as Criterion;
+                const val = parseNumber(parts[colIndex + 1]); 
+                const idx = headerIndexMap[metric]++;
+                if (val > 0) {
+                    record.values[metric][idx] = (record.values[metric][idx] || 0) + val;
+                }
+            });
+        }
+        
+        employeeData.forEach((data, name) => {
+            Object.keys(legacyResult).forEach(key => { 
+                const criterion = key as Criterion; 
+                legacyResult[criterion].employees.push({ 
+                    name, 
+                    originalName: data.originalName, 
+                    department: data.department, 
+                    values: data.values[criterion] 
+                }); 
+            });
         });
+        return legacyResult;
     }
-    
-    // Đổ dữ liệu từ Map vào kết quả cuối cùng
-    employeeData.forEach((data, name) => {
-        Object.keys(result).forEach(key => { 
-            const criterion = key as Criterion; 
-            result[criterion].employees.push({ 
-                name, 
-                originalName: data.originalName, 
-                department: data.department, 
-                values: data.values[criterion] 
-            }); 
+
+    // 2. Định dạng BI Mới: Danh sách các khối chương trình xếp dọc hoặc bảng
+    // "DOANH THU và SỐ LƯỢNG: Cả 2 đều là kết quả luỹ kế" -> DOANH THU map DTLK, SỐ LƯỢNG map SLLK
+    const isMetadataLine = (str: string) => {
+        const s = str.toLowerCase();
+        return s.startsWith('http') || s.startsWith('dashboards') || s.startsWith('tìm báo cáo') ||
+               s.startsWith('cập nhật lúc') || s.startsWith('tải lại') || s.startsWith('xuất excel') ||
+               s.startsWith('chép link') || s.startsWith('chép bảng') || s.startsWith('toàn công ty') ||
+               s.startsWith('lũy kế') || s.startsWith('danh sách') || s.startsWith('toggle theme') ||
+               s.startsWith('miền') || s.startsWith('vùng') || s.startsWith('khu vực') || s.startsWith('siêu thị') ||
+               s.startsWith('ngành hàng') || s.includes('chương trình') || s.includes('đã copy');
+    };
+
+    const getCleanTitle = (idx: number): string => {
+        for (let k = idx - 1; k >= 0; k--) {
+            const line = rawLines[k];
+            if (!isMetadataLine(line) && line !== 'TOP' && line !== 'BOTTOM' && line !== '-' && !/^\d+$/.test(line)) {
+                return line;
+            }
+        }
+        return `Chương trình ${idx}`;
+    };
+
+    interface ProgramBlock {
+        title: string;
+        metric: Criterion;
+        headerLineIndex: number;
+        dataStartIndex: number;
+        endLineIndex?: number;
+    }
+
+    const blocks: ProgramBlock[] = [];
+
+    for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        const upper = line.toUpperCase();
+
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim());
+            const upperParts = parts.map(p => p.toUpperCase());
+            const dtIdx = upperParts.indexOf('DOANH THU');
+            const slIdx = upperParts.indexOf('SỐ LƯỢNG');
+            const dtqdIdx = upperParts.findIndex(p => p === 'DOANH THU QĐ' || p === 'DTQĐ');
+
+            if (dtIdx !== -1 || slIdx !== -1 || dtqdIdx !== -1) {
+                let metric: Criterion = 'DTLK';
+                if (slIdx !== -1) metric = 'SLLK';
+                else if (dtqdIdx !== -1) metric = 'DTQĐ';
+
+                let title = parts[0];
+                if (!title || upperParts.includes(title.toUpperCase())) {
+                    title = getCleanTitle(i);
+                }
+                blocks.push({ title, metric, headerLineIndex: i, dataStartIndex: i + 1 });
+            }
+        } else {
+            if (upper === 'DOANH THU' || upper === 'SỐ LƯỢNG' || upper === 'DOANH THU QĐ' || upper === 'DTQĐ' || upper === 'DTLK' || upper === 'SLLK') {
+                let metric: Criterion = 'DTLK';
+                if (upper === 'SỐ LƯỢNG' || upper === 'SLLK') metric = 'SLLK';
+                else if (upper === 'DOANH THU QĐ' || upper === 'DTQĐ') metric = 'DTQĐ';
+
+                const title = getCleanTitle(i);
+                blocks.push({ title, metric, headerLineIndex: i, dataStartIndex: i + 1 });
+            }
+        }
+    }
+
+    if (blocks.length === 0) return emptyResult;
+
+    // Boundaries of each block
+    for (let b = 0; b < blocks.length; b++) {
+        const nextBlock = blocks[b + 1];
+        blocks[b].endLineIndex = nextBlock
+            ? nextBlock.headerLineIndex - (nextBlock.headerLineIndex > 0 && !rawLines[nextBlock.headerLineIndex].includes('\t') ? 1 : 0)
+            : rawLines.length;
+    }
+
+    const headersMap: Record<Criterion, CompetitionHeader[]> = {
+        DTLK: [],
+        SLLK: [],
+        DTQĐ: []
+    };
+
+    const isEmployeeName = (str: string) => {
+        if (!str || typeof str !== 'string') return false;
+        const s = str.trim();
+        if (/^\d{3,}\s*-\s*.+/.test(s)) return true;
+        if (/^(online|admin|administrator)\s*-\s*.+/i.test(s)) return true;
+        return false;
+    };
+
+    const fastDeptMap = new Map<string, { orig: string; dept: string }>();
+    for (const [fullName, dept] of Object.entries(employeeDepartmentMap)) {
+        fastDeptMap.set(normalizeText(fullName), { orig: fullName, dept });
+        if (fullName.includes(' - ')) {
+            const parts = fullName.split(' - ').map(p => p.trim());
+            parts.forEach(p => {
+                const normP = normalizeText(p);
+                if (normP) fastDeptMap.set(normP, { orig: fullName, dept });
+            });
+        }
+    }
+
+    const employeeData = new Map<string, {
+        department: string;
+        originalName: string;
+        values: Record<Criterion, (number | null)[]>;
+    }>();
+
+    const recordEmployeeValue = (rawEmpName: string, metric: Criterion, colIdx: number, val: number) => {
+        const canonical = standardizeEmployeeName(rawEmpName);
+        const match = fastDeptMap.get(normalizeText(canonical)) || fastDeptMap.get(normalizeText(rawEmpName));
+        const matchedOriginalName = match ? match.orig : rawEmpName;
+        const department = match ? match.dept : 'BP ALL IN ONE - DMX';
+
+        if (department && isIgnoredDept(department)) return;
+
+        const formattedName = formatEmployeeName(matchedOriginalName);
+
+        if (!employeeData.has(formattedName)) {
+            employeeData.set(formattedName, {
+                department,
+                originalName: matchedOriginalName,
+                values: {
+                    DTLK: new Array(headersMap.DTLK.length).fill(null),
+                    SLLK: new Array(headersMap.SLLK.length).fill(null),
+                    DTQĐ: new Array(headersMap.DTQĐ.length).fill(null)
+                }
+            });
+        }
+        const record = employeeData.get(formattedName)!;
+        while (record.values[metric].length <= colIdx) {
+            record.values[metric].push(null);
+        }
+        record.values[metric][colIdx] = (record.values[metric][colIdx] || 0) + val;
+    };
+
+    // Đăng ký headers
+    blocks.forEach(block => {
+        const { title, metric } = block;
+        headersMap[metric].push({
+            title: shortenName(title || `Unnamed ${headersMap[metric].length}`),
+            originalTitle: title,
+            metric
         });
     });
+
+    const metricIndices: Record<Criterion, number> = { DTLK: 0, SLLK: 0, DTQĐ: 0 };
+    blocks.forEach(block => {
+        const { metric } = block;
+        const colIdx = metricIndices[metric]++;
+        const blockLines = rawLines.slice(block.dataStartIndex, block.endLineIndex);
+
+        let i = 0;
+        while (i < blockLines.length) {
+            const line = blockLines[i];
+
+            if (line.includes('HẠNG TRONG ST') || line.includes('TOP/BOTTOM ST') || line.includes('BỘ PHẬN') ||
+                line.includes('HẠNG TRONG MIỀN') || line.includes('HẠNG TRONG VÙNG') ||
+                line === 'HẠNG TRONG ST' || line === 'TOP/BOTTOM ST' || line === 'BỘ PHẬN' ||
+                isMetadataLine(line)) {
+                i++;
+                continue;
+            }
+
+            if (line.includes('\t')) {
+                const parts = line.split('\t').map(p => p.trim());
+                const firstCol = parts[0];
+                if (firstCol.toLowerCase().startsWith('tổng')) {
+                    i++;
+                    continue;
+                }
+                if (isEmployeeName(firstCol)) {
+                    const val = parseNumber(parts[1]);
+                    recordEmployeeValue(firstCol, metric, colIdx, val);
+                }
+                i++;
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('tổng')) {
+                i++;
+                if (i < blockLines.length && /^-?[\d.,]+$/.test(blockLines[i])) i++;
+                if (i < blockLines.length && (blockLines[i] === '-' || /^\d+$/.test(blockLines[i]))) i++;
+                continue;
+            }
+
+            if (isEmployeeName(line)) {
+                const empName = line;
+                i++;
+                let val = 0;
+                if (i < blockLines.length && /^-?[\d.,]+$/.test(blockLines[i])) {
+                    val = parseNumber(blockLines[i]);
+                    i++;
+                }
+                if (i < blockLines.length && /^\d+$/.test(blockLines[i])) i++;
+                if (i < blockLines.length && (blockLines[i] === 'TOP' || blockLines[i] === 'BOTTOM' || blockLines[i] === '-')) i++;
+                if (i < blockLines.length && blockLines[i].startsWith('BP ')) i++;
+
+                recordEmployeeValue(empName, metric, colIdx, val);
+                continue;
+            }
+
+            i++;
+        }
+    });
+
+    const result: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
+        DTLK: { headers: headersMap.DTLK, employees: [] },
+        DTQĐ: { headers: headersMap.DTQĐ, employees: [] },
+        SLLK: { headers: headersMap.SLLK, employees: [] }
+    };
+
+    employeeData.forEach((data, name) => {
+        (['DTLK', 'SLLK', 'DTQĐ'] as Criterion[]).forEach(key => {
+            const expectedLen = headersMap[key].length;
+            const vals = [...(data.values[key] || [])];
+            while (vals.length < expectedLen) vals.push(null);
+
+            result[key].employees.push({
+                name,
+                originalName: data.originalName,
+                department: data.department,
+                values: vals
+            });
+        });
+    });
+
     return result;
 };

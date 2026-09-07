@@ -9,6 +9,14 @@ export type MainTab = 'realtime' | 'cumulative';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
+/** Nhãn hiển thị của cột bảng Thi đua khi khác với tên cột trong dữ liệu — dùng chung cho bảng và
+ *  popup "Bộ lọc bảng Thi đua" để 2 nơi không gọi cột bằng 2 tên khác nhau. */
+const COMPETITION_COLUMN_LABELS: Record<string, string> = {
+    '%HTDK': '%DKHT',
+};
+
+export const getCompetitionColumnLabel = (header: string): string => COMPETITION_COLUMN_LABELS[header] || header;
+
 /** Nhãn nhóm mặc định theo tiêu chí thi đua (dùng cho cấu hình target và bảng tổng hợp thi đua). */
 export const getDefaultGroupLabel = (metric: string): string =>
     metric === 'SLLK' ? 'Số lượng' : metric === 'DTLK' ? 'Doanh thu' : metric === 'DTQĐ' ? 'Doanh thu quy đổi' : metric;

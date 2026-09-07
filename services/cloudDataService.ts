@@ -156,6 +156,12 @@ export async function uploadProcessedData(
         await batch.commit();
     }
 
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('ycx-sales-data-uploaded', {
+            detail: { savedAt: meta.savedAt, fileLastModified: meta.fileLastModified }
+        }));
+    }
+
     // 3. Clean up old chunks that are no longer needed
     //    (e.g., if previous upload had 5 chunks but this one only has 3)
     try {

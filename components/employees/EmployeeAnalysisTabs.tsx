@@ -55,7 +55,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                             variant="unstyled" size="none"
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(tab.color || 'sky', activeTab === tab.id)}`}
+                            className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-medium text-[10px] sm:text-[13px] transition-colors whitespace-nowrap ${getTabColorClasses(tab.color || 'sky', activeTab === tab.id)}`}
                         >
                             <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
                                 <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
@@ -77,7 +77,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                                 variant="unstyled" size="none"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
+                                className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-medium text-[10px] sm:text-[13px] transition-colors whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
                             >
                                 <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
                                     <Icon name={tab.icon} size={3.5} className="sm:hidden"/>

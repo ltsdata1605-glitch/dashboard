@@ -598,29 +598,29 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     title="Chi Tiết Theo Kho" 
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
-                    <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
+                    <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
                         {/* Lũy kế button */}
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
-                            <Icon name="layers" size={5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Lũy kế</span>
+                            <Icon name="layers" size={4.5} className="hidden lg:block" />
+                            <span className="hidden lg:inline text-[10px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Lũy kế</span>
                         </Button>
 
                         {/* Toggle Ngang/Dọc */}
                         <Button
                             variant="unstyled" size="none"
                             onClick={toggleViewMode}
-                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors whitespace-nowrap shrink-0 ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4} className="lg:hidden" />
-                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
+                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4.5} className="hidden lg:block" />
+                            <span className="hidden lg:inline text-[10px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
                         </Button>
 
                         {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
@@ -637,23 +637,23 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         )}
 
                         {/* Divider */}
-                        <div className="hidden lg:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                        <div className="hidden lg:block w-px h-4 lg:h-5 bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <Icon name="settings-2" size={4} className="lg:hidden" />
-                                <Icon name="settings-2" size={5} className="hidden lg:block" />
+                                <Icon name="settings-2" size={4.5} className="hidden lg:block" />
                             </Button>
                         )}
 
                         {uniqueFilterOptions.kho.length > 1 && (
-                            <Button variant="unstyled" size="none" onClick={onBatchExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
+                            <Button variant="unstyled" size="none" onClick={onBatchExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Xuất hàng loạt">
                                 <Icon name="images" size={4} className="lg:hidden" />
-                                <Icon name="images" size={5} className="hidden lg:block" />
+                                <Icon name="images" size={4.5} className="hidden lg:block" />
                             </Button>
                         )}
-                        <Button variant="unstyled" size="none" onClick={handleSingleExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
-                            {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                        <Button variant="unstyled" size="none" onClick={handleSingleExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
+                            {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={4.5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={4.5} className="hidden lg:block" /></>}
                         </Button>
                     </div>
                 </SectionHeader>

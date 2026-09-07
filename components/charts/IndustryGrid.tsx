@@ -265,24 +265,24 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     </div>
                 )}
             >
-                <div className="flex flex-wrap items-center gap-2 hide-on-export">
+                <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('quantity')}
-                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
                         <Icon name="package" size={4} className="lg:hidden" />
-                        <Icon name="package" size={5} className="hidden lg:block" />
+                        <Icon name="package" size={4.5} className="hidden lg:block" />
                     </Button>
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('revenue')}
-                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
                         <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
-                        <Icon name="circle-dollar-sign" size={5} className="hidden lg:block" />
+                        <Icon name="circle-dollar-sign" size={4.5} className="hidden lg:block" />
                     </Button>
                     {drilldownPath.length > 0 && (
                         <Button

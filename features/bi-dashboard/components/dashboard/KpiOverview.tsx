@@ -250,7 +250,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={dtThucTargetStr}
                         onClick={() => handleOpenModal('dtThuc')}
                     >
-                        <div className="text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
                             {roundUp(dtlk).toLocaleString('vi-VN')} Tr
                         </div>
                     </KpiCard>
@@ -265,7 +265,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={secondaryTargetStr || '-'}
                         onClick={() => handleOpenModal('dtQd')}
                     >
-                        <div className={`text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
                             {roundUp(dtqd).toLocaleString('vi-VN')} Tr
                         </div>
                     </KpiCard>
@@ -280,7 +280,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={`${currentQuyDoiTarget}%`}
                         onClick={() => handleOpenModal('hqqd')}
                     >
-                        <div className={`text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'}`}>
                             {Math.ceil(hqqd)}%
                         </div>
                     </KpiCard>
@@ -295,7 +295,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={`${currentTraGopTarget}%`}
                         onClick={() => handleOpenModal('traCham')}
                     >
-                        <div className={`text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                             {Math.ceil(tyTrongTraGop)}%
                         </div>
                     </KpiCard>
@@ -304,25 +304,25 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* ROW 2: CHỈ SỐ PHỤ */}
                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
                     <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
-                        <div className="text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums text-sky-600 dark:text-sky-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-sky-600 dark:text-sky-400">
                             {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
-                        <div className="text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums text-amber-600 dark:text-amber-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-amber-600 dark:text-amber-400">
                             {Math.ceil(parseNumber(kpiData.tlpv))}%
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
-                        <div className="text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
                             {kpiData.lbillBH ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : '0'}
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="wallet" iconColor="rose" title="Bill T.Hộ">
-                        <div className="text-[14px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-black leading-none tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
                             {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                         </div>
                     </KpiCard>

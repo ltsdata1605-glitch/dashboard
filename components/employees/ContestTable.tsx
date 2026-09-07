@@ -404,8 +404,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 >
                     <div className="flex items-center gap-2 lg:gap-3 min-w-0">
                         <div className="min-w-0">
-                            <h3 className="text-[11px] lg:text-lg font-black uppercase text-slate-800 dark:text-white tracking-tight truncate leading-tight">{config.tableName}</h3>
-                            <p className="text-[8px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
+                            <h3 className="text-sm lg:text-lg font-medium uppercase text-slate-700 dark:text-slate-200 tracking-wide truncate leading-tight">{config.tableName}</h3>
+                            <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">

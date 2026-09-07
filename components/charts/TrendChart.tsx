@@ -533,43 +533,43 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           <Button
               variant="unstyled" size="none"
               onClick={() => setDisplayMode('chart')}
-              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
+              className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                   displayMode === 'chart'
-                      ? 'text-indigo-600 dark:text-indigo-400'
-                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
               title="Dạng Biểu đồ"
           >
               <Icon name="bar-chart-2" size={4} className="lg:hidden" />
-              <Icon name="bar-chart-2" size={5} className="hidden lg:block" />
+              <Icon name="bar-chart-2" size={4.5} className="hidden lg:block" />
           </Button>
           <Button
               variant="unstyled" size="none"
               onClick={() => setDisplayMode('calendar')}
-              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
+              className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                   displayMode === 'calendar'
-                      ? 'text-indigo-600 dark:text-indigo-400'
-                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
               title="Dạng Bảng Lịch"
           >
               <Icon name="calendar" size={4} className="lg:hidden" />
-              <Icon name="calendar" size={5} className="hidden lg:block" />
+              <Icon name="calendar" size={4.5} className="hidden lg:block" />
           </Button>
 
           <Button
             variant="unstyled" size="none"
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
+            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
               isExporting
-              ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
-              : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
+              : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title={displayMode === 'calendar' ? "Xuất ảnh hàng loạt toàn bộ Bảng Lịch" : "Xuất ảnh"}
           >
             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4} className="lg:hidden" />}
-            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={5} className="hidden lg:block" />}
+            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4.5} className="hidden lg:block" />}
           </Button>
         </div>
       </SectionHeader>

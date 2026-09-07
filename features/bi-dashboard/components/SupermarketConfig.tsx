@@ -1,6 +1,7 @@
 
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
-import { XIcon, ResetIcon, AlertTriangleIcon, PencilIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
+import { createPortal } from 'react-dom';
+import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
 import { ExternalLink } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
@@ -9,12 +10,12 @@ import * as db from '../utils/db';
 import { shortenName, shortenSupermarketName, getDefaultGroupLabel } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
-import { Modal } from '../../../components/shared/ui/Modal';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { Input } from '../../../components/shared/ui/Input';
 import { DataTable, type DataTableColumn } from '../../../components/shared/ui/DataTable';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
+import { validateThiDuaData } from '../utils/nhanVienHelpers';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
@@ -42,21 +43,67 @@ const GroupCombobox: React.FC<{
     onDeleteGroup?: (group: string) => void;
     onResetGroups?: () => void;
     hasDeletedGroups?: boolean;
-}> = ({ value, onChange, placeholder, availableGroups, onDeleteGroup, onResetGroups, hasDeletedGroups }) => {
+    /** Gọi khi giá trị được CHỐT (chọn từ danh sách / bỏ chọn / xoá nhóm đang chọn), khác với
+     *  onChange vốn bắn theo từng ký tự người dùng gõ. */
+    onCommit?: (val: string) => void;
+}> = ({ value, onChange, placeholder, availableGroups, onDeleteGroup, onResetGroups, hasDeletedGroups, onCommit }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+
+    const updatePosition = useCallback(() => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const estimatedHeight = 240;
+        const placeAbove = spaceBelow < estimatedHeight && rect.top > estimatedHeight;
+
+        const style: React.CSSProperties = {
+            position: 'fixed',
+            zIndex: 9999,
+            minWidth: Math.max(rect.width, 220),
+            maxWidth: 280,
+            right: Math.max(8, window.innerWidth - rect.right),
+        };
+
+        if (placeAbove) {
+            style.bottom = window.innerHeight - rect.top + 4;
+        } else {
+            style.top = rect.bottom + 4;
+        }
+
+        setMenuStyle(style);
+    }, []);
 
     useEffect(() => {
+        if (!isOpen) return;
+        updatePosition();
+
+        const handleScrollOrResize = () => {
+            updatePosition();
+        };
+
+        window.addEventListener('scroll', handleScrollOrResize, true);
+        window.addEventListener('resize', handleScrollOrResize);
+
         const handleClickOutside = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+            const target = e.target as Node;
+            if (
+                containerRef.current && !containerRef.current.contains(target) &&
+                dropdownRef.current && !dropdownRef.current.contains(target)
+            ) {
                 setIsOpen(false);
             }
         };
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => document.removeEventListener('mousedown', handleClickOutside);
-        }
-    }, [isOpen]);
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            window.removeEventListener('scroll', handleScrollOrResize, true);
+            window.removeEventListener('resize', handleScrollOrResize);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, updatePosition]);
 
     return (
         <div ref={containerRef} className="relative w-full">
@@ -65,15 +112,32 @@ const GroupCombobox: React.FC<{
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    onFocus={() => setIsOpen(true)}
+                    onFocus={() => {
+                        updatePosition();
+                        setIsOpen(true);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            setIsOpen(false);
+                            onCommit?.(value);
+                            e.currentTarget.blur();
+                        } else if (e.key === 'Escape') {
+                            setIsOpen(false);
+                        }
+                    }}
                     placeholder={placeholder}
                     className="h-8 py-1 px-2.5 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
                 />
                 <Button
                     type="button"
                     variant="unstyled"
+                    size="none"
                     tabIndex={-1}
-                    onClick={() => setIsOpen(prev => !prev)}
+                    onClick={() => {
+                        if (!isOpen) updatePosition();
+                        setIsOpen(prev => !prev);
+                    }}
                     className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded"
                     title="Xem tất cả các nhóm có sẵn"
                 >
@@ -83,20 +147,25 @@ const GroupCombobox: React.FC<{
                 </Button>
             </div>
 
-            {isOpen && (
-                <div className="absolute left-0 right-0 top-[calc(100%+2px)] z-50 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden py-1 max-h-48 overflow-y-auto">
-                    <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
+            {isOpen && typeof document !== 'undefined' && createPortal(
+                <div
+                    ref={dropdownRef}
+                    style={menuStyle}
+                    className="w-max bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden py-0.5 max-h-72 overflow-y-auto"
+                >
+                    <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 whitespace-nowrap">
                         <span>Nhóm có sẵn ({availableGroups.length})</span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                             {hasDeletedGroups && onResetGroups && (
                                 <Button
                                     type="button"
                                     variant="unstyled"
+                                    size="none"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onResetGroups();
                                     }}
-                                    className="text-sky-500 hover:underline text-[10px] font-normal"
+                                    className="text-sky-500 hover:underline text-[10px] font-normal whitespace-nowrap"
                                     title="Khôi phục lại các nhóm mặc định đã xoá"
                                 >
                                     Khôi phục
@@ -106,11 +175,13 @@ const GroupCombobox: React.FC<{
                                 <Button
                                     type="button"
                                     variant="unstyled"
+                                    size="none"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onChange('');
+                                        onCommit?.('');
                                     }}
-                                    className="text-rose-500 hover:underline text-[10px] font-normal"
+                                    className="text-rose-500 hover:underline text-[10px] font-normal whitespace-nowrap"
                                     title="Xoá nhóm đã chọn"
                                 >
                                     Bỏ chọn
@@ -126,16 +197,17 @@ const GroupCombobox: React.FC<{
                                     key={group}
                                     onClick={() => {
                                         onChange(group);
+                                        onCommit?.(group);
                                         setIsOpen(false);
                                     }}
-                                    className={`group/item w-full text-left px-2.5 py-1.5 text-xs font-normal flex items-center justify-between transition-colors cursor-pointer ${
+                                    className={`group/item w-full text-left px-2.5 py-1 text-xs font-normal leading-tight whitespace-nowrap flex items-center justify-between gap-2 transition-colors cursor-pointer ${
                                         isSelected
                                             ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 font-medium'
                                             : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                                     }`}
                                 >
                                     <span className="truncate flex-1">{group}</span>
-                                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                    <div className="flex items-center gap-1 shrink-0">
                                         {isSelected && (
                                             <span className="text-[10px] text-sky-600 font-bold">✓</span>
                                         )}
@@ -143,12 +215,13 @@ const GroupCombobox: React.FC<{
                                             <Button
                                                 type="button"
                                                 variant="unstyled"
+                                                size="none"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     onDeleteGroup(group);
-                                                    if (value === group) onChange('');
+                                                    if (value === group) { onChange(''); onCommit?.(''); }
                                                 }}
-                                                className="p-1 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
+                                                className="p-0.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
                                                 title={`Xoá nhóm "${group}" khỏi danh sách`}
                                             >
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -161,165 +234,55 @@ const GroupCombobox: React.FC<{
                             );
                         })
                     ) : (
-                        <div className="px-2.5 py-3 text-center text-[11px] text-slate-400">
+                        <div className="px-2.5 py-2 text-center text-[11px] text-slate-400 whitespace-nowrap">
                             Không còn nhóm nào
                         </div>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
 };
 
-const BulkRenameModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    competitions: Competition[];
-    nameOverrides: Record<string, string>;
-    groupOverrides: Record<string, string>;
-    onSave: (newNames: Record<string, string>, newGroups: Record<string, string>) => void;
-}> = ({ isOpen, onClose, competitions, nameOverrides, groupOverrides, onSave }) => {
-    const [tempName, setTempName] = useState<Record<string, string>>(nameOverrides);
-    const [tempGroup, setTempGroup] = useState<Record<string, string>>(groupOverrides);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [deletedGroups, setDeletedGroups] = useIndexedDBState<string[]>('competition-deleted-preset-groups', []);
-    
-    useEffect(() => { 
-        if (isOpen) {
-            setTempName(nameOverrides); 
-            setTempGroup(groupOverrides);
-            setSearchQuery('');
-        }
-    }, [isOpen]); // Execute only when modal opens/closes
+/** Ô "Nhóm tiêu chí" của bảng Cấu hình Target Thi đua. Bảng được gom nhóm THEO chính giá trị này,
+ *  nên nếu ghi ngay từng ký tự thì hàng sẽ nhảy sang bảng nhóm khác giữa lúc gõ và ô nhập mất focus.
+ *  Vì vậy giữ bản nháp cục bộ, chỉ ghi khi chốt: chọn trong danh sách, hoặc rời khỏi ô. */
+const CompetitionGroupCell: React.FC<{
+    value: string;
+    placeholder: string;
+    availableGroups: string[];
+    onCommit: (val: string) => void;
+    onDeleteGroup: (group: string) => void;
+    onResetGroups: () => void;
+    hasDeletedGroups: boolean;
+}> = ({ value, placeholder, availableGroups, onCommit, onDeleteGroup, onResetGroups, hasDeletedGroups }) => {
+    const [draft, setDraft] = useState(value);
+    useEffect(() => { setDraft(value); }, [value]);
 
-    const availableGroups = useMemo(() => {
-        const deletedSet = new Set(deletedGroups || []);
-        const set = new Set<string>();
-        DEFAULT_PRESET_GROUPS.forEach(g => {
-            if (!deletedSet.has(g)) set.add(g);
-        });
-        competitions.forEach(c => {
-            const defaultGroup = getDefaultGroupLabel(c.criteria);
-            if (defaultGroup && !deletedSet.has(defaultGroup)) set.add(defaultGroup);
-            if (tempGroup[c.name] && !deletedSet.has(tempGroup[c.name])) set.add(tempGroup[c.name]);
-            if (groupOverrides[c.name] && !deletedSet.has(groupOverrides[c.name])) set.add(groupOverrides[c.name]);
-        });
-        return Array.from(set).filter(Boolean);
-    }, [competitions, tempGroup, groupOverrides, deletedGroups]);
-
-    const handleDeleteGroup = (groupToDelete: string) => {
-        setDeletedGroups(prev => Array.from(new Set([...(prev || []), groupToDelete])));
-        setTempGroup(prev => {
-            const updated = { ...prev };
-            Object.keys(updated).forEach(k => {
-                if (updated[k] === groupToDelete) {
-                    delete updated[k];
-                }
-            });
-            return updated;
-        });
+    const commit = (val: string) => {
+        setDraft(val);
+        if (val.trim() !== value.trim()) onCommit(val.trim());
     };
-
-    const handleResetGroups = () => {
-        setDeletedGroups([]);
-    };
-
-    const filteredComps = competitions.filter(comp => comp.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={<span className="font-semibold text-base text-slate-800 dark:text-slate-100">Sửa cấu hình nhóm thi đua</span>}
-            subTitle="Cấu hình tên hiển thị và phân loại nhóm tiêu chí đồng bộ toàn báo cáo"
-            maxWidth="2xl"
-            controls={
-                <Input
-                    type="text"
-                    fullWidth={false}
-                    placeholder="Tìm kiếm nhóm BI..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="h-8 w-44 sm:w-60 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs font-normal focus-visible:ring-1 focus-visible:ring-sky-500 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 shadow-none"
-                />
-            }
-            footer={
-                <div className="flex justify-between items-center w-full">
-                    <span className="text-xs text-slate-400 font-normal">
-                        Hiển thị {filteredComps.length} / {competitions.length} nhóm
-                    </span>
-                    <div className="flex gap-2">
-                        <Button 
-                            variant="unstyled" 
-                            size="none" 
-                            onClick={() => { setTempName({}); setTempGroup({}); setDeletedGroups([]); }} 
-                            className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-xs font-medium transition-colors"
-                        >
-                            Mặc định
-                        </Button>
-                        <Button 
-                            variant="unstyled" 
-                            size="none" 
-                            onClick={() => { onSave(tempName, tempGroup); onClose(); }} 
-                            className="px-4 py-1.5 bg-sky-600 text-white rounded-md text-xs font-medium hover:bg-sky-700 transition-colors"
-                        >
-                            Lưu cập nhật
-                        </Button>
-                    </div>
-                </div>
-            }
+        <div
+            onBlur={(e) => {
+                // Chỉ chốt khi focus rời hẳn ô (không phải nhảy giữa input và nút mở danh sách).
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) commit(draft);
+            }}
         >
-            <div className="-mx-6 -my-4 border-t border-slate-200 dark:border-slate-700">
-                {/* Header hàng */}
-                <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                    <div className="col-span-4">Tên gốc trong BI</div>
-                    <div className="col-span-4">Tên hiển thị mới</div>
-                    <div className="col-span-4">Nhóm tiêu chí</div>
-                </div>
-
-                {/* Danh sách các hàng */}
-                <div className="max-h-[58vh] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredComps.length > 0 ? (
-                        filteredComps.map(comp => (
-                            <div 
-                                key={comp.name} 
-                                className="grid grid-cols-12 gap-3 px-4 py-2 items-center hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors text-xs"
-                            >
-                                <div className="col-span-4 min-w-0 pr-1">
-                                    <p className="font-normal text-slate-700 dark:text-slate-200 truncate" title={comp.name}>
-                                        {comp.name}
-                                    </p>
-                                </div>
-                                <div className="col-span-4">
-                                    <Input
-                                        value={tempName[comp.name] ?? ''}
-                                        onChange={e => setTempName({ ...tempName, [comp.name]: e.target.value })}
-                                        placeholder={shortenName(comp.name)}
-                                        className="h-8 py-1 px-2.5 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs font-normal focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 shadow-none"
-                                    />
-                                </div>
-                                <div className="col-span-4">
-                                    <GroupCombobox
-                                        value={tempGroup[comp.name] ?? ''}
-                                        onChange={val => setTempGroup({ ...tempGroup, [comp.name]: val })}
-                                        placeholder={getDefaultGroupLabel(comp.criteria)}
-                                        availableGroups={availableGroups}
-                                        onDeleteGroup={handleDeleteGroup}
-                                        onResetGroups={handleResetGroups}
-                                        hasDeletedGroups={(deletedGroups || []).length > 0}
-                                    />
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                            <XIcon className="h-5 w-5 mb-1.5 opacity-60" />
-                            <p className="text-xs font-normal">Không có nhóm nào để sửa.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </Modal>
+            <GroupCombobox
+                value={draft}
+                onChange={setDraft}
+                onCommit={commit}
+                placeholder={placeholder}
+                availableGroups={availableGroups}
+                onDeleteGroup={onDeleteGroup}
+                onResetGroups={onResetGroups}
+                hasDeletedGroups={hasDeletedGroups}
+            />
+        </div>
     );
 };
 
@@ -465,7 +428,10 @@ const CompetitionTarget: React.FC<{
     const [targets, setTargets] = useIndexedDBState<Record<string, number>>(`comptarget-${safeName}-targets`, {}, 300);
     const [nameOverrides, setNameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides, setGroupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
-    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+    const [deletedGroups, setDeletedGroups] = useIndexedDBState<string[]>('competition-deleted-preset-groups', []);
+    // Tiêu chí đang sửa tên hiển thị ngay trên bảng (thay cho modal "Sửa cấu hình nhóm thi đua" cũ)
+    const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
+    const [editingNameValue, setEditingNameValue] = useState('');
     
     // Confirm Dialog State
     const [confirmDialog, setConfirmDialog] = useState<{
@@ -492,6 +458,48 @@ const CompetitionTarget: React.FC<{
     const handleSliderChange = (compName: string) => (val: number) => {
         setTargets(prev => ({ ...prev, [compName]: val }));
         addUpdate(`comptarget-${supermarketName}-${compName}`, `Điều chỉnh target ${compName} - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+    };
+
+    const availableGroups = useMemo(() => {
+        const deletedSet = new Set(deletedGroups || []);
+        const set = new Set<string>();
+        DEFAULT_PRESET_GROUPS.forEach(g => { if (!deletedSet.has(g)) set.add(g); });
+        competitions.forEach(c => {
+            const defaultGroup = getDefaultGroupLabel(c.criteria);
+            if (defaultGroup && !deletedSet.has(defaultGroup)) set.add(defaultGroup);
+            if (groupOverrides[c.name] && !deletedSet.has(groupOverrides[c.name])) set.add(groupOverrides[c.name]);
+        });
+        return Array.from(set).filter(Boolean);
+    }, [competitions, groupOverrides, deletedGroups]);
+
+    const handleDeleteGroup = (groupToDelete: string) => {
+        setDeletedGroups(prev => Array.from(new Set([...(prev || []), groupToDelete])));
+        setGroupOverrides(prev => {
+            const updated = { ...prev };
+            Object.keys(updated).forEach(k => { if (updated[k] === groupToDelete) delete updated[k]; });
+            return updated;
+        });
+    };
+
+    const handleResetGroups = () => setDeletedGroups([]);
+
+    /** Ghi tên hiển thị mới; để trống = trả về tên rút gọn mặc định của BI. */
+    const commitDisplayName = (compName: string, value: string) => {
+        const trimmed = value.trim();
+        setNameOverrides(prev => {
+            const next = { ...prev };
+            if (!trimmed) delete next[compName]; else next[compName] = trimmed;
+            return next;
+        });
+        setEditingNameFor(null);
+    };
+
+    const commitGroup = (compName: string, value: string) => {
+        setGroupOverrides(prev => {
+            const next = { ...prev };
+            if (!value) delete next[compName]; else next[compName] = value;
+            return next;
+        });
     };
 
     const handleSaveAsPrevMonth = async (compName: string) => {
@@ -526,9 +534,6 @@ const CompetitionTarget: React.FC<{
                     }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="unstyled" size="none" onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
-                        <PencilIcon className="h-4 w-4" />
-                    </Button>
                 </div>
             </div>
 
@@ -548,17 +553,47 @@ const CompetitionTarget: React.FC<{
                         header: 'Tiêu chí',
                         headerAlign: 'center',
                         minWidth: '160px',
-                        cell: (comp) => (
-                            <span className="text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:text-slate-300" title={comp.name}>
-                                {shortenName(comp.name, nameOverrides)}
-                            </span>
-                        ),
+                        cell: (comp) => {
+                            const currentDisplayName = shortenName(comp.name, nameOverrides);
+                            if (editingNameFor === comp.name) {
+                                return (
+                                    <Input
+                                        autoFocus
+                                        value={editingNameValue}
+                                        onChange={(e) => setEditingNameValue(e.target.value)}
+                                        onFocus={(e) => {
+                                            const val = e.target.value;
+                                            e.target.setSelectionRange(val.length, val.length);
+                                        }}
+                                        onBlur={() => commitDisplayName(comp.name, editingNameValue)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') commitDisplayName(comp.name, editingNameValue);
+                                            else if (e.key === 'Escape') setEditingNameFor(null);
+                                        }}
+                                        placeholder={shortenName(comp.name)}
+                                        className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-[11px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case"
+                                    />
+                                );
+                            }
+                            return (
+                                <div
+                                    onDoubleClick={() => {
+                                        setEditingNameFor(comp.name);
+                                        setEditingNameValue(currentDisplayName);
+                                    }}
+                                    className="w-full justify-start text-left text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
+                                    title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
+                                >
+                                    {currentDisplayName}
+                                </div>
+                            );
+                        },
                     },
                     {
                         id: 'base',
                         header: 'Gốc',
                         align: 'center',
-                        width: '90px',
+                        width: '95px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
@@ -569,7 +604,7 @@ const CompetitionTarget: React.FC<{
                         id: 'after',
                         header: 'Sau',
                         align: 'center',
-                        width: '90px',
+                        width: '95px',
                         cell: (comp) => {
                             const idx = competitions.findIndex(c => c.name === comp.name);
                             const t = COMPETITION_ROW_THEMES[idx % COMPETITION_ROW_THEMES.length];
@@ -584,7 +619,7 @@ const CompetitionTarget: React.FC<{
                         id: 'perPerson',
                         header: '/Người',
                         align: 'center',
-                        width: '80px',
+                        width: '90px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const ratio = targets[comp.name] ?? 100;
@@ -598,20 +633,13 @@ const CompetitionTarget: React.FC<{
                     {
                         id: 'ratio',
                         header: '% Target',
-                        headerAlign: 'center',
-                        minWidth: '220px',
+                        align: 'center',
+                        width: '95px',
                         cell: (comp) => {
                             const t = RATIO_CONTROL_THEME;
                             const ratio = targets[comp.name] ?? 100;
                             return (
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="range"
-                                        min={0} max={300} step={1}
-                                        value={ratio}
-                                        onChange={(e) => handleSliderChange(comp.name)(parseFloat(e.target.value))}
-                                        className={`flex-1 h-1.5 ${t.track} rounded-full appearance-none cursor-pointer ${t.thumb} transition-all min-w-0`}
-                                    />
+                                <div className="flex items-center justify-center">
                                     <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm shrink-0`}>
                                         <input
                                             type="number"
@@ -632,23 +660,21 @@ const CompetitionTarget: React.FC<{
                         },
                     },
                     {
-                        id: 'action',
-                        header: '',
-                        align: 'center',
-                        width: '44px',
-                        cell: (comp) => {
-                            const t = RATIO_CONTROL_THEME;
-                            return (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={() => handleSaveAsPrevMonth(comp.name)}
-                                    className={`p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors`}
-                                    title="Lưu dữ liệu hiện tại làm mốc so sánh tháng trước"
-                                >
-                                    <ClockIcon className="h-3.5 w-3.5" />
-                                </Button>
-                            );
-                        },
+                        id: 'group',
+                        header: 'Nhóm tiêu chí',
+                        headerAlign: 'center',
+                        width: '180px',
+                        cell: (comp) => (
+                            <CompetitionGroupCell
+                                value={groupOverrides[comp.name] ?? ''}
+                                placeholder={getDefaultGroupLabel(comp.criteria)}
+                                availableGroups={availableGroups}
+                                onCommit={(val) => commitGroup(comp.name, val)}
+                                onDeleteGroup={handleDeleteGroup}
+                                onResetGroups={handleResetGroups}
+                                hasDeletedGroups={(deletedGroups || []).length > 0}
+                            />
+                        ),
                     },
                 ];
 
@@ -667,6 +693,8 @@ const CompetitionTarget: React.FC<{
                                     compact
                                     stickyHeader={false}
                                     columnDividers
+                                    overflowVisible
+                                    fixedLayout
                                 />
                             </div>
                         ))}
@@ -681,18 +709,6 @@ const CompetitionTarget: React.FC<{
                     />
                 </div>
             )}
-
-            <BulkRenameModal 
-                isOpen={isRenameModalOpen} 
-                onClose={() => setIsRenameModalOpen(false)} 
-                competitions={competitions} 
-                nameOverrides={nameOverrides}
-                groupOverrides={groupOverrides}
-                onSave={(names, groups) => {
-                    setNameOverrides(names);
-                    setGroupOverrides(groups);
-                }}
-            />
 
             <ConfirmDialog 
                 isOpen={confirmDialog.isOpen}
@@ -878,9 +894,15 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         
                                     }} />
                                 
-                                <StatusTile title="THI ĐUA NV" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Phòng ban..." error={errors.thiDua} 
+                                <StatusTile title="THI ĐUA NV" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua NV..." error={errors.thiDua} 
                                     icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
-                                    onChange={(v) => { setThiDuaData(v); if(v && v.toLowerCase().includes('phòng ban')) { onThiDuaDataChange(supermarketName, v); handleUpdate('thiDua', v, s => s.toLowerCase().includes('phòng ban'), setThiDuaTs, `Nhân viên (TĐ) - ${supermarketName}`, ids.td!); } else setErrors(p => ({...p, thiDua: 'Sai định dạng Thi đua NV.'})); }}
+                                    onChange={(v) => { 
+                                        setThiDuaData(v); 
+                                        if(v && validateThiDuaData(v)) { 
+                                            onThiDuaDataChange(supermarketName, v); 
+                                            handleUpdate('thiDua', v, validateThiDuaData, setThiDuaTs, `Nhân viên (TĐ) - ${supermarketName}`, ids.td!); 
+                                        } else setErrors(p => ({...p, thiDua: 'Sai định dạng Thi đua NV.'})); 
+                                    }}
                                     onClear={(title) => { 
                                         setThiDuaData(''); 
                                         setThiDuaTs(null); 

@@ -1577,3 +1577,160 @@ index, nên đúng cho cả nguồn có sẵn 2 cột lẫn nguồn chưa có.
 **Chưa test dữ liệu thật** — cần user mở lại tab Thi đua (Luỹ kế và Realtime) xem 2 cột đã ra số.
 Nếu ra "0" thì nguyên nhân tiếp theo là base target/% điều chỉnh chưa cấu hình cho siêu thị đó
 (SupermarketConfig → target thi đua), không phải lỗi ghi cột nữa.
+
+## Bộ lọc bảng Thi đua — bấm thẳng vào nút gạt không ăn (2026-09-05)
+
+**Nguyên nhân**: trong popup "Bộ lọc bảng Thi đua"
+(`features/bi-dashboard/components/dashboard/CompetitionView.tsx`, cả 2 danh sách "Chương trình" và
+"Cột hiển thị"), `<Switch />` nằm **bên trong** `<div onClick={toggle}>` của cả dòng. Một cú bấm
+vào nút chạy `onChange` rồi nổi bọt lên `div` chạy tiếp `toggle` → đảo trạng thái 2 lần, nhìn như
+nút chết; bấm vào phần trống của dòng chỉ chạy 1 lần nên vẫn hoạt động.
+
+**Sửa**: `Switch` trong `DashboardWidgets.tsx` gọi `e.stopPropagation()` trước `onChange`. Sửa ở
+component thay vì ở CompetitionView vì nút đã tự xử lý sự kiện của nó thì không nên để phần tử cha
+xử lý lại. Các nơi dùng `Switch` khác (IndustryView, SummaryTableView, CompetitionTab,
+CompetitionSummaryView) đặt nhãn bấm được là phần tử **anh em** của Switch nên không phụ thuộc việc
+nổi bọt — không bị ảnh hưởng.
+
+**Verify**: eslint + tsc sạch, build OK. Ratchet: 2 vi phạm còn lại (`Legend.tsx`,
+`SummaryTableHeader.tsx`) đến từ thay đổi chưa commit trong working tree của user, không phải đợt
+sửa này.
+
+## Bảng Thi đua — thứ tự cột, bộ cột mặc định, đổi tên %HTDK, sắp xếp mặc định (2026-09-05)
+
+1. **Thứ tự cột = thứ tự bật**: `CompetitionView` chuyển từ lưu danh sách cột ẨN
+   (`competition-hidden-cols-*`) sang lưu danh sách cột BẬT theo thứ tự
+   (`competition-visible-cols-*-v2`); bật thêm cột nào thì cột đó vào cuối danh sách ⇒ cuối bảng.
+   Popup Bộ lọc hiện số thứ tự cột bên trái tên để thấy ngay vị trí. `CompetitionListView` đổi prop
+   `hiddenColumns` → `visibleColumns`, render header/ô theo danh sách đã sắp xếp và tra ô bằng
+   `headers.indexOf(cột)` thay vì `program.data.map` (nhờ vậy cũng hết lệch khi data thiếu ô), cột
+   "Còn Lại" trở thành một cột bình thường trong danh sách thay vì luôn ghim cuối.
+2. **Bộ cột mặc định**: Realtime = `Target V.Trội, Realtime, %HT V.Trội, Còn Lại`;
+   Luỹ kế = `Target V.Trội, L.Kế, %HTDK, Còn Lại`.
+3. **Đổi nhãn `%HTDK` → `%DKHT`**: thêm `getCompetitionColumnLabel()` trong `dashboardHelpers.ts`
+   dùng chung cho bảng và popup Bộ lọc (chỉ đổi NHÃN, tên cột trong dữ liệu giữ nguyên `%HTDK` để
+   không phá logic sort/rename). Cột `%HTDK V.Trội` giữ nguyên tên vì user chỉ yêu cầu đổi `%HTDK`.
+   `getHeaderCellClass` nhận thêm `%DKHT` để cột này vẫn giữ màu rose.
+4. **Sắp xếp mặc định giảm dần**: Realtime theo `%HT`, Luỹ kế theo `%HTDK` (trước đây là
+   `Realtime`/`L.Kế`).
+
+Hai khoá IndexedDB (`competition-sort-config-*`, cột hiển thị) đều thêm hậu tố `-v2`: cấu hình cũ
+đang lưu trên máy người dùng luôn khác `null`/khác mặc định nên mặc định mới sẽ không bao giờ được
+áp nếu giữ khoá cũ. Đổi khoá = mọi người nhận bộ mặc định mới, và vẫn tự chỉnh lại được như thường.
+
+**Verify**: eslint (chỉ còn 2 warning `<button>` thô có sẵn từ trước ở popup), tsc sạch, build OK,
+ratchet không phát sinh vi phạm mới ở các file này. **Chưa test UI thật.**
+
+## Bảng Cấu hình Target Thi đua — bỏ thanh trượt, gộp chức năng sửa tên/nhóm vào bảng (2026-09-05)
+
+`features/bi-dashboard/components/SupermarketConfig.tsx`:
+
+- **Bỏ `<input type="range">`** ở cột "% Target", chỉ giữ ô nhập số %; cột thu từ `minWidth 220px`
+  xuống `width 90px`, căn giữa.
+- **Cột "Tiêu chí" sửa tên tại chỗ**: bấm vào tên → ô nhập; Enter hoặc rời ô = lưu, Esc = huỷ, để
+  trống = trả về tên rút gọn mặc định của BI. Ghi thẳng vào `competition-name-overrides` (đúng khoá
+  modal cũ dùng nên các nơi khác trong báo cáo vẫn đọc được).
+- **Thêm cột "Nhóm tiêu chí" ở CUỐI bảng**, dùng lại `GroupCombobox` của modal cũ (chọn nhóm có
+  sẵn, tạo nhóm mới, xoá/khôi phục nhóm preset). Ghi vào `competition-group-overrides`.
+- **Xoá modal `BulkRenameModal` và nút bút chì mở modal** — chức năng đã nằm hết trong bảng (xoá
+  ~8.100 ký tự code chết, dọn luôn import `Modal`/`XIcon`/`PencilIcon` không còn dùng).
+
+Hai điểm kỹ thuật đáng lưu:
+- Bảng được **gom nhóm theo chính giá trị "Nhóm tiêu chí"**, nên ghi ngay từng ký tự sẽ làm hàng
+  nhảy sang bảng khác giữa lúc gõ và ô nhập mất focus. Thêm `CompetitionGroupCell` giữ bản nháp cục
+  bộ, chỉ ghi khi CHỐT (chọn trong danh sách / rời ô) — `GroupCombobox` được thêm prop `onCommit`
+  để phân biệt "đang gõ" với "đã chốt".
+- `CompetitionGroupCell` đặt ở top-level của file, không định nghĩa lồng trong component cha (lồng
+  sẽ khiến ô nhập mất focus mỗi ký tự).
+
+**Chức năng bị mất so với modal cũ**: nút "Mặc định" của modal (xoá TOÀN BỘ tên hiển thị + nhóm +
+danh sách nhóm đã xoá trong một lần). Vẫn reset được từng dòng (xoá trắng ô tên / "Bỏ chọn" trong
+dropdown nhóm). Chưa làm lại nút reset hàng loạt vì user không yêu cầu — cần thì bổ sung sau.
+
+**Verify**: eslint + tsc sạch, build OK, ratchet không phát sinh vi phạm mới ở file này.
+
+## Ô "Nhóm tiêu chí" — làm gọn danh sách + Enter để lưu (2026-09-05)
+
+**Nguyên nhân danh sách bị vỡ chữ/cao bất thường**: 4 nút bên trong `GroupCombobox` (mở danh sách,
+"Khôi phục", "Bỏ chọn", nút xoá từng nhóm) dùng `<Button variant="unstyled">` nhưng **quên
+`size="none"`**, nên nhận kích thước mặc định `md` = `h-9 px-4`. Trong modal cũ (rộng) không lộ,
+nhưng ở cột bảng chỉ ~170px thì nút chiếm hết chỗ, đẩy tiêu đề "Nhóm có sẵn (3)" xuống nhiều dòng
+và làm mỗi hàng cao gấp đôi.
+
+**Sửa**: thêm `size="none"` cho cả 4 nút; danh sách chuyển sang `w-max min-w-full max-w-[260px]`
+neo phải (nới rộng về bên trái, không tràn khỏi bảng vì đây là cột cuối); thêm `whitespace-nowrap`
+cho tiêu đề và các hàng; giảm padding hàng `py-1.5 → py-1`, nút xoá `p-1 → p-0.5`.
+
+**Enter để lưu**: ô nhập nhóm bắt `Enter` → chốt giá trị đang gõ (tạo nhóm mới ngay tại chỗ), đóng
+danh sách và rời focus; `Escape` chỉ đóng danh sách. Ô "Tiêu chí" (tên hiển thị) đã có sẵn Enter =
+lưu từ đợt trước.
+
+**Verify**: eslint + tsc sạch, build OK, ratchet không phát sinh vi phạm mới ở file này.
+
+## Test E2E sâu cho Report BI + Phân Tích (2026-09-05)
+
+Bộ test Playwright kiểm chứng đúng các thay đổi trong ngày, chạy **10/10 pass** trên cả dev server
+lẫn bản build (`E2E_BASE_URL=http://127.0.0.1:4173` + `vite preview`).
+
+**`tests/e2e/bi-competition.spec.ts`** (4 test): cột mặc định đúng thứ tự + nhãn `%DKHT`; 2 cột
+vượt trội CÓ số (bug `push` sai vị trí); sắp xếp mặc định giảm dần theo %DKHT; bấm THẲNG vào nút
+gạt thì cột được bật và nằm cuối bảng (bug double-toggle + thứ tự theo lượt bật).
+
+**`tests/e2e/phan-tich-performance-modal.spec.ts`** (5 test): bảng "Phụ Kiện & Điện Gia Dụng" thay
+cho biểu đồ tỷ trọng; đủ 3 nhóm cột; header ảnh xuất nằm trong DOM nhưng ẩn trên UI; còn nút xuất
+ảnh + danh sách khách hàng; **số liệu khớp dữ liệu nạp vào** (CAM 2, SDP 1, Loa 1, MLN 1, N.Cơm 1 —
+trùng khít bảng "Chi Tiết Theo Kho" của cùng dữ liệu).
+
+**Những chỗ mất thời gian nhất khi dựng dữ liệu giả (ghi lại để lần sau khỏi dò):**
+- Sidebar thu gọn: nhãn chữ `display:none` và hover không bung trong test → nhận diện mục menu bằng
+  icon lucide (`button:has(svg.lucide-users)`).
+- Thi đua: parser coi "dòng ngay TRƯỚC một dòng header" là tên chương trình, nên mỗi khối dữ liệu
+  phải có 1 dòng đệm (dòng `Tổng`) ở cuối, không thì dòng số liệu bị nuốt.
+- Bảng Thi đua mặc định ở Realtime + siêu thị "Tổng" (rỗng) → phải chuyển "Luỹ kế" và chọn siêu thị.
+- File Excel Phân Tích: cột `Nhóm Hàng` phải là **MÃ số** theo `productConfig.childToParentMap`
+  (tên tiếng Việt rơi vào "nhóm hàng mới chưa cấu hình" và bị bỏ qua sạch); `Trạng thái hồ sơ` phải
+  là `1 - Mới` vì bộ lọc mặc định là `trangThai: ['1 - Mới']` — sai giá trị là mọi KPI về 0.
+- `innerText` trả text đã qua `text-transform: uppercase`, so khớp tên cột phải bỏ qua hoa/thường.
+
+**Phát hiện phụ**: lần chạy đầu trên dev server đang mở sẵn của user báo `ClockIcon is not defined`
+(màn Report BI trắng). Chạy lại trên bản build và trên chính dev server đó sau khi Vite nạp lại
+module đều bình thường → là nhiễu HMR sau khi sửa import, KHÔNG phải lỗi code.
+
+`playwright.config.ts` thêm biến `E2E_BASE_URL` để chạy test trên server có sẵn (bản build) thay vì
+dev server — dùng khi cần loại trừ nhiễu HMR.
+
+## Test E2E trên DỮ LIỆU THẬT (tài khoản lts.truongson@gmail.com) — 2026-09-06
+
+**Cách vào**: profile Chrome RIÊNG cho test (`.e2e-chrome-profile/`, đã gitignore), user tự đăng
+nhập Google một lần. Không đụng profile Chrome cá nhân; không ai đọc mật khẩu.
+
+- `scripts/e2e-auth-setup.mjs` mở Chrome qua Playwright để đăng nhập — **Google chặn** ("This
+  browser or app may not be secure") vì cửa sổ do công cụ tự động khởi chạy. Cách chạy được: mở
+  Chrome BÌNH THƯỜNG bằng lệnh hệ điều hành với `--user-data-dir` trỏ vào profile test, đăng nhập
+  ở đó, đóng cửa sổ. Sau đó Playwright dùng lại profile bình thường (Google chỉ chặn lúc ĐĂNG NHẬP,
+  không chặn phiên đã có).
+- `tests/e2e/helpers/realDataContext.ts`: fixture `launchPersistentContext` trỏ vào profile đó.
+  Context để phạm vi TEST (mở/đóng mỗi test) và dùng `pages()[0]`; thử worker-scoped + `newPage()`
+  thì trang trắng và context đóng giữa chừng.
+
+**Kết quả (16/16 test toàn bộ bộ E2E pass, trong đó 6 test trên dữ liệu thật):**
+- Luỹ kế: cột `M.TIÊU V.TRỘI · L.KẾ · %DKHT · C.LẠI`, **cột vượt trội có số thật**
+  (150, 586, 103, 167, 546, 1, 314, 50, 1.269, …) — xác nhận bản sửa `useDashboardLogic` chạy đúng
+  trên dữ liệu thật, không còn "-".
+- Realtime: cột `M.TIÊU V.TRỘI · T.HIỆN · %HT V.TRỘI · C.LẠI` đúng bộ mặc định mới.
+- Bộ lọc cột: bấm THẲNG nút gạt → cột bật và nằm CUỐI bảng.
+- Bảng Cấu hình Target Thi đua: không còn `input[type=range]`, cột "NHÓM TIÊU CHÍ" ở cuối, sửa tên
+  tại chỗ + Enter lưu được (test tự trả lại tên gốc sau khi kiểm tra).
+
+**Gotcha khi test trên dữ liệu thật (khác hẳn dữ liệu giả):**
+- Trạng thái Realtime/Luỹ kế, siêu thị đang chọn và cấu hình cột đều được LƯU trong IndexedDB →
+  test phải tự đưa về trạng thái mong muốn, không tin vào mặc định, và phải idempotent.
+- `page.locator('div').filter({hasText})` quét toàn bộ div — với trang dữ liệu thật thì treo tới
+  hết timeout. Dùng XPath đi thẳng tới phần tử.
+- Trang "Cập nhật" có nhiều `<table>` (map siêu thị, mỗi nhóm tiêu chí một bảng) → `table.first()`
+  trỏ nhầm; lọc theo `filter({ has: getByText('Nhóm tiêu chí') })`.
+- App tải dữ liệu thật từ Firestore nên chậm hơn nhiều: các test này để `test.setTimeout(180_000)`.
+
+**Ghi nhận**: ô "tên tiêu chí" trong `SupermarketConfig.tsx` hiện là `<div onDoubleClick>` (title
+"Nhấp đúp để sửa tên hiển thị"), khác bản `<Button onClick>` đợt trước — file đã được sửa ngoài
+phiên làm việc này, test đã bám theo trạng thái hiện tại.

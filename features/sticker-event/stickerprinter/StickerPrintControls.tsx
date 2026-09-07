@@ -4,6 +4,7 @@ import {
     RotateCcw, Download, FileSpreadsheet, Package, History
 } from 'lucide-react';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
+import { DEFAULT_HISTORY_ID, DEFAULT_DRAW_HISTORY_ENTRY } from '../hooks/useStickerPrinterData';
 import { StickerManualQueue } from './StickerManualQueue';
 import { Button, Input, Tabs, EmptyState, SectionCard } from '../../../components/shared/ui';
 import type { TabItem } from '../../../components/shared/ui';
@@ -145,7 +146,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     }, [localTotalTickets]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const filteredHistory = useMemo(() => {
-        return printHistory.filter(entry => entry.stickerType === stickerType);
+        const userEntries = printHistory.filter(entry => entry.stickerType === stickerType);
+        // Ở chế độ draw, luôn gắn entry mẫu mặc định ở cuối danh sách
+        if (stickerType === 'draw') {
+            return [...userEntries, DEFAULT_DRAW_HISTORY_ENTRY];
+        }
+        return userEntries;
     }, [printHistory, stickerType]);
 
     const tabItems: TabItem[] = [
@@ -163,7 +169,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     className="flex-1 !bg-amber-400 hover:!bg-amber-500 !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-amber-500/10 border-transparent"
                     leftIcon={<Printer size={16} />}
                 >
-                    BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
+                    BẤM ĐỂ IN ({stickerType === 'draw' ? Math.ceil(drawTotalTickets / 4) : (batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1))})
                 </Button>
                 <Button 
                     onClick={addCurrentPage}
@@ -460,13 +466,22 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         {filteredHistory.length === 0 ? (
                             <EmptyState icon={<History size={20} />} title="Chưa có lịch sử in" compact />
                         ) : (
-                            filteredHistory.map(entry => (
-                                <div key={entry.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group text-left">
+                            filteredHistory.map(entry => {
+                                const isDefault = entry.id === DEFAULT_HISTORY_ID;
+                                return (
+                                <div key={entry.id} className={`flex items-center justify-between p-3 rounded-lg border group text-left ${isDefault ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/50' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'}`}>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{entry.label}</p>
+                                        <p className="text-xs font-bold text-slate-800 dark:text-white truncate flex items-center gap-1.5">
+                                            {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded">📌 Mặc định</span>}
+                                            {entry.label}
+                                        </p>
                                         <div className="flex gap-1.5 mt-1 text-[10px] text-slate-400">
-                                            <span>{new Date(entry.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                                            <span>•</span>
+                                            {!isDefault && (
+                                                <>
+                                                    <span>{new Date(entry.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span>•</span>
+                                                </>
+                                            )}
                                             <span>{entry.pageCount} trang</span>
                                             <span>•</span>
                                             <span>
@@ -487,17 +502,20 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         >
                                             <RotateCcw size={13} />
                                         </Button>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => deleteHistory(entry.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
-                                            title="Xóa"
-                                        >
-                                            <Trash2 size={13} />
-                                        </Button>
+                                        {!isDefault && (
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => deleteHistory(entry.id)}
+                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
+                                                title="Xóa"
+                                            >
+                                                <Trash2 size={13} />
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 )}

@@ -266,21 +266,8 @@ export const useCloudSync = () => {
                                 try {
                                     const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
                                     await saveCheckThuongDataToIframeDb(val);
-                                    // BUG FIX: trước đây phát 'check-thuong-cloud-sync' — CheckThuongView.tsx
-                                    // áp dụng NGAY, ghi đè UI đang xem mà không cảnh báo khi mở 2
-                                    // tab/thiết bị cùng sửa (last-write-wins im lặng). Dữ liệu Cloud đã ghi
-                                    // an toàn vào IndexedDB ở dòng trên + saveCheckThuongDataToIframeDb —
-                                    // không mất dữ liệu — chỉ đổi tên sự kiện để CheckThuongView HỎI người
-                                    // dùng trước khi áp dụng vào UI, thay vì tự động.
-                                    //
-                                    // BUG FIX #2: lượt bắn ĐẦU TIÊN của listener (đồng bộ khởi động khi mới mở
-                                    // app, không phải tab khác vừa sửa) vẫn phải phát tên sự kiện CŨ (áp dụng
-                                    // ngay) — nếu không, mở app bình thường cũng hiện toast hỏi "tab khác vừa
-                                    // sửa" dù chẳng có tab nào khác, và bấm "Tải lại" không thấy đổi gì vì dữ
-                                    // liệu vốn đã đúng sẵn (đây chính là lỗi user báo cáo).
-                                    window.dispatchEvent(new CustomEvent(
-                                        isInitialSnapshot ? 'check-thuong-cloud-sync' : 'check-thuong-cloud-update-available'
-                                    ));
+                                    // Tự động đồng bộ ngay vào iframe Check Thưởng không cần hỏi
+                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
                                 } catch (err) {
                                     console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                 }

@@ -1,0 +1,16 @@
+{
+  "name": "price-scraper-server",
+  "version": "1.0.0",
+  "description": "Server scraping giá sản phẩm từ các trang TMĐT đối thủ",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "puppeteer": "^23.4.0"
+  }
+}

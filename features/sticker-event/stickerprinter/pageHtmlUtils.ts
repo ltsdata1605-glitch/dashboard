@@ -25,7 +25,7 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
         drawTickets, bgImage,
         drawTitleSize = 2.5, drawCodeSize = 3.8, drawFooterSize = 3.8,
         drawContentTopLeftSize = 3.5, drawContentTopRightSize = 3.5,
-        drawContentBottomLeftSize = 2.2, drawContentBottomRightSize = 2.2,
+        drawContentBottomLeftSize = 1.7, drawContentBottomRightSize = 2.2,
         isAutoIncrement = true,
     } = opts;
 

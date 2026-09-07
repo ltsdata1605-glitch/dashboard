@@ -22,6 +22,23 @@
    npm run check
    ```
    (Lệnh này chạy gộp typecheck, eslint, build và lint-ratchet).
+8. **Luôn TỰ TEST rồi mới báo cáo**: `npm run check` chỉ chứng minh code biên dịch được, KHÔNG
+   chứng minh tính năng chạy đúng. Sau mỗi lần sửa/nâng cấp, agent phải tự kiểm chứng thay đổi ở
+   mức cao nhất có thể rồi **báo cáo kết quả thật** (đã chạy gì, thấy gì), không đẩy toàn bộ việc
+   kiểm tra cho người dùng:
+   - **UI: dùng Playwright** (đã cài sẵn, `npm run test:e2e`, thêm `--headed` để xem trực tiếp).
+     Cấu hình `playwright.config.ts` tự khởi động `npm run dev` và tự tắt khi xong; nếu người dùng
+     đang mở sẵn dev server thì dùng lại chứ không tắt server của họ. Test đặt trong `tests/e2e/`.
+     Viết test tạm cho đúng thay đổi vừa làm, chạy, xem kết quả/ảnh chụp rồi mới báo cáo.
+   - Nếu cần chạy dev server thủ công (`npm run dev`), nhớ **lưu lại PID** — xem quy tắc không tra
+     PID theo port.
+   - Với logic thuần (parser, hàm tính toán, định dạng): viết script nhỏ trong thư mục scratchpad
+     chạy bằng `node`/`npx tsx` với dữ liệu mẫu, đối chiếu kết quả trước/sau.
+   - Với tính năng cần dữ liệu thật: dùng dữ liệu giả đã có sẵn cách dựng (xem memory
+     `reference_bi_dashboard_seed_data_testing`, `reference_sticker_event_test_accounts`).
+   - Nếu thật sự không tự test được (thiếu dữ liệu thật/quyền/thiết bị), phải nói RÕ: đã thử cách
+     nào, vướng ở đâu, và hướng dẫn người dùng các bước kiểm tra cụ thể — không nói chung chung
+     "chưa test UI thật".
 
 ---
 

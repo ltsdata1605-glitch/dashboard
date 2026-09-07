@@ -186,14 +186,14 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className="min-w-0">
-                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{theme.title}</h3>
-                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
+                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{theme.title}</h3>
+                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
                     </div>
                 </div>
 
                 {/* Tab switcher + export */}
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
                             {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => {
                                 const tabIcon = TAB_THEMES[tab].icon;
@@ -203,34 +203,38 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     variant="unstyled" size="none"
-                                    className={`px-1.5 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 h-8 lg:h-10 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     title={tabLabel}
                                 >
                                     <Icon name={tabIcon} size={4} className="lg:hidden" />
-                                    <Icon name={tabIcon} size={5} className="hidden lg:block" />
+                                    <Icon name={tabIcon} size={4.5} className="hidden lg:block" />
                                     <span className="hidden sm:inline">{tabLabel}</span>
                                 </Button>
                             )})}
                         </div>
-                        <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
+                        <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
                         <Button
                             onClick={async (e) => { 
                                 e.stopPropagation(); 
                                 onBatchExport();
                             }}
                             disabled={isExporting}
-                            variant="unstyled" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="unstyled" size="none"
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={4} className="lg:hidden" /><Icon name="images" size={5} className="hidden lg:block" />
+                            <Icon name="images" size={4} className="lg:hidden" />
+                            <Icon name="images" size={4.5} className="hidden lg:block" />
                         </Button>
                         <Button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
-                            disabled={isExporting} isLoading={isExporting}
-                            variant="unstyled" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 text-slate-400 hover:text-indigo-600 transition-all"
+                            disabled={isExporting}
+                            variant="unstyled" size="none"
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {!isExporting && <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                         </Button>
                     </div>
                 </div>

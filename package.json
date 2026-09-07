@@ -18,7 +18,9 @@
     "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist",
     "deploy:rules": "firebase deploy --only firestore",
     "deploy:functions": "firebase deploy --only functions",
-    "test:rules": "npx firebase emulators:exec --only firestore \"node tests/firestore.rules.test.mjs\""
+    "test:rules": "npx firebase emulators:exec --only firestore \"node tests/firestore.rules.test.mjs\"",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
@@ -47,6 +49,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^22.14.0",
     "@types/qrcode": "^1.5.6",
