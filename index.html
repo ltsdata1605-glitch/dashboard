@@ -8,6 +8,29 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="description" content="Nền tảng phân tích dữ liệu bán hàng hiệu suất cao tích hợp Trợ lý ảo AI. Xử lý file Excel lớn mượt mà, trực quan hóa dữ liệu đa chiều.">
+    <!--
+      Content-Security-Policy (KE_HOACH_TONG_THE.md mục 2.3) — CHẾ ĐỘ REPORT-ONLY (chỉ cảnh báo ở
+      DevTools Console, KHÔNG chặn gì) cho đến khi đã tự xác nhận đủ luồng (đặc biệt luồng đăng
+      nhập Google THẬT — signInWithPopup không tự động test được bằng Playwright vì Google chặn
+      trình duyệt do công cụ tự động điều khiển). Xem implementation_plan.md để biết luồng nào đã
+      kiểm chứng, luồng nào CHƯA. Đổi thành `Content-Security-Policy` (bỏ "-Report-Only") sau khi
+      xác nhận sạch cả luồng đăng nhập thật.
+      Giới hạn của <meta> so với header HTTP thật: KHÔNG hỗ trợ frame-ancestors/report-uri/sandbox
+      (trình duyệt tự bỏ qua, không báo lỗi) — hosting tĩnh (GitHub Pages) không đặt được header,
+      cân nhắc chuyển sang Firebase Hosting nếu cần các directive này (đã ghi trong kế hoạch).
+    -->
+    <meta http-equiv="Content-Security-Policy-Report-Only" content="
+      default-src 'self';
+      script-src 'self' https://www.googletagmanager.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: blob: https:;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com http://localhost:3456;
+      frame-src https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    ">
     <title>Dashboard YCX - Bảo mật tuyệt đối</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,55 +45,12 @@
         <div class="absolute inset-0 bg-static-blobs"></div>
     </div>
 
-    <script>
-        // Tự động tải lại trang khi gặp lỗi preload chunk/module dynamic import do build mới
-        window.addEventListener('vite:preloadError', function(event) {
-            console.warn('Vite preload error detected, reloading page...', event);
-            event.preventDefault();
-            const now = Date.now();
-            const lastReload = sessionStorage.getItem('last_module_import_reload');
-            if (!lastReload || now - Number(lastReload) > 10000) {
-                sessionStorage.setItem('last_module_import_reload', String(now));
-                window.location.reload();
-            }
-        });
-        
-        // Bắt thêm lỗi loading script/css chunk toàn cục
-        window.addEventListener('error', function(event) {
-            var target = event.target || event.srcElement;
-            if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
-                var url = target.src || target.href;
-                if (url && (url.indexOf('/assets/') !== -1 || url.indexOf('DashboardView') !== -1 || url.indexOf('index') !== -1)) {
-                    console.warn('Asset load error detected, reloading page...', url);
-                    const now = Date.now();
-                    const lastReload = sessionStorage.getItem('last_module_import_reload');
-                    if (!lastReload || now - Number(lastReload) > 10000) {
-                        sessionStorage.setItem('last_module_import_reload', String(now));
-                        window.location.reload();
-                    }
-                }
-            }
-        }, true); // Bắt ở phase capture để nhận các lỗi resource load
-    </script>
+    <script src="/reload-on-chunk-error.js"></script>
     <div id="root" class="relative z-10"></div>
     <!-- Entry point for React -->
     <script type="module" src="./index.tsx"></script>
 
-    <script>
-        // Chống Refresh khi kéo xuống ngoài ý muốn trên Mobile (Pull-to-refresh)
-        let lastTouchY = 0;
-        document.addEventListener('touchstart', function(e) {
-            lastTouchY = e.touches[0].clientY;
-        }, {passive: false});
-
-        document.addEventListener('touchmove', function(e) {
-            const touchY = e.touches[0].clientY;
-            if (window.scrollY === 0 && touchY > lastTouchY) {
-                e.preventDefault();
-            }
-            lastTouchY = touchY;
-        }, {passive: false});
-    </script>
+    <script src="/prevent-pull-to-refresh.js"></script>
 </body>
 
 </html>

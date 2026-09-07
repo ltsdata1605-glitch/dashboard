@@ -1882,3 +1882,61 @@ HTML), chèn phần tử `<br/>` THẬT giữa các đoạn; mọi ký tự khá
 
 **Còn lại của Đợt 2** (mục 2.3 phần CSP + 2.4 gom cấu hình Firebase + 2.5 App Check) — làm tiếp
 theo các phần riêng, ghi log sau.
+
+---
+
+# Đợt 2 (phần 2/3) — Content-Security-Policy chế độ Report-Only (mục 2.3) — 2026-09-07
+
+**Đã làm**:
+1. Chuyển 2 script inline trong `index.html` ra file riêng (`public/reload-on-chunk-error.js`,
+   `public/prevent-pull-to-refresh.js`) — để bỏ hẳn nhu cầu `script-src 'unsafe-inline'`, lớp
+   phòng thủ CHÍNH chống XSS (kể cả nếu có 1 lỗ dangerouslySetInnerHTML nào đó sót lại chưa phát
+   hiện, script-src chặt sẽ ngăn nó CHẠY được).
+2. Thêm `<meta http-equiv="Content-Security-Policy-Report-Only">` vào `index.html` — CHỈ CẢNH BÁO
+   ở console, KHÔNG chặn gì (xem lý do chọn report-only bên dưới). Directive chính:
+   `script-src 'self' https://www.googletagmanager.com` (không unsafe-inline/unsafe-eval),
+   `style-src 'self' 'unsafe-inline' ...` (giữ unsafe-inline — React dùng `style={{}}` khắp nơi,
+   loại bỏ cần refactor lớn ngoài phạm vi đợt này; rủi ro thấp hơn nhiều so với script),
+   `connect-src`/`img-src`/`frame-src` theo đúng danh sách domain THẬT đã đo được (xem dưới),
+   `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`.
+
+**Vì sao Report-Only chứ không Enforce ngay**: `signInWithPopup` (đăng nhập Google) không tự test
+được bằng Playwright — Google chặn cửa sổ do công cụ tự động điều khiển ("This browser or app may
+not be secure", đã gặp lỗi này khi tự động hoá đăng nhập ở phiên trước). Đây là luồng RỦI RO NHẤT
+nếu CSP sai (mọi người dùng bị khoá khỏi đăng nhập) mà tôi không thể tự xác nhận. Report-Only cho
+quan sát đầy đủ mà không có rủi ro chặn nhầm.
+
+**Đã tự kiểm chứng bằng Playwright (bắt sự kiện `securitypolicyviolation`, không chỉ đọc code)**:
+- Demo mode + Report BI: dán cả 3 khối dữ liệu (Realtime/Luỹ kế/Thi đua) → **0 vi phạm**.
+- Phân Tích: upload + parse file Excel thật (qua Worker) → **0 vi phạm**.
+- **Dữ liệu thật** (phiên đăng nhập Google thật, không phải demo): điều hướng Report BI, xem bảng
+  Thi đua Luỹ kế → **0 vi phạm**.
+- Liệt kê TOÀN BỘ domain thật sự được gọi trong 1 phiên điều hướng đầy đủ trên dữ liệu thật:
+  `firebase.googleapis.com`, `firestore.googleapis.com`, `fonts.googleapis.com`,
+  `identitytoolkit.googleapis.com` (làm mới token), `lh3.googleusercontent.com` (ảnh đại diện
+  Google — lý do giữ `img-src ... https:` rộng), `us-central1-dashboa-7e20b.cloudfunctions.net`
+  (Cloud Function `resolveSession` chạy khi mở app), `www.googletagmanager.com` (Analytics) — **tất
+  cả đều đã được phép trong policy**, không có domain nào ngoài dự kiến.
+
+**CHƯA kiểm chứng được (rõ ràng, không giấu)**:
+- Luồng đăng nhập Google MỚI (`signInWithPopup` từ đầu) — lý do nêu trên. Người dùng cần TỰ đăng
+  xuất rồi đăng nhập lại 1 lần, mở DevTools Console xem có dòng "Content-Security-Policy" nào
+  không, trước khi đổi sang chế độ enforce (bỏ "-Report-Only").
+- `features/sticker-event` (in tem, quét mã, xuất Google Sheets) và `features/phan-ca` (gợi ý AI,
+  xuất Google Sheets) — chưa có E2E che phủ các luồng này để tự kiểm tra qua CSP.
+- `price-scraper-server` (localhost:3456) — tính năng còn rất mới (file
+  `components/views/PriceComparisonView.tsx` chưa từng qua audit), đã tạm cho phép trong
+  `connect-src` để không chặn nhầm.
+- Firebase Analytics collection ping thật (`google-analytics.com`) — `gtag.js` xác nhận có tải,
+  nhưng chưa thấy request thu thập dữ liệu thật trong cửa sổ test ngắn; đã phép sẵn trong
+  `connect-src` phòng hờ.
+
+**Verify chung**: `npx vitest run` 80/80, `eslint .` 0 lỗi, `npm run build` OK, `npm run test:e2e`
+17/17 (1 skip theo thiết kế).
+
+**Bước tiếp theo (không tự làm — cần người dùng)**: sau khi tự đăng xuất/đăng nhập lại 1 lần và
+xác nhận Console sạch, đổi `Content-Security-Policy-Report-Only` → `Content-Security-Policy` để
+CSP thực sự có hiệu lực chặn. Giới hạn cố hữu của `<meta>` so với header HTTP thật: không hỗ trợ
+`frame-ancestors`/`report-uri`/`sandbox` — nếu cần các directive này (chống clickjacking chẳng
+hạn), phải chuyển hosting sang nơi đặt được header thật (Firebase Hosting, đã ghi trong
+KE_HOACH_TONG_THE.md mục 2.3).
