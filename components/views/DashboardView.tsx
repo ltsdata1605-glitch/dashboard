@@ -17,15 +17,20 @@ import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
 import FilterBar from '../filters/FilterBar';
 import KpiCards from '../kpis/KpiCards';
-import TrendChart from '../charts/TrendChart';
-import IndustryGrid from '../charts/IndustryGrid';
-import EmployeeAnalysis from '../employees/EmployeeAnalysis';
-import SummaryTable from '../tables/SummaryTable';
-import WarehouseSummary from '../summary/WarehouseSummary';
+
+// Các section nặng (biểu đồ dùng recharts, bảng lớn) — lazy theo từng section
+// (KE_HOACH_TONG_THE.md mục 3.2/Đợt 3) để KpiCards vẽ xong trước, không phải đợi
+// parse xong toàn bộ vendor-charts + các bảng lớn cùng lúc khi mở tab Phân Tích.
+// KpiCards giữ static import vì là nội dung "above the fold" đầu tiên, không dùng recharts.
+const TrendChart = React.lazy(() => import('../charts/TrendChart'));
+const IndustryGrid = React.lazy(() => import('../charts/IndustryGrid'));
+const EmployeeAnalysis = React.lazy(() => import('../employees/EmployeeAnalysis'));
+const SummaryTable = React.lazy(() => import('../tables/SummaryTable'));
+const WarehouseSummary = React.lazy(() => import('../summary/WarehouseSummary'));
 
 // Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
-// (đo thực tế: chunk DashboardView ~300kB gzip, phần lớn do các modal này luôn bị
-// static-import dù đa số người dùng không bao giờ mở tới).
+// (sau khi tách các section ở trên + các modal này, chunk DashboardView còn ~60kB gzip,
+// giảm từ ~291kB gzip lúc còn static-import tất cả — đo bằng `npm run build`, 2026-09-08).
 const UnshippedOrdersModal = React.lazy(() => import('../modals/UnshippedOrdersModal'));
 const UncollectedOrdersModal = React.lazy(() => import('../modals/UncollectedOrdersModal'));
 const UnconfiguredGroupsModal = React.lazy(() => import('../modals/UnconfiguredGroupsModal'));
@@ -452,7 +457,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                     {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
                                         <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
-                                            <WarehouseSummary onBatchExport={handleBatchKhoExport} />
+                                            <React.Suspense fallback={<TableSkeleton rows={3} />}>
+                                                <WarehouseSummary onBatchExport={handleBatchKhoExport} />
+                                            </React.Suspense>
                                         </div>
                                     )}
 
@@ -563,26 +570,34 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                         {visibleComponents.trendChart && (
                                             <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                                <TrendChart />
+                                                <React.Suspense fallback={<ChartSkeleton />}>
+                                                    <TrendChart />
+                                                </React.Suspense>
                                             </div>
                                         )}
 
                                         {visibleComponents.industryGrid && (
                                             <div data-debug-id="IndustryGrid" data-debug-info={JSON.stringify(debugInitialData.IndustryGrid)} id="industry-grid-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                                <IndustryGrid />
+                                                <React.Suspense fallback={<ChartSkeleton />}>
+                                                    <IndustryGrid />
+                                                </React.Suspense>
                                             </div>
                                         )}
 
                                         {visibleComponents.employeeAnalysis && (
                                             <div data-debug-id="EmployeeAnalysis" data-debug-info={JSON.stringify(debugInitialData.EmployeeAnalysis)} id="employee-analysis-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                                <EmployeeAnalysis />
+                                                <React.Suspense fallback={<TableSkeleton />}>
+                                                    <EmployeeAnalysis />
+                                                </React.Suspense>
                                             </div>
                                         )}
                                     </div>
 
                                     {visibleComponents.summaryTable && (
                                         <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                            <SummaryTable />
+                                            <React.Suspense fallback={<TabbedTableSkeleton />}>
+                                                <SummaryTable />
+                                            </React.Suspense>
                                         </div>
                                     )}
                                 </div>

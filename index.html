@@ -23,10 +23,21 @@
       Giới hạn của <meta> so với header HTTP thật: KHÔNG hỗ trợ frame-ancestors/report-uri/sandbox
       (trình duyệt tự bỏ qua, không báo lỗi) — hosting tĩnh (GitHub Pages) không đặt được header,
       cân nhắc chuyển sang Firebase Hosting nếu cần các directive này (đã ghi trong kế hoạch).
+
+      BỔ SUNG 2026-09-08 (phát hiện khi viết test cho Đợt 3 — hiệu năng bundle, KHÔNG liên quan
+      bundle splitting, đã xác nhận bằng git stash tái tạo lỗi TRƯỚC cả khi có thay đổi Đợt 3):
+      thư viện canvas-confetti (hiệu ứng pháo giấy khi tải file thành công,
+      hooks/useFileUploadLogic.ts) tự tạo 1 Worker nội bộ qua blob: URL để vẽ animation không chặn
+      main thread — bị chặn vì thiếu directive worker-src (mặc định rơi về script-src, không có
+      blob:). KHÔNG làm hỏng tính năng (thư viện tự lùi về vẽ trên main thread khi Worker tạo lỗi)
+      nhưng in lỗi CSP ra Console mỗi lần — đã thêm worker-src 'self' blob: để hết lỗi, không phải
+      lỗ hổng bảo mật (blob: worker vẫn chạy code cùng-origin do JS của trang tự tạo, không phải
+      nguồn ngoài).
     -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' https://www.googletagmanager.com;
+      worker-src 'self' blob:;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https:;

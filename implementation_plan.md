@@ -2032,3 +2032,69 @@ này, do tiến trình chỉnh sửa song song tạo ra) import `services/dbServ
 tắc cách ly CLAUDE.md mà tôi vừa phát hiện ở mục 2.4 (`import/no-restricted-paths` báo lỗi thật khi
 chạy `eslint .`, không phải cảnh báo). Cần người tạo file này tự sửa hoặc xin ngoại lệ như
 bi-dashboard đã có cho `services/firebase.ts`.
+
+---
+
+## Đợt 3 — Hiệu năng bundle (2026-09-08)
+
+Mục tiêu theo KE_HOACH_TONG_THE.md mục 3.2/7: chunk khởi động < 700 KB, tổng JS tải lần đầu < 1,5 MB.
+
+**Đo lại trước khi sửa (bài học ở mục "Đo lại số liệu trước khi tin plan" trong memory) — số liệu
+"bundle 5,9 MB, DashboardView 1,0 MB tải một lần" trong KE_HOACH_TONG_THE.md mục 1 là tổng TẤT CẢ
+chunk cộng lại, KHÔNG phải payload thật lúc khởi động app**. Đọc `dist/index.html` +
+`dist/.vite/manifest.json` sau `npm run build` cho thấy danh sách chunk thật sự được
+`<link rel="modulepreload">` (tức tải ngay lúc boot) chỉ gồm: entry (187 kB) + vendor-react
+(194 kB) + shared-utils (27 kB) + vendor-firebase (666 kB) + vendor-motion (128 kB) + vendor-icons
+(88 kB) ≈ **1,29 MB thô / ~340 kB gzip** — đã dưới mục tiêu 1,5 MB từ trước, nhờ một đợt sửa trước
+đó (comment "PERF FIX" có sẵn trong `App.tsx`, không phải do tôi viết) đổi từ prefetch cứng 3 tab
+nặng nhất sang chỉ preload đúng tab đang mở, cộng với xlsx/jspdf/html2canvas đã được `await import()`
+động sẵn ở đúng nơi dùng (`services/worker.ts` qua cú pháp Vite `?worker`,
+`sticker-event/services/printService.ts`). Hai mục trong kế hoạch 3.2 ("chuyển xlsx sang import()
+động", "bỏ 2 thư viện xuất ảnh thừa khỏi bundle chính") coi như **đã đạt từ trước**, không cần sửa
+thêm — xác nhận bằng build thật, không chỉ đọc code.
+
+**Việc thực sự còn thiếu và đã làm**: `DashboardView.tsx` (chunk riêng của tab Phân Tích, KHÔNG
+nằm trong bundle khởi động nhưng vẫn là 1 khối 1,05 MB/291 kB gzip DUY NHẤT tải khi mở tab) static-
+import cả 5 section nặng (`TrendChart`, `IndustryGrid`, `EmployeeAnalysis`, `SummaryTable`,
+`WarehouseSummary` — 2 cái đầu dùng `recharts`). Chuyển cả 5 sang `React.lazy` + bọc
+`React.Suspense` với skeleton có sẵn (`ChartSkeleton`/`TableSkeleton`/`TabbedTableSkeleton`), giữ
+`KpiCards` static (nội dung "above the fold" đầu tiên, không dùng recharts). Kết quả đo bằng
+`npm run build`: chunk `DashboardView` giảm từ **1.051 kB → 221 kB thô (291 kB → 60,5 kB gzip)**,
+5 section tách thành 5 chunk riêng tải song song ngay sau đó — KpiCards không còn phải đợi parse
+xong `vendor-charts` + các bảng lớn mới vẽ. Người dùng đã ẩn bớt section qua tuỳ chọn hiển thị có
+sẵn (`FilterSection`) giờ thực sự tiết kiệm băng thông (trước đây ẩn section chỉ ẩn DOM, code vẫn
+tải).
+
+File sửa: `components/views/DashboardView.tsx` (import → `React.lazy`, bọc `React.Suspense` quanh
+5 chỗ render, sửa lại comment cũ ghi số đo đã lỗi thời).
+
+**Phát hiện phụ khi viết test kiểm chứng, ĐÃ SỬA (không phải Đợt 3, nhưng phát hiện lúc verify Đợt
+3 nên sửa ngay theo đúng tinh thần "không đợt nào được để lại vi phạm CSP")**: viết test Playwright
+bắt `page.on('console')` khi tải file Excel demo, thấy lỗi
+`Creating a worker from 'blob:...' violates ... script-src ... worker-src was not explicitly set`.
+Dò bằng cách monkey-patch `window.Worker` qua `page.addInitScript` để in stack trace lúc tạo Worker
+từ blob: → xác định nguồn là thư viện `canvas-confetti` (hiệu ứng pháo giấy khi tải file thành
+công, gọi từ `hooks/useFileUploadLogic.ts:414`) tự tạo 1 Worker nội bộ để vẽ animation không chặn
+main thread. Xác nhận bằng `git stash` — lỗi đã có TỪ TRƯỚC Đợt 3 (từ đợt bật CSP enforce ở Đợt 2,
+không phải do sửa `DashboardView.tsx` gây ra). Không làm hỏng tính năng thật (thư viện tự lùi về vẽ
+trên main thread khi Worker lỗi) nhưng in lỗi Console mỗi lần tải file — đã thêm
+`worker-src 'self' blob:;` vào CSP trong `index.html` (kèm comment giải thích), verify lại: lỗi hết
+hẳn, không phải lỗ hổng bảo mật (blob: worker chạy code cùng-origin do chính JS của trang tạo).
+
+**Verify**: `npm run typecheck` — CÓ lỗi nhưng xác nhận bằng `git stash` là lỗi TỪ TRƯỚC, không
+liên quan `DashboardView.tsx` (100% nằm ở `EmployeeAnalysis.tsx`/`features/bi-dashboard/.../
+DashboardHeader.tsx`/`features/phan-ca/...` — tất cả thuộc tiến trình chỉnh sửa song song hoặc lỗi
+kiểu đã có sẵn ở HEAD, không phải phạm vi Đợt 3, đã báo cho user). `npx eslint
+components/views/DashboardView.tsx` sạch. `npx vitest run` 80/80. `npm run build` OK. `npx
+playwright test tests/e2e/` **17/17 pass** (1 skip theo thiết kế) — chạy 2 lần (trước và sau khi
+thêm `worker-src`), bao gồm cả test trên phiên đăng nhập thật (`real-data*.spec.ts`) để chắc chắn
+CSP mới không phá luồng Report BI thật. Ngoài ra viết 1 test tạm kiểm tra riêng cả 5 section lazy
+(`#trend-chart-section svg.recharts-surface`, `#industry-grid-section svg.recharts-surface`,
+`#summary-table-section table`, `#employee-analysis-section`) đều render đủ nội dung thật, không
+kẹt ở skeleton — xoá sau khi xác nhận xanh (không phải test hồi quy lâu dài, chỉ để kiểm chứng lúc
+sửa).
+
+**Chưa làm trong Đợt 3 (cân nhắc để lại)**: `vendor-firebase` (666 kB thô/156 kB gzip, eager) là
+chunk khởi động lớn nhất hiện tại nhưng đã DƯỚI mục tiêu 700 kB nên không bắt buộc — thu nhỏ thêm
+đòi hỏi tách nhỏ Firebase SDK theo module (auth/firestore/functions/analytics riêng), rủi ro cao
+hơn nhiều (đụng vào init dùng chung cho cả 4 khu vực) so với lợi ích, để lại cho đợt sau nếu cần.
