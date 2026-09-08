@@ -232,7 +232,8 @@ export const HEAVY_SYNC_KEYS = new Set([
     'checkthuong_data',
     'originalDepartmentMap',
     'customExploitationTabs',
-    'efficiencyExploitationTabs'
+    'efficiencyExploitationTabs',
+    'analysis-employees-list'
 ]);
 
 export const isHeavySyncKey = (key: string): boolean => {

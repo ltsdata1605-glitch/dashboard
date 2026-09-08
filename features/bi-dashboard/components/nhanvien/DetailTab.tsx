@@ -13,6 +13,7 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { DeltaBadge } from '../shared/Badges';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { standardizeEmployeeName } from '../../utils/nhanVienHelpers';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -29,6 +30,7 @@ interface DetailTabProps {
     supermarketName: string;
     activeDepartments: string[];
     hiddenEmployees?: string[];
+    allowedEmployeeNames?: Set<string>;
     isActive?: boolean;
 }
 
@@ -204,7 +206,7 @@ const SearchableSelect: React.FC<{
     );
 };
 
-const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments, hiddenEmployees, isActive }) => {
+const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments, hiddenEmployees, allowedEmployeeNames, isActive }) => {
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -269,6 +271,12 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     const tree = useMemo(() => {
         if (isActive === false) return [];
+        const isAllowedEmp = (empName: string) => {
+            if (hiddenSet.has(empName)) return false;
+            if (!allowedEmployeeNames || allowedEmployeeNames.size === 0) return true;
+            return allowedEmployeeNames.has(empName) || allowedEmployeeNames.has(standardizeEmployeeName(empName));
+        };
+
         // Flatten: skip 'total' nodes, take their department children directly
         let departments: DetailNode[] = [];
         for (const node of fullTree) {
@@ -276,12 +284,12 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 // Clone dept nodes to avoid mutating cached fullTree
                 departments.push(...node.children.map(d => ({
                     ...d,
-                    children: d.children.filter(emp => emp.level !== 'employee' || !hiddenSet.has(emp.name))
+                    children: d.children.filter(emp => emp.level !== 'employee' || isAllowedEmp(emp.name))
                 })));
             } else {
                 departments.push({
                     ...node,
-                    children: node.children.filter(emp => emp.level !== 'employee' || !hiddenSet.has(emp.name))
+                    children: node.children.filter(emp => emp.level !== 'employee' || isAllowedEmp(emp.name))
                 });
             }
         }
@@ -292,7 +300,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             );
         }
         return departments;
-    }, [fullTree, activeDepartments, hiddenSet, isActive]);
+    }, [fullTree, activeDepartments, hiddenSet, allowedEmployeeNames, isActive]);
 
     const lastRawDataRef = useRef<string>('');
 

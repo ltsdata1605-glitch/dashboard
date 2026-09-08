@@ -23,6 +23,7 @@ const EXCLUDED_SYNC_KEYS = new Set([
     'customCalendars',            // Calendar data
     'crossSellingConfig',         // Can grow large
     'industryAnalysisCustomTabs', // Large analysis configs
+    'analysis-employees-list',    // Heavy sync key - synced separately to configs/{key}
 ]);
 
 // Firestore max doc size is 1MB. We target 800KB to leave room for other document fields.

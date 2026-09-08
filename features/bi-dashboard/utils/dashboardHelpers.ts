@@ -19,7 +19,7 @@ export const getCompetitionColumnLabel = (header: string): string => COMPETITION
 
 /** Nhãn nhóm mặc định theo tiêu chí thi đua (dùng cho cấu hình target và bảng tổng hợp thi đua). */
 export const getDefaultGroupLabel = (metric: string): string =>
-    metric === 'SLLK' ? 'Số lượng' : metric === 'DTLK' ? 'Doanh thu' : metric === 'DTQĐ' ? 'Doanh thu quy đổi' : metric;
+    metric === 'SLLK' ? 'Doanh thu' : metric === 'DTLK' ? 'Doanh thu' : metric === 'DTQĐ' ? 'Doanh thu quy đổi' : metric;
 
 import { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../../utils/dataUtils';
 export { roundUp, parseNumber, shortenName, shortenSupermarketName };
@@ -135,8 +135,9 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
                 currentCompetition = parts[0];
                 currentHeaders = parts.slice(1);
                 const firstHeader = parts[1].toUpperCase();
-                if (firstHeader.includes('SL') || firstHeader.includes('SỐ LƯỢNG')) currentMetric = 'SLLK';
-                else if (firstHeader.includes('QĐ') || firstHeader.includes('QD')) currentMetric = 'DTQĐ';
+                // Giữ SLLK cho SỐ LƯỢNG để hiển thị đúng đơn vị (Cái), nhưng gom cùng nhóm DTLK
+                if (firstHeader.includes('QĐ') || firstHeader.includes('QD')) currentMetric = 'DTQĐ';
+                else if (firstHeader.includes('SỐ LƯỢNG') || firstHeader === 'SLLK' || firstHeader === 'SL REALTIME') currentMetric = 'SLLK';
                 else currentMetric = 'DTLK';
                 continue;
             }
@@ -147,8 +148,9 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
             const parts = line.split('\t').map(p => p.trim());
             currentHeaders = parts;
             const firstH = parts[0]?.toUpperCase() || '';
-            if (firstH.includes('SL') || firstH.includes('SỐ LƯỢNG')) currentMetric = 'SLLK';
-            else if (firstH.includes('QĐ') || firstH.includes('QD')) currentMetric = 'DTQĐ';
+            // Giữ SLLK cho SỐ LƯỢNG để hiển thị đúng đơn vị (Cái), nhưng gom cùng nhóm DTLK
+            if (firstH.includes('QĐ') || firstH.includes('QD')) currentMetric = 'DTQĐ';
+            else if (firstH.includes('SỐ LƯỢNG') || firstH === 'SLLK' || firstH === 'SL REALTIME') currentMetric = 'SLLK';
             else currentMetric = 'DTLK';
             continue;
         }

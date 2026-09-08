@@ -89,7 +89,8 @@ export const useCloudSync = () => {
                 'stickerPrinterState',
                 'stickerPrintHistory',
                 'stickerSavedLists',
-                'salesFilesRegistry'
+                'salesFilesRegistry',
+                'analysis-employees-list'
             ]);
             const settingsToSync: Record<string, unknown> = {};
             for (const key of Object.keys(allSettings)) {

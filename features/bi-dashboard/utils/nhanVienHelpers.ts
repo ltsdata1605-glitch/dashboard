@@ -654,7 +654,8 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         for (let i = 0; i < count; i++) {
             const metricRaw = metrics[i]?.trim().toUpperCase();
             let metric = '';
-            if (metricRaw === 'DTLK') metric = 'DTLK'; else if (metricRaw === 'DTQĐ') metric = 'DTQĐ'; else if (metricRaw === 'SLLK' || metricRaw === 'SL REALTIME') metric = 'SLLK';
+            // SỐ LƯỢNG (SLLK) gộp vào DTLK vì cả 2 đều là kết quả luỹ kế, chỉ khác cách đo lường
+            if (metricRaw === 'DTLK') metric = 'DTLK'; else if (metricRaw === 'DTQĐ') metric = 'DTQĐ'; else if (metricRaw === 'SLLK' || metricRaw === 'SL REALTIME') metric = 'DTLK';
             if (metric) allHeaders.push({ title: shortenName(titles[i] || `Unnamed ${i}`), originalTitle: titles[i], metric });
         }
         const legacyResult: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
@@ -751,7 +752,7 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
     }
 
     // 2. Định dạng BI Mới: Danh sách các khối chương trình xếp dọc hoặc bảng
-    // "DOANH THU và SỐ LƯỢNG: Cả 2 đều là kết quả luỹ kế" -> DOANH THU map DTLK, SỐ LƯỢNG map SLLK
+    // "DOANH THU và SỐ LƯỢNG: Cả 2 đều là kết quả luỹ kế, chỉ khác cách đo lường" -> CẢ HAI đều map vào DTLK
     const isMetadataLine = (str: string) => {
         const s = str.toLowerCase();
         return s.startsWith('http') || s.startsWith('dashboards') || s.startsWith('tìm báo cáo') ||
@@ -795,8 +796,9 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
 
             if (dtIdx !== -1 || slIdx !== -1 || dtqdIdx !== -1) {
                 let metric: Criterion = 'DTLK';
-                if (slIdx !== -1) metric = 'SLLK';
-                else if (dtqdIdx !== -1) metric = 'DTQĐ';
+                // Giữ SLLK cho SỐ LƯỢNG để hiển thị đúng đơn vị (Cái), gom cùng nhóm DTLK
+                if (dtqdIdx !== -1) metric = 'DTQĐ';
+                else if (slIdx !== -1 && dtIdx === -1) metric = 'SLLK';
 
                 let title = parts[0];
                 if (!title || upperParts.includes(title.toUpperCase())) {
@@ -807,8 +809,9 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         } else {
             if (upper === 'DOANH THU' || upper === 'SỐ LƯỢNG' || upper === 'DOANH THU QĐ' || upper === 'DTQĐ' || upper === 'DTLK' || upper === 'SLLK') {
                 let metric: Criterion = 'DTLK';
-                if (upper === 'SỐ LƯỢNG' || upper === 'SLLK') metric = 'SLLK';
-                else if (upper === 'DOANH THU QĐ' || upper === 'DTQĐ') metric = 'DTQĐ';
+                // Giữ SLLK cho SỐ LƯỢNG để hiển thị đúng đơn vị (Cái), gom cùng nhóm DTLK
+                if (upper === 'DOANH THU QĐ' || upper === 'DTQĐ') metric = 'DTQĐ';
+                else if (upper === 'SỐ LƯỢNG' || upper === 'SLLK') metric = 'SLLK';
 
                 const title = getCleanTitle(i);
                 blocks.push({ title, metric, headerLineIndex: i, dataStartIndex: i + 1 });
@@ -931,7 +934,16 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
 
             if (line.toLowerCase().startsWith('tổng')) {
                 i++;
-                if (i < blockLines.length && /^-?[\d.,]+$/.test(blockLines[i])) i++;
+                if (i < blockLines.length) {
+                    const nextLine = blockLines[i];
+                    if (/^-?[\d.,]+$/.test(nextLine)) {
+                        i++;
+                    } else if (nextLine.includes('\t')) {
+                        // Tab-separated total line: "508.56\t\t-\t" → skip
+                        const firstPart = nextLine.split('\t')[0].trim();
+                        if (/^-?[\d.,]+$/.test(firstPart)) i++;
+                    }
+                }
                 if (i < blockLines.length && (blockLines[i] === '-' || /^\d+$/.test(blockLines[i]))) i++;
                 continue;
             }
@@ -940,10 +952,22 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
                 const empName = line;
                 i++;
                 let val = 0;
-                if (i < blockLines.length && /^-?[\d.,]+$/.test(blockLines[i])) {
-                    val = parseNumber(blockLines[i]);
-                    i++;
+                if (i < blockLines.length) {
+                    const nextLine = blockLines[i];
+                    if (/^-?[\d.,]+$/.test(nextLine)) {
+                        // Pure number line (no tabs)
+                        val = parseNumber(nextLine);
+                        i++;
+                    } else if (nextLine.includes('\t')) {
+                        // Tab-separated: "55.69\t1\tTOP\t" → extract first column as value
+                        const nextParts = nextLine.split('\t').map(p => p.trim());
+                        if (/^-?[\d.,]+$/.test(nextParts[0])) {
+                            val = parseNumber(nextParts[0]);
+                            i++; // Skip entire tab-separated line (rank+status already consumed)
+                        }
+                    }
                 }
+                // Fallback: skip separate rank/status/BP lines if they exist on individual lines
                 if (i < blockLines.length && /^\d+$/.test(blockLines[i])) i++;
                 if (i < blockLines.length && (blockLines[i] === 'TOP' || blockLines[i] === 'BOTTOM' || blockLines[i] === '-')) i++;
                 if (i < blockLines.length && blockLines[i].startsWith('BP ')) i++;
@@ -956,24 +980,39 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         }
     });
 
+    // Merge SLLK vào DTLK ở output: gom chung nhóm nhưng mỗi header giữ metric gốc
+    // để UI biết đơn vị hiển thị (SLLK → Cái, DTLK → Tr)
+    const mergedDTLKHeaders = [...headersMap.DTLK, ...headersMap.SLLK];
+
     const result: Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }> = {
-        DTLK: { headers: headersMap.DTLK, employees: [] },
+        DTLK: { headers: mergedDTLKHeaders, employees: [] },
         DTQĐ: { headers: headersMap.DTQĐ, employees: [] },
-        SLLK: { headers: headersMap.SLLK, employees: [] }
+        SLLK: { headers: [], employees: [] }  // Luôn trống — đã merge vào DTLK
     };
 
     employeeData.forEach((data, name) => {
-        (['DTLK', 'SLLK', 'DTQĐ'] as Criterion[]).forEach(key => {
-            const expectedLen = headersMap[key].length;
-            const vals = [...(data.values[key] || [])];
-            while (vals.length < expectedLen) vals.push(null);
+        // DTLK: nối values DTLK + SLLK
+        const dtlkVals = [...(data.values.DTLK || [])];
+        while (dtlkVals.length < headersMap.DTLK.length) dtlkVals.push(null);
+        const sllkVals = [...(data.values.SLLK || [])];
+        while (sllkVals.length < headersMap.SLLK.length) sllkVals.push(null);
+        const mergedVals = [...dtlkVals, ...sllkVals];
 
-            result[key].employees.push({
-                name,
-                originalName: data.originalName,
-                department: data.department,
-                values: vals
-            });
+        result.DTLK.employees.push({
+            name,
+            originalName: data.originalName,
+            department: data.department,
+            values: mergedVals
+        });
+
+        // DTQĐ
+        const dtqdVals = [...(data.values.DTQĐ || [])];
+        while (dtqdVals.length < headersMap.DTQĐ.length) dtqdVals.push(null);
+        result.DTQĐ.employees.push({
+            name,
+            originalName: data.originalName,
+            department: data.department,
+            values: dtqdVals
         });
     });
 

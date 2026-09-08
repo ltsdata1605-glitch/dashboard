@@ -156,22 +156,29 @@ export const parseEmployeeCompetitionTargets = (
     allEmployees: NhanVienEmployee[]
 ): Map<string, Map<string, number>> => {
     const targets = new Map<string, Map<string, number>>();
+    const fullText = lines.join('\n');
+
+    // Dùng parseCompetitionDataBySupermarket — đã xử lý đúng cả format cũ (tab ngang)
+    // lẫn format mới (BI dọc với DOANH THU/SỐ LƯỢNG/TARGET/% HT THÁNG)
+    const parsedBySm = parseCompetitionDataBySupermarket(fullText);
+
     for (const sm of activeSupermarkets) {
         const smData = smDataMap.get(sm);
         const competitionTargetsData = smData?.competitionTargets;
         const departmentWeightsData = smData?.departmentWeights;
-        let currentComp: { name: string, targetIdx: number } | null = null;
         const shortSm = shortenSupermarketName(sm);
 
-        // empWeights/totalW chỉ phụ thuộc departmentWeightsData (cố định theo sm), không đổi giữa
-        // các dòng target khác nhau của cùng siêu thị — tính 1 lần/sm thay vì mỗi dòng khớp.
-        //
-        // departmentWeightsData[dept] là % target CỦA CẢ PHÒNG BAN (khớp định nghĩa ở
-        // TargetHero.tsx/useDepartments.ts và cách useRevenueData.ts tính đúng:
-        // empTarget = supermarketTarget*weight/empCount) — PHẢI chia đều cho số nhân viên
-        // trong phòng ban đó mới ra phần của từng người. Trước đây gán thẳng % phòng ban cho
-        // từng nhân viên rồi mới chuẩn hoá theo tổng, khiến phòng ban đông người bị thổi phồng
-        // target ảo (%HT bị dìm thấp), phòng ban ít người bị hụt target ảo (%HT bị đẩy cao ảo).
+        // Tìm siêu thị trong parsed data (fuzzy match)
+        const matchedSmKey = Object.keys(parsedBySm).find(k =>
+            shortenSupermarketName(k) === shortSm ||
+            k.includes(sm) || sm.includes(k)
+        );
+
+        if (!matchedSmKey || !parsedBySm[matchedSmKey]) continue;
+
+        const smParsedData = parsedBySm[matchedSmKey];
+
+        // empWeights: trọng số phòng ban chia đều cho NV trong BP đó
         const deptCounts = new Map<string, number>();
         allEmployees.forEach(emp => {
             deptCounts.set(emp.department, (deptCounts.get(emp.department) || 0) + 1);
@@ -181,8 +188,6 @@ export const parseEmployeeCompetitionTargets = (
         const empWeights = new Map<string, number>();
         allEmployees.forEach(emp => {
             const deptWeight = departmentWeightsData?.[emp.department];
-            // Không có cấu hình weight riêng cho phòng ban này: fallback chia đều thẳng theo
-            // tổng số nhân viên (bản thân giá trị này đã là phần/người, không chia thêm).
             const w = deptWeight !== undefined
                 ? deptWeight / (deptCounts.get(emp.department) || 1)
                 : (100 / allEmployees.length);
@@ -190,39 +195,35 @@ export const parseEmployeeCompetitionTargets = (
             totalW += w;
         });
 
-        for (const line of lines) {
-            const parts = line.split('\t').map(p => p.trim());
+        if (totalW <= 0) continue;
 
-            if (parts.length > 2) {
-                const p1 = parts[1].toUpperCase();
-                const isMetric = ['DTLK', 'DTQĐ', 'SLLK', 'DT REALTIME', 'SL REALTIME', 'DT REALTIME (QĐ)'].some(m => p1.includes(m));
-                if (isMetric) {
-                    const targetIdx = parts.findIndex(p => {
-                        const up = p.toUpperCase();
-                        return up.includes('TARGET') || up.includes('MỤC TIÊU');
-                    });
-                    if (targetIdx > -1) {
-                        currentComp = { name: parts[0], targetIdx };
-                        continue;
-                    }
-                }
-            }
+        // Tìm cột TARGET trong headers
+        const headers = smParsedData.headers;
+        const targetIdx = headers.findIndex(h => {
+            const up = h.toUpperCase();
+            return up.includes('TARGET') || up.includes('MỤC TIÊU');
+        });
 
-            if (currentComp && shortenSupermarketName(parts[0]) === shortSm) {
-                const targetValRaw = parts[currentComp.targetIdx];
-                if (targetValRaw && totalW > 0) {
-                    const baseTarget = parseNumber(targetValRaw);
-                    const slider = competitionTargetsData?.[currentComp.name] ?? 100;
-                    const adjTarget = baseTarget * (slider / 100);
+        if (targetIdx === -1) continue;
 
-                    if (!targets.has(currentComp.name)) targets.set(currentComp.name, new Map());
-                    const compT = targets.get(currentComp.name)!;
-                    allEmployees.forEach(emp => {
-                        const existing = compT.get(emp.originalName) || 0;
-                        compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW)));
-                    });
-                }
-            }
+        // Duyệt từng chương trình thi đua, lấy target value, phân bổ cho NV
+        for (const program of smParsedData.programs) {
+            const compName = program.name;
+            const targetValRaw = program.data[targetIdx];
+            if (targetValRaw === undefined || targetValRaw === null) continue;
+
+            const baseTarget = parseNumber(targetValRaw);
+            if (baseTarget <= 0) continue;
+
+            const slider = competitionTargetsData?.[compName] ?? 100;
+            const adjTarget = baseTarget * (slider / 100);
+
+            if (!targets.has(compName)) targets.set(compName, new Map());
+            const compT = targets.get(compName)!;
+            allEmployees.forEach(emp => {
+                const existing = compT.get(emp.originalName) || 0;
+                compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW)));
+            });
         }
     }
     return targets;

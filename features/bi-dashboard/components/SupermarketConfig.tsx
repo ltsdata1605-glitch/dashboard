@@ -14,8 +14,9 @@ import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { Input } from '../../../components/shared/ui/Input';
 import { DataTable, type DataTableColumn } from '../../../components/shared/ui/DataTable';
-import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
+import { parseDepartments, parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 import { validateThiDuaData } from '../utils/nhanVienHelpers';
+import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
@@ -553,7 +554,7 @@ const CompetitionTarget: React.FC<{
                         header: 'Tiêu chí',
                         headerAlign: 'center',
                         minWidth: '160px',
-                        cell: (comp) => {
+                        cell: (comp, index) => {
                             const currentDisplayName = shortenName(comp.name, nameOverrides);
                             if (editingNameFor === comp.name) {
                                 return (
@@ -581,9 +582,10 @@ const CompetitionTarget: React.FC<{
                                         setEditingNameFor(comp.name);
                                         setEditingNameValue(currentDisplayName);
                                     }}
-                                    className="w-full justify-start text-left text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
+                                    className="w-full justify-start text-left text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 flex items-center gap-1.5"
                                     title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
                                 >
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums min-w-[16px] text-right">{index + 1}.</span>
                                     {currentDisplayName}
                                 </div>
                             );
@@ -685,6 +687,7 @@ const CompetitionTarget: React.FC<{
                                 <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
                                     Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
                                 </h3>
                                 <DataTable
                                     columns={columns}
@@ -695,6 +698,7 @@ const CompetitionTarget: React.FC<{
                                     columnDividers
                                     overflowVisible
                                     fixedLayout
+                                    className="!rounded-none"
                                 />
                             </div>
                         ))}
@@ -743,9 +747,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         }
     }, []);
 
+    const safeName = useMemo(() => supermarketName ? shortenSupermarketName(supermarketName) : '', [supermarketName]);
+
     const ids = useMemo(() => {
         if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, bk: null };
-        const safeName = shortenSupermarketName(supermarketName);
         return {
             ds: `config-${safeName}-danhsach`,
             td: `config-${safeName}-thidua`,
@@ -754,7 +759,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             tg: `config-${safeName}-tragop`,
             bk: `config-${safeName}-bankem`,
         };
-    }, [supermarketName]);
+    }, [supermarketName, safeName]);
+
+    // Đọc danh sách NV ẩn để lọc đúng số lượng NV từ Phân tích
+    const [hiddenEmployees] = useIndexedDBState<string[]>(safeName ? `hidden-employees-${safeName}` : null, []);
 
     const [danhSachData, setDanhSachData] = useIndexedDBState(ids.ds, '');
     const [thiDuaData, setThiDuaData] = useIndexedDBState(ids.td, '');
@@ -771,6 +779,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [banKemTs, setBanKemTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.bk}-ts` : null, null);
 
     const [errors, setErrors] = useState<Record<string, string | null>>({});
+    const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);
+
+    useEffect(() => {
+        getAnalysisEmployees().then(setAnalysisEmployees).catch(console.error);
+        const handleUpdate = (e: CustomEvent) => {
+            if (e.detail) setAnalysisEmployees(e.detail);
+        };
+        window.addEventListener('analysis-employees-updated', handleUpdate as EventListener);
+        return () => window.removeEventListener('analysis-employees-updated', handleUpdate as EventListener);
+    }, []);
 
     const getDetailedTimestamp = () => {
         const now = new Date();
@@ -780,8 +798,25 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     const departments = useMemo(() => {
-        return parseSimpleDepartments(danhSachData);
-    }, [danhSachData]);
+        // Ưu tiên đếm theo danh sách nhân viên từ Phân tích nếu có
+        if (analysisEmployees && analysisEmployees.employees.length > 0) {
+            const hiddenSet = new Set(hiddenEmployees || []);
+            const deptMap = new Map<string, number>();
+            for (const emp of analysisEmployees.employees) {
+                if (hiddenSet.has(emp.originalName)) continue;
+                deptMap.set(emp.department, (deptMap.get(emp.department) || 0) + 1);
+            }
+            if (deptMap.size > 0) {
+                return Array.from(deptMap.entries()).map(([name, employeeCount]) => ({
+                    name,
+                    employeeCount,
+                    isManual: false
+                }));
+            }
+        }
+        // Fallback dùng parseDepartments từ dữ liệu dán
+        return parseDepartments(danhSachData, hiddenEmployees);
+    }, [analysisEmployees, danhSachData, hiddenEmployees]);
 
     const competitions = useMemo(() => {
         return parseCompetitions(competitionLuyKeData);
@@ -871,10 +906,23 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         </div>
                         {/* NHÓM 2: BC D.THU THEO NHÂN VIÊN */}
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
-                                BC D.Thu theo NV
-                            </h3>
+                            <div className="flex items-center justify-between px-1 pb-2">
+                                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
+                                    BC D.Thu theo NV
+                                </h3>
+                                {analysisEmployees && analysisEmployees.employees.length > 0 && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        {analysisEmployees.employees.length} NV từ Phân Tích
+                                    </span>
+                                )}
+                            </div>
+                            {analysisEmployees && analysisEmployees.employees.length > 0 && (
+                                <div className="mb-2 p-2 rounded-lg bg-sky-50/70 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-800/40 text-[11px] text-sky-800 dark:text-sky-300 flex items-center justify-between">
+                                    <span>Hệ thống đang ưu tiên sử dụng <b>{analysisEmployees.employees.length} nhân viên</b> từ chức năng Phân Tích để tính toán toàn bộ các tab.</span>
+                                </div>
+                            )}
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="indigo"

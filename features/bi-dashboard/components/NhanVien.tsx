@@ -22,6 +22,10 @@ import { logAuditEvent } from '../utils/auditTrail';
 import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../components/shared/ui/MultiSelectDropdown';
+import { useActiveTab } from '../../../contexts/LayoutContext';
+import { Icon } from '../../../components/common/Icon';
+import { Button } from '../../../components/shared/ui/Button';
+import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
@@ -62,6 +66,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [isBatchBonusMode, setIsBatchBonusMode] = useState(false);
     const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
 
+    const { setActiveTab: setAppActiveTab } = useActiveTab();
     const data = useNhanVienData(isActive);
     const {
         supermarkets,
@@ -86,7 +91,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         handleSaveBonusMonthly,
         resolveEmployeeSupermarket,
         setBonusPeriodLabel,
-        dataVersion
+        dataVersion,
+        hasAnalysisEmployees,
+        analysisEmployeesCount,
+        loadAnalysisEmployees
     } = data;
 
     const handleBonusModalClose = (reason: 'save' | 'skip' | 'stop') => {
@@ -128,13 +136,21 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 const criterion = key as Criterion;
                 filteredResult[criterion] = {
                     headers: parsed[criterion].headers,
-                    employees: parsed[criterion].employees.filter((emp: CompetitionEmployeeRow) => !hiddenSet.has(emp.originalName || ''))
+                    employees: parsed[criterion].employees.filter((emp: CompetitionEmployeeRow) => {
+                        if (hiddenSet.has(emp.originalName || '')) return false;
+                        if (hasAnalysisEmployees) {
+                            const empOrig = emp.originalName || '';
+                            const canonical = standardizeEmployeeName(empOrig);
+                            return allEmployees.some(e => e.originalName === empOrig || standardizeEmployeeName(e.originalName) === canonical);
+                        }
+                        return true;
+                    })
                 };
             });
             setCompetitionData(filteredResult);
         }).catch(err => console.error('[NhanVien] Lỗi parse dữ liệu thi đua:', err));
         return () => { isMounted = false; };
-    }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees, isActive]);
+    }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees, isActive, hasAnalysisEmployees, allEmployees]);
 
     // Fix: Updated type to include 'tong'
     const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'tatca' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
@@ -297,6 +313,11 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         [exportOptions.showExportOptions]
     );
 
+    const allowedEmployeeNames = useMemo(() => {
+        if (!hasAnalysisEmployees) return undefined;
+        return new Set(allEmployees.map(e => e.originalName));
+    }, [hasAnalysisEmployees, allEmployees]);
+
     return (
         <ExportOptionsProvider value={exportOptionsContextValue}>
         <div className="space-y-4 sm:space-y-6 relative">
@@ -308,9 +329,19 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
-                        Nhân Viên
-                    </h2>
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                                Nhân Viên
+                            </h2>
+                            {hasAnalysisEmployees && (
+                                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    {analysisEmployeesCount} NV từ Phân Tích
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex flex-none justify-end">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx.
@@ -351,6 +382,32 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Banner hướng dẫn nếu chưa có danh sách nhân viên từ Phân Tích */}
+            {!hasAnalysisEmployees && (
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-200 shadow-sm animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 shrink-0">
+                            <Icon name="alert-triangle" size={5} />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold">Chưa có danh sách nhân viên từ chức năng Phân Tích</h4>
+                            <p className="text-xs text-amber-700/90 dark:text-amber-300/90 mt-0.5">
+                                Để toàn bộ các tab Report BI hiển thị và phân bổ target chính xác trên mọi thiết bị, vui lòng tải dữ liệu tại chức năng <b>Phân Tích</b>.
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setAppActiveTab('analysis')}
+                        className="shrink-0 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1.5 py-1.5 px-3 rounded-lg"
+                    >
+                        <span>Chuyển đến Phân Tích</span>
+                        <Icon name="arrow-right" size={3.5} />
+                    </Button>
+                </div>
+            )}
 
 
 
@@ -411,7 +468,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 )}
                 {visitedTabs.has('detail') && (
                     <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
-                        <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} isActive={isActive && activeTab === 'detail'} />
+                        <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} allowedEmployeeNames={allowedEmployeeNames} isActive={isActive && activeTab === 'detail'} />
                     </div>
                 )}
             </div>

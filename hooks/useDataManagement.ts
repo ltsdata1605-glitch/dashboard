@@ -11,6 +11,7 @@ import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigPr
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import type { SalesDataMeta } from '../services/cloudDataService';
+import { saveAnalysisEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -890,6 +891,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             setWarehouseFilteredData(pending.warehouseFilteredData);
                         }
                         setEmployeeAnalysisData(result.employeeData);
+                        if (result.employeeData?.fullSellerArray && result.employeeData.fullSellerArray.length > 0) {
+                            const currentWarehouse = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
+                            saveAnalysisEmployees(result.employeeData.fullSellerArray, currentWarehouse).catch(err => {
+                                console.warn('[useDataManagement] Lỗi tự động lưu danh sách nhân viên phân tích:', err);
+                            });
+                        }
                         setIsFilterProcessing(false);
                         break;
                     }

@@ -14,6 +14,8 @@ import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { getExportFilenamePrefix, sanitizeFilename } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
 import type { ContestTableConfig } from '../../types';
+import toast from 'react-hot-toast';
+import { saveAnalysisEmployees } from '../../features/bi-dashboard/services/analysisEmployeeSyncService';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
 
@@ -131,6 +133,27 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         }
     }, [isClosingModal]);
 
+    const [isSyncingToBi, setIsSyncingToBi] = useState(false);
+
+    const handleSyncToBi = React.useCallback(async () => {
+        const sourceArray = filteredEmployeeAnalysisData?.fullSellerArray || [];
+        if (sourceArray.length === 0) {
+            toast.error('Không có danh sách nhân viên để đồng bộ.');
+            return;
+        }
+        setIsSyncingToBi(true);
+        try {
+            const currentSm = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
+            const res = await saveAnalysisEmployees(sourceArray, currentSm);
+            toast.success(`Đã đồng bộ ${res.totalCount} nhân viên sang Report BI & Cloud thành công!`, { icon: '🚀' });
+        } catch (err) {
+            console.error('Lỗi đồng bộ nhân viên sang Report BI:', err);
+            toast.error('Lỗi khi đồng bộ danh sách nhân viên lên Cloud.');
+        } finally {
+            setIsSyncingToBi(false);
+        }
+    }, [filteredEmployeeAnalysisData, filterState.kho]);
+
     // Ramp 14 tab bằng palette semantic: 6 họ (sky/emerald/amber/rose/indigo/slate) × 2 tầng
     // sắc độ (nhạt-50/đậm-100) để mỗi tab 1 tông riêng, không trùng.
     const colorThemes = useMemo(() => [
@@ -204,6 +227,17 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         hideZeroRevenue={hideZeroRevenue}
                         setHideZeroRevenue={setHideZeroRevenue}
                     />
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleSyncToBi}
+                        loading={isSyncingToBi}
+                        title="Đồng bộ danh sách nhân viên này sang Report BI và Cloud Firebase"
+                        className="text-xs flex items-center gap-1.5 py-1 px-2.5 font-semibold text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:border-sky-700 dark:text-sky-300"
+                    >
+                        <Icon name="refresh-cw" size={3.5} className={isSyncingToBi ? 'animate-spin' : ''} />
+                        <span className="hidden sm:inline">Đồng bộ Report BI</span>
+                    </Button>
                     <div ref={settingsRef} className="relative">
                         <Button
                             variant="unstyled" size="none"
