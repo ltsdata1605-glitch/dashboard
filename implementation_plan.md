@@ -1940,3 +1940,44 @@ CSP thực sự có hiệu lực chặn. Giới hạn cố hữu của `<meta>` 
 `frame-ancestors`/`report-uri`/`sandbox` — nếu cần các directive này (chống clickjacking chẳng
 hạn), phải chuyển hosting sang nơi đặt được header thật (Firebase Hosting, đã ghi trong
 KE_HOACH_TONG_THE.md mục 2.3).
+
+---
+
+# Đợt 2 (phần 3/3, kết thúc) — mục 2.4/2.5: quyết định KHÔNG làm, đã hỏi user — 2026-09-07/08
+
+Khi bắt tay vào "gom cấu hình Firebase" (mục 2.4), phát hiện đề xuất ban đầu (cho `phan-ca` import
+chung `services/firebase.ts` ở gốc) **vi phạm trực tiếp** quy tắc cách ly 4 khu vực của CLAUDE.md —
+ngoại lệ import `services/firebase.ts` chỉ cấp cho `bi-dashboard`, không cấp cho `phan-ca`. Đồng
+thời phát hiện phụ: `features/sticker-event/firebase-applet-config.json` có comment trong code nói
+định gitignore nhưng thực tế đang được commit thật, và dùng CHUNG project `dashboa-7e20b` với
+root/phan-ca (khác mô tả "project riêng" trong CLAUDE.md) — chỉ khác Firestore database con.
+
+**Đã hỏi user cả 2 việc, user xác nhận cả 2: KHÔNG LÀM, chỉ ghi nhận vào kế hoạch.**
+Lý do: lợi ích thấp (không phải lỗ hổng bảo mật thật — apiKey Firebase không phải bí mật, bảo mật
+thật nằm ở Firestore Rules đã audit kỹ ở Đợt 1-2), rủi ro cao (sửa 3 file khởi tạo Firebase dùng
+cho đăng nhập — sai là khoá người dùng khỏi app; xoá/gitignore file cấu hình có thể vỡ build
+sticker-event nếu nơi deploy chưa có biến môi trường thay thế). Chi tiết đầy đủ + hướng làm thay
+thế nếu sau này cần (dùng `import.meta.env.VITE_FIREBASE_*` thay vì import chéo) đã ghi vào
+`KE_HOACH_TONG_THE.md` mục 2.4/2.4b.
+
+Mục 2.5 (App Check) **cần quyền Firebase Console mà agent không có** (tạo reCAPTCHA site key +
+bật chế độ enforce) — không tự làm được, không đoán code trước khi có site key thật (không test
+được, có thể lỗi runtime). Đã ghi hướng dẫn cụ thể cho user trong `KE_HOACH_TONG_THE.md` mục 2.5.
+
+## Tổng kết Đợt 2
+
+| Mục | Trạng thái |
+|---|---|
+| 2.3a — Đóng XSS `dangerouslySetInnerHTML` (7 chỗ, 3 file) | ✅ Xong, kiểm chứng đỏ/xanh bằng E2E thật |
+| 2.3b — Content-Security-Policy | ✅ Xong (chế độ Report-Only), kiểm chứng 0 vi phạm trên dữ liệu thật |
+| 2.4 — Gom cấu hình Firebase | ❌ Không làm (xung đột kiến trúc, đã hỏi user) |
+| 2.4b — File config sticker-event lộ ngoài ý định | 📝 Chỉ ghi nhận (đã hỏi user) |
+| 2.5 — Firebase App Check | ⏸ Cần user (quyền Firebase Console) |
+
+**Việc còn cần USER tự làm trước khi Đợt 2 thực sự "xong"**:
+1. Tự đăng xuất → đăng nhập lại 1 lần bằng Google thật, mở DevTools Console kiểm tra không có dòng
+   "Content-Security-Policy" nào xuất hiện, rồi báo lại để đổi `Content-Security-Policy-Report-Only`
+   → `Content-Security-Policy` (enforce thật).
+2. Nếu dùng nhiều `features/sticker-event`/`features/phan-ca` (in tem, quét mã, xuất Google Sheets,
+   gợi ý AI) — tự thử qua 1 lượt, xem Console có cảnh báo CSP không.
+3. Nếu muốn bật App Check: tạo reCAPTCHA v3 site key ở Firebase Console trước.

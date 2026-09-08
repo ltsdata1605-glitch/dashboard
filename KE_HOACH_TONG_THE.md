@@ -127,11 +127,41 @@ liệu người dùng dán vào**) → một chuỗi độc trong dữ liệu d�
 **2.4 Ba bản sao cấu hình Firebase hard-code** (`services/firebase.ts`,
 `features/phan-ca/services/firebase.ts`, `features/sticker-event/firebase-applet-config.json`).
 Bản thân `apiKey` của Firebase không phải bí mật, nhưng ba bản sao khiến việc đổi project/khoá
-thành ba lần sửa, dễ lệch. Gom về một nguồn + `.env` cho từng môi trường.
+thành ba lần sửa, dễ lệch.
+**CẬP NHẬT 2026-09-07 — QUYẾT ĐỊNH: BỎ QUA, không làm** (đã hỏi user, xác nhận). Lý do phát hiện
+lúc thực thi: "gom về một nguồn" như đề xuất ban đầu (cho `features/phan-ca` import chung
+`services/firebase.ts` ở gốc) **vi phạm trực tiếp** quy tắc cách ly 4 khu vực của CLAUDE.md mục 1
+(`features/*` không được import `services/*` ở gốc, ngoại lệ CHỈ cấp cho `bi-dashboard`, không cấp
+cho `phan-ca`). Lợi ích thấp (tránh trùng lặp, không phải lỗ hổng bảo mật thật — apiKey không phải
+bí mật) trong khi rủi ro cao (sửa cả 3 file khởi tạo Firebase dùng cho đăng nhập — sai là khoá
+người dùng khỏi app). Nếu MUỐN giảm trùng lặp sau này mà không phá cách ly: mỗi khu vực vẫn giữ
+`firebase.ts` riêng (không import chéo), nhưng đọc giá trị qua `import.meta.env.VITE_FIREBASE_*`
+(biến build-time, không phải import module) thay vì hard-code — `features/sticker-event/firebase.ts`
+ĐÃ làm đúng kiểu này sẵn (đọc `import.meta.env` với hard-code làm fallback), chỉ cần áp dụng thêm
+cho `services/firebase.ts` và `features/phan-ca/services/firebase.ts`. Chưa làm vì cùng lý do
+rủi ro/lợi ích ở trên, để lại cho lúc thật sự cần đổi project hoặc khoá.
+
+**2.4b Phát hiện phụ, KHÔNG sửa (đã hỏi user, xác nhận chỉ ghi nhận)**:
+`features/sticker-event/firebase-applet-config.json` có comment trong chính code
+(`features/sticker-event/firebase.ts`: "Safe load for AI Studio config file (ignored on GitHub)")
+nói file này ĐỊNH được gitignore, nhưng thực tế **không có trong `.gitignore`** và **đang được
+commit thật** trong lịch sử git (xác nhận bằng `git check-ignore -v` trả về không bị ignore). Nội
+dung: `projectId: "dashboa-7e20b"` — TRÙNG project với root/phan-ca (khác CLAUDE.md mô tả "project
+riêng"), chỉ khác ở `firestoreDatabaseId` (dùng 1 Firestore database CON tên riêng trong CÙNG
+project, không phải project riêng biệt). Không sửa vì: apiKey không phải bí mật thật (bảo mật thật
+nằm ở Firestore Rules, đã audit kỹ — xem mục 1-2 trên), và xoá/gitignore file có thể làm vỡ build
+sticker-event ở nơi đang deploy nếu chưa có biến môi trường thay thế tương ứng.
 
 **2.5 Chưa bật Firebase App Check.** Rules hiện dựa hoàn toàn vào custom claim (`role`,
 `departmentId`). Ai lấy được token hợp lệ đều gọi được API trực tiếp ngoài app. App Check chặn phần
 lớn lạm dụng tự động, chi phí triển khai thấp.
+**CẬP NHẬT 2026-09-07 — CẦN USER, không tự làm được**: bật App Check thật cần (a) tạo reCAPTCHA v3
+site key trong Firebase Console, (b) bật chế độ ENFORCE cho Firestore/Functions trong Firebase
+Console — cả 2 bước đều cần quyền truy cập Firebase Console mà agent không có, và bước (b) mang
+tính phá vỡ nếu cấu hình sai (khoá luôn mọi request kể cả người dùng thật). Không viết code phía
+client đoán trước site key (không test được, có thể throw runtime nếu thiếu key thật). Khi user
+sẵn sàng: tạo site key ở Firebase Console → App Check → Web app → reCAPTCHA v3, rồi quay lại yêu
+cầu agent thêm `initializeAppCheck()` vào `services/firebase.ts` với site key đó.
 
 ### P2 — Ghi nhận, chưa gấp
 
