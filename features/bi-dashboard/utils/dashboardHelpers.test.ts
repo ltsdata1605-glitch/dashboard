@@ -18,11 +18,15 @@ describe('parseCompetitionDataBySupermarket', () => {
         const result = parseCompetitionDataBySupermarket(text);
         expect(Object.keys(result)).toEqual(['ĐML_STR_STR - 99 Hùng Vương']);
         expect(result['ĐML_STR_STR - 99 Hùng Vương'].headers).toEqual(['SLLK', 'Target', '% HT Target Tháng']);
-        // metric 'SLLK' được GỘP vào 'DTLK' có chủ đích (comment trong dashboardHelpers.ts:
-        // "SỐ LƯỢNG gộp vào DTLK — cùng kết quả, khác đơn vị đo") — chỉ 'QĐ'/'QD' mới tách riêng
-        // thành 'DTQĐ'. Cột hiển thị (headers) vẫn giữ nguyên "SLLK", chỉ nhãn PHÂN LOẠI nội bộ gộp.
+        // LƯU Ý CHO NGƯỜI SỬA SAU: logic phân loại metric SLLK/DTLK ở dashboardHelpers.ts đã đổi
+        // 3 LẦN chỉ trong 1 phiên làm việc (rõ ràng đang có người khác chỉnh song song, xem
+        // implementation_plan.md "Đợt 0" + "Đợt 2 phần 1") — hiện tại (2026-09-08): header khớp
+        // CHÍNH XÁC 'SLLK'/'SỐ LƯỢNG'/'SL REALTIME' giữ nguyên metric 'SLLK' (để hiển thị đúng đơn
+        // vị "Cái"); các biến thể SL khác gộp vào 'DTLK'. Nếu test này lại đỏ, ĐỪNG vội "sửa cho
+        // qua" — đọc lại đúng đoạn code tương ứng, đây nhiều khả năng là 1 đợt chỉnh nghiệp vụ
+        // đang diễn ra, không phải lỗi.
         expect(result['ĐML_STR_STR - 99 Hùng Vương'].programs).toEqual([
-            { name: 'VAS', data: ['224', '39', '574'], metric: 'DTLK' },
+            { name: 'VAS', data: ['224', '39', '574'], metric: 'SLLK' },
         ]);
     });
 
