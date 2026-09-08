@@ -1981,3 +1981,54 @@ bật chế độ enforce) — không tự làm được, không đoán code tr�
 2. Nếu dùng nhiều `features/sticker-event`/`features/phan-ca` (in tem, quét mã, xuất Google Sheets,
    gợi ý AI) — tự thử qua 1 lượt, xem Console có cảnh báo CSP không.
 3. Nếu muốn bật App Check: tạo reCAPTCHA v3 site key ở Firebase Console trước.
+
+---
+
+# Đợt 2 — Bổ sung KHẨN: CSP enforce làm hỏng tải cấu hình lõi, đã sửa — 2026-09-08
+
+**User tự đăng xuất/đăng nhập lại theo yêu cầu, gửi log Console: KHÔNG có dòng CSP nào, chỉ có
+cảnh báo `Cross-Origin-Opener-Policy` của chính Firebase Auth (cơ chế khác CSP, không đặt được qua
+`<meta>`, có từ trước, vô hại).** Dựa trên bằng chứng đó, đổi `Content-Security-Policy-Report-Only`
+→ `Content-Security-Policy` (enforce thật).
+
+**NHƯNG sau đó tự kiểm chứng lại bằng E2E dưới enforce thật (không tin report-only là đủ), phát
+hiện HỎNG THẬT**: bộ test chính thức `phan-tich-performance-modal.spec.ts` (5 test đã ổn định suốt
+phiên làm việc) **fail đồng loạt cả 5**. Điều tra bằng console log trực tiếp: app tải cấu hình
+ngành hàng/hệ số quy đổi (chính là dữ liệu `productConfig` nuôi `calculateRowMetrics()` — nguồn
+chân lý duy nhất cho DTQĐ, đã viết 40 test cho ở Đợt 0) từ **1 Google Sheet công khai**
+(`docs.google.com/spreadsheets/.../pub?output=xlsx`, cấu hình mặc định ở
+`hooks/useDashboardLogic.ts`) — domain này **hoàn toàn vắng mặt** trong `connect-src` tôi viết.
+Bị CSP chặn cứng → `loadConfigFromSheet()` throw → app fallback "dữ liệu cũ rỗng" → mọi phân loại
+ngành hàng/hệ số quy đổi mất tác dụng.
+
+**Vì sao lọt qua bước kiểm chứng trước đó**: mọi lần đo domain thật ("liệt kê tất cả host") trong
+lúc làm Đợt 2 đều đi qua **Report BI** (dùng phiên đăng nhập thật) — khu vực này KHÔNG gọi
+`loadConfigFromSheet()` (đó là logic riêng của khu vực gốc/Phân Tích, nạp lúc `useDataManagement`
+khởi động). Bài học: "kiểm chứng trên dữ liệu thật" phải test ĐÚNG khu vực bị ảnh hưởng, không chỉ
+1 khu vực tiện kiểm tra nhất.
+
+**Điều tra thêm, sửa đúng 2 lần** (test lại sau mỗi lần, không đoán 1 phát):
+1. Thêm `https://docs.google.com` → vẫn lỗi, vì Google Sheets **chuyển hướng file thật** sang
+   subdomain ngẫu nhiên dạng `doc-XX-XX-sheets.googleusercontent.com` (đổi mỗi lần build sheet).
+2. Thêm `https://*.googleusercontent.com` (wildcard, vì subdomain ngẫu nhiên không liệt kê được) →
+   console hiện `[Config] Đã tải 692 hệ số từ sheet 'Bảo Hiểm ĐMX'...` — cấu hình tải THÀNH CÔNG.
+
+`connect-src` cuối cùng: thêm `https://docs.google.com https://*.googleusercontent.com`.
+
+**Verify lại toàn bộ sau khi sửa**: `npx vitest run` 80/80, `npm run build` OK,
+`npm run test:e2e` **17/17 pass** (1 skip theo thiết kế) — chạy 2 LẦN LIÊN TIẾP để chắc chắn không
+phải may mắn nhất thời, bao gồm `phan-tich-performance-modal.spec.ts` (khu vực bị hỏng) VÀ
+`real-data*.spec.ts` (phiên đăng nhập thật, đảm bảo fix không phá lại luồng Report BI).
+
+**Bài học ghi lại cho lần sau**: CSP `connect-src` phải audit domain theo TỪNG KHU VỰC ĐỘC LẬP của
+app (Phân Tích/Report BI/Check Thưởng/phan-ca/sticker-event đều có nguồn dữ liệu ngoài RIÊNG), một
+lượt đo trên 1 khu vực không đại diện cho toàn app. `docs.google.com` là ví dụ điển hình của domain
+REDIRECT sang subdomain không đoán trước được — cần bắt bằng thực nghiệm (mở DevTools/Playwright
+network), không đoán từ đọc code.
+
+**Phát hiện phụ, KHÔNG sửa (ngoài phạm vi, phát hiện lúc kiểm chứng)**:
+`features/bi-dashboard/services/analysisEmployeeSyncService.ts` (file MỚI, không phải của phiên
+này, do tiến trình chỉnh sửa song song tạo ra) import `services/dbService` ở gốc — vi phạm ĐÚNG quy
+tắc cách ly CLAUDE.md mà tôi vừa phát hiện ở mục 2.4 (`import/no-restricted-paths` báo lỗi thật khi
+chạy `eslint .`, không phải cảnh báo). Cần người tạo file này tự sửa hoặc xin ngoại lệ như
+bi-dashboard đã có cho `services/firebase.ts`.

@@ -9,23 +9,28 @@
     <meta http-equiv="Expires" content="0">
     <meta name="description" content="Nền tảng phân tích dữ liệu bán hàng hiệu suất cao tích hợp Trợ lý ảo AI. Xử lý file Excel lớn mượt mà, trực quan hóa dữ liệu đa chiều.">
     <!--
-      Content-Security-Policy (KE_HOACH_TONG_THE.md mục 2.3) — CHẾ ĐỘ REPORT-ONLY (chỉ cảnh báo ở
-      DevTools Console, KHÔNG chặn gì) cho đến khi đã tự xác nhận đủ luồng (đặc biệt luồng đăng
-      nhập Google THẬT — signInWithPopup không tự động test được bằng Playwright vì Google chặn
-      trình duyệt do công cụ tự động điều khiển). Xem implementation_plan.md để biết luồng nào đã
-      kiểm chứng, luồng nào CHƯA. Đổi thành `Content-Security-Policy` (bỏ "-Report-Only") sau khi
-      xác nhận sạch cả luồng đăng nhập thật.
+      Content-Security-Policy (KE_HOACH_TONG_THE.md mục 2.3) — CHẾ ĐỘ ENFORCE thật (đã bỏ
+      "-Report-Only" ngày 2026-09-08). Trước khi bật: đã kiểm chứng 0 vi phạm qua Playwright trên
+      demo mode + Report BI + upload Excel + PHIÊN ĐĂNG NHẬP GOOGLE THẬT (đăng xuất/đăng nhập lại,
+      user tự xác nhận Console sạch — không có dòng "Content-Security-Policy"/"Refused to..." nào,
+      chỉ có cảnh báo Cross-Origin-Opener-Policy của chính Firebase Auth — cơ chế KHÁC CSP, không
+      đặt được qua <meta>, vô hại, có từ trước). Report-Only và Enforce dùng CHUNG logic đánh giá
+      policy nên kết quả sạch ở Report-Only áp dụng y hệt cho Enforce.
+      CHƯA tự kiểm chứng: features/sticker-event, features/phan-ca (in tem/quét mã/gợi ý AI/xuất
+      Google Sheets) — nếu sau khi bật thấy tính năng ở 2 khu vực này lỗi bất thường, mở DevTools
+      Console tìm dòng "Content-Security-Policy" hoặc "Refused to..." rồi báo lại để nới directive
+      tương ứng (không phải tắt hẳn CSP).
       Giới hạn của <meta> so với header HTTP thật: KHÔNG hỗ trợ frame-ancestors/report-uri/sandbox
       (trình duyệt tự bỏ qua, không báo lỗi) — hosting tĩnh (GitHub Pages) không đặt được header,
       cân nhắc chuyển sang Firebase Hosting nếu cần các directive này (đã ghi trong kế hoạch).
     -->
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="
+    <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' https://www.googletagmanager.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https:;
-      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com http://localhost:3456;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
       frame-src https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
       object-src 'none';
       base-uri 'self';
