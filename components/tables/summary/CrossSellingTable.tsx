@@ -65,7 +65,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
 
                 const NhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
                 const NganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
-                const SanPham = row['Sản phẩm'] || '';
+                const SanPham = getRowValue(row, COL.PRODUCT) || '';
                 const HangSX = getRowValue(row, COL.MANUFACTURER) || '';
                 const MaSP = String(getRowValue(row, COL.PRODUCT_CODE) || '');
 

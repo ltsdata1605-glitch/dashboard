@@ -12,7 +12,8 @@ import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
 import { useStableCallback } from './useStableCallback';
 import * as dbService from '../services/dbService';
-import { toLocalISOString } from '../utils/dataUtils';
+import { toLocalISOString, getRowValue } from '../utils/dataUtils';
+import { COL } from '../constants';
 
 const getTodayStr = () => {
     const now = new Date();
@@ -205,7 +206,7 @@ export const useDashboardLogic = () => {
         const merged = await dbService.getMergedSalesData();
         if (merged) {
             if (activeHistoricalCount > 0) {
-                const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                const allTrangThai = Array.from(new Set(merged.data.map(r => getRowValue(r, COL.TRANG_THAI)).filter(Boolean))) as string[];
                 const todayStr = getTodayStr();
                 setFilterState(prev => ({
                     ...prev,

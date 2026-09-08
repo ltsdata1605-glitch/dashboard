@@ -4,14 +4,18 @@ import type { WarehouseColumnConfig, WarehouseMetricType } from './types';
 export const COL = {
     ID: ['Mã Đơn Hàng', 'Mã đơn hàng'],
     PRODUCT: ['Tên Sản Phẩm', 'Tên sản phẩm'],
-    CUSTOMER_NAME: ['Tên Khách Hàng', 'Tên khách hàng'],
+    CUSTOMER_NAME: ['Tên Khách Hàng', 'Tên khách hàng', 'TenKhachHang', 'Khách hàng'],
     QUANTITY: ['Số Lượng', 'Số lượng'],
     PRICE: ['Giá bán_1'],
     ORIGINAL_PRICE: ['Giá bán'],
     KHO: ['Mã kho tạo'],
-    TRANG_THAI: ['Trạng thái hồ sơ'],
-    NGUOI_TAO: ['Người tạo'],
-    XUAT: ['Trạng thái xuất'],
+    // 'Trạng thái' (trần, không "hồ sơ") — biến thể fallback trước đây rải rác ở
+    // hooks/useDashboardLogic.ts + hooks/useFileUploadLogic.ts, gộp về đây (Đợt 4).
+    TRANG_THAI: ['Trạng thái hồ sơ', 'Trạng thái'],
+    // 'NguoiTao'/'NV Tạo' — biến thể trước đây chỉ khai báo cục bộ ở 3 modal xuất Excel
+    // (Uncollected/Unshipped/PerformanceModal), gộp về đây (Đợt 4) để worker.ts nhận diện được.
+    NGUOI_TAO: ['Người tạo', 'NguoiTao', 'NV Tạo'],
+    XUAT: ['Trạng thái xuất', 'TrangThaiXuat'],
     DATE_CREATED: ['Ngày tạo', 'Ngày Tạo'],
     NGAY_HEN_GIAO: ['Thời gian hẹn giao', 'Thời Gian Hẹn Giao', 'Thoi gian hen giao', 'TG Hẹn Giao'],
     HINH_THUC_XUAT: ['Hình thức xuất'],
@@ -26,6 +30,50 @@ export const COL = {
     TRANG_THAI_GIAO_HANG: ['Trạng thái giao hàng', 'Trạng thái giao'],
     CON_NO: ['Còn nợ', 'Còn Nợ']
 };
+
+// Khoá ngắn cố định cho từng field logic ở trên (KE_HOACH_TONG_THE.md mục 3.1 bước 1) — dùng để
+// đổi tên khoá của DataRow NGAY SAU KHI parse Excel (services/worker.ts), thay cho việc giữ
+// nguyên chuỗi tiếng Việt dài lặp lại ở mọi dòng. `getRowValue` tra bảng này TRƯỚC (O(1)), chỉ rơi
+// xuống dò biến thể cũ nếu không thấy — dữ liệu cũ đã lưu IndexedDB/Firestore từ trước bản vá này
+// (còn khoá tiếng Việt gốc) vẫn đọc đúng, không cần migrate.
+export const COL_SHORT_KEY: Record<keyof typeof COL, string> = {
+    ID: 'id',
+    PRODUCT: 'sp',
+    CUSTOMER_NAME: 'kh',
+    QUANTITY: 'sl',
+    PRICE: 'gia',
+    ORIGINAL_PRICE: 'giaGoc',
+    KHO: 'kho',
+    TRANG_THAI: 'trangThai',
+    NGUOI_TAO: 'nguoiTao',
+    XUAT: 'xuat',
+    DATE_CREATED: 'ngayTao',
+    NGAY_HEN_GIAO: 'ngayHenGiao',
+    HINH_THUC_XUAT: 'htx',
+    TINH_TRANG_NHAP_TRA: 'nhapTra',
+    TRANG_THAI_THU_TIEN: 'thuTien',
+    TRANG_THAI_HUY: 'trangThaiHuy',
+    MA_NGANH_HANG: 'nganhHang',
+    MA_NHOM_HANG: 'nhomHang',
+    MANUFACTURER: 'hangSx',
+    PRODUCT_CODE: 'maSp',
+    KHO_TAO: 'khoTao',
+    TRANG_THAI_GIAO_HANG: 'trangThaiGiaoHang',
+    CON_NO: 'conNo',
+};
+
+// Map phẳng TỪNG biến thể tiếng Việt (kể cả các biến thể phụ, vd 'Ngày Tạo' lẫn 'Ngày tạo') →
+// khoá ngắn tương ứng — dựng 1 lần từ COL + COL_SHORT_KEY lúc module load, không hardcode riêng
+// (trước đây services/worker.ts có 1 danh sách `reqCols` hardcode riêng, lệch dần khỏi COL —
+// dùng chung nguồn này để hết lệch). Dùng ở services/worker.ts khi map cột lúc parse, và ở
+// getRowValue (utils/dataUtils.ts) khi tra khoá ngắn cho biến thể đầu tiên của mỗi field.
+export const VARIANT_TO_SHORT_KEY: Record<string, string> = {};
+for (const key of Object.keys(COL) as (keyof typeof COL)[]) {
+    const shortKey = COL_SHORT_KEY[key];
+    for (const variant of COL[key]) {
+        VARIANT_TO_SHORT_KEY[variant] = shortKey;
+    }
+}
 
 export const HINH_THUC_XUAT_THU_HO = new Set(['Xuất dịch vụ thu hộ cước Payoo', 'Xuất dịch vụ thu hộ qua Epay', 'Xuất dịch vụ thu hộ qua SmartNet', 'Xuất dịch vụ thu hộ qua tổng công ty Viettel', 'Xuất dịch vụ thu hộ nạp tiền vào ví', 'Xuất dịch vụ thu hộ cước Bảo Kim']);
 export const HINH_THUC_XUAT_TIEN_MAT = new Set(['Xuất bán hàng Online tại siêu thị', 'Xuất bán hàng online tiết kiệm', 'Xuất bán hàng tại siêu thị', 'Xuất bán hàng tại siêu thị (TCĐM)', 'Xuất bán Online giá rẻ', 'Xuất bán pre-order tại siêu thị', 'Xuất bán ưu đãi cho nhân viên', 'Xuất dịch vụ thu hộ bảo hiểm', 'Xuất đổi bảo hành sản phẩm IMEI', 'Xuất đổi bảo hành tại siêu thị']);

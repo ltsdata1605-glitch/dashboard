@@ -2098,3 +2098,128 @@ sửa).
 chunk khởi động lớn nhất hiện tại nhưng đã DƯỚI mục tiêu 700 kB nên không bắt buộc — thu nhỏ thêm
 đòi hỏi tách nhỏ Firebase SDK theo module (auth/firestore/functions/analytics riêng), rủi ro cao
 hơn nhiều (đụng vào init dùng chung cho cả 4 khu vực) so với lợi ích, để lại cho đợt sau nếu cần.
+
+---
+
+## Đợt 4 — Chuẩn hoá khoá cột DataRow, Bước 1 (2026-09-08)
+
+Mục tiêu theo KE_HOACH_TONG_THE.md mục 3.1: ngay sau khi parse Excel, ánh xạ tên cột tiếng Việt đầy
+đủ → khoá ngắn cố định, `getRowValue` giữ nguyên chữ ký nhưng tra bảng 1 lần thay vì dò biến thể.
+Chỉ làm Bước 1 (đổi khoá) — KHÔNG làm Bước 2/3 (lưu dạng cột/nhị phân, để đợt sau khi có nhiều test
+hơn cho tầng tính toán, đúng như kế hoạch đã ghi).
+
+**Khảo sát trước khi sửa** (Explore agent, đọc toàn bộ 4 khu vực): chỉ khu vực GỐC (Phân Tích/Check
+Thưởng — `services/`, `hooks/`, `components/`) dùng `DataRow`/`COL`/`getRowValue`. Cả 3
+`features/*` đều có mô hình dữ liệu RIÊNG không liên quan (bi-dashboard không parse Excel;
+phan-ca/sticker-event parse Excel dạng `header:1` mảng vị trí rồi tự map sang type riêng, không
+qua `DataRow`) — **hoàn toàn ngoài phạm vi Đợt 4**, đúng tinh thần cách ly CLAUDE.md.
+
+**Phát hiện quan trọng làm thay đổi cách tiếp cận**: `services/worker.ts` (nơi parse Excel THẬT SỰ
+đang chạy — `services/dataService.ts::processSalesFile` tưởng là parser nhưng thực ra là code CHẾT,
+0 nơi gọi, xác nhận bằng grep toàn repo) đã có sẵn bước "chỉ giữ ~34 cột cần thiết theo whitelist
+`reqCols`" (dòng 64-71 cũ) — tức là ĐÃ làm gần hết việc "giảm ~50 cột Excel thô xuống còn đúng số
+cột cần dùng" mà mục 3.1 mô tả, chỉ còn thiếu bước cuối: đổi tên khoá thành NGẮN thay vì vẫn giữ
+nguyên chuỗi tiếng Việt dài. Việc còn lại nhỏ hơn nhiều so với hình dung ban đầu — không cần viết
+lại pipeline parse, chỉ cần đổi GIÁ TRỊ được gán làm khoá trong vòng lặp map cột đã có sẵn.
+
+**Rủi ro thật đã tìm trước khi sửa** (275 nơi dùng đúng `getRowValue`/`COL` — an toàn tự động; nhưng
+~20 chỗ đọc thẳng `row['Tên cột tiếng Việt']` bỏ qua `getRowValue` — sẽ ÂM THẦM vỡ nếu đổi khoá mà
+không sửa các chỗ này trước, không có lỗi throw, chỉ mất dữ liệu):
+- **Mức nghiêm trọng cao nhất**: `computeRbacFilteredData()` và `computeUniqueFilterOptions()`
+  trong `utils/dataUtils.ts` (dòng ~707/716/743-752) đọc thẳng `row['Mã kho tạo']`/`row['Người
+  tạo']`. Đây là hàm QUYẾT ĐỊNH nhân viên/quản lý xem được dòng nào — nếu vỡ, nhân viên đăng nhập
+  sẽ thấy Dashboard TRỐNG HOÀN TOÀN, không có thông báo lỗi nào (giống hệt loại bug đã từng có thật
+  ở comment sẵn trong file, dòng 710-719, về việc so khớp "Người tạo" sai định dạng).
+- **Mức nghiêm trọng cao**: `services/khoDataService.ts:280` (`syncDataToKhoIfManager`) đọc thẳng
+  `row['Mã kho tạo']` khi tách dữ liệu đồng bộ lên Firestore theo từng Kho — nếu vỡ, KHÔNG Kho nào
+  nhận được dữ liệu đồng bộ sau khi admin/manager tải file mới, âm thầm không báo lỗi.
+- **Mức thấp hơn**: `hooks/useDashboardLogic.ts:208`, `hooks/useFileUploadLogic.ts:502`,
+  `components/filters/FilterSection.tsx:112-113` (đọc `row['Trạng thái hồ sơ']`/`row['Người tạo']`
+  để dựng lại danh sách lọc sau khi xoá/tải file) — vỡ thì bộ lọc rỗng, không phải mất dữ liệu.
+  `components/modals/UncollectedOrdersModal.tsx:507-508` (đọc `a['Người tạo']` chỉ để SẮP XẾP danh
+  sách xuất Excel) — vỡ thì sai thứ tự, không mất dữ liệu.
+- **Phát hiện phụ, sửa kèm vì cùng loại lỗi**: `components/tables/summary/CrossSellingTable.tsx:68`
+  đọc `row['Sản phẩm']` — chuỗi này **không tồn tại** trong `COL` (`COL.PRODUCT` chỉ có `'Tên Sản
+  Phẩm'`/`'Tên sản phẩm'`) nên biến `SanPham` LUÔN RỖNG từ trước tới nay — tính năng "so khớp từ
+  khoá theo tên sản phẩm" của Bảng Chéo Sản Phẩm (`r.keywords`, dòng 94) đang âm thầm không hoạt
+  động, độc lập với việc đổi khoá lần này. Sửa luôn thành `getRowValue(row, COL.PRODUCT)`.
+
+**Thiết kế — tương thích ngược bắt buộc, không phá dữ liệu cũ đã lưu**: dữ liệu đã lưu trong
+IndexedDB/Firestore từ TRƯỚC bản vá này vẫn giữ nguyên khoá tiếng Việt gốc (`saveSalesData`/
+`cloudDataService.ts` chỉ `JSON.stringify` nguyên trạng object, không đụng vào khoá) — nếu
+`getRowValue` chỉ tra khoá ngắn mà bỏ nhánh dò biến thể cũ, dữ liệu cũ đã lưu sẽ đọc ra `undefined`
+toàn bộ ngay khi mở lại app. Cách xử lý: `getRowValue` thử khoá ngắn TRƯỚC (nhanh, hàng mới), KHÔNG
+tìm thấy thì rơi xuống nguyên vẹn logic dò biến thể cũ (hàng cũ/dữ liệu tạo thủ công nơi khác) — cả
+2 loại dữ liệu cùng đọc đúng, hàng cũ chỉ không được hưởng tốc độ mới cho tới khi người dùng tải lại
+file.
+
+**File sửa**:
+1. `constants.ts` — thêm `COL_SHORT_KEY` (khoá ngắn cho từng field logic của `COL`, vd `ID→'id'`,
+   `KHO→'kho'`) và `VARIANT_TO_SHORT_KEY` (map phẳng TỪNG biến thể tiếng Việt → khoá ngắn, dựng từ
+   `COL`+`COL_SHORT_KEY` lúc module load, không hardcode riêng). Đồng thời gộp thêm các biến thể lẻ
+   đang nằm rải rác ở 3 modal gần giống nhau (`'NguoiTao'`, `'NV Tạo'` → NGUOI_TAO; `'TenKhachHang'`,
+   `'Khách hàng'` → CUSTOMER_NAME; `'TrangThaiXuat'` → XUAT; `'Trạng thái'` trần → TRANG_THAI) vào
+   thẳng `COL` — 1 nguồn chân lý duy nhất thay vì rải rác.
+2. `utils/dataUtils.ts` — `getRowValue`: thêm nhánh tra khoá ngắn trước nhánh cache/dò biến thể cũ
+   (không xoá nhánh cũ). Sửa `computeRbacFilteredData`/`computeUniqueFilterOptions` dùng
+   `getRowValue`+`COL` thay vì bracket trực tiếp.
+3. `services/worker.ts` — bỏ mảng `reqCols` hardcode (35 chuỗi, đã lệch khỏi `COL` — thiếu
+   `'Nganh Hang'`, `'Nhom Hang'`, `'Hãng SX'`, `'Mã SP'`/`'Mã sp'`/`'Mã Hàng'`/`'Mã hàng'`,
+   `'Thời Gian Hẹn Giao'`, `'Thoi gian hen giao'` — các cột dùng đúng những tên này bị ÂM THẦM RỚT
+   MẤT khỏi dữ liệu từ trước tới giờ, độc lập với đợt sửa này), thay bằng danh sách dựng từ
+   `VARIANT_TO_SHORT_KEY` (1 nguồn chân lý với `COL`) — vòng lặp map cột giữ nguyên cấu trúc, chỉ
+   đổi giá trị gán làm khoá từ chuỗi tiếng Việt dài sang khoá ngắn.
+4. `services/khoDataService.ts`, `hooks/useDashboardLogic.ts`, `hooks/useFileUploadLogic.ts`,
+   `components/filters/FilterSection.tsx`, `components/modals/UncollectedOrdersModal.tsx`,
+   `components/tables/summary/CrossSellingTable.tsx` — thay bracket trực tiếp bằng
+   `getRowValue`+`COL` ở đúng các dòng liệt kê ở mục rủi ro trên.
+5. `services/dataService.ts::processSalesFile` — hàm CHẾT (0 caller) dùng đúng pattern object-mode
+   `sheet_to_json` sẽ tạo dữ liệu khoá tiếng Việt không qua chuẩn hoá mới; để nguyên logic xử lý
+   nhưng không cần sửa theo (không ai gọi) — cân nhắc xoá hẳn ở Đợt 5 (dọn code) thay vì sửa ở đây.
+
+**Không đổi/không phá tương thích**: `COL` vẫn giữ nguyên hình dạng mảng — 275 nơi gọi
+`getRowValue(row, COL.X)` không cần sửa gì. `saveSalesData`/luồng Firestore không đổi (đã key-shape
+agnostic sẵn, xác nhận lúc khảo sát). Không export/in ấn nào bị ảnh hưởng — toàn bộ export Excel
+dùng object khoá cố định tự dựng (`{'Kho Xuất': ..., 'Người Tạo': ...}`), không suy ra header từ
+khoá nội bộ của row.
+
+**Phát hiện lúc rà — hoá ra KHÔNG phải bypass thật**: `components/modals/UncollectedOrdersModal.tsx:507-508`
+(`a['Người tạo']` trong hàm sắp xếp trước khi xuất Excel) ban đầu bị liệt vào danh sách rủi ro,
+nhưng đọc kỹ thì `a`/`b` ở đây là phần tử của `exportData` — 1 object MỚI tự dựng ngay phía trên với
+khoá cố định `'Người tạo'` (dòng ~487), KHÔNG phải `DataRow` gốc. Đổi khoá nội bộ của `DataRow`
+không ảnh hưởng gì tới đây — để nguyên, không sửa.
+
+**Verify**:
+- `npx vitest run`: **92/92 pass** (12 test mới — khoá ngắn/tương thích ngược cho `getRowValue`,
+  toàn vẹn bảng `COL_SHORT_KEY`/`VARIANT_TO_SHORT_KEY` không trùng/không sót, `computeRbacFilteredData`
+  + `computeUniqueFilterOptions` với CẢ 2 dạng row — khoá ngắn mới và khoá tiếng Việt cũ).
+- `npx tsc --noEmit`: so sánh output trước/sau bằng `grep -v` loại các file KHÔNG do tôi sửa — 0
+  lỗi mới. Các lỗi còn lại (EmployeeAnalysis.tsx, DashboardHeader.tsx, phan-ca/EditShiftModal.tsx,
+  phan-ca/PhanCaView.tsx) xác nhận đã có sẵn ở HEAD `89a340fb` từ trước (không liên quan Đợt 4).
+- `npx eslint` trên đúng 9 file đã sửa: sạch.
+- `npm run build`: OK.
+- `npm run lint:ratchet`: có 5 vi phạm màu KHÔNG do tôi (IndustryGrid.tsx, TrendChart.tsx,
+  SummaryTableHeader.tsx, PriceComparisonView.tsx, phan-ca/Legend.tsx — không nằm trong danh sách
+  file tôi sửa) — xác nhận bằng `git stash` toàn bộ thay đổi rồi chạy lại ratchet: **giống hệt**,
+  đã có sẵn ở HEAD, không phải do Đợt 4.
+- **Kiểm chứng số liệu THẬT quan trọng nhất**: viết 1 test tạm tải file Excel mẫu (`createSalesXlsx`)
+  qua đúng luồng `services/worker.ts` đã sửa, chụp lại toàn bộ text vùng KPI (DT Thực, DTQĐ, HQQĐ,
+  Tỷ trọng ngành hàng, Top nhân viên...). Chạy 1 lần trên code ĐÃ sửa, `git stash` riêng đúng các
+  file Đợt 4 rồi chạy lại lần 2 trên code TRƯỚC khi sửa (giữ nguyên `implementation_plan.md`/test
+  file tạm). **Kết quả giống hệt từng ký tự** ở cả 2 lần chạy (DT Thực 44 Tr, DTQĐ 62 Tr, HQQĐ 43%,
+  4 ngành hàng cùng tỷ trọng, top nhân viên #1 195025 cùng số liệu) — bằng chứng cụ thể rằng đổi
+  khoá cột không làm sai lệch bất kỳ phép tính nào trên pipeline thật, không chỉ là "trang không
+  crash". Xoá test tạm sau khi xác nhận xong (không phải test hồi quy lâu dài).
+- `npx playwright test tests/e2e/`: 17/17 pass (1 skip theo thiết kế), gồm cả
+  `phan-tich-performance-modal.spec.ts` (tải Excel thật qua worker.ts đã sửa) và
+  `real-data*.spec.ts` (Report BI trên phiên đăng nhập thật — xác nhận bi-dashboard không bị ảnh
+  hưởng, đúng như khảo sát ban đầu là khu vực này không dùng `DataRow`).
+
+**Chưa làm (để lại cho Bước 2/3 sau, đúng kế hoạch)**: lưu dạng cột (columnar/`Float64Array`) và
+lưu IndexedDB dạng nhị phân — mục 3.1 tự ghi rõ nên làm sau khi có nhiều test hơn cho tầng tính
+toán, Đợt 4 lần này chỉ làm Bước 1 (đổi khoá).
+
+**Chưa làm, phát hiện phụ ngoài phạm vi**: `services/dataService.ts::processSalesFile` là code CHẾT
+(0 caller, xác nhận bằng grep toàn repo) dùng pattern parse object-mode cũ (khoá tiếng Việt dài,
+không qua chuẩn hoá mới) — để nguyên, không sửa theo vì không ai gọi tới; cân nhắc XOÁ HẲN ở Đợt 5
+(dọn code) thay vì vá logic cho 1 hàm chết.

@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import type { DataRow, Status } from '../types';
 import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
-import { COL } from '../constants';
+import { COL, VARIANT_TO_SHORT_KEY } from '../constants';
 
 interface WorkerMessage {
     file: File;
@@ -59,24 +59,22 @@ async function processSingleFileInWorker(file: File) {
         
         if (rows.length > 0) {
             let headers = (rows[0] || []).map(h => (h || '').toString().trim());
-            
-            // Danh sách các cột thực sự quan trọng cần được giữ lại
-            const reqCols = [
-                'Ngày tạo', 'Ngày Tạo', 'Trạng thái hủy', 'Tình trạng nhập trả của sản phẩm đổi với sản phẩm chính',
-                'Trạng thái thu tiền', 'Mã Đơn Hàng', 'Mã đơn hàng', 'Tên Sản Phẩm', 'Tên sản phẩm',
-                'Tên Khách Hàng', 'Tên khách hàng', 'Số Lượng', 'Số lượng', 'Giá bán_1', 'Giá bán',
-                'Mã kho tạo', 'Trạng thái hồ sơ', 'Người tạo', 'Trạng thái xuất', 'Hình thức xuất',
-                'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao', 'Thời gian hẹn giao',
-                'Mã sản phẩm', 'Kho tạo', 'Kho Tạo', 'Trạng thái giao hàng', 'Trạng thái giao', 'Còn nợ', 'Còn Nợ'
-            ];
-            
-            const normalizedReqCols = reqCols.map(c => cleanAndNormalize(c));
+
+            // Cột thực sự quan trọng cần giữ lại — dựng từ constants.ts::VARIANT_TO_SHORT_KEY
+            // (nguồn chân lý duy nhất, cùng danh sách COL mà getRowValue dùng khắp app), KHÔNG
+            // còn hardcode riêng 1 danh sách ở đây (KE_HOACH_TONG_THE.md mục 3.1 bước 1, Đợt 4).
+            // Trước đây danh sách hardcode ở đây đã lệch khỏi COL (thiếu vài biến thể như 'Nganh
+            // Hang', 'Mã SP'...) khiến cột dùng đúng các tên đó bị âm thầm rớt mất — dùng chung
+            // nguồn với COL fix luôn lỗi này. Giá trị gán cho mỗi cột khớp là KHOÁ NGẮN (vd 'id',
+            // 'sp'...) thay vì chuỗi tiếng Việt dài — đây là bước chuẩn hoá khoá thực sự.
+            const knownVariants = Object.keys(VARIANT_TO_SHORT_KEY);
+            const normalizedReqCols = knownVariants.map(c => cleanAndNormalize(c));
             const reqIndices: Record<number, string> = {};
             for (let j = 0; j < headers.length; j++) {
                 const normHeader = cleanAndNormalize(headers[j]);
                 const matchedIdx = normalizedReqCols.indexOf(normHeader);
                 if (matchedIdx !== -1) {
-                    reqIndices[j] = reqCols[matchedIdx];
+                    reqIndices[j] = VARIANT_TO_SHORT_KEY[knownVariants[matchedIdx]];
                 }
             }
 
@@ -86,7 +84,7 @@ async function processSingleFileInWorker(file: File) {
             // headers thực tế + số cột khớp được, gỡ bỏ khi đã xác định xong nguyên nhân.
             console.log('[Worker Debug] Tổng số dòng đọc được (kể cả header):', rows.length);
             console.log('[Worker Debug] Header hàng đầu tiên (rows[0]):', headers);
-            console.log('[Worker Debug] Số cột khớp được với reqCols:', Object.keys(reqIndices).length, '/', reqCols.length);
+            console.log('[Worker Debug] Số cột khớp được:', Object.keys(reqIndices).length, '/', headers.length, '(tổng số biến thể cột đã biết:', knownVariants.length, ')');
 
             // Chunked Array Push — báo tiến độ liên tục theo số dòng thực đã xử lý (40→65%),
             // tránh bar "đứng hình" rồi nhảy mốc cứng với file lớn (hàng chục nghìn dòng).

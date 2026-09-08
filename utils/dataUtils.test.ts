@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ProductConfig } from '../types';
-import { COL } from '../constants';
+import { COL, COL_SHORT_KEY, VARIANT_TO_SHORT_KEY } from '../constants';
 import {
     getRowValue,
     calculateRowMetrics,
@@ -12,6 +12,8 @@ import {
     roundUp,
     isValidSalesRow,
     isUncollectedOrder,
+    computeRbacFilteredData,
+    computeUniqueFilterOptions,
 } from './dataUtils';
 
 /**
@@ -56,6 +58,111 @@ describe('getRowValue', () => {
     it('trả về undefined khi không có khoá nào khớp', () => {
         const row = { 'Cột khác': 'x' };
         expect(getRowValue(row, COL.PRICE)).toBeUndefined();
+    });
+
+    /** Đợt 4 bước 1 (KE_HOACH_TONG_THE.md mục 3.1) — services/worker.ts giờ parse ra row với
+     *  khoá NGẮN cố định (vd `gia` thay vì `'Giá bán_1'`) thay vì chuỗi tiếng Việt dài. */
+    describe('khoá ngắn (Đợt 4) — rows parse mới từ services/worker.ts', () => {
+        it('tra thẳng khoá ngắn khi row đã chuẩn hoá (không dò biến thể)', () => {
+            const row = { gia: 100000 };
+            expect(getRowValue(row, COL.PRICE)).toBe(100000);
+        });
+
+        it('row có CẢ khoá ngắn lẫn khoá tiếng Việt (không xảy ra thực tế, nhưng phải xác định rõ hành vi): ưu tiên khoá ngắn', () => {
+            const row = { gia: 999, 'Giá bán_1': 111 };
+            expect(getRowValue(row, COL.PRICE)).toBe(999);
+        });
+
+        it('khoá ngắn hoạt động với biến thể KHÔNG PHẢI keys[0] (vd danh sách alias cục bộ ở modal xuất Excel)', () => {
+            // Mô phỏng đúng cách 3 modal (Uncollected/Unshipped/PerformanceModal) gọi getRowValue
+            // với alias riêng — 'NguoiTao' không phải keys[0] của COL.NGUOI_TAO nhưng vẫn phải
+            // tra được khoá ngắn 'nguoiTao' vì VARIANT_TO_SHORT_KEY map TỪNG biến thể, không chỉ keys[0].
+            const row = { nguoiTao: '107617 - Nguyễn Văn A' };
+            expect(getRowValue(row, ['NguoiTao', 'Người tạo', 'NV Tạo'])).toBe('107617 - Nguyễn Văn A');
+        });
+
+        it('row CHƯA chuẩn hoá (dữ liệu cũ lưu IndexedDB/Firestore từ trước, hoặc mock thủ công) vẫn đọc đúng qua nhánh dò biến thể cũ — không mất dữ liệu tương thích ngược', () => {
+            const row = { 'Giá bán_1': 250000 }; // hình dạng row TRƯỚC Đợt 4, không có khoá ngắn
+            expect(getRowValue(row, COL.PRICE)).toBe(250000);
+        });
+    });
+});
+
+describe('COL_SHORT_KEY / VARIANT_TO_SHORT_KEY — toàn vẹn bảng ánh xạ (Đợt 4)', () => {
+    it('mọi field trong COL đều có khoá ngắn tương ứng, không field nào bị bỏ sót', () => {
+        for (const key of Object.keys(COL) as (keyof typeof COL)[]) {
+            expect(COL_SHORT_KEY[key], `thiếu COL_SHORT_KEY cho field ${key}`).toBeTruthy();
+        }
+    });
+
+    it('không có 2 field logic khác nhau dùng trùng 1 khoá ngắn (tránh đè dữ liệu lên nhau khi parse)', () => {
+        const shortKeys = Object.values(COL_SHORT_KEY);
+        const uniqueShortKeys = new Set(shortKeys);
+        expect(uniqueShortKeys.size, 'có khoá ngắn bị trùng giữa 2 field COL khác nhau').toBe(shortKeys.length);
+    });
+
+    it('mọi biến thể tiếng Việt trong COL đều tra được khoá ngắn qua VARIANT_TO_SHORT_KEY', () => {
+        for (const variants of Object.values(COL)) {
+            for (const variant of variants) {
+                expect(VARIANT_TO_SHORT_KEY[variant], `thiếu ánh xạ cho biến thể "${variant}"`).toBeTruthy();
+            }
+        }
+    });
+});
+
+describe('computeRbacFilteredData — Đợt 4: vẫn lọc đúng dù row dùng khoá ngắn (mới) hay khoá tiếng Việt (cũ)', () => {
+    const baseParams = { isDemoMode: false, userRole: 'employee' as const, departmentId: 'K01', employeeName: '107617', userEmail: 'nv@test.com' };
+
+    it('row khoá NGẮN (dữ liệu parse mới): nhân viên chỉ thấy đúng Kho + đúng mã số của mình', () => {
+        const data = [
+            { kho: 'K01', nguoiTao: '107617 - Nguyễn Văn A' },
+            { kho: 'K01', nguoiTao: '999999 - Người khác' }, // khác mã NV — phải bị loại
+            { kho: 'K02', nguoiTao: '107617 - Nguyễn Văn A' }, // khác Kho — phải bị loại
+        ];
+        const result = computeRbacFilteredData(data, baseParams);
+        expect(result).toHaveLength(1);
+        expect(result[0].nguoiTao).toBe('107617 - Nguyễn Văn A');
+    });
+
+    it('row khoá TIẾNG VIỆT (dữ liệu cũ đã lưu từ trước Đợt 4): vẫn lọc đúng y hệt, không bị mất trắng', () => {
+        const data = [
+            { 'Mã kho tạo': 'K01', 'Người tạo': '107617 - Nguyễn Văn A' },
+            { 'Mã kho tạo': 'K01', 'Người tạo': '999999 - Người khác' },
+            { 'Mã kho tạo': 'K02', 'Người tạo': '107617 - Nguyễn Văn A' },
+        ];
+        const result = computeRbacFilteredData(data, baseParams);
+        expect(result).toHaveLength(1);
+        expect(result[0]['Người tạo']).toBe('107617 - Nguyễn Văn A');
+    });
+
+    it('admin/demo mode: không lọc gì cả, giữ nguyên toàn bộ dữ liệu', () => {
+        const data = [{ kho: 'K01' }, { kho: 'K99' }];
+        const result = computeRbacFilteredData(data, { ...baseParams, userRole: 'admin' });
+        expect(result).toHaveLength(2);
+    });
+});
+
+describe('computeUniqueFilterOptions — Đợt 4: dựng đúng danh sách lọc dù row dùng khoá ngắn hay tiếng Việt', () => {
+    it('row khoá NGẮN', () => {
+        const data = [
+            { kho: 'K01', trangThai: 'Đã duyệt', nguoiTao: '107617 - A', hangSx: 'Samsung' },
+            { kho: 'K02', trangThai: 'Chờ duyệt', nguoiTao: '999999 - B', hangSx: 'LG' },
+        ];
+        const opts = computeUniqueFilterOptions(data, null);
+        expect(opts.kho).toEqual(['K01', 'K02']);
+        expect(opts.trangThai.sort()).toEqual(['Chờ duyệt', 'Đã duyệt']);
+        expect(opts.nguoiTao).toHaveLength(2);
+        expect(opts.hangSX.sort()).toEqual(['LG', 'Samsung']);
+    });
+
+    it('row khoá TIẾNG VIỆT (dữ liệu cũ)', () => {
+        const data = [
+            { 'Mã kho tạo': 'K01', 'Trạng thái hồ sơ': 'Đã duyệt', 'Người tạo': '107617 - A', 'Hãng': 'Samsung' },
+        ];
+        const opts = computeUniqueFilterOptions(data, null);
+        expect(opts.kho).toEqual(['K01']);
+        expect(opts.trangThai).toEqual(['Đã duyệt']);
+        expect(opts.hangSX).toEqual(['Samsung']);
     });
 });
 

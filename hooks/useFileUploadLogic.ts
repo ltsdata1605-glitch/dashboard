@@ -499,7 +499,7 @@ export const useFileUploadLogic = ({
                     const registry = await dbService.getSalesFilesRegistry();
                     const activeHistoricalCount = registry.filter(f => f.isActive).length;
                     if (activeHistoricalCount > 0) {
-                        const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                        const allTrangThai = Array.from(new Set(merged.data.map(r => getRowValue(r, COL.TRANG_THAI)).filter(Boolean))) as string[];
                         setFilterState({
                             ...initialFilterState,
                             trangThai: allTrangThai,

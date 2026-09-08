@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { VisibilityState } from '../../types';
-import { toLocalISOString } from '../../utils/dataUtils';
+import { toLocalISOString, getRowValue } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
@@ -109,8 +110,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     };
 
     const handleResetFilters = () => {
-         const allTrangThai = [...new Set(allData.map(r => r['Trạng thái hồ sơ']).filter(Boolean))]; 
-         const allNguoiTao = [...new Set(allData.map(r => r['Người tạo']).filter(Boolean))];
+         const allTrangThai = [...new Set(allData.map(r => getRowValue(r, COL.TRANG_THAI)).filter(Boolean))];
+         const allNguoiTao = [...new Set(allData.map(r => getRowValue(r, COL.NGUOI_TAO)).filter(Boolean))];
          updateLocalFilter({
             kho: [],
             xuat: 'all',

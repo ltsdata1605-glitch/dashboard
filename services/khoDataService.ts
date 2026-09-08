@@ -24,6 +24,8 @@ import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
 import { cleanRow, chunkData, BATCH_GROUP_SIZE } from './cloudDataService';
 import * as dbService from './dbService';
+import { getRowValue } from '../utils/dataUtils';
+import { COL } from '../constants';
 
 export interface KhoSalesFileMeta {
     fileId: string;
@@ -277,7 +279,7 @@ export async function syncDataToKhoIfManager(
 
     const rowsByKho = new Map<string, DataRow[]>();
     for (const row of data) {
-        const kho = String(row['Mã kho tạo'] || '').trim();
+        const kho = String(getRowValue(row, COL.KHO) || '').trim();
         if (!kho || !allowedKhos.includes(kho)) continue;
         if (!rowsByKho.has(kho)) rowsByKho.set(kho, []);
         rowsByKho.get(kho)!.push(row);

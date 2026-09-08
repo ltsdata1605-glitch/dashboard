@@ -1,6 +1,6 @@
 
 import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
-import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
+import { COL, VARIANT_TO_SHORT_KEY, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
 
 // Tailwind safelist (implementation_plan.md mục 61) — viền dưới 3px đổi màu theo nhóm cột ở
 // nhiều bảng biểu khắp dự án được ghép ĐỘNG qua template literal (vd `border-b-${colorName}-400`)
@@ -56,6 +56,16 @@ export const normalizedThuHoSet = new Set(Array.from(HINH_THUC_XUAT_THU_HO).map(
 // any: trả về giá trị ô thô của DataRow (string/number/Date/...) — hàm lõi được gọi ở hàng trăm nơi khắp 4 khu vực, đổi kiểu trả về sẽ vỡ diện rộng ngoài phạm vi utils/
 export function getRowValue(row: DataRow, keys: string[]): any {
     if (!row) return undefined;
+
+    // Đợt 4 bước 1 (KE_HOACH_TONG_THE.md mục 3.1): rows parse MỚI (từ services/worker.ts sau
+    // bản vá này) đã có khoá NGẮN cố định thay vì chuỗi tiếng Việt dài — tra thẳng O(1), không
+    // cần dò biến thể. Rows CŨ đã lưu IndexedDB/Firestore từ trước, hoặc dựng thủ công ở nơi khác
+    // (test, mock...), vẫn còn khoá tiếng Việt gốc → shortKey không khớp `row`, rơi xuống nguyên
+    // vẹn nhánh cache/dò biến thể bên dưới như trước đây — không mất dữ liệu cũ.
+    const shortKey = VARIANT_TO_SHORT_KEY[keys[0]];
+    if (shortKey !== undefined && row[shortKey] !== undefined && row[shortKey] !== null) {
+        return row[shortKey];
+    }
 
     // Check cache
     const cacheKey = keys[0];
@@ -704,7 +714,7 @@ export function computeRbacFilteredData(originalData: DataRow[], params: RbacPar
     if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && userEmail !== 'nguyendangkhoafit2@gmail.com') {
         const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
         data = originalData.filter(row => {
-            const kho = String(row['Mã kho tạo'] || '').trim();
+            const kho = String(getRowValue(row, COL.KHO) || '').trim();
             if (!allowedKhos.includes(kho)) return false;
 
             if (userRole === 'employee') {
@@ -713,7 +723,7 @@ export function computeRbacFilteredData(originalData: DataRow[], params: RbacPar
                 // số thuần (validate /^\d+$/). So khớp toàn bộ chuỗi trước đây sẽ KHÔNG BAO GIỜ
                 // khớp — nhân viên đăng nhập xong thấy Dashboard trống dù đã được duyệt quyền
                 // đúng. Trích mã số đứng đầu "Người tạo" rồi so với employeeName thay vì so cả chuỗi.
-                const nguoiTaoRaw = String(row['Người tạo'] || '').trim();
+                const nguoiTaoRaw = String(getRowValue(row, COL.NGUOI_TAO) || '').trim();
                 const empIdMatch = nguoiTaoRaw.match(/^(\d+)/);
                 const empId = empIdMatch ? empIdMatch[1] : nguoiTaoRaw;
                 if (empId !== employeeName?.trim()) return false;
@@ -740,16 +750,16 @@ export function computeUniqueFilterOptions(rbacData: DataRow[], departmentMap: R
     for (let i = 0; i < len; i++) {
         const r = rbacData[i];
 
-        const kho = r['Mã kho tạo'];
+        const kho = getRowValue(r, COL.KHO);
         if (kho) khos.add(String(kho));
 
-        const tt = r['Trạng thái hồ sơ'];
+        const tt = getRowValue(r, COL.TRANG_THAI);
         if (tt) trangThais.add(String(tt));
 
-        const tao = r['Người tạo'];
+        const tao = getRowValue(r, COL.NGUOI_TAO);
         if (tao) nguoiTaos.add(String(tao));
 
-        const hsx = r['Hãng'] || r['Hãng SX'];
+        const hsx = getRowValue(r, COL.MANUFACTURER);
         if (hsx) hangSxs.add(String(hsx));
     }
 
