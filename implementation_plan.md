@@ -2612,3 +2612,29 @@ hay làm hỏng `npm install`) — rủi ro cao, lợi ích thực tế bằng 0
 Nguyên nhân: từ Đợt 3, `#employee-analysis-section` được lazy-load qua Suspense — thẻ `<div>` có id
 xuất hiện NGAY (bọc skeleton) còn nội dung tới sau, nên test thỉnh thoảng bấm trúng lúc còn
 skeleton. Sửa bằng cách chờ đúng dòng nhân viên hiện ra rồi mới bấm.
+
+### 5. Lưới an toàn cho chính CSP + xoá code chết
+
+- **`tests/e2e/csp-sweep.spec.ts`** (mới): lắng nghe sự kiện DOM `securitypolicyviolation` — sự
+  kiện này nổ cho MỌI loại tài nguyên bị chặn (script/style/img/font/connect/frame/worker) nên bắt
+  được cả những thứ không in lỗi ra console, đúng kiểu đã khiến 3 lần trước lọt lưới. Quét lần lượt
+  10 tab. **Kết quả: 0 vi phạm.** Giới hạn đã ghi rõ trong file: chỉ MỞ tab, chưa thao tác sâu.
+- **Xoá `processSalesFile()`** (86 dòng) khỏi `services/dataService.ts` (586 → 507 dòng). Không chỉ
+  là rác mà là CÁI BẪY: sinh `DataRow` khoá tiếng Việt, đi vòng qua chuẩn hoá khoá ngắn của Đợt 4 —
+  ai lỡ gọi sẽ nhận dữ liệu sai hình dạng mà không có lỗi nào báo ra.
+
+### 6. Vì sao DỪNG ở đây, không làm tiếp Đợt 8
+
+Đợt 0-7 là **sửa lỗi / dọn dẹp / tối ưu** — có tiêu chí đúng-sai rõ ràng, kiểm chứng được bằng
+test và số đo, nên làm liên tục được. Đợt 8 (pivot động, so sánh kỳ, cảnh báo ngưỡng, drill-down
+xuyên suốt) là **phát triển tính năng MỚI**, bản chất khác hẳn:
+
+- Mỗi mục là một dự án nhiều tuần, cần quyết định nghiệp vụ từ người dùng thật (pivot cho ai dùng?
+  cảnh báo gửi cho ai, ngưỡng bao nhiêu? drill-down xuống tới mức nào?).
+- Làm dở dang rồi ship vào app đang phục vụ nhiều siêu thị thật sẽ TẠO RA đúng loại nợ kỹ thuật mà
+  cả 8 đợt vừa rồi đi dọn — đi ngược mục tiêu.
+- Kế hoạch chi tiết đã có sẵn ở `KE_HOACH_TONG_THE.md` mục 6, chỉ chờ thứ tự ưu tiên.
+
+Khuyến nghị thứ tự nếu làm tiếp, theo tỷ lệ lợi ích/công sức: **so sánh kỳ** (đã có sẵn ở vài chỗ,
+chỉ cần chuẩn hoá thành cơ chế chung) → **drill-down** (cũng đã có ở vài bảng) → **cảnh báo ngưỡng**
+(có sẵn hạ tầng `notifications` trong Cloud Functions) → **pivot động** (làm mới hoàn toàn, nặng nhất).
