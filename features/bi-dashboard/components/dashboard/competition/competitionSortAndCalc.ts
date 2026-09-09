@@ -12,9 +12,9 @@ export const ALLOWED_REALTIME_COLUMNS = [
 
 export const ALLOWED_LUYKE_COLUMNS = [
     'L.Kế',
+    '%DKHT',
     'Target',
     '%HT',
-    '%DKHT',
     'Target V.Trội',
     '%HT V.Trội',
     'Còn Lại'
@@ -22,31 +22,25 @@ export const ALLOWED_LUYKE_COLUMNS = [
 
 /**
  * Xử lý bật/tắt cột theo quy tắc nhóm loại trừ tương hỗ (Coupled & Mutually Exclusive):
- * - Nhóm Cơ bản:
- *   + Realtime: ['Target', '%HT']
- *   + Luỹ kế: ['Target', '%HT', '%DKHT']
- * - Nhóm Vượt trội:
- *   + Realtime & Luỹ kế: ['Target V.Trội', '%HT V.Trội']
+ * - Nhóm Target Cơ bản: ['Target', '%HT']
+ * - Nhóm Target Vượt trội: ['Target V.Trội', '%HT V.Trội']
  * 
  * Quy tắc:
- * 1. Nếu bật 1 trong các cột nhóm Cơ bản => Bật tất cả các cột nhóm Cơ bản, đồng thời TẮT nhóm Vượt trội.
- * 2. Nếu bật 1 trong các cột nhóm Vượt trội => Bật tất cả các cột nhóm Vượt trội, đồng thời TẮT nhóm Cơ bản.
+ * 1. Nếu bật 1 trong các cột nhóm Cơ bản => Bật cả 2 cột nhóm Cơ bản, đồng thời TẮT nhóm Vượt trội.
+ * 2. Nếu bật 1 trong các cột nhóm Vượt trội => Bật cả 2 cột nhóm Vượt trội, đồng thời TẮT nhóm Cơ bản.
  * 3. Nếu click vào cột đang bật của một nhóm, tự động chuyển sang bật nhóm còn lại để đảm bảo luôn có 1 bộ Target tính toán Còn Lại.
- * 4. Các cột độc lập (T.HIỆN, L.Kế, Còn Lại) bật/tắt bình thường.
+ * 4. Các cột độc lập (REAL TIME/T.HIỆN, LUỸ KẾ/L.Kế, %DKHT, Còn Lại) bật/tắt bình thường, cho phép hiển thị song song.
  */
 export function toggleCompetitionColumn(
     clickedHeader: string,
     currentVisibleColumns: string[],
     allAllowedColumns: string[],
-    isRealtime: boolean
+    _isRealtime: boolean = false
 ): string[] {
-    const isStandardCol = (h: string) => h === 'Target' || h === '%HT' || h === '%DKHT' || h === '%HTDK';
+    const isStandardCol = (h: string) => h === 'Target' || h === '%HT';
     const isSuperCol = (h: string) => h === 'Target V.Trội' || h === '%HT V.Trội' || h === '%HTDK V.Trội';
 
-    const standardCols = (isRealtime
-        ? ['Target', '%HT']
-        : ['Target', '%HT', '%DKHT']
-    ).filter(c => allAllowedColumns.includes(c));
+    const standardCols = ['Target', '%HT'].filter(c => allAllowedColumns.includes(c));
 
     const superCols = [
         'Target V.Trội',
