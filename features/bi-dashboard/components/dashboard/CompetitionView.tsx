@@ -1,10 +1,9 @@
-
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Settings, Search } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
-import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, getCompetitionColumnLabel } from '../../utils/dashboardHelpers';
+import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel } from '../../utils/dashboardHelpers';
 import CompetitionListView from './competition/CompetitionListView';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
@@ -46,20 +45,20 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const modeKey = isRealtime ? 'realtime' : 'luyke';
     // Cột bật MẶC ĐỊNH theo đúng chế độ:
-    // Realtime: T.HIỆN, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
-    // Luỹ kế: L.KẾ, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
+    // Realtime: THỰC HIỆN, TAR V.TRỘI, %HT V.TRỘI, C.LẠI
+    // Luỹ kế: LUỸ KẾ, TAR V.TRỘI, %HT V.TRỘI, %DKHT V.TRỘI, C.LẠI
     const defaultVisibleCols = useMemo(
         () => isRealtime
             ? ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']
-            : ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'],
+            : ['L.Kế', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'],
         [isRealtime]
     );
 
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
     // Hậu tố -v7: Mặc định luôn null để áp dụng chuỗi ưu tiên giảm dần %HT V.Trội > %DKHT > %HT
     const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v7`, null);
-    // Hậu tố -v5: đồng bộ bộ cột hiển thị mới tách biệt và cố định thứ tự chuẩn giữa Realtime và Luỹ kế
-    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v5`, defaultVisibleCols);
+    // Hậu tố -v6: đồng bộ bộ cột hiển thị mới bổ sung cột %HT V.TRỘI cho Luỹ kế
+    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v6`, defaultVisibleCols);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
@@ -162,7 +161,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             '% HT Dự Kiến': '%DKHT', 
             'Target V.Trội': 'Target V.Trội', 
             '%HT Target V.Trội': '%HT V.Trội', 
-            '%HTDK V.Trội': '%HT V.Trội',
+            '%HTDK V.Trội': '%DKHT V.Trội',
+            '%DKHT V.Trội': '%DKHT V.Trội',
             '%HTDK': '%DKHT'
         };
 
@@ -187,6 +187,11 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             data: program.data.filter((_, index) => !indicesToRemove.includes(index))
         }));
 
+        // CHẾ ĐỘ LUỸ KẾ: Bổ sung thêm cột %HT V.TRỘI nếu có cột Target V.Trội
+        if (!isRealtime && processedHeaders.includes('Target V.Trội') && !processedHeaders.includes('%HT V.Trội')) {
+            processedHeaders.push('%HT V.Trội');
+        }
+
         if (processedHeaders.length > 0 && !processedHeaders.includes('Còn Lại')) {
             processedHeaders.push('Còn Lại');
         }
@@ -200,6 +205,19 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 const oldIdx = processedHeaders.indexOf(h);
                 return oldIdx !== -1 ? program.data[oldIdx] : '';
             });
+
+            // CHẾ ĐỘ LUỸ KẾ: BỔ SUNG THÊM CỘT %HT V.TRỘI, cột này đặt sau cột TAR V.TRỘI, Cách tính: LUỸ KẾ/ TAR V.TRỘI
+            if (!isRealtime) {
+                const htVTIndex = finalHeaders.indexOf('%HT V.Trội');
+                const lkIndex = finalHeaders.indexOf('L.Kế');
+                const targetVTIndex = finalHeaders.indexOf('Target V.Trội');
+                if (htVTIndex !== -1 && lkIndex !== -1 && targetVTIndex !== -1) {
+                    const lkVal = parseNumber(reorderedData[lkIndex]);
+                    const targetVTVal = parseNumber(reorderedData[targetVTIndex]);
+                    const htVTRate = targetVTVal > 0 ? (lkVal / targetVTVal) * 100 : 0;
+                    reorderedData[htVTIndex] = roundUp(htVTRate);
+                }
+            }
 
             let conLaiValue: number | null = null;
             const actualIndex = isRealtime ? finalHeaders.indexOf('Realtime') : finalHeaders.indexOf('L.Kế');

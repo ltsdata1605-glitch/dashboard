@@ -17,6 +17,7 @@ export const ALLOWED_LUYKE_COLUMNS = [
     '%DKHT',
     'Target V.Trội',
     '%HT V.Trội',
+    '%DKHT V.Trội',
     'Còn Lại'
 ] as const;
 
@@ -26,13 +27,14 @@ export const ALLOWED_LUYKE_COLUMNS = [
  *   + Realtime: ['Target', '%HT']
  *   + Luỹ kế: ['Target', '%HT', '%DKHT']
  * - Nhóm Vượt trội:
- *   + Realtime & Luỹ kế: ['Target V.Trội', '%HT V.Trội']
+ *   + Realtime: ['Target V.Trội', '%HT V.Trội']
+ *   + Luỹ kế: ['Target V.Trội', '%HT V.Trội', '%DKHT V.Trội']
  * 
  * Quy tắc:
  * 1. Nếu bật 1 trong các cột nhóm Cơ bản => Bật tất cả các cột nhóm Cơ bản, đồng thời TẮT nhóm Vượt trội.
  * 2. Nếu bật 1 trong các cột nhóm Vượt trội => Bật tất cả các cột nhóm Vượt trội, đồng thời TẮT nhóm Cơ bản.
  * 3. Nếu click vào cột đang bật của một nhóm, tự động chuyển sang bật nhóm còn lại để đảm bảo luôn có 1 bộ Target tính toán Còn Lại.
- * 4. Các cột độc lập (T.HIỆN, L.Kế, Còn Lại) bật/tắt bình thường.
+ * 4. Các cột độc lập (THỰC HIỆN, L.Kế, Còn Lại) bật/tắt bình thường.
  */
 export function toggleCompetitionColumn(
     clickedHeader: string,
@@ -41,17 +43,18 @@ export function toggleCompetitionColumn(
     isRealtime: boolean
 ): string[] {
     const isStandardCol = (h: string) => h === 'Target' || h === '%HT' || h === '%DKHT' || h === '%HTDK';
-    const isSuperCol = (h: string) => h === 'Target V.Trội' || h === '%HT V.Trội' || h === '%HTDK V.Trội';
+    const isSuperCol = (h: string) => h === 'Target V.Trội' || h === '%HT V.Trội' || h === '%DKHT V.Trội' || h === '%HTDK V.Trội';
 
     const standardCols = (isRealtime
         ? ['Target', '%HT']
         : ['Target', '%HT', '%DKHT']
     ).filter(c => allAllowedColumns.includes(c));
 
-    const superCols = [
-        'Target V.Trội',
-        allAllowedColumns.includes('%HT V.Trội') ? '%HT V.Trội' : '%HTDK V.Trội'
-    ].filter(c => allAllowedColumns.includes(c));
+    const luykeSuperCandidate = ['Target V.Trội', '%HT V.Trội', allAllowedColumns.includes('%DKHT V.Trội') ? '%DKHT V.Trội' : '%HTDK V.Trội'];
+    const superCols = (isRealtime
+        ? ['Target V.Trội', '%HT V.Trội']
+        : luykeSuperCandidate
+    ).filter(c => allAllowedColumns.includes(c));
 
     let nextVisible: string[];
 
@@ -93,71 +96,83 @@ export function toggleCompetitionColumn(
 
 /**
  * Lấy các chỉ số % hoàn thành của chương trình theo thứ tự ưu tiên:
- * 1. %HT V.Trội (%HT V.Trội ở Realtime, hoặc %HTDK V.Trội ở Luỹ kế, hoặc program.htdkVT)
- * 2. %DKHT (%HTDK, %DKHT, % DỰ BÁO, % HT Dự Kiến)
- * 3. %HT (%HT, % HT NGÀY, % HT THÁNG, % HT Target Ngày)
+ * 1. %HT V.Trội (tiến độ hoàn thành thực tế = LUỸ KẾ / TAR V.TRỘI)
+ * 2. %DKHT V.Trội (dự kiến cuối tháng của target vượt trội)
+ * 3. %DKHT (%HTDK, %DKHT, % DỰ BÁO, % HT Dự Kiến của target cơ bản)
+ * 4. %HT (%HT, % HT NGÀY, % HT THÁNG)
  */
 export function getProgramCompletionMetrics(program: ProcessedProgram, headers: string[]): {
     htVT: number | null;
+    htDKVT: number | null;
     htDK: number | null;
     ht: number | null;
 } {
-    // 1. %HT V.Trội
+    // 1. %HT V.Trội (tiến độ hoàn thành thực tế)
     let htVT: number | null = null;
     const htVTIndex = headers.findIndex(h => {
         const lower = h.toLowerCase().trim();
-        return lower === '%ht v.trội' || 
-               lower === '%htdk v.trội' || 
-               lower === '%ht target v.trội' ||
-               (lower.includes('%') && lower.includes('trội'));
+        return (lower === '%ht v.trội' || lower === '%ht target v.trội') && !lower.includes('dk') && !lower.includes('dự');
     });
     if (htVTIndex !== -1 && program.data[htVTIndex] !== undefined && program.data[htVTIndex] !== '' && program.data[htVTIndex] !== '-') {
         const val = parseNumber(program.data[htVTIndex]);
         if (!isNaN(val)) htVT = val;
     }
-    if (htVT === null && program.htdkVT !== undefined && program.htdkVT !== null) {
+
+    // 2. %DKHT V.Trội (%HTDK V.Trội - dự kiến cuối tháng)
+    let htDKVT: number | null = null;
+    const htDKVTIndex = headers.findIndex(h => {
+        const lower = h.toLowerCase().trim();
+        return lower === '%dkht v.trội' || 
+               lower === '%htdk v.trội' || 
+               (lower.includes('%') && lower.includes('trội') && (lower.includes('dk') || lower.includes('dự')));
+    });
+    if (htDKVTIndex !== -1 && program.data[htDKVTIndex] !== undefined && program.data[htDKVTIndex] !== '' && program.data[htDKVTIndex] !== '-') {
+        const val = parseNumber(program.data[htDKVTIndex]);
+        if (!isNaN(val)) htDKVT = val;
+    }
+    if (htDKVT === null && program.htdkVT !== undefined && program.htdkVT !== null) {
         const val = typeof program.htdkVT === 'number' ? program.htdkVT : parseNumber(program.htdkVT);
-        if (!isNaN(val)) htVT = val;
+        if (!isNaN(val)) htDKVT = val;
     }
 
-    // 2. %DKHT (%HTDK)
+    // 3. %DKHT (%HTDK, %DKHT, % DỰ BÁO - target cơ bản)
     let htDK: number | null = null;
     const htDKIndex = headers.findIndex(h => {
         const lower = h.toLowerCase().trim();
-        return lower === '%htdk' || 
+        return (lower === '%htdk' || 
                lower === '%dkht' || 
                lower === '% dự báo' || 
-               lower === '% ht dự kiến';
+               lower === '% ht dự kiến') && !lower.includes('trội');
     });
     if (htDKIndex !== -1 && program.data[htDKIndex] !== undefined && program.data[htDKIndex] !== '' && program.data[htDKIndex] !== '-') {
         const val = parseNumber(program.data[htDKIndex]);
         if (!isNaN(val)) htDK = val;
     }
 
-    // 3. %HT (% HT NGÀY / % HT THÁNG)
+    // 4. %HT (% HT NGÀY / % HT THÁNG - target cơ bản)
     let ht: number | null = null;
     const htIndex = headers.findIndex(h => {
         const lower = h.toLowerCase().trim();
-        return lower === '%ht' || 
+        return (lower === '%ht' || 
                lower === '% ht ngày' || 
                lower === '% ht tháng' || 
                lower === '% ht target ngày' ||
-               lower === '% ht target tháng';
+               lower === '% ht target tháng') && !lower.includes('trội') && !lower.includes('dk');
     });
     if (htIndex !== -1 && program.data[htIndex] !== undefined && program.data[htIndex] !== '' && program.data[htIndex] !== '-') {
         const val = parseNumber(program.data[htIndex]);
         if (!isNaN(val)) ht = val;
     }
 
-    return { htVT, htDK, ht };
+    return { htVT, htDKVT, htDK, ht };
 }
 
-export type PrimaryMetric = 'htVT' | 'htDK' | 'ht';
+export type PrimaryMetric = 'htVT' | 'htDKVT' | 'htDK' | 'ht';
 
 /**
  * Xác định thứ tự ưu tiên các chỉ số % hoàn thành dựa vào chế độ Realtime/Luỹ kế và cột đang hiển thị:
  * - Realtime: Sắp xếp theo cột %HT hoặc %HT V.Trội (tuỳ nhóm cột nào đang bật hiển thị)
- * - Luỹ kế: Sắp xếp theo cột %DKHT, %HT V.Trội (tuỳ nhóm cột nào đang bật hiển thị)
+ * - Luỹ kế: Bảng luôn ưu tiên giảm dần theo %HT V.Trội > %DKHT V.Trội > %DKHT > %HT
  */
 export function getCompletionSortOrder(
     visibleColumns?: string[],
@@ -166,13 +181,16 @@ export function getCompletionSortOrder(
 ): PrimaryMetric[] {
     if (explicitPrimary) {
         if (explicitPrimary === 'htVT') {
-            return isRealtime ? ['htVT', 'ht', 'htDK'] : ['htVT', 'htDK', 'ht'];
+            return isRealtime ? ['htVT', 'ht', 'htDKVT', 'htDK'] : ['htVT', 'htDKVT', 'htDK', 'ht'];
+        }
+        if (explicitPrimary === 'htDKVT') {
+            return ['htDKVT', 'htVT', 'htDK', 'ht'];
         }
         if (explicitPrimary === 'htDK') {
-            return ['htDK', 'htVT', 'ht'];
+            return ['htDK', 'htVT', 'htDKVT', 'ht'];
         }
         if (explicitPrimary === 'ht') {
-            return isRealtime ? ['ht', 'htVT', 'htDK'] : ['ht', 'htDK', 'htVT'];
+            return isRealtime ? ['ht', 'htVT', 'htDKVT', 'htDK'] : ['ht', 'htDK', 'htVT', 'htDKVT'];
         }
     }
 
@@ -185,24 +203,24 @@ export function getCompletionSortOrder(
     if (isRealtime) {
         // Realtime: Ưu tiên cột đang hiển thị giữa %HT V.Trội và %HT
         if (hasVisible('trội')) {
-            return ['htVT', 'ht', 'htDK'];
+            return ['htVT', 'ht', 'htDKVT', 'htDK'];
         }
         if (hasVisible('%ht')) {
-            return ['ht', 'htVT', 'htDK'];
+            return ['ht', 'htVT', 'htDKVT', 'htDK'];
         }
-        return ['htVT', 'ht', 'htDK'];
+        return ['htVT', 'ht', 'htDKVT', 'htDK'];
     } else {
-        // Luỹ kế: Ưu tiên cột đang hiển thị giữa %HT V.Trội và %DKHT
+        // Luỹ kế: Luôn ưu tiên giảm dần %HT V.Trội > %DKHT V.Trội > %DKHT > %HT
         if (hasVisible('trội')) {
-            return ['htVT', 'htDK', 'ht'];
+            return ['htVT', 'htDKVT', 'htDK', 'ht'];
         }
         if (hasVisible('dk') || hasVisible('dự')) {
-            return ['htDK', 'htVT', 'ht'];
+            return ['htDK', 'ht', 'htVT', 'htDKVT'];
         }
         if (hasVisible('%ht')) {
-            return ['ht', 'htDK', 'htVT'];
+            return ['ht', 'htDK', 'htVT', 'htDKVT'];
         }
-        return ['htVT', 'htDK', 'ht'];
+        return ['htVT', 'htDKVT', 'htDK', 'ht'];
     }
 }
 
@@ -316,7 +334,11 @@ export function sortProgramsList(
             if (lowerHeader.includes('%') || lowerHeader.includes('trội')) {
                 let explicitPrimary: PrimaryMetric = 'htVT';
                 if (lowerHeader.includes('trội')) {
-                    explicitPrimary = 'htVT';
+                    if (lowerHeader.includes('dk') || lowerHeader.includes('dự')) {
+                        explicitPrimary = 'htDKVT';
+                    } else {
+                        explicitPrimary = 'htVT';
+                    }
                 } else if (lowerHeader.includes('dk') || lowerHeader.includes('dự')) {
                     explicitPrimary = 'htDK';
                 } else if (lowerHeader === '%ht' || lowerHeader.includes('ngày') || lowerHeader.includes('tháng')) {

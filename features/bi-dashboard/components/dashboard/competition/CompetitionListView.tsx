@@ -27,15 +27,18 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
 
     const getFormattedHeader = (header: string) => {
         const mapping: Record<string, string> = {
-            'Realtime': 'REAL<br/>TIME',
-            'Realtime (QĐ)': 'REAL TIME<br/>QĐ',
+            'Realtime': 'THỰC<br/>HIỆN',
+            'Realtime (QĐ)': 'THỰC HIỆN<br/>QĐ',
             'Target': 'TAR',
             'Target V.Trội': 'TAR<br/>V.TRỘI',
             'L.Kế': 'LUỸ<br/>KẾ',
             'L.Kế (QĐ)': 'LUỸ KẾ<br/>QĐ',
             '%HT': '%HT',
-            '%HT V.Trội': '%DKHT<br/>V.TRỘI',
+            '%HT V.Trội': '%HT<br/>V.TRỘI',
+            '%DKHT V.Trội': '%DKHT<br/>V.TRỘI',
             '%HTDK V.Trội': '%DKHT<br/>V.TRỘI',
+            '%DKHT': '%DKHT',
+            '%HTDK': '%DKHT',
             'Còn Lại': 'C.LẠI',
             'CÒN LẠI': 'C.LẠI',
             'SLLK': 'S.LƯỢNG',
@@ -48,8 +51,13 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
     const getHeaderCellClass = (header: string) => {
         const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
         if (h.includes('TAR') || h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('REAL TIME') || h.includes('LUỸ KẾ') || h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('V.TRỘI') && h.includes('%')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
+        if (h.includes('THỰC HIỆN') || h.includes('REAL TIME') || h.includes('LUỸ KẾ') || h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('V.TRỘI') && h.includes('%')) {
+            if (h.includes('%DKHT') || h.includes('%HTDK')) {
+                return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
+            }
+            return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
+        }
         if (h.includes('%HTDK') || h.includes('%DKHT')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
         if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
@@ -99,8 +107,8 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                         </tr>
                                         {programs.map((program, index: number) => {
                                             const conLai = program.conLai;
-                                            const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
-                                            const percentHeadersToRound = new Set(['%HT', '%HTDK', '%DKHT', '%HT V.Trội', '%HTDK V.Trội']);
+                                            const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'THỰC HIỆN', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
+                                            const percentHeadersToRound = new Set(['%HT', '%HTDK', '%DKHT', '%HT V.Trội', '%DKHT V.Trội', '%HTDK V.Trội']);
 
                                             return (
                                                 <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
@@ -143,7 +151,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                             if (isDash) {
                                                                 return <span className="text-slate-400 dark:text-slate-500 font-bold">-</span>;
                                                             }
-                                                            const isProgressBarColumn = headerKey === '%HT' || headerKey === '%HT V.Trội' || headerKey === '%DKHT' || headerKey === '%HTDK' || headerKey === '%HTDK V.Trội';
+                                                            const isProgressBarColumn = headerKey === '%HT' || headerKey === '%HT V.Trội' || headerKey === '%DKHT' || headerKey === '%HTDK' || headerKey === '%DKHT V.Trội' || headerKey === '%HTDK V.Trội';
                                                             
                                                             if (isProgressBarColumn) {
                                                                 const htValue = parseNumber(cell);

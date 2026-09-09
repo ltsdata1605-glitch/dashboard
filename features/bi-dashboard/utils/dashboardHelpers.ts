@@ -12,14 +12,15 @@ export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 /** Nhãn hiển thị của cột bảng Thi đua khi khác với tên cột trong dữ liệu — dùng chung cho bảng và
  *  popup "Bộ lọc bảng Thi đua" để 2 nơi không gọi cột bằng 2 tên khác nhau. */
 const COMPETITION_COLUMN_LABELS: Record<string, string> = {
-    'Realtime': 'REAL TIME',
-    'Realtime (QĐ)': 'REAL TIME (QĐ)',
+    'Realtime': 'THỰC HIỆN',
+    'Realtime (QĐ)': 'THỰC HIỆN (QĐ)',
     'Target': 'TAR',
     'Target V.Trội': 'TAR V.TRỘI',
     'L.Kế': 'LUỸ KẾ',
     'L.Kế (QĐ)': 'LUỸ KẾ (QĐ)',
     '%HT': '%HT',
-    '%HT V.Trội': '%DKHT V.TRỘI',
+    '%HT V.Trội': '%HT V.TRỘI',
+    '%DKHT V.Trội': '%DKHT V.TRỘI',
     '%HTDK V.Trội': '%DKHT V.TRỘI',
     '%HTDK': '%DKHT',
     '%DKHT': '%DKHT',

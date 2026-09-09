@@ -87,4 +87,26 @@ describe('toggleCompetitionColumn — liên kết 2 nhóm cột loại trừ nha
         expect(indices, 'thứ tự cột phải tăng dần theo bảng chuẩn').toEqual([...indices].sort((a, b) => a - b));
         expect(after.every(c => (LUYKE as string[]).includes(c)), 'không được sinh ra cột lạ ngoài danh sách cho phép').toBe(true);
     });
+
+    it('Luỹ kế: nhóm Vượt trội gồm đủ 3 cột Target V.Trội, %HT V.Trội và %DKHT V.Trội', () => {
+        const before = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const after = toggleCompetitionColumn('Target V.Trội', before, LUYKE, false);
+
+        expect(after).toContain('Target V.Trội');
+        expect(after).toContain('%HT V.Trội');
+        expect(after).toContain('%DKHT V.Trội');
+        expect(after).not.toContain('Target');
+        expect(after).not.toContain('%HT');
+        expect(after).not.toContain('%DKHT');
+    });
+
+    it('Luỹ kế: cột %HT V.Trội nằm ngay sau Target V.Trội và trước %DKHT V.Trội', () => {
+        const idxTarVT = LUYKE.indexOf('Target V.Trội');
+        const idxHtVT = LUYKE.indexOf('%HT V.Trội');
+        const idxDkhtVT = LUYKE.indexOf('%DKHT V.Trội');
+
+        expect(idxHtVT).toBe(idxTarVT + 1);
+        expect(idxDkhtVT).toBe(idxHtVT + 1);
+    });
 });
+
