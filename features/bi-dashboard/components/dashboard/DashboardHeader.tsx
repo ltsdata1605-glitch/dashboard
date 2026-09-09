@@ -128,7 +128,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none lg:rounded-2xl shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none shadow-sm">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 hide-on-export">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>

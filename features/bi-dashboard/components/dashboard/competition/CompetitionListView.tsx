@@ -4,16 +4,18 @@ import { Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel
 import { ProgressBar } from '../DashboardWidgets';
 import { renderHeaderText } from '../SafeHeaderText';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
+import { calculateGroupAchievementStats } from './competitionSortAndCalc';
 import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionListViewProps {
-    groupedAndSortedPrograms: Partial<Record<Criterion, ProcessedProgram[]>>;
+    groupedAndSortedPrograms: Record<string, ProcessedProgram[]>;
     /** Toàn bộ cột của dữ liệu — dùng để tra chỉ số ô trong `program.data`. */
     headers: string[];
     /** Các cột đang bật, THEO ĐÚNG THỨ TỰ người dùng bật ở Bộ lọc bảng Thi đua (gồm cả 'Còn Lại'). */
     visibleColumns: string[];
     isRealtime: boolean;
     handleSort: (col: number | 'conLai' | 'htdkVT' | -1) => void;
+    groupingMode?: 'default' | 'configured';
 }
 
 const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; accent: string }> = {
@@ -22,7 +24,22 @@ const CRITERIA_THEMES: Record<string, { main: string; light: string; text: strin
     'SLLK': { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', accent: 'border-l-rose-500' },
 };
 
-const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSortedPrograms, headers, visibleColumns, isRealtime, handleSort }) => {
+const GROUP_PALETTES = [
+    { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', accent: 'border-l-sky-500' },
+    { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', accent: 'border-l-emerald-500' },
+    { main: 'bg-amber-600', light: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800', accent: 'border-l-amber-500' },
+    { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', accent: 'border-l-rose-500' },
+    { main: 'bg-slate-600', light: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700', accent: 'border-l-slate-400' },
+];
+
+const CompetitionListView: React.FC<CompetitionListViewProps> = ({ 
+    groupedAndSortedPrograms, 
+    headers, 
+    visibleColumns, 
+    isRealtime, 
+    handleSort,
+    groupingMode = 'default'
+}) => {
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
 
     const getFormattedHeader = (header: string) => {
@@ -70,9 +87,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 w-10">#</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 w-10">#</th>
                                     <th
-                                        className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                        className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 whitespace-nowrap hover:bg-sky-200 dark:hover:bg-sky-800/50 transition-colors"
                                         onClick={() => handleSort(-1)}
                                     >
                                         NHÓM THI ĐUA
@@ -81,11 +98,12 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                         // 'Còn Lại' không nằm trong program.data (tính riêng ở CompetitionView) nên sắp
                                         // xếp bằng khoá 'conLai'; các cột khác sắp theo chỉ số ô trong data.
                                         const isConLai = column === 'Còn Lại';
+                                        const isProgressBarCol = column.includes('%HT') || column.includes('%DKHT');
                                         return (
                                             <th
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
-                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass(column)}`}
+                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
                                             >
                                                 {renderHeaderText(getFormattedHeader(column))}
                                             </th>
@@ -93,19 +111,54 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     })}
                                 </tr>
                             </thead>
-                            {(['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map(criterion => {
-                                const programs = groupedAndSortedPrograms[criterion];
-                                if (!programs || programs.length === 0) return null;
-                                const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700', accent: 'border-l-slate-400' };
+                            {(() => {
+                                const groupKeys = groupingMode === 'configured'
+                                    ? Object.keys(groupedAndSortedPrograms)
+                                    : (['SLLK', 'DTLK', 'DTQĐ'] as string[]).filter(c => groupedAndSortedPrograms[c]?.length);
 
-                                return (
-                                    <tbody key={criterion}>
-                                        <tr className={`${theme.light} border-t-2 ${theme.border}`}>
-                                            <td colSpan={100} className={`px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider border-l-4 ${theme.accent} ${theme.text}`}>
-                                                <span className="px-2 py-0.5 rounded bg-white/70 dark:bg-black/20 mr-2 text-[9px]">TIÊU CHÍ</span>{criterion}
-                                            </td>
-                                        </tr>
-                                        {programs.map((program, index: number) => {
+                                return groupKeys.map((groupKey, groupIdx) => {
+                                    const programs = groupedAndSortedPrograms[groupKey];
+                                    if (!programs || programs.length === 0) return null;
+                                    const theme = CRITERIA_THEMES[groupKey as keyof typeof CRITERIA_THEMES] || 
+                                                  GROUP_PALETTES[groupIdx % GROUP_PALETTES.length];
+                                    const stats = calculateGroupAchievementStats(programs, headers, visibleColumns, isRealtime);
+
+                                    return (
+                                        <tbody key={groupKey}>
+                                            <tr className={`${theme.light} border-t-2 ${theme.border}`}>
+                                                <td colSpan={100} className={`px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider border-l-4 ${theme.accent} ${theme.text}`}>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <div className="flex items-center">
+                                                            <span className="px-2 py-0.5 rounded bg-white/70 dark:bg-black/20 mr-2 text-[9px]">
+                                                                {groupingMode === 'configured' ? 'NHÓM TIÊU CHÍ' : 'TIÊU CHÍ'}
+                                                            </span>
+                                                            <span>{groupKey}</span>
+                                                            <span className="ml-1.5 text-[10px] font-semibold opacity-75">
+                                                                ({programs.length})
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Badges số lượng ngành hàng >100% và <100% */}
+                                                        <div className="flex items-center gap-1.5 font-sans normal-case tracking-normal ml-1">
+                                                            <span 
+                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/60 shadow-xs tabular-nums"
+                                                                title={`Số ngành hàng đạt >100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.over100}/${programs.length}`}
+                                                            >
+                                                                <span className="opacity-80 font-medium">&gt;100%:</span>
+                                                                <span className="font-black text-emerald-700 dark:text-emerald-200">{stats.over100}</span>
+                                                            </span>
+                                                            <span 
+                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100/90 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/80 dark:border-rose-700/60 shadow-xs tabular-nums"
+                                                                title={`Số ngành hàng dưới 100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.under100}/${programs.length}`}
+                                                            >
+                                                                <span className="opacity-80 font-medium">&lt;100%:</span>
+                                                                <span className="font-black text-rose-700 dark:text-rose-200">{stats.under100}</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {programs.map((program, index: number) => {
                                             const conLai = program.conLai;
                                             const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'THỰC HIỆN', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
                                             const percentHeadersToRound = new Set(['%HT', '%HTDK', '%DKHT', '%HT V.Trội', '%DKHT V.Trội', '%HTDK V.Trội']);
@@ -146,19 +199,20 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                             cellDisplayValue = `${roundUp(parseNumber(cellDisplayValue))}%`;
                                                         }
 
+                                                        const isProgressBarColumn = header === '%HT' || header === '%HT V.Trội' || header === '%DKHT' || header === '%HTDK' || header === '%DKHT V.Trội' || header === '%HTDK V.Trội';
+
                                                         const cellContent = () => {
                                                             const headerKey = header;
                                                             if (isDash) {
                                                                 return <span className="text-slate-400 dark:text-slate-500 font-bold">-</span>;
                                                             }
-                                                            const isProgressBarColumn = headerKey === '%HT' || headerKey === '%HT V.Trội' || headerKey === '%DKHT' || headerKey === '%HTDK' || headerKey === '%DKHT V.Trội' || headerKey === '%HTDK V.Trội';
                                                             
                                                             if (isProgressBarColumn) {
                                                                 const htValue = parseNumber(cell);
                                                                 return (
-                                                                    <div className="flex items-center gap-1 justify-center tabular-nums">
-                                                                        <span className="font-bold text-center w-10 text-[13px]">{`${roundUp(htValue)}%`}</span>
-                                                                        <div className="w-10 hidden sm:block"> <ProgressBar value={htValue} /> </div>
+                                                                    <div className="flex items-center gap-1 justify-center tabular-nums w-full">
+                                                                        <span className="font-bold text-center w-9 shrink-0 text-[13px]">{`${roundUp(htValue)}%`}</span>
+                                                                        <div className="w-10 shrink-0 block"> <ProgressBar value={htValue} /> </div>
                                                                     </div>
                                                                 );
                                                             }
@@ -182,10 +236,10 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                         };
 
                                                         return (
-                                                            <td key={header} className="px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums">
+                                                            <td key={header} className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${isProgressBarColumn ? 'min-w-[105px] w-[105px]' : ''}`}>
                                                                 {cellContent()}
                                                             </td>
-                                                        )
+                                                        );
                                                     })}
 
                                                 </tr>
@@ -193,8 +247,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                         })}
                                     </tbody>
                                 );
-                            })}
-                        </table>
+                            });
+                        })()}
+                    </table>
                 </div>
         </div>
     );

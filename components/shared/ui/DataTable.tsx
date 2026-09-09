@@ -78,6 +78,8 @@ export interface DataTableProps<T = unknown> {
   fixedLayout?: boolean;
   /** Custom className cho thẻ table */
   tableClassName?: string;
+  /** Tùy biến HTML attributes cho từng thẻ <tr> (ví dụ: draggable, event drag & drop, className...) */
+  rowProps?: (row: T, index: number) => React.HTMLAttributes<HTMLTableRowElement>;
 }
 
 /* Group header color map */
@@ -120,6 +122,7 @@ export function DataTable<T>({
   overflowVisible = false,
   fixedLayout = false,
   tableClassName,
+  rowProps,
 }: DataTableProps<T>) {
   // Build group headers
   const groups = React.useMemo(() => {
@@ -251,18 +254,28 @@ export function DataTable<T>({
             )}
 
             {/* Data Rows */}
-            {!isLoading && data.map((row, ri) => (
-              <tr
-                key={rowKey(row, ri)}
-                className={cn(
-                  'border-b border-slate-100 dark:border-slate-800/50 last:border-b-0',
-                  'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors',
-                  onRowClick && 'cursor-pointer',
-                  isRowHighlighted?.(row, ri) && 'bg-sky-50/50 dark:bg-sky-500/5'
-                )}
-                onClick={() => onRowClick?.(row, ri)}
-              >
-                {columns.map((col, i) => (
+            {!isLoading && data.map((row, ri) => {
+              const customRowProps = rowProps ? rowProps(row, ri) : undefined;
+              const { className: customRowClassName, onClick: customOnClick, ...restRowProps } = customRowProps || {};
+              return (
+                <tr
+                  key={rowKey(row, ri)}
+                  className={cn(
+                    'border-b border-slate-100 dark:border-slate-800/50 last:border-b-0',
+                    'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors',
+                    onRowClick && 'cursor-pointer',
+                    isRowHighlighted?.(row, ri) && 'bg-sky-50/50 dark:bg-sky-500/5',
+                    customRowClassName
+                  )}
+                  onClick={(e) => {
+                    customOnClick?.(e);
+                    if (!e.defaultPrevented) {
+                      onRowClick?.(row, ri);
+                    }
+                  }}
+                  {...restRowProps}
+                >
+                  {columns.map((col, i) => (
                   <td
                     key={col.id}
                     className={cn(
@@ -283,7 +296,8 @@ export function DataTable<T>({
                   </td>
                 ))}
               </tr>
-            ))}
+            );
+          })}
           </tbody>
 
           {/* Footer */}

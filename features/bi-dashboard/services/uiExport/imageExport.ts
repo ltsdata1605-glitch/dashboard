@@ -384,6 +384,16 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     }
 
+    // Bỏ bo góc cho toàn bộ khung viền theo yêu cầu: "VIỀN KHÔNG CẦN BO GỐC"
+    clone.style.setProperty('border-radius', '0px', 'important');
+    clone.querySelectorAll<HTMLElement>('*').forEach(el => {
+        const cls = el.getAttribute('class') || '';
+        // Giữ lại pill tròn cho badge/icon nếu có class rounded-full, còn lại tất cả khung viền/card/container đều ép vuông vức 0px
+        if (!cls.includes('rounded-full')) {
+            el.style.setProperty('border-radius', '0px', 'important');
+        }
+    });
+
     // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP
     clone.querySelectorAll('.compact-export-table, table').forEach(table => {
         if (!(table instanceof HTMLElement)) return;
@@ -391,29 +401,41 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         table.style.setProperty('width', '100%', 'important');
         table.style.setProperty('min-width', 'auto', 'important');
 
-        // Tìm index của cột "NHÓM THI ĐUA" trong bảng
+        // Tìm index của cột "NHÓM THI ĐUA" và các cột thanh tiến độ ProgressBar (%HT, %DKHT)
         let nhomThiDuaColIdx = -1;
+        const progressBarColIndices = new Set<number>();
         const ths = table.querySelectorAll('thead th');
         ths.forEach((th, idx) => {
             const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
             if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
                 nhomThiDuaColIdx = idx;
             }
+            if (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK')) {
+                progressBarColIndices.add(idx);
+            }
         });
 
         // Xử lý các thẻ th của bảng
         table.querySelectorAll('thead th').forEach((th, idx) => {
             if (!(th instanceof HTMLElement)) return;
-            const isFirstCol = th.previousElementSibling === null;
+            const text = th.textContent?.trim() || '';
+            const isSttCol = idx === 0 || text === '#' || text === 'STT';
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+            const isProgressBarCol = progressBarColIndices.has(idx);
 
             // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
             th.style.setProperty('font-size', '11px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
             th.style.setProperty('padding', '3px 5px', 'important');
 
-            if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
-                th.style.setProperty('min-width', '100px', 'important');
+            if (isSttCol) {
+                th.style.setProperty('min-width', '36px', 'important');
+                th.style.setProperty('width', '36px', 'important');
+                th.style.setProperty('max-width', '42px', 'important');
+                th.style.setProperty('text-align', 'center', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+            } else if (isNhomThiDuaCol) {
+                th.style.setProperty('min-width', '140px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
 
@@ -422,6 +444,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     const content = th.innerHTML;
                     th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                 }
+            } else if (isProgressBarCol) {
+                // Cột có thanh tiến độ ProgressBar (%HT, %DKHT, ...) đồng bộ min-width 105px để không bị lệch cột
+                th.style.setProperty('min-width', '105px', 'important');
+                th.style.setProperty('width', '105px', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+                th.style.setProperty('max-width', 'none', 'important');
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
@@ -431,7 +459,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             th.querySelectorAll('span').forEach(span => {
                 span.classList.remove('truncate');
                 span.style.setProperty('line-height', '1.25', 'important');
-                if (!isFirstCol && !isNhomThiDuaCol) {
+                if (!isSttCol && !isNhomThiDuaCol && !isProgressBarCol) {
                     span.style.setProperty('white-space', 'normal', 'important');
                     span.style.setProperty('word-break', 'break-word', 'important');
                 } else {
@@ -442,10 +470,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
         // Xử lý các thẻ td của bảng
         table.querySelectorAll('tbody tr').forEach((tr) => {
+            // Bỏ qua dòng tiêu đề nhóm (colSpan > 1) để không làm vỡ layout
+            const firstTd = tr.querySelector('td');
+            if (firstTd && firstTd.colSpan > 1) return;
+
             tr.querySelectorAll('td').forEach((td, idx) => {
                 if (!(td instanceof HTMLElement)) return;
-                const isFirstCol = td.previousElementSibling === null;
+                const isSttCol = idx === 0;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+                const isProgressBarCol = progressBarColIndices.has(idx) || !!td.querySelector('.w-10') || !!td.querySelector('[class*="progress"]');
 
                 // Ép cỡ chữ chuẩn 13px và padding 3px 5px giúp hàng gọn gàng, siêu sắc nét chuẩn như bảng Trả Góp
                 td.style.setProperty('font-size', '13px', 'important');
@@ -480,9 +513,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     }
                 });
 
-                if (isNhomThiDuaCol || (isFirstCol && nhomThiDuaColIdx === -1)) {
+                if (isSttCol) {
+                    td.style.setProperty('min-width', '36px', 'important');
+                    td.style.setProperty('width', '36px', 'important');
+                    td.style.setProperty('max-width', '42px', 'important');
+                    td.style.setProperty('text-align', 'center', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                    td.style.setProperty('min-width', '100px', 'important');
+                } else if (isNhomThiDuaCol) {
+                    td.style.setProperty('white-space', 'nowrap', 'important');
+                    td.style.setProperty('min-width', '140px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
 
                     // Bọc thẻ span con chống ngắt dòng
@@ -490,15 +529,21 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                         const content = td.innerHTML;
                         td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                     }
+                } else if (isProgressBarCol) {
+                    // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th, KHÔNG set max-width 80px và KHÔNG bọc wrap span inline-block
+                    td.style.setProperty('min-width', '105px', 'important');
+                    td.style.setProperty('width', '105px', 'important');
+                    td.style.setProperty('max-width', 'none', 'important');
+                    td.style.setProperty('white-space', 'nowrap', 'important');
                 } else {
-                    if (!td.classList.contains('sticky') && !isFirstCol) {
+                    if (!td.classList.contains('sticky')) {
                         td.style.setProperty('min-width', '45px', 'important');
                         td.style.setProperty('max-width', '80px', 'important');
 
-                        // Tự động nhận diện các ô số, phần trăm hoặc ProgressBar để chống ngắt dòng
+                        // Tự động nhận diện các ô số, phần trăm để chống ngắt dòng
                         const text = td.textContent?.trim() || '';
                         const isNumeric = /^[0-9%\s.,+\-/]+$/.test(text);
-                        if (isNumeric || td.querySelector('.w-10')) {
+                        if (isNumeric) {
                             td.style.setProperty('white-space', 'nowrap', 'important');
                             if (!td.querySelector('.export-nowrap-wrapper')) {
                                 const content = td.innerHTML;

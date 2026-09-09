@@ -1,10 +1,13 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Settings, Search } from 'lucide-react';
+import { Settings, Search, Layers, MessageSquareQuote } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
-import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel } from '../../utils/dashboardHelpers';
+import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel, getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import CompetitionListView from './competition/CompetitionListView';
+import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
+import { CompetitionCommentaryModal } from './competition/CompetitionCommentaryModal';
+import { calculateCompetitionCommentary } from './competition/competitionCommentaryCalc';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -60,7 +63,15 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     // Hậu tố -v6: đồng bộ bộ cột hiển thị mới bổ sung cột %HT V.TRỘI cho Luỹ kế
     const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v6`, defaultVisibleCols);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
+    // Nhóm tiêu chí cấu hình trong 'Cấu hình Target Thi đua' (SupermarketConfig.tsx)
+    const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
+    // Thứ tự dòng ngành hàng tùy chỉnh do người dùng kéo thả trong 'Cấu hình Target Thi đua'
+    const [customOrder] = useIndexedDBState<Record<string, string[]>>('competition-custom-order', {});
+    // Chế độ xem theo tiêu chí: 'default' (tiêu chí gốc khi dán: SLLK, DTLK, DTQĐ) vs 'configured' (theo nhóm cấu hình trong Target Thi đua)
+    // Mặc định là 'configured' (Tuỳ chỉnh) và tự động đồng bộ lên Firebase qua useCloudSync
+    const [groupingMode, setGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+    const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
 
@@ -267,20 +278,52 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime);
     }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides, visibleColumns, allColumns, isRealtime]);
 
-    // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN THEO CỘT ĐANG HIỂN THỊ TRONG TỪNG TIÊU CHÍ (SLLK, DTLK, DTQĐ):
-    // - Realtime: Sắp xếp theo %HT hoặc %HT V.Trội (tuỳ cột nào đang hiển thị)
-    // - Luỹ kế: Sắp xếp theo %DKHT, %HT V.Trội (tuỳ cột nào đang hiển thị)
+    // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN THEO CỘT ĐANG HIỂN THỊ TRONG TỪNG TIÊU CHÍ:
+    // - Mặc định: Phân nhóm theo tiêu chí gốc khi dán dữ liệu (SLLK, DTLK, DTQĐ)
+    // - Tuỳ chỉnh: Phân nhóm dựa theo nhóm tiêu chí người dùng đã cấu hình trong 'Cấu hình Target Thi đua'
     const groupedAndSortedPrograms = useMemo(() => {
-        const groups: Partial<Record<Criterion, ProcessedProgram[]>> = {};
-        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
-            const criterionPrograms = sortedPrograms.filter(p => p.metric === criterion);
-            if (criterionPrograms.length > 0) {
-                // Đảm bảo từng nhóm tiêu chí con luôn được sắp xếp theo đúng sortConfig và chế độ hiện tại
-                groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime);
-            }
-        });
-        return groups;
-    }, [sortedPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime]);
+        if (groupingMode === 'default') {
+            const groups: Record<string, ProcessedProgram[]> = {};
+            (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
+                const criterionPrograms = sortedPrograms.filter(p => p.metric === criterion);
+                if (criterionPrograms.length > 0) {
+                    groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, customOrder[criterion]);
+                }
+            });
+            return groups;
+        } else {
+            // Chế độ Tuỳ chỉnh: Gom nhóm theo cấu hình trong 'Cấu hình Target Thi đua'
+            const rawGroups: Record<string, ProcessedProgram[]> = {};
+            sortedPrograms.forEach(program => {
+                const defaultGroup = getDefaultGroupLabel(program.metric) || program.metric;
+                const customGroup = (groupOverrides[program.name] && groupOverrides[program.name].trim())
+                    ? groupOverrides[program.name].trim()
+                    : defaultGroup;
+                if (!rawGroups[customGroup]) {
+                    rawGroups[customGroup] = [];
+                }
+                rawGroups[customGroup].push(program);
+            });
+
+            const sortedGroups: Record<string, ProcessedProgram[]> = {};
+            Object.keys(rawGroups).forEach(groupKey => {
+                sortedGroups[groupKey] = sortProgramsList(rawGroups[groupKey], sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, customOrder[groupKey]);
+            });
+            return sortedGroups;
+        }
+    }, [groupingMode, sortedPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, groupOverrides, customOrder]);
+
+    const commentaryData = useMemo(() => {
+        if (!processedSupermarketData?.programs || sortedPrograms.length === 0) return null;
+        return calculateCompetitionCommentary(
+            groupedAndSortedPrograms,
+            processedSupermarketData.headers,
+            visibleColumns,
+            isRealtime,
+            activeSupermarket,
+            nameOverrides
+        );
+    }, [groupedAndSortedPrograms, processedSupermarketData?.programs, processedSupermarketData?.headers, visibleColumns, isRealtime, activeSupermarket, nameOverrides, sortedPrograms.length]);
 
     const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
     const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));
@@ -315,7 +358,39 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     };
 
     const toolbarControls = (
-        <div id="competition-view-controls" className="flex items-center gap-1">
+        <div id="competition-view-controls" className="flex items-center gap-1.5">
+            {/* Nút Nhận xét & Đánh giá theo nhóm tiêu chí */}
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCommentModalOpen(true)}
+                className="h-7 px-2.5 text-xs font-bold text-sky-700 bg-sky-50/80 hover:bg-sky-100 border-sky-200 dark:text-sky-300 dark:bg-sky-950/40 dark:border-sky-800 rounded-lg flex items-center gap-1.5 shadow-2xs transition-all"
+                title="Xem nhận xét & đánh giá thi đua theo từng nhóm tiêu chí"
+            >
+                <MessageSquareQuote className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                <span>Nhận xét</span>
+            </Button>
+
+            {/* Chuyển đổi chế độ gom nhóm: Mặc định (gốc) vs Tuỳ chỉnh (theo cấu hình Target) */}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
+                className={`h-7 w-7 transition-colors ${
+                    groupingMode === 'configured'
+                        ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                }`}
+                title={
+                    groupingMode === 'configured'
+                        ? 'Chế độ nhóm: Tuỳ chỉnh (Click để chuyển về Mặc định)'
+                        : 'Chế độ nhóm: Mặc định (Click để chuyển sang Tuỳ chỉnh)'
+                }
+                aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
+            >
+                <Layers className="h-4 w-4" />
+            </Button>
+
             {/* Bộ lọc tích hợp 2 cột: Lọc chương trình & Cột hiển thị */}
             <div className="relative" ref={columnSelectorRef}>
                 <Button
@@ -473,6 +548,18 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             {/* Portal controls into DashboardHeader action bar */}
             {portalTarget && ReactDOM.createPortal(toolbarControls, portalTarget)}
 
+            {/* 4 Thẻ KPI tổng hợp dưới Quỹ thời gian */}
+            {processedSupermarketData && sortedPrograms.length > 0 && (
+                <div className="pt-2">
+                    <CompetitionKpiCards
+                        programs={sortedPrograms}
+                        headers={processedSupermarketData.headers}
+                        visibleColumns={visibleColumns}
+                        isRealtime={isRealtime}
+                    />
+                </div>
+            )}
+
             {/* Scrollable table content */}
             <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2 min-w-fit">
@@ -480,6 +567,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         {processedSupermarketData && sortedPrograms.length > 0 ? (
                             <CompetitionListView
                                 groupedAndSortedPrograms={groupedAndSortedPrograms}
+                                groupingMode={groupingMode}
                                 headers={processedSupermarketData.headers}
                                 visibleColumns={visibleColumns}
                                 isRealtime={isRealtime}
@@ -494,6 +582,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     </div>
                 </div>
             </div>
+
+            {/* Modal Nhận xét & Đánh giá thi đua */}
+            <CompetitionCommentaryModal
+                isOpen={isCommentModalOpen}
+                onClose={() => setIsCommentModalOpen(false)}
+                commentaryData={commentaryData}
+            />
         </div>
     );
 });

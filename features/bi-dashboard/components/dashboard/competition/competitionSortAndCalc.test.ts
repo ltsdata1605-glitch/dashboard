@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { toggleCompetitionColumn, ALLOWED_REALTIME_COLUMNS, ALLOWED_LUYKE_COLUMNS } from './competitionSortAndCalc';
+import { 
+    toggleCompetitionColumn, 
+    ALLOWED_REALTIME_COLUMNS, 
+    ALLOWED_LUYKE_COLUMNS,
+    isSuperCompetitionActive,
+    calculateGroupAchievementStats,
+    calculateOverallCompetitionKpiStats,
+    sortProgramsList
+} from './competitionSortAndCalc';
+import type { ProcessedProgram } from '../CompetitionView';
 
 /**
  * Lưới an toàn cho quy tắc LIÊN KẾT NHÓM CỘT của bảng Thi đua (thêm ngày 2026-09-09).
@@ -107,6 +116,228 @@ describe('toggleCompetitionColumn — liên kết 2 nhóm cột loại trừ nha
 
         expect(idxHtVT).toBe(idxTarVT + 1);
         expect(idxDkhtVT).toBe(idxHtVT + 1);
+    });
+
+    it('Luỹ kế: người dùng có thể tuỳ chỉnh tắt bớt cột %HT trong bộ Cơ bản', () => {
+        const before = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const afterOffHt = toggleCompetitionColumn('%HT', before, LUYKE, false);
+
+        expect(afterOffHt).not.toContain('%HT');
+        expect(afterOffHt).toContain('Target');
+        expect(afterOffHt).toContain('%DKHT');
+        expect(afterOffHt).toContain('L.Kế');
+        expect(afterOffHt).toContain('Còn Lại');
+
+        // Bật lại %HT
+        const afterOnHt = toggleCompetitionColumn('%HT', afterOffHt, LUYKE, false);
+        expect(afterOnHt).toContain('%HT');
+        expect(afterOnHt).toContain('Target');
+        expect(afterOnHt).toContain('%DKHT');
+    });
+
+    it('Luỹ kế: người dùng có thể tuỳ chỉnh tắt bớt cột %HT V.Trội và %DKHT V.Trội trong bộ Vượt trội', () => {
+        const before = ['L.Kế', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+        
+        // Tắt %HT V.Trội
+        const afterOffHtVT = toggleCompetitionColumn('%HT V.Trội', before, LUYKE, false);
+        expect(afterOffHtVT).not.toContain('%HT V.Trội');
+        expect(afterOffHtVT).toContain('Target V.Trội');
+        expect(afterOffHtVT).toContain('%DKHT V.Trội');
+
+        // Tắt tiếp %DKHT V.Trội (chỉ còn lại Target V.Trội)
+        const afterOffBoth = toggleCompetitionColumn('%DKHT V.Trội', afterOffHtVT, LUYKE, false);
+        expect(afterOffBoth).not.toContain('%DKHT V.Trội');
+        expect(afterOffBoth).not.toContain('%HT V.Trội');
+        expect(afterOffBoth).toContain('Target V.Trội');
+
+        // Bật lại %HT V.Trội
+        const afterOnHtVT = toggleCompetitionColumn('%HT V.Trội', afterOffBoth, LUYKE, false);
+        expect(afterOnHtVT).toContain('%HT V.Trội');
+        expect(afterOnHtVT).toContain('Target V.Trội');
+    });
+
+    it('Realtime: người dùng có thể tuỳ chỉnh tắt bớt cột %HT hoặc %HT V.Trội', () => {
+        const standardRT = ['Realtime', 'Target', '%HT', 'Còn Lại'];
+        const afterOff = toggleCompetitionColumn('%HT', standardRT, REALTIME, true);
+        expect(afterOff).not.toContain('%HT');
+        expect(afterOff).toContain('Target');
+
+        const superRT = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+        const afterOffSuper = toggleCompetitionColumn('%HT V.Trội', superRT, REALTIME, true);
+        expect(afterOffSuper).not.toContain('%HT V.Trội');
+        expect(afterOffSuper).toContain('Target V.Trội');
+    });
+});
+
+describe('calculateGroupAchievementStats & isSuperCompetitionActive — đếm số ngành hàng >100% và <100%', () => {
+    it('isSuperCompetitionActive: nhận diện đúng chế độ Vượt trội vs Cơ bản (bình thường)', () => {
+        expect(isSuperCompetitionActive(['L.Kế', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'])).toBe(true);
+        expect(isSuperCompetitionActive(['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'])).toBe(true);
+
+        expect(isSuperCompetitionActive(['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'])).toBe(false);
+        expect(isSuperCompetitionActive(['Realtime', 'Target', '%HT', 'Còn Lại'])).toBe(false);
+    });
+
+    const mockHeaders = ['L.Kế', 'Target', '%HT', '%DKHT', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+
+    const mockPrograms: ProcessedProgram[] = [
+        {
+            metric: 'DTLK',
+            name: 'MANGO',
+            data: ['202', '150', '135%', '505%', '180', '112%', '450%', '52'],
+            conLai: 52
+        },
+        {
+            metric: 'DTLK',
+            name: 'REALME',
+            data: ['98', '334', '30%', '100%', '350', '28%', '90%', '-236'],
+            conLai: -236
+        },
+        {
+            metric: 'DTLK',
+            name: 'VAY TIỀN MẶT',
+            data: ['0', '164', '0%', '0%', '180', '0%', '0%', '-163'],
+            conLai: -163
+        }
+    ];
+
+    it('Luỹ kế với nhóm Cơ bản (bình thường): so sánh mốc 100% theo %DKHT cơ bản', () => {
+        const visibleCols = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const stats = calculateGroupAchievementStats(mockPrograms, mockHeaders, visibleCols, false);
+
+        expect(stats.isSuperMode).toBe(false);
+        expect(stats.total).toBe(3);
+        // MANGO: 505% (>=100) -> đạt
+        // REALME: 100% (>=100) -> đạt
+        // VAY TIỀN MẶT: 0% (<100) -> chưa đạt
+        expect(stats.over100).toBe(2);
+        expect(stats.under100).toBe(1);
+    });
+
+    it('Luỹ kế với nhóm Vượt trội (V.Trội): so sánh mốc 100% theo %DKHT V.Trội', () => {
+        const visibleCols = ['L.Kế', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+        const stats = calculateGroupAchievementStats(mockPrograms, mockHeaders, visibleCols, false);
+
+        expect(stats.isSuperMode).toBe(true);
+        expect(stats.total).toBe(3);
+        // MANGO: 450% (>=100) -> đạt
+        // REALME: 90% (<100) -> chưa đạt (vì target vượt trội cao hơn)
+        // VAY TIỀN MẶT: 0% (<100) -> chưa đạt
+        expect(stats.over100).toBe(1);
+        expect(stats.under100).toBe(2);
+    });
+
+    it('Realtime với nhóm Cơ bản: so sánh mốc 100% theo %HT cơ bản', () => {
+        const rtHeaders = ['Realtime', 'Target', '%HT', 'Còn Lại'];
+        const rtPrograms: ProcessedProgram[] = [
+            { metric: 'DTLK', name: 'A', data: ['150', '100', '150%', '50'], conLai: 50 },
+            { metric: 'DTLK', name: 'B', data: ['80', '100', '80%', '-20'], conLai: -20 }
+        ];
+        const stats = calculateGroupAchievementStats(rtPrograms, rtHeaders, rtHeaders, true);
+
+        expect(stats.isSuperMode).toBe(false);
+        expect(stats.total).toBe(2);
+        expect(stats.over100).toBe(1);
+        expect(stats.under100).toBe(1);
+    });
+
+    it('Danh sách rỗng: trả về total: 0, over100: 0, under100: 0 an toàn', () => {
+        const stats = calculateGroupAchievementStats([], mockHeaders, ['L.Kế', 'Target', '%HT'], false);
+        expect(stats.total).toBe(0);
+        expect(stats.over100).toBe(0);
+        expect(stats.under100).toBe(0);
+    });
+});
+
+describe('calculateOverallCompetitionKpiStats — 4 thẻ KPI dưới Quỹ thời gian', () => {
+    const mockHeaders = ['L.Kế', 'Target', '%HT', '%DKHT', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+
+    // 4 nhóm kiểm thử:
+    // P1: %DKHT = 120% (>= 100%) -> Đạt
+    // P2: %DKHT = 85%  (80% <= val < 100%) -> Gần đạt
+    // P3: %DKHT = 60%  (val < 80% & > 0) -> Chưa đạt
+    // P4: %DKHT = 0%   (val === 0) -> Kết quả 0%
+    const testPrograms: ProcessedProgram[] = [
+        { metric: 'DTLK', name: 'Nhóm 1', data: ['120', '100', '120%', '120%', '150', '80%', '90%', '20'], conLai: 20 },
+        { metric: 'DTLK', name: 'Nhóm 2', data: ['85', '100', '85%', '85%', '150', '56%', '60%', '-15'], conLai: -15 },
+        { metric: 'DTLK', name: 'Nhóm 3', data: ['60', '100', '60%', '60%', '150', '40%', '40%', '-40'], conLai: -40 },
+        { metric: 'DTLK', name: 'Nhóm 4', data: ['0', '100', '0%', '0%', '150', '0%', '0%', '-100'], conLai: -100 }
+    ];
+
+    it('Tính chuẩn xác 4 chỉ số KPI ở chế độ Cơ bản', () => {
+        const visibleCols = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const stats = calculateOverallCompetitionKpiStats(testPrograms, mockHeaders, visibleCols, false);
+
+        expect(stats.isSuperMode).toBe(false);
+        expect(stats.total).toBe(4);
+
+        // 1. % số nhóm đạt 100%: 1/4 = 25%
+        expect(stats.countOver100).toBe(1);
+        expect(stats.pctOver100).toBe(25);
+
+        // 2. % số nhóm < 100%: 3/4 = 75%
+        expect(stats.countUnder100).toBe(3);
+        expect(stats.pctUnder100).toBe(75);
+
+        // 3. 80% < Số nhóm < 100%: 1 nhóm (Nhóm 2: 85%)
+        expect(stats.countNear100).toBe(1);
+        expect(stats.pctNear100).toBe(25);
+
+        // 4. Số nhóm kết quả 0%: 1 nhóm (Nhóm 4: 0%)
+        expect(stats.countZero).toBe(1);
+        expect(stats.pctZero).toBe(25);
+    });
+
+    it('Tự động chuyển đổi khi xem Vượt trội', () => {
+        const visibleCols = ['L.Kế', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+        const stats = calculateOverallCompetitionKpiStats(testPrograms, mockHeaders, visibleCols, false);
+
+        expect(stats.isSuperMode).toBe(true);
+        expect(stats.total).toBe(4);
+        // %DKHT V.Trội:
+        // Nhóm 1: 90% (80 <= val < 100) -> countNear100
+        // Nhóm 2: 60% (< 80)
+        // Nhóm 3: 40% (< 80)
+        // Nhóm 4: 0%  (0%) -> countZero
+        expect(stats.countOver100).toBe(0);
+        expect(stats.countUnder100).toBe(4);
+        expect(stats.countNear100).toBe(1);
+        expect(stats.countZero).toBe(1);
+    });
+
+    it('Danh sách rỗng: không bị chia cho 0 (NaN)', () => {
+        const stats = calculateOverallCompetitionKpiStats([], mockHeaders, ['L.Kế', 'Target', '%HT'], false);
+        expect(stats.total).toBe(0);
+        expect(stats.pctOver100).toBe(0);
+        expect(stats.pctUnder100).toBe(0);
+        expect(stats.pctNear100).toBe(0);
+        expect(stats.pctZero).toBe(0);
+    });
+});
+
+describe('sortProgramsList — hỗ trợ customOrder (thứ tự kéo thả tuỳ chỉnh)', () => {
+    const mockHeaders = ['Tiêu chí', 'L.Kế', 'Target', '%HT', '%DKHT'];
+    const p1: ProcessedProgram = { name: 'CHƯƠNG TRÌNH A', metric: 'SLLK', data: ['10', '100', '10%', '20%'], conLai: 90 };
+    const p2: ProcessedProgram = { name: 'CHƯƠNG TRÌNH B', metric: 'SLLK', data: ['50', '100', '50%', '60%'], conLai: 50 };
+    const p3: ProcessedProgram = { name: 'CHƯƠNG TRÌNH C', metric: 'SLLK', data: ['90', '100', '90%', '95%'], conLai: 10 };
+
+    it('áp dụng đúng thứ tự customOrder khi sortConfig là null', () => {
+        const customOrder = ['CHƯƠNG TRÌNH C', 'CHƯƠNG TRÌNH A', 'CHƯƠNG TRÌNH B'];
+        const sorted = sortProgramsList([p1, p2, p3], null, mockHeaders, {}, ['Target', '%HT'], false, customOrder);
+        expect(sorted.map(p => p.name)).toEqual(['CHƯƠNG TRÌNH C', 'CHƯƠNG TRÌNH A', 'CHƯƠNG TRÌNH B']);
+    });
+
+    it('nếu người dùng click sort cột rõ ràng, sortConfig sẽ được ưu tiên hơn customOrder', () => {
+        const customOrder = ['CHƯƠNG TRÌNH C', 'CHƯƠNG TRÌNH A', 'CHƯƠNG TRÌNH B'];
+        // Sort theo %HT (cột 3) giảm dần -> B (50%), C (90%), A (10%) -> C, B, A
+        const sorted = sortProgramsList([p1, p2, p3], { columnIndex: 3, direction: 'desc' }, mockHeaders, {}, ['Target', '%HT'], false, customOrder);
+        expect(sorted.map(p => p.name)).toEqual(['CHƯƠNG TRÌNH C', 'CHƯƠNG TRÌNH B', 'CHƯƠNG TRÌNH A']);
+    });
+
+    it('các chương trình chưa có trong customOrder được đặt ở phía sau một cách ổn định', () => {
+        const customOrder = ['CHƯƠNG TRÌNH B'];
+        const sorted = sortProgramsList([p1, p2, p3], null, mockHeaders, {}, ['Target', '%HT'], false, customOrder);
+        expect(sorted[0].name).toBe('CHƯƠNG TRÌNH B');
     });
 });
 

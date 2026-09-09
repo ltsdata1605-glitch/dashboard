@@ -2,12 +2,13 @@
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, GripVertical } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
 import * as db from '../utils/db';
 import { shortenName, shortenSupermarketName, getDefaultGroupLabel } from '../utils/dashboardHelpers';
+import { cn } from '../../../components/shared/ui/utils';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
@@ -427,6 +428,11 @@ const CompetitionTarget: React.FC<{
     const [nameOverrides, setNameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides, setGroupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
     const [deletedGroups, setDeletedGroups] = useIndexedDBState<string[]>('competition-deleted-preset-groups', []);
+    // Thứ tự dòng ngành hàng tùy chỉnh do người dùng kéo thả (tự động đồng bộ Firebase)
+    const [customOrder, setCustomOrder] = useIndexedDBState<Record<string, string[]>>('competition-custom-order', {});
+    // State tương tác Drag & Drop dòng ngành hàng
+    const [draggedItem, setDraggedItem] = useState<{ group: string; index: number; name: string } | null>(null);
+    const [dragOverItem, setDragOverItem] = useState<{ group: string; index: number; name: string } | null>(null);
     // Tiêu chí đang sửa tên hiển thị ngay trên bảng (thay cho modal "Sửa cấu hình nhóm thi đua" cũ)
     const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
     const [editingNameValue, setEditingNameValue] = useState('');
@@ -550,45 +556,71 @@ const CompetitionTarget: React.FC<{
                     groupedCompetitions[group].push(comp);
                 });
 
+                // Sắp xếp các dòng trong từng nhóm theo thứ tự kéo thả đã lưu trong Firebase (customOrder)
+                Object.keys(groupedCompetitions).forEach(group => {
+                    const order = customOrder[group];
+                    if (order && order.length > 0) {
+                        groupedCompetitions[group].sort((a, b) => {
+                            const idxA = order.indexOf(a.name);
+                            const idxB = order.indexOf(b.name);
+                            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                            if (idxA !== -1) return -1;
+                            if (idxB !== -1) return 1;
+                            return 0;
+                        });
+                    }
+                });
+
                 const columns: DataTableColumn<Competition>[] = [
                     {
                         id: 'name',
                         header: 'Tiêu chí',
                         headerAlign: 'center',
-                        minWidth: '160px',
+                        minWidth: '180px',
                         cell: (comp, index) => {
                             const currentDisplayName = shortenName(comp.name, nameOverrides);
-                            if (editingNameFor === comp.name) {
-                                return (
-                                    <Input
-                                        autoFocus
-                                        value={editingNameValue}
-                                        onChange={(e) => setEditingNameValue(e.target.value)}
-                                        onFocus={(e) => {
-                                            const val = e.target.value;
-                                            e.target.setSelectionRange(val.length, val.length);
-                                        }}
-                                        onBlur={() => commitDisplayName(comp.name, editingNameValue)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') commitDisplayName(comp.name, editingNameValue);
-                                            else if (e.key === 'Escape') setEditingNameFor(null);
-                                        }}
-                                        placeholder={shortenName(comp.name)}
-                                        className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-[11px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case"
-                                    />
-                                );
-                            }
                             return (
-                                <div
-                                    onDoubleClick={() => {
-                                        setEditingNameFor(comp.name);
-                                        setEditingNameValue(currentDisplayName);
-                                    }}
-                                    className="w-full justify-start text-left text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 flex items-center gap-1.5"
-                                    title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
-                                >
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums min-w-[16px] text-right">{index + 1}.</span>
-                                    {currentDisplayName}
+                                <div className="w-full flex items-center gap-2 py-0.5 px-0.5">
+                                    {/* Số thứ tự TO RÕ + Icon Kéo Thả */}
+                                    <div className="flex items-center gap-1.5 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
+                                        <GripVertical
+                                            className="h-3.5 w-3.5 text-slate-400 hover:text-sky-500 dark:text-slate-500 dark:hover:text-sky-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors"
+                                        />
+                                        <span className="inline-flex items-center justify-center min-w-[24px] h-[22px] px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-xs">
+                                            {index + 1}
+                                        </span>
+                                    </div>
+
+                                    {/* Tên tiêu chí */}
+                                    {editingNameFor === comp.name ? (
+                                        <Input
+                                            autoFocus
+                                            value={editingNameValue}
+                                            onChange={(e) => setEditingNameValue(e.target.value)}
+                                            onFocus={(e) => {
+                                                const val = e.target.value;
+                                                e.target.setSelectionRange(val.length, val.length);
+                                            }}
+                                            onBlur={() => commitDisplayName(comp.name, editingNameValue)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') commitDisplayName(comp.name, editingNameValue);
+                                                else if (e.key === 'Escape') setEditingNameFor(null);
+                                            }}
+                                            placeholder={shortenName(comp.name)}
+                                            className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-[11px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
+                                        />
+                                    ) : (
+                                        <div
+                                            onDoubleClick={() => {
+                                                setEditingNameFor(comp.name);
+                                                setEditingNameValue(currentDisplayName);
+                                            }}
+                                            className="flex-1 text-left text-[11px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
+                                            title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
+                                        >
+                                            {currentDisplayName}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         },
@@ -701,6 +733,85 @@ const CompetitionTarget: React.FC<{
                                     overflowVisible
                                     fixedLayout
                                     className="!rounded-none"
+                                    rowProps={(comp, index) => {
+                                        const isDragging = draggedItem?.name === comp.name;
+                                        const isOver = dragOverItem?.name === comp.name && !isDragging;
+                                        return {
+                                            draggable: true,
+                                            onDragStart: (e) => {
+                                                setDraggedItem({ group: criteria, index, name: comp.name });
+                                                e.dataTransfer.effectAllowed = 'move';
+                                                e.dataTransfer.setData('text/plain', comp.name);
+                                            },
+                                            onDragOver: (e) => {
+                                                e.preventDefault();
+                                                e.dataTransfer.dropEffect = 'move';
+                                                if (dragOverItem?.name !== comp.name) {
+                                                    setDragOverItem({ group: criteria, index, name: comp.name });
+                                                }
+                                            },
+                                            onDragLeave: () => {
+                                                if (dragOverItem?.name === comp.name) {
+                                                    setDragOverItem(null);
+                                                }
+                                            },
+                                            onDrop: (e) => {
+                                                e.preventDefault();
+                                                if (!draggedItem || draggedItem.name === comp.name) {
+                                                    setDraggedItem(null);
+                                                    setDragOverItem(null);
+                                                    return;
+                                                }
+
+                                                if (draggedItem.group === criteria) {
+                                                    // Sắp xếp lại thứ tự trong cùng một nhóm
+                                                    const currentOrder = comps.map(c => c.name);
+                                                    const fromIdx = currentOrder.indexOf(draggedItem.name);
+                                                    const toIdx = currentOrder.indexOf(comp.name);
+                                                    if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+                                                        const newOrder = [...currentOrder];
+                                                        const [moved] = newOrder.splice(fromIdx, 1);
+                                                        newOrder.splice(toIdx, 0, moved);
+                                                        setCustomOrder(prev => ({
+                                                            ...prev,
+                                                            [criteria]: newOrder
+                                                        }));
+                                                        toast.success(`Đã đổi vị trí "${shortenName(draggedItem.name, nameOverrides)}"`);
+                                                    }
+                                                } else {
+                                                    // Kéo thả chuyển sang nhóm khác
+                                                    commitGroup(draggedItem.name, criteria);
+                                                    setCustomOrder(prev => {
+                                                        const srcList = (groupedCompetitions[draggedItem.group] || []).map(c => c.name).filter(n => n !== draggedItem.name);
+                                                        const dstList = comps.map(c => c.name).filter(n => n !== draggedItem.name);
+                                                        const targetIdx = dstList.indexOf(comp.name);
+                                                        if (targetIdx !== -1) {
+                                                            dstList.splice(targetIdx, 0, draggedItem.name);
+                                                        } else {
+                                                            dstList.push(draggedItem.name);
+                                                        }
+                                                        return {
+                                                            ...prev,
+                                                            [draggedItem.group]: srcList,
+                                                            [criteria]: dstList
+                                                        };
+                                                    });
+                                                    toast.success(`Đã chuyển "${shortenName(draggedItem.name, nameOverrides)}" sang nhóm "${criteria}"`);
+                                                }
+                                                setDraggedItem(null);
+                                                setDragOverItem(null);
+                                            },
+                                            onDragEnd: () => {
+                                                setDraggedItem(null);
+                                                setDragOverItem(null);
+                                            },
+                                            className: cn(
+                                                'cursor-grab active:cursor-grabbing transition-all select-none',
+                                                isDragging && 'opacity-30 bg-sky-100/60 dark:bg-sky-900/40 border-2 border-dashed border-sky-400',
+                                                isOver && 'border-t-2 border-t-sky-500 bg-sky-50/70 dark:bg-sky-950/40'
+                                            )
+                                        };
+                                    }}
                                 />
                             </div>
                         ))}

@@ -22,7 +22,8 @@ export const ALLOWED_LUYKE_COLUMNS = [
 ] as const;
 
 /**
- * Xử lý bật/tắt cột theo quy tắc nhóm loại trừ tương hỗ (Coupled & Mutually Exclusive):
+ * Xử lý bật/tắt cột theo quy tắc nhóm loại trừ tương hỗ giữa Cơ bản và Vượt trội,
+ * đồng thời cho phép người dùng tuỳ chỉnh bật/tắt bớt các cột % trong cùng một bộ:
  * - Nhóm Cơ bản:
  *   + Realtime: ['Target', '%HT']
  *   + Luỹ kế: ['Target', '%HT', '%DKHT']
@@ -31,9 +32,13 @@ export const ALLOWED_LUYKE_COLUMNS = [
  *   + Luỹ kế: ['Target V.Trội', '%HT V.Trội', '%DKHT V.Trội']
  * 
  * Quy tắc:
- * 1. Nếu bật 1 trong các cột nhóm Cơ bản => Bật tất cả các cột nhóm Cơ bản, đồng thời TẮT nhóm Vượt trội.
- * 2. Nếu bật 1 trong các cột nhóm Vượt trội => Bật tất cả các cột nhóm Vượt trội, đồng thời TẮT nhóm Cơ bản.
- * 3. Nếu click vào cột đang bật của một nhóm, tự động chuyển sang bật nhóm còn lại để đảm bảo luôn có 1 bộ Target tính toán Còn Lại.
+ * 1. Chuyển đổi giữa 2 bộ:
+ *    - Đang ở bộ Vượt trội mà click vào cột Cơ bản => chuyển sang bộ Cơ bản, tắt sạch bộ Vượt trội.
+ *    - Đang ở bộ Cơ bản mà click vào cột Vượt trội => chuyển sang bộ Vượt trội, tắt sạch bộ Cơ bản.
+ * 2. Tuỳ chỉnh trong cùng 1 bộ:
+ *    - Người dùng có thể tuỳ chỉnh bật/tắt riêng lẻ các cột % (%HT, %DKHT, %HT V.Trội, %DKHT V.Trội).
+ *    - Nếu click vào cột Target chính (anchor) của bộ đang bật: chuyển sang bộ đối diện.
+ * 3. Bảo toàn tối thiểu: Bảng luôn giữ ít nhất 1 bộ Target để tính toán cột "Còn Lại".
  * 4. Các cột độc lập (THỰC HIỆN, L.Kế, Còn Lại) bật/tắt bình thường.
  */
 export function toggleCompetitionColumn(
@@ -59,26 +64,46 @@ export function toggleCompetitionColumn(
     let nextVisible: string[];
 
     if (isStandardCol(clickedHeader)) {
-        const isStandardActive = standardCols.some(c => currentVisibleColumns.includes(c));
-        if (!isStandardActive) {
-            // Chuyển sang bật nhóm Cơ bản, tắt nhóm Vượt trội
+        const isSuperActive = superCols.some(c => currentVisibleColumns.includes(c));
+        if (isSuperActive) {
+            // Đang ở bộ Vượt trội -> chuyển sang bộ Cơ bản
             const remaining = currentVisibleColumns.filter(c => !superCols.includes(c) && !standardCols.includes(c));
             nextVisible = [...remaining, ...standardCols];
         } else {
-            // Đang bật nhóm Cơ bản mà click tắt -> chuyển sang bật nhóm Vượt trội
-            const remaining = currentVisibleColumns.filter(c => !standardCols.includes(c) && !superCols.includes(c));
-            nextVisible = [...remaining, ...superCols];
+            // Đang ở trong bộ Cơ bản:
+            if (clickedHeader === 'Target') {
+                // Click vào cột Target chính: chuyển sang bộ Vượt trội
+                const remaining = currentVisibleColumns.filter(c => !standardCols.includes(c) && !superCols.includes(c));
+                nextVisible = [...remaining, ...superCols];
+            } else {
+                // Click vào các cột tỷ lệ % (%HT, %DKHT): cho phép người dùng tuỳ chỉnh bật/tắt bớt
+                if (currentVisibleColumns.includes(clickedHeader)) {
+                    nextVisible = currentVisibleColumns.filter(c => c !== clickedHeader);
+                } else {
+                    nextVisible = [...currentVisibleColumns, clickedHeader];
+                }
+            }
         }
     } else if (isSuperCol(clickedHeader)) {
-        const isSuperActive = superCols.some(c => currentVisibleColumns.includes(c));
-        if (!isSuperActive) {
-            // Chuyển sang bật nhóm Vượt trội, tắt nhóm Cơ bản
+        const isStandardActive = standardCols.some(c => currentVisibleColumns.includes(c));
+        if (isStandardActive) {
+            // Đang ở bộ Cơ bản -> chuyển sang bộ Vượt trội
             const remaining = currentVisibleColumns.filter(c => !standardCols.includes(c) && !superCols.includes(c));
             nextVisible = [...remaining, ...superCols];
         } else {
-            // Đang bật nhóm Vượt trội mà click tắt -> chuyển sang bật nhóm Cơ bản
-            const remaining = currentVisibleColumns.filter(c => !superCols.includes(c) && !standardCols.includes(c));
-            nextVisible = [...remaining, ...standardCols];
+            // Đang ở trong bộ Vượt trội:
+            if (clickedHeader === 'Target V.Trội') {
+                // Click vào cột Target V.Trội chính: chuyển sang bộ Cơ bản
+                const remaining = currentVisibleColumns.filter(c => !superCols.includes(c) && !standardCols.includes(c));
+                nextVisible = [...remaining, ...standardCols];
+            } else {
+                // Click vào các cột tỷ lệ % (%HT V.Trội, %DKHT V.Trội): cho phép người dùng tuỳ chỉnh bật/tắt bớt
+                if (currentVisibleColumns.includes(clickedHeader)) {
+                    nextVisible = currentVisibleColumns.filter(c => c !== clickedHeader);
+                } else {
+                    nextVisible = [...currentVisibleColumns, clickedHeader];
+                }
+            }
         }
     } else {
         // Các cột độc lập khác (Realtime, L.Kế, Còn Lại)
@@ -87,6 +112,13 @@ export function toggleCompetitionColumn(
         } else {
             nextVisible = [...currentVisibleColumns, clickedHeader];
         }
+    }
+
+    // Đảm bảo không bao giờ rơi vào trạng thái mất sạch cả 2 bộ Target
+    const hasStandardLeft = standardCols.some(c => nextVisible.includes(c));
+    const hasSuperLeft = superCols.some(c => nextVisible.includes(c));
+    if (!hasStandardLeft && !hasSuperLeft) {
+        nextVisible = [...nextVisible, ...(isStandardCol(clickedHeader) ? superCols : standardCols)];
     }
 
     // THỨ TỰ CÁC CỘT SẼ LUÔN ĐƯỢC SẮP XẾP THEO THỨ TỰ NÀY:
@@ -320,10 +352,18 @@ export function sortProgramsList(
     headers: string[],
     nameOverrides: Record<string, string> = {},
     visibleColumns?: string[],
-    isRealtime: boolean = false
+    isRealtime: boolean = false,
+    customOrder?: string[]
 ): ProcessedProgram[] {
     return [...programs].sort((a, b) => {
         if (!sortConfig) {
+            if (customOrder && customOrder.length > 0) {
+                const idxA = customOrder.indexOf(a.name);
+                const idxB = customOrder.indexOf(b.name);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+            }
             return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
         }
 
@@ -383,4 +423,176 @@ export function sortProgramsList(
         // Khi 2 giá trị bằng nhau: tie-breaker theo chuỗi ưu tiên phù hợp với chế độ hiện tại
         return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
     });
+}
+
+/**
+ * Thống kê số lượng ngành hàng (chương trình thi đua) đạt >100% và <100% trong một nhóm.
+ */
+export interface GroupAchievementStats {
+    total: number;
+    over100: number;  // số ngành hàng đạt >= 100%
+    under100: number; // số ngành hàng dưới 100% (< 100%)
+    isSuperMode: boolean; // true nếu người dùng đang chọn xem Target Vượt trội, false nếu xem Cơ bản
+    evaluatedMetric: 'htVT' | 'htDKVT' | 'htDK' | 'ht';
+}
+
+/**
+ * Kiểm tra xem người dùng đang chọn xem nhóm cột Target Vượt trội hay Cơ bản (bình thường).
+ */
+export function isSuperCompetitionActive(visibleColumns: string[]): boolean {
+    return visibleColumns.some(col => 
+        col === 'Target V.Trội' || 
+        col === '%HT V.Trội' || 
+        col === '%DKHT V.Trội' ||
+        col === '%HTDK V.Trội'
+    );
+}
+
+/**
+ * Lấy chỉ số % hoàn thành dùng để so sánh với mốc 100%:
+ * - Dựa vào người dùng chọn V.Trội hay bình thường (isSuperMode).
+ * - Kết hợp Realtime (ưu tiên %HT) hay Luỹ kế (ưu tiên %DKHT rồi tới %HT).
+ * - Tự động thích ứng nếu người dùng tuỳ biến ẩn/hiện cột trong popup.
+ */
+export function getProgramEvaluatedCompletion(
+    program: ProcessedProgram,
+    headers: string[],
+    isSuperMode: boolean,
+    isRealtime: boolean,
+    visibleColumns?: string[]
+): { value: number | null; metric: 'htVT' | 'htDKVT' | 'htDK' | 'ht' } {
+    const metrics = getProgramCompletionMetrics(program, headers);
+
+    if (isRealtime) {
+        if (isSuperMode) {
+            return { value: metrics.htVT, metric: 'htVT' };
+        } else {
+            return { value: metrics.ht, metric: 'ht' };
+        }
+    } else {
+        // Luỹ kế:
+        if (isSuperMode) {
+            const hasDkhtVT = visibleColumns 
+                ? visibleColumns.some(c => c === '%DKHT V.Trội' || c === '%HTDK V.Trội')
+                : true;
+            if (hasDkhtVT && metrics.htDKVT !== null) {
+                return { value: metrics.htDKVT, metric: 'htDKVT' };
+            }
+            if (metrics.htVT !== null) {
+                return { value: metrics.htVT, metric: 'htVT' };
+            }
+            return { value: metrics.htDKVT, metric: 'htDKVT' };
+        } else {
+            const hasDkht = visibleColumns 
+                ? visibleColumns.some(c => c === '%DKHT' || c === '%HTDK')
+                : true;
+            if (hasDkht && metrics.htDK !== null) {
+                return { value: metrics.htDK, metric: 'htDK' };
+            }
+            if (metrics.ht !== null) {
+                return { value: metrics.ht, metric: 'ht' };
+            }
+            return { value: metrics.htDK, metric: 'htDK' };
+        }
+    }
+}
+
+/**
+ * Đếm số lượng ngành hàng >100% (đạt) và <100% (chưa đạt) trong danh sách chương trình của một nhóm:
+ * - >100%: value >= 100
+ * - <100%: value < 100 (bao gồm cả null/0/chưa có số liệu)
+ */
+export function calculateGroupAchievementStats(
+    programs: ProcessedProgram[],
+    headers: string[],
+    visibleColumns: string[],
+    isRealtime: boolean
+): GroupAchievementStats {
+    const isSuperMode = isSuperCompetitionActive(visibleColumns);
+    let over100 = 0;
+    let under100 = 0;
+    let lastMetric: 'htVT' | 'htDKVT' | 'htDK' | 'ht' = isSuperMode 
+        ? (isRealtime ? 'htVT' : 'htDKVT') 
+        : (isRealtime ? 'ht' : 'htDK');
+
+    for (const prog of programs) {
+        const { value, metric } = getProgramEvaluatedCompletion(prog, headers, isSuperMode, isRealtime, visibleColumns);
+        lastMetric = metric;
+        if (value !== null && !isNaN(value) && value >= 100) {
+            over100++;
+        } else {
+            under100++;
+        }
+    }
+
+    return {
+        total: programs.length,
+        over100,
+        under100,
+        isSuperMode,
+        evaluatedMetric: lastMetric
+    };
+}
+
+/**
+ * Thống kê tổng hợp các chỉ số KPI cho toàn bộ các nhóm/ngành hàng thi đua đang hiển thị:
+ * 1. % số nhóm đạt 100%: Số nhóm > 100% / tổng nhóm (kèm số lượng nhóm >100%, tổng nhóm)
+ * 2. % số nhóm < 100%: Số nhóm < 100% / tổng nhóm (kèm số lượng nhóm <100%, tổng nhóm)
+ * 3. 80% < Số nhóm < 100%: Số lượng nhóm trong khoảng 80% đến dưới 100%
+ * 4. Số nhóm kết quả 0%: Số lượng nhóm đạt 0% (hoặc chưa có kết quả)
+ */
+export interface OverallCompetitionKpiStats {
+    total: number;
+    countOver100: number;
+    pctOver100: number;
+    countUnder100: number;
+    pctUnder100: number;
+    countNear100: number; // 80% <= val < 100%
+    pctNear100: number;
+    countZero: number;    // val === 0 hoặc null/NaN
+    pctZero: number;
+    isSuperMode: boolean;
+}
+
+export function calculateOverallCompetitionKpiStats(
+    programs: ProcessedProgram[],
+    headers: string[],
+    visibleColumns: string[],
+    isRealtime: boolean
+): OverallCompetitionKpiStats {
+    const isSuperMode = isSuperCompetitionActive(visibleColumns);
+    const total = programs.length;
+    let countOver100 = 0;
+    let countNear100 = 0;
+    let countZero = 0;
+
+    for (const prog of programs) {
+        const { value } = getProgramEvaluatedCompletion(prog, headers, isSuperMode, isRealtime, visibleColumns);
+        if (value === null || isNaN(value) || value <= 0) {
+            countZero++;
+        } else if (value >= 100) {
+            countOver100++;
+        } else if (value >= 80 && value < 100) {
+            countNear100++;
+        }
+    }
+
+    const countUnder100 = total - countOver100;
+    const pctOver100 = total > 0 ? (countOver100 / total) * 100 : 0;
+    const pctUnder100 = total > 0 ? (countUnder100 / total) * 100 : 0;
+    const pctNear100 = total > 0 ? (countNear100 / total) * 100 : 0;
+    const pctZero = total > 0 ? (countZero / total) * 100 : 0;
+
+    return {
+        total,
+        countOver100,
+        pctOver100,
+        countUnder100,
+        pctUnder100,
+        countNear100,
+        pctNear100,
+        countZero,
+        pctZero,
+        isSuperMode
+    };
 }
