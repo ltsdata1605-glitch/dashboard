@@ -498,89 +498,10 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
     });
 }
 
-/**
- * Xử lý file YCX trực tiếp trên Main Thread (Tốc độ cao cho file < 50MB)
- * Thay thế Worker để tránh overhead load thư viện.
- */
-export async function processSalesFile(file: File, setStatus: StatusUpdater): Promise<DataRow[]> {
-    setStatus({ message: 'Đang đọc file...', type: 'info', progress: 10 });
-    
-    try {
-        const arrayBuffer = await file.arrayBuffer();
-        
-        setStatus({ message: 'Đang phân tích Excel...', type: 'info', progress: 30 });
-        const data = new Uint8Array(arrayBuffer);
-        const XLSX = await import('xlsx');
-        
-        let workbook;
-        try {
-            // Use dense mode for memory efficiency
-            workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
-        } catch (err: unknown) {
-            const errMsg = getErrorMessage(err);
-            if (errMsg.includes('Invalid HTML') || errMsg.includes('find <table>')) {
-                throw new Error("File bị lỗi cấu trúc (File HTML bị đổi đuôi xanh .xlsx). Vui lòng đảm bảo bạn đang tải lên file Excel (.xlsx) chuẩn từ hệ thống.");
-            }
-            throw err;
-        }
-        
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-
-        setStatus({ message: 'Đang chuyển đổi dữ liệu...', type: 'info', progress: 50 });
-        const json: DataRow[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-        
-        const processedList: DataRow[] = json;
-
-        setStatus({ message: 'Đang chuẩn hóa dữ liệu...', type: 'info', progress: 90 });
-        
-        const validResults: DataRow[] = [];
-        const len = processedList.length;
-
-        for (let i = 0; i < len; i++) {
-            const row = processedList[i];
-            
-            // Inline validation logic
-            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-            const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
-            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-            const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
-            const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
-
-            // Standard valid sales row
-            const isStandardValid = (
-                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && 
-                nhapTra === 'chưa trả' && 
-                thuTien === 'đã thu'
-            );
-
-            // Uncollected/uncancelled row
-            const isUncollected = (
-                thuTien === 'chưa thu' && 
-                trangThaiXuat === 'chưa xuất' && 
-                trangThaiGiao === 'chưa giao' && 
-                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ')
-            );
-
-            if (!isStandardValid && !isUncollected) continue;
-
-            // Normalize Date
-            const parsedDate = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
-            if (parsedDate && !isNaN(parsedDate.getTime())) {
-                row.parsedDate = parsedDate;
-                validResults.push(row);
-            }
-        }
-
-        if (validResults.length === 0) {
-            throw new Error("Không tìm thấy dữ liệu hợp lệ (Chưa hủy, Chưa trả, Đã thu) hoặc lỗi ngày tháng.");
-        }
-
-        setStatus({ message: 'Hoàn tất xử lý.', type: 'success', progress: 100 });
-        return validResults;
-
-    } catch (error) {
-        console.error("Lỗi xử lý file:", error);
-        throw error;
-    }
-}
+// ĐÃ XOÁ `processSalesFile()` (82 dòng) — dọn code, 2026-09-09.
+// Đây là đường parse Excel CŨ chạy trên main thread, đã bị thay bằng Worker
+// (services/worker.ts, gọi từ hooks/useFileUploadLogic.ts) và KHÔNG còn nơi nào gọi tới
+// (xác nhận bằng grep toàn repo: chỉ khớp đúng dòng khai báo của chính nó).
+// Xoá hẳn chứ không để lại, vì nó là CÁI BẪY: nó sinh DataRow với khoá tiếng Việt dài,
+// đi vòng qua bước chuẩn hoá khoá ngắn của Đợt 4 — ai lỡ gọi sẽ nhận dữ liệu sai hình dạng
+// mà không có lỗi nào báo ra. Cần lại thì lấy từ lịch sử git.
