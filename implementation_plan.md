@@ -2417,18 +2417,23 @@ song chạy lệnh git ghi đè working tree (ngay sau đó `git status` hiện 
 tức** để bảo vệ. Bài học cho các đợt sau: khi có phiên khác đang chạy song song, commit từng phần
 nhỏ ngay khi xong thay vì gom nhiều file rồi commit một lần cuối.
 
-### Còn lại của Đợt 6 (chưa làm)
+### ~~Còn lại của Đợt 6~~ → ✅ ĐÃ LÀM XONG TOÀN BỘ (cập nhật cuối 2026-09-09)
 
-- **Bug dải màu sky/indigo trùng nhau** (4 nơi nêu trên) — cần quyết định hướng xử lý, vì 3 cách
-  đều có đánh đổi lớn: (i) bỏ override `--color-indigo-*` trong `styles.css` → **toàn bộ 1.390 chỗ
-  dùng indigo trong app đổi màu cùng lúc** từ xanh sky sang tím indigo, rủi ro thị giác rất lớn;
-  (ii) thay indigo trong các dải xoay vòng bằng "tầng sắc độ thứ 2" của họ màu có sẵn (đúng ý
-  CLAUDE.md "6 họ x 2 tầng sắc độ", phạm vi hẹp hơn nhiều); (iii) chấp nhận dải chỉ có 5 màu phân
-  biệt. Khuyến nghị (ii).
-- **Giảm dần `indigoAlias` 1.407** theo thứ tự kế hoạch (Report BI → Phân Tích → sticker-event).
-  Lưu ý RULES.md §2.5 đã cảnh báo: KHÔNG tìm-thay hàng loạt, phải xét từng chỗ là "alias primary"
-  hay "màu riêng trong dải" — trộn 2 nhóm này sẽ làm mất phân biệt màu vốn cần có.
-- `sticker-event` là khu vực lệch chuẩn nhất (indigo 26% / sky 2%, ngược hẳn 3 khu vực còn lại).
+> Mục này viết lúc còn dở dang. Cả 3 gạch đầu dòng bên dưới **nay đã xong** — giữ lại để thấy
+> hướng suy nghĩ đã thay đổi thế nào sau khi đo kỹ hơn, nhưng ĐỪNG đọc như việc còn tồn.
+
+- ~~Bug dải màu sky/indigo trùng nhau — 3 cách đều có đánh đổi lớn, khuyến nghị (ii)~~
+  → **Đã chọn cách thứ 4, tốt hơn cả 3 cách từng cân nhắc**: nhận ra dải "6 họ" **chưa bao giờ**
+  thật sự có 6 màu phân biệt (indigo luôn render y hệt sky), nên đổi HẾT indigo→sky để code nói
+  đúng thứ đang hiển thị (0 pixel đổi), rồi mới xoá khối override. Không phải chọn giữa "đổi màu
+  1.390 chỗ" hay "chấp nhận trùng" — cả hai đều là lựa chọn sai đề bài.
+- ~~Giảm dần `indigoAlias` 1.407~~ → **về 0**. Đúng như RULES.md cảnh báo, KHÔNG tìm-thay hàng
+  loạt: phân loại bằng máy (file có token chuỗi `'indigo'` = dải màu → xét tay; còn lại = alias
+  thuần → đổi máy), rồi kiểm chứng bằng ảnh chụp toàn trang trước/sau giống hệt nhau.
+- ~~`sticker-event` lệch chuẩn nhất (indigo 26%/sky 2%)~~ → đã đổi cùng đợt, nay 0 indigo.
+
+**Trạng thái chốt của Đợt 6**: `violations-baseline.json` = `{}` — 0 vi phạm, 0 file
+(từ 1.416 vi phạm / 118 file).
 
 ---
 

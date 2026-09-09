@@ -106,11 +106,27 @@ service cloud.firestore {
       allow write: if isAdmin() || (isManager() && maKho in myKhos());
     }
 
-    // Bộ đếm lượt truy cập (hooks/useSystemTraffic.ts) — không phải dữ liệu
-    // nhạy cảm về phân quyền, chỉ cần đăng nhập là ghi được (giữ nguyên hành
-    // vi cũ trước khi có rules, không cần qua Cloud Function).
+    // Bộ đếm lượt truy cập (hooks/useSystemTraffic.ts).
+    //
+    // SIẾT LẠI 2026-09-09 (KE_HOACH_TONG_THE.md mục 2.6). Trước đây là
+    // `allow read, write: if isSignedIn()` — nghĩa là BẤT KỲ ai đăng nhập cũng
+    // có thể ghi đè hoặc XOÁ TRẮNG document đếm, hoặc set totalVisits thành số
+    // bất kỳ. Phía client chỉ chặn bằng sessionStorage('hasCountedVisit'), tức
+    // không chặn được gì cả. Nay chỉ cho phép đúng 1 thao tác: TĂNG totalVisits
+    // lên đúng 1 đơn vị. Vẫn có thể bơm số nếu gọi lặp lại, nhưng mỗi lần +1 là
+    // 1 request nên chi phí tăng tuyến tính, và quan trọng hơn: không còn khả
+    // năng phá huỷ (ghi đè/xoá/thêm field lạ).
+    // Không chuyển sang Cloud Function vì việc đó cần deploy functions, trong
+    // khi rules đã đủ diễn đạt ràng buộc này.
     match /_system/{doc} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.keys().hasOnly(['totalVisits'])
+                    && request.resource.data.totalVisits == 1;
+      allow update: if isSignedIn()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalVisits'])
+                    && request.resource.data.totalVisits == resource.data.totalVisits + 1;
+      allow delete: if false;
     }
   }
 }

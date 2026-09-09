@@ -163,6 +163,32 @@ async function main() {
     await check('Chưa đăng nhập KHÔNG đọc được',
         assertFails(khoMapDoc(anon).get()));
 
+    // --- Seed doc đếm lượt truy cập (bypass rules) ---
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await ctx.firestore().doc('_system/stats').set({ totalVisits: 10 });
+    });
+    const statsDoc = (ctx) => ctx.firestore().doc('_system/stats');
+
+    console.log('\n=== _SYSTEM/STATS — bộ đếm lượt truy cập (siết lại 2026-09-09, mục 2.6) ===');
+    await check('User đăng nhập TĂNG được đúng 1 đơn vị (luồng thật của useSystemTraffic)',
+        assertSucceeds(statsDoc(employeeSame).update({ totalVisits: 11 })));
+    await check('KHÔNG được nhảy cóc nhiều đơn vị (bơm số)',
+        assertFails(statsDoc(employeeSame).update({ totalVisits: 9999 })));
+    await check('KHÔNG được giảm số',
+        assertFails(statsDoc(employeeSame).update({ totalVisits: 1 })));
+    await check('KHÔNG được ghi đè cả document (mất bộ đếm)',
+        assertFails(statsDoc(employeeSame).set({ totalVisits: 11 })));
+    await check('KHÔNG được thêm field lạ kèm theo',
+        assertFails(statsDoc(employeeSame).update({ totalVisits: 11, hacked: true })));
+    await check('KHÔNG được XOÁ document đếm',
+        assertFails(statsDoc(employeeSame).delete()));
+    await check('Admin cũng KHÔNG được ghi đè (ràng buộc áp cho mọi vai trò)',
+        assertFails(statsDoc(adminUser).set({ totalVisits: 500 })));
+    await check('Chưa đăng nhập KHÔNG ghi được',
+        assertFails(statsDoc(anon).update({ totalVisits: 11 })));
+    await check('User đăng nhập vẫn ĐỌC được tổng lượt truy cập',
+        assertSucceeds(statsDoc(employeeSame).get()));
+
     await testEnv.cleanup();
 
     console.log(`\n=== KẾT QUẢ: ${pass} pass / ${fail} fail (tổng ${pass + fail}) ===`);
