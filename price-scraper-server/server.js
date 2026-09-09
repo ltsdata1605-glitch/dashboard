@@ -5,8 +5,31 @@ import { normalizeProductName } from './utils/nameNormalizer.js';
 
 const app = express();
 const PORT = 3456;
+// Chỉ lắng nghe trên máy này (KE_HOACH_TONG_THE.md mục 2.7, vá 2026-09-09).
+// Trước đây `app.listen(PORT)` mặc định bind 0.0.0.0 = MỌI card mạng, nên bất kỳ máy nào trong
+// cùng Wi-Fi (siêu thị, quán cà phê...) đều gọi được server này: chạy Puppeteer tốn CPU/mạng của
+// máy bạn, và biết được máy bạn đang bật nó. Server này không có xác thực và cũng không cần —
+// nó chỉ phục vụ đúng tab "So sánh giá" chạy trên chính máy này.
+const HOST = '127.0.0.1';
 
-app.use(cors());
+// CORS: chỉ cho trang chạy trên chính máy này gọi vào.
+// Trước đây `cors()` cho phép MỌI origin — nghĩa là bất kỳ website nào bạn đang mở trong trình
+// duyệt cũng có thể âm thầm POST vào http://localhost:3456 để bắt máy bạn đi cào giá.
+// Cho phép mọi cổng của localhost/127.0.0.1 vì cổng dev thay đổi (5173 khi `npm run dev`,
+// 4173 khi `npm run preview`...), nhưng chặn mọi tên miền bên ngoài.
+const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+app.use(cors({
+  origin: (origin, cb) => {
+    // origin rỗng = gọi trực tiếp (curl, EventSource cùng origin) → vẫn cho qua.
+    if (!origin || LOCAL_ORIGIN.test(origin)) return cb(null, true);
+    // CỐ Ý ném lỗi (chặn ngay tại server) thay vì `cb(null, false)`: cách kia vẫn để request
+    // CHẠY và chỉ trình duyệt chặn đọc kết quả — nghĩa là trang độc vẫn bắt được máy này đi cào
+    // giá, chỉ là không đọc được kết quả. Ném lỗi thì handler không bao giờ chạy.
+    const err = new Error(`CORS: origin không được phép — ${origin}`);
+    err.status = 403;
+    return cb(err);
+  },
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Store active SSE connections for progress updates
@@ -200,8 +223,16 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 Price Scraper Server running on http://localhost:${PORT}`);
+// Trả 403 rõ ràng cho request bị CORS chặn, thay vì 500 khó hiểu.
+app.use((err, _req, res, next) => {
+  if (err && String(err.message || '').startsWith('CORS:')) {
+    return res.status(err.status || 403).json({ error: err.message });
+  }
+  return next(err);
+});
+
+app.listen(PORT, HOST, () => {
+  console.log(`\n🚀 Price Scraper Server running on http://${HOST}:${PORT} (chỉ máy này truy cập được)`);
   console.log(`   - POST /api/scrape-prices  — Scrape prices for products`);
   console.log(`   - GET  /api/sites          — List available sites`);
   console.log(`   - GET  /api/health         — Health check`);
