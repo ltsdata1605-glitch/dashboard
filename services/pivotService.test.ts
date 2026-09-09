@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ProductConfig } from '../types';
-import { computePivot, computePivotComparison } from './pivotService';
+import { computePivot, computePivotComparison, selectPivotCellRows } from './pivotService';
 import { computeRbacFilteredData, calculateRowMetrics } from '../utils/dataUtils';
 
 /**
@@ -272,5 +272,48 @@ describe('computePivotComparison — so sánh 2 kỳ', () => {
         expect(r.rows.map(x => x.label)).toEqual(['111 - A']);
         expect(r.totalCurrent).toBe(1000);
         expect(r.totalPrevious).toBe(800);
+    });
+});
+
+describe('selectPivotCellRows — drill-down phải KHỚP đúng con số đang hiển thị', () => {
+    const data = [
+        row({ id: 'SO1', kho: 'K01', hangSx: 'Samsung', gia: 1000 }),
+        row({ id: 'SO2', kho: 'K01', hangSx: 'LG', gia: 300 }),
+        row({ id: 'SO3', kho: 'K02', hangSx: 'Samsung', gia: 700 }),
+        row({ id: 'SO4', kho: 'K01', hangSx: 'Samsung', gia: 9999, thuTien: 'Chưa thu' }), // không đủ ĐK
+    ];
+    const conf = { rowDims: ['kho'] as ('kho')[], colDim: 'hangSx' as const, metric: 'revenue' as const };
+
+    it('tổng các dòng lấy ra CỘNG LẠI ĐÚNG BẰNG giá trị ô — không lệch một đồng', () => {
+        const pivot = computePivot(data, conf, cfg());
+        const k01 = pivot.rows.find(r => r.label === 'K01')!;
+
+        const rowsCua_K01_Samsung = selectPivotCellRows(data, conf, cfg(), ['K01'], 'Samsung');
+        const tong = rowsCua_K01_Samsung.reduce((s, r) => s + calculateRowMetrics(r, cfg()).revenue, 0);
+
+        expect(tong, 'drill-down cộng ra số khác với ô trên bảng = mất niềm tin vào cả bảng')
+            .toBe(k01.values['Samsung']);
+        expect(tong).toBe(1000);
+    });
+
+    it('loại đúng dòng KHÔNG đủ điều kiện doanh thu (giống hệt bảng)', () => {
+        const rows = selectPivotCellRows(data, conf, cfg(), ['K01'], 'Samsung');
+        expect(rows.map(r => r.id), 'dòng chưa thu tiền không được lọt vào').toEqual(['SO1']);
+    });
+
+    it('bấm vào dòng TỔNG của 1 hàng (không chọn cột) thì lấy mọi cột của hàng đó', () => {
+        const rows = selectPivotCellRows(data, conf, cfg(), ['K01'], null);
+        expect(rows.map(r => r.id).sort()).toEqual(['SO1', 'SO2']);
+    });
+
+    it('2 cấp hàng: lọc theo cả 2 khoá', () => {
+        const d2 = [
+            row({ id: 'A', kho: 'K01', nhomHang: 'Smartphone' }),
+            row({ id: 'B', kho: 'K01', nhomHang: 'Tablet' }),
+            row({ id: 'C', kho: 'K02', nhomHang: 'Smartphone' }),
+        ];
+        const c2 = { rowDims: ['kho', 'nhomHang'] as ('kho' | 'nhomHang')[], colDim: null, metric: 'revenue' as const };
+        const rows = selectPivotCellRows(d2, c2, cfg(), ['K01', 'Smartphone']);
+        expect(rows.map(r => r.id)).toEqual(['A']);
     });
 });

@@ -346,3 +346,36 @@ export function computePivotComparison(
         totalDeltaPercent: pct(cur.grandTotal, prev.grandTotal),
     };
 }
+
+/**
+ * Lấy các dòng THẬT cấu thành một ô của bảng pivot — phục vụ drill-down ("số này từ đâu ra?").
+ *
+ * Dùng LẠI đúng `getDimensionValue` và `isValidSalesRow` mà `computePivot` dùng, nên tập dòng trả
+ * về chắc chắn khớp với con số đang hiển thị: không có chuyện bảng nói 31 Tr mà mở ra lại cộng ra
+ * số khác. Đây là lý do hàm này nằm cùng file với engine chứ không viết riêng ở tầng UI.
+ *
+ * @param rowKeys giá trị của chiều hàng cấp 1 (và cấp 2 nếu bấm vào dòng con).
+ * @param colKey  giá trị của chiều cột, bỏ qua nếu bảng không tách cột.
+ */
+export function selectPivotCellRows(
+    sourceData: DataRow[],
+    config: PivotConfig,
+    productConfig: ProductConfig | null,
+    rowKeys: string[],
+    colKey?: string | null
+): DataRow[] {
+    const rowDims = config.rowDims.slice(0, 2).filter(Boolean);
+    if (rowDims.length === 0) return [];
+
+    return sourceData.filter(row => {
+        if (!isValidSalesRow(row, productConfig)) return false;
+
+        for (let i = 0; i < rowKeys.length && i < rowDims.length; i++) {
+            if (getDimensionValue(row, rowDims[i], productConfig) !== rowKeys[i]) return false;
+        }
+        if (config.colDim && colKey != null && colKey !== '__all__') {
+            if (getDimensionValue(row, config.colDim, productConfig) !== colKey) return false;
+        }
+        return true;
+    });
+}

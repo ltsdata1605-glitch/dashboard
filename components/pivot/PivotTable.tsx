@@ -5,6 +5,7 @@ import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import {
     computePivot,
     computePivotComparison,
+    selectPivotCellRows,
     PIVOT_DIMENSIONS,
     PIVOT_METRICS,
     type PivotDimension,
@@ -27,6 +28,7 @@ import { Input } from '../shared/ui/Input';
 import { Button } from '../shared/ui/Button';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { Icon } from '../common/Icon';
+import DrillDownModal from '../shared/DrillDownModal';
 
 /**
  * Bảng Pivot động (KE_HOACH_TONG_THE.md mục 6 — Giai đoạn 2).
@@ -62,6 +64,26 @@ const PivotTable: React.FC = () => {
         `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     );
     const [upToCurrentDay, setUpToCurrentDay] = useState(true);
+
+    // --- Drill-down: bấm 1 ô để xem các dòng cấu thành ---
+    const [drill, setDrill] = useState<{ title: string; rows: typeof baseFilteredData; total: number } | null>(null);
+
+    /** Mở drill-down cho 1 ô. `rowKeys` = giá trị chiều hàng (1 hoặc 2 cấp), `colKey` = chiều cột. */
+    const openDrill = (rowKeys: string[], colKey: string | null, total: number, labelParts: string[]) => {
+        // Nguồn phải khớp đúng phạm vi đang xem: khi so sánh kỳ thì chỉ lấy dòng của KỲ NÀY,
+        // nếu không người dùng bấm vào ô "Kỳ này" lại thấy cả dòng của kỳ trước.
+        const source = compareOn && ranges
+            ? filterRowsInRange(baseFilteredData, ranges.currentStart, ranges.currentEnd)
+            : baseFilteredData;
+        const rows = selectPivotCellRows(
+            source,
+            { rowDims: rowDim2 === NONE ? [rowDim1] : [rowDim1, rowDim2], colDim: compareOn ? null : (colDim === NONE ? null : colDim), metric },
+            productConfig,
+            rowKeys,
+            colKey
+        );
+        setDrill({ title: `${labelParts.join(' › ')} — ${metricInfo.label}`, rows, total });
+    };
 
     const metricInfo = PIVOT_METRICS.find(m => m.id === metric)!;
     const fmt = (v: number) => (metricInfo.kind === 'currency' ? formatCurrency(v) : formatQuantity(v));
@@ -141,11 +163,27 @@ const PivotTable: React.FC = () => {
             </td>
             {hasCols && result.colKeys.map(ck => (
                 <td key={ck} className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 text-slate-600">
-                    {r.values[ck] ? fmt(r.values[ck]) : <span className="text-slate-300">-</span>}
+                    {r.values[ck] ? (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => openDrill(isChild ? [r.key.split('||')[0], r.label] : [r.label], ck, r.values[ck], [r.label, ck])}
+                            className="underline decoration-dotted underline-offset-2 hover:text-sky-700"
+                            title="Xem các dòng cấu thành"
+                        >
+                            {fmt(r.values[ck])}
+                        </Button>
+                    ) : <span className="text-slate-300">-</span>}
                 </td>
             ))}
             <td className="px-2 py-1 text-center text-[13px] tabular-nums font-bold text-sky-700">
-                {fmt(r.total)}
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={() => openDrill(isChild ? [r.key.split('||')[0], r.label] : [r.label], null, r.total, [r.label])}
+                    className="underline decoration-dotted underline-offset-2 hover:text-sky-800 font-bold text-sky-700"
+                    title="Xem các dòng cấu thành"
+                >
+                    {fmt(r.total)}
+                </Button>
             </td>
         </tr>
     );
@@ -171,7 +209,18 @@ const PivotTable: React.FC = () => {
                     </Button>
                 ) : <span>{r.label}</span>}
             </td>
-            <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 font-bold text-sky-700">{fmt(r.current)}</td>
+            <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 font-bold text-sky-700">
+                {r.current ? (
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={() => openDrill(isChild ? [r.key.split('||')[0], r.label] : [r.label], null, r.current, [r.label])}
+                        className="underline decoration-dotted underline-offset-2 font-bold text-sky-700 hover:text-sky-800"
+                        title="Xem các dòng cấu thành (kỳ này)"
+                    >
+                        {fmt(r.current)}
+                    </Button>
+                ) : fmt(r.current)}
+            </td>
             <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 text-slate-500">{fmt(r.previous)}</td>
             <td className={`px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 font-semibold ${deltaClass(r.delta)}`}>{fmtDelta(r.delta)}</td>
             <td className={`px-2 py-1 text-center text-[13px] tabular-nums font-bold ${deltaClass(r.delta)}`}>
@@ -401,6 +450,17 @@ const PivotTable: React.FC = () => {
                     </div>
                 )}
             </div>
+            {drill && (
+                <DrillDownModal
+                    isOpen
+                    onClose={() => setDrill(null)}
+                    title={drill.title}
+                    rows={drill.rows}
+                    productConfig={productConfig}
+                    expectedTotal={drill.total}
+                    expectedTotalLabel={metricInfo.label}
+                />
+            )}
         </SectionCard>
     );
 };

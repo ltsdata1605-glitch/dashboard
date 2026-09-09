@@ -99,3 +99,28 @@ test('so sánh kỳ: bật lên thì bảng đổi sang 4 cột Kỳ này/Kỳ t
     await section.locator('select').last().selectOption('ytd_same_period_year').catch(() => {});
     await page.waitForTimeout(800);
 });
+
+test('drill-down: bấm ô mở ra dòng gốc, và TỔNG cộng lại đúng bằng giá trị ô', async ({ page }) => {
+    const section = await moBangPivot(page);
+
+    const oTong = section.locator('tbody tr').first().locator('td').last().locator('button');
+    await expect(oTong, 'ô giá trị phải bấm được để drill-down').toBeVisible();
+    const giaTriO = (await oTong.innerText()).trim();
+    await oTong.click();
+    await page.waitForTimeout(1000);
+
+    const modal = page.locator('.fixed').filter({ hasText: 'dòng cấu thành' }).first();
+    await expect(modal).toBeVisible();
+
+    // Bảng trong modal phải có dòng TỔNG cộng lại ĐÚNG BẰNG giá trị ô vừa bấm.
+    // Đây là tính chất quan trọng nhất: bảng nói 1 đằng mà mở ra cộng ra số khác thì mất
+    // niềm tin vào toàn bộ báo cáo.
+    const footText = (await modal.locator('tfoot').innerText()).replace(/\s+/g, ' ');
+    console.log('GIÁ TRỊ Ô:', giaTriO, '| DÒNG TỔNG TRONG MODAL:', footText);
+    expect(footText, `TỔNG trong drill-down không chứa giá trị ô (${giaTriO})`).toContain(giaTriO);
+
+    // Đóng lại được
+    await modal.getByRole('button', { name: /Đóng/i }).first().click();
+    await page.waitForTimeout(500);
+    await expect(modal).toBeHidden();
+});
