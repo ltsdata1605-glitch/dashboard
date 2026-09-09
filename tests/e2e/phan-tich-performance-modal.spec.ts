@@ -20,7 +20,15 @@ test.describe('Phân Tích — modal hiệu quả cá nhân', () => {
         // gọn nên tìm theo mã nhân viên cho chắc.
         const section = page.locator('#employee-analysis-section');
         await section.scrollIntoViewIfNeeded();
-        await section.getByText(new RegExp(TEST_EMPLOYEE.split(' - ')[0])).first().click();
+
+        // SỬA FLAKY (2026-09-09): từ Đợt 3, section này được lazy-load qua React.Suspense —
+        // thẻ <div id="employee-analysis-section"> xuất hiện NGAY (bọc skeleton), còn nội dung
+        // thật tới sau khi chunk tải xong. Trước đây test bấm luôn nên thỉnh thoảng bấm trúng
+        // lúc còn skeleton và hỏng (đã đỏ 2 lần khi chạy cả bộ, chạy riêng thì luôn xanh).
+        // Chờ đúng dòng nhân viên hiện ra rồi mới bấm.
+        const employeeRow = section.getByText(new RegExp(TEST_EMPLOYEE.split(' - ')[0])).first();
+        await expect(employeeRow).toBeVisible({ timeout: 20_000 });
+        await employeeRow.click();
         // 2 phần tử mang chữ này: header của modal + header ẩn chỉ dùng cho ảnh xuất.
         await expect(page.getByText('Phân Tích Hiệu Quả Cá Nhân').first()).toBeVisible({ timeout: 15_000 });
     });

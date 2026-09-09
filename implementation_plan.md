@@ -2547,3 +2547,68 @@ catalog chỉ số, snapshot lịch sử) là PHÁT TRIỂN TÍNH NĂNG MỚI**,
 tuần, không phải việc dọn dẹp/sửa lỗi như Đợt 0-6. Kế hoạch chi tiết đã có sẵn ở
 `KE_HOACH_TONG_THE.md` mục 6 — nên triển khai theo từng tính năng có ưu tiên rõ ràng từ người dùng
 thật, không nên làm ồ ạt.
+
+---
+
+## Hoàn tất phần còn lại (2026-09-09, đợt cuối)
+
+### 1. Đợt 6 khép lại hoàn toàn — 0 vi phạm chuẩn thiết kế
+
+- Commit lại giúp công việc CHƯA COMMIT của phiên làm việc song song (`getDepartmentsFromAnalysis`
+  + badge đếm NV + 4 test) — đã để hơn 1 tiếng trong working tree, giữ nguyên nội dung để khỏi mất.
+- `SupermarketConfig.tsx`: đổi nốt 27 class indigo → sky; **xoá nhánh theme `indigo`** vốn là bản
+  SAO Y từng ký tự của nhánh `sky`.
+- `styles.css`: **XOÁ HẲN khối override `--color-indigo-*`**. Điều kiện đã đủ vì không còn class
+  indigo nào. Kiểm chứng: ảnh chụp toàn trang Phân Tích sau khi xoá **giống hệt** ảnh trước — đúng
+  như dự đoán, đây là no-op. Từ nay `indigo` lại là màu tím thật của Tailwind.
+- `printService.ts`: đổi tên class gray → slate ĐỒNG THỜI đổi hex sang giá trị slate thật. Trước đó
+  tôi cố ý không đụng vì đổi mỗi tên sẽ khiến tên nói dối giá trị; đổi cả hai thì nhất quán, và
+  chênh lệch trên bản in không thể nhận ra bằng mắt (#4b5563 vs #475569).
+- `lint-ratchet.cjs`: dạy công cụ bỏ qua 2 ngữ cảnh KHÔNG phải class Tailwind của app — dòng định
+  nghĩa CSS tự viết (`.text-x { }`) và chuỗi mã hoá URL (code bookmarklet chèn vào website khác).
+  Lọc theo DÒNG chứ không loại cả file, nên phần còn lại của 2 file đó vẫn được kiểm tra.
+
+**`violations-baseline.json` giờ là `{}`** — từ 1.416 vi phạm / 118 file xuống **0 / 0**.
+
+### 2. 🔴 Phát hiện & sửa 2 tính năng HỎNG HOÀN TOÀN do chính CSP của Đợt 2
+
+Khi rà nốt, phát hiện `frame-src` chỉ liệt kê firebaseapp.com + accounts.google.com nên chặn luôn:
+
+| Tính năng | Kiểu | Hậu quả |
+|---|---|---|
+| **Check Thưởng** | iframe nội bộ `/check-thuong.html` | Hỏng hoàn toàn (thiếu `'self'`) |
+| **Hoàn thuế** | iframe ra `https://tinhthue-….run.app` | Hỏng hoàn toàn (thiếu `https://*.run.app`) |
+| Kiểm quỹ | `window.open` tab mới | KHÔNG bị ảnh hưởng |
+
+Cả 2 hỏng nhiều ngày mà không ai biết vì trình duyệt **không báo lỗi ồn ào** — iframe chỉ lặng lẽ
+trở thành `chrome-error://chromewebdata/`, nhìn y như trang trắng. Nguyên nhân sót ở Đợt 2: chỉ
+kiểm chứng CSP trên Phân Tích + Report BI, và không có test nào phủ 2 tab iframe.
+
+Đã vá `frame-src` và thêm test hồi quy `tests/e2e/iframe-tabs-csp.spec.ts`, **kiểm chứng
+red-before-green**: gỡ bản vá ra thì 2 test ĐỎ, vá vào thì XANH.
+
+⚠️ Đây là **lần thứ 3** CSP này chặn nhầm thứ đang dùng thật (trước đó: `connect-src` thiếu
+`docs.google.com` làm hỏng nạp cấu hình lõi; `worker-src` thiếu `blob:`). Bài học đã ghi thẳng vào
+comment CSP trong `index.html`: mỗi lần sửa CSP phải rà theo **từng KIỂU TÀI NGUYÊN**
+(script/frame/connect/worker/img/style), không chỉ theo từng khu vực app.
+
+### 3. Vá nốt lỗ hổng xlsx bị bỏ sót ở Check Thưởng
+
+`public/check-thuong.html` là app vanilla độc lập, nạp thư viện qua CDN nên KHÔNG đi qua npm — vì
+thế Đợt 1 (thay `xlsx` dính CVE) đã **bỏ sót nó**, và nó vẫn kéo `xlsx@0.18.5` từ cdnjs: đúng bản
+dính CVE-2023-30533 (Prototype Pollution) + CVE-2024-22363 (ReDoS), trong khi chính nó parse file
+Excel do người dùng tải lên. Đã đổi sang CDN chính chủ SheetJS 0.20.3 (cùng nguồn `package.json`
+dùng). Kiểm chứng trong trình duyệt thật: `window.XLSX.version === "0.20.3"`. Đã khoá bằng test.
+
+**Cố ý KHÔNG chạy `npm audit fix`**: 3 lỗ hổng moderate còn lại nằm ở `qs`, đến từ `firebase-tools`
+(CLI) và nhánh Node-only của `@google/genai`. Đã kiểm chứng `qs` **không lọt vào bundle trình
+duyệt** (dấu hiệu riêng `allowPrototypes`/`parseArrays` không có trong `dist`; chữ "express" khớp
+chỉ vì từ "expression"). Ngược lại `npm audit fix` sẽ kéo thêm `re2` + `node-gyp` (biên dịch native,
+hay làm hỏng `npm install`) — rủi ro cao, lợi ích thực tế bằng 0.
+
+### 4. Sửa test flaky (do chính Đợt 3 gây ra)
+
+`phan-tich-performance-modal.spec.ts` đỏ ngẫu nhiên 2 lần khi chạy cả bộ, chạy riêng luôn xanh.
+Nguyên nhân: từ Đợt 3, `#employee-analysis-section` được lazy-load qua Suspense — thẻ `<div>` có id
+xuất hiện NGAY (bọc skeleton) còn nội dung tới sau, nên test thỉnh thoảng bấm trúng lúc còn
+skeleton. Sửa bằng cách chờ đúng dòng nhân viên hiện ra rồi mới bấm.
