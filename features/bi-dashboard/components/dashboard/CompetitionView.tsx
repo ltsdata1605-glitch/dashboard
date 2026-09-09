@@ -246,21 +246,23 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             };
         });
 
-        return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides);
+        return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime);
     }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides, visibleColumns, allColumns, isRealtime]);
 
-    // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN %HT V.Trội > %DKHT > %HT TRONG TỪNG TIÊU CHÍ (SLLK, DTLK, DTQĐ)
+    // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN THEO CỘT ĐANG HIỂN THỊ TRONG TỪNG TIÊU CHÍ (SLLK, DTLK, DTQĐ):
+    // - Realtime: Sắp xếp theo %HT hoặc %HT V.Trội (tuỳ cột nào đang hiển thị)
+    // - Luỹ kế: Sắp xếp theo %DKHT, %HT V.Trội (tuỳ cột nào đang hiển thị)
     const groupedAndSortedPrograms = useMemo(() => {
         const groups: Partial<Record<Criterion, ProcessedProgram[]>> = {};
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
             const criterionPrograms = sortedPrograms.filter(p => p.metric === criterion);
             if (criterionPrograms.length > 0) {
-                // Đảm bảo từng nhóm tiêu chí con luôn được sắp xếp theo đúng sortConfig (mặc định giảm dần %HT V.Trội > %DKHT > %HT)
-                groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides);
+                // Đảm bảo từng nhóm tiêu chí con luôn được sắp xếp theo đúng sortConfig và chế độ hiện tại
+                groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime);
             }
         });
         return groups;
-    }, [sortedPrograms, sortConfig, allColumns, nameOverrides]);
+    }, [sortedPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime]);
 
     const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
     const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));

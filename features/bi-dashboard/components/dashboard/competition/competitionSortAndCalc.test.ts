@@ -200,6 +200,51 @@ describe('competitionSortAndCalc', () => {
                 'SẠC DỰ PHÒNG' // 56%
             ]);
         });
+
+        describe('Mode-aware sorting (Realtime vs Luỹ kế)', () => {
+            const allHeaders = ['Realtime', 'L.Kế', 'Target', '%HT', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+            const prog1: ProcessedProgram = {
+                name: 'Prog Alpha',
+                // Realtime, L.Kế, Target, %HT, %DKHT, Target VT, %HT VT, Còn Lại
+                data: [10, 100, 20, 50, 80, 40, 120, 0], // %HT=50, %DKHT=80, %HT VT=120
+                metric: 'SLLK',
+                conLai: null
+            };
+            const prog2: ProcessedProgram = {
+                name: 'Prog Beta',
+                data: [20, 200, 20, 90, 60, 40, 70, 0], // %HT=90, %DKHT=60, %HT VT=70
+                metric: 'SLLK',
+                conLai: null
+            };
+
+            it('Realtime: sorts by %HT V.Trội when %HT V.Trội column is visible', () => {
+                const visible = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, true);
+                // Prog Alpha (%HT VT=120) > Prog Beta (%HT VT=70)
+                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
+            });
+
+            it('Realtime: sorts by %HT when %HT column is visible (standard group active)', () => {
+                const visible = ['Realtime', 'Target', '%HT', 'Còn Lại'];
+                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, true);
+                // Prog Beta (%HT=90) > Prog Alpha (%HT=50)
+                expect(sorted.map(p => p.name)).toEqual(['Prog Beta', 'Prog Alpha']);
+            });
+
+            it('Luỹ kế: sorts by %HT V.Trội when %HT V.Trội column is visible', () => {
+                const visible = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, false);
+                // Prog Alpha (%HT VT=120) > Prog Beta (%HT VT=70)
+                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
+            });
+
+            it('Luỹ kế: sorts by %DKHT when %DKHT column is visible (standard group active)', () => {
+                const visible = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, false);
+                // Prog Alpha (%DKHT=80) > Prog Beta (%DKHT=60)
+                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
+            });
+        });
     });
 
     describe('toggleCompetitionColumn and Mutual Exclusivity', () => {

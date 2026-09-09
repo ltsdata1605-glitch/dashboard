@@ -152,40 +152,86 @@ export function getProgramCompletionMetrics(program: ProcessedProgram, headers: 
     return { htVT, htDK, ht };
 }
 
+export type PrimaryMetric = 'htVT' | 'htDK' | 'ht';
+
 /**
- * So sánh 2 chương trình theo chuỗi ưu tiên giảm dần:
- * %HT V.Trội > %DKHT > %HT
+ * Xác định thứ tự ưu tiên các chỉ số % hoàn thành dựa vào chế độ Realtime/Luỹ kế và cột đang hiển thị:
+ * - Realtime: Sắp xếp theo cột %HT hoặc %HT V.Trội (tuỳ nhóm cột nào đang bật hiển thị)
+ * - Luỹ kế: Sắp xếp theo cột %DKHT, %HT V.Trội (tuỳ nhóm cột nào đang bật hiển thị)
+ */
+export function getCompletionSortOrder(
+    visibleColumns?: string[],
+    isRealtime: boolean = false,
+    explicitPrimary?: PrimaryMetric | null
+): PrimaryMetric[] {
+    if (explicitPrimary) {
+        if (explicitPrimary === 'htVT') {
+            return isRealtime ? ['htVT', 'ht', 'htDK'] : ['htVT', 'htDK', 'ht'];
+        }
+        if (explicitPrimary === 'htDK') {
+            return ['htDK', 'htVT', 'ht'];
+        }
+        if (explicitPrimary === 'ht') {
+            return isRealtime ? ['ht', 'htVT', 'htDK'] : ['ht', 'htDK', 'htVT'];
+        }
+    }
+
+    const hasVisible = (keyword: string) => {
+        if (!visibleColumns || visibleColumns.length === 0) return false;
+        const lower = keyword.toLowerCase();
+        return visibleColumns.some(c => c.toLowerCase().includes(lower));
+    };
+
+    if (isRealtime) {
+        // Realtime: Ưu tiên cột đang hiển thị giữa %HT V.Trội và %HT
+        if (hasVisible('trội')) {
+            return ['htVT', 'ht', 'htDK'];
+        }
+        if (hasVisible('%ht')) {
+            return ['ht', 'htVT', 'htDK'];
+        }
+        return ['htVT', 'ht', 'htDK'];
+    } else {
+        // Luỹ kế: Ưu tiên cột đang hiển thị giữa %HT V.Trội và %DKHT
+        if (hasVisible('trội')) {
+            return ['htVT', 'htDK', 'ht'];
+        }
+        if (hasVisible('dk') || hasVisible('dự')) {
+            return ['htDK', 'htVT', 'ht'];
+        }
+        if (hasVisible('%ht')) {
+            return ['ht', 'htDK', 'htVT'];
+        }
+        return ['htVT', 'htDK', 'ht'];
+    }
+}
+
+/**
+ * So sánh 2 chương trình theo chuỗi ưu tiên:
+ * - Realtime: Sắp xếp theo cột %HT hoặc %HT V.Trội
+ * - Luỹ kế: Sắp xếp theo cột %DKHT, %HT V.Trội
  */
 export function compareByCompletionPriority(
     a: ProcessedProgram,
     b: ProcessedProgram,
     headers: string[],
-    direction: 'asc' | 'desc' = 'desc'
+    direction: 'asc' | 'desc' = 'desc',
+    visibleColumns?: string[],
+    isRealtime: boolean = false,
+    explicitPrimary?: PrimaryMetric | null
 ): number {
     const aMetrics = getProgramCompletionMetrics(a, headers);
     const bMetrics = getProgramCompletionMetrics(b, headers);
 
     const mult = direction === 'asc' ? 1 : -1;
+    const priorityOrder = getCompletionSortOrder(visibleColumns, isRealtime, explicitPrimary);
 
-    // Ưu tiên 1: %HT V.Trội
-    const aVT = (aMetrics.htVT !== null && !isNaN(aMetrics.htVT)) ? aMetrics.htVT : -Infinity;
-    const bVT = (bMetrics.htVT !== null && !isNaN(bMetrics.htVT)) ? bMetrics.htVT : -Infinity;
-    if (aVT !== bVT) {
-        return (aVT - bVT) * mult;
-    }
-
-    // Ưu tiên 2: %DKHT (%HTDK)
-    const aDK = (aMetrics.htDK !== null && !isNaN(aMetrics.htDK)) ? aMetrics.htDK : -Infinity;
-    const bDK = (bMetrics.htDK !== null && !isNaN(bMetrics.htDK)) ? bMetrics.htDK : -Infinity;
-    if (aDK !== bDK) {
-        return (aDK - bDK) * mult;
-    }
-
-    // Ưu tiên 3: %HT
-    const aHT = (aMetrics.ht !== null && !isNaN(aMetrics.ht)) ? aMetrics.ht : -Infinity;
-    const bHT = (bMetrics.ht !== null && !isNaN(bMetrics.ht)) ? bMetrics.ht : -Infinity;
-    if (aHT !== bHT) {
-        return (aHT - bHT) * mult;
+    for (const metric of priorityOrder) {
+        const aVal = (aMetrics[metric] !== null && !isNaN(aMetrics[metric])) ? aMetrics[metric] : -Infinity;
+        const bVal = (bMetrics[metric] !== null && !isNaN(bMetrics[metric])) ? bMetrics[metric] : -Infinity;
+        if (aVal !== bVal) {
+            return (aVal - bVal) * mult;
+        }
     }
 
     // Tie-breaker ổn định theo tên
@@ -243,8 +289,9 @@ export function calculateProgramRemaining(
 
 /**
  * Sắp xếp danh sách chương trình:
- * - Khi sortConfig === null: Mặc định LUÔN sắp xếp giảm dần theo chuỗi ưu tiên %HT V.Trội > %DKHT > %HT.
- * - Khi sortConfig theo các cột % hoàn thành (%HT V.Trội, %DKHT, %HT): LUÔN sắp xếp theo chuỗi ưu tiên này.
+ * - Realtime: Sắp xếp theo cột %HT hoặc %HT V.Trội (tuỳ nhóm đang hiển thị)
+ * - Luỹ kế: Sắp xếp theo cột %DKHT, %HT V.Trội (tuỳ nhóm đang hiển thị)
+ * - Khi sortConfig theo các cột % hoàn thành: LUÔN sắp xếp theo chỉ số % tương ứng.
  * - Khi sortConfig theo 'conLai': sắp xếp theo Còn Lại, tie-break bằng chuỗi % ưu tiên.
  * - Khi sortConfig theo tên (-1): sắp xếp theo tên hiển thị.
  * - Khi sortConfig theo 1 cột dữ liệu khác: khi bằng nhau tie-break bằng chuỗi % ưu tiên.
@@ -253,19 +300,29 @@ export function sortProgramsList(
     programs: ProcessedProgram[],
     sortConfig: { columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null,
     headers: string[],
-    nameOverrides: Record<string, string> = {}
+    nameOverrides: Record<string, string> = {},
+    visibleColumns?: string[],
+    isRealtime: boolean = false
 ): ProcessedProgram[] {
     return [...programs].sort((a, b) => {
         if (!sortConfig) {
-            return compareByCompletionPriority(a, b, headers, 'desc');
+            return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
         }
 
-        // Nếu sort theo cột % hoàn thành: áp dụng trực tiếp chuỗi ưu tiên
+        // Nếu sort theo cột % hoàn thành: áp dụng trực tiếp chuỗi ưu tiên với cột đó làm primary
         if (typeof sortConfig.columnIndex === 'number' && sortConfig.columnIndex >= 0 && sortConfig.columnIndex < headers.length) {
             const colHeader = headers[sortConfig.columnIndex] || '';
             const lowerHeader = colHeader.toLowerCase();
             if (lowerHeader.includes('%') || lowerHeader.includes('trội')) {
-                return compareByCompletionPriority(a, b, headers, sortConfig.direction);
+                let explicitPrimary: PrimaryMetric = 'htVT';
+                if (lowerHeader.includes('trội')) {
+                    explicitPrimary = 'htVT';
+                } else if (lowerHeader.includes('dk') || lowerHeader.includes('dự')) {
+                    explicitPrimary = 'htDK';
+                } else if (lowerHeader === '%ht' || lowerHeader.includes('ngày') || lowerHeader.includes('tháng')) {
+                    explicitPrimary = 'ht';
+                }
+                return compareByCompletionPriority(a, b, headers, sortConfig.direction, visibleColumns, isRealtime, explicitPrimary);
             }
         }
 
@@ -283,7 +340,7 @@ export function sortProgramsList(
             bValue = shortenName(b.name, nameOverrides);
         } else {
             if (a.data.length <= sortConfig.columnIndex || b.data.length <= sortConfig.columnIndex) {
-                return compareByCompletionPriority(a, b, headers, 'desc');
+                return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
             }
             aValue = parseNumber(a.data[sortConfig.columnIndex]);
             bValue = parseNumber(b.data[sortConfig.columnIndex]);
@@ -292,7 +349,7 @@ export function sortProgramsList(
         if (typeof aValue === 'string' && typeof bValue === 'string') {
             const res = sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
             if (res !== 0) return res;
-            return compareByCompletionPriority(a, b, headers, 'desc');
+            return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
         }
 
         const numA = (typeof aValue === 'number' && !isNaN(aValue)) ? aValue : -Infinity;
@@ -301,7 +358,7 @@ export function sortProgramsList(
             return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
         }
 
-        // Khi 2 giá trị bằng nhau: tie-breaker theo chuỗi ưu tiên %HT V.Trội > %DKHT > %HT
-        return compareByCompletionPriority(a, b, headers, 'desc');
+        // Khi 2 giá trị bằng nhau: tie-breaker theo chuỗi ưu tiên phù hợp với chế độ hiện tại
+        return compareByCompletionPriority(a, b, headers, 'desc', visibleColumns, isRealtime);
     });
 }
