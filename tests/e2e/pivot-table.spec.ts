@@ -124,3 +124,33 @@ test('drill-down: bấm ô mở ra dòng gốc, và TỔNG cộng lại đúng b
     await page.waitForTimeout(500);
     await expect(modal).toBeHidden();
 });
+
+test('cảnh báo ngưỡng: thêm quy tắc thì hệ thống tự chỉ ra chỉ số vi phạm', async ({ page }) => {
+    const section = await moBangPivot(page);
+    await expect(section.getByText(/CẢNH BÁO NGƯỠNG/i).first()).toBeVisible();
+
+    // Bấm "Thêm quy tắc" khi chưa có quy tắc nào phải TẠO LUÔN 1 quy tắc, không chỉ mở khung rỗng
+    await section.getByRole('button', { name: /Thêm quy tắc/i }).first().click();
+    await page.waitForTimeout(600);
+    const oNguong = section.locator('input[type="number"]').first();
+    await expect(oNguong, 'bấm "Thêm quy tắc" nhưng không có dòng quy tắc nào hiện ra').toBeVisible();
+
+    // Đặt ngưỡng rất cao → mọi Kho đều "thấp hơn" → phải có cảnh báo
+    await oNguong.fill('999999999');
+    await page.waitForTimeout(1000);
+
+    const txt = (await section.innerText()).replace(/\s+/g, ' ');
+    console.log('CẢNH BÁO:', txt.slice(txt.indexOf('CẢNH BÁO'), txt.indexOf('CẢNH BÁO') + 160));
+    expect(txt, 'đặt ngưỡng cao mà không sinh cảnh báo nào').toMatch(/thấp hơn ngưỡng/i);
+
+    // Số trong cảnh báo phải khớp KPI của trang (cùng nguồn tính)
+    const kpi = (await page.locator('#business-overview').innerText()).replace(/\s+/g, ' ');
+    const m = txt.match(/Doanh thu QĐ\s+([\d.,]+\s*\w+)\s+thấp hơn/i);
+    expect(m, 'không đọc được giá trị trong dòng cảnh báo').toBeTruthy();
+    expect(kpi.includes(m![1].trim()), `giá trị cảnh báo (${m![1]}) không khớp KPI của trang`).toBe(true);
+
+    // Hạ ngưỡng về 0 → không còn vi phạm
+    await oNguong.fill('0');
+    await page.waitForTimeout(900);
+    await expect(section.getByText(/Không có chỉ số nào vượt ngưỡng/i).first()).toBeVisible();
+});

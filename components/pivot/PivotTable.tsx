@@ -29,6 +29,7 @@ import { Button } from '../shared/ui/Button';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { Icon } from '../common/Icon';
 import DrillDownModal from '../shared/DrillDownModal';
+import AlertRulesPanel from './AlertRulesPanel';
 
 /**
  * Bảng Pivot động (KE_HOACH_TONG_THE.md mục 6 — Giai đoạn 2).
@@ -249,6 +250,8 @@ const PivotTable: React.FC = () => {
                     }
                 />
             </div>
+
+            <AlertRulesPanel sourceData={baseFilteredData} productConfig={productConfig} />
 
             {/* Bộ chọn chiều & chỉ số */}
             <div className="px-2 lg:px-4 pb-2 grid grid-cols-2 lg:grid-cols-4 gap-2 hide-on-export">
