@@ -30,12 +30,12 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
             'Realtime': 'T.HIỆN',
             'Realtime (QĐ)': 'T.HIỆN<br/>QĐ',
             'Target': 'M.TIÊU',
-            'Target V.Trội': 'M.TIÊU<br/>V.TRỘI',
+            'Target V.Trội': 'TAR<br/>V.TRỘI',
             'L.Kế': 'L.KẾ',
             'L.Kế (QĐ)': 'L.KẾ<br/>QĐ',
             '%HT': '%HT',
-            '%HT V.Trội': '%HT<br/>V.Trội',
-            '%HTDK V.Trội': '%HTDK<br/>V.Trội',
+            '%HT V.Trội': '%DKHT<br/>V.TRỘI',
+            '%HTDK V.Trội': '%DKHT<br/>V.TRỘI',
             'Còn Lại': 'C.LẠI',
             'CÒN LẠI': 'C.LẠI',
             'SLLK': 'S.LƯỢNG',
@@ -47,8 +47,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
     // NhanVien-style header color mapping — thick bottom-border with colored backgrounds
     const getHeaderCellClass = (header: string) => {
         const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
-        if (h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('M.TIÊU') || h.includes('TAR')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
         if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('V.TRỘI') && h.includes('%')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('%HTDK') || h.includes('%DKHT')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
         if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
