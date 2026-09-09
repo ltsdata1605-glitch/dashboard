@@ -2798,3 +2798,61 @@ Chưa refactor `useSummaryComparison` để dùng lại `periodService`. Hook đ
 logic đã được port y nguyên nên không có rủi ro lệch số giữa 2 nơi. Đổi nó là sửa 370 dòng đang
 hoạt động chỉ để lấy lợi ích gọn code — nên làm riêng một đợt có đối chiếu trước/sau, không ghép
 vào đợt thêm tính năng.
+
+---
+
+## Đợt 8 (mục 3 + 4): Drill-down chuẩn hoá & Cảnh báo ngưỡng (2026-09-09)
+
+Hai mục cuối của Đợt 8, làm chung một đợt vì cùng trả lời một nhu cầu: **người dùng không phải tự
+soi bảng nữa** — bấm để biết số từ đâu ra, và hệ thống chủ động chỉ ra chỗ bất thường.
+
+### Mục 3 — Drill-down: `components/shared/DrillDownModal.tsx`
+
+Kế hoạch ghi *"bấm một ô bất kỳ → xem các dòng cấu thành. Hiện chỉ có ở vài bảng"*. Đã tách thành
+**một modal dùng chung**, cộng `selectPivotCellRows()` trong `pivotService.ts` để lấy đúng tập dòng
+tạo nên một ô (theo hạng mục dòng + hạng mục cột).
+
+Bảng trong modal: Mã đơn / Ngày / Sản phẩm / Nhóm hàng / Nhân viên / SL / Doanh thu / DTQĐ, có ô
+tìm kiếm và **dòng TỔNG** để đối chiếu ngay với giá trị ô.
+
+Ba quyết định đáng ghi:
+- **Cắt hiển thị ở 300 dòng** cho nhẹ máy, nhưng **nói rõ ra màn hình** là dòng TỔNG vẫn cộng đủ tất
+  cả. Cắt âm thầm sẽ khiến người dùng tưởng số bị thiếu — tệ hơn là không cắt.
+- **Số trong modal tính lại bằng `calculateRowMetrics()`**, cùng hàm bảng dùng → không có đường tính
+  thứ hai để lệch nhau.
+- **Modal KHÔNG tự truy vấn dữ liệu**: nơi gọi truyền vào mảng dòng đã lọc quyền. Giữ nguyên nguyên
+  tắc "chỉ có MỘT nơi quyết định quyền xem" (`computeRbacFilteredData`) — nhân viên mở drill-down
+  cũng chỉ thấy đơn của chính mình.
+
+### Mục 4 — Cảnh báo ngưỡng: `services/alertService.ts` + `components/pivot/AlertRulesPanel.tsx`
+
+Người dùng tự đặt quy tắc dạng *"Kho nào có Doanh thu QĐ thấp hơn X thì báo"* (7 chiều × 5 chỉ số ×
+thấp hơn/vượt quá). Quy tắc lưu qua `dbService.saveSetting` — cùng cơ chế mọi cài đặt khác của module
+Phân Tích, nên tự động được khôi phục như bình thường.
+
+Quyết định thiết kế:
+- **`evaluateAlerts()` gọi lại `computePivot()`** để tính, nên con số trong cảnh báo **luôn bằng** con
+  số trên bảng. Không tự viết công thức riêng (CLAUDE.md mục 1).
+- **Dùng `<` và `>` chứ không `<=`/`>=`**: giá trị đúng bằng ngưỡng KHÔNG bị cảnh báo. Có test khẳng
+  định điều này để sau không ai đổi nhầm.
+- **Ngưỡng NaN (người dùng xoá trắng ô nhập) thì BỎ QUA quy tắc**, không cảnh báo loạn — mọi so sánh
+  với NaN đều false nên nếu không chặn, quy tắc sẽ "im lặng" một cách khó hiểu.
+- **Sắp xếp theo % lệch giảm dần** — cái đáng lo nhất nằm trên cùng.
+
+### CHƯA làm — có chủ đích
+**Không** gửi thông báo đẩy/định kỳ ra ngoài. Việc đó cần Cloud Function chạy theo lịch, tức cần
+`npm run deploy:functions` — thao tác agent không tự làm và quan trọng hơn là **không tự kiểm chứng
+được**. Phần giá trị cốt lõi ("không phải tự soi bảng") đã đạt; khi cần gửi đi xa thì dùng lại
+NGUYÊN hàm `evaluateAlerts()` ở phía server, không phải viết lại.
+
+### Kiểm chứng
+- **13 test đơn vị** cho alertService, gồm test phân quyền (nhân viên không nhận cảnh báo về số của
+  đồng nghiệp) và test khẳng định giá trị cảnh báo **bằng đúng** `computePivot()` cho ra.
+- **5 test E2E** `tests/e2e/pivot-table.spec.ts`, trong đó có test drill-down khẳng định **tổng trong
+  modal = giá trị ô** đã bấm.
+- Chạy thật trên dữ liệu thật: bấm ô "31 Tr" → modal liệt kê 1 đơn (iPhone 17 Pro Max 256GB), dòng
+  TỔNG đọc đúng "31 Tr". Cảnh báo hiện *"Kho 99999 Doanh thu QĐ 62 Tr thấp hơn ngưỡng 1000 Tr (lệch
+  94%)"* — 62 Tr khớp thẻ KPI của trang.
+- **Một lỗi UX do chính test này tìm ra và đã sửa**: nút "Thêm quy tắc" lúc chưa có quy tắc nào chỉ
+  mở trình sửa mà không thêm gì, người dùng nhìn vào khoảng trắng. Nay bấm là có ngay 1 quy tắc.
+- `npm run check` **exit 0**; **197 test đơn vị** pass (1 skip); **26 test E2E** pass (1 skip).
