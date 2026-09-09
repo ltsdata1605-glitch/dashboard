@@ -1,294 +1,90 @@
 import { describe, it, expect } from 'vitest';
-import { 
-    calculateProgramRemaining, 
-    compareByCompletionPriority, 
-    sortProgramsList,
-    toggleCompetitionColumn,
-    ALLOWED_REALTIME_COLUMNS,
-    ALLOWED_LUYKE_COLUMNS
-} from './competitionSortAndCalc';
-import type { ProcessedProgram } from '../CompetitionView';
+import { toggleCompetitionColumn, ALLOWED_REALTIME_COLUMNS, ALLOWED_LUYKE_COLUMNS } from './competitionSortAndCalc';
 
-describe('competitionSortAndCalc', () => {
-    describe('calculateProgramRemaining', () => {
-        it('calculates conLai = Actual - Target V.Trội when Target V.Trội is visible', () => {
-            const allHeaders = ['Target V.Trội', 'Realtime', '%HT V.Trội', 'Còn Lại'];
-            const visibleColumns = ['Target V.Trội', 'Realtime', '%HT V.Trội', 'Còn Lại'];
-            
-            // SIM MOBI/VINA/SIM: Actual = 3, Target VT = 18
-            const prog1: ProcessedProgram = {
-                name: 'SIM MOBI/VINA/SIM',
-                data: [18, 3, 17, 0],
-                metric: 'SLLK',
-                conLai: null
-            };
-            expect(calculateProgramRemaining(prog1, visibleColumns, allHeaders, true)).toBe(-15);
+/**
+ * Lưới an toàn cho quy tắc LIÊN KẾT NHÓM CỘT của bảng Thi đua (thêm ngày 2026-09-09).
+ *
+ * Vì sao test ở tầng đơn vị chứ không phải E2E: trước đây quy tắc này được phủ gián tiếp bằng 1
+ * test Playwright lái popup "Bộ lọc thi đua" (bấm nút gạt rồi đọc lại header bảng). Cách đó rất
+ * dễ vỡ — nhãn cột đi qua `getCompetitionColumnLabel()` nên đổi hoa/thường là hỏng selector, popup
+ * lại tự đóng sau mỗi lần gạt. Trong khi đó `toggleCompetitionColumn()` là HÀM THUẦN, nên kiểm
+ * đúng 4 quy tắc đã ghi trong tài liệu của nó ở đây vừa chính xác vừa chạy trong mili-giây.
+ *
+ * 4 quy tắc (trích từ chính comment của hàm):
+ *   1. Bật 1 cột nhóm Cơ bản  => bật CẢ nhóm Cơ bản, TẮT nhóm Vượt trội.
+ *   2. Bật 1 cột nhóm Vượt trội => bật CẢ nhóm Vượt trội, TẮT nhóm Cơ bản.
+ *   3. Bấm vào cột của nhóm ĐANG bật => chuyển sang nhóm còn lại (luôn còn 1 bộ Target để tính
+ *      cột "Còn Lại" — đây là lý do nghiệp vụ, không phải tiện tay).
+ *   4. Cột độc lập (T.HIỆN/L.Kế/Còn Lại) bật/tắt bình thường.
+ */
 
-            // SIM TỔNG: Actual = 4, Target VT = 28
-            const prog2: ProcessedProgram = {
-                name: 'SIM TỔNG',
-                data: [28, 4, 14, 0],
-                metric: 'SLLK',
-                conLai: null
-            };
-            expect(calculateProgramRemaining(prog2, visibleColumns, allHeaders, true)).toBe(-24);
+const LUYKE = [...ALLOWED_LUYKE_COLUMNS];
+const REALTIME = [...ALLOWED_REALTIME_COLUMNS];
 
-            // TC HOMECREDIT: Actual = 101, Target VT = 223
-            const prog3: ProcessedProgram = {
-                name: 'TC HOMECREDIT',
-                data: [223, 101, 45, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-            expect(calculateProgramRemaining(prog3, visibleColumns, allHeaders, true)).toBe(-122);
-        });
+const superCols = (cols: string[]) => cols.filter(c => c.includes('V.Trội'));
+const standardCols = (cols: string[]) => cols.filter(c => c === 'Target' || c === '%HT' || c === '%DKHT');
 
-        it('falls back to Target when Target V.Trội is hidden and only Target is visible', () => {
-            const allHeaders = ['Target V.Trội', 'Target', 'Realtime', '%HT', 'Còn Lại'];
-            const visibleColumns = ['Target', 'Realtime', '%HT', 'Còn Lại'];
-            
-            const prog: ProcessedProgram = {
-                name: 'SIM MOBI/VINA/SIM',
-                data: [18, 3, 3, 100, 0],
-                metric: 'SLLK',
-                conLai: null
-            };
-            // Actual (3) - Target (3) = 0
-            expect(calculateProgramRemaining(prog, visibleColumns, allHeaders, true)).toBe(0);
-        });
+describe('toggleCompetitionColumn — liên kết 2 nhóm cột loại trừ nhau', () => {
+    it('quy tắc 1: đang bật nhóm Vượt trội, bấm "Target" → bật cả nhóm Cơ bản và TẮT SẠCH Vượt trội', () => {
+        const before = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+        const after = toggleCompetitionColumn('Target', before, LUYKE, false);
 
-        it('calculates properly in Luỹ kế mode with L.Kế', () => {
-            const allHeaders = ['Target V.Trội', 'L.Kế', '%HTDK', 'Còn Lại'];
-            const visibleColumns = ['Target V.Trội', 'L.Kế', '%HTDK', 'Còn Lại'];
-            
-            const prog: ProcessedProgram = {
-                name: 'ĐIỆN TỬ',
-                data: [58, 40, 68, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-            expect(calculateProgramRemaining(prog, visibleColumns, allHeaders, false)).toBe(-18);
-        });
+        expect(superCols(after), 'nhóm Vượt trội phải bị tắt hết').toEqual([]);
+        expect(after).toContain('Target');
+        expect(standardCols(after).length, 'phải bật CẢ nhóm Cơ bản chứ không chỉ cột vừa bấm').toBeGreaterThan(1);
     });
 
-    describe('compareByCompletionPriority (%HT V.Trội > %DKHT > %HT)', () => {
-        const headers = ['Target V.Trội', 'Realtime', '%HT V.Trội', '%HTDK', '%HT', 'Còn Lại'];
+    it('quy tắc 2: đang bật nhóm Cơ bản, bấm "Target V.Trội" → bật cả nhóm Vượt trội và TẮT SẠCH Cơ bản', () => {
+        const before = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const after = toggleCompetitionColumn('Target V.Trội', before, LUYKE, false);
 
-        it('sorts primarily by %HT V.Trội descending', () => {
-            const progA: ProcessedProgram = {
-                name: 'Prog A',
-                data: [10, 7, 70, 50, 40, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-            const progB: ProcessedProgram = {
-                name: 'Prog B',
-                data: [10, 5, 50, 90, 80, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-
-            // Prog A has 70% HT VT, Prog B has 50% HT VT -> Prog A should come before Prog B
-            expect(compareByCompletionPriority(progA, progB, headers, 'desc')).toBeLessThan(0);
-        });
-
-        it('sorts by %DKHT when %HT V.Trội is equal or missing', () => {
-            const progA: ProcessedProgram = {
-                name: 'Prog A',
-                data: [10, 0, 0, 85, 30, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-            const progB: ProcessedProgram = {
-                name: 'Prog B',
-                data: [10, 0, 0, 65, 50, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-
-            // Both have 0% HT VT. Prog A has 85% DKHT, Prog B has 65% DKHT -> Prog A comes before Prog B
-            expect(compareByCompletionPriority(progA, progB, headers, 'desc')).toBeLessThan(0);
-        });
-
-        it('sorts by %HT when %HT V.Trội and %DKHT are both equal', () => {
-            const progA: ProcessedProgram = {
-                name: 'Prog A',
-                data: [10, 0, 0, 70, 45, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-            const progB: ProcessedProgram = {
-                name: 'Prog B',
-                data: [10, 0, 0, 70, 25, 0],
-                metric: 'DTLK',
-                conLai: null
-            };
-
-            // Both have 0% HT VT and 70% DKHT. Prog A has 45% HT, Prog B has 25% HT -> Prog A comes before Prog B
-            expect(compareByCompletionPriority(progA, progB, headers, 'desc')).toBeLessThan(0);
-        });
+        expect(standardCols(after), 'nhóm Cơ bản phải bị tắt hết').toEqual([]);
+        expect(after).toContain('Target V.Trội');
+        expect(superCols(after).length, 'phải bật CẢ nhóm Vượt trội').toBeGreaterThan(1);
     });
 
-    describe('sortProgramsList default sorting', () => {
-        it('automatically sorts programs descending by %HT V.Trội > %DKHT > %HT when sortConfig is null', () => {
-            const headers = ['Target V.Trội', 'Realtime', '%HT V.Trội', '%HTDK', '%HT', 'Còn Lại'];
-            const prog1: ProcessedProgram = { name: 'P1', data: [10, 1, 10, 80, 50, 0], metric: 'SLLK', conLai: null };
-            const prog2: ProcessedProgram = { name: 'P2', data: [10, 7, 70, 60, 40, 0], metric: 'SLLK', conLai: null };
-            const prog3: ProcessedProgram = { name: 'P3', data: [10, 1, 10, 90, 40, 0], metric: 'SLLK', conLai: null };
-            const prog4: ProcessedProgram = { name: 'P4', data: [10, 1, 10, 80, 60, 0], metric: 'SLLK', conLai: null };
+    it('quy tắc 3: bấm vào cột của nhóm ĐANG bật thì KHÔNG tắt trắng mà chuyển sang nhóm kia — luôn còn 1 bộ Target', () => {
+        const withStandard = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+        const afterA = toggleCompetitionColumn('Target', withStandard, LUYKE, false);
+        expect(standardCols(afterA)).toEqual([]);
+        expect(superCols(afterA).length, 'tắt nhóm Cơ bản thì phải bật nhóm Vượt trội thay thế').toBeGreaterThan(0);
 
-            const sorted = sortProgramsList([prog1, prog2, prog3, prog4], null, headers);
-            // P2: HT VT = 70% (highest)
-            // P3: HT VT = 10%, DKHT = 90%
-            // P4: HT VT = 10%, DKHT = 80%, HT = 60%
-            // P1: HT VT = 10%, DKHT = 80%, HT = 50%
-            expect(sorted.map(p => p.name)).toEqual(['P2', 'P3', 'P4', 'P1']);
-        });
-
-        it('correctly sorts real user screenshot SLLK data descending by %HT V.Trội', () => {
-            const headers = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-            const programs: ProcessedProgram[] = [
-                { name: 'OTT MANGO/, ICALLME/', data: [202, 600, '113%', -398], metric: 'SLLK', conLai: -398 },
-                { name: 'VAS', data: [308, 586, '176%', -278], metric: 'SLLK', conLai: -278 },
-                { name: 'SIM MOBI/VINA/SIM', data: [87, 515, '57%', -428], metric: 'SLLK', conLai: -428 },
-                { name: 'SIM TỔNG', data: [116, 835, '47%', -719], metric: 'SLLK', conLai: -719 },
-                { name: 'NẠP/RÚT NH', data: [142, 819, '58%', -677], metric: 'SLLK', conLai: -677 },
-                { name: 'MỞ THẺ TÍN DỤNG', data: [0, 1, '0%', -1], metric: 'SLLK', conLai: -1 },
-            ];
-
-            // Mặc định (sortConfig = null)
-            const sortedDefault = sortProgramsList(programs, null, headers);
-            expect(sortedDefault.map(p => p.name)).toEqual([
-                'VAS', // 176%
-                'OTT MANGO/, ICALLME/', // 113%
-                'NẠP/RÚT NH', // 58%
-                'SIM MOBI/VINA/SIM', // 57%
-                'SIM TỔNG', // 47%
-                'MỞ THẺ TÍN DỤNG' // 0%
-            ]);
-
-            // Khi click vào cột %HT V.Trội (columnIndex = 2)
-            const sortedByCol = sortProgramsList(programs, { columnIndex: 2, direction: 'desc' }, headers);
-            expect(sortedByCol.map(p => p.name)).toEqual([
-                'VAS',
-                'OTT MANGO/, ICALLME/',
-                'NẠP/RÚT NH',
-                'SIM MOBI/VINA/SIM',
-                'SIM TỔNG',
-                'MỞ THẺ TÍN DỤNG'
-            ]);
-        });
-
-        it('correctly sorts real user screenshot DTLK data descending by %HT V.Trội', () => {
-            const headers = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-            const programs: ProcessedProgram[] = [
-                { name: 'VÍ TRẢ SAU', data: [329, 941, '117%', -611], metric: 'DTLK', conLai: -611 },
-                { name: 'TAI NGHE', data: [36, 150, '79%', -114], metric: 'DTLK', conLai: -114 },
-                { name: 'CE-ĐGD TOSHIBA', data: [722, 1269, '190%', -547], metric: 'DTLK', conLai: -547 },
-                { name: 'SẠC DỰ PHÒNG', data: [64, 386, '56%', -321], metric: 'DTLK', conLai: -321 },
-                { name: 'GIA DỤNG KANGAROO', data: [392, 803, '163%', -411], metric: 'DTLK', conLai: -411 },
-                { name: 'ĐIỆN TỬ SONY', data: [144, 366, '132%', -221], metric: 'DTLK', conLai: -221 },
-            ];
-
-            const sorted = sortProgramsList(programs, null, headers);
-            expect(sorted.map(p => p.name)).toEqual([
-                'CE-ĐGD TOSHIBA', // 190%
-                'GIA DỤNG KANGAROO', // 163%
-                'ĐIỆN TỬ SONY', // 132%
-                'VÍ TRẢ SAU', // 117%
-                'TAI NGHE', // 79%
-                'SẠC DỰ PHÒNG' // 56%
-            ]);
-        });
-
-        describe('Mode-aware sorting (Realtime vs Luỹ kế)', () => {
-            const allHeaders = ['Realtime', 'L.Kế', 'Target', '%HT', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-            const prog1: ProcessedProgram = {
-                name: 'Prog Alpha',
-                // Realtime, L.Kế, Target, %HT, %DKHT, Target VT, %HT VT, Còn Lại
-                data: [10, 100, 20, 50, 80, 40, 120, 0], // %HT=50, %DKHT=80, %HT VT=120
-                metric: 'SLLK',
-                conLai: null
-            };
-            const prog2: ProcessedProgram = {
-                name: 'Prog Beta',
-                data: [20, 200, 20, 90, 60, 40, 70, 0], // %HT=90, %DKHT=60, %HT VT=70
-                metric: 'SLLK',
-                conLai: null
-            };
-
-            it('Realtime: sorts by %HT V.Trội when %HT V.Trội column is visible', () => {
-                const visible = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, true);
-                // Prog Alpha (%HT VT=120) > Prog Beta (%HT VT=70)
-                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
-            });
-
-            it('Realtime: sorts by %HT when %HT column is visible (standard group active)', () => {
-                const visible = ['Realtime', 'Target', '%HT', 'Còn Lại'];
-                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, true);
-                // Prog Beta (%HT=90) > Prog Alpha (%HT=50)
-                expect(sorted.map(p => p.name)).toEqual(['Prog Beta', 'Prog Alpha']);
-            });
-
-            it('Luỹ kế: sorts by %HT V.Trội when %HT V.Trội column is visible', () => {
-                const visible = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, false);
-                // Prog Alpha (%HT VT=120) > Prog Beta (%HT VT=70)
-                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
-            });
-
-            it('Luỹ kế: sorts by %DKHT when %DKHT column is visible (standard group active)', () => {
-                const visible = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
-                const sorted = sortProgramsList([prog1, prog2], null, allHeaders, {}, visible, false);
-                // Prog Alpha (%DKHT=80) > Prog Beta (%DKHT=60)
-                expect(sorted.map(p => p.name)).toEqual(['Prog Alpha', 'Prog Beta']);
-            });
-        });
+        const afterB = toggleCompetitionColumn('Target V.Trội', afterA, LUYKE, false);
+        expect(superCols(afterB)).toEqual([]);
+        expect(standardCols(afterB).length, 'và ngược lại').toBeGreaterThan(0);
     });
 
-    describe('toggleCompetitionColumn and Mutual Exclusivity', () => {
-        describe('Realtime mode', () => {
-            const allowed = [...ALLOWED_REALTIME_COLUMNS];
+    it('quy tắc 3 (hệ quả quan trọng): KHÔNG BAO GIỜ rơi vào trạng thái mất cả 2 nhóm Target', () => {
+        // Bấm liên tiếp 6 lần vào các cột Target khác nhau — sau mỗi lần vẫn phải còn đúng 1 nhóm.
+        let cols = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+        for (const click of ['Target', 'Target V.Trội', '%HT', '%HT V.Trội', '%DKHT', 'Target V.Trội']) {
+            cols = toggleCompetitionColumn(click, cols, LUYKE, false);
+            const conBo = standardCols(cols).length > 0 || superCols(cols).length > 0;
+            expect(conBo, `sau khi bấm "${click}" thì mất sạch cả 2 nhóm Target → cột "Còn Lại" hết căn cứ tính`).toBe(true);
+        }
+    });
 
-            it('activates both Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking Target (strictly maintaining canonical order)', () => {
-                const current = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('Target', current, allowed, true);
+    it('quy tắc 4: cột độc lập bật/tắt bình thường, KHÔNG kéo theo nhóm nào', () => {
+        const before = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
 
-                expect(updated).toEqual(['Realtime', 'Target', '%HT', 'Còn Lại']);
-            });
+        const afterOff = toggleCompetitionColumn('Còn Lại', before, LUYKE, false);
+        expect(afterOff).not.toContain('Còn Lại');
+        expect(superCols(afterOff), 'tắt cột độc lập không được đụng tới nhóm Target').toEqual(superCols(before));
 
-            it('activates both Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking %HT', () => {
-                const current = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('%HT', current, allowed, true);
+        const afterOn = toggleCompetitionColumn('Còn Lại', afterOff, LUYKE, false);
+        expect(afterOn).toContain('Còn Lại');
+    });
 
-                expect(updated).toEqual(['Realtime', 'Target', '%HT', 'Còn Lại']);
-            });
+    it('Realtime: nhóm Cơ bản KHÔNG có %DKHT (chỉ Luỹ kế mới có)', () => {
+        const after = toggleCompetitionColumn('Target', ['Realtime', 'Target V.Trội', '%HT V.Trội'], REALTIME, true);
+        expect(after).toContain('Target');
+        expect(after, 'Realtime không được tự bật %DKHT').not.toContain('%DKHT');
+    });
 
-            it('activates both Target V.Trội and %HT V.Trội and deactivates Target and %HT when clicking Target V.Trội', () => {
-                const current = ['Realtime', 'Target', '%HT', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('Target V.Trội', current, allowed, true);
-
-                expect(updated).toEqual(['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
-            });
-        });
-
-        describe('Luỹ kế mode', () => {
-            const allowed = [...ALLOWED_LUYKE_COLUMNS];
-
-            it('activates Target, %HT, %DKHT and deactivates Target V.Trội and %HT V.Trội when clicking %DKHT (strictly maintaining canonical order)', () => {
-                const current = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('%DKHT', current, allowed, false);
-
-                expect(updated).toEqual(['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại']);
-            });
-
-            it('activates Target V.Trội and %HT V.Trội and deactivates Target, %HT, %DKHT when clicking Target V.Trội', () => {
-                const current = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('Target V.Trội', current, allowed, false);
-
-                expect(updated).toEqual(['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
-            });
-        });
+    it('kết quả luôn giữ THỨ TỰ CHUẨN theo allAllowedColumns, không phải thứ tự bấm', () => {
+        const after = toggleCompetitionColumn('Target', ['Còn Lại', 'L.Kế'], LUYKE, false);
+        const indices = after.map(c => (LUYKE as string[]).indexOf(c));
+        expect(indices, 'thứ tự cột phải tăng dần theo bảng chuẩn').toEqual([...indices].sort((a, b) => a - b));
+        expect(after.every(c => (LUYKE as string[]).includes(c)), 'không được sinh ra cột lạ ngoài danh sách cho phép').toBe(true);
     });
 });

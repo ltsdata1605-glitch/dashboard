@@ -49,17 +49,20 @@ test('bảng Thi đua Luỹ kế trên dữ liệu thật: cột đúng thứ t�
 
     const headers = (await page.locator('table thead th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim());
     console.log('CỘT ĐANG HIỂN THỊ:', JSON.stringify(headers));
-    // CẬP NHẬT 2026-09-09: trước đây khẳng định phải có cột '%DKHT'. Từ commit 3a9dbad8
-    // (feat(competition): tách biệt bộ lọc Realtime/Luỹ kế) bộ cột MẶC ĐỊNH được đổi CÓ CHỦ Ý —
-    // Luỹ kế mặc định bật L.KẾ / M.TIÊU V.TRỘI / %HT V.TRỘI / C.LẠI, không còn %DKHT (xem
-    // `defaultVisibleCols` kèm comment trong CompetitionView.tsx). Test cũ đang khoá hành vi cũ
-    // nên chuyển sang khẳng định đúng bộ mặc định mới. Logic đổi tên '%HTDK' → '%DKHT' vẫn còn
-    // nguyên trong headerRenames, chỉ là cột đó không bật sẵn nữa.
-    expect(headers.join(' '), 'bộ cột mặc định của Luỹ kế đã đổi ngoài dự kiến').toContain('%HT V.TRỘI');
-    expect(headers.join(' ')).toContain('L.KẾ');
+    // KHÔNG khoá cứng NHÃN cột (cập nhật 2026-09-09). Bộ nhãn hiển thị
+    // (COMPETITION_COLUMN_LABELS) đang được đổi liên tục — chỉ trong 1 buổi đã đổi
+    // 'L.Kế'→'LUỸ KẾ', 'Target V.Trội'→'TAR V.TRỘI', '%HT V.Trội'→'%DKHT V.TRỘI'. Khoá chuỗi
+    // hiển thị chỉ khiến test đỏ liên tục mà không chỉ ra lỗi thật nào.
+    // Giữ lại đúng phần có giá trị của test này: cột Target Vượt trội PHẢI CÓ SỐ (bug thật đã
+    // từng làm 2 cột đó luôn hiện "-", xem phần dưới), cộng vài bất biến cấu trúc.
+    expect(headers.length, 'bảng Thi đua Luỹ kế mất cột').toBeGreaterThanOrEqual(5);
+    expect(headers.every(h => h.length > 0), 'có cột trống — nhãn cột hỏng').toBe(true);
+    expect(headers.some(h => h.includes('V.TRỘI')), 'mất nhóm cột Vượt trội').toBe(true);
 
-    const targetVTIndex = headers.findIndex(h => h.includes('M.TIÊU V.TRỘI'));
-    expect(targetVTIndex, 'không thấy cột M.TIÊU V.TRỘI').toBeGreaterThan(-1);
+    // Cột "Target Vượt trội" — nhãn từng là 'M.TIÊU V.TRỘI', nay là 'TAR V.TRỘI'; tìm theo phần
+    // BẤT BIẾN của nhãn ('V.TRỘI' + không phải cột phần trăm) để không vỡ khi đổi nhãn tiếp.
+    const targetVTIndex = headers.findIndex(h => h.includes('V.TRỘI') && !h.includes('%'));
+    expect(targetVTIndex, `không thấy cột Target Vượt trội trong ${JSON.stringify(headers)}`).toBeGreaterThan(-1);
 
     const rows = page.locator('table tbody tr').filter({ has: page.locator('td') });
     const rowCount = await rows.count();
