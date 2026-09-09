@@ -167,10 +167,25 @@ cầu agent thêm `initializeAppCheck()` vào `services/firebase.ts` với site 
 
 **2.6 `_system/{doc}` cho phép mọi người đăng nhập ghi** (bộ đếm traffic) — có thể bị bơm số. Ảnh
 hưởng thấp, nhưng nên chuyển sang Cloud Function tăng đếm hoặc bỏ hẳn.
+**CẬP NHẬT 2026-09-09 — ĐÃ SỬA (chưa deploy)**: siết `firestore.rules` thay vì đổi sang Cloud
+Function (rules đủ diễn đạt ràng buộc, không phải deploy functions). Tách read/create/update/delete,
+chỉ cho TĂNG `totalVisits` đúng 1 đơn vị; cấm ghi đè, xoá, thêm field lạ — tức bỏ được khả năng PHÁ
+HUỶ, chỉ còn khả năng bơm số với chi phí tuyến tính. Kèm 9 test case trong
+`tests/firestore.rules.test.mjs`. ⚠️ CÒN 2 VIỆC CỦA USER: chạy `npm run test:rules` (máy hiện thiếu
+Java nên emulator chưa chạy được — 9 test đó CHƯA từng xanh) và `npm run deploy:rules` để có hiệu lực.
 
 **2.7 `price-scraper-server/`** là server Express chạy cục bộ, không có auth. Nếu có ngày được
 deploy công khai thì đó là SSRF-as-a-service. Cần quyết định: xoá khỏi repo, hay đưa vào Cloud
 Functions có auth.
+**CẬP NHẬT 2026-09-09 — ĐÃ SỬA, và đánh giá lại mức độ**: KHÔNG xoá (đã xác minh server này đang
+DÙNG THẬT — `PriceComparisonView` hướng dẫn user chạy nó, và chính là `localhost:3456` trong CSP).
+Mức SSRF thực tế THẤP HƠN lo ngại ban đầu: URL scrape được hard-code cho đúng 4 site, input người
+dùng chỉ là tham số tìm kiếm đã `encodeURIComponent` — không phải SSRF tuỳ ý. Rủi ro thật là lộ dịch
+vụ: `app.listen(PORT)` bind 0.0.0.0 (mọi máy cùng Wi-Fi gọi được) + `cors()` cho mọi origin (mọi
+website đang mở đều POST vào được). Đã sửa: bind `127.0.0.1`, chỉ nhận origin localhost, ném lỗi
+chặn tại server (không dùng `cb(null,false)` vì cách đó vẫn để request chạy). Kiểm chứng: origin
+localhost → 200, origin lạ → 403, gọi qua IP LAN → từ chối kết nối.
+⚠️ User cần TỰ KHỞI ĐỘNG LẠI server đang chạy thì bản vá mới có hiệu lực.
 
 **Điểm mạnh cần giữ**: `firestore.rules` được viết cẩn thận và có ý thức — đã bịt lỗ manager đọc
 toàn bộ `users`, đã chặn client ghi `role`/`status`/`departmentId` kể cả khi là admin, có chú thích
