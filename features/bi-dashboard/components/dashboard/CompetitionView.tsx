@@ -47,18 +47,19 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const modeKey = isRealtime ? 'realtime' : 'luyke';
     // Cột bật MẶC ĐỊNH theo đúng chế độ:
     // Realtime: T.HIỆN, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
+    // Luỹ kế: L.KẾ, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
     const defaultVisibleCols = useMemo(
         () => isRealtime
             ? ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']
-            : ['L.Kế', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'],
+            : ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'],
         [isRealtime]
     );
 
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
-    // Hậu tố -v9: Mặc định luôn null để áp dụng chuỗi ưu tiên giảm dần
-    const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v9`, null);
-    // Hậu tố -v9: Bổ sung thêm cột %DKHT cho chế độ Luỹ kế và cập nhật các nhãn mới
-    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v9`, defaultVisibleCols);
+    // Hậu tố -v7: Mặc định luôn null để áp dụng chuỗi ưu tiên giảm dần %HT V.Trội > %DKHT > %HT
+    const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v7`, null);
+    // Hậu tố -v5: đồng bộ bộ cột hiển thị mới tách biệt và cố định thứ tự chuẩn giữa Realtime và Luỹ kế
+    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v5`, defaultVisibleCols);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
@@ -189,10 +190,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         if (processedHeaders.length > 0 && !processedHeaders.includes('Còn Lại')) {
             processedHeaders.push('Còn Lại');
         }
-        // Chế độ Luỹ kế: Bổ sung thêm cột %DKHT vào danh sách cột nếu chưa có
-        if (!isRealtime && processedHeaders.length > 0 && !processedHeaders.includes('%DKHT')) {
-            processedHeaders.push('%DKHT');
-        }
 
         // Sắp xếp lại các cột theo thứ tự chuẩn
         const orderedHeaders = allowedColumns.filter(c => processedHeaders.includes(c));
@@ -203,28 +200,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 const oldIdx = processedHeaders.indexOf(h);
                 return oldIdx !== -1 ? program.data[oldIdx] : '';
             });
-
-            // Tự động bổ sung giá trị %DKHT ở Luỹ kế nếu ô này trống
-            const dkhtIndex = finalHeaders.indexOf('%DKHT');
-            if (dkhtIndex !== -1 && (reorderedData[dkhtIndex] === '' || reorderedData[dkhtIndex] === undefined || reorderedData[dkhtIndex] === null)) {
-                const lkIdx = finalHeaders.indexOf('L.Kế');
-                const tarIdx = finalHeaders.indexOf('Target');
-                if (lkIdx !== -1 && tarIdx !== -1) {
-                    const lk = parseNumber(reorderedData[lkIdx]);
-                    const tar = parseNumber(reorderedData[tarIdx]);
-                    const now = new Date();
-                    const daysPassed = now.getDate();
-                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                    if (daysPassed > 0 && tar > 0) {
-                        const proj = (lk / daysPassed) * daysInMonth;
-                        reorderedData[dkhtIndex] = `${Math.round((proj / tar) * 100)}%`;
-                    } else {
-                        reorderedData[dkhtIndex] = '-';
-                    }
-                } else {
-                    reorderedData[dkhtIndex] = '-';
-                }
-            }
 
             let conLaiValue: number | null = null;
             const actualIndex = isRealtime ? finalHeaders.indexOf('Realtime') : finalHeaders.indexOf('L.Kế');

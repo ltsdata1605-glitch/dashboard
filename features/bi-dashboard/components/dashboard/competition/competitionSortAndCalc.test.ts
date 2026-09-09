@@ -276,25 +276,18 @@ describe('competitionSortAndCalc', () => {
         describe('Luỹ kế mode', () => {
             const allowed = [...ALLOWED_LUYKE_COLUMNS];
 
-            it('toggles %DKHT independently while preserving Target V.Trội and %HT V.Trội', () => {
+            it('activates Target, %HT, %DKHT and deactivates Target V.Trội and %HT V.Trội when clicking %DKHT (strictly maintaining canonical order)', () => {
                 const current = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('%DKHT', current, allowed, false);
 
-                expect(updated).toEqual(['L.Kế', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
+                expect(updated).toEqual(['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại']);
             });
 
-            it('activates Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking Target (retaining %DKHT)', () => {
-                const current = ['L.Kế', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
-                const updated = toggleCompetitionColumn('Target', current, allowed, false);
-
-                expect(updated).toEqual(['L.Kế', '%DKHT', 'Target', '%HT', 'Còn Lại']);
-            });
-
-            it('activates Target V.Trội and %HT V.Trội and deactivates Target and %HT when clicking Target V.Trội (retaining %DKHT)', () => {
-                const current = ['L.Kế', '%DKHT', 'Target', '%HT', 'Còn Lại'];
+            it('activates Target V.Trội and %HT V.Trội and deactivates Target, %HT, %DKHT when clicking Target V.Trội', () => {
+                const current = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('Target V.Trội', current, allowed, false);
 
-                expect(updated).toEqual(['L.Kế', '%DKHT', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
+                expect(updated).toEqual(['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
             });
         });
     });

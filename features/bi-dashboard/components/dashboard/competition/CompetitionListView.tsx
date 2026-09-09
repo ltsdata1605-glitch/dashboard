@@ -28,16 +28,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
     const getFormattedHeader = (header: string) => {
         const mapping: Record<string, string> = {
             'Realtime': 'REAL<br/>TIME',
-            'Realtime (QĐ)': 'REAL<br/>TIME QĐ',
+            'Realtime (QĐ)': 'REAL TIME<br/>QĐ',
             'Target': 'TAR',
             'Target V.Trội': 'TAR<br/>V.TRỘI',
             'L.Kế': 'LUỸ<br/>KẾ',
-            'L.Kế (QĐ)': 'LUỸ<br/>KẾ QĐ',
+            'L.Kế (QĐ)': 'LUỸ KẾ<br/>QĐ',
             '%HT': '%HT',
             '%HT V.Trội': '%DKHT<br/>V.TRỘI',
             '%HTDK V.Trội': '%DKHT<br/>V.TRỘI',
-            '%DKHT': '%DKHT',
-            '%HTDK': '%DKHT',
             'Còn Lại': 'C.LẠI',
             'CÒN LẠI': 'C.LẠI',
             'SLLK': 'S.LƯỢNG',
@@ -50,7 +48,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
     const getHeaderCellClass = (header: string) => {
         const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
         if (h.includes('TAR') || h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('REAL TIME') || h.includes('T.HIỆN') || h.includes('LUỸ KẾ') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('REAL TIME') || h.includes('LUỸ KẾ') || h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
         if (h.includes('V.TRỘI') && h.includes('%')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
         if (h.includes('%HTDK') || h.includes('%DKHT')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
         if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
