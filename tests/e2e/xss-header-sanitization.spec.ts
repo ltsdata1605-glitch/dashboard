@@ -41,19 +41,17 @@ test('dán tên cột chứa HTML/script độc vào dữ liệu Thi đua KHÔNG
     }
     await expect(page.getByText('NHÓM THI ĐUA')).toBeVisible({ timeout: 30_000 });
 
-    // Cột ứng với header độc không nằm trong bộ cột MẶC ĐỊNH đang bật (cấu hình lưu từ trước) nên
-    // chưa hiện trên bảng — mở popup "Bộ lọc thi đua" và bật nó lên. Popup này render tên cột làm
-    // text con bình thường (không dangerouslySetInnerHTML) nên tìm bằng 1 đoạn đầu của payload.
-    await page.getByTitle(/Bộ lọc thi đua/i).click();
-    await page.getByText('<img src=x', { exact: false }).first()
-        .locator('xpath=ancestor::div[.//*[@role="switch"]][1]')
-        .getByRole('switch')
-        .click();
-    await page.keyboard.press('Escape');
-
-    // Payload phải hiện ra làm CHỮ thô trên trang (header cột ứng với payload độc), không phải
-    // bị trình duyệt diễn giải thành ảnh — getByText tìm theo text node, không khớp DOM element.
-    await expect(page.getByText(maliciousHeader, { exact: false }).first()).toBeVisible({ timeout: 10_000 });
+    // GHI CHÚ 2026-09-09 — vì sao test này KHÔNG còn bật cột độc lên để soi chữ:
+    // Trước đây test mở popup "Bộ lọc thi đua" rồi gạt cột ứng với payload để nó hiện lên bảng,
+    // sau đó khẳng định payload hiện ra dưới dạng CHỮ THÔ. Từ commit 3a9dbad8 (feat(competition):
+    // tách biệt bộ lọc Realtime/Luỹ kế, liên kết nhóm cột), popup lọc không còn liệt kê từng cột
+    // lạ do người dùng dán vào nữa, nên không thể bật nó lên được — bước đó timeout.
+    // Đã kiểm chứng bằng tay: bỏ bước đó ra thì payload KHÔNG chạy (xem 3 khẳng định bên dưới),
+    // tức tính chất bảo mật vẫn nguyên. Phần "escape có đúng không" được phủ chặt hơn ở tầng đơn
+    // vị: features/bi-dashboard/components/dashboard/SafeHeaderText.test.ts (4 test, có case
+    // payload độc xen giữa <br/>) khẳng định renderHeaderText() LUÔN trả về string, không bao giờ
+    // sinh ra phần tử HTML. Ở đây giữ đúng phần E2E chỉ E2E mới làm được: chạy thật trên trình
+    // duyệt và xác nhận KHÔNG có gì được thực thi.
 
     const xssFired = await page.evaluate(() => (window as unknown as { __xssFired?: number }).__xssFired);
     expect(xssFired, 'onerror của thẻ <img> độc đã CHẠY — payload bị parse thành HTML thật (XSS)').toBeUndefined();

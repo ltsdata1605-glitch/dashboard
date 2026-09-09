@@ -42,11 +42,14 @@ test('Thi đua Realtime: bộ cột mặc định mới', async ({ page }) => {
     const headers = (await page.locator('table thead th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim());
     console.log('CỘT REALTIME (dữ liệu thật):', JSON.stringify(headers));
     await page.screenshot({ path: 'test-results/real-03-realtime.png', fullPage: true });
+    // CẬP NHẬT 2026-09-09: commit 3a9dbad8 (tách biệt bộ lọc Realtime/Luỹ kế) đổi THỨ TỰ cột mặc
+    // định CÓ CHỦ Ý — comment ngay tại `defaultVisibleCols` trong CompetitionView.tsx ghi rõ
+    // "Realtime: T.HIỆN, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI". Test cũ khoá thứ tự cũ nên cập nhật.
     expect(headers.slice(2).map(h => h.toUpperCase()))
-        .toEqual(['M.TIÊU V.TRỘI', 'T.HIỆN', '%HT V.TRỘI', 'C.LẠI']);
+        .toEqual(['T.HIỆN', 'M.TIÊU V.TRỘI', '%HT V.TRỘI', 'C.LẠI']);
 });
 
-test('Bộ lọc cột: bấm thẳng nút gạt thì cột bật và xuống cuối bảng', async ({ page }) => {
+test('Bộ lọc cột: bật cột nhóm Cơ bản thì tắt nhóm Vượt trội (và ngược lại)', async ({ page }) => {
     await openReportBi(page);
     await page.getByRole('button', { name: /Tổng quan/i }).first().click();
     await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click();
@@ -54,23 +57,37 @@ test('Bộ lọc cột: bấm thẳng nút gạt thì cột bật và xuống cu
     await ensureSupermarketPicked(page);
     await expect(page.getByText('NHÓM THI ĐUA')).toBeVisible({ timeout: 30_000 });
 
-    const targetRow = page.locator('xpath=//span[normalize-space(text())="Target"]/ancestor::div[.//*[@role="switch"]][1]').first();
+    // VIẾT LẠI 2026-09-09: test cũ khẳng định "bật 1 cột thì nó xuống CUỐI bảng, các cột khác giữ
+    // nguyên". Từ commit 3a9dbad8, các cột Target được LIÊN KẾT THÀNH 2 NHÓM LOẠI TRỪ NHAU — quy
+    // tắc ghi rõ trong `toggleCompetitionColumn()` (competitionSortAndCalc.ts): bật 1 cột nhóm Cơ
+    // bản (Target/%HT/%DKHT) sẽ bật cả nhóm đó và TẮT nhóm Vượt trội, để bảng luôn có đúng 1 bộ
+    // Target làm căn cứ tính cột "Còn Lại". Test giờ khoá đúng quy tắc đó thay vì hành vi cũ.
     const readHeaders = async () => (await page.locator('table thead th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim());
+    // Nhãn trong popup đi qua getCompetitionColumnLabel() nên là chữ HOA.
+    const rowFor = (label: string) =>
+        page.locator(`xpath=//span[normalize-space(text())="${label}"]/ancestor::div[.//*[@role="switch"]][1]`).first();
 
-    // Cấu hình cột được lưu lại giữa các lần chạy — tắt cột "Target" trước để phép đo luôn giống nhau
     await page.getByTitle(/Bộ lọc thi đua/i).click();
-    if ((await readHeaders()).includes('M.TIÊU')) {
-        await targetRow.getByRole('switch').click();
+
+    // Về trạng thái gốc: đảm bảo đang bật nhóm VƯỢT TRỘI (cấu hình được lưu giữa các lần chạy).
+    if (!(await readHeaders()).some(h => h.includes('V.TRỘI'))) {
+        await rowFor('TARGET V.TRỘI').getByRole('switch').click();
     }
     const before = await readHeaders();
-    expect(before).not.toContain('M.TIÊU');
+    expect(before.some(h => h.includes('V.TRỘI')), 'chưa về được trạng thái bật nhóm Vượt trội').toBe(true);
 
-    await targetRow.getByRole('switch').click();
+    // Bật cột nhóm Cơ bản -> nhóm Vượt trội phải TẮT hết
+    await rowFor('TARGET').getByRole('switch').click();
     await page.keyboard.press('Escape');
-
     const after = await readHeaders();
-    console.log('CỘT SAU KHI BẬT "Target":', JSON.stringify(after));
-    expect(after).toEqual([...before, 'M.TIÊU']);
+    console.log('CỘT TRƯỚC:', JSON.stringify(before));
+    console.log('CỘT SAU KHI BẬT NHÓM CƠ BẢN:', JSON.stringify(after));
+
+    expect(after.some(h => h.includes('V.TRỘI')), 'bật nhóm Cơ bản nhưng nhóm Vượt trội vẫn còn — sai quy tắc loại trừ').toBe(false);
+    expect(after, 'bật nhóm Cơ bản thì phải có cột M.TIÊU').toContain('M.TIÊU');
+    // Cột độc lập không bị ảnh hưởng
+    expect(after, 'cột độc lập C.LẠI bị mất').toContain('C.LẠI');
+    expect(after, 'cột độc lập L.KẾ bị mất').toContain('L.KẾ');
 });
 
 test('Cấu hình Target Thi đua: hết thanh trượt, có cột Nhóm tiêu chí, sửa tên tại chỗ', async ({ page }) => {

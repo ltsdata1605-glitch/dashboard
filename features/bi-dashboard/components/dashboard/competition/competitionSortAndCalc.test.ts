@@ -150,64 +150,43 @@ describe('competitionSortAndCalc', () => {
         describe('Realtime mode', () => {
             const allowed = [...ALLOWED_REALTIME_COLUMNS];
 
-            it('activates both Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking Target', () => {
+            it('activates both Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking Target (strictly maintaining canonical order)', () => {
                 const current = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('Target', current, allowed, true);
 
-                expect(updated).toContain('Target');
-                expect(updated).toContain('%HT');
-                expect(updated).not.toContain('Target V.Trội');
-                expect(updated).not.toContain('%HT V.Trội');
-                expect(updated).toContain('Realtime');
-                expect(updated).toContain('Còn Lại');
+                expect(updated).toEqual(['Realtime', 'Target', '%HT', 'Còn Lại']);
             });
 
             it('activates both Target and %HT and deactivates Target V.Trội and %HT V.Trội when clicking %HT', () => {
                 const current = ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('%HT', current, allowed, true);
 
-                expect(updated).toContain('Target');
-                expect(updated).toContain('%HT');
-                expect(updated).not.toContain('Target V.Trội');
-                expect(updated).not.toContain('%HT V.Trội');
+                expect(updated).toEqual(['Realtime', 'Target', '%HT', 'Còn Lại']);
             });
 
             it('activates both Target V.Trội and %HT V.Trội and deactivates Target and %HT when clicking Target V.Trội', () => {
                 const current = ['Realtime', 'Target', '%HT', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('Target V.Trội', current, allowed, true);
 
-                expect(updated).toContain('Target V.Trội');
-                expect(updated).toContain('%HT V.Trội');
-                expect(updated).not.toContain('Target');
-                expect(updated).not.toContain('%HT');
+                expect(updated).toEqual(['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
             });
         });
 
         describe('Luỹ kế mode', () => {
             const allowed = [...ALLOWED_LUYKE_COLUMNS];
 
-            it('activates Target, %HT, %DKHT and deactivates Target V.Trội and %HT V.Trội when clicking %DKHT', () => {
+            it('activates Target, %HT, %DKHT and deactivates Target V.Trội and %HT V.Trội when clicking %DKHT (strictly maintaining canonical order)', () => {
                 const current = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('%DKHT', current, allowed, false);
 
-                expect(updated).toContain('Target');
-                expect(updated).toContain('%HT');
-                expect(updated).toContain('%DKHT');
-                expect(updated).not.toContain('Target V.Trội');
-                expect(updated).not.toContain('%HT V.Trội');
-                expect(updated).toContain('L.Kế');
-                expect(updated).toContain('Còn Lại');
+                expect(updated).toEqual(['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại']);
             });
 
             it('activates Target V.Trội and %HT V.Trội and deactivates Target, %HT, %DKHT when clicking Target V.Trội', () => {
                 const current = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
                 const updated = toggleCompetitionColumn('Target V.Trội', current, allowed, false);
 
-                expect(updated).toContain('Target V.Trội');
-                expect(updated).toContain('%HT V.Trội');
-                expect(updated).not.toContain('Target');
-                expect(updated).not.toContain('%HT');
-                expect(updated).not.toContain('%DKHT');
+                expect(updated).toEqual(['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']);
             });
         });
     });

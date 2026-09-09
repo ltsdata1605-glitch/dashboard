@@ -58,8 +58,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
     // Hậu tố -v5: bỏ cấu hình sort cũ, ưu tiên sắp xếp giảm dần theo %HT V.Trội > %DKHT > %HT.
     const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v5`, null);
-    // Hậu tố -v4: đồng bộ bộ cột hiển thị mới tách biệt giữa Realtime và Luỹ kế
-    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v4`, defaultVisibleCols);
+    // Hậu tố -v5: đồng bộ bộ cột hiển thị mới tách biệt và cố định thứ tự chuẩn giữa Realtime và Luỹ kế
+    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v5`, defaultVisibleCols);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -216,10 +216,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     }, [supermarketData, isRealtime]);
 
     const allColumns = useMemo(() => processedSupermarketData?.headers || [], [processedSupermarketData]);
-    // Bỏ những cột đã lưu nhưng không còn trong dữ liệu hiện tại; thứ tự giữ nguyên như lúc bật.
+    // THỨ TỰ CÁC CỘT SẼ LUÔN ĐƯỢC SẮP XẾP THEO THỨ TỰ NÀY (Thực hiện -> Target -> %HT -> %DKHT -> Vượt trội -> Còn Lại)
     const visibleColumns = useMemo(
-        () => visibleColumnOrder.filter(col => allColumns.includes(col)),
-        [visibleColumnOrder, allColumns]
+        () => allColumns.filter(col => visibleColumnOrder.includes(col)),
+        [allColumns, visibleColumnOrder]
     );
     const hasHiddenColumn = allColumns.length > 0 && visibleColumns.length < allColumns.length;
     /** Bật/tắt cột theo quy tắc nhóm loại trừ tương hỗ giữa Cơ bản và Vượt trội */

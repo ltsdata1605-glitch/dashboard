@@ -53,38 +53,42 @@ export function toggleCompetitionColumn(
         allAllowedColumns.includes('%HT V.Trội') ? '%HT V.Trội' : '%HTDK V.Trội'
     ].filter(c => allAllowedColumns.includes(c));
 
+    let nextVisible: string[];
+
     if (isStandardCol(clickedHeader)) {
         const isStandardActive = standardCols.some(c => currentVisibleColumns.includes(c));
         if (!isStandardActive) {
             // Chuyển sang bật nhóm Cơ bản, tắt nhóm Vượt trội
             const remaining = currentVisibleColumns.filter(c => !superCols.includes(c) && !standardCols.includes(c));
-            return [...remaining, ...standardCols].filter(c => allAllowedColumns.includes(c));
+            nextVisible = [...remaining, ...standardCols];
         } else {
             // Đang bật nhóm Cơ bản mà click tắt -> chuyển sang bật nhóm Vượt trội
             const remaining = currentVisibleColumns.filter(c => !standardCols.includes(c) && !superCols.includes(c));
-            return [...remaining, ...superCols].filter(c => allAllowedColumns.includes(c));
+            nextVisible = [...remaining, ...superCols];
         }
-    }
-
-    if (isSuperCol(clickedHeader)) {
+    } else if (isSuperCol(clickedHeader)) {
         const isSuperActive = superCols.some(c => currentVisibleColumns.includes(c));
         if (!isSuperActive) {
             // Chuyển sang bật nhóm Vượt trội, tắt nhóm Cơ bản
             const remaining = currentVisibleColumns.filter(c => !standardCols.includes(c) && !superCols.includes(c));
-            return [...remaining, ...superCols].filter(c => allAllowedColumns.includes(c));
+            nextVisible = [...remaining, ...superCols];
         } else {
             // Đang bật nhóm Vượt trội mà click tắt -> chuyển sang bật nhóm Cơ bản
             const remaining = currentVisibleColumns.filter(c => !superCols.includes(c) && !standardCols.includes(c));
-            return [...remaining, ...standardCols].filter(c => allAllowedColumns.includes(c));
+            nextVisible = [...remaining, ...standardCols];
+        }
+    } else {
+        // Các cột độc lập khác (Realtime, L.Kế, Còn Lại)
+        if (currentVisibleColumns.includes(clickedHeader)) {
+            nextVisible = currentVisibleColumns.filter(c => c !== clickedHeader);
+        } else {
+            nextVisible = [...currentVisibleColumns, clickedHeader];
         }
     }
 
-    // Các cột độc lập khác (Realtime, L.Kế, Còn Lại)
-    if (currentVisibleColumns.includes(clickedHeader)) {
-        return currentVisibleColumns.filter(c => c !== clickedHeader);
-    } else {
-        return [...currentVisibleColumns, clickedHeader];
-    }
+    // THỨ TỰ CÁC CỘT SẼ LUÔN ĐƯỢC SẮP XẾP THEO THỨ TỰ NÀY:
+    // Lọc và sắp xếp theo đúng thứ tự chuẩn định sẵn trong allAllowedColumns
+    return allAllowedColumns.filter(col => nextVisible.includes(col));
 }
 
 /**

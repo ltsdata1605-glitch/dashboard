@@ -49,7 +49,14 @@ test('bảng Thi đua Luỹ kế trên dữ liệu thật: cột đúng thứ t�
 
     const headers = (await page.locator('table thead th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim());
     console.log('CỘT ĐANG HIỂN THỊ:', JSON.stringify(headers));
-    expect(headers.join(' ')).toContain('%DKHT');
+    // CẬP NHẬT 2026-09-09: trước đây khẳng định phải có cột '%DKHT'. Từ commit 3a9dbad8
+    // (feat(competition): tách biệt bộ lọc Realtime/Luỹ kế) bộ cột MẶC ĐỊNH được đổi CÓ CHỦ Ý —
+    // Luỹ kế mặc định bật L.KẾ / M.TIÊU V.TRỘI / %HT V.TRỘI / C.LẠI, không còn %DKHT (xem
+    // `defaultVisibleCols` kèm comment trong CompetitionView.tsx). Test cũ đang khoá hành vi cũ
+    // nên chuyển sang khẳng định đúng bộ mặc định mới. Logic đổi tên '%HTDK' → '%DKHT' vẫn còn
+    // nguyên trong headerRenames, chỉ là cột đó không bật sẵn nữa.
+    expect(headers.join(' '), 'bộ cột mặc định của Luỹ kế đã đổi ngoài dự kiến').toContain('%HT V.TRỘI');
+    expect(headers.join(' ')).toContain('L.KẾ');
 
     const targetVTIndex = headers.findIndex(h => h.includes('M.TIÊU V.TRỘI'));
     expect(targetVTIndex, 'không thấy cột M.TIÊU V.TRỘI').toBeGreaterThan(-1);
