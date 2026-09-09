@@ -105,10 +105,10 @@ const StatusTile: React.FC<{
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
         indigo: {
-            wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
-            text: 'text-indigo-800 dark:text-indigo-200',
-            iconActive: 'text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 shadow-sm',
-            ring: 'border-indigo-500 ring-2 ring-indigo-500/20'
+            wrapper: 'border-sky-200 bg-sky-50 dark:bg-sky-900/20 dark:border-sky-800',
+            text: 'text-sky-800 dark:text-sky-200',
+            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700 shadow-sm',
+            ring: 'border-sky-500 ring-2 ring-sky-500/20'
         },
         slate: {
             wrapper: 'border-slate-200 bg-slate-100 dark:bg-slate-700/40 dark:border-slate-700',

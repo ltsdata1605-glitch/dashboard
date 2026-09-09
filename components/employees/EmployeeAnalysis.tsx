@@ -161,13 +161,13 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
         { header: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', activeTab: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-b-[2.5px] border-amber-400', row: '', border: '' },
         { header: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', activeTab: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-b-[2.5px] border-rose-400', row: '', border: '' },
-        { header: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', activeTab: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border-b-[2.5px] border-indigo-400', row: '', border: '' },
+        { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
         { header: 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300', activeTab: 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300 border-b-[2.5px] border-slate-400', row: '', border: '' },
         { header: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300', activeTab: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300 border-b-[2.5px] border-sky-500', row: '', border: '' },
         { header: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300', activeTab: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-b-[2.5px] border-emerald-500', row: '', border: '' },
         { header: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300', activeTab: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border-b-[2.5px] border-amber-500', row: '', border: '' },
         { header: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300', activeTab: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 border-b-[2.5px] border-rose-500', row: '', border: '' },
-        { header: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300', activeTab: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 border-b-[2.5px] border-indigo-500', row: '', border: '' },
+        { header: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300', activeTab: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300 border-b-[2.5px] border-sky-500', row: '', border: '' },
         { header: 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200', activeTab: 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200 border-b-[2.5px] border-slate-500', row: '', border: '' },
         { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
         { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
@@ -268,7 +268,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                                                     className="sr-only peer"
                                                     id={`vis-toggle-${tab.id}`}
                                                 />
-                                                <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
+                                                <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-sky-500"></div>
                                             </div>
                                         </label>
                                     ))}

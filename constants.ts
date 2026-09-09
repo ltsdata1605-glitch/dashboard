@@ -112,8 +112,8 @@ export const WAREHOUSE_HEADER_COLORS: Record<string, { border: string; sub: stri
     'SL PHỤ KIỆN': { border: 'border-sky-300 dark:border-sky-700', sub: 'bg-sky-100 dark:bg-sky-900/50', text: 'text-sky-800 dark:text-sky-200' },
     'SL DỊCH VỤ': { border: 'border-emerald-300 dark:border-emerald-700', sub: 'bg-emerald-100 dark:bg-emerald-900/50', text: 'text-emerald-800 dark:text-emerald-200' },
     'SL GIA DỤNG': { border: 'border-amber-200 dark:border-amber-800', sub: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
-    'BẢO HIỂM ALL': { border: 'border-indigo-200 dark:border-indigo-800', sub: 'bg-indigo-50/50 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-300' },
-    'BẢO HIỂM ĐỐI TÁC': { border: 'border-indigo-300 dark:border-indigo-700', sub: 'bg-indigo-100/50 dark:bg-indigo-900/50', text: 'text-indigo-800 dark:text-indigo-200' },
+    'BẢO HIỂM ALL': { border: 'border-sky-200 dark:border-sky-800', sub: 'bg-sky-50/50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-300' },
+    'BẢO HIỂM ĐỐI TÁC': { border: 'border-sky-300 dark:border-sky-700', sub: 'bg-sky-100/50 dark:bg-sky-900/50', text: 'text-sky-800 dark:text-sky-200' },
     'BẢO HIỂM ĐMX': { border: 'border-rose-300 dark:border-rose-700', sub: 'bg-rose-100 dark:bg-rose-900/50', text: 'text-rose-800 dark:text-rose-200' },
     'DEFAULT': { border: 'border-slate-200 dark:border-slate-700', sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' },
 };

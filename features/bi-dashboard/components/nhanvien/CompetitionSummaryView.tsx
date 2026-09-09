@@ -26,7 +26,7 @@ const HEADER_COLUMN_THEMES: Record<typeof HEADER_COLUMN_COLOR_KEYS[number], stri
     sky: 'border-b-sky-400 bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50',
     emerald: 'border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
     amber: 'border-b-amber-400 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50',
-    indigo: 'border-b-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
+    indigo: 'border-b-indigo-400 bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50',
     rose: 'border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50',
     slate: 'border-b-slate-400 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/50',
 };
@@ -36,7 +36,7 @@ const HEADER_GROUP_THEMES: Record<typeof HEADER_COLUMN_COLOR_KEYS[number], strin
     sky: 'bg-sky-200 dark:bg-sky-900/60 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700',
     emerald: 'bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
     amber: 'bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700',
-    indigo: 'bg-indigo-200 dark:bg-indigo-900/60 text-indigo-900 dark:text-indigo-200 border-indigo-300 dark:border-indigo-700',
+    indigo: 'bg-sky-200 dark:bg-sky-900/60 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700',
     rose: 'bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-700',
     slate: 'bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200 border-slate-300 dark:border-slate-600',
 };

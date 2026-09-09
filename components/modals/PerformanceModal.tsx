@@ -27,11 +27,11 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
     return (
         <div className={`flex-1 p-1 sm:p-2 bg-white dark:bg-slate-800 rounded sm:rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.05)] border-l-2 border-${color}-500 flex flex-col justify-center gap-0.5`}>
             {/* Color mapping for JIT compiler */}
-            {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
+            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
             {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 */}
             {/* border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 */}
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
-            {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
+            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
             {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 */}
             <div className="flex items-center sm:gap-1.5 justify-center sm:justify-start">
                 <div className={`hidden sm:flex w-7 h-7 rounded bg-${color}-100 dark:bg-${color}-900/50 items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
@@ -367,11 +367,11 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                 <React.Fragment key={customer.name}>
                                     {showDateHeader && (
                                         <div className="flex items-center gap-2 mt-3 mb-1 px-1">
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-md">
                                                 <Icon name="calendar" size={3} />
                                                 <span>Ngày tạo: {customer.createdDateFormatted}</span>
                                             </div>
-                                            <div className="flex-1 h-px bg-indigo-200 dark:bg-indigo-800"></div>
+                                            <div className="flex-1 h-px bg-sky-200 dark:bg-sky-800"></div>
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
@@ -415,7 +415,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                      return (
                                                          <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                              {lineIndex === 0 && (
-                                                             <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
+                                                             <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
                                                                  onClick={() => {
                                                                      if (orderId && orderId !== '-') {
                                                                          navigator.clipboard.writeText(orderId).then(() => {
@@ -484,7 +484,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Phân Tích Hiệu Quả Cá Nhân</p>
-                        <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{employeeName}</h3>
+                        <h3 className="text-2xl font-bold text-sky-600 dark:text-sky-400">{employeeName}</h3>
                     </div>
                 </div>
                 <div className="p-6 bg-slate-100 dark:bg-slate-950">
@@ -500,7 +500,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             onClose={onClose}
             title={employeeName}
             subTitle="Phân Tích Hiệu Quả Cá Nhân"
-            titleColorClass="text-indigo-600 dark:text-indigo-400"
+            titleColorClass="text-sky-600 dark:text-sky-400"
             controls={controls}
             maxWidth="4xl"
         >

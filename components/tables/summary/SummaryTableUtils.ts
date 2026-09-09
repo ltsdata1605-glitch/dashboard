@@ -99,11 +99,11 @@ export const HEADER_CONFIG: HeaderConfig[] = [
     { label: '%DT', group: 'DOANH THU', key: 'dtThucPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%DT', colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'sky', icon: 'trending-up' },
 
     // Thêm nhóm TRUNG BÌNH NGÀY
-    { label: 'TrB SL', group: 'TB SỐ LƯỢNG', key: 'avgQuantity', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'indigo', icon: 'calculator' },
-    { label: 'TrB DT', group: 'TB DOANH THU', key: 'avgRevenue', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'indigo', icon: 'calculator' },
+    { label: 'TrB SL', group: 'TB SỐ LƯỢNG', key: 'avgQuantity', showInComparison: true, colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'indigo', icon: 'calculator' },
+    { label: 'TrB DT', group: 'TB DOANH THU', key: 'avgRevenue', showInComparison: true, colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'indigo', icon: 'calculator' },
 
     { label: 'DTQĐ', group: '', key: 'totalRevenueQD', showInComparison: true, colorClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', borderColor: 'amber', icon: 'award' },
-    { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'indigo', icon: 'shopping-bag' },
+    { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'indigo', icon: 'shopping-bag' },
     { label: 'TRẢ CHẬM', group: '', key: 'traGopPercent', showInComparison: true, colorClass: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', borderColor: 'rose', icon: 'clock' },
 ];
 
@@ -140,5 +140,5 @@ export const PILL_COLORS: Record<string, string> = {
     'child': 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/40 dark:text-sky-200 dark:border-sky-700',
     'manufacturer': 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-700',
     'creator': 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-700',
-    'product': 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-200 dark:border-indigo-700'
+    'product': 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/40 dark:text-sky-200 dark:border-sky-700'
 };

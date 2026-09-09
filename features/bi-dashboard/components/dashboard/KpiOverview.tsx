@@ -280,7 +280,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={`${currentQuyDoiTarget}%`}
                         onClick={() => handleOpenModal('hqqd')}
                     >
-                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                             {Math.ceil(hqqd)}%
                         </div>
                     </KpiCard>
