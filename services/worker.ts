@@ -78,13 +78,17 @@ async function processSingleFileInWorker(file: File) {
                 }
             }
 
-            // DEBUG TẠM: chẩn đoán lỗi "Không tìm thấy dữ liệu hợp lệ" với file lớn (vd 60MB)
-            // — không rõ nguyên nhân do dữ liệu thật không khớp hay do dòng tiêu đề không nằm ở
-            // hàng 0 (rows[0]). Log ra console (Worker log vẫn hiện trong DevTools) để xem
-            // headers thực tế + số cột khớp được, gỡ bỏ khi đã xác định xong nguyên nhân.
-            console.log('[Worker Debug] Tổng số dòng đọc được (kể cả header):', rows.length);
-            console.log('[Worker Debug] Header hàng đầu tiên (rows[0]):', headers);
-            console.log('[Worker Debug] Số cột khớp được:', Object.keys(reqIndices).length, '/', headers.length, '(tổng số biến thể cột đã biết:', knownVariants.length, ')');
+            // Chẩn đoán lỗi "Không tìm thấy dữ liệu hợp lệ" (từng gặp với file 60MB): nguyên nhân
+            // hay gặp là dòng tiêu đề KHÔNG nằm ở hàng đầu tiên, nên không cột nào khớp.
+            // Đợt 5: trước đây 3 dòng log này chạy ở MỌI lần tải file, đổ cả dòng tiêu đề của
+            // người dùng ra console — giờ chỉ log khi THỰC SỰ có vấn đề (không khớp được cột nào),
+            // tức đúng lúc cần chẩn đoán. Lúc chạy bình thường console sạch.
+            if (Object.keys(reqIndices).length === 0) {
+                console.warn(
+                    '[Worker] Không khớp được cột nào với danh sách cột đã biết — nhiều khả năng dòng tiêu đề không nằm ở hàng đầu tiên của sheet.',
+                    { soDongDocDuoc: rows.length, headerHangDau: headers, soBienTheDaBiet: knownVariants.length }
+                );
+            }
 
             // Chunked Array Push — báo tiến độ liên tục theo số dòng thực đã xử lý (40→65%),
             // tránh bar "đứng hình" rồi nhảy mốc cứng với file lớn (hàng chục nghìn dòng).

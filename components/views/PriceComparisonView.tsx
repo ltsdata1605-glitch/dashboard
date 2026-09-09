@@ -602,8 +602,13 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {/* key theo NỘI DUNG sản phẩm, không theo index: nút xoá dưới đây gọi
+                    removeProduct(idx) → mảng ngắn lại, nếu key là index thì React tái dùng DOM
+                    theo VỊ TRÍ khiến các dòng sau trượt lên chiếm DOM của dòng trước (sai trạng
+                    thái hover/focus). Trùng key chỉ xảy ra khi dán trùng hệt 1 sản phẩm 2 lần —
+                    lúc đó 2 dòng giống hệt nhau nên đổi chỗ cũng không thấy khác biệt. */}
                 {products.map((p, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                  <tr key={`${p.sku}|${p.name}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                     <td className="px-4 py-2 text-slate-500">{idx + 1}</td>
                     <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{p.group || '—'}</td>
                     <td className="px-4 py-2 text-slate-600 dark:text-slate-300 font-mono text-xs">{p.sku || '—'}</td>
@@ -691,7 +696,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                   const diff = mainPrice > 0 && lowestCompetitor > 0 ? mainPrice - lowestCompetitor : 0;
                   
                   return (
-                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                    // key theo sản phẩm, không theo index — kết quả được đổ dần trong lúc quét giá
+                    <tr key={`${r.product.sku}|${r.product.name}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                       <td className="px-3 py-2.5 text-slate-500">{idx + 1}</td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300 font-mono text-xs">{r.product.sku || '—'}</td>
                       <td className="px-3 py-2.5">

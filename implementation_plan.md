@@ -2223,3 +2223,98 @@ toán, Đợt 4 lần này chỉ làm Bước 1 (đổi khoá).
 (0 caller, xác nhận bằng grep toàn repo) dùng pattern parse object-mode cũ (khoá tiếng Việt dài,
 không qua chuẩn hoá mới) — để nguyên, không sửa theo vì không ai gọi tới; cân nhắc XOÁ HẲN ở Đợt 5
 (dọn code) thay vì vá logic cho 1 hàm chết.
+
+---
+
+## Đợt 5 — Dọn code, phần cơ học an toàn (2026-09-09)
+
+**Đo lại trước, số trong kế hoạch sai khá nhiều** (đúng như bài học "đừng tin số cũ trong plan"):
+
+| Hạng mục | Kế hoạch ghi | Đo thật hôm nay | Ghi chú |
+|---|---|---|---|
+| `console.log` | 3 | 3 (app) + 17 (tests) | Kế hoạch đúng phần app; 17 dòng trong `tests/e2e/` là output test hợp lệ, KHÔNG được xoá |
+| `catch {}` rỗng | 9 | 9 | Khớp |
+| `@ts-ignore` | 3 | 3 | Khớp |
+| `key={index}` | 32 | 33 chỗ / 23 file | Nhưng **29/33 là dương tính giả** — xem dưới |
+| File > 800 dòng | 8 | 9 | Khớp xấp xỉ |
+
+### Đã làm
+
+**1. `@ts-ignore` 3 → 0 (sửa gốc chứ không phải xoá bừa)**. Cả 3 chỗ đều là workaround cho
+*virtual module* của Vite (`?worker`, `import.meta.glob`) mà TypeScript không biết kiểu. Nguyên
+nhân gốc: `tsconfig.json` khai `"types": ["node"]` nên thiếu hẳn `vite/client` — bộ khai báo kiểu
+CHÍNH THỨC của Vite cho đúng các cú pháp này. Thêm `"vite/client"` vào `types` là bỏ được cả 3
+`@ts-ignore` mà typecheck vẫn sạch. Đây là sửa đúng bệnh: `@ts-ignore` tắt kiểm tra kiểu cho TOÀN
+BỘ dòng phía dưới (che luôn lỗi thật nếu sau này dòng đó hỏng), giờ 3 chỗ này lại được kiểm tra kiểu
+bình thường.
+
+**2. `console.log` trong `services/worker.ts`: 3 dòng luôn chạy → chỉ cảnh báo khi thật sự có
+vấn đề.** 3 dòng này (đánh dấu "DEBUG TẠM" từ đợt chẩn đoán lỗi file 60MB) chạy ở MỌI lần tải file,
+đổ nguyên dòng tiêu đề Excel của người dùng ra console. Không xoá trắng (mất khả năng chẩn đoán) mà
+đổi thành: chỉ `console.warn` khi **không khớp được cột nào** — đúng tình huống cần chẩn đoán, kèm
+gợi ý nguyên nhân hay gặp nhất (dòng tiêu đề không nằm ở hàng đầu). Kiểm chứng bằng Playwright bắt
+`page.on('console')` lúc tải file mẫu: **0 dòng log worker** (trước là 3).
+
+**3. `catch {}` rỗng 9 → 0, phân loại theo BẢN CHẤT chứ không thêm log hàng loạt:**
+- *2 chỗ nuốt lỗi THẬT* — `services/notificationService.ts` (`markAsRead`, `markAllAsRead`): ghi
+  Firestore hỏng (mất mạng/thiếu quyền) bị nuốt sạch, thông báo "đã đọc" sẽ hiện lại là chưa đọc ở
+  lần mở sau mà không ai biết vì sao. Thêm `console.error` — đồng nhất với chính các `catch` khác
+  trong cùng file (file này vốn đã log ở chỗ khác, 2 chỗ này là ngoại lệ không nhất quán).
+- *7 chỗ nuốt lỗi CÓ CHỦ Ý* (3 bản `dbService` đóng kết nối IndexedDB trễ, 3 chỗ `JSON.parse` cache
+  hỏng, 1 chỗ `navigator.clipboard` bị từ chối quyền): giữ nguyên hành vi nhưng **viết rõ lý do**
+  vào code, đổi `catch (e) {}` → `catch { /* lý do */ }`. Riêng chỗ cache `role` ở sticker-event ghi
+  rõ: cache hỏng thì giữ `isAdmin = false` (quyền THẤP NHẤT) — cố ý không nâng quyền khi không đọc
+  được cache.
+
+**4. `key={index}`: audit 33 chỗ, chỉ 4 chỗ là lỗi thật — đã sửa; 29 chỗ còn lại là dương tính
+giả, cố ý giữ nguyên.** Kế hoạch ghi "32 chỗ gây render sai khi sắp xếp/lọc" là **nói quá**. Thực tế:
+- *Đúng và phải giữ index* (29 chỗ): skeleton/placeholder (`Array.from({length: n})` — không có
+  danh tính, không bao giờ đổi thứ tự), mảng tĩnh (`[0,1,2]` chấm loading), đường kẻ thụt đầu dòng
+  thuần trang trí, mảnh text tách từ `<br/>` (vị trí CHÍNH LÀ danh tính), header nhóm cột dựng từ
+  config ổn định.
+- *Lỗi thật, đã sửa* (4 chỗ, đều là danh sách **rút ngắn khi người dùng thao tác**):
+  `components/views/PriceComparisonView.tsx` 2 bảng (có nút xoá gọi
+  `setProducts(prev => prev.filter((_, i) => i !== index))` — xoá dòng giữa mảng trong khi key là
+  index là ca lỗi React kinh điển: các dòng sau trượt lên chiếm DOM của dòng trước, sai trạng thái
+  hover/focus), và `components/modals/UnconfiguredGroupsModal.tsx` 2 bảng (bấm "bỏ qua"/"khôi phục"
+  chuyển phần tử qua lại giữa 2 danh sách). Đổi sang key theo NỘI DUNG
+  (`${p.sku}|${p.name}`, `${group.nganhHang}|${group.nhomHang}`) — trùng key chỉ xảy ra khi 2 dòng
+  giống hệt nhau, lúc đó đổi chỗ cũng không nhìn thấy khác biệt.
+
+**Verify Đợt 5**: `npx tsc --noEmit` không lỗi mới (so bằng `grep -v` các file không do tôi sửa);
+`npx eslint` trên 13 file đã sửa — 0 error, 3 warning xác nhận CÓ SẴN từ trước bằng `git stash`
+(1 cái chỉ đổi số dòng 612→617 do tôi thêm comment); `npx vitest run` 92/92; `npm run build` OK;
+`npx playwright test` 17/17 (1 skip theo thiết kế).
+
+### CHƯA làm — 3 việc lớn còn lại của Đợt 5, cần bạn quyết trước
+
+**a) Gom 4 bản `uiService`/`imageExport` (việc lớn nhất của Đợt 5) — VƯỚNG QUY TẮC CÁCH LY.**
+Đo mức trùng lặp thật (diff sau khi bỏ khoảng trắng):
+
+| Cặp file | Số dòng KHÁC nhau | Mức giống nhau |
+|---|---|---|
+| root ↔ sticker-event | 132 / ~1.100 | ~88% |
+| root ↔ phan-ca | 144 / ~1.100 | ~87% |
+| phan-ca ↔ sticker-event | **38 / ~1.090** | **~96,5%** |
+
+Tức khoảng **1.000 dòng gần như y hệt bị chép 3 lần** (`services/uiService.ts` 1.123 dòng,
+`features/phan-ca/services/uiService.ts` 1.091, `features/sticker-event/services/uiService.ts`
+1.081; riêng bi-dashboard đã được tách sẵn thành `uiExport/` 3 file 1.061 dòng). Đây là loại nợ kỹ
+thuật gây lỗi thật: sửa bug ở 1 bản, 2 bản kia vẫn sai.
+**Vướng ở đâu**: CLAUDE.md mục 1 cấm `features/*` import `services/*` ở gốc. Kế hoạch đề xuất tạo
+thư mục dùng chung mới `services/export/` — nhưng làm vậy phải (1) nới `import/no-restricted-paths`
+trong `eslint.config.js`, và (2) sửa CLAUDE.md để ghi nhận ngoại lệ thứ 4. Đây là **quyết định kiến
+trúc**, không phải việc dọn dẹp cơ học, nên tôi dừng lại hỏi thay vì tự làm — nhất là vì tiền lệ ở
+Đợt 2 bạn đã chọn "bỏ qua" với đề xuất gom cấu hình Firebase tương tự.
+
+**b) Tách 9 file > 800 dòng**: `WarehouseSummary.tsx` (1.496), `useDataManagement.ts` (1.215),
+`services/uiService.ts` (1.123), `CompetitionSummaryView.tsx` (1.065), `nhanVienHelpers.ts` (1.020),
+`SupermarketConfig.tsx` (1.010), `utils/dataUtils.ts` (1.000), `imageExport.ts` (924),
+`salesData.ts` (826). Đây là refactor thuần hình thức (không thêm tính năng, không sửa lỗi) nhưng
+rủi ro hồi quy thật, và 2 file trong danh sách (`nhanVienHelpers.ts`, `SupermarketConfig.tsx`) vừa
+được phiên làm việc song song sửa xong. Đề xuất: chỉ tách khi có lý do cụ thể (sắp sửa lớn vào file
+đó), không tách hàng loạt chỉ để đạt chỉ tiêu số dòng.
+
+**c) Số phận `price-scraper-server/` và `telegram-agent/`**: cần bạn xác nhận còn dùng hay bỏ —
+đây là thao tác xoá thư mục, không tự quyết. (`services/dataService.ts::processSalesFile` — hàm
+chết 0 caller phát hiện ở Đợt 4 — cũng nằm trong nhóm chờ quyết định xoá này.)

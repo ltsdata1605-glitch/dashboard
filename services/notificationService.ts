@@ -58,7 +58,12 @@ export const markAsRead = async (userId: string, notificationId: string) => {
     try {
         const ref = doc(db, 'users', userId, 'notifications', notificationId);
         await updateDoc(ref, { read: true });
-    } catch (e) {}
+    } catch (e) {
+        // Đợt 5: trước đây nuốt lỗi hoàn toàn — thông báo "đã đọc" ghi hỏng (mất mạng/thiếu
+        // quyền) sẽ hiện lại là chưa đọc ở lần mở sau mà không ai biết vì sao. Ít nhất phải log,
+        // đồng nhất với các catch khác trong chính file này.
+        console.error("Lỗi đánh dấu đã đọc thông báo:", e);
+    }
 }
 
 export const markAllAsRead = async (userId: string) => {
@@ -70,5 +75,7 @@ export const markAllAsRead = async (userId: string) => {
             updateDoc(doc(db, 'users', userId, 'notifications', d.id), { read: true })
         );
         await Promise.all(batchUpdates);
-    } catch (e) {}
+    } catch (e) {
+        console.error("Lỗi đánh dấu đã đọc TẤT CẢ thông báo:", e);
+    }
 }

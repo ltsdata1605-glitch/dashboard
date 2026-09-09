@@ -52,7 +52,8 @@ export function getDb(): Promise<IDBDatabase> {
                     db.onclose = () => { dbPromise = null; };
                     resolve(db);
                 } else {
-                    try { request.result.close(); } catch (e) {}
+                    // Nuốt lỗi CÓ CHỦ Ý: kết nối trễ đã bị bỏ, đóng lỗi cũng không ảnh hưởng gì.
+                    try { request.result.close(); } catch { /* đã đóng sẵn — bỏ qua */ }
                 }
             };
             request.onerror = () => {

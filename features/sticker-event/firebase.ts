@@ -29,7 +29,6 @@ interface FirebaseAppletConfig {
 }
 
 // Safe load for AI Studio config file (ignored on GitHub)
-// @ts-ignore
 const configs = import.meta.glob('./firebase-applet-config.json', { eager: true });
 const firebaseConfigJson: FirebaseAppletConfig = (configs['./firebase-applet-config.json'] as { default?: FirebaseAppletConfig } | undefined)?.default || {};
 

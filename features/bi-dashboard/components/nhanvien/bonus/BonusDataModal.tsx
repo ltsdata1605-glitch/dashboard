@@ -117,7 +117,12 @@ export const BonusDataModal: React.FC<{
                                         try {
                                             await navigator.clipboard.writeText(nextId);
                                             toast.success(`Đã copy: ${nextId}`, { duration: 1500, position: 'top-center' });
-                                        } catch (err) {}
+                                        } catch {
+                                            // Trình duyệt từ chối quyền clipboard (hoặc tab mất
+                                            // focus) → CÓ CHỦ Ý im lặng: không hiện toast "Đã
+                                            // copy" nên người dùng không bị báo sai, việc lưu
+                                            // chính đã xong. Chỉ mất tiện ích copy sẵn mã kế tiếp.
+                                        }
                                     }
                                 }
 

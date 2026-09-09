@@ -335,7 +335,10 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
         if (data.stickerMeta) {
           try {
             parsedStickerMeta = JSON.parse(data.stickerMeta);
-          } catch (e) {}
+          } catch {
+            // stickerMeta hỏng → để undefined, danh sách vẫn tải được phần còn lại. CÓ CHỦ Ý
+            // không ném lỗi: 1 danh sách lỗi metadata không được làm hỏng cả màn hình.
+          }
         }
 
         let parsedItems: SavedListItem[] = [];

@@ -846,7 +846,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [workerCachedGeneration, setWorkerCachedGeneration] = useState(0);
 
     useEffect(() => {
-        // @ts-ignore
         import('../services/analytics.worker?worker').then((WorkerModule) => {
             const worker = new WorkerModule.default();
             workerRef.current = worker;

@@ -977,7 +977,10 @@ export function useStickerPrinterData() {
                         const parsed = JSON.parse(cachedData);
                         if (parsed.storeId) storeId = parsed.storeId;
                         if (parsed.username) username = parsed.username;
-                    } catch (e) {}
+                    } catch {
+                        // Cache hỏng/không phải JSON → dùng giá trị mặc định phía trên. CÓ CHỦ Ý
+                        // không chặn luồng: đây chỉ là cache tăng tốc, thiếu thì đọc lại từ server.
+                    }
                 }
                 // BUG FIX: đã bỏ fallback đọc 'cached_dept_id'/'cached_emp_name' — 2 khoá này
                 // thuộc app gốc (contexts/AuthContext.tsx), vô tình trùng IndexedDB với
@@ -1043,7 +1046,10 @@ export function useStickerPrinterData() {
                         if (parsed.storeId) storeId = parsed.storeId;
                         if (parsed.username) username = parsed.username;
                         if (parsed.role === 'admin' || parsed.role === 'superadmin') isAdmin = true;
-                    } catch (e) {}
+                    } catch {
+                        // Cache hỏng → giữ mặc định (isAdmin = false, tức quyền THẤP NHẤT). Cố ý
+                        // không nâng quyền khi không đọc được cache.
+                    }
                 }
                 // BUG FIX: đã bỏ fallback đọc 'cached_dept_id'/'cached_emp_name' — 2 khoá này
                 // thuộc app gốc (contexts/AuthContext.tsx), vô tình trùng IndexedDB với

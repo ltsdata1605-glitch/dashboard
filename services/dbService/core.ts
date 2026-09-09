@@ -47,8 +47,10 @@ export function getDb(): Promise<IDBDatabase> {
                     db.onclose = () => { dbPromise = null; };
                     resolve(db);
                 } else {
-                    // Timeout already triggered, close this late connection
-                    try { request.result.close(); } catch (e) {}
+                    // Timeout already triggered, close this late connection.
+                    // Nuốt lỗi CÓ CHỦ Ý: kết nối này đã bị bỏ, đóng được hay không đều không ảnh
+                    // hưởng gì (thường lỗi vì đã tự đóng sẵn) — không có gì để báo cho người dùng.
+                    try { request.result.close(); } catch { /* đã đóng sẵn — bỏ qua */ }
                 }
             };
             request.onerror = () => {

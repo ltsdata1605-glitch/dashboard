@@ -103,8 +103,12 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {/* key theo cặp Ngành/Nhóm hàng, không theo index: bấm "bỏ qua"
+                                        sẽ rút phần tử khỏi mảng này, nếu key là index thì các dòng
+                                        sau trượt lên chiếm DOM của dòng trước (sai trạng thái nút
+                                        "đã copy"/hover). Cặp Ngành+Nhóm là duy nhất theo định nghĩa. */}
                                     {unconfiguredGroups.map((group, index) => (
-                                        <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <tr key={`${group.nganhHang}|${group.nhomHang}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-4 py-3 text-center text-slate-400 font-medium">{index + 1}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col gap-0.5">
@@ -161,8 +165,9 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                             <div className="max-h-[150px] overflow-auto custom-scrollbar">
                                 <table className="min-w-[400px] md:w-full text-left border-collapse text-xs">
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                                        {/* key theo nội dung — danh sách này cũng rút ngắn khi bấm "khôi phục" */}
                                         {ignoredUnconfiguredGroups.map((group, index) => (
-                                            <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                            <tr key={`${group.nganhHang}|${group.nhomHang}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                                                 <td className="px-4 py-2 w-10 text-center text-slate-400 font-medium">{index + 1}</td>
                                                 <td className="px-4 py-2 text-slate-400 dark:text-slate-500">
                                                     <div className="flex flex-col">

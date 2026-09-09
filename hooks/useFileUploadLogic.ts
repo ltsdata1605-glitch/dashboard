@@ -1,5 +1,4 @@
 import { useState, useRef, startTransition, useEffect } from 'react';
-// @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
 import confetti from 'canvas-confetti';
 import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterState } from '../types';
