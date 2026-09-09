@@ -90,6 +90,25 @@ export const parseSummaryData = (text: string) => {
     return { kpis, table: { headers, rows } };
 };
 
+/**
+ * Kiểm tra chuỗi có phải là dòng định dạng nhân viên MWG (Mã NV - Họ Tên, VD: "276650 - Quách Trần Phương Thảo").
+ * Mã NV thường là dãy số 3-8 chữ số theo sau bởi dấu '-' và họ tên nhân viên (không có từ khoá siêu thị/kho).
+ */
+export const isEmployeeName = (text: string): boolean => {
+    if (!text) return false;
+    const trimmed = text.trim();
+    // Khớp mẫu: [Mã NV 3-8 số] - [Họ tên]
+    if (/^\d{3,8}\s*-\s*/.test(trimmed)) {
+        const afterDash = trimmed.replace(/^\d{3,8}\s*-\s*/, '').trim();
+        // Nếu sau dấu '-' là tên siêu thị/kho thì vẫn là siêu thị (VD: "1234 - ĐM Cần Thơ", "5678 - Kho Hùng Vương")
+        if (/^(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)\b/i.test(afterDash)) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+};
+
 export const parseCompetitionDataBySupermarket = (text: string) => {
     if (!text) return {};
     const supermarketData: Record<string, SupermarketCompetitionData> = {};
@@ -125,6 +144,12 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
             line.includes('Danh sách') || line.includes('Ma trận') || line.includes('Tải lại') ||
             line.includes('Xuất theo mẫu') || line.includes('Chép link') || line.includes('Chi phí chăm sóc') ||
             line.includes('Lượt bill TGDĐ') || line.includes('Báo cáo') || line.includes('Employee') || line.includes('employee')) {
+            continue;
+        }
+
+        // Bỏ qua dòng nhân viên (VD: "276650 - Quách Trần Phương Thảo") — tuyệt đối không nhận diện nhân viên là siêu thị!
+        if (isEmployeeName(line)) {
+            lastEntityName = null;
             continue;
         }
 
@@ -165,8 +190,8 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
         const isEntity = line.toUpperCase() === 'TỔNG' || 
                          line.startsWith('ĐM') || 
                          line.startsWith('TGD') || 
-                         /^\d+\s*-\s*ĐM/.test(line) ||
-                         (line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%'));
+                         /^\d+\s*-\s*(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(line) ||
+                         (!isEmployeeName(line) && line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%') && !/^\d{3,8}\s*-/.test(line));
 
         if (isEntity) {
             // Check if tab-separated on same line with numbers

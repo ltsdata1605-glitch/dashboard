@@ -10,7 +10,7 @@ import { Badge } from '../../../components/shared/ui/Badge';
 import { DataTable, type DataTableColumn } from '../../../components/shared/ui/DataTable';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { extractSupermarketList, parseCompetitionDataBySupermarket } from '../utils/dashboardHelpers';
+import { extractSupermarketList, parseCompetitionDataBySupermarket, isEmployeeName } from '../utils/dashboardHelpers';
 import {
     fetchSupermarketMap,
     addSupermarketNameToKho,
@@ -114,8 +114,8 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
     const pastedNames = useMemo(() => {
         const fromSummary = extractSupermarketList(summaryLuyKe);
         const fromCompetition = Object.keys(parseCompetitionDataBySupermarket(competitionLuyKe))
-            .filter(n => n.toUpperCase() !== 'TỔNG');
-        return Array.from(new Set([...fromSummary, ...fromCompetition]));
+            .filter(n => n.toUpperCase() !== 'TỔNG' && !isEmployeeName(n));
+        return Array.from(new Set([...fromSummary, ...fromCompetition])).filter(n => !isEmployeeName(n));
     }, [summaryLuyKe, competitionLuyKe]);
 
     const unmappedNames = useMemo(() => pastedNames.filter(name => !map[name]), [pastedNames, map]);

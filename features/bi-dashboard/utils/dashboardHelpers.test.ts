@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCompetitionDataBySupermarket } from './dashboardHelpers';
+import { parseCompetitionDataBySupermarket, isEmployeeName } from './dashboardHelpers';
 
 /** Lưới an toàn (KE_HOACH_TONG_THE.md đợt 0) cho parser dữ liệu Thi đua dán vào Report BI —
  *  đây là nguồn dữ liệu duy nhất cho toàn bộ bảng Thi đua, không qua tính toán lại ở nơi khác. */
@@ -127,5 +127,35 @@ describe('parseCompetitionDataBySupermarket', () => {
         const result = parseCompetitionDataBySupermarket(text);
         const names = result['ĐM_STR - Kho X'].programs.map(p => p.name);
         expect(names.sort()).toEqual(['SIM TỔNG', 'VAS']);
+    });
+
+    it('isEmployeeName nhận diện chính xác dòng nhân viên MWG và không nhầm siêu thị', () => {
+        expect(isEmployeeName('276650 - Quách Trần Phương Thảo')).toBe(true);
+        expect(isEmployeeName('17952 - Đinh Thị Mỹ Hường')).toBe(true);
+        expect(isEmployeeName('51115 - Trần Thị Thu')).toBe(true);
+        expect(isEmployeeName('107617 - Phạm Anh Nhân')).toBe(true);
+        
+        // Siêu thị thật sự không bị coi là nhân viên
+        expect(isEmployeeName('ĐML_STR_STR - 99 Hùng Vương (Kho bán hàng lưu động)')).toBe(false);
+        expect(isEmployeeName('ĐM_STR - Kho X')).toBe(false);
+        expect(isEmployeeName('TGD_ABC - Chi nhánh Y')).toBe(false);
+        expect(isEmployeeName('1234 - ĐM Cần Thơ')).toBe(false);
+        expect(isEmployeeName('5678 - Kho Hùng Vương')).toBe(false);
+        expect(isEmployeeName('Tổng')).toBe(false);
+    });
+
+    it('parseCompetitionDataBySupermarket loại trừ các dòng nhân viên, chỉ trích xuất siêu thị', () => {
+        const text = [
+            'VAS\tSLLK\tTarget\t% HT Target Tháng',
+            'ĐML_STR_STR - 99 Hùng Vương (Kho bán hàng lưu động)\t224\t39\t574',
+            '276650 - Quách Trần Phương Thảo\t15\t10\t150',
+            '17952 - Đinh Thị Mỹ Hường\t12\t10\t120',
+            '51115 - Trần Thị Thu\t8\t10\t80',
+        ].join('\n');
+
+        const result = parseCompetitionDataBySupermarket(text);
+        // Chỉ có siêu thị thật sự được nhận diện, 3 nhân viên không xuất hiện trong keys
+        expect(Object.keys(result)).toEqual(['ĐML_STR_STR - 99 Hùng Vương (Kho bán hàng lưu động)']);
+        expect(result['ĐML_STR_STR - 99 Hùng Vương (Kho bán hàng lưu động)'].programs).toHaveLength(1);
     });
 });
