@@ -14,7 +14,7 @@ import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { Input } from '../../../components/shared/ui/Input';
 import { DataTable, type DataTableColumn } from '../../../components/shared/ui/DataTable';
-import { parseDepartments, parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
+import { parseDepartments, parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap, getDepartmentsFromAnalysis } from '../services/employeeParser';
 import { validateThiDuaData } from '../utils/nhanVienHelpers';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
 
@@ -519,6 +519,11 @@ const CompetitionTarget: React.FC<{
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-3 bg-amber-600 rounded-full"></div>
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
+                    {totalEmployees > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                            {totalEmployees} NV
+                        </span>
+                    )}
                 </div>
                 <div className="flex gap-2">
                     <Button variant="unstyled" size="none" onClick={() => {
@@ -800,19 +805,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const departments = useMemo(() => {
         // Ưu tiên đếm theo danh sách nhân viên từ Phân tích nếu có
         if (analysisEmployees && analysisEmployees.employees.length > 0) {
-            const hiddenSet = new Set(hiddenEmployees || []);
-            const deptMap = new Map<string, number>();
-            for (const emp of analysisEmployees.employees) {
-                if (hiddenSet.has(emp.originalName)) continue;
-                deptMap.set(emp.department, (deptMap.get(emp.department) || 0) + 1);
-            }
-            if (deptMap.size > 0) {
-                return Array.from(deptMap.entries()).map(([name, employeeCount]) => ({
-                    name,
-                    employeeCount,
-                    isManual: false
-                }));
-            }
+            const depts = getDepartmentsFromAnalysis(analysisEmployees.employees, danhSachData, hiddenEmployees);
+            if (depts.length > 0) return depts;
         }
         // Fallback dùng parseDepartments từ dữ liệu dán
         return parseDepartments(danhSachData, hiddenEmployees);
@@ -1000,7 +994,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         </div>
                     </div>
                 )}
-                {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} />}
+                {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} analysisEmployees={analysisEmployees} />}
                 {activeTab === 'competitionTarget' && <CompetitionTarget supermarketName={supermarketName!} addUpdate={addUpdate} competitions={competitions} competitionLuyKeData={competitionLuyKeData} totalEmployees={departments.reduce((s, d) => s + d.employeeCount, 0)} />}
             </div>
         </div>

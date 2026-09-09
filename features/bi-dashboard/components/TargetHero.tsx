@@ -5,12 +5,13 @@ import { XIcon, PlusIcon, TrashIcon, PencilIcon, ResetIcon } from './Icons';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi } from '../services/employeeParser';
+import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi, getEmployeesFromAnalysis } from '../services/employeeParser';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useDepartments } from '../hooks/useDepartments';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
+import type { AnalysisEmployeesPayload } from '../services/analysisEmployeeSyncService';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -19,6 +20,7 @@ interface TargetHeroProps {
     addUpdate: (id: string, message: string, category: UpdateCategory) => void;
     departments: { name: string; employeeCount: number }[];
     summaryLuyKeData: string;
+    analysisEmployees?: AnalysisEmployeesPayload | null;
 }
 
 interface ManualDeptModalProps {
@@ -215,7 +217,7 @@ const DEPARTMENT_PASTEL_THEMES = [
     { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
     { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
     { bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-800', label: 'text-rose-700 dark:text-rose-400', after: 'text-rose-600 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-rose-200 dark:border-rose-700/50', inputText: 'text-rose-600', ring: 'focus-within:ring-rose-500', track: 'bg-rose-200 dark:bg-rose-900', thumb: 'accent-rose-500' },
-    { bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800', label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500' },
+    { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
 ];
 
 const CompactTargetItem: React.FC<{
@@ -283,7 +285,7 @@ const CompactTargetItem: React.FC<{
     );
 };
 
-const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData }) => {
+const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData, analysisEmployees }) => {
     const f = TARGET_HERO_DECIMAL_FORMATTER;
     const safeName = shortenSupermarketName(supermarketName);
     const [traGop, setTraGop] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45, 300);
@@ -313,8 +315,12 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
     const [allEmployeesRaw] = useIndexedDBState<string>(`config-${safeName}-danhsach`, '');
     const allEmployees = useMemo(() => {
+        if (analysisEmployees && analysisEmployees.employees.length > 0) {
+            const list = getEmployeesFromAnalysis(analysisEmployees.employees, hiddenEmployees);
+            if (list.length > 0) return list;
+        }
         return parseAllEmployees(allEmployeesRaw, hiddenEmployees);
-    }, [allEmployeesRaw, hiddenEmployees]);
+    }, [analysisEmployees, allEmployeesRaw, hiddenEmployees]);
 
     const baseTargetQuyDoi = useMemo(() => {
         return parseBaseTargetQuyDoi(summaryLuyKeData, supermarketName);
@@ -323,10 +329,13 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const adjustedTarget = useMemo(() => baseTargetQuyDoi * (totalTarget / 100), [baseTargetQuyDoi, totalTarget]);
 
     const defaultDepartments = useMemo(() => {
+        if (analysisEmployees && analysisEmployees.employees.length > 0 && departments.length > 0) {
+            return departments.map(d => ({ ...d, isManual: false }));
+        }
         if (!allEmployeesRaw) return departments.map(d => ({ ...d, isManual: false }));
         const parsedDepts = parseDepartments(allEmployeesRaw, hiddenEmployees);
         return parsedDepts.length > 0 ? parsedDepts : departments.map(d => ({ ...d, isManual: false }));
-    }, [allEmployeesRaw, hiddenEmployees, departments]);
+    }, [analysisEmployees, departments, allEmployeesRaw, hiddenEmployees]);
 
     const {
         combinedDepts,
@@ -354,6 +363,11 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
+                            {analysisEmployees && analysisEmployees.employees.length > 0 && totalAllocatedEmployees > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
+                                    {totalAllocatedEmployees} NV
+                                </span>
+                            )}
                         </div>
                         <Button variant="unstyled" size="none" onClick={() => {
                             showConfirm({
@@ -383,6 +397,11 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-3 bg-emerald-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
+                            {totalAllocatedEmployees > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                    {totalAllocatedEmployees} NV
+                                </span>
+                            )}
                         </div>
                         <div className="flex gap-2">
                             <Button variant="unstyled" size="none" onClick={() => {
@@ -425,7 +444,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             {combinedDepts.map((d, idx) => {
                                 const w = effectiveWeights[d.name] || 0;
                                 if (w <= 0) return null;
-                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-indigo-500', 'bg-rose-500', 'bg-slate-500'];
+                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-sky-500', 'bg-rose-500', 'bg-slate-500'];
                                 return <div key={d.name} style={{ width: `${Math.max(w, 100)}%` }} className={`${colors[idx % colors.length]} h-full opacity-90 transition-all`} title={`${d.name}: ${w.toFixed(1)}%`} />
                             })}
                         </div>

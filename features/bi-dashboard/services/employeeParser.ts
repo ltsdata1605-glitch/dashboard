@@ -2,8 +2,9 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee ở types/nhanVienTypes.ts có thêm department (nhân viên đã gắn phòng ban) — khác với
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
-import { parseRevenueData, standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { parseRevenueData, standardizeEmployeeName, formatEmployeeName } from '../utils/nhanVienHelpers';
 import { parseCompetitionDataBySupermarket } from '../utils/dashboardHelpers';
+import type { AnalysisEmployeeItem } from './analysisEmployeeSyncService';
 
 export interface Employee {
     originalName: string;
@@ -147,6 +148,116 @@ export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: strin
 
 export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] => {
     return parseDepartments(danhSachData, []);
+};
+
+/**
+ * Lấy danh sách nhân viên Employee[] chuẩn hoá từ danh sách Phân Tích (ưu tiên cao nhất).
+ */
+export const getEmployeesFromAnalysis = (
+    analysisEmployees: AnalysisEmployeeItem[],
+    hiddenEmployees: string[] = []
+): Employee[] => {
+    if (!analysisEmployees || analysisEmployees.length === 0) return [];
+    const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
+    return analysisEmployees
+        .filter(e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName)))
+        .map(e => ({
+            originalName: e.originalName,
+            name: e.name || formatEmployeeName(e.originalName)
+        }));
+};
+
+/**
+ * Trích xuất danh sách phòng ban dựa trên danh sách nhân viên Phân Tích (ưu tiên cao nhất).
+ * Tự động phân bổ nhân viên vào các phòng ban (BP ...) tìm thấy trong báo cáo dán thô.
+ */
+export const getDepartmentsFromAnalysis = (
+    analysisEmployees: AnalysisEmployeeItem[],
+    rawEmployeesText: string = '',
+    hiddenEmployees: string[] = []
+): DepartmentInfo[] => {
+    if (!analysisEmployees || analysisEmployees.length === 0) return [];
+    const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
+    const activeAnalysisEmployees = analysisEmployees.filter(
+        e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName))
+    );
+    if (activeAnalysisEmployees.length === 0) return [];
+
+    const analysisLookup = new Map<string, AnalysisEmployeeItem>();
+    activeAnalysisEmployees.forEach(e => {
+        analysisLookup.set(e.originalName.toLowerCase().trim(), e);
+        analysisLookup.set(standardizeEmployeeName(e.originalName).toLowerCase().trim(), e);
+        if (e.id) analysisLookup.set(e.id.toLowerCase().trim(), e);
+    });
+
+    const isMatch = (name: string): boolean => {
+        const clean = name.toLowerCase().trim();
+        if (analysisLookup.has(clean)) return true;
+        const canonical = standardizeEmployeeName(name).toLowerCase().trim();
+        if (analysisLookup.has(canonical)) return true;
+        if (name.includes(' - ')) {
+            const parts = name.split(' - ').map(p => p.trim().toLowerCase());
+            if (analysisLookup.has(parts[0]) || analysisLookup.has(parts[1])) return true;
+        }
+        return false;
+    };
+
+    // Nếu có dữ liệu dán thô, quét các dòng phòng ban (BP ...) và chỉ đếm nhân viên thuộc Phân tích
+    if (rawEmployeesText) {
+        const lines = rawEmployeesText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const deptMap = new Map<string, Set<string>>();
+        let currentDeptName = '';
+        const matchedEmpKeys = new Set<string>();
+
+        for (const line of lines) {
+            const parts = line.split('\t');
+            const namePart = parts[0]?.trim() || '';
+            if (namePart.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
+                currentDeptName = namePart;
+                if (!deptMap.has(currentDeptName)) deptMap.set(currentDeptName, new Set());
+            } else if (currentDeptName && (parts.length > 1 || namePart.includes(' - '))) {
+                if (namePart.includes(' - ') && !namePart.includes('http') && !namePart.includes('Báo cáo') && !namePart.includes('Dashboards')) {
+                    if (isMatch(namePart)) {
+                        const canonical = standardizeEmployeeName(namePart);
+                        deptMap.get(currentDeptName)!.add(canonical);
+                        matchedEmpKeys.add(canonical);
+                    }
+                }
+            }
+        }
+
+        if (deptMap.size > 0 && matchedEmpKeys.size > 0) {
+            // Các nhân viên Phân tích chưa xuất hiện trong báo cáo dán thô: gom vào phòng ban chính đầu tiên
+            const firstDeptName = Array.from(deptMap.keys())[0];
+            activeAnalysisEmployees.forEach(e => {
+                const canonical = standardizeEmployeeName(e.originalName);
+                if (!matchedEmpKeys.has(canonical)) {
+                    deptMap.get(firstDeptName)!.add(canonical);
+                }
+            });
+
+            return Array.from(deptMap.entries())
+                .filter(([_, set]) => set.size > 0)
+                .map(([name, set]) => ({
+                    name,
+                    employeeCount: set.size,
+                    isManual: false
+                }));
+        }
+    }
+
+    // Fallback nếu không có dữ liệu dán thô hoặc dữ liệu không có phòng ban
+    const fallbackMap = new Map<string, number>();
+    activeAnalysisEmployees.forEach(e => {
+        const d = (e.department && e.department !== 'Kinh Doanh') ? e.department : 'BP ALL IN ONE - DMX';
+        fallbackMap.set(d, (fallbackMap.get(d) || 0) + 1);
+    });
+
+    return Array.from(fallbackMap.entries()).map(([name, count]) => ({
+        name,
+        employeeCount: count,
+        isManual: false
+    }));
 };
 
 export const parseEmployeeCompetitionTargets = (
