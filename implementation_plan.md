@@ -2692,3 +2692,54 @@ bảo mật còn nguyên. Giữ 3 khẳng định cứng đó, bỏ bước lái
 
 **Bài học chung**: test E2E không nên khoá chuỗi hiển thị của phần giao diện đang được lặp nhanh —
 khoá bất biến cấu trúc ở E2E, còn quy tắc nghiệp vụ thì đẩy xuống test đơn vị trên hàm thuần.
+
+---
+
+## Đợt 8 (mục đầu tiên): Bảng Phân tích động — Pivot (2026-09-09)
+
+User chọn mục này và chốt luôn yêu cầu phân quyền: *"Cho Admin, quản lý và nhân viên (Chỉ được xem
+của chính mình)"*.
+
+### Quyết định thiết kế quan trọng nhất: KHÔNG tự lọc quyền lần thứ hai
+
+Cách làm sai mà tôi cố ý tránh: cho engine pivot nhận `userRole`/`departmentId` rồi tự lọc. Làm vậy
+sẽ có **hai nơi cùng quyết định ai được xem gì** — nguồn gốc kinh điển của lỗi rò rỉ dữ liệu, vì
+chỉ cần hai nơi lệch nhau một chút là hở.
+
+Cách đã làm: bảng đọc `baseFilteredData` từ `DashboardContext` — dữ liệu **đã** đi qua
+`computeRbacFilteredData()` ở `hooks/useDataManagement.ts` (chính chỗ đã có sẵn comment cảnh báo
+"nếu không nhân viên/quản lý sẽ thấy dữ liệu ngoài phạm vi... rò rỉ dữ liệu"). Nhờ vậy phân quyền
+đúng **theo cấu trúc**: nhân viên chỉ thấy dòng mình tạo, quản lý chỉ thấy Kho mình, admin thấy đủ.
+`computePivot()` cố ý KHÔNG nhận tham số quyền nào, và có hẳn 1 test ghi lại chủ đích đó (đưa dữ
+liệu chưa lọc vào thì engine tính hết — để người sau biết engine không phải hàng rào bảo vệ).
+
+UI hiện badge nhắc phạm vi cho nhân viên/quản lý; admin không hiện vì không bị giới hạn.
+
+### Không tự chế công thức nào
+
+- Mọi chỉ số tiền/số lượng lấy từ `calculateRowMetrics()` — nguồn chân lý duy nhất (CLAUDE.md mục 1).
+- Điều kiện "đơn đủ điều kiện doanh thu" dùng `isValidSalesRow()` — **đúng hàm** SummaryTable /
+  WarehouseSummary đang dùng, nên tổng pivot khớp các bảng đó theo cấu trúc chứ không nhờ may mắn.
+- "Số đơn" đếm đơn KHÔNG TRÙNG. Điều này khiến tổng các nhóm con có thể LỚN HƠN tổng cha (1 đơn
+  nhiều sản phẩm nằm ở nhiều nhóm hàng) — thấy rõ khi kiểm chứng thật (6 nhóm con × 1 đơn nhưng
+  dòng cha = 5). Đã thêm ghi chú ngay trên bảng giải thích, thay vì để người dùng tự nghi ngờ số.
+
+### Phạm vi
+7 chiều (Kho / Ngành hàng / Nhóm hàng / Nhân viên / Hãng SX / Hình thức xuất / Trạng thái), tối đa
+2 cấp hàng lồng nhau + 1 chiều cột, 5 chỉ số. Mặc định TẮT, bật ở Bộ lọc → "Hiển thị các khu vực";
+lazy-load như 5 section nặng khác nên không làm chậm việc mở tab Phân Tích.
+
+### Kiểm chứng
+- **14 test đơn vị** (`services/pivotService.test.ts`): tính toán, ô trống, giá trị thiếu, đếm đơn
+  không trùng, **4 test phân quyền** (nhân viên/quản lý/admin), và test "tổng pivot = tổng tính tay
+  từng dòng bằng calculateRowMetrics".
+- **2 test E2E** (`tests/e2e/pivot-table.spec.ts`), trong đó có test khẳng định **tổng pivot KHỚP
+  thẻ KPI Doanh thu QĐ trên cùng trang** (đo thật: 62 Tr = 62 Tr) — chống việc pivot âm thầm tính
+  lệch với phần còn lại của app.
+- Chụp ảnh thật: đổi chiều/chỉ số, mở rộng nhóm con, badge phạm vi đều đúng; 0 lỗi JS.
+
+### Ghi chú về phiên làm việc song song
+Lúc chạy kiểm tra cuối, `npm run check` và 1 test E2E đỏ vì thay đổi ở `CompetitionView.tsx` /
+`CompetitionListView.tsx` — **không liên quan pivot**. Đã xác minh bằng cách tạm `git stash` phần
+WIP đó: `npm run check` **exit 0**, 132 test xanh, ratchet OK; rồi trả lại nguyên vẹn. Riêng test
+`bi-competition` đỏ do commit đã merge của họ thêm 1 cột — đã nới khẳng định (xem commit sau).
