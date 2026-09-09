@@ -2347,3 +2347,85 @@ nào trong app import tới, README trỏ đường dẫn máy người dùng kh
 - Gỡ kèm mục "QUY TRÌNH THỰC THI TASK TỪ XA (TELEGRAM AGENT WORKFLOW)" trong `AGENT_RULES.md` —
   toàn bộ hạ tầng của quy trình đó đã không còn (`tasks/` không tồn tại, `safety.js` chỉ còn trong
   file backup cũ), để lại chỉ khiến agent đọc file này hiểu nhầm là quy trình vẫn đang chạy.
+
+---
+
+## Đợt 6 (phần 1) — Chuẩn hoá màu: sửa chỉ số đo trước, rồi sửa 2 file nặng nhất (2026-09-09)
+
+**Phát hiện quan trọng nhất: chỉ số của kế hoạch đo SAI bản chất, khiến mục tiêu "1.416 → <400"
+phần lớn là công việc ảo.** Quét lại toàn dự án theo họ màu:
+
+| Họ màu | Số lần | Đánh giá |
+|---|---|---|
+| `indigo` | **1.390 (94%)** | **HỢP LỆ** theo CLAUDE.md ("6 họ semantic: 5 màu chuẩn + indigo") |
+| blue | 33 | Sai chuẩn |
+| red | 25 | Sai chuẩn |
+| purple | 17 | Sai chuẩn |
+| gray / yellow / green | 15 | Sai chuẩn |
+
+Tức nợ thật chỉ **90**, không phải 1.416. Kiểm chứng thêm 2 điều:
+1. `styles.css` (dòng 14-23) **cố tình override `--color-indigo-*` thành đúng hex của `sky`**
+   (indigo-500 = `#0ea5e9` = sky-500) — indigo hoạt động như alias của "primary".
+2. Module **Phân Tích — chính là chuẩn vàng** — dùng indigo 12%, NHIỀU HƠN cả sky 11%. Nên không
+   thể coi indigo là "màu lạ cần loại"; nó là một phần ngôn ngữ thiết kế đang có.
+
+**Bug thật tìm được nhờ việc đo này** (RULES.md §2.5 đã cảnh báo, nay xác nhận cụ thể): có 4 nơi
+dùng `sky` và `indigo` như 2 màu KHÁC NHAU trong cùng một dải xoay vòng, nhưng chúng render y hệt
+nhau → dải 6 màu thực chất chỉ phân biệt được 5:
+- `utils/dataUtils.ts:15` `BORDER_ACCENT_FAMILIES`
+- `features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx:23` `HEADER_COLUMN_COLOR_KEYS`
+- `features/bi-dashboard/components/SupermarketConfig.tsx:299` và `DataUpdater.tsx:75` (`colorTheme`)
+CHƯA sửa — xem mục "còn lại" bên dưới.
+
+### Đã làm
+
+**1. Sửa công cụ đo trước khi sửa code** (`scripts/lint-ratchet.cjs`): tách chỉ số cũ làm 2 —
+`nonSemanticColor` (màu NGOÀI bảng đã duyệt, phải về 0) và `indigoAlias` (nợ indigo hợp lệ, chỉ
+được giảm). Vì logic so sánh của script vốn đã generic theo tên chỉ số nên không phải sửa gì thêm.
+Lý do bắt buộc phải tách: đổi `purple` (sai chuẩn) → `indigo` (đúng chuẩn) là cải thiện THẬT nhưng
+chỉ số gộp cũ không hề đổi, tức công cụ không đo được tiến bộ.
+
+**2. `components/views/PriceComparisonView.tsx` — 64 class** blue/red/yellow/green →
+sky/rose/amber/emerald. File này **chưa từng có trong `violations-baseline.json`**, nghĩa là nó lọt
+vào repo mà chưa từng đi qua cổng kiểm tra lần nào — file vi phạm nặng nhất dự án.
+
+**3. `features/phan-ca/components/Legend.tsx` — 17 class** purple → indigo, đồng bộ với các
+checkbox trong cùng thanh công cụ (trạng thái bật vẫn phân biệt bằng nền + viền, không cần khác hệ
+màu). ⚠️ **Đây là đổi màu NHÌN THẤY ĐƯỢC** (tím → xanh) ở nút "SBH gender boost" — nếu không thích
+thì revert riêng file này.
+
+**Kết quả: `nonSemanticColor` 90 → 9 (giảm 90%), ratchet từ ĐỎ chuyển XANH.**
+
+**Cố ý KHÔNG sửa 8 chỗ ở `features/sticker-event/services/printService.ts`** — đây là **dương tính
+giả của ratchet**: chúng không phải class Tailwind mà là CSS tự viết tay trong stylesheet bản in
+(`.text-gray-600 { color: #4b5563; }`). Tôi đã thử đổi rồi hoàn tác, vì đổi tên class thành `slate`
+trong khi giá trị hex vẫn là của `gray` sẽ khiến tên gọi nói dối giá trị thật; còn đổi cả hex là
+đổi màu MỰC IN THẬT trên tem giá — không thuộc phạm vi chuẩn giao diện.
+
+**Verify**: typecheck sạch, vitest 98/98, build OK, `npm run lint:ratchet` XANH, Playwright 17/17
+(1 lần chạy đầu có 1 test flaky `phan-tich-performance-modal.spec.ts:42`, chạy riêng PASS và chạy
+lại toàn bộ cũng PASS — là flaky sẵn có, không phải hồi quy). Chụp ảnh màn So Sánh Giá sau khi đổi
+để kiểm tra trực quan: tiêu đề/nút/viền đã sang tông sky, badge "Server Online" sang emerald, đồng
+bộ với phần còn lại của app.
+
+### ⚠️ Sự cố mất code do phiên làm việc song song
+
+Giữa lúc làm, toàn bộ thay đổi chưa commit ở `PriceComparisonView.tsx` và `Legend.tsx` **bị xoá
+sạch** — không còn trong `git status`, nội dung quay về như cũ. Nguyên nhân: phiên làm việc song
+song chạy lệnh git ghi đè working tree (ngay sau đó `git status` hiện file của họ:
+`TargetHero.tsx`, `employeeParser.ts`, `employeeParser.test.ts`). Đã làm lại và **commit ngay lập
+tức** để bảo vệ. Bài học cho các đợt sau: khi có phiên khác đang chạy song song, commit từng phần
+nhỏ ngay khi xong thay vì gom nhiều file rồi commit một lần cuối.
+
+### Còn lại của Đợt 6 (chưa làm)
+
+- **Bug dải màu sky/indigo trùng nhau** (4 nơi nêu trên) — cần quyết định hướng xử lý, vì 3 cách
+  đều có đánh đổi lớn: (i) bỏ override `--color-indigo-*` trong `styles.css` → **toàn bộ 1.390 chỗ
+  dùng indigo trong app đổi màu cùng lúc** từ xanh sky sang tím indigo, rủi ro thị giác rất lớn;
+  (ii) thay indigo trong các dải xoay vòng bằng "tầng sắc độ thứ 2" của họ màu có sẵn (đúng ý
+  CLAUDE.md "6 họ x 2 tầng sắc độ", phạm vi hẹp hơn nhiều); (iii) chấp nhận dải chỉ có 5 màu phân
+  biệt. Khuyến nghị (ii).
+- **Giảm dần `indigoAlias` 1.407** theo thứ tự kế hoạch (Report BI → Phân Tích → sticker-event).
+  Lưu ý RULES.md §2.5 đã cảnh báo: KHÔNG tìm-thay hàng loạt, phải xét từng chỗ là "alias primary"
+  hay "màu riêng trong dải" — trộn 2 nhóm này sẽ làm mất phân biệt màu vốn cần có.
+- `sticker-event` là khu vực lệch chuẩn nhất (indigo 26% / sky 2%, ngược hẳn 3 khu vực còn lại).
