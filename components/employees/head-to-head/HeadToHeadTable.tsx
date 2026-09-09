@@ -148,7 +148,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                         <tr>
-                            <th colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-left text-[9px] sm:text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 uppercase tracking-wider cursor-pointer select-none min-w-[110px] sm:min-w-[150px] sticky left-0 z-20 border-r border-slate-200 dark:border-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                            <th colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-left text-[9px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 uppercase tracking-wider cursor-pointer select-none min-w-[110px] sm:min-w-[150px] sticky left-0 z-20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                 <div className="flex items-center gap-1">
                                     NHÂN VIÊN
                                     <span className="hide-on-export"><Icon name="chevrons-up-down" size={3} className="text-slate-400 opacity-80"/></span>
@@ -166,9 +166,9 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                     </th>
                                 )
                             })}
-                            <th onClick={() => handleSort('total')} className="px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider cursor-pointer select-none bg-indigo-50/50 dark:bg-indigo-900/20 border-r border-slate-200 dark:border-slate-700 hover:bg-indigo-100 transition-colors">
+                            <th onClick={() => handleSort('total')} className="px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider cursor-pointer select-none bg-sky-50/50 dark:bg-sky-900/20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 transition-colors">
                                 {config.totalCalculationMethod === 'average' ? 'T.BÌNH' : 'TỔNG'}
-                                {sortConfig.key === 'total' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-indigo-500" /></span>}
+                                {sortConfig.key === 'total' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-sky-500" /></span>}
                             </th>
                             <th onClick={() => handleSort('daysWithNoSales')} className="px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider cursor-pointer select-none bg-rose-50/50 dark:bg-rose-900/20 hover:bg-rose-100 transition-colors">
                                 NS
@@ -211,7 +211,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                                         </td>
                                                     );
                                                 })}
-                                                <td className={`px-2 py-1 text-center font-black text-indigo-600 dark:text-indigo-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-indigo-50/20`}>
+                                                <td className={`px-2 py-1 text-center font-black text-sky-600 dark:text-sky-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-sky-50/20`}>
                                                     <div className="inline-block px-1 sm:px-1.5 py-0.5" style={getCellStyle(row.total, row, 'total')}>
                                                         {formatValue(row.total)}
                                                     </div>
@@ -237,7 +237,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                                     </td>
                                                 );
                                             })}
-                                            <td className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-black text-indigo-700 dark:text-indigo-400 border-r border-slate-200 dark:border-slate-700 bg-indigo-50/40 dark:bg-indigo-900/40">{formatValue(deptTotalData.total)}</td>
+                                            <td className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-black text-sky-700 dark:text-sky-400 border-r border-slate-200 dark:border-slate-700 bg-sky-50/40 dark:bg-sky-900/40">{formatValue(deptTotalData.total)}</td>
                                             <td className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-black text-rose-500 dark:text-rose-400 bg-rose-50/40 dark:bg-rose-900/40">
                                                 {deptTotalData.daysWithNoSales > 0 ? deptTotalData.daysWithNoSales.toFixed(1) : '-'}
                                             </td>

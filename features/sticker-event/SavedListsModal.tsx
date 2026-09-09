@@ -97,7 +97,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                 <div className="flex-1 overflow-y-auto min-h-[300px]">
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
-                            <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                            <div className="w-8 h-8 border-4 border-sky-200 border-t-indigo-600 rounded-full animate-spin"></div>
                         </div>
                     ) : lists.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
@@ -106,7 +106,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                     ) : (
                         <div className="space-y-3">
                             {lists.map(list => (
-                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors">
+                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-sky-300 transition-colors">
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-base font-semibold text-slate-800 truncate">{list.name}</h3>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
@@ -116,7 +116,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                             {isAdmin && list.userId !== userId && (
                                                 <>
                                                     <span>•</span>
-                                                    <span className="text-indigo-600">Tạo bởi: {list.userId}</span>
+                                                    <span className="text-sky-600">Tạo bởi: {list.userId}</span>
                                                 </>
                                             )}
                                         </div>
@@ -128,7 +128,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                                 onLoadList(list.items);
                                                 onClose();
                                             }}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg text-sm font-medium transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-lg text-sm font-medium transition-colors"
                                         >
                                             Mở
                                         </Button>

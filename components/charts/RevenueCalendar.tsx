@@ -160,7 +160,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         {subtitle && (
                             <>
                                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                                <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
+                                <span className="bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
                             </>
                         )}
                         {displayTotal !== null && (
@@ -172,8 +172,8 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         {!compact && (
                             <>
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold flex items-center gap-1">
-                                    <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                                <span className="text-sky-600 dark:text-sky-400 font-extrabold flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
                                     CẬP NHẬT MỚI
                                 </span>
                             </>
@@ -217,7 +217,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         let borderClass = 'border-slate-200/80 dark:border-white/10';
                         let textClass = 'text-slate-800 dark:text-slate-100';
                         let dayNumClass = 'text-slate-700 dark:text-slate-200';
-                        let barColor = 'bg-indigo-500';
+                        let barColor = 'bg-sky-500';
                         
                         if (isWeekend) {
                             bgClass = 'bg-amber-50/40 dark:bg-[#2c1d11]';
@@ -228,8 +228,8 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         }
 
                         if (isToday) {
-                            borderClass = 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-500/20 dark:ring-indigo-500/30';
-                            bgClass = isWeekend ? 'bg-amber-100/60 dark:bg-[#3d2411]' : 'bg-indigo-50/40 dark:bg-indigo-900/10';
+                            borderClass = 'border-sky-400 dark:border-sky-500 ring-2 ring-sky-500/20 dark:ring-sky-500/30';
+                            bgClass = isWeekend ? 'bg-amber-100/60 dark:bg-[#3d2411]' : 'bg-sky-50/40 dark:bg-sky-900/10';
                         }
                         
                         // Holiday override
@@ -249,7 +249,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             >
                                 {/* Top Row: Solar & Lunar Date */}
                                 <div className="flex justify-between items-start w-full">
-                                    <span className={`font-black ${isToday ? 'text-indigo-600 dark:text-indigo-400' : dayNumClass} ${dayNumSize} leading-none`}>
+                                    <span className={`font-black ${isToday ? 'text-sky-600 dark:text-sky-400' : dayNumClass} ${dayNumSize} leading-none`}>
                                         {dayData.day}
                                     </span>
                                     <span className={`font-bold ${lunarSize} text-slate-400 dark:text-slate-500 leading-none`}>

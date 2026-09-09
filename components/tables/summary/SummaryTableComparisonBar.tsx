@@ -48,7 +48,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     <Select 
                         value={compMode} 
                         onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
-                        className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-800 dark:text-indigo-400 dark:border-slate-700 py-1 sm:py-1.5 pl-2 sm:pl-3 pr-6 sm:pr-8 cursor-pointer hover:bg-white transition-colors h-auto w-auto min-h-0"
+                        className="text-[10px] sm:text-xs font-bold text-sky-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 py-1 sm:py-1.5 pl-2 sm:pl-3 pr-6 sm:pr-8 cursor-pointer hover:bg-white transition-colors h-auto w-auto min-h-0"
                     >
                         <option value="day_adjacent">Ngày (Liền kề)</option>
                         <option value="day_same_period">Ngày (CK tháng trước)</option>
@@ -192,7 +192,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     )}
                 </div>
                 <div className="flex text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1 sm:gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                    <Icon name="info" size={3.5} className="mt-0.5 shrink-0 text-indigo-400 dark:text-indigo-500"/>
+                    <Icon name="info" size={3.5} className="mt-0.5 shrink-0 text-sky-400 dark:text-sky-500"/>
                     <span>
                         {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
                         compMode === 'day_same_period' ? "So sánh ngày được chọn với ngày cùng số của tháng trước (VD: 15/03 vs 15/02). Dùng để loại bỏ biến động nhất thời khi đầu/cuối tháng." :

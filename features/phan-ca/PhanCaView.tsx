@@ -580,10 +580,10 @@ const App: React.FC = () => {
                 <div className="spinner !w-14 !h-14 !border-[5px] mb-6"></div>
                 <p className="text-xl font-extrabold text-slate-800 mb-3">Đang xử lý dữ liệu</p>
                 <div className="w-full bg-slate-100 h-2 mb-3 overflow-hidden">
-                    <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: `${(batchExportProgress.current / batchExportProgress.total) * 100}%` }}></div>
+                    <div className="bg-sky-600 h-full transition-all duration-500" style={{ width: `${(batchExportProgress.current / batchExportProgress.total) * 100}%` }}></div>
                 </div>
                 <p className="text-slate-400 font-semibold text-sm mb-5">{batchExportProgress.current} / {batchExportProgress.total}</p>
-                <div className="bg-indigo-50 text-indigo-700 font-bold px-5 py-3 w-full text-center truncate text-sm">
+                <div className="bg-sky-50 text-sky-700 font-bold px-5 py-3 w-full text-center truncate text-sm">
                     {batchExportProgress.name}
                 </div>
               </div>

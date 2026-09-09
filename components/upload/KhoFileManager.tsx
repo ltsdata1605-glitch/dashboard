@@ -84,7 +84,7 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
     return (
         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
             <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                <Icon name="share-2" size={3.5} className="text-indigo-500" />
+                <Icon name="share-2" size={3.5} className="text-sky-500" />
                 Dữ liệu Kho dùng chung ({maKho})
             </h4>
             <FileHistoryManager

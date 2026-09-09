@@ -24,7 +24,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={!onLeftIconClick}
             className={cn(
               "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onLeftIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
+              onLeftIconClick ? "cursor-pointer hover:text-sky-500 transition-colors" : "cursor-default"
             )}
           >
             <Icon name={leftIcon} size={4.5} />
@@ -55,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={!onRightIconClick}
             className={cn(
               "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onRightIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
+              onRightIconClick ? "cursor-pointer hover:text-sky-500 transition-colors" : "cursor-default"
             )}
           >
             <Icon name={rightIcon} size={4.5} />

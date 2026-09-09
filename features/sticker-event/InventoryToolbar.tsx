@@ -89,12 +89,12 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         <Button
           variant="ghost"
           onClick={() => setShowFilters(!showFilters)}
-          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-500 hover:bg-slate-100'} border border-slate-200`}
+          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-sky-100 text-sky-700' : 'bg-white text-slate-500 hover:bg-slate-100'} border border-slate-200`}
         >
           <Filter className="w-3 h-3" />
           <span className="uppercase tracking-wider text-[10px]">Bộ lọc</span>
           {activeFilterCount > 0 && (
-            <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
+            <span className="bg-sky-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
               {activeFilterCount}
             </span>
           )}
@@ -108,7 +108,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             type="checkbox" 
             checked={useInventoryQuantity}
             onChange={(e) => onUseInventoryQuantityChange(e.target.checked)}
-            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3 h-3"
+            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 w-3 h-3"
           />
           <span className="text-[11px] font-medium text-slate-600">Tồn kho</span>
         </label>
@@ -121,7 +121,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
           <select
             value={sortField}
             onChange={(e) => handleSortFieldChange(e.target.value as SortField)}
-            className="text-[11px] font-medium text-slate-700 bg-white border border-slate-200 rounded px-1.5 py-1 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+            className="text-[11px] font-medium text-slate-700 bg-white border border-slate-200 rounded px-1.5 py-1 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 cursor-pointer"
           >
             {SORT_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -131,7 +131,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             <Button
               variant="ghost"
               onClick={() => onSortChange?.(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-5 h-5 rounded bg-slate-200 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 transition-colors text-[10px] font-bold"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-5 h-5 rounded bg-slate-200 hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors text-[10px] font-bold"
               title={sortDirection === 'asc' ? 'Tăng dần' : 'Giảm dần'}
             >
               {sortDirection === 'asc' ? '↑' : '↓'}

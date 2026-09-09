@@ -91,7 +91,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(false)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Top/Bot 20%"
                         >
                             <Icon name="percent" size={4} className="lg:hidden" />
@@ -100,7 +100,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(true)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Tất cả"
                         >
                             <Icon name="layout-list" size={4} className="lg:hidden" />
@@ -171,7 +171,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
                                                         <p className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
-                                                        <p className="font-bold text-sm sm:text-lg text-indigo-600 dark:text-indigo-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
+                                                        <p className="font-bold text-sm sm:text-lg text-sky-600 dark:text-sky-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
                                                     </div>
                                                 </div>
                                             </div>

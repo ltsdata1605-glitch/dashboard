@@ -49,11 +49,11 @@ export const SettingsAccountTab: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-4 sm:gap-6 rounded-lg">
                     {/* Top: Avatar & Basic Info */}
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-4 sm:pb-6">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
                             {user?.photoURL ? (
                                 <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <Icon name="user" size={10} className="text-indigo-400" />
+                                <Icon name="user" size={10} className="text-sky-400" />
                             )}
                         </div>
                         
@@ -63,7 +63,7 @@ export const SettingsAccountTab: React.FC = () => {
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                 <span className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 rounded-md ${
                                     userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
-                                    userRole === 'manager' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                                    userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
                                     'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                 }`}>
                                     <Icon name={userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users'} size={4} />
@@ -82,7 +82,7 @@ export const SettingsAccountTab: React.FC = () => {
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm rounded-lg ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
+                                className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm rounded-lg ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-sky-500 w-full sm:w-auto'}`}
                             >
                                 <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
                                 {isEditingProfile ? 'Lưu Dữ Liệu' : 'Yêu Cầu Đổi Kho'}
@@ -92,7 +92,7 @@ export const SettingsAccountTab: React.FC = () => {
 
                     {/* Bottom: Fields & Editing */}
                     {isEditingProfile ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-indigo-100 dark:border-indigo-900/50 shadow-inner rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 shadow-inner rounded-lg">
                             <div className="flex flex-col gap-2">
                                 <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> MÃ KHO ĐĂNG KÝ (Cách nhau bởi dấu phẩy)</label>
                                 <input 
@@ -100,7 +100,7 @@ export const SettingsAccountTab: React.FC = () => {
                                     value={stagedDept}
                                     onChange={e => setStagedDept(e.target.value)}
                                     placeholder="Ví dụ: 58614, 58615, 66708"
-                                    className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase rounded-md"
+                                    className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase rounded-md"
                                 />
                             </div>
                             {userRole === 'employee' && (
@@ -111,7 +111,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         value={stagedEmployee}
                                         onChange={e => setStagedEmployee(e.target.value)}
                                         placeholder="Ví dụ: 58614 - Nguyễn Đăng Khoa"
-                                        className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 transition-all rounded-md"
+                                        className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-700 dark:text-slate-300 transition-all rounded-md"
                                     />
                                 </div>
                             )}

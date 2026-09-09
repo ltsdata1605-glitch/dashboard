@@ -290,7 +290,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             onClick={() => setIncludeToday(p => !p)}
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                 includeToday
-                                ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 font-bold'
+                                ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                             title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
@@ -301,14 +301,14 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             variant="unstyled" size="none"
                             onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-40"
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
                             {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="images" size={4} className="lg:hidden" />}
                             {isBatchExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="images" size={4.5} className="hidden lg:block" />}
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                 {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                             </Button>

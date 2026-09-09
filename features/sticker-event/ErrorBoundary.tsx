@@ -47,7 +47,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <Button
               variant="ghost"
               onClick={() => window.location.reload()}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium"
             >
               Tải lại trang
             </Button>

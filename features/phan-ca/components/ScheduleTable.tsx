@@ -154,7 +154,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <td colSpan={2} className="sticky-col text-right px-4 py-3 border-r border-slate-400 text-xs uppercase tracking-widest text-slate-500 bg-slate-100">
                     GIỜ CÔNG TRUNG BÌNH
                 </td>
-                <td className="col-total border-r border-slate-300 text-sm text-indigo-700">
+                <td className="col-total border-r border-slate-300 text-sm text-sky-700">
                     {Math.round(avgSpecial)}
                     {targets.targetSpecialHours && (
                         <div className="text-[10px] font-bold opacity-50">Target: {Math.round(targets.targetSpecialHours)}</div>
@@ -163,9 +163,9 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <td className="col-total border-r border-slate-300 text-sm text-slate-500">{Math.round(avgNormal)}</td>
                 <td className="col-total col-total-final border-r-2 border-slate-400 text-sm text-slate-900">{Math.round(avgTotal)}</td>
                 
-                <td className="col-stat border-r border-slate-300 text-sm text-indigo-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
-                <td className="col-stat border-r border-slate-300 text-sm text-indigo-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
-                <td className="col-stat border-r-2 border-slate-400 text-sm text-indigo-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
+                <td className="col-stat border-r border-slate-300 text-sm text-sky-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
+                <td className="col-stat border-r border-slate-300 text-sm text-sky-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
+                <td className="col-stat border-r-2 border-slate-400 text-sm text-sky-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
                 
                 <td colSpan={2} className="border-r-2 border-slate-400 bg-slate-50"></td>
                 <td colSpan={weekRange ? (weekRange.end - weekRange.start + 1) : duration} className="bg-slate-50 border-t-2 border-slate-400"></td>

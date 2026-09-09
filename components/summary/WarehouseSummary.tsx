@@ -541,16 +541,16 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         { sub: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
         { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
         { sub: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
-        { sub: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400' },
+        { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
         { sub: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
         { sub: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
-        { sub: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400' },
+        { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
         { sub: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
         { sub: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
         { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
         { sub: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
         { sub: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
-        { sub: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400' },
+        { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
         { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' }
     ];
 
@@ -603,7 +603,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
@@ -689,7 +689,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     {/* Progress Bar Container */}
                     <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                         <div 
-                            className="bg-gradient-to-r from-sky-500 to-indigo-600 h-full rounded-full transition-all duration-500" 
+                            className="bg-gradient-to-r from-sky-500 to-sky-600 h-full rounded-full transition-all duration-500" 
                             style={{ width: `${Math.min(100, Math.max(0, timeUsedPct))}%` }}
                         />
                     </div>
@@ -737,7 +737,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             ))}
                         </div>
                         <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                            <svg className="w-3.5 h-3.5 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
+                            <svg className="w-3.5 h-3.5 animate-spin text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
                             Đang tải cấu hình cột...
                         </div>
                     </div>
@@ -873,7 +873,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         if (isHqqd) {
                                             content = <span className={customColor ? "font-bold" : getHqqdClass(value)} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—'}</span>;
                                         } else if (isDTQD) {
-                                            content = <span className={customColor ? "font-semibold" : "font-semibold text-indigo-700"} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
+                                            content = <span className={customColor ? "font-semibold" : "font-semibold text-sky-700"} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                         } else if (isPercentHT) {
                                             let extraIcon = null;
                                             let classNameStr = customColor ? "font-bold" : "font-bold text-amber-500";
@@ -900,7 +900,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                 content = <span className={customColor ? "font-bold" : "font-bold text-slate-700 dark:text-slate-300"} style={textColorStyle}>{`${formatted}%`}</span>;
                                             } else {
                                                 const formatted = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-                                                content = <span className={customColor ? "font-bold text-indigo-600" : "font-semibold text-indigo-700 dark:text-indigo-400"} style={textColorStyle}>{formatted}</span>;
+                                                content = <span className={customColor ? "font-bold text-sky-600" : "font-semibold text-sky-700 dark:text-sky-400"} style={textColorStyle}>{formatted}</span>;
                                             }
                                         } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
                                             content = <span style={textColorStyle}>{formatRevenueForKho(value)}</span>;
@@ -965,7 +965,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                             content = <span className="font-bold text-slate-700 dark:text-slate-300">{`${formatted}%`}</span>;
                                         } else {
                                             const formatted = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-                                            content = <span className="font-bold text-indigo-700 dark:text-indigo-400">{formatted}</span>;
+                                            content = <span className="font-bold text-sky-700 dark:text-sky-400">{formatted}</span>;
                                         }
                                     } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
                                         content = <span>{formatRevenueForKho(value)}</span>;
@@ -1228,7 +1228,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                         const pctVal = (value || 0) * 100;
                                                         content = <span className={customColor ? 'font-bold' : 'font-bold text-slate-700 dark:text-slate-300'} style={textColorStyle}>{value !== undefined && value !== 0 ? `${pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}%` : '0%'}</span>;
                                                     } else {
-                                                        content = <span className={customColor ? 'font-bold text-indigo-600' : 'font-semibold text-indigo-700 dark:text-indigo-400'} style={textColorStyle}>{(value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
+                                                        content = <span className={customColor ? 'font-bold text-sky-600' : 'font-semibold text-sky-700 dark:text-sky-400'} style={textColorStyle}>{(value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
                                                     }
                                                 } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
                                                     content = <span style={textColorStyle}>{Math.round(value || 0).toLocaleString('vi-VN')}</span>;
@@ -1265,7 +1265,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                         const pctVal = (totalVal || 0) * 100;
                                                         content = <span className="font-bold text-slate-700 dark:text-slate-300">{`${pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}%`}</span>;
                                                     } else {
-                                                        content = <span className="font-bold text-indigo-700 dark:text-indigo-400">{(totalVal || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
+                                                        content = <span className="font-bold text-sky-700 dark:text-sky-400">{(totalVal || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
                                                     }
                                                 } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
                                                     content = <span className="font-bold">{Math.round(totalVal || 0).toLocaleString('vi-VN')}</span>;
@@ -1336,7 +1336,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 onClose={() => setEditingTargetKho(null)}
                 title="Nhập Target Tháng"
                 subTitle={`Đặt chỉ tiêu doanh thu tháng cho kho ${editingTargetKho?.name}`}
-                titleColorClass="text-indigo-600 dark:text-indigo-400"
+                titleColorClass="text-sky-600 dark:text-sky-400"
                 maxWidth="lg"
             >
                 <div>
@@ -1411,7 +1411,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     })()}
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="unstyled" size="none" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
-                        <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</Button>
+                        <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-semibold">Lưu</Button>
                     </div>
                 </div>
             </Modal>

@@ -45,7 +45,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : displayTitle}
                             </h2>
                             {isComparisonMode && (
-                                <p className="text-[10px] lg:text-[11px] font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                <p className="text-[10px] lg:text-[11px] font-medium text-sky-600 dark:text-sky-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                     {({
                                         day_adjacent: 'Ngày (Liền kề)',
                                         day_same_period: 'Ngày (CK tháng trước)',
@@ -89,7 +89,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 onClick={() => setTableMode('standard')}
                                 className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'standard'
-                                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                                    ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="Tiêu chuẩn"
@@ -102,7 +102,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 onClick={() => setTableMode('comparison')}
                                 className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'comparison'
-                                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold'
+                                    ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="So sánh"
@@ -178,7 +178,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                                 checked={visibleColumns.includes(col.key)} 
                                                                 readOnly
                                                             />
-                                                            <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
+                                                            <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-sky-500"></div>
                                                         </div>
                                                     </div>
                                                 ))}

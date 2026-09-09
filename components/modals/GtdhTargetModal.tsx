@@ -110,7 +110,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                     setTargetValue(raw);
                                 }}
                                 placeholder="Ví dụ: 9.5"
-                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
+                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
                             />
                         </div>
                         <div className="w-full">
@@ -131,8 +131,8 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                 <div className="p-3 sm:p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
                     <div className="flex justify-between items-center mb-3 sm:mb-4">
                         <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight flex items-center gap-2">
-                            <Icon name="list" size={3.5} className="text-indigo-500 sm:hidden" />
-                            <Icon name="list" size={4} className="text-indigo-500 hidden sm:block" />
+                            <Icon name="list" size={3.5} className="text-sky-500 sm:hidden" />
+                            <Icon name="list" size={4} className="text-sky-500 hidden sm:block" />
                             Mục Tiêu Đang Áp Dụng
                         </h4>
                         <span className="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
@@ -149,7 +149,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                             {gtdhList.map(([nhom, value]) => (
-                                <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-3 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group">
+                                <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-3 rounded-lg shadow-sm hover:border-sky-300 dark:hover:border-sky-500 transition-colors group">
                                     <div className="flex flex-col overflow-hidden pr-2">
                                         <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
                                             {nhom}

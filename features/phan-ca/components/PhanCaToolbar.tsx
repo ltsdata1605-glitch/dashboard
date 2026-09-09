@@ -40,7 +40,7 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                     <Button variant="ghost" onClick={onDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </Button>
-                    <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400 font-semibold text-sm border-l border-slate-100 dark:border-slate-700 transition-colors">
+                    <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-sky-50 hover:text-sky-700 dark:hover:bg-sky-900/30 dark:hover:text-sky-400 font-semibold text-sm border-l border-slate-100 dark:border-slate-700 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                         <span>Ca Xoay</span>
                     </Button>
@@ -68,7 +68,7 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
             )}
             {/* Mobile action bar — lg:hidden */}
             <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                <Button variant="ghost" onClick={onImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
+                <Button variant="ghost" onClick={onImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Nhập NV
                 </Button>
@@ -79,7 +79,7 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     Xoá
                 </Button>
-                <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
+                <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                     Ca Xoay
                 </Button>

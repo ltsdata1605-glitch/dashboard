@@ -40,7 +40,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
             <div className={`flex items-center justify-between flex-wrap gap-2 ${compact ? 'mb-2' : 'mb-4'}`}>
                 <div>
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <Icon name="database" size={4} className="text-indigo-500" />
+                        <Icon name="database" size={4} className="text-sky-500" />
                         <span>Kho Dữ Liệu Tích Lũy ({registry.length})</span>
                     </h4>
                     {!compact && (
@@ -54,7 +54,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                         variant="unstyled" size="none"
                         onClick={onViewReport}
                         id="btn-view-historical-report"
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="play" size={3.5} />
                         <span>Xem Báo Cáo Gộp</span>
@@ -83,7 +83,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         onChange={() => onToggleActive(file.id)}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-5 h-5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all flex items-center justify-center after:content-[''] after:w-2.5 after:h-1.5 after:border-white after:border-b-2 after:border-l-2 after:-rotate-45 after:translate-y-[-1px] after:opacity-0 peer-checked:after:opacity-100"></div>
+                                    <div className="w-5 h-5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md peer-checked:bg-sky-600 peer-checked:border-sky-600 transition-all flex items-center justify-center after:content-[''] after:w-2.5 after:h-1.5 after:border-white after:border-b-2 after:border-l-2 after:-rotate-45 after:translate-y-[-1px] after:opacity-0 peer-checked:after:opacity-100"></div>
                                 </label>
 
                                 <div className="min-w-0 flex-1">
@@ -96,7 +96,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         >
                                             {file.filename}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/30 shrink-0">
+                                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-sky-50/50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/30 shrink-0">
                                             {file.rowCount.toLocaleString('vi-VN')} dòng
                                         </span>
                                         {file.isMissingLocalData && (

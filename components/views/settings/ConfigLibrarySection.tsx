@@ -42,7 +42,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setShowShareModal(true)}
-                        className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800 rounded-lg"
+                        className="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 dark:hover:bg-sky-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-sky-100 dark:border-sky-800 rounded-lg"
                     >
                         <Icon name="share-2" size={4} />
                         Đăng Bài Chia Sẻ
@@ -58,18 +58,18 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {sharedConfigs.map(config => (
-                        <div key={config.id} className="bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors rounded-lg">
+                        <div key={config.id} className="bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:border-sky-300 dark:hover:border-sky-700 transition-colors rounded-lg">
                             <div>
                                 <div className="flex items-start justify-between gap-2 mb-3">
                                     <h4 className="font-bold text-slate-800 dark:text-white line-clamp-1">{config.description}</h4>
-                                    <span className={`px-2 py-1 text-[10px] font-bold whitespace-nowrap uppercase tracking-wider flex-shrink-0 rounded-md ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'}`}>
+                                    <span className={`px-2 py-1 text-[10px] font-bold whitespace-nowrap uppercase tracking-wider flex-shrink-0 rounded-md ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'}`}>
                                         {config.role === 'admin' ? 'Super Admin' : config.role === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
                                     </span>
                                 </div>
                                 <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 mb-4">
                                     <p className="flex items-center gap-1.5"><Icon name="user" size={3.5} /> Được tạo bởi: <strong>{config.authorName}</strong></p>
                                     <p className="flex items-center gap-1.5"><Icon name="calendar-days" size={3.5} /> Ngày đăng: {config.createdAt?.toDate ? config.createdAt.toDate().toLocaleDateString('vi-VN') : 'Mới đây'}</p>
-                                    {config.role !== 'admin' && <p className="flex items-center gap-1.5 text-indigo-500"><Icon name="map-pin" size={3.5} /> Phạm vi: Kho {config.departmentId}</p>}
+                                    {config.role !== 'admin' && <p className="flex items-center gap-1.5 text-sky-500"><Icon name="map-pin" size={3.5} /> Phạm vi: Kho {config.departmentId}</p>}
                                 </div>
                             </div>
                             
@@ -104,7 +104,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                 onClose={() => setShowShareModal(false)}
                 title={
                     <span className="flex items-center gap-2">
-                        <Icon name="share-2" size={5} className="text-indigo-500" />
+                        <Icon name="share-2" size={5} className="text-sky-500" />
                         Chia Sẻ Cấu Hình
                     </span>
                 }
@@ -112,7 +112,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                 footer={
                     <div className="flex justify-end gap-3">
                         <Button variant="unstyled" size="none" onClick={() => setShowShareModal(false)} className="px-4 py-2 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Hủy Bỏ</Button>
-                        <Button variant="unstyled" size="none" onClick={onShareConfig} disabled={isSharing} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
+                        <Button variant="unstyled" size="none" onClick={onShareConfig} disabled={isSharing} className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
                             {isSharing ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="check" size={4} />}
                             {isSharing ? 'Đang Đăng...' : 'Đăng Tải'}
                         </Button>
@@ -131,7 +131,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                             value={shareDescription}
                             onChange={e => setShareDescription(e.target.value)}
                             placeholder="Ví dụ: Mẫu Báo cáo Phụ Kiện T5/2024"
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:text-white"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none transition-all dark:text-white"
                         />
                     </div>
                 </div>

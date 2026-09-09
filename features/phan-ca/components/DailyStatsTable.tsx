@@ -95,7 +95,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                         key={idx} 
                                         onClick={() => setSelectedDay(dh.d)}
                                         className={`px-1 py-1.5 text-center border-b border-r border-slate-200 min-w-[48px] cursor-pointer transition-colors ${
-                                            isSelected ? 'bg-indigo-100 border-b-2 border-b-indigo-500' :
+                                            isSelected ? 'bg-sky-100 border-b-2 border-b-indigo-500' :
                                             dh.isWeekend ? 'bg-rose-50 hover:bg-rose-100 text-rose-600' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'
                                         }`}
                                     >
@@ -132,7 +132,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                                         }
                                                     }
                                                 }}
-                                                className="w-full text-center font-bold bg-slate-50 border border-slate-200 p-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-none"
+                                                className="w-full text-center font-bold bg-slate-50 border border-slate-200 p-1.5 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-none"
                                                 min="0"
                                             />
                                         </td>
@@ -156,7 +156,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                         }
 
                                         if (isSelected) {
-                                            bgClass = "bg-indigo-50/70";
+                                            bgClass = "bg-sky-50/70";
                                         }
 
                                         return (

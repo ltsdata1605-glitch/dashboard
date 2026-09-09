@@ -170,7 +170,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
     if (!employeeData) {
         return (
             <div className="flex items-center justify-center p-8 h-64">
-                <Icon name="loader-2" className="animate-spin text-indigo-500" size={8} />
+                <Icon name="loader-2" className="animate-spin text-sky-500" size={8} />
                 <span className="ml-3 text-slate-500 font-medium">Đang tải dữ liệu...</span>
             </div>
         );

@@ -39,8 +39,8 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
                 iconColor: 'text-amber-600 dark:text-amber-400', textColor: 'text-amber-700 dark:text-amber-300', switchBg: 'bg-amber-600'
             };
             default: return {
-                 bg: 'bg-indigo-50 dark:bg-indigo-900/20', iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
-                 iconColor: 'text-indigo-600 dark:text-indigo-400', textColor: 'text-indigo-700 dark:text-indigo-300', switchBg: 'bg-indigo-600'
+                 bg: 'bg-sky-50 dark:bg-sky-900/20', iconBg: 'bg-sky-100 dark:bg-sky-900/40',
+                 iconColor: 'text-sky-600 dark:text-sky-400', textColor: 'text-sky-700 dark:text-sky-300', switchBg: 'bg-sky-600'
             };
         }
     };
@@ -285,7 +285,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         {/* 1. Kho Tạo */}
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
-                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-600 dark:text-sky-400 shadow-sm">
                                     <Icon name="warehouse" size={3} className="sm:hidden" />
                                     <Icon name="warehouse" size={3.5} className="hidden sm:block" />
                                 </div>

@@ -203,7 +203,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     variant="unstyled" size="none"
-                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     title={tabLabel}
                                 >
                                     <Icon name={tabIcon} size={4} className="lg:hidden" />
@@ -252,7 +252,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 colSpan={2} 
                                 rowSpan={2} 
                                 onClick={() => onSort('name')}
-                                className="px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 select-none cursor-pointer h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors group/nhanvien"
+                                className="px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 select-none cursor-pointer h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors group/nhanvien"
                             >
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
@@ -311,7 +311,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         if (!isNaN(num)) setTempTarget(new Intl.NumberFormat('vi-VN').format(num));
                                                     }}
                                                     onBlur={handleSaveTarget}
-                                                    className="w-20 px-2 py-0.5 text-xs text-center border rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-indigo-400 dark:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                                    className="w-20 px-2 py-0.5 text-xs text-center border rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-sky-400 dark:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:outline-none"
                                                     autoFocus
                                                     placeholder="VD: 100"
                                                     onKeyDown={e => {
@@ -325,9 +325,9 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                                                 {h.sos ? <Icon name="alert-triangle" size={3} /> : null}
                                                 {h.label}
-                                                {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500 hide-on-export" />}
+                                                {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-sky-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
+                                                    <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-sky-600 dark:hover:text-sky-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
                                                     </Button>
                                                 )}

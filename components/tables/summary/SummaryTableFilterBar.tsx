@@ -92,7 +92,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => setIsFullScreen(!isFullScreen)}
-                                        className={`h-6 w-6 lg:h-7 lg:w-7 rounded-lg flex items-center justify-center transition-colors ${isFullScreen ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-800/60' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                                        className={`h-6 w-6 lg:h-7 lg:w-7 rounded-lg flex items-center justify-center transition-colors ${isFullScreen ? 'bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-800/60' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}
                                         title={isFullScreen ? "Thu nhỏ bảng" : "Phóng to toàn màn hình"}
                                     >
                                         <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={4} className="lg:hidden" />

@@ -74,7 +74,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           <div className="p-2 border-b border-slate-100 sticky top-0 bg-white z-10 rounded-t-lg">
             <input
               type="text"
-              className="w-full text-base sm:text-sm border-slate-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
+              className="w-full text-base sm:text-sm border-slate-200 rounded-md focus:ring-sky-500 focus:border-sky-500 px-3 py-2"
               placeholder="Tìm kiếm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -86,7 +86,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               <label className="flex items-center px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-md border-b border-slate-100 mb-1">
                 <input
                   type="checkbox"
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mr-3 w-4 h-4 sm:w-3 sm:h-3"
+                  className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 mr-3 w-4 h-4 sm:w-3 sm:h-3"
                   checked={selectedValues.length === options.length && options.length > 0}
                   onChange={handleSelectAll}
                 />
@@ -100,7 +100,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 <label key={opt} className="flex items-center px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-md">
                   <input
                     type="checkbox"
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mr-3 w-4 h-4 sm:w-3 sm:h-3"
+                    className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 mr-3 w-4 h-4 sm:w-3 sm:h-3"
                     checked={selectedValues.includes(opt)}
                     onChange={() => handleToggle(opt)}
                   />

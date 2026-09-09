@@ -52,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
           <h3 className="font-bold text-xs text-slate-900 line-clamp-1" title={result.sanPham}>
             {result.sanPham}
           </h3>
-          <span className="font-mono text-[10px] text-indigo-600">{result.msp}</span>
+          <span className="font-mono text-[10px] text-sky-600">{result.msp}</span>
         </div>
         
         <div className={`flex items-center gap-3 ${isMobile ? 'mt-0.5' : ''} w-full sm:w-auto`}>
@@ -98,9 +98,9 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 variant="ghost"
                 onClick={() => onToggleSelect(result.msp)}
                 title={result.selected ? "Bỏ chọn" : "Chọn in"}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-indigo-600 transition-colors p-0.5"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-sky-600 transition-colors p-0.5"
             >
-                {result.selected ? <CheckboxCheckedIcon className="h-7 w-7 text-indigo-600" /> : <CheckboxIcon className="h-7 w-7" />}
+                {result.selected ? <CheckboxCheckedIcon className="h-7 w-7 text-sky-600" /> : <CheckboxIcon className="h-7 w-7" />}
             </Button>
             <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-200">
                 <Button
@@ -159,16 +159,16 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
 ProductCard.displayName = 'ProductCard';
 
 const Annotation: React.FC<{ number: number; className: string }> = ({ number, className }) => (
-    <div className={`absolute w-5 h-5 bg-indigo-600 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm ${className}`}>
+    <div className={`absolute w-5 h-5 bg-sky-600 text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm ${className}`}>
         {number}
     </div>
 );
 
 const InstructionsPanel = () => (
-  <div className="text-left p-8 bg-white rounded-2xl shadow-xl border-2 border-indigo-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
+  <div className="text-left p-8 bg-white rounded-2xl shadow-xl border-2 border-sky-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
     <div className="flex items-center gap-4 mb-6">
-        <div className="p-3 bg-indigo-100 rounded-full">
-            <InfoIcon className="h-8 w-8 text-indigo-600" />
+        <div className="p-3 bg-sky-100 rounded-full">
+            <InfoIcon className="h-8 w-8 text-sky-600" />
         </div>
         <div>
             <h3 className="text-2xl font-bold text-slate-900">Hướng dẫn sử dụng Hệ thống In Sticker Event</h3>
@@ -178,12 +178,12 @@ const InstructionsPanel = () => (
 
     <div className="text-base text-slate-700 space-y-3 leading-relaxed">
       <ol className="list-none space-y-2">
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">1.</span><span><strong>Truy cập:</strong> <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">ERP &gt; In bảng giá</code></span></li>
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">2.</span><span><strong>Chọn Ngành hàng:</strong> <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">Điện gia dụng, Dụng cụ nhà bếp,...</code></span></li>
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">3.</span><span><strong>Chọn Nhóm hàng:</strong> <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">Tất cả</code></span></li>
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">4.</span><span><strong>Chọn Vị trí trưng bày:</strong> <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">2 - Kệ trưng bày</code></span></li>
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">5.</span><span><strong>Chọn Mẫu in:</strong> <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">81 - Bảng giá Gia Dụng - Phu Kiện rút gọn...</code></span></li>
-          <li className="flex items-start"><span className="font-bold text-indigo-600 mr-2 w-5 text-center">6.</span><span><strong>Xuất file:</strong> Bấm nút <strong className="text-slate-900">"In"</strong>, sau đó chọn định dạng <code className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-1 rounded-md">Excel Workbook Data - only (*.xlsx)</code>.</span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">1.</span><span><strong>Truy cập:</strong> <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">ERP &gt; In bảng giá</code></span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">2.</span><span><strong>Chọn Ngành hàng:</strong> <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">Điện gia dụng, Dụng cụ nhà bếp,...</code></span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">3.</span><span><strong>Chọn Nhóm hàng:</strong> <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">Tất cả</code></span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">4.</span><span><strong>Chọn Vị trí trưng bày:</strong> <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">2 - Kệ trưng bày</code></span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">5.</span><span><strong>Chọn Mẫu in:</strong> <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">81 - Bảng giá Gia Dụng - Phu Kiện rút gọn...</code></span></li>
+          <li className="flex items-start"><span className="font-bold text-sky-600 mr-2 w-5 text-center">6.</span><span><strong>Xuất file:</strong> Bấm nút <strong className="text-slate-900">"In"</strong>, sau đó chọn định dạng <code className="text-sky-700 font-semibold bg-sky-50 px-2 py-1 rounded-md">Excel Workbook Data - only (*.xlsx)</code>.</span></li>
       </ol>
     </div>
     
@@ -191,7 +191,7 @@ const InstructionsPanel = () => (
          <h4 className="font-semibold text-lg text-slate-800 mb-2">Lưu ý quan trọng</h4>
          <ul className="list-disc list-outside space-y-2 pl-5 text-slate-600">
             <li>Mỗi lần chỉ xuất được <strong>một ngành hàng</strong>. Để in nhiều ngành, bạn cần xuất nhiều file.</li>
-            <li>Công cụ cho phép <strong className="text-indigo-700">tải lên nhiều file cùng lúc</strong> để gộp dữ liệu từ nhiều ngành hàng.</li>
+            <li>Công cụ cho phép <strong className="text-sky-700">tải lên nhiều file cùng lúc</strong> để gộp dữ liệu từ nhiều ngành hàng.</li>
             <li>Sau khi có file, hãy sử dụng nút <strong className="text-emerald-600">"Tải lên"</strong> ở bảng điều khiển bên trái.</li>
          </ul>
     </div>
@@ -255,10 +255,10 @@ const InstructionsPanel = () => (
             </div>
          </div>
          <div className="mt-4 px-4 text-xs text-slate-600 grid grid-cols-2 gap-x-6 gap-y-2">
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">1</div><span>Mã QR của sản phẩm</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">2</div><span>Tên người in & Tổng thưởng</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">3</div><span>Tên, Giá & Khuyến mãi</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">4</div><span>Ngày giờ in sticker</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">1</div><span>Mã QR của sản phẩm</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">2</div><span>Tên người in & Tổng thưởng</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">3</div><span>Tên, Giá & Khuyến mãi</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">4</div><span>Ngày giờ in sticker</span></div>
          </div>
     </div>
   </div>
@@ -298,7 +298,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                     <Button
                         variant="ghost"
                         onClick={() => setVisibleCount(prev => prev + 50)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold rounded-xl border border-sky-200 dark:border-sky-800 transition-colors text-sm shadow-sm flex items-center gap-2"
                     >
                         Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
                     </Button>

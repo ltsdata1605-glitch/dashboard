@@ -70,13 +70,13 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     // dùng cùng tông với các thẻ khác (500/400/300) khiến indigo đọc gần giống sky (đều
     // là "màu xanh" khi nhìn nhanh). Tông đậm này ngả tím rõ, tách biệt hẳn khỏi sky.
     indigo: {
-        gradient: 'from-indigo-700 via-indigo-600 to-indigo-500',
-        iconBg: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-500/20 dark:to-indigo-500/15',
-        iconText: 'text-indigo-700 dark:text-indigo-400',
-        progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-        progressFill: 'bg-gradient-to-r from-indigo-700 to-indigo-500',
-        glowColor: 'shadow-indigo-300/50 dark:shadow-indigo-500/20',
-        borderHover: 'hover:border-indigo-400 dark:hover:border-indigo-600',
+        gradient: 'from-sky-700 via-sky-600 to-sky-500',
+        iconBg: 'bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-500/20 dark:to-sky-500/15',
+        iconText: 'text-sky-700 dark:text-sky-400',
+        progressBg: 'bg-sky-100 dark:bg-sky-500/10',
+        progressFill: 'bg-gradient-to-r from-sky-700 to-sky-500',
+        glowColor: 'shadow-sky-300/50 dark:shadow-sky-500/20',
+        borderHover: 'hover:border-sky-400 dark:hover:border-sky-600',
     },
 };
 

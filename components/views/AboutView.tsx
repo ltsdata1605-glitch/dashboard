@@ -19,21 +19,21 @@ export default function AboutView() {
     return (
         <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-32 animate-in fade-in duration-500 max-w-7xl mx-auto">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-sky-800 p-5 sm:p-8 text-white shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-sky-600 via-sky-700 to-sky-800 p-5 sm:p-8 text-white shadow-xl">
                 <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-10 pointer-events-none">
                     <Cpu size={200} className="w-32 h-32 sm:w-48 sm:h-48" />
                 </div>
                 <div className="relative z-10 max-w-3xl">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 backdrop-blur-md mb-3 sm:mb-4">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/30 border border-sky-400/30 backdrop-blur-md mb-3 sm:mb-4">
                         <Sparkles size={14} className="text-amber-300 w-3.5 h-3.5" />
-                        <span className="text-xs font-bold tracking-wide uppercase text-indigo-100">Phiên bản 11.2 - 2026</span>
+                        <span className="text-xs font-bold tracking-wide uppercase text-sky-100">Phiên bản 11.2 - 2026</span>
                     </div>
-                    <h1 className="text-2xl sm:text-4xl font-black mb-2 sm:mb-3 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-200">
+                    <h1 className="text-2xl sm:text-4xl font-black mb-2 sm:mb-3 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-sky-200">
                         Dashboard YCX
                         <br />
                         Bảo Mật Tuyệt Đối
                     </h1>
-                    <p className="text-sm sm:text-base text-indigo-100/90 leading-relaxed max-w-2xl font-medium">
+                    <p className="text-sm sm:text-base text-sky-100/90 leading-relaxed max-w-2xl font-medium">
                         Nền tảng phân tích dữ liệu bán hàng hiệu suất cao tích hợp Trợ lý ảo AI. Xử lý file Excel dung lượng lớn cực kỳ mượt mà, trực quan hóa dữ liệu đa chiều mang lại cái nhìn sâu sắc cho nhà quản trị.
                     </p>
                 </div>
@@ -42,7 +42,7 @@ export default function AboutView() {
             {/* Core Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 mb-3 sm:mb-4">
                         <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-1.5 sm:mb-2">Tốc Độ Xử Lý Nhanh</h3>
@@ -90,7 +90,7 @@ export default function AboutView() {
                     <div className="p-4 sm:p-5">
                         <ul className="space-y-2.5 sm:space-y-3">
                             <li className="flex gap-2.5 sm:gap-3">
-                                <Target className="text-indigo-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <Target className="text-sky-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300"><strong className="text-slate-800 dark:text-slate-200">Giao diện Hiện đại:</strong> Thiết kế "High-Density" phẳng hóa, tích hợp hệ thống Badges (#1, #2) trực quan cho các phân hệ Thi Đua & Phân Tích.</span>
                             </li>
                             <li className="flex gap-2.5 sm:gap-3">
@@ -120,7 +120,7 @@ export default function AboutView() {
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300"><strong className="text-slate-800 dark:text-slate-200">Tự động hoá Nhập liệu:</strong> Tính năng "Cập nhật thưởng" sao chép ID hàng loạt (Context-Aware Clipboard), tự động chuyển tab loại bỏ thao tác thủ công.</span>
                             </li>
                             <li className="flex gap-2.5 sm:gap-3">
-                                <Shield className="text-indigo-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <Shield className="text-sky-500 shrink-0 mt-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300"><strong className="text-slate-800 dark:text-slate-200">An toàn Dữ liệu:</strong> Cơ chế Backup / Restore cấu hình hệ thống an toàn qua IndexedDB, bảo mật tuyệt đối (Client-side) không truyền tải dữ liệu nhạy cảm.</span>
                             </li>
                             <li className="flex gap-2.5 sm:gap-3">

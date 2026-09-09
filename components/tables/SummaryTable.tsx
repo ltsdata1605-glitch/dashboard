@@ -477,7 +477,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     const avgQty = Math.ceil(grandTotal.totalQuantity / daysCountData.current);
                                     return (
                                         <>
-                                            <td className={`${footerCellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                                            <td className={`${footerCellClass} font-bold text-sky-600 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
                                                 {avgQty > 0 ? formatQuantity(avgQty) : '-'}
                                             </td>
                                             {isComparisonMode && (() => {
@@ -519,7 +519,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     const avgRev = grandTotal.totalRevenue / daysCountData.current;
                                     return (
                                         <>
-                                            <td className={`${footerCellClass} font-bold text-indigo-700 dark:text-indigo-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                                            <td className={`${footerCellClass} font-bold text-sky-700 dark:text-sky-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
                                                 {formatCurrency(avgRev)}
                                             </td>
                                             {isComparisonMode && (() => {

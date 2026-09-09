@@ -113,7 +113,7 @@ const Legend: React.FC<LegendProps> = ({
                         {onSbhGenderBoostChange && (
                             <div className={`flex items-center gap-1.5 h-9 px-3 border text-xs transition-colors select-none ${
                                 sbhGenderBoost.gender 
-                                ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-800 dark:text-indigo-300' 
+                                ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-800 dark:text-sky-300' 
                                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                             }`}>
                                 <span className="font-bold uppercase tracking-wider whitespace-nowrap">Ưu tiên SBH:</span>
@@ -134,8 +134,8 @@ const Legend: React.FC<LegendProps> = ({
                                 </select>
 
                                 {sbhGenderBoost.gender && (
-                                    <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-indigo-200 dark:border-indigo-700">
-                                        <span className="font-bold text-indigo-600 dark:text-indigo-400">+</span>
+                                    <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-sky-200 dark:border-sky-700">
+                                        <span className="font-bold text-sky-600 dark:text-sky-400">+</span>
                                         <input
                                             type="number"
                                             min={1}
@@ -148,9 +148,9 @@ const Legend: React.FC<LegendProps> = ({
                                                     hours: val
                                                 });
                                             }}
-                                            className="w-10 h-6 text-center font-black bg-white dark:bg-slate-900 border border-indigo-300 dark:border-indigo-600 rounded px-0.5 text-indigo-900 dark:text-indigo-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                            className="w-10 h-6 text-center font-black bg-white dark:bg-slate-900 border border-sky-300 dark:border-sky-600 rounded px-0.5 text-sky-900 dark:text-sky-200 focus:outline-none focus:ring-1 focus:ring-sky-500 text-xs"
                                         />
-                                        <span className="font-bold text-indigo-600 dark:text-indigo-400">h</span>
+                                        <span className="font-bold text-sky-600 dark:text-sky-400">h</span>
                                     </div>
                                 )}
                             </div>
@@ -159,35 +159,35 @@ const Legend: React.FC<LegendProps> = ({
                         {/* TN in SBH toggle — pushed to right */}
                         <div className="ml-auto flex items-center gap-2">
                             {onAutoAddWeekendShiftsChange && (
-                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">
+                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
                                     <input
                                         type="checkbox"
                                         checked={autoAddWeekendShifts}
                                         onChange={(e) => onAutoAddWeekendShiftsChange(e.target.checked)}
-                                        className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                                        className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
                                     />
-                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 2,5 T7-CN</span>
+                                    <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tăng ca 2,5 T7-CN</span>
                                 </label>
                             )}
                             {onAutoAddWeekendShift1Change && (
-                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">
+                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
                                     <input
                                         type="checkbox"
                                         checked={autoAddWeekendShift1}
                                         onChange={(e) => onAutoAddWeekendShift1Change(e.target.checked)}
-                                        className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                                        className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
                                     />
-                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 1 T7-CN</span>
+                                    <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tăng ca 1 T7-CN</span>
                                 </label>
                             )}
-                            <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">
+                            <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
                                 <input
                                     type="checkbox"
                                     checked={includeTnInSbh}
                                     onChange={(e) => onIncludeTnInSbhChange(e.target.checked)}
-                                    className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                                    className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
                                 />
-                                <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tính TN vào SBH</span>
+                                <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tính TN vào SBH</span>
                             </label>
                         </div>
                     </div>

@@ -96,7 +96,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 onChange={props.onEmployeeNameChange}
                                 onBlur={props.onSaveEmployeeName}
                                 onKeyDown={props.onEmployeeNameKeyDown}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ${isEmployeeNameEmpty ? 'border-rose-300 bg-rose-50/50 placeholder-rose-300' : 'border-slate-300'}`}
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition ${isEmployeeNameEmpty ? 'border-rose-300 bg-rose-50/50 placeholder-rose-300' : 'border-slate-300'}`}
                                 autoFocus={!props.employeeName}
                             />
                             {isEmployeeNameEmpty && (
@@ -109,7 +109,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             <Button
                                 variant="ghost"
                                 onClick={() => props.onSetIsEditingEmployeeName(true)}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-sm text-indigo-600 hover:underline shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-sm text-sky-600 hover:underline shrink-0"
                             >
                                 (Sửa)
                             </Button>
@@ -134,7 +134,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 <Button
                                     variant="ghost"
                                     onClick={props.onOpenUserGuide}
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-indigo-600 rounded-full transition-colors"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-sky-600 rounded-full transition-colors"
                                     title="Xem hướng dẫn"
                                 >
                                     <Info className="h-4 w-4" />
@@ -146,7 +146,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 <input type="file" id="inventory-file-input" onChange={props.onInventoryFileChange} accept=".xlsx, .xls" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" disabled={props.isLoading} />
                                 <label
                                     htmlFor="inventory-file-input"
-                                    className={`flex items-center gap-2 py-2 px-2.5 rounded-lg border transition-all cursor-pointer ${props.isLoading ? 'bg-slate-50 border-slate-200 opacity-50' : 'bg-indigo-50 border-indigo-200 hover:border-indigo-400 text-indigo-700 hover:bg-indigo-100'}`}
+                                    className={`flex items-center gap-2 py-2 px-2.5 rounded-lg border transition-all cursor-pointer ${props.isLoading ? 'bg-slate-50 border-slate-200 opacity-50' : 'bg-sky-50 border-sky-200 hover:border-sky-400 text-sky-700 hover:bg-sky-100'}`}
                                 >
                                     <InventoryIcon className="h-4 w-4 shrink-0" />
                                     <div className="min-w-0">
@@ -183,15 +183,15 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
                 {/* Manager instructions */}
                 {isAdmin && props.showManagerInstructions && (
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
-                        <Button variant="ghost" onClick={props.onCloseInstructions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 absolute top-2.5 right-2.5 text-indigo-400 hover:text-indigo-700">
+                    <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 relative">
+                        <Button variant="ghost" onClick={props.onCloseInstructions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 absolute top-2.5 right-2.5 text-sky-400 hover:text-sky-700">
                             <TrashIcon className="h-4 w-4" />
                         </Button>
-                        <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-sky-900 mb-2 flex items-center gap-2">
                             <ShieldAlert className="h-4 w-4" />
                             Hướng dẫn Quản lý
                         </h3>
-                        <div className="space-y-2.5 text-[11px] leading-relaxed text-indigo-800">
+                        <div className="space-y-2.5 text-[11px] leading-relaxed text-sky-800">
                             <p><strong>B1:</strong> Click <span className="text-rose-600 font-bold">"Lấy file tồn kho"</span> &gt; Chọn nhóm cần in: ĐGD, DCNB, Phụ Kiện &gt; Chọn siêu thị &gt; Trạng thái MỚI &gt; Xem báo cáo &gt; Tải file.</p>
                             <p><strong>B2:</strong> Upload file vào <strong>"Tải File tồn kho"</strong>.</p>
                             <p><strong>B3:</strong> Chờ xử lý =&gt; <span className="text-emerald-600 font-bold">File mẫu tự động tải xuống.</span></p>
@@ -275,7 +275,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 variant="ghost"
                                 onClick={props.onSaveUserState}
                                 disabled={props.displayedProducts.length === 0}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md hover:bg-indigo-100 transition-colors border border-indigo-100 uppercase tracking-wide disabled:opacity-40"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md hover:bg-sky-100 transition-colors border border-sky-100 uppercase tracking-wide disabled:opacity-40"
                                 title="Đồng bộ lên Cloud"
                             >
                                 Đồng bộ Cloud
@@ -306,10 +306,10 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
                         {/* Print buttons — full width stacked */}
                         <div className="flex flex-col gap-2">
-                            <Button variant="ghost" onClick={props.onPrintSelected} disabled={selectedCount === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-indigo-200/40">
+                            <Button variant="ghost" onClick={props.onPrintSelected} disabled={selectedCount === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-sky-600 to-sky-700 text-white hover:from-sky-700 hover:to-sky-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-sky-200/40">
                                 <PrintIcon className="h-4 w-4" /> In đã chọn ({selectedCount})
                             </Button>
-                            <Button variant="ghost" onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            <Button variant="ghost" onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-sky-500 text-sky-600 bg-sky-50 hover:bg-sky-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 In tất cả ({props.displayedProducts.length})
                             </Button>
                         </div>

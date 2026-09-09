@@ -26,7 +26,7 @@ export const CloudSyncSection: React.FC<CloudSyncSectionProps> = ({
                     <div className={`p-3 rounded-lg ${
                         syncState === 'synced' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 
                         syncState === 'error' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' : 
-                        'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                        'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
                     }`}>
                         <Icon 
                             name={syncState === 'synced' ? 'cloud-check' : syncState === 'error' ? 'cloud-off' : 'cloud-snow'} 
@@ -38,7 +38,7 @@ export const CloudSyncSection: React.FC<CloudSyncSectionProps> = ({
                         <h4 className="text-base font-bold text-slate-800 dark:text-white">Sao Lưu Toàn Diện</h4>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Mọi bộ lọc, bảng tự tạo, cột tuỳ chỉnh cá nhân sẽ được tự động Push lên mây khi bạn rời ứng dụng, và tự động Pull về trên thiết bị khác.</p>
                         <p className="text-xs font-bold mt-2 text-slate-400 dark:text-slate-500">
-                            Lần cập nhật cuối: <span className="text-indigo-500">{lastSyncTime ? lastSyncTime.toLocaleTimeString('vi-VN') : 'Đang đợi thao tác Mới'}</span>
+                            Lần cập nhật cuối: <span className="text-sky-500">{lastSyncTime ? lastSyncTime.toLocaleTimeString('vi-VN') : 'Đang đợi thao tác Mới'}</span>
                         </p>
                     </div>
                 </div>
@@ -48,8 +48,8 @@ export const CloudSyncSection: React.FC<CloudSyncSectionProps> = ({
                     disabled={syncState === 'syncing' || !user || isDemoMode}
                     className={`px-5 py-2.5 whitespace-nowrap font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto rounded-lg
                         ${syncState === 'syncing'
-                            ? 'bg-indigo-100 text-indigo-400 dark:bg-indigo-900/20 cursor-not-allowed'
-                            : 'bg-white border-2 border-indigo-100 text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-indigo-400 dark:hover:border-indigo-500'}`}
+                            ? 'bg-sky-100 text-sky-400 dark:bg-sky-900/20 cursor-not-allowed'
+                            : 'bg-white border-2 border-sky-100 text-sky-600 hover:border-sky-500 hover:bg-sky-50 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400 dark:hover:border-sky-500'}`}
                 >
                     <Icon name={syncState === 'syncing' ? 'loader-2' : 'refresh-ccw'} size={4} className={syncState === 'syncing' ? 'animate-spin' : ''} />
                     {syncState === 'syncing' ? 'Đang Sao Lưu...' : 'Bắt Buộc Lưu Trữ'}

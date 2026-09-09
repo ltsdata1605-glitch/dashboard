@@ -22,7 +22,7 @@ const CheckboxOption: React.FC<{
             id={id}
             checked={checked}
             onChange={(e) => onChange(id, e.target.checked)}
-            className="h-5 w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
         />
         <span className="text-sm font-medium text-slate-800">{label}</span>
     </label>
@@ -41,7 +41,7 @@ const FontUploadSection: React.FC<{
             {fontName ? (
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center font-bold text-xs">Aa</div>
+                        <div className="h-8 w-8 bg-sky-100 text-sky-600 rounded flex items-center justify-center font-bold text-xs">Aa</div>
                         <div className="overflow-hidden">
                             <p className="text-sm font-medium text-slate-900 truncate max-w-[150px]">{fontName}</p>
                             <p className="text-xs text-slate-500">Đã tải lên</p>
@@ -67,8 +67,8 @@ const FontUploadSection: React.FC<{
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-full file:border-0
                         file:text-sm file:font-semibold
-                        file:bg-indigo-50 file:text-indigo-700
-                        hover:file:bg-indigo-100
+                        file:bg-sky-50 file:text-sky-700
+                        hover:file:bg-sky-100
                         cursor-pointer"
                     />
                 </div>
@@ -146,7 +146,7 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2"
                     >
                         Xong
                     </Button>
@@ -171,7 +171,7 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
                         id="tagsPerPage"
                         value={settings.tagsPerPage}
                         onChange={handleSelectChange}
-                        className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                     >
                         <option value={4}>4 sticker / trang (Lớn nhất)</option>
                         <option value={8}>8 sticker / trang</option>

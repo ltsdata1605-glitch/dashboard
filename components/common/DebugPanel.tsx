@@ -22,14 +22,14 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
         <div className={`debug-panel ${isVisible ? '' : 'hidden'}`}>
             <div className="debug-panel-header">
                 <div className="flex items-center gap-3">
-                    <Icon name="bug" className="w-5 h-5 text-indigo-500" />
+                    <Icon name="bug" className="w-5 h-5 text-sky-500" />
                     <h3 className="font-bold text-lg">Bảng Gỡ Lỗi Giao Diện</h3>
                 </div>
                 <div className="flex items-center gap-4">
                     <Button
                         variant="unstyled" size="none"
                         onClick={onToggleInspector}
-                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-rose-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
+                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-rose-500 text-white animate-pulse' : 'bg-sky-500 text-white hover:bg-sky-600'}`}
                     >
                         {isInspectorActive ? 'TẮT Inspector' : 'BẬT Inspector'}
                     </Button>
@@ -42,7 +42,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                 {info ? (
                     <div className="space-y-4">
                         <div>
-                            <h4 className="font-bold text-xl text-indigo-600 dark:text-indigo-400">{info.name}</h4>
+                            <h4 className="font-bold text-xl text-sky-600 dark:text-sky-400">{info.name}</h4>
                         </div>
                         <div>
                             <h5 className="font-semibold text-base mb-1 border-b border-slate-300 dark:border-slate-600 pb-1">Chức năng</h5>

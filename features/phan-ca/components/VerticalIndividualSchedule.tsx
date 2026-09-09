@@ -112,7 +112,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
             } else if (info.role.includes("(Kho)")) {
                 rolePill = <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200">KHO</span>;
             } else if (info.role.includes("(TN)")) {
-                rolePill = <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold text-[11px] border border-indigo-200">THU NGÂN</span>;
+                rolePill = <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-sky-100 text-sky-800 font-bold text-[11px] border border-sky-200">THU NGÂN</span>;
             }
             
             return (
@@ -136,7 +136,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
                    {rolePill}
                 </td>
                 <td className="py-3 px-6 text-center whitespace-nowrap">
-                   {info.isManual && <span className="text-[11px] font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Đã đổi ca</span>}
+                   {info.isManual && <span className="text-[11px] font-semibold text-sky-500 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">Đã đổi ca</span>}
                    {!info.isManual && <span className="text-slate-300 text-[13px]">-</span>}
                 </td>
               </tr>

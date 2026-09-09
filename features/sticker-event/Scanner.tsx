@@ -269,7 +269,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
                   <Button
                       variant="ghost"
                       onClick={handleOpenInNewTab}
-                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
+                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2"
                   >
                       Mở trong Tab Mới để Quét
                   </Button>

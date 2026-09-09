@@ -314,7 +314,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         ))}
                         {batchItems.filter(it => it.selected).length > 20 && (
                             <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
-                                <span className="text-indigo-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
+                                <span className="text-sky-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
                                 <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
                             </div>
                         )}

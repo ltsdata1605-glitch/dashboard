@@ -156,7 +156,7 @@ export default function CouponConverterView() {
                         variant="secondary"
                         onClick={() => setShowGuide(!showGuide)}
                         leftIcon={<Icon name={showGuide ? "chevron-up" : "help-circle"} size={4} />}
-                        className="mt-6 rounded-full font-semibold border-indigo-100 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                        className="mt-6 rounded-full font-semibold border-sky-100 dark:border-sky-800/50 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/50"
                     >
                         {showGuide ? "Ẩn hướng dẫn sử dụng" : "Xem hướng dẫn sử dụng"}
                     </Button>
@@ -196,14 +196,14 @@ export default function CouponConverterView() {
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
                           <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                  <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full" />
+                                  <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />
                                   Nguồn Dữ Liệu
                               </h2>
                               <div className="flex items-center gap-1.5">
                                   <Button
                                       variant="unstyled" size="none"
                                       onClick={handlePasteClick}
-                                      className="h-8 px-2.5 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 rounded-lg"
+                                      className="h-8 px-2.5 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-800/50 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
                                   >
                                       <Icon name="clipboard-paste" size={4} />
@@ -252,7 +252,7 @@ export default function CouponConverterView() {
                                       value={inputText}
                                       onChange={handleInputChange}
                                       onPaste={handleContentPaste}
-                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none custom-scrollbar rounded-lg"
+                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-none custom-scrollbar rounded-lg"
                                       placeholder="Dán dữ liệu thô vào đây...&#10;Hệ thống sẽ tự động định dạng và sao chép kết quả."
                                   />
                               </div>
@@ -282,7 +282,7 @@ export default function CouponConverterView() {
                                 className={`h-8 px-3 rounded-lg hover:scale-105 active:scale-95 transition-all duration-300 font-bold ${
                                     isCopied
                                         ? '!bg-emerald-50 dark:!bg-emerald-900/30 !text-emerald-600 dark:!text-emerald-400 !border-emerald-200 dark:!border-emerald-800/60'
-                                        : '!bg-indigo-600 hover:!bg-indigo-500 !text-white !border-indigo-600'
+                                        : '!bg-sky-600 hover:!bg-sky-500 !text-white !border-sky-600'
                                 }`}
                                 leftIcon={isCopied ? <Icon name="check-circle" size={4} /> : <Icon name="copy" size={4} />}
                             />

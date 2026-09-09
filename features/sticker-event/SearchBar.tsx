@@ -40,7 +40,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onChange={onSearchChange}
             disabled={disabled}
             autoComplete="off"
-            className={`w-full ${isMobile ? 'pl-10 pr-3 py-2 text-sm' : 'pl-12 pr-4 py-3 text-base'} border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed`}
+            className={`w-full ${isMobile ? 'pl-10 pr-3 py-2 text-sm' : 'pl-12 pr-4 py-3 text-base'} border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:cursor-not-allowed`}
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
              <Button
@@ -49,7 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               onClick={onIconClick}
               disabled={disabled}
               title="Quét mã vạch/mã QR"
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <QRIcon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-slate-400`} />
             </Button>
@@ -60,7 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     <li
                         key={suggestion.msp}
                         onClick={() => onSuggestionClick(suggestion)}
-                        className="px-4 py-3 cursor-pointer hover:bg-indigo-50 transition-colors border-b border-slate-100 last:border-0 flex items-center justify-between"
+                        className="px-4 py-3 cursor-pointer hover:bg-sky-50 transition-colors border-b border-slate-100 last:border-0 flex items-center justify-between"
                         tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && onSuggestionClick(suggestion)}
                     >

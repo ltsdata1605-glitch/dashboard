@@ -36,7 +36,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
+    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
     'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
@@ -45,8 +45,8 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
     'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'Đơn giá': { label: 'GTĐH', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
-    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-400' },
+    'Đơn giá': { label: 'GTĐH', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
+    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
@@ -212,7 +212,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
                     className={`p-1.5 transition-colors ${
                         hiddenIndustries.length > 0
-                            ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Lọc ngành hàng"
@@ -258,7 +258,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
                         className={`p-1.5 transition-colors ${
                             hiddenSubIndustries.length > 0
-                                ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                                ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                         }`}
                         title="Lọc nhóm hàng"
@@ -307,7 +307,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
                     className={`p-1.5 transition-colors ${
                         isColumnSelectorOpen
-                            ? 'text-indigo-600 dark:text-indigo-400'
+                            ? 'text-sky-600 dark:text-sky-400'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
@@ -448,7 +448,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 );
             }
-            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(Math.round(numericValue))}</span>;
+            if (isDtqdCol) return <span className="text-sky-700 dark:text-sky-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(Math.round(numericValue))}</span>;
             if (isGTDHCol && isNumericCol) return fmtGTDH.format(numericValue);
             if (isPercentCol) {
                 const rounded = Math.round(numericValue);
@@ -539,13 +539,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                                 border-b border-slate-300 dark:border-slate-700
                                                                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
                                                                 bg-white dark:bg-slate-900 ${g.text}
-                                                                ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
+                                                                ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
                                                             `}
                                                             onClick={() => handleColumnSort(g.singleHeader)}
                                                             title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                         >
                                                             <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
-                                                            {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
+                                                            {sortIndicator && <span className="text-sky-500 dark:text-sky-400 ml-0.5">{sortIndicator}</span>}
                                                         </th>
                                                     );
                                                 }
@@ -584,13 +584,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             text-right align-middle whitespace-nowrap
                                                             cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
                                                             bg-white dark:bg-slate-900 ${g.text}
-                                                            ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
+                                                            ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
                                                         `}
                                                         onClick={() => handleColumnSort(h)}
                                                         title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                                     >
                                                         <span>{renderHeaderText(headerMapping[h] || h)}</span>
-                                                        {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
+                                                        {sortIndicator && <span className="text-sky-500 dark:text-sky-400 ml-0.5">{sortIndicator}</span>}
                                                     </th>
                                                 );
                                             })}

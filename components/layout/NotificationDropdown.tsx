@@ -229,7 +229,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                         <h3 className="font-bold text-sm sm:text-base text-slate-800 dark:text-white flex items-center gap-1.5 sm:gap-2">
                             Thông báo
                             {unreadCount > 0 && (
-                                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs">{unreadCount} mới</span>
+                                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] sm:text-xs">{unreadCount} mới</span>
                             )}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                 </Button>
                             )}
                             {unreadCount > 0 && (
-                                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
                                     Đánh dấu đã đọc
                                 </Button>
                             )}
@@ -272,14 +272,14 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                                 setIsOpen(false);
                                             }
                                         }}
-                                        className={`p-2.5 sm:p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors flex gap-2 sm:gap-3 ${!notif.read ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}
+                                        className={`p-2.5 sm:p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors flex gap-2 sm:gap-3 ${!notif.read ? 'bg-sky-50/30 dark:bg-sky-900/10' : ''}`}
                                     >
                                         <div className="mt-0.5 flex-shrink-0">
                                             <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                                                 notif.type === 'success' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' :
                                                 notif.type === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
                                                 notif.type === 'error' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' :
-                                                'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30'
+                                                'bg-sky-100 text-sky-600 dark:bg-sky-900/30'
                                             }`}>
                                                 <Icon name={
                                                     notif.type === 'success' ? 'check-circle' :
@@ -309,7 +309,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                             )}
                                         </div>
                                         {!notif.read && (
-                                            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                                            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-sky-500 mt-1.5 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
                                         )}
                                     </div>
                                 ))}

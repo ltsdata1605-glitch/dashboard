@@ -45,7 +45,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         variant="ghost"
         onClick={() => onTabChange('home')}
         className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-0.5 ${
-          activeTab === 'home' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-900'
+          activeTab === 'home' ? 'text-sky-600' : 'text-slate-500 hover:text-slate-900'
         }`}
       >
         <Home className="w-5 h-5" />
@@ -56,7 +56,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         variant="ghost"
         onClick={() => onTabChange('tools')}
         className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-0.5 ${
-          activeTab === 'tools' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-900'
+          activeTab === 'tools' ? 'text-sky-600' : 'text-slate-500 hover:text-slate-900'
         }`}
       >
         <Wrench className="w-5 h-5" />
@@ -68,7 +68,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         onClick={onScanClick}
         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-0.5 text-slate-500 hover:text-slate-900 relative"
       >
-        <div className="absolute -top-4 bg-indigo-600 text-white p-2.5 rounded-full shadow-md border-4 border-white">
+        <div className="absolute -top-4 bg-sky-600 text-white p-2.5 rounded-full shadow-md border-4 border-white">
           <ScanLine className="w-5 h-5" />
         </div>
         <span className="text-[9px] font-medium mt-6">Quét mã</span>

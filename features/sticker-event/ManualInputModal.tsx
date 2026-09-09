@@ -57,7 +57,7 @@ const InputField: React.FC<InputFieldProps> = ({ name, label, placeholder, value
             onChange={onChange}
             placeholder={placeholder}
             inputMode={inputMode}
-            className={`w-full px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${error ? 'border-rose-500' : 'border-slate-300'}`}
+            className={`w-full px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 ${error ? 'border-rose-500' : 'border-slate-300'}`}
         />
         {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
     </div>
@@ -228,7 +228,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
             onClose={onClose}
             title="Nhập thông tin sản phẩm thủ công"
             titleColorClass="text-slate-900"
-            subTitle={<>Ngành hàng: <b className="text-indigo-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</>}
+            subTitle={<>Ngành hàng: <b className="text-sky-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</>}
             maxWidth="lg"
             footer={
                 <div className="flex justify-between items-center">
@@ -241,7 +241,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                 type="button"
                                 variant="ghost"
                                 onClick={handlePrintSelected}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-5 py-2"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 h-10 px-5 py-2"
                             >
                                 In đã chọn ({selectedCount})
                             </Button>
@@ -281,7 +281,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             <textarea
                                 id="khuyenMai" name="khuyenMai" value={formData.khuyenMai} onChange={handleChange}
                                 placeholder="Nội dung khuyến mãi..." rows={1}
-                                className="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                             />
                         </div>
                         <div className="flex justify-between items-center pt-1">
@@ -319,13 +319,13 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                             type="checkbox"
                                             checked={selectedIds.size === manualProducts.length && manualProducts.length > 0}
                                             onChange={toggleSelectAll}
-                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                            className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                                         />
                                         Chọn tất cả
                                     </label>
                                 )}
                             </div>
-                            <span className="text-xs text-indigo-600 font-medium">Lưu trên Firebase</span>
+                            <span className="text-xs text-sky-600 font-medium">Lưu trên Firebase</span>
                         </div>
 
                         {manualProducts.length === 0 ? (
@@ -349,8 +349,8 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                                 isEditing
                                                     ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200'
                                                     : isSelected
-                                                    ? 'bg-indigo-50 border-indigo-200'
-                                                    : 'bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50'
+                                                    ? 'bg-sky-50 border-sky-200'
+                                                    : 'bg-white border-slate-200 hover:border-sky-200 hover:bg-slate-50'
                                             }`}
                                         >
                                             {/* Checkbox */}
@@ -359,7 +359,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                                 checked={isSelected}
                                                 onChange={() => p.firebaseId && toggleSelection(p.firebaseId)}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 flex-shrink-0"
+                                                className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 flex-shrink-0"
                                             />
 
                                             {/* Product info - clickable for edit */}

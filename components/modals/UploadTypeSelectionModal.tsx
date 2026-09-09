@@ -25,7 +25,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
         >
             <div className="-m-5 p-4">
                 <div className="flex flex-col items-center text-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2">
+                    <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2">
                         <Icon name="file-up" size={4.5} />
                     </div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">
@@ -58,13 +58,13 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => onSelect(true)}
-                        className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-indigo-500/30 dark:border-slate-800 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex items-start gap-2.5 group"
+                        className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-sky-500/30 dark:border-slate-800 dark:hover:border-sky-500/30 hover:bg-sky-50/10 dark:hover:bg-sky-950/10 transition-all flex items-start gap-2.5 group"
                     >
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/50 dark:border-indigo-500/20 group-hover:scale-105 transition-transform">
+                        <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20 group-hover:scale-105 transition-transform">
                             <Icon name="database" size={3.5} />
                         </div>
                         <div className="flex-1">
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-sky-600 dark:group-hover:text-sky-400">
                                 Lũy kế / Quá khứ
                             </h4>
                             <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5">

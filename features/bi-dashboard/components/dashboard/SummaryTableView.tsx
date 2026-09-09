@@ -12,7 +12,7 @@ import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
-    'Tên miền': { label: 'DANH MỤC', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    'Tên miền': { label: 'DANH MỤC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
     
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
@@ -323,7 +323,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
                 className={`p-1.5 transition-colors ${
                     hiddenSupermarkets.length > 0
-                        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                        ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
                 title="Lọc danh sách siêu thị"
@@ -372,7 +372,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
                 className={`p-1.5 transition-colors ${
                     isColumnSelectorOpen
-                        ? 'text-indigo-600 dark:text-indigo-400'
+                        ? 'text-sky-600 dark:text-sky-400'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
@@ -523,7 +523,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             ) : (
                                                                 h === 'Tên miền'
                                                                     ? 'TỔNG CỤM'
-                                                                    : h === 'DTQĐ' ? <span className="text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
+                                                                    : h === 'DTQĐ' ? <span className="text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>
                                                                     : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                             )}
                                                         </td>
@@ -537,7 +537,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     return (
                                         <tr
                                             key={rIdx}
-                                            className={`group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`}
+                                            className={`group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`}
                                         >
                                             {orderedHeaders.map(h => {
                                                 if (!visibleColumns.has(h)) return null;
@@ -551,7 +551,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 let colorCls = '';
                                                 if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
                                                 if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
-                                                if (h === 'DTQĐ') colorCls = ' text-indigo-700 dark:text-indigo-400 font-semibold';
+                                                if (h === 'DTQĐ') colorCls = ' text-sky-700 dark:text-sky-400 font-semibold';
 
                                                 return (
                                                     <td
@@ -560,13 +560,13 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                             tabular-nums align-middle whitespace-nowrap
                                                             ${h === 'Tên miền'
-                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`
+                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`
                                                                 : `text-center text-[11px] sm:text-[13px] ${colorCls || ''}`}
                                                         `}
                                                     >
                                                         {cell?.isMerged ? (
                                                             <div className="flex flex-col items-center leading-tight justify-center">
-                                                                <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-sky-700 dark:text-sky-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
                                                                 <span className={`text-[8px] font-black ${
                                                                     parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
                                                                 }`}>
@@ -582,7 +582,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                             {roundUp(val)}%
                                                                         </span>
                                                                     )
-                                                                : h === 'DTQĐ' ? <span className="font-semibold text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
+                                                                : h === 'DTQĐ' ? <span className="font-semibold text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>
                                                                 : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                         )}
                                                     </td>

@@ -34,7 +34,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
     'child': 'text-sky-700 dark:text-sky-300',           
     'manufacturer': 'text-primary-700 dark:text-primary-300', 
     'creator': 'text-amber-700 dark:text-amber-300',      
-    'product': 'text-indigo-700 dark:text-indigo-300'     
+    'product': 'text-sky-700 dark:text-sky-300'     
 };
 
 export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.memo(({
@@ -125,8 +125,8 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform relative pr-4">
                         {indentGuides}
                         {isExpandable ? (
-                            <Button variant="unstyled" size="none" className={`w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
-                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-300'} />
+                            <Button variant="unstyled" size="none" className={`w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-sky-400 bg-sky-50 dark:border-sky-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
+                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-300'} />
                             </Button>
                         ) : (
                             <span className="w-5 h-5 shrink-0 z-10"></span>
@@ -209,7 +209,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     const aov = (node && node.totalQuantity > 0) ? node.totalRevenue / node.totalQuantity : 0;
                     return (
                         <td key={`aov-${m.id}`} className="px-3 py-3 text-right">
-                            <span className="text-indigo-600 dark:text-indigo-400 font-medium text-[11px]">
+                            <span className="text-sky-600 dark:text-sky-400 font-medium text-[11px]">
                                 {aov > 0 ? formatCurrency(aov, 0) : '-'}
                             </span>
                         </td>

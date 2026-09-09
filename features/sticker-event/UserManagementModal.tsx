@@ -134,7 +134,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
             onClose={onClose}
             title={
                 <span className="flex items-center gap-2 text-xl">
-                    <UserIcon className="h-6 w-6 text-indigo-600" />
+                    <UserIcon className="h-6 w-6 text-sky-600" />
                     Quản lý người dùng
                 </span>
             }
@@ -163,7 +163,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                 <div className="-m-5 p-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12">
-                            <Loader2Icon className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
+                            <Loader2Icon className="h-10 w-10 text-sky-600 animate-spin mb-4" />
                             <p className="text-slate-500">Đang tải danh sách người dùng...</p>
                         </div>
                     ) : error ? (
@@ -189,7 +189,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                             value={user.role}
                                             onChange={(e) => handleRoleChange(user.uid, e.target.value as 'admin' | 'staff', user.username)}
                                             disabled={user.uid === currentUserId || user.username === 'admin'}
-                                            className="text-sm border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-50"
+                                            className="text-sm border-slate-300 rounded-lg focus:ring-sky-500 focus:border-sky-500 disabled:opacity-50 disabled:bg-slate-50"
                                         >
                                             <option value="staff">Nhân viên</option>
                                             <option value="admin">Quản trị viên</option>
@@ -254,7 +254,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                 }}
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-4 py-2 text-white rounded-lg transition-colors font-medium ${
                                     confirmAction.type === 'error' || confirmAction.type === 'info'
-                                        ? 'bg-indigo-600 hover:bg-indigo-700'
+                                        ? 'bg-sky-600 hover:bg-sky-700'
                                         : 'bg-rose-600 hover:bg-rose-700'
                                 }`}
                             >

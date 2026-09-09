@@ -54,7 +54,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
         <div className="flex-1 h-full flex items-center justify-center p-6 relative overflow-y-auto">
             {/* Background effects */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px]"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sky-500/10 dark:bg-sky-500/5 rounded-full blur-[100px]"></div>
             </div>
 
             <motion.div 
@@ -77,7 +77,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                 className="w-full h-full rounded-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 flex items-center justify-center text-3xl font-bold uppercase">
+                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-3xl font-bold uppercase">
                                 {user?.email ? user.email[0] : '?'}
                             </div>
                         )}
@@ -108,7 +108,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                 <span className="font-semibold">Vui lòng liên hệ Admin qua LINE để được duyệt nhanh nhất.</span>
                             </div>
 
-                            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-indigo-200 dark:border-indigo-800/50 rounded-2xl bg-white dark:bg-slate-900 mb-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-sky-200 dark:border-sky-800/50 rounded-2xl bg-white dark:bg-slate-900 mb-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Quét mã QR bằng LINE</p>
                                 <img 
                                     src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me/ti/p/VOUflskKB0&margin=10" 
@@ -156,7 +156,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                         variant="unstyled" size="none"
                                         type="button"
                                         onClick={() => setSelectedRole('manager')}
-                                        className={`justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'manager' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 text-slate-500'}`}
+                                        className={`justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'manager' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400' : 'border-slate-200 dark:border-slate-700 hover:border-sky-300 text-slate-500'}`}
                                     >
                                         <Icon name="briefcase" size={6} />
                                         <span className="font-semibold text-sm">Quản lý Kho</span>
@@ -182,7 +182,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                         value={deptId}
                                         onChange={(e) => setDeptId(e.target.value)}
                                         placeholder={selectedRole === 'manager' ? "VD: 1022, 58614, 12345" : "VD: 1022"} 
-                                        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 outline-none transition-all"
                                         required
                                     />
                                     {selectedRole === 'manager' ? (
@@ -228,7 +228,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                             variant="unstyled" size="none"
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-sky-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {isSubmitting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="check-circle" size={5} />}
                                             {isSubmitting ? 'Đang gửi...' : forceDeptUpdate ? 'Cập nhật Mã Kho' : 'Gửi Đăng Ký'}

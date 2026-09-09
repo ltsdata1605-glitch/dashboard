@@ -159,7 +159,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
                         {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-indigo-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
+                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-sky-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
                                 {selected.length}
                             </div>
                         )}
@@ -206,7 +206,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                         }
                                     }
                                 }}
-                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
@@ -245,12 +245,12 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                             onClick={() => handleToggleOption(option)}
                                             className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all justify-start ${
                                                 isSelected
-                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
+                                                ? 'bg-sky-50/60 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                         >
                                             <div className={`relative flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 transition-all shrink-0 ${
-                                                isSelected ? 'bg-indigo-600 border-indigo-600 shadow-sm' : 'border-slate-300 dark:border-slate-600'
+                                                isSelected ? 'bg-sky-600 border-sky-600 shadow-sm' : 'border-slate-300 dark:border-slate-600'
                                             }`}>
                                                 {isSelected && <><Icon name="check" size={2.5} className="text-white sm:hidden" /><Icon name="check" size={3} className="text-white hidden sm:block" /></>}
                                             </div>

@@ -274,10 +274,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     return (
         <div className="w-full">
             {pendingCloudSync && (
-                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-50/50 dark:border-indigo-500/20 rounded-2xl p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-sky-50/50 dark:border-sky-500/20 rounded-2xl p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="flex items-start justify-between gap-3 w-full min-w-0">
                         <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0 mt-0.5">
+                            <div className="p-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg shrink-0 mt-0.5">
                                 <Icon name="cloud-download" size={4} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -316,7 +316,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleAcceptCloudSync()}
-                            className="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
+                            className="flex-[2] py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
                         >
                             <Icon name="refresh-cw" size={3.5} />
                             Nạp dữ liệu đám mây
@@ -423,7 +423,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
                                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
-                                                <Icon name="users" size={3} className="text-indigo-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
+                                                <Icon name="users" size={3} className="text-sky-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">

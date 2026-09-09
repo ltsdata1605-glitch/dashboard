@@ -123,10 +123,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 variant="secondary"
                                 className={`h-8 w-8 transition-all ${
                                     showOnboarding 
-                                        ? 'discount-toggle-glow text-indigo-600 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20' 
+                                        ? 'discount-toggle-glow text-sky-600 border-sky-300 dark:border-sky-700 bg-sky-50 dark:bg-sky-900/20' 
                                         : discountDisplayMode === 'amount'
                                             ? '!bg-amber-50 dark:!bg-amber-950/20 !text-amber-600 dark:!text-amber-400 !border-amber-200 dark:!border-amber-900/30'
-                                            : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                            : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                 }`}
                                 title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                             >
@@ -134,14 +134,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             </Button>
                             
                             {showOnboarding && (
-                                <div className="absolute right-0 top-9 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="absolute right-0 top-9 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="font-bold flex items-center justify-between">
                                         <span>💡 Kiểu giảm giá mới!</span>
-                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-indigo-200 hover:text-white"><X size={12} /></Button>
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
                                     </div>
                                     <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                    <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</Button>
-                                    <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-indigo-600 rotate-45 border-l border-t border-indigo-500" />
+                                    <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
+                                    <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-sky-600 rotate-45 border-l border-t border-sky-500" />
                                 </div>
                             )}
                         </div>
@@ -153,8 +153,8 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             variant="secondary"
                             className={`h-8 w-8 transition-colors ${
                                 showBarcode 
-                                    ? '!bg-indigo-50 dark:!bg-indigo-950/50 !text-indigo-600 dark:!text-indigo-400 font-bold !border-indigo-200 dark:!border-indigo-800' 
-                                    : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                    ? '!bg-sky-50 dark:!bg-sky-950/50 !text-sky-600 dark:!text-sky-400 font-bold !border-sky-200 dark:!border-sky-800' 
+                                    : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                             }`}
                             title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                         >
@@ -174,7 +174,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 type="checkbox"
                                 checked={allChecked}
                                 onChange={(e) => toggleAllPagesSelection(e.target.checked)}
-                                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
+                                className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
                                 title="Chọn tất cả / Bỏ chọn tất cả"
                             />
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng: {manualPages.length}</span>
@@ -204,10 +204,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                     variant="secondary"
                                     className={`h-7 w-7 transition-all ${
                                         showOnboarding 
-                                            ? 'discount-toggle-glow text-indigo-600 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20' 
+                                            ? 'discount-toggle-glow text-sky-600 border-sky-300 dark:border-sky-700 bg-sky-50 dark:bg-sky-900/20' 
                                             : discountDisplayMode === 'amount'
                                                 ? '!bg-amber-50 dark:!bg-amber-950/20 !text-amber-600 dark:!text-amber-400 !border-amber-200 dark:!border-amber-900/30'
-                                                : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                                : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                     }`}
                                     title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                                 >
@@ -215,14 +215,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 </Button>
                                 
                                 {showOnboarding && (
-                                    <div className="absolute right-0 top-8 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="absolute right-0 top-8 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="font-bold flex items-center justify-between">
                                             <span>💡 Kiểu giảm giá mới!</span>
-                                            <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-indigo-200 hover:text-white"><X size={12} /></Button>
+                                            <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
                                         </div>
                                         <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</Button>
-                                        <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-indigo-600 rotate-45 border-l border-t border-indigo-500" />
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
+                                        <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-sky-600 rotate-45 border-l border-t border-sky-500" />
                                     </div>
                                 )}
                             </div>
@@ -234,8 +234,8 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 variant="secondary"
                                 className={`h-7 w-7 transition-colors ${
                                     showBarcode 
-                                        ? '!bg-indigo-50 dark:!bg-indigo-950/50 !text-indigo-600 dark:!text-indigo-400 font-bold !border-indigo-200 dark:!border-indigo-800' 
-                                        : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                        ? '!bg-sky-50 dark:!bg-sky-950/50 !text-sky-600 dark:!text-sky-400 font-bold !border-sky-200 dark:!border-sky-800' 
+                                        : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                 }`}
                                 title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                             >
@@ -250,7 +250,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={saveCurrentList} 
                                 size="icon"
                                 variant="secondary"
-                                className="h-7 w-7 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                className="h-7 w-7 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Lưu danh sách"
                             >
                                 <Save size={13} />
@@ -277,7 +277,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={() => setPriceSource('sale')}
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
                                     priceSource === 'sale'
-                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                                 }`}
                             >
@@ -288,7 +288,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={() => setPriceSource('service')}
                                 className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
                                     priceSource === 'service'
-                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                                 }`}
                             >
@@ -317,9 +317,9 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 key={page.id} 
                                 tabIndex={0}
                                 data-queue-index={idx}
-                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all group outline-none ${
+                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border cursor-pointer hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-sky-900/10 transition-all group outline-none ${
                                     page.id === activeQueuePageId 
-                                        ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/30 dark:bg-indigo-950/20' 
+                                        ? 'border-sky-600 dark:border-sky-500 ring-2 ring-sky-500/20 bg-sky-50/30 dark:bg-sky-950/20' 
                                         : 'border-slate-100 dark:border-slate-700'
                                 } ${page.selected === false ? 'opacity-50' : ''}`}
                                 onClick={() => {
@@ -363,9 +363,9 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                             e.stopPropagation();
                                             togglePageSelection(page.id);
                                         }}
-                                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
+                                        className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
                                     />
-                                    <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 w-6 h-6 flex items-center justify-center rounded-full shrink-0">{idx + 1}</span>
+                                    <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 w-6 h-6 flex items-center justify-center rounded-full shrink-0">{idx + 1}</span>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">
                                             {cleanDisplayLabel(page.label)}
@@ -406,7 +406,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                     <Button
                         variant="ghost"
                         onClick={() => setShowSavedLists(!showSavedLists)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full p-0 text-inherit flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors shrink-0"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full p-0 text-inherit flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 transition-colors shrink-0"
                     >
                         <span className="flex items-center gap-2">
                             <ImageIcon size={16} className="text-emerald-500" />

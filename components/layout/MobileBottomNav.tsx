@@ -108,8 +108,8 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 rel="noopener noreferrer"
                                                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
-                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
+                                                <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
+                                                    <tab.icon size={20} className="text-sky-600 dark:text-sky-400" />
                                                 </div>
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                             </a>
@@ -120,8 +120,8 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 onClick={() => handleTabClick(tab.id)}
                                                 className="justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
-                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
+                                                <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
+                                                    <tab.icon size={20} className="text-sky-600 dark:text-sky-400" />
                                                 </div>
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                             </Button>
@@ -159,7 +159,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 onClick={() => handleTabClick(tab.id)}
                                                 className={`justify-start w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                                                     isActive
-                                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                                                        ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                                 } ${isPending ? 'opacity-70' : ''}`}
                                             >
@@ -186,13 +186,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 key={tab.id}
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
+                                    isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
                                 } ${isPending ? 'opacity-70' : ''}`}
                             >
                                 {isActive && (
                                     <motion.div
                                         layoutId="mobile-tab-indicator"
-                                        className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
+                                        className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-sky-500 to-sky-400 dark:from-sky-400 dark:to-sky-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                     />
                                 )}
@@ -207,13 +207,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
                         variant="unstyled" size="none"
                         onClick={() => setIsMoreOpen(!isMoreOpen)}
                         className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                            isMoreActive || isMoreOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
+                            isMoreActive || isMoreOpen ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
                         }`}
                     >
                         {(isMoreActive && !isMoreOpen) && (
                             <motion.div
                                 layoutId="mobile-tab-indicator"
-                                className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
+                                className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-sky-500 to-sky-400 dark:from-sky-400 dark:to-sky-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         )}

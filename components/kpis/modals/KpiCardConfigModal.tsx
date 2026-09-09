@@ -215,7 +215,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     <Button variant="unstyled" size="none" onClick={onClose}>
                         Hủy bỏ
                     </Button>
-                    <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30">
+                    <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-sky-600/20 hover:shadow-md hover:shadow-sky-600/30">
                         <Icon name="save" size={4.5} /> Lưu Cấu Hình
                     </Button>
                 </div>
@@ -226,7 +226,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 <div className="w-[30%] sm:w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
                         <h3 className="font-bold text-[10px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
-                        <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-0.5 sm:gap-1">
+                        <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-sky-50 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400 font-semibold rounded-lg hover:bg-sky-100 transition-colors flex items-center gap-0.5 sm:gap-1">
                             <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Thêm
                         </Button>
                     </div>
@@ -242,7 +242,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white dark:bg-slate-900 rounded-md border ${editingCard?.id === config.id ? 'border-sky-500 shadow-sm' : 'border-slate-200 dark:border-slate-800'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-sky-500' : ''} transition-all cursor-pointer hover:border-sky-300`}
                                 onClick={() => setEditingCard(config)}
                             >
-                                <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-600 p-1">
+                                <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-sky-600 p-1">
                                     <Icon name="grip-vertical" size={4.5} />
                                 </div>
                                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${normColor(config.iconColor)}-100 text-${normColor(config.iconColor)}-600 dark:bg-${normColor(config.iconColor)}-500/20 dark:text-${normColor(config.iconColor)}-400`}>
@@ -415,7 +415,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <Select 
                                                 value={editingCard.operation || '+'}
                                                 onChange={(e) => updateEditingCard({ operation: e.target.value as '+' | '-' | '*' | '/' })}
-                                                className="w-16 sm:w-20 text-center font-bold text-indigo-600 text-sm sm:text-lg"
+                                                className="w-16 sm:w-20 text-center font-bold text-sky-600 text-sm sm:text-lg"
                                             >
                                                 <option value="+">+</option>
                                                 <option value="-">-</option>
@@ -461,7 +461,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     variant="unstyled" size="none"
                                                     key={icon}
                                                     onClick={() => updateEditingCard({ icon })}
-                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-indigo-100 border-indigo-300 text-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-sky-100 border-sky-300 text-sky-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
                                                 >
                                                     <Icon name={icon} size={3.5} className="sm:hidden" /><Icon name={icon} size={5} className="hidden sm:block" />
                                                 </Button>
@@ -476,7 +476,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     variant="unstyled" size="none"
                                                     key={color}
                                                     onClick={() => updateEditingCard({ iconColor: color })}
-                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-sky-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
                                                 >
                                                     <Icon name="palette" size={4} />
                                                 </Button>
@@ -491,7 +491,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             type="checkbox"
                                             checked={editingCard.hasTarget}
                                             onChange={(e) => updateEditingCard({ hasTarget: e.target.checked, targetType: e.target.checked ? 'custom' : 'none', customTargetValue: editingCard.customTargetValue || 0 })}
-                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                                         />
                                         Kích hoạt Mục tiêu tháng (Target)
                                     </label>

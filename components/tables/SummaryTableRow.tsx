@@ -41,7 +41,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
     'child': 'text-sky-700 dark:text-sky-300',           // Sky
     'manufacturer': 'text-primary-700 dark:text-primary-300', // Primary instead of Emerald
     'creator': 'text-amber-700 dark:text-amber-300',      // Amber
-    'product': 'text-indigo-700 dark:text-indigo-300'     // Violet
+    'product': 'text-sky-700 dark:text-sky-300'     // Violet
 };
 
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
@@ -295,7 +295,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* Avg Quantity (TrB SL) */}
                 {visibleColumns.includes('avgQuantity') && (
                     <>
-                        <td className={`${cellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-bold text-sky-600 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
                             {avgQuantity > 0 ? formatQuantity(avgQuantity) : '-'}
                         </td>
                         {isComparisonMode && (
@@ -309,7 +309,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* Avg Revenue (TrB DT) */}
                 {visibleColumns.includes('avgRevenue') && (
                     <>
-                        <td className={`${cellClass} font-bold text-indigo-700 dark:text-indigo-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-bold text-sky-700 dark:text-sky-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
                             {formatCurrency(avgRevenue)}
                         </td>
                         {isComparisonMode && (

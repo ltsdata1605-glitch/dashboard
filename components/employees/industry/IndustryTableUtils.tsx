@@ -53,8 +53,8 @@ export const HeaderCell: React.FC<{
     colorConfig?: { bg: string; text: string; border?: string };
 }> = ({ label, sortKey, onSort, sortConfig, className, colorConfig }) => {
     const isActive = sortConfig.key === sortKey;
-    const bgClass = colorConfig ? colorConfig.bg : (isActive ? 'bg-indigo-50/80 dark:bg-indigo-900/20' : 'bg-transparent');
-    const textClass = colorConfig ? colorConfig.text : (isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-300');
+    const bgClass = colorConfig ? colorConfig.bg : (isActive ? 'bg-sky-50/80 dark:bg-sky-900/20' : 'bg-transparent');
+    const textClass = colorConfig ? colorConfig.text : (isActive ? 'text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-slate-300');
     // Viền dưới 3px đổi màu theo nhóm cột (implementation_plan.md mục 61) — mặc định slate nếu
     // nhóm không truyền border (vd trạng thái active tạm thời không gắn với 1 nhóm cụ thể).
     const borderClass = colorConfig?.border || 'border-b-slate-400';

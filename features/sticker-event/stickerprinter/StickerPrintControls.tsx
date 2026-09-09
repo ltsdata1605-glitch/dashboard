@@ -173,7 +173,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 </Button>
                 <Button 
                     onClick={addCurrentPage}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-indigo-500/10 border-transparent"
+                    className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-sky-500/10 border-transparent"
                     title="Thêm trang hiện tại vào hàng đợi in"
                     leftIcon={<Plus size={16} />}
                 >
@@ -279,14 +279,14 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 </div>
 
                                 <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    <span className="font-bold text-indigo-600 dark:text-indigo-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
+                                    <span className="font-bold text-sky-600 dark:text-sky-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
                                 </div>
                             </div>
                         ) : (
                             <>
                                 {/* File upload actions */}
                                 <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
-                                    <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
+                                    <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
                                         <Upload size={14} />
                                         File giá ĐSD - TBBM
                                         <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
@@ -351,7 +351,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 Danh sách in ({selectedCount}/{batchItems.length})
                                             </h4>
                                             <div className="flex gap-2">
-                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-indigo-600 hover:text-indigo-700 font-bold uppercase">Chọn hết</Button>
+                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-sky-600 hover:text-sky-700 font-bold uppercase">Chọn hết</Button>
                                                 <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
                                                 <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-rose-500 hover:text-rose-600 font-bold uppercase">Xóa</Button>
                                             </div>
@@ -365,12 +365,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         />
                                         <div className="space-y-2">
                                             {filteredItems.map(item => (
-                                                <label key={item.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${item.selected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                                                <label key={item.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${item.selected ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                                     <input 
                                                         type="checkbox" 
                                                         checked={item.selected} 
                                                         onChange={() => toggleItemSelection(item.id)}
-                                                        className="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300"
+                                                        className="mt-1 w-4 h-4 text-sky-600 rounded border-slate-300"
                                                     />
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-bold text-xs text-slate-800 dark:text-white truncate" title={item.name}>{item.name}</p>
@@ -391,7 +391,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         {/* Guide Section */}
                         <div className="mt-4 border-t border-slate-100 dark:border-slate-700/60 pt-4 space-y-2.5">
                             <div className="flex items-center gap-1.5">
-                                <Settings size={13} className="text-indigo-500" />
+                                <Settings size={13} className="text-sky-500" />
                                 <span className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">H.Dẫn in & Sử dụng</span>
                             </div>
                             
@@ -400,15 +400,15 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
                                     <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
                                         <li className="flex items-center gap-1.5">
-                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span className="w-1 h-1 rounded-full bg-sky-500 shrink-0" />
                                             <span>Khổ giấy khuyên dùng: <strong>A4</strong></span>
                                         </li>
                                         <li className="flex items-center gap-1.5">
-                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span className="w-1 h-1 rounded-full bg-sky-500 shrink-0" />
                                             <span>Lề (Margins): <strong>Không Có (None)</strong></span>
                                         </li>
                                         <li className="flex items-center gap-1.5">
-                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span className="w-1 h-1 rounded-full bg-sky-500 shrink-0" />
                                             <span>Chọn: <strong>Hiển thị đồ họa nền (Background graphics)</strong></span>
                                         </li>
                                     </ul>
@@ -497,7 +497,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={() => restoreHistory(entry)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
                                             title="Khôi phục"
                                         >
                                             <RotateCcw size={13} />

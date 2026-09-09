@@ -55,7 +55,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                             <span><strong>Ma trận Cấu Hình Động (Dynamic Cross-Selling):</strong> Bảng Bán Kèm lột xác hoàn toàn, cho phép tự do thiết kế vô hạn số cột và dòng. Tự động quy đổi linh hoạt giữa Sản Lượng và Doanh Thu. Hỗ trợ Format điều kiện Xanh/Đỏ theo Target %.</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="download-cloud" size={4} className="text-indigo-500 shrink-0 mt-0.5" />
+                            <Icon name="download-cloud" size={4} className="text-sky-500 shrink-0 mt-0.5" />
                             <span><strong>Hệ thống Nạp Cấu Hình Mẫu:</strong> Nút One-Click thần thánh dựng lại khung báo cáo chuẩn ngành hàng (ICT, CE, Tử Lạnh, Bảo Hiểm...) với đầy đủ bộ lọc nhóm con 100% ngay lập tức mà không cần tốn 10 phút click tay.</span>
                         </li>
                         <li className="flex gap-2">
@@ -88,7 +88,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                             <span><strong>Loại bỏ code thừa & Tái cấu trúc:</strong> Xóa bỏ triệt để các tính năng/thành phần không còn sử dụng. Cơ sở mã nguồn được tối ưu và chia tách thành các module siêu nhỏ nhắn, tăng tốc độ tải trang cực nhanh.</span>
                         </li>
                         <li className="flex gap-2">
-                            <Icon name="layout-dashboard" size={4} className="text-indigo-500 shrink-0 mt-0.5" />
+                            <Icon name="layout-dashboard" size={4} className="text-sky-500 shrink-0 mt-0.5" />
                             <span><strong>Giao diện:</strong> Cập nhật thông tin phiên bản ở cuối trang. Thay thế thuật ngữ cũ bằng giao diện Lịch sử cập nhật chuyên nghiệp.</span>
                         </li>
                     </ul>

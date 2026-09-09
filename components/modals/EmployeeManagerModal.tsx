@@ -130,7 +130,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
     const renderSortIcon = (key: 'id' | 'name' | 'dept') => {
         if (sortConfig?.key !== key) return <Icon name="chevrons-up-down" size={3.5} className="opacity-30" />;
-        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-indigo-600" />;
+        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-sky-600" />;
     };
 
     const handleEdit = (emp: { id: string, dept: string, name: string }) => {
@@ -188,7 +188,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             title="Quản Lý Danh Sách Nhân Viên"
             subTitle={`Tổng số: ${Object.keys(localMap).length} nhân viên`}
             maxWidth="2xl"
-            titleColorClass="text-indigo-600 dark:text-indigo-400"
+            titleColorClass="text-sky-600 dark:text-sky-400"
             footer={
                 <div className="flex justify-between gap-2 sm:gap-3">
                     <Button
@@ -233,15 +233,15 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 {/* Table */}
                 <div className="flex-grow overflow-y-auto custom-scrollbar">
                     <table className="min-w-full text-[10px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
-                        <thead className="bg-indigo-50 dark:bg-indigo-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
-                            <tr className="text-[10px] sm:text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-tight whitespace-nowrap">
-                                <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[13%] sm:w-20">
+                        <thead className="bg-sky-50 dark:bg-sky-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
+                            <tr className="text-[10px] sm:text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-tight whitespace-nowrap">
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[13%] sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[47%] sm:w-56">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[47%] sm:w-56">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
-                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 transition-colors w-[27%] sm:w-64">
+                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[27%] sm:w-64">
                                     <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')} onKeyDown={onActivateKey(() => handleSort('dept'))}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
@@ -254,7 +254,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                 <option value="">Tất cả</option>
                                                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
-                                            <Button variant="unstyled" size="none" className={`p-0.5 sm:p-1 rounded transition-colors ${filterDept ? 'text-indigo-650 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                            <Button variant="unstyled" size="none" className={`p-0.5 sm:p-1 rounded transition-colors ${filterDept ? 'text-indigo-650 bg-sky-50' : 'text-slate-400 hover:bg-slate-200'}`}>
                                                 <Icon name="filter" size={3} />
                                             </Button>
                                         </div>
@@ -276,7 +276,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500"
                                                     autoFocus
                                                 />
                                             </td>
@@ -287,7 +287,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500"
                                                     placeholder="Chọn hoặc nhập..."
                                                 />
                                             </td>
@@ -308,7 +308,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 truncate">
                                                 <span 
                                                     title={emp.dept}
-                                                    className="inline-block max-w-full truncate px-1 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/20"
+                                                    className="inline-block max-w-full truncate px-1 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs font-semibold bg-sky-50/80 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/20"
                                                 >
                                                     {emp.dept}
                                                 </span>

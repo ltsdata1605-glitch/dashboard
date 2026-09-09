@@ -449,7 +449,7 @@ export default function App(): React.JSX.Element {
   if (isInitializing) {
      return (
         <div className="min-h-dvh flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
         </div>
      );
   }
@@ -490,7 +490,7 @@ export default function App(): React.JSX.Element {
                 <Button
                   variant="ghost"
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors"
                 >
                   Đổi mật khẩu
                 </Button>
@@ -499,7 +499,7 @@ export default function App(): React.JSX.Element {
                 <Button
                   variant="ghost"
                   onClick={() => setIsUserGuideOpen(true)}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors"
                   title="Hướng dẫn sử dụng"
                 >
                   <Info className="h-4 w-4" />
@@ -579,7 +579,7 @@ export default function App(): React.JSX.Element {
               <div className={`${isMobile ? 'space-y-2' : 'space-y-2 lg:sticky lg:top-0 lg:z-20 lg:bg-white lg:pb-2 lg:pt-1 lg:border-b lg:border-slate-100'}`}>
                {isLoading && (
                   <div className="text-center p-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto"></div>
                     <p className="mt-2 text-slate-600">Đang xử lý tệp...</p>
                   </div>
                 )}
@@ -794,7 +794,7 @@ export default function App(): React.JSX.Element {
 
         {isPrinting && (
           <div className="fixed inset-0 z-50 bg-slate-900/30 flex flex-col items-center justify-center backdrop-blur-md">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-400"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400"></div>
             <p className="text-white mt-4 text-lg font-medium">Đang tạo tệp PDF...</p>
           </div>
         )}

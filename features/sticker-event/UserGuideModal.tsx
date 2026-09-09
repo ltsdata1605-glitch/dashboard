@@ -16,8 +16,8 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
       onClose={onClose}
       title={
         <span className="flex items-center gap-3">
-          <span className="p-2 bg-indigo-50 rounded-lg">
-            <BookOpen className="h-5 w-5 text-indigo-600" />
+          <span className="p-2 bg-sky-50 rounded-lg">
+            <BookOpen className="h-5 w-5 text-sky-600" />
           </span>
           Hướng dẫn sử dụng
         </span>
@@ -30,7 +30,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           <Button
             variant="ghost"
             onClick={onClose}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-all shadow-sm shadow-sky-200 active:scale-95"
           >
             Đã hiểu
           </Button>
@@ -41,7 +41,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Nguyên lý hoạt động */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <RefreshCw className="h-5 w-5 text-indigo-500" />
+              <RefreshCw className="h-5 w-5 text-sky-500" />
               <h3 className="text-base font-bold text-slate-800">1. Nguyên lý hoạt động</h3>
             </div>
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
@@ -111,7 +111,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
             <div className="space-y-4">
               <div className="relative pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                 <div className="relative mb-6">
-                  <div className="absolute -left-8 top-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                  <div className="absolute -left-8 top-0 w-6 h-6 bg-sky-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Lấy dữ liệu từ Report</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Click vào <span className="text-rose-600 font-bold">"Lấy file tồn kho"</span>. 
@@ -121,21 +121,21 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
                   </p>
                 </div>
                 <div className="relative mb-6">
-                  <div className="absolute -left-8 top-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                  <div className="absolute -left-8 top-0 w-6 h-6 bg-sky-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Đổ tồn vào hệ thống</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
-                    Upload file vừa tải ở bước 1 vào mục <span className="font-bold text-indigo-600">"Tải File tồn kho"</span>.
+                    Upload file vừa tải ở bước 1 vào mục <span className="font-bold text-sky-600">"Tải File tồn kho"</span>.
                   </p>
                 </div>
                 <div className="relative mb-6">
-                  <div className="absolute -left-8 top-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                  <div className="absolute -left-8 top-0 w-6 h-6 bg-sky-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Tải file mẫu tự động</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Chờ hệ thống xử lý trong giây lát. <span className="font-medium text-emerald-600">File mẫu in giá sẽ tự động được tải xuống máy của bạn.</span>
                   </p>
                 </div>
                 <div className="relative">
-                  <div className="absolute -left-8 top-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+                  <div className="absolute -left-8 top-0 w-6 h-6 bg-sky-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Xuất file giá từ ERP & Upload</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Vào ERP &gt; In giá. Chọn lần lượt từng ngành hàng (<span className="font-medium">ĐGD, DCNB, Phụ kiện</span>), nhóm hàng chọn <span className="font-medium">Tất cả</span>. 

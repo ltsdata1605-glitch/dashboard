@@ -324,24 +324,24 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {/* Header */}
                 <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Quản Trị Hệ Thống & Phân Quyền</h1>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={fetchRequests} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
+                    <Button variant="unstyled" size="none" onClick={fetchRequests} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
                         <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
                     </Button>
                 </div>
                 {/* Tabs & Search & Sort */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
                             <Icon name="clock" size={3.5} />
                             Đơn Chờ Duyệt
                         </Button>
-                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
                             <Icon name="users" size={3.5} />
                             Người Dùng Hoạt Động
                         </Button>
@@ -355,7 +355,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <option value="dept">Mã Kho</option>
                                 <option value="logins">Truy cập</option>
                             </Select>
-                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                 <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
                             </Button>
                         </div>
@@ -375,12 +375,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     <AnimatePresence>
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
-                                <Icon name="loader-2" size={8} className="animate-spin text-indigo-500 mb-4" />
+                                <Icon name="loader-2" size={8} className="animate-spin text-sky-500 mb-4" />
                                 <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
                             </div>
                         ) : requests.length === 0 ? (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
-                                <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-4"><Icon name="check-circle-2" size={8} className="text-indigo-400" /></div>
+                                <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><Icon name="check-circle-2" size={8} className="text-sky-400" /></div>
                                 <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Chưa có người dùng hoạt động'}</p>
                                 <p className="text-slate-500 mt-1 text-sm">{listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : 'Danh sách trống hoặc chưa cập nhật.'}</p>
                             </motion.div>
@@ -429,7 +429,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                          <option value="blocked">Khoá</option>
                                                      </Select>
                                                 ) : (
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'}`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'}`}>
                                                         <Icon name={req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users'} size={3} />
                                                         {req.role === 'admin' ? 'Admin' : req.role === 'manager' ? 'Quản Lý' : 'NV'}
                                                     </span>
@@ -441,7 +441,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                         <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
                                                             <Icon name="x" size={3.5} />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors flex items-center gap-1">
                                                             <Icon name="check" size={3.5} /> Duyệt
                                                         </Button>
                                                     </div>
@@ -451,7 +451,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             <Icon name="user-minus" size={3.5} />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
-                                                            <span className="text-[10px] text-indigo-500 font-bold flex items-center gap-1 animate-pulse">
+                                                            <span className="text-[10px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
                                                                 <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
                                                             </span>
                                                         )}
@@ -503,7 +503,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
-                                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{req.loginCount ?? 0} lần</span>
+                                                <span className="text-xs font-bold text-sky-600 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
                                             </div>
                                         </div>
                                     </motion.div>

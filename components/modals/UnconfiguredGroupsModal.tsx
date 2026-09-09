@@ -121,7 +121,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                     <Button
                                                         variant="unstyled" size="none"
                                                         onClick={() => handleCopyText(`${group.nganhHang}\t${group.nhomHang}\t\t${group.nhomHang.includes(' - ') ? group.nhomHang.split(' - ').slice(1).join(' - ').trim() : group.nhomHang.trim()}\t100%`, index)}
-                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
                                                         title="Sao chép dòng cấu hình"
                                                     >
                                                         <Icon name="copy" size={3} />
@@ -216,7 +216,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         variant="unstyled" size="none"
                         onClick={handleCopyAllRows}
                         disabled={unconfiguredGroups.length === 0}
-                        className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-300/30 dark:shadow-none active:scale-95'}`}
+                        className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-300/30 dark:shadow-none active:scale-95'}`}
                     >
                         <Icon name="copy" size={3.5} />
                         <span>Sao chép toàn bộ dòng mới</span>

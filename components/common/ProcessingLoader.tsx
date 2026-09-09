@@ -51,7 +51,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
             <div className="absolute inset-0 bg-slate-900/30 dark:bg-slate-950/70 backdrop-blur-xl transition-all duration-500"></div>
 
             {/* Soft Ambient Backlight Orbs */}
-            <div className="absolute -top-28 -left-28 w-60 h-60 bg-sky-400/20 dark:bg-indigo-600/30 rounded-full blur-[60px] pointer-events-none animate-pulse"></div>
+            <div className="absolute -top-28 -left-28 w-60 h-60 bg-sky-400/20 dark:bg-sky-600/30 rounded-full blur-[60px] pointer-events-none animate-pulse"></div>
             <div className="absolute -bottom-28 -right-28 w-60 h-60 bg-sky-400/20 dark:bg-sky-500/30 rounded-full blur-[60px] pointer-events-none animate-pulse"></div>
 
             {/* Ultra-Modern White Glassmorphism Modal Card */}
@@ -78,7 +78,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     ></div>
 
                     {/* Glowing Core Capsule */}
-                    <div className="relative bg-gradient-to-br from-sky-600 via-indigo-600 to-sky-500 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-sky-500/30 flex items-center justify-center text-white ring-4 ring-sky-50 dark:ring-slate-800 transform rotate-3">
+                    <div className="relative bg-gradient-to-br from-sky-600 via-sky-600 to-sky-500 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-sky-500/30 flex items-center justify-center text-white ring-4 ring-sky-50 dark:ring-slate-800 transform rotate-3">
                         <Icon name="cpu" size={5} className="animate-pulse hidden sm:block" />
                         <Icon name="cpu" size={4} className="animate-pulse sm:hidden" />
                     </div>
@@ -119,10 +119,10 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
 
                         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
                             <div className="flex items-baseline gap-0.5">
-                                <span className="text-sm sm:text-base font-mono font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
+                                <span className="text-sm sm:text-base font-mono font-bold text-sky-600 dark:text-sky-400 tabular-nums">
                                     {progressPercent}
                                 </span>
-                                <span className="text-[10px] font-bold text-indigo-500">%</span>
+                                <span className="text-[10px] font-bold text-sky-500">%</span>
                             </div>
                             <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
                                 Tiến độ
@@ -133,7 +133,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     {/* Shimmer Glowing Progress Bar */}
                     <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/50 shadow-inner relative">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-sky-400 transition-all duration-300 ease-out relative"
+                            className="h-full rounded-full bg-gradient-to-r from-sky-500 via-sky-500 to-sky-400 transition-all duration-300 ease-out relative"
                             style={{
                                 width: `${Math.max(progressPercent, 5)}%`,
                             }}

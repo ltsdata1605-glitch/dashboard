@@ -283,7 +283,7 @@ export default function Sidebar() {
                 {/* Logo Section */}
                 <div className="h-20 flex items-center px-5 border-b border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-3 overflow-hidden w-full">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
+                        <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-200 dark:shadow-sky-900/20">
                             <BarChart3 className="text-white" size={24} />
                         </div>
                         <motion.div
@@ -297,7 +297,7 @@ export default function Sidebar() {
                             className="flex flex-col whitespace-nowrap"
                         >
                             <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
-                            <span className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Vibe Dashboard</span>
+                            <span className="text-[10px] font-bold text-sky-500 dark:text-sky-400 uppercase tracking-widest">Vibe Dashboard</span>
                         </motion.div>
                     </div>
                 </div>
@@ -355,11 +355,11 @@ export default function Sidebar() {
                         className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
                         title="Thông tin tài khoản"
                     >
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                        <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
                             {user?.photoURL ? (
                                 <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                             ) : (
-                                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                                <span className="font-bold text-sky-600 dark:text-sky-400">
                                     {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
                                 </span>
                             )}

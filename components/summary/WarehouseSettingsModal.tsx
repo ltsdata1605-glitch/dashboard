@@ -245,11 +245,11 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         'SP CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
         'MÙA VỤ': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
         'TRAFFIC': { bg: 'bg-slate-50/30 dark:bg-slate-900/10', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-800' },
-        'SL PHỤ KIỆN': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
+        'SL PHỤ KIỆN': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
         'SL DỊCH VỤ': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
         'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
-        'BẢO HIỂM ALL': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
-        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
+        'BẢO HIỂM ALL': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
         'BẢO HIỂM ĐMX': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
@@ -257,7 +257,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     const itemPastelColors = [
         { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
         { bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
-        { bg: 'bg-indigo-50/50 dark:bg-indigo-900/10', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-400' },
+        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
         { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
         { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
         { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
@@ -383,7 +383,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                         <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
                     </Button>
-                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">
+                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
                         Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
                     </Button>
                 </div>

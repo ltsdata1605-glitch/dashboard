@@ -24,13 +24,13 @@ const colorClasses: Record<string, { bg: string, text: string }> = {
     emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400' },
     amber:  { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400' },
     rose:   { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400' },
-    indigo: { bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400' },
+    indigo: { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
     cyan:   { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
     orange: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300' },
     pink:   { bg: 'bg-rose-100 dark:bg-rose-500/20', text: 'text-rose-700 dark:text-rose-300' },
     teal:   { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300' },
     sky:    { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
-    violet: { bg: 'bg-indigo-100 dark:bg-indigo-500/20', text: 'text-indigo-700 dark:text-indigo-300' },
+    violet: { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
     slate:  { bg: 'bg-slate-100 dark:bg-slate-700/60', text: 'text-slate-500 dark:text-slate-400' },
     lime:   { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-500 dark:text-emerald-300' },
     fuchsia:{ bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-500 dark:text-rose-300' },
@@ -211,7 +211,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         return (
             <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
                 <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 truncate text-xs">{d.name}</div>
-                <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
+                <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-sky-600 dark:text-sky-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
                 <div className="text-slate-500 dark:text-slate-400 flex justify-between gap-3 text-[11px]"><span>Tỷ trọng:</span><span className="font-bold">{pct}%</span></div>
             </div>
         );
@@ -269,7 +269,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('quantity')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
                         <Icon name="package" size={4} className="lg:hidden" />
@@ -278,7 +278,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('revenue')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
                         <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
@@ -308,7 +308,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         {/* Left Side Header (Level indicator) - always rendered for export, hidden on mobile screen only */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
                             {currentLevelLabel && (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/40">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 text-xs font-extrabold uppercase tracking-widest border border-sky-100 dark:border-sky-800/40">
                                     <Icon name="layers" size={3.5} />
                                     {currentLevelLabel}
                                     {isDrillable && drilldownPath.length < 2 && (
@@ -364,7 +364,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 {pct.toFixed(1)}%
                                             </span>
                                             {isDrillable && (
-                                                <Icon name="chevron-right" size={3} className="text-indigo-400 opacity-60 shrink-0 lg:hidden" />
+                                                <Icon name="chevron-right" size={3} className="text-sky-400 opacity-60 shrink-0 lg:hidden" />
                                             )}
 
                                             {/* Desktop: original block layout */}
@@ -394,7 +394,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                             </div>
                                             {isDrillable && (
                                                 <div className="hidden lg:block absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-70 transition-opacity">
-                                                    <Icon name="chevron-right" size={3} className="text-indigo-400" />
+                                                    <Icon name="chevron-right" size={3} className="text-sky-400" />
                                                 </div>
                                             )}
                                         </div>

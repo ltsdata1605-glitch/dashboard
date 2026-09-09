@@ -220,7 +220,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
             onClose={onClose}
             title="Cấu Hình Bảng Động"
             subTitle="Tuỳ biến cột/dòng"
-            titleColorClass="text-indigo-600"
+            titleColorClass="text-sky-600"
             maxWidth="xl"
             footer={
                 <div className="flex items-center justify-end gap-2 sm:gap-3">
@@ -250,8 +250,8 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
-                                <Icon name="columns" size={4} className="text-indigo-600 dark:text-indigo-400 hidden sm:block" />
-                                <Icon name="columns" size={3.5} className="text-indigo-600 dark:text-indigo-400 sm:hidden" />
+                                <Icon name="columns" size={4} className="text-sky-600 dark:text-sky-400 hidden sm:block" />
+                                <Icon name="columns" size={3.5} className="text-sky-600 dark:text-sky-400 sm:hidden" />
                                 Cấu Hình Cột
                             </h3>
                             <div className="flex gap-1.5 sm:gap-2">
@@ -364,20 +364,20 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
-                                <Icon name="list" size={3.5} className="text-indigo-600 dark:text-indigo-400 sm:hidden" />
-                                <Icon name="list" size={4.5} className="text-indigo-600 dark:text-indigo-400 hidden sm:block" />
+                                <Icon name="list" size={3.5} className="text-sky-600 dark:text-sky-400 sm:hidden" />
+                                <Icon name="list" size={4.5} className="text-sky-600 dark:text-sky-400 hidden sm:block" />
                                 Cấu Hình Dòng
                             </h3>
-                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800">
+                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                 <Icon name="plus" size={3.5} /> Thêm Nhóm
                             </Button>
                         </div>
                         
                         <div className="p-2.5 sm:p-4 space-y-4 sm:space-y-6">
                             {config.sections.map((section, sIdx) => (
-                                <div key={section.id} className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all focus-within:border-indigo-400 dark:focus-within:border-indigo-500">
+                                <div key={section.id} className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all focus-within:border-sky-400 dark:focus-within:border-sky-500">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="h-8 w-8 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
+                                        <div className="h-8 w-8 rounded bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black">
                                             {sIdx + 1}
                                         </div>
                                         <div className="flex-1 flex gap-2">
@@ -454,7 +454,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => addRow(section.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-400 transition"
                                         >
                                             <Icon name="plus" size={3.5} /> Thêm dòng
                                         </Button>

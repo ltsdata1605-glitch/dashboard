@@ -362,7 +362,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </div>
         
         {/* Welcome / Instruction Message */}
-        <div className="bg-indigo-50 text-indigo-800 p-4 rounded-lg mb-6 text-sm border border-indigo-100">
+        <div className="bg-sky-50 text-sky-800 p-4 rounded-lg mb-6 text-sm border border-sky-100">
             <p className="font-semibold mb-2">👋 Chào mừng bạn!</p>
             <ul className="list-disc pl-5 space-y-1">
                 <li>Nếu bạn là <strong>Quản lý</strong>: Vui lòng tạo tài khoản Admin để tải lên dữ liệu giá và tồn kho.</li>
@@ -388,7 +388,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   value="staff"
                   checked={role === 'staff'}
                   onChange={() => setRole('staff')}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                  className="mr-2 text-sky-600 focus:ring-sky-500"
                   />
                   Nhân viên
               </label>
@@ -398,7 +398,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   value="admin"
                   checked={role === 'admin'}
                   onChange={() => setRole('admin')}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                  className="mr-2 text-sky-600 focus:ring-sky-500"
                   />
                   Admin (Quản lý)
               </label>
@@ -411,7 +411,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
               required
               placeholder="Nhập tên đăng nhập..."
             />
@@ -427,7 +427,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 required={role === 'admin'}
                 placeholder="Nhập mật khẩu..."
               />
@@ -442,7 +442,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 type="text"
                 value={storeId}
                 onChange={(e) => setStoreId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 required={!isLogin}
                 placeholder="Nhập mã kho..."
               />
@@ -453,7 +453,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             type="submit"
             variant="ghost"
             disabled={loading}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full bg-indigo-600 text-white py-2.5 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all font-bold shadow-sm disabled:opacity-50 mt-2"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full bg-sky-600 text-white py-2.5 px-4 rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all font-bold shadow-sm disabled:opacity-50 mt-2"
           >
             {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -472,7 +472,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               setError(null);
               setPassword('');
             }}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-sm text-sky-600 hover:text-sky-800 font-semibold"
           >
             {isLogin ? 'Chưa có tài khoản? Đăng ký ngay' : 'Đã có tài khoản? Đăng nhập'}
           </Button>

@@ -188,7 +188,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
                                             }
                                             
                                             if (col.type === 'ratio') {
-                                                let colorClass = "text-indigo-600 dark:text-indigo-400 font-black";
+                                                let colorClass = "text-sky-600 dark:text-sky-400 font-black";
                                                 
                                                 if (col.compareWithTarget && r.targetValue !== undefined) {
                                                     colorClass = val >= r.targetValue 

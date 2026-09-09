@@ -42,7 +42,7 @@ export const TabModal: React.FC<{
             onClose={onClose}
             title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"}
             subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"}
-            titleColorClass="text-indigo-600 dark:text-indigo-400"
+            titleColorClass="text-sky-600 dark:text-sky-400"
             maxWidth="md"
             footer={
                 <div className="flex justify-end gap-2 sm:gap-3">

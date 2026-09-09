@@ -117,12 +117,12 @@ const Controls: React.FC<ControlsProps> = ({
       {/* Store & Department selectors */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col">
-          <label htmlFor="cfgSupermarket" className="text-[9px] font-bold text-indigo-500 mb-1 uppercase tracking-wider">
+          <label htmlFor="cfgSupermarket" className="text-[9px] font-bold text-sky-500 mb-1 uppercase tracking-wider">
             Siêu thị
           </label>
           <Select
               id="cfgSupermarket"
-              className="h-9 w-full sm:w-44 text-sm font-semibold text-indigo-700 bg-indigo-50/50 border-indigo-200 focus-visible:border-indigo-400"
+              className="h-9 w-full sm:w-44 text-sm font-semibold text-sky-700 bg-sky-50/50 border-sky-200 focus-visible:border-sky-400"
               value={currentSupermarket}
               onChange={(e) => setSupermarket(e.target.value)}
               disabled={supermarkets.length <= 1 && isDisabled}
@@ -163,7 +163,7 @@ const Controls: React.FC<ControlsProps> = ({
         <Button
           variant="ghost"
           onClick={onGenerate}
-          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-11 lg:h-9 w-full lg:w-auto px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
+          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-11 lg:h-9 w-full lg:w-auto px-6 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
           disabled={isGenerateDisabled}
           title={isGenerateDisabled ? "Vui lòng nhập danh sách nhân viên và tạo Ca Xoay trước." : "Tạo lịch làm việc mới"}
         >

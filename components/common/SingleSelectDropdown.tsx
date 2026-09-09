@@ -75,14 +75,14 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
         // We always use the text-[10px] with uppercase and tracking-wider to match other inputs.
         // If variant=compact OR there is no selection, show it plainly (with indigo color if selected)
         if (!hasSelection || variant === 'compact') {
-            return <span className={`font-medium uppercase tracking-wider whitespace-nowrap text-[10px] ${hasSelection ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>
+            return <span className={`font-medium uppercase tracking-wider whitespace-nowrap text-[10px] ${hasSelection ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`}>
                 {variant === 'compact' && hasSelection && selectedLabel !== 'Tất cả' ? selectedLabel : label}
             </span>;
         }
 
         // Default variant with a selection shows a pill
         return (
-            <span className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] px-1.5 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50 font-medium max-w-[120px] truncate">
+            <span className="bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 font-medium max-w-[120px] truncate">
                 {selectedLabel}
             </span>
         );
@@ -94,11 +94,11 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                 type="button"
                 variant="unstyled" size="none"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between rounded-md border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                className={`w-full flex items-center justify-between rounded-md border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 ${
                     variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     hasSelection || isOpen
-                    ? 'border-indigo-500 bg-white dark:bg-slate-800 ring-2 ring-indigo-500/10'
+                    ? 'border-sky-500 bg-white dark:bg-slate-800 ring-2 ring-sky-500/10'
                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
             >
@@ -140,7 +140,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                         handleSelectOption(filteredOptions[0].value);
                                     }
                                 }}
-                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 py-2 flex-1 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 py-2 flex-1 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
@@ -160,12 +160,12 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                             onClick={() => handleSelectOption(option.value)}
                                             className={`flex items-center justify-between w-full text-left px-2.5 py-2 rounded-lg transition-all ${
                                                 isSelected
-                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
+                                                ? 'bg-sky-50/60 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                         >
                                             <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option.label}</span>
-                                            {isSelected && <Icon name="check" size={3.5} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+                                            {isSelected && <Icon name="check" size={3.5} className="text-sky-600 dark:text-sky-400 flex-shrink-0" />}
                                         </Button>
                                     );
                                 })}
