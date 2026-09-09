@@ -235,3 +235,114 @@ export function computePivot(
         matchedRowCount,
     };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SO SÁNH KỲ (Đợt 8 — dùng chung cơ chế ở services/periodService.ts)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PivotComparisonRow {
+    key: string;
+    label: string;
+    current: number;
+    previous: number;
+    /** current - previous. */
+    delta: number;
+    /** % thay đổi so với kỳ trước. `null` khi kỳ trước = 0 (không chia được cho 0). */
+    deltaPercent: number | null;
+    children: PivotComparisonRow[];
+}
+
+export interface PivotComparisonResult {
+    rows: PivotComparisonRow[];
+    totalCurrent: number;
+    totalPrevious: number;
+    totalDelta: number;
+    totalDeltaPercent: number | null;
+}
+
+const pct = (current: number, previous: number): number | null =>
+    previous === 0 ? null : ((current - previous) / Math.abs(previous)) * 100;
+
+/**
+ * Ghép 2 kỳ thành 1 bảng so sánh.
+ *
+ * Cố ý KHÔNG tự cắt dữ liệu theo ngày ở đây: nơi gọi truyền vào 2 mảng đã lọc sẵn bằng
+ * `filterRowsInRange()` của periodService. Nhờ vậy phần "kỳ là gì" và phần "gộp số thế nào" tách
+ * bạch, mỗi phần test riêng được, và cả 2 kỳ chắc chắn đi qua CÙNG một đường tính toán.
+ *
+ * Dòng chỉ xuất hiện ở 1 trong 2 kỳ vẫn được liệt kê (kỳ kia = 0) — nếu bỏ đi thì người dùng
+ * không thấy được hạng mục MỚI phát sinh hoặc đã BIẾN MẤT, vốn là thông tin đáng giá nhất.
+ */
+export function computePivotComparison(
+    currentRows: DataRow[],
+    previousRows: DataRow[],
+    config: PivotConfig,
+    productConfig: ProductConfig | null
+): PivotComparisonResult {
+    const cur = computePivot(currentRows, { ...config, colDim: null }, productConfig);
+    const prev = computePivot(previousRows, { ...config, colDim: null }, productConfig);
+
+    const prevByKey = new Map(prev.rows.map(r => [r.key, r]));
+    const seen = new Set<string>();
+    const rows: PivotComparisonRow[] = [];
+
+    const mergeChildren = (
+        curChildren: PivotRow[],
+        prevChildren: PivotRow[]
+    ): PivotComparisonRow[] => {
+        const prevMap = new Map(prevChildren.map(c => [c.key, c]));
+        const seenChild = new Set<string>();
+        const out: PivotComparisonRow[] = [];
+        for (const c of curChildren) {
+            const p = prevMap.get(c.key);
+            seenChild.add(c.key);
+            out.push({
+                key: c.key, label: c.label,
+                current: c.total, previous: p?.total ?? 0,
+                delta: c.total - (p?.total ?? 0), deltaPercent: pct(c.total, p?.total ?? 0),
+                children: [],
+            });
+        }
+        for (const p of prevChildren) {
+            if (seenChild.has(p.key)) continue;
+            out.push({
+                key: p.key, label: p.label,
+                current: 0, previous: p.total,
+                delta: -p.total, deltaPercent: pct(0, p.total),
+                children: [],
+            });
+        }
+        return out.sort((a, b) => b.current - a.current);
+    };
+
+    for (const c of cur.rows) {
+        const p = prevByKey.get(c.key);
+        seen.add(c.key);
+        rows.push({
+            key: c.key, label: c.label,
+            current: c.total, previous: p?.total ?? 0,
+            delta: c.total - (p?.total ?? 0), deltaPercent: pct(c.total, p?.total ?? 0),
+            children: mergeChildren(c.children, p?.children ?? []),
+        });
+    }
+    // Hạng mục CHỈ có ở kỳ trước = đã biến mất trong kỳ này — vẫn phải hiện.
+    for (const p of prev.rows) {
+        if (seen.has(p.key)) continue;
+        rows.push({
+            key: p.key, label: p.label,
+            current: 0, previous: p.total,
+            delta: -p.total, deltaPercent: pct(0, p.total),
+            children: mergeChildren([], p.children),
+        });
+    }
+
+    rows.sort((a, b) => b.current - a.current);
+
+    return {
+        rows,
+        totalCurrent: cur.grandTotal,
+        totalPrevious: prev.grandTotal,
+        totalDelta: cur.grandTotal - prev.grandTotal,
+        totalDeltaPercent: pct(cur.grandTotal, prev.grandTotal),
+    };
+}

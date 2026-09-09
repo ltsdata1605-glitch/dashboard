@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ProductConfig } from '../types';
-import { computePivot } from './pivotService';
+import { computePivot, computePivotComparison } from './pivotService';
 import { computeRbacFilteredData, calculateRowMetrics } from '../utils/dataUtils';
 
 /**
@@ -192,5 +192,85 @@ describe('PHÂN QUYỀN — pivot chỉ thấy đúng phạm vi được phép',
         // gọi computePivot với originalData thô, test này nhắc rằng engine sẽ KHÔNG cứu được.
         const r = computePivot(duLieuToanCongTy, { rowDims: ['kho'], colDim: null, metric: 'revenue' }, cfg());
         expect(r.grandTotal).toBe(7000);
+    });
+});
+
+describe('computePivotComparison — so sánh 2 kỳ', () => {
+    const kyNay = [
+        row({ id: 'A1', kho: 'K01', gia: 1000 }),
+        row({ id: 'A2', kho: 'K02', gia: 500 }),
+        row({ id: 'A3', kho: 'K03', gia: 300 }),   // CHỈ có ở kỳ này (hạng mục mới)
+    ];
+    const kyTruoc = [
+        row({ id: 'B1', kho: 'K01', gia: 800 }),
+        row({ id: 'B2', kho: 'K02', gia: 900 }),
+        row({ id: 'B3', kho: 'K09', gia: 200 }),   // CHỈ có ở kỳ trước (đã biến mất)
+    ];
+    const conf = { rowDims: ['kho'] as const, colDim: null, metric: 'revenue' as const };
+
+    it('tính đúng chênh lệch và % cho hạng mục có ở cả 2 kỳ', () => {
+        const r = computePivotComparison(kyNay, kyTruoc, { ...conf, rowDims: ['kho'] }, cfg());
+        const k01 = r.rows.find(x => x.label === 'K01')!;
+        expect(k01.current).toBe(1000);
+        expect(k01.previous).toBe(800);
+        expect(k01.delta).toBe(200);
+        expect(k01.deltaPercent).toBeCloseTo(25, 6);
+
+        const k02 = r.rows.find(x => x.label === 'K02')!;
+        expect(k02.delta, 'giảm thì delta phải âm').toBe(-400);
+        expect(k02.deltaPercent).toBeCloseTo(-400 / 900 * 100, 6);
+    });
+
+    it('hạng mục MỚI (chỉ có kỳ này) vẫn hiện, kỳ trước = 0', () => {
+        const r = computePivotComparison(kyNay, kyTruoc, { ...conf, rowDims: ['kho'] }, cfg());
+        const k03 = r.rows.find(x => x.label === 'K03')!;
+        expect(k03.previous).toBe(0);
+        expect(k03.current).toBe(300);
+        expect(k03.deltaPercent, 'chia cho 0 phải trả null chứ không phải Infinity').toBeNull();
+    });
+
+    it('hạng mục ĐÃ BIẾN MẤT (chỉ có kỳ trước) vẫn hiện — đây là thông tin đáng giá nhất', () => {
+        const r = computePivotComparison(kyNay, kyTruoc, { ...conf, rowDims: ['kho'] }, cfg());
+        const k09 = r.rows.find(x => x.label === 'K09');
+        expect(k09, 'mất hạng mục chỉ có ở kỳ trước = người dùng không biết mình vừa mất Kho đó').toBeTruthy();
+        expect(k09!.current).toBe(0);
+        expect(k09!.previous).toBe(200);
+        expect(k09!.delta).toBe(-200);
+    });
+
+    it('tổng 2 kỳ và chênh lệch tổng đúng', () => {
+        const r = computePivotComparison(kyNay, kyTruoc, { ...conf, rowDims: ['kho'] }, cfg());
+        expect(r.totalCurrent).toBe(1800);
+        expect(r.totalPrevious).toBe(1900);
+        expect(r.totalDelta).toBe(-100);
+    });
+
+    it('kỳ trước rỗng: không chia cho 0, không ném lỗi', () => {
+        const r = computePivotComparison(kyNay, [], { ...conf, rowDims: ['kho'] }, cfg());
+        expect(r.totalPrevious).toBe(0);
+        expect(r.totalDeltaPercent).toBeNull();
+        expect(r.rows.every(x => x.previous === 0)).toBe(true);
+    });
+
+    it('2 cấp hàng: nhóm con cũng được ghép và giữ hạng mục chỉ có ở 1 kỳ', () => {
+        const a = [row({ id: 'A1', kho: 'K01', nhomHang: 'Smartphone', gia: 1000 })];
+        const b = [row({ id: 'B1', kho: 'K01', nhomHang: 'Tablet', gia: 700 })];
+        const r = computePivotComparison(a, b, { rowDims: ['kho', 'nhomHang'], colDim: null, metric: 'revenue' }, cfg());
+        const k01 = r.rows.find(x => x.label === 'K01')!;
+        expect(k01.children.map(c => c.label).sort()).toEqual(['Smartphone', 'Tablet']);
+        expect(k01.children.find(c => c.label === 'Tablet')!.current).toBe(0);
+    });
+
+    it('PHÂN QUYỀN vẫn giữ: nguồn 2 kỳ đã lọc thì so sánh cũng chỉ trong phạm vi đó', () => {
+        const loc = (rows: ReturnType<typeof row>[]) => computeRbacFilteredData(rows, {
+            isDemoMode: false, userRole: 'employee', departmentId: 'K01',
+            employeeName: '111', userEmail: 'a@test.com',
+        });
+        const a = [row({ id: 'A1', kho: 'K01', nguoiTao: '111 - A', gia: 1000 }), row({ id: 'A2', kho: 'K01', nguoiTao: '222 - B', gia: 5000 })];
+        const b = [row({ id: 'B1', kho: 'K01', nguoiTao: '111 - A', gia: 800 }), row({ id: 'B2', kho: 'K01', nguoiTao: '222 - B', gia: 4000 })];
+        const r = computePivotComparison(loc(a), loc(b), { rowDims: ['nguoiTao'], colDim: null, metric: 'revenue' }, cfg());
+        expect(r.rows.map(x => x.label)).toEqual(['111 - A']);
+        expect(r.totalCurrent).toBe(1000);
+        expect(r.totalPrevious).toBe(800);
     });
 });

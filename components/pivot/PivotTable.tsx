@@ -4,15 +4,26 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import {
     computePivot,
+    computePivotComparison,
     PIVOT_DIMENSIONS,
     PIVOT_METRICS,
     type PivotDimension,
     type PivotMetric,
     type PivotRow,
 } from '../../services/pivotService';
+import {
+    computePeriodRanges,
+    clampToDataMaxDate,
+    findDataMaxDate,
+    filterRowsInRange,
+    PERIOD_MODES,
+    MODES_SUPPORT_UP_TO_CURRENT_DAY,
+    type PeriodMode,
+} from '../../services/periodService';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { Select } from '../shared/ui/Select';
+import { Input } from '../shared/ui/Input';
 import { Button } from '../shared/ui/Button';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { Icon } from '../common/Icon';
@@ -40,6 +51,18 @@ const PivotTable: React.FC = () => {
     const [metric, setMetric] = useState<PivotMetric>('revenueQD');
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
+    // --- So sánh kỳ (dùng chung services/periodService.ts) ---
+    const [compareOn, setCompareOn] = useState(false);
+    const [periodMode, setPeriodMode] = useState<PeriodMode>('month_adjacent');
+    const today = new Date();
+    const [anchorDate, setAnchorDate] = useState(
+        `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    );
+    const [anchorMonth, setAnchorMonth] = useState(
+        `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+    );
+    const [upToCurrentDay, setUpToCurrentDay] = useState(true);
+
     const metricInfo = PIVOT_METRICS.find(m => m.id === metric)!;
     const fmt = (v: number) => (metricInfo.kind === 'currency' ? formatCurrency(v) : formatQuantity(v));
 
@@ -55,6 +78,26 @@ const PivotTable: React.FC = () => {
         ),
         [baseFilteredData, rowDim1, rowDim2, colDim, metric, productConfig]
     );
+
+    const ranges = useMemo(() => {
+        if (!compareOn) return null;
+        const base = computePeriodRanges(periodMode, { selectedDate: anchorDate, selectedMonth: anchorMonth, selectedWeekId: 1 });
+        if (!base) return null;
+        // "Chỉ tính tới ngày có dữ liệu": tránh so tháng mới chạy 8 ngày với cả tháng trước 30 ngày.
+        return upToCurrentDay && MODES_SUPPORT_UP_TO_CURRENT_DAY.includes(periodMode)
+            ? clampToDataMaxDate(base, findDataMaxDate(baseFilteredData))
+            : base;
+    }, [compareOn, periodMode, anchorDate, anchorMonth, upToCurrentDay, baseFilteredData]);
+
+    const comparison = useMemo(() => {
+        if (!ranges) return null;
+        return computePivotComparison(
+            filterRowsInRange(baseFilteredData, ranges.currentStart, ranges.currentEnd),
+            filterRowsInRange(baseFilteredData, ranges.prevStart, ranges.prevEnd),
+            { rowDims: rowDim2 === NONE ? [rowDim1] : [rowDim1, rowDim2], colDim: null, metric },
+            productConfig
+        );
+    }, [ranges, baseFilteredData, rowDim1, rowDim2, metric, productConfig]);
 
     const toggle = (key: string) => setExpanded(prev => {
         const next = new Set(prev);
@@ -107,6 +150,38 @@ const PivotTable: React.FC = () => {
         </tr>
     );
 
+    const fmtDelta = (v: number) => (v > 0 ? `+${fmt(v)}` : fmt(v));
+    const deltaClass = (v: number) => (v > 0 ? 'text-emerald-600' : v < 0 ? 'text-rose-600' : 'text-slate-400');
+
+    const renderCompRow = (r: import('../../services/pivotService').PivotComparisonRow, isChild: boolean) => (
+        <tr
+            key={r.key}
+            className={`border-b border-slate-100 transition-colors ${isChild ? 'bg-slate-50/50 hover:bg-slate-50' : 'bg-white hover:bg-slate-50'}`}
+        >
+            <td className={`px-2 py-1 text-left text-[13px] border-r border-slate-200 ${isChild ? 'pl-7 text-slate-600' : 'font-semibold text-slate-800'}`}>
+                {!isChild && r.children.length > 0 ? (
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={() => toggle(r.key)}
+                        className="inline-flex items-center gap-1 text-left hover:text-sky-700"
+                    >
+                        <Icon name={expanded.has(r.key) ? 'chevron-down' : 'chevron-right'} size={3.5} className="text-slate-400 shrink-0" />
+                        <span>{r.label}</span>
+                        <span className="ml-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{r.children.length}</span>
+                    </Button>
+                ) : <span>{r.label}</span>}
+            </td>
+            <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 font-bold text-sky-700">{fmt(r.current)}</td>
+            <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 text-slate-500">{fmt(r.previous)}</td>
+            <td className={`px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 font-semibold ${deltaClass(r.delta)}`}>{fmtDelta(r.delta)}</td>
+            <td className={`px-2 py-1 text-center text-[13px] tabular-nums font-bold ${deltaClass(r.delta)}`}>
+                {r.deltaPercent === null
+                    ? <span className="text-slate-300" title="Kỳ trước bằng 0 nên không tính được %">—</span>
+                    : `${r.deltaPercent > 0 ? '+' : ''}${r.deltaPercent.toFixed(1)}%`}
+            </td>
+        </tr>
+    );
+
     return (
         <SectionCard className="relative lg:rounded-none">
             <div className="relative z-10 pt-1 lg:pt-3">
@@ -150,8 +225,124 @@ const PivotTable: React.FC = () => {
                 </label>
             </div>
 
+            {/* Bật/tắt so sánh kỳ + chọn chế độ */}
+            <div className="px-2 lg:px-4 pb-2 flex flex-wrap items-end gap-2 hide-on-export">
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={() => setCompareOn(v => !v)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-bold transition-colors ${
+                        compareOn
+                            ? 'bg-sky-50 border-sky-300 text-sky-700'
+                            : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                    }`}
+                >
+                    <Icon name={compareOn ? 'check' : 'plus'} size={3.5} />
+                    So sánh kỳ
+                </Button>
+
+                {compareOn && (
+                    <>
+                        <label className="flex flex-col gap-1 min-w-[200px]">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Kiểu so sánh</span>
+                            <Select
+                                value={periodMode}
+                                onChange={e => setPeriodMode(e.target.value as PeriodMode)}
+                                options={PERIOD_MODES.map(m => ({ value: m.id, label: m.label }))}
+                            />
+                        </label>
+
+                        {/* Mốc thời gian: chế độ theo ngày/YTD dùng ngày, còn lại dùng tháng */}
+                        {(periodMode === 'day_adjacent' || periodMode === 'day_same_period' || periodMode === 'ytd_same_period_year') ? (
+                            <label className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ngày</span>
+                                <Input
+                                    type="date" value={anchorDate} onChange={e => setAnchorDate(e.target.value)}
+                                    fullWidth={false} className="h-9 text-xs"
+                                />
+                            </label>
+                        ) : periodMode !== 'custom_range' ? (
+                            <label className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tháng</span>
+                                <Input
+                                    type="month" value={anchorMonth} onChange={e => setAnchorMonth(e.target.value)}
+                                    fullWidth={false} className="h-9 text-xs"
+                                />
+                            </label>
+                        ) : null}
+
+                        {MODES_SUPPORT_UP_TO_CURRENT_DAY.includes(periodMode) && (
+                            <label className="flex items-center gap-1.5 h-9 text-[11px] font-semibold text-slate-600 cursor-pointer select-none">
+                                {/* Giữ <input type="checkbox"> thô: components/shared/ui KHÔNG có
+                                    component checkbox (chỉ có Input/Select/Button/Switch-của-BI),
+                                    nên đây không phải trường hợp bỏ qua quy tắc dùng chung. */}
+                                <input
+                                    type="checkbox" checked={upToCurrentDay}
+                                    onChange={e => setUpToCurrentDay(e.target.checked)}
+                                    className="h-3.5 w-3.5 accent-sky-600"
+                                />
+                                Chỉ tính tới ngày có dữ liệu
+                            </label>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {compareOn && ranges && (
+                <div className="px-2 lg:px-4 pb-2 text-[11px] text-slate-500">
+                    <span className="font-bold text-slate-700">{ranges.label}</span> — {ranges.description}
+                </div>
+            )}
+            {compareOn && !ranges && (
+                <div className="px-2 lg:px-4 pb-2 text-[11px] text-rose-600">
+                    Không xác định được khoảng thời gian cho lựa chọn này — thử đổi mốc hoặc kiểu so sánh.
+                </div>
+            )}
+
             <div className="px-2 lg:px-4 pb-4">
-                {result.rows.length === 0 ? (
+                {compareOn ? (
+                    !comparison || comparison.rows.length === 0 ? (
+                        <EmptyState
+                            icon="table"
+                            title="Không có dữ liệu trong 2 kỳ đã chọn"
+                            description="Thử đổi mốc thời gian hoặc kiểu so sánh."
+                        />
+                    ) : (
+                        <div className="overflow-x-auto border border-slate-200">
+                            <table className="w-full border-collapse compact-export-table">
+                                <thead>
+                                    <tr>
+                                        <th className="px-2 py-1 text-left text-[11px] font-bold tracking-tight uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
+                                            {PIVOT_DIMENSIONS.find(d => d.id === rowDim1)?.label}
+                                        </th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-sky-700 bg-sky-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ này</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-slate-600 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ trước</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100 border-r border-slate-200">Chênh lệch</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {comparison.rows.map(r => (
+                                        <React.Fragment key={r.key}>
+                                            {renderCompRow(r, false)}
+                                            {expanded.has(r.key) && r.children.map(c => renderCompRow(c, true))}
+                                        </React.Fragment>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-emerald-50 border-t-2 border-emerald-200 font-extrabold">
+                                        <td className="px-2 py-1 text-left text-[13px] text-slate-800 border-r border-slate-200">TỔNG CỘNG</td>
+                                        <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 text-sky-700">{fmt(comparison.totalCurrent)}</td>
+                                        <td className="px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 text-slate-600">{fmt(comparison.totalPrevious)}</td>
+                                        <td className={`px-2 py-1 text-center text-[13px] tabular-nums border-r border-slate-200 ${deltaClass(comparison.totalDelta)}`}>{fmtDelta(comparison.totalDelta)}</td>
+                                        <td className={`px-2 py-1 text-center text-[13px] tabular-nums ${deltaClass(comparison.totalDelta)}`}>
+                                            {comparison.totalDeltaPercent === null ? '—' : `${comparison.totalDeltaPercent > 0 ? '+' : ''}${comparison.totalDeltaPercent.toFixed(1)}%`}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    )
+                ) : result.rows.length === 0 ? (
                     <EmptyState
                         icon="table"
                         title="Chưa có dữ liệu để phân tích"

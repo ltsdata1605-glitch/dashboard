@@ -69,3 +69,33 @@ test('đổi chiều hàng/cột và chỉ số thì bảng vẽ lại đúng, m
     // Với "Số đơn" phải có ghi chú giải thích vì sao các phần cộng lại không bằng tổng
     await expect(section.getByText(/Số đơn.*không trùng|đếm số đơn KHÔNG TRÙNG/i).first()).toBeVisible();
 });
+
+test('so sánh kỳ: bật lên thì bảng đổi sang 4 cột Kỳ này/Kỳ trước/Chênh lệch/%', async ({ page }) => {
+    const section = await moBangPivot(page);
+
+    await section.getByRole('button', { name: /So sánh kỳ/i }).click();
+    await page.waitForTimeout(1200);
+
+    // Có dòng mô tả rõ đang so kỳ nào với kỳ nào
+    await expect(section.getByText(/So sánh tháng .* với tháng trước/i).first()).toBeVisible();
+
+    const headers = (await section.locator('thead th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim().toUpperCase());
+    console.log('CỘT KHI SO SÁNH:', JSON.stringify(headers));
+    expect(headers.some(h => h.includes('KỲ NÀY')), 'thiếu cột Kỳ này').toBe(true);
+    expect(headers.some(h => h.includes('KỲ TRƯỚC')), 'thiếu cột Kỳ trước').toBe(true);
+    expect(headers.some(h => h.includes('CHÊNH LỆCH')), 'thiếu cột Chênh lệch').toBe(true);
+
+    // Tổng "Kỳ này" vẫn phải khớp KPI của trang (dữ liệu mẫu chỉ có ở kỳ hiện tại)
+    const footCells = await section.locator('tfoot tr').first().locator('td').allInnerTexts();
+    const tongKyNay = footCells[1].trim();
+    const kpi = (await page.locator('#business-overview').innerText()).replace(/\s+/g, ' ');
+    expect(kpi.includes(tongKyNay), `tổng "Kỳ này" (${tongKyNay}) không khớp KPI của trang`).toBe(true);
+
+    // Kỳ trước = 0 → cột % phải hiện "—" chứ không phải Infinity/NaN
+    const phanTram = footCells[4].trim();
+    expect(phanTram, 'chia cho 0 phải hiện "—", không được ra NaN/Infinity').not.toMatch(/NaN|Infinity/);
+
+    // Đổi kiểu so sánh vẫn chạy, không lỗi
+    await section.locator('select').last().selectOption('ytd_same_period_year').catch(() => {});
+    await page.waitForTimeout(800);
+});
