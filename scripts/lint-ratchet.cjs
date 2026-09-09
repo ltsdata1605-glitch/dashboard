@@ -28,8 +28,34 @@ const IGNORE_DIRS = new Set([
   'design-system', 'worktrees',
 ]);
 
-const NON_SEMANTIC_COLOR_PATTERN =
-  /\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|accent|caret|decoration|shadow)-(?:indigo|blue|purple|violet|teal|cyan|orange|yellow|red|green|pink|fuchsia|lime|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)\b/g;
+const COLOR_UTILITY_PREFIX =
+  '(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|accent|caret|decoration|shadow)';
+const COLOR_SHADE = '(?:50|100|200|300|400|500|600|700|800|900|950)';
+
+/**
+ * Đợt 6 (2026-09-09) — TÁCH LÀM 2 CHỈ SỐ, trước đây gộp làm 1 nên số liệu gây hiểu nhầm.
+ *
+ * Lý do tách: `indigo` chiếm 1.390/1.480 (94%) tổng số "vi phạm" của chỉ số cũ, nhưng CLAUDE.md
+ * lại LIỆT KÊ indigo là màu HỢP LỆ ("6 họ semantic x 2 tầng sắc độ: 5 màu chuẩn + indigo"), và
+ * `styles.css` cố tình override `--color-indigo-*` thành đúng hex của `sky` để indigo hoạt động
+ * như alias của "primary". Gộp chung khiến 2 chuyện rất khác nhau bị trộn:
+ *   - dùng màu NGOÀI bảng đã duyệt (blue/purple/gray/teal...) = sai quy chuẩn, phải về 0;
+ *   - dùng indigo = hợp lệ theo CLAUDE.md, nhưng là nợ kỹ thuật cần giảm dần (xem RULES.md §2.5
+ *     mục 2: có nơi dùng indigo làm alias "primary" — đúng ý; có nơi dùng indigo như 1 màu RIÊNG
+ *     trong dải xoay vòng cạnh sky — 2 màu này đang vô tình render y hệt nhau, là bug thật).
+ * Hậu quả của việc gộp: đổi `purple` (sai chuẩn) → `indigo` (đúng chuẩn) là một CẢI THIỆN thật
+ * nhưng chỉ số cũ không đổi, nên công cụ không phản ánh được tiến bộ.
+ */
+const OFF_PALETTE_COLOR_PATTERN = new RegExp(
+  `\\b${COLOR_UTILITY_PREFIX}-(?:blue|purple|violet|teal|cyan|orange|yellow|red|green|pink|fuchsia|lime|gray|zinc|neutral|stone)-${COLOR_SHADE}\\b`,
+  'g'
+);
+
+/** Nợ kỹ thuật indigo — hợp lệ theo CLAUDE.md nhưng cần giảm dần, KHÔNG được tăng thêm. */
+const INDIGO_ALIAS_PATTERN = new RegExp(
+  `\\b${COLOR_UTILITY_PREFIX}-indigo-${COLOR_SHADE}\\b`,
+  'g'
+);
 
 function walk(dir, files) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -48,8 +74,13 @@ function relPath(p) {
   return path.relative(ROOT, p).split(path.sep).join('/');
 }
 
-function countNonSemanticColors(content) {
-  const matches = content.match(NON_SEMANTIC_COLOR_PATTERN);
+function countOffPaletteColors(content) {
+  const matches = content.match(OFF_PALETTE_COLOR_PATTERN);
+  return matches ? matches.length : 0;
+}
+
+function countIndigoAlias(content) {
+  const matches = content.match(INDIGO_ALIAS_PATTERN);
   return matches ? matches.length : 0;
 }
 
@@ -69,10 +100,11 @@ function computeViolations() {
   for (const file of files) {
     const content = fs.readFileSync(file, 'utf8');
     const counts = {
-      nonSemanticColor: countNonSemanticColors(content),
+      nonSemanticColor: countOffPaletteColors(content),
+      indigoAlias: countIndigoAlias(content),
       missingMobileToolbar: countMissingMobileToolbar(content),
     };
-    if (counts.nonSemanticColor || counts.missingMobileToolbar) {
+    if (counts.nonSemanticColor || counts.indigoAlias || counts.missingMobileToolbar) {
       result[relPath(file)] = counts;
     }
   }
@@ -105,7 +137,7 @@ function main() {
   let improved = false;
 
   for (const [file, counts] of Object.entries(current)) {
-    const base = baseline[file] || { nonSemanticColor: 0, missingMobileToolbar: 0 };
+    const base = baseline[file] || { nonSemanticColor: 0, indigoAlias: 0, missingMobileToolbar: 0 };
     const merged = { ...base };
     for (const key of Object.keys(counts)) {
       const baseVal = base[key] || 0;
