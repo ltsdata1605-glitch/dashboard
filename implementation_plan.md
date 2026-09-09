@@ -2429,3 +2429,82 @@ nhỏ ngay khi xong thay vì gom nhiều file rồi commit một lần cuối.
   Lưu ý RULES.md §2.5 đã cảnh báo: KHÔNG tìm-thay hàng loạt, phải xét từng chỗ là "alias primary"
   hay "màu riêng trong dải" — trộn 2 nhóm này sẽ làm mất phân biệt màu vốn cần có.
 - `sticker-event` là khu vực lệch chuẩn nhất (indigo 26% / sky 2%, ngược hẳn 3 khu vực còn lại).
+
+---
+
+## Đợt 6 (phần 2-4) + CỘT MỐC: `npm run check` XANH lần đầu (2026-09-09)
+
+### Đợt 6 phần 2-3 — dọn sạch nợ indigo, 1.407 → 27
+
+Nhận định then chốt sau khi xét từng chỗ: **dải màu "6 họ semantic" của dự án CHƯA BAO GIỜ thật sự
+có 6 màu phân biệt — nó luôn chỉ có 5**, vì `styles.css` map `indigo` thành đúng hex của `sky`.
+Các chỗ như `FilterChip` (union màu không hề có 'sky'), `KpiCards` ('indigo' = sky sắc độ đậm hơn),
+bản đồ màu theo ngành hàng... thực chất đều là sky dưới một cái tên khác.
+
+Vì vậy hướng xử lý đúng là **để code nói thật về thứ đang hiển thị**, thay vì gỡ override (sẽ đổi
+màu 1.390 chỗ cùng lúc):
+- Phân loại **bằng máy chứ không đoán**: file nào chứa token chuỗi `'indigo'` (tức indigo đóng vai
+  màu riêng) thì tách ra xét tay; còn lại là alias thuần.
+- Đổi 1.380/1.407 class `indigo-*` → `sky-*`, giữ nguyên số sắc độ.
+- **Mức chênh màu thực tế**: 9/11 sắc độ có hex TRÙNG KHÍT → 0 pixel đổi. `indigo-600` (275 chỗ)
+  lệch 3/255 ở kênh đỏ do typo cũ `#0584c7` (sky-600 thật là `#0284c7`) — đổi sang sky là sửa luôn
+  typo. `indigo-950` (12 chỗ) không được map nên là tím thật — chỗ duy nhất đổi màu thấy được,
+  gần hết nằm trong biến thể `dark:` (đã tắt toàn dự án nên vô hiệu).
+- Kiểm chứng: chụp ảnh TOÀN TRANG Phân Tích trước và sau → **giống hệt nhau**.
+
+Còn đúng 27 class ở `features/bi-dashboard/components/SupermarketConfig.tsx` — cố ý không đụng vì
+phiên làm việc song song đang sửa file đó. Đã ghi chú ngay trong `styles.css`: sau khi đổi nốt 27
+class này thì XOÁ HẲN khối override, lúc đó `indigo` mới trở lại là màu tím thật và có thể dùng làm
+màu thứ 6 THẬT SỰ cho dải xoay vòng — nhưng đó phải là quyết định thiết kế có chủ ý.
+
+### Đợt 6 phần 4 — hết `<button>` thô
+4 chỗ cuối (`PriceComparisonView` 2, `CompetitionView` 2) đổi sang `<Button variant="unstyled"
+size="none">`, giữ nguyên className nên không đổi giao diện. Rule này giờ chỉ còn đúng 1 kết quả là
+bên trong chính `Button.tsx` — đã khai `eslint-disable-next-line` kèm lý do tại đó.
+
+### CỘT MỐC — `npm run check` xanh lần đầu (exit code 0, 0 lỗi 0 cảnh báo)
+
+CLAUDE.md mục 0.7 bắt buộc chạy `npm run check` trước khi báo cáo, nhưng cổng này **đã ĐỎ từ trước
+khi loạt đợt rà soát bắt đầu** — toàn bộ lỗi nằm trong code đã commit, không phải do các đợt vừa
+rồi gây ra (đã xác nhận nhiều lần bằng `git stash`). Nay sạch hoàn toàn.
+
+**25 lỗi typecheck, 4 nhóm:**
+1. `features/phan-ca/components/EditShiftModal.tsx` (21 lỗi — chiếm 84%): modal tự sinh 3 dạng gợi
+   ý riêng (`pure_swap`/`extend`/`split_cover`, thuộc tính PHẲNG) nhưng bị gán nhầm kiểu `Solution`
+   dùng chung (hình dạng khác hẳn: mọi thay đổi gói trong `actions[]`, type chỉ nhận
+   'swap'|'direct'|'add'|'split'|'reassign'). Khai union `ShiftSuggestion` đúng hình dạng thật để
+   TS tự thu hẹp kiểu ở từng nhánh render — KHÔNG dùng `any`/`@ts-ignore` để giấu lỗi.
+   **Diff của file này chỉ gồm chú thích kiểu + comment**, không đổi 1 dòng logic nào → JavaScript
+   sinh ra sau biên dịch giữ nguyên hành vi (bằng chứng mạnh hơn cả click thử tay).
+2. `features/phan-ca/PhanCaView.tsx` (2): thiếu import kiểu `SbhGenderBoost`.
+3. `features/bi-dashboard/.../DashboardHeader.tsx` (1): so sánh `activeMainTab === 'report'` trong
+   khi `MainTab` chỉ còn `'realtime' | 'cumulative'` → nhánh "BÁO CÁO" là code chết, đã gỡ.
+4. `components/employees/EmployeeAnalysis.tsx` (1): `<Button>` nhận prop `loading` không tồn tại
+   (đúng tên `isLoading`) nên bị đổ thẳng xuống DOM — gây CẢ lỗi typecheck LẪN cảnh báo React lúc
+   chạy. Dùng `disabled` thay vì `isLoading` để không vẽ thêm spinner thứ 2 (Icon đã tự xoay).
+
+**Lỗi eslint cuối cùng** — `analysisEmployeeSyncService.ts` import `services/dbService` gốc: đây là
+**cầu nối có chủ đích** giữa Phân Tích và Report BI nên buộc phải chạm cả 2 phía; cụ thể cần
+`saveSetting()` gốc vì hàm đó phát event `ycx-setting-changed` mà `useCloudSync` gốc đang nghe (bản
+`saveSetting` riêng của bi-dashboard ghi sang IndexedDB khác và không phát event này). Khai **ngoại
+lệ thứ 4** trong `eslint.config.js` theo ĐÚNG 1 đường dẫn file, KHÔNG mở cho cả thư mục — đã kiểm
+chứng bằng file dò: file thứ 2 trong cùng thư mục import `services/` gốc VẪN bị chặn. Ghi vào
+CLAUDE.md mục 1.
+
+### Đo lại hiệu năng — báo cáo trung thực, không tô hồng
+
+Chạy `PERF=1 npx playwright test perf-audit` 3 lần trên dữ liệu thật:
+
+| Chỉ số | Mốc cũ (mục 1 kế hoạch) | 3 lần đo | Kết luận |
+|---|---|---|---|
+| App khởi động | 358 ms | 314 / 310 / 302 | **nhanh hơn ~14%, ổn định qua cả 3 lần** |
+| Vào Report BI | 377 ms | 387 / 400 / 344 | trong nhiễu, không kết luận được |
+| Render bảng Thi đua | 181 ms | 208 / 181 / 247 | nhiễu rất lớn, không kết luận được |
+| JS heap | 76 MB | 81 / 80 / 76 | trong nhiễu |
+
+**Diễn giải trung thực**: chỉ có "app khởi động" là cải thiện thấy rõ và lặp lại được. 3 chỉ số còn
+lại đi ngang trong biên độ nhiễu — hợp lý, vì phép đo này đi vào **Report BI**, trong khi Đợt 3
+(tách `DashboardView`) tác động lên tab **Phân Tích**, còn lợi ích RAM của Đợt 4 chỉ áp dụng cho
+file parse MỚI chứ không phải dữ liệu đã cache sẵn mà phép đo này đang đọc. Cải thiện chắc chắn và
+đo trực tiếp được (không nhiễu) là **kích thước chunk**: `DashboardView` 1.051 kB → 221 kB
+(291 → 60,5 kB gzip), lấy thẳng từ output `npm run build`.
