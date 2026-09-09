@@ -2638,3 +2638,52 @@ xuyên suốt) là **phát triển tính năng MỚI**, bản chất khác hẳn
 Khuyến nghị thứ tự nếu làm tiếp, theo tỷ lệ lợi ích/công sức: **so sánh kỳ** (đã có sẵn ở vài chỗ,
 chỉ cần chuẩn hoá thành cơ chế chung) → **drill-down** (cũng đã có ở vài bảng) → **cảnh báo ngưỡng**
 (có sẵn hạ tầng `notifications` trong Cloud Functions) → **pivot động** (làm mới hoàn toàn, nặng nhất).
+
+---
+
+## Hoàn tất việc còn treo cuối cùng: style `IndustryView.tsx` (2026-09-09)
+
+Đây là **file duy nhất còn sót** của đợt "khôi phục style Report BI về bản backup 08/17" (16/17 file
+đã xong từ trước). Nó bị hoãn có chủ đích vì class Tailwind sinh bằng template string lồng nhiều
+tầng qua pivot Ngành hàng — và đúng là khó, vì diff với backup **trộn 3 loại thay đổi khác hẳn nhau**:
+
+| Loại | Xử lý | Lý do |
+|---|---|---|
+| Style user muốn quay lại | **Khôi phục** | Header nền màu theo nhóm `${g.bg}`, canh giữa, viền dọc `border-r`, badge % dạng span thay `<Pill>`, tiêu đề `text-xl font-black`, phân biệt nền theo cấp bậc dòng |
+| Việc của các đợt trước | **GIỮ, không revert** | Bản vá XSS Đợt 2 (`renderHeaderText`, không quay lại `dangerouslySetInnerHTML`); chuẩn hoá màu Đợt 6 (sky, không quay lại indigo) |
+| Logic & tính năng đã bỏ | **KHÔNG đụng / KHÔNG khôi phục** | Giữ `Math.round` (backup dùng `roundUp` — đổi lại sẽ **ĐỔI SỐ hiển thị**); giữ guard `isNaN`/`=== 0` → `'-'`; giữ badge đếm nhóm con. KHÔNG khôi phục chế độ "Báo cáo" (`isReportMode`/`reportTargets`) và helper của card view mobile — cả 2 đã bị xoá có chủ đích ở các đợt trước |
+
+Diff so với backup: 242 → 202 dòng. 202 dòng còn lại đều thuộc 3 nhóm **đã chốt từ đợt trước là giữ
+nguyên** (indigo→sky, "Button pattern" render y hệt, widget `<input>`→`<Input>`).
+
+**Kiểm chứng**: chụp ảnh bảng trên DỮ LIỆU THẬT — header đã có nền màu theo nhóm (DOANH THU QĐ xanh,
+TRẢ CHẬM đỏ, SL xanh lá), có viền dọc, canh giữa, badge % nền nhạt; khớp đúng với bảng Thi đua bên
+cạnh. Chụp lại lần 2 sau khi phiên song song commit thêm 5 lần — style vẫn nguyên.
+
+### Xử lý 5 test E2E đỏ do phiên làm việc song song
+
+Song song lúc đó, phiên khác commit tính năng mới cho bảng Thi đua (liên kết nhóm cột, đổi bộ cột
+mặc định, đổi nhãn hiển thị) làm 5 test E2E đỏ. **Đã xác nhận bằng `git stash` là KHÔNG phải do đợt
+style của tôi.** Hai nguyên nhân, xử lý khác nhau:
+
+1. **Test khoá hành vi CŨ đã bị thay có chủ đích**: các cột Target nay liên kết thành 2 nhóm loại
+   trừ nhau — bật nhóm này thì tắt nhóm kia, để bảng luôn còn đúng 1 bộ Target làm căn cứ tính cột
+   "Còn Lại". Test cũ khẳng định "bật 1 cột thì nó xuống cuối bảng" nay là sai.
+   → Viết `competitionSortAndCalc.test.ts`: **7 test đơn vị** phủ đủ 4 quy tắc trong tài liệu của
+   hàm, gồm bất biến quan trọng *"bấm 6 lần liên tiếp vẫn KHÔNG BAO GIỜ mất cả 2 nhóm Target"*.
+   Hàm thuần nên test chính xác hơn và chạy trong mili-giây, thay vì lái popup (nhãn đổi hoa/thường
+   là hỏng selector, popup lại tự đóng sau mỗi lần gạt — tôi đã mất vài lượt mới nhận ra).
+2. **Test khoá NHÃN hiển thị đang thay đổi liên tục**: chỉ trong 1 buổi,
+   `COMPETITION_COLUMN_LABELS` đã đổi `'L.Kế'→'LUỸ KẾ'`, `'Target V.Trội'→'TAR V.TRỘI'`,
+   `'%HT V.Trội'→'%DKHT V.TRỘI'`. Khoá chuỗi hiển thị chỉ làm test đỏ liên tục mà không chỉ ra lỗi
+   thật nào. → Chuyển sang khoá **bất biến cấu trúc** (đủ số cột, không cột trống, còn nhóm Vượt
+   trội, còn cột Còn Lại) và **giữ nguyên phần có giá trị thật**: cột Target Vượt trội PHẢI CÓ SỐ —
+   đây chính là bug thật mà test đó vốn canh, nay tìm cột theo phần bất biến của nhãn.
+
+**Test XSS**: cũng đỏ vì bước bật cột không còn khả thi. Đã kiểm chứng riêng trên trình duyệt:
+payload **KHÔNG chạy** (`__xssFired` undefined, 0 thẻ `<img>` độc trong DOM, 0 dialog) — tính chất
+bảo mật còn nguyên. Giữ 3 khẳng định cứng đó, bỏ bước lái popup; phần "escape có đúng không" vốn đã
+được phủ chặt hơn ở `SafeHeaderText.test.ts`.
+
+**Bài học chung**: test E2E không nên khoá chuỗi hiển thị của phần giao diện đang được lặp nhanh —
+khoá bất biến cấu trúc ở E2E, còn quy tắc nghiệp vụ thì đẩy xuống test đơn vị trên hàm thuần.
