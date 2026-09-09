@@ -11,6 +11,19 @@
 @theme {
   --font-sans: "UTM Avo", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
+  /* DI SẢN — sắp bỏ được (Đợt 6, 2026-09-09).
+     Khối này ép `indigo` hiển thị y hệt `sky`, tức 1 màu mang 2 tên khác nhau. Hệ quả xấu:
+     dải màu xoay vòng "6 họ semantic" mà CLAUDE.md mô tả (5 màu chuẩn + indigo) thực chất
+     CHƯA BAO GIỜ có 6 màu phân biệt — 2 trong 6 slot luôn trùng nhau, nên 2 hạng mục dữ
+     liệu khác nhau bị tô cùng màu.
+     Đợt 6 đã đổi 1.380/1.407 class `indigo-*` sang `sky-*` (giữ nguyên sắc độ nên KHÔNG
+     đổi pixel nào, vì hex vốn đã bằng nhau). Chỉ còn 27 class ở
+     features/bi-dashboard/components/SupermarketConfig.tsx chưa đổi vì lúc đó có phiên
+     làm việc khác đang sửa file này.
+     ⚠️ VIỆC CÒN LẠI: sau khi đổi nốt 27 class đó sang `sky-*`, XOÁ HẲN 10 dòng dưới đây.
+     Lúc ấy `indigo` sẽ trở lại là màu tím thật của Tailwind và có thể dùng làm màu thứ 6
+     THẬT SỰ phân biệt cho dải xoay vòng — nhưng đó phải là quyết định thiết kế có chủ ý,
+     không phải hệ quả phụ. Xem implementation_plan.md mục "Đợt 6". */
   --color-indigo-50: #f0f9ff;
   --color-indigo-100: #e0f2fe;
   --color-indigo-200: #bae6fd;

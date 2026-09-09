@@ -301,13 +301,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                     <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                                         Chương trình ({validSelectedPrograms.length}/{allProgramNames.length})
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="unstyled" size="none"
                                         type="button"
                                         onClick={toggleAllPrograms}
                                         className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                     >
                                         {validSelectedPrograms.length === allProgramNames.length ? 'Bỏ chọn hết' : 'Chọn tất cả'}
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 {/* Ô tìm kiếm chương trình */}
@@ -354,14 +355,15 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                     <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                                         Cột hiển thị ({visibleColumns.length}/{allColumns.length})
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="unstyled" size="none"
                                         type="button"
                                         onClick={() => setVisibleColumnOrder(allColumns)}
                                         className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                         title="Hiện tất cả các cột"
                                     >
                                         Hiện tất cả
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 scrollbar-thin mt-1">
