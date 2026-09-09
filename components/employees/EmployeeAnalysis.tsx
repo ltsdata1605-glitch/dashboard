@@ -231,7 +231,12 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         variant="secondary"
                         size="sm"
                         onClick={handleSyncToBi}
-                        loading={isSyncingToBi}
+                        // `loading` KHÔNG phải prop của <Button> (đúng tên là `isLoading`) nên
+                        // trước đây nó bị đổ thẳng xuống thẻ <button> của DOM, gây lỗi typecheck
+                        // + cảnh báo React "Received `false` for a non-boolean attribute".
+                        // Không dùng `isLoading` vì prop đó vẽ THÊM 1 spinner nữa, trong khi
+                        // Icon bên dưới đã tự xoay rồi — chỉ cần chặn bấm lại khi đang chạy.
+                        disabled={isSyncingToBi}
                         title="Đồng bộ danh sách nhân viên này sang Report BI và Cloud Firebase"
                         className="text-xs flex items-center gap-1.5 py-1 px-2.5 font-semibold text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:border-sky-700 dark:text-sky-300"
                     >

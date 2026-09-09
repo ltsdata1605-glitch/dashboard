@@ -57,6 +57,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
+      // ĐÂY chính là component <Button> mà quy tắc RULES.md §2.5 yêu cầu mọi nơi khác dùng;
+      // nó buộc phải render <button> thật của DOM nên được miễn trừ quy tắc đó.
+      // eslint-disable-next-line no-restricted-syntax
       <button
         ref={ref}
         disabled={disabled || isLoading}

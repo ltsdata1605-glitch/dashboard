@@ -89,4 +89,41 @@ export default tseslint.config(
     },
   },
   ...featureBoundaryRules,
+
+  // ── Ngoại lệ cách ly thứ 4 (bổ sung 2026-09-09, Đợt 6) — PHẠM VI ĐÚNG 1 FILE ──
+  // `analysisEmployeeSyncService.ts` là CẦU NỐI có chủ đích giữa 2 khu vực: nó đẩy danh sách
+  // nhân viên từ chức năng Phân Tích (khu vực gốc) sang Report BI. Bản chất công việc bắt buộc
+  // phải chạm cả 2 phía, nên nó cần `services/dbService` gốc — cụ thể là `saveSetting()` gốc,
+  // vì hàm này phát ra event 'ycx-setting-changed' mà `hooks/useCloudSync` ở gốc đang lắng nghe.
+  // Dùng `saveSetting` riêng của bi-dashboard KHÔNG thay thế được: nó ghi sang IndexedDB khác
+  // (BI_HUB_DATABASE_V2) và không phát event đó, nên phía Phân Tích sẽ không thấy dữ liệu mới.
+  //
+  // Cố ý KHÔNG thêm './dbService' vào danh sách `except` chung ở trên: làm vậy sẽ mở cửa cho
+  // MỌI file trong bi-dashboard import services/ gốc, phá đúng thứ quy tắc này bảo vệ. Khai
+  // riêng ở đây để ngoại lệ chỉ đúng 1 file, ai thêm file thứ 2 vẫn bị chặn.
+  {
+    files: ['features/bi-dashboard/services/analysisEmployeeSyncService.ts'],
+    rules: {
+      'import/no-restricted-paths': ['error', {
+        zones: [
+          ...FEATURES.filter((f) => f !== 'bi-dashboard').map((other) => ({
+            target: './features/bi-dashboard',
+            from: `./features/${other}`,
+            message: `Cấm import chéo giữa features/bi-dashboard và features/${other} (RULES.md §2.0).`,
+          })),
+          {
+            target: './features/bi-dashboard',
+            from: './hooks',
+            message: 'features/* không được import hooks/ gốc (RULES.md §2.0).',
+          },
+          {
+            target: './features/bi-dashboard',
+            from: './services',
+            except: ['./firebase.ts', './firebase', './dbService.ts', './dbService'],
+            message: 'features/* không được import services/ gốc — dùng services riêng của feature (RULES.md §2.0).',
+          },
+        ],
+      }],
+    },
+  },
 );

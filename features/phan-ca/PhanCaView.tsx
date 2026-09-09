@@ -38,7 +38,8 @@ import {
   BusySchedule,
   MonthlyStats,
   ScheduleConfig,
-  StaffInitialData
+  StaffInitialData,
+  SbhGenderBoost
 } from './types';
 import { createFullSchedule } from './services/scheduleService';
 import { abbreviateVietnameseName } from './utils/stringUtils';

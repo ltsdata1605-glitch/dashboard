@@ -7,6 +7,23 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
+/**
+ * Gợi ý đổi ca của RIÊNG modal này — KHÔNG phải kiểu `Solution` dùng chung trong types.ts
+ * (kiểu đó vẫn được dùng cho 2 prop `onFindSolution`/`onFindSolutionForDemotion` bên dưới).
+ *
+ * Trước đây các object do modal này tự sinh bị gán nhầm kiểu `Solution`, trong khi hình dạng
+ * thực tế khác hẳn: `Solution` gói mọi thay đổi vào mảng `actions[]` và chỉ nhận type
+ * 'swap'|'direct'|'add'|'split'|'reassign'; còn modal này sinh ra 3 dạng riêng với thuộc tính
+ * PHẲNG ('pure_swap' có partner/partnerShift, 'extend' có staff/originalShift/newShift). Sai lệch
+ * đó tạo ra 21/25 lỗi typecheck của toàn dự án, làm hỏng `npm run check` (Đợt 6).
+ * Khai báo đúng bằng union phân biệt theo `type` để TypeScript tự thu hẹp kiểu ở từng nhánh
+ * render, thay vì tắt kiểm tra bằng `any`/`@ts-ignore`.
+ */
+type ShiftSuggestion =
+  | { type: 'pure_swap'; partner: StaffMember; partnerShift: ScheduleInfo }
+  | { type: 'extend'; staff: StaffMember; originalShift: ScheduleInfo; newShift: ScheduleInfo }
+  | { type: 'split_cover'; actions: SolutionAction[] };
+
 
 interface EditShiftModalProps {
   info: EditShiftModalInfo;
@@ -66,7 +83,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   const { employeeName, date, currentShift, employeeStats, department } = info;
 
   const [view, setView] = useState<ModalView>('main');
-  const [suggestion, setSuggestion] = useState<Solution>(null);
+  const [suggestion, setSuggestion] = useState<ShiftSuggestion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const suggestionTimeoutRef = React.useRef<number | null>(null);
 
@@ -168,7 +185,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
 
       if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
       suggestionTimeoutRef.current = window.setTimeout(() => {
-          let allSolutions: Solution[] = [];
+          let allSolutions: ShiftSuggestion[] = [];
 
           if (context === 'busy') {
               const swapSolution = findSwapSolutions(info.currentShift.shift.includes('1') || info.currentShift.shift.includes('2') || info.currentShift.shift.includes('3') ? 'morning' : 'afternoon');
@@ -192,7 +209,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
           }
 
           if (allSolutions.length > 0) {
-              let bestSolution: Solution = null;
+              let bestSolution: ShiftSuggestion | null = null;
 
               const solutionPriority = { 'pure_swap': 1, 'split_cover': 2, 'extend': 3, 'swap': 4, 'replace': 5 };
               allSolutions.sort((a, b) => {
@@ -255,7 +272,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
     }
   };
 
-  const findSwapSolutions = (period: 'morning' | 'afternoon'): Solution | null => {
+  const findSwapSolutions = (period: 'morning' | 'afternoon'): ShiftSuggestion | null => {
     const employeeShift = info.currentShift.shift;
 
     const potentialPartners = allStaff.filter(s => {

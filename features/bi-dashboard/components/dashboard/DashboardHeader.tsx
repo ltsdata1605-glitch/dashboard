@@ -57,17 +57,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
 
-    // Tiêu đề cập nhật động theo chế độ Realtime / Luỹ kế / Báo cáo và tab Doanh thu / Thi đua
+    // Tiêu đề cập nhật động theo chế độ Realtime / Luỹ kế và tab Doanh thu / Thi đua.
+    // Đã gỡ nhánh 'report' (Đợt 6): `MainTab` chỉ còn 'realtime' | 'cumulative'
+    // (dashboardHelpers.ts) nên `activeMainTab === 'report'` KHÔNG BAO GIỜ đúng — đó là code
+    // chết còn sót lại từ lúc bỏ chế độ "Báo cáo", và là 1 trong các lỗi làm hỏng `npm run check`.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
-        const isReport = activeMainTab === 'report';
         const subTabLabel = activeSubTab === 'competition' ? 'THI ĐUA' : 'DOANH THU';
 
         if (isRealtime) {
             return `REALTIME ${subTabLabel} NGÀY ${getDateLabel(true)}`;
-        }
-        if (isReport) {
-            return `BÁO CÁO ${subTabLabel} ĐẾN NGÀY ${getDateLabel(true)}`;
         }
         return `LUỸ KẾ ${subTabLabel} ĐẾN NGÀY ${getDateLabel(false)}`;
     }, [activeMainTab, activeSubTab]);

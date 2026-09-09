@@ -136,14 +136,14 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             if (localStartNumber !== drawStartNumber) setDrawStartNumber(localStartNumber);
         }, 400);
         return () => clearTimeout(timer);
-    }, [localStartNumber]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [localStartNumber]);  
 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (localTotalTickets !== drawTotalTickets) setDrawTotalTickets(localTotalTickets);
         }, 400);
         return () => clearTimeout(timer);
-    }, [localTotalTickets]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [localTotalTickets]);  
 
     const filteredHistory = useMemo(() => {
         const userEntries = printHistory.filter(entry => entry.stickerType === stickerType);

@@ -312,7 +312,7 @@ export function useStickerPrinterData() {
         };
         document.addEventListener('draw-font-size-change', handler);
         return () => document.removeEventListener('draw-font-size-change', handler);
-    }, [stickerType, activeField]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [stickerType, activeField]);  
 
     useEffect(() => {
         const match = previewName.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
