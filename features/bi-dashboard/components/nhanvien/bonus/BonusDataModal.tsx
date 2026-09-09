@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { parseBonusBlock } from '../../../utils/bonusParser';
+import { extractEmployeeId } from '../../../utils/nhanVienHelpers';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { appendBonusHistory } from '../../../utils/bonusHistory';
@@ -24,7 +25,7 @@ export const BonusDataModal: React.FC<{
         setError(null);
         textareaRef.current?.focus();
 
-        const employeeId = employee.originalName.split(' - ')[1]?.trim();
+        const employeeId = extractEmployeeId(employee.originalName) || extractEmployeeId(employee.name);
         if (employeeId) {
             navigator.clipboard.writeText(employeeId)
                 .then(() => toast.success(`Đã copy: ${employeeId}`, { duration: 1500, position: 'top-center' }))
@@ -112,7 +113,7 @@ export const BonusDataModal: React.FC<{
                                 toast.success(`Lưu thành công: ${employee.name}`, { duration: 1500 });
 
                                 if (nextEmployee) {
-                                    const nextId = nextEmployee.originalName.split(' - ')[1]?.trim();
+                                    const nextId = extractEmployeeId(nextEmployee.originalName) || extractEmployeeId(nextEmployee.name);
                                     if (nextId) {
                                         try {
                                             await navigator.clipboard.writeText(nextId);

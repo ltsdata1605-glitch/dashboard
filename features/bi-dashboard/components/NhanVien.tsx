@@ -29,7 +29,7 @@ import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
-    { tab: 'crossSelling', label: 'Bán kèm' },
+    // { tab: 'crossSelling', label: 'Bán kèm' }, // Tạm ẩn theo yêu cầu
     { tab: 'installment', label: 'Trả góp' },
     { tab: 'competition', label: 'Thi đua' },
     { tab: 'bonus', label: 'Thưởng' },
@@ -50,6 +50,13 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             setActiveTab('revenue');
         }
     }, [isActive, setActiveTab]);
+
+    // Nếu tab hiện tại đang là crossSelling (do cache cũ lưu), tự động chuyển sang revenue
+    useEffect(() => {
+        if (activeTab === 'crossSelling') {
+            setActiveTab('revenue');
+        }
+    }, [activeTab, setActiveTab]);
 
     useEffect(() => {
         if (activeTab) {

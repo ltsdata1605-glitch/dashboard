@@ -12,6 +12,14 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 
+import { 
+    calculateProgramRemaining, 
+    sortProgramsList, 
+    toggleCompetitionColumn,
+    ALLOWED_REALTIME_COLUMNS,
+    ALLOWED_LUYKE_COLUMNS
+} from './competition/competitionSortAndCalc';
+
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 export interface ProcessedProgram {
     name: string;
@@ -37,22 +45,21 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const { data, isRealtime, activeSupermarket } = props;
 
     const modeKey = isRealtime ? 'realtime' : 'luyke';
-    // Cột bật MẶC ĐỊNH, theo đúng thứ tự muốn thấy trên bảng. Lưu danh sách cột BẬT (thay cho danh
-    // sách cột ẩn trước đây) vì thứ tự trong danh sách này chính là thứ tự cột trên bảng: bật thêm
-    // cột nào thì cột đó xuống cuối bảng.
+    // Cột bật MẶC ĐỊNH theo đúng chế độ:
+    // Realtime: T.HIỆN, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
+    // Luỹ kế: L.KẾ, M.TIÊU V.TRỘI, %HT V.Trội, C.LẠI
     const defaultVisibleCols = useMemo(
         () => isRealtime
-            ? ['Target V.Trội', 'Realtime', '%HT V.Trội', 'Còn Lại']
-            : ['Target V.Trội', 'L.Kế', '%HTDK', 'Còn Lại'],
+            ? ['Realtime', 'Target V.Trội', '%HT V.Trội', 'Còn Lại']
+            : ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'],
         [isRealtime]
     );
 
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
-    // Hậu tố -v2 ở 2 khoá dưới: đổi khoá = bỏ cấu hình cũ đang lưu trên máy người dùng, để bộ cột
-    // và kiểu sắp xếp mặc định mới thực sự có hiệu lực (cấu hình cũ luôn khác null nên mặc định
-    // mới sẽ không bao giờ được áp).
-    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v2`, null);
-    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v2`, defaultVisibleCols);
+    // Hậu tố -v5: bỏ cấu hình sort cũ, ưu tiên sắp xếp giảm dần theo %HT V.Trội > %DKHT > %HT.
+    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v5`, null);
+    // Hậu tố -v4: đồng bộ bộ cột hiển thị mới tách biệt giữa Realtime và Luỹ kế
+    const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v4`, defaultVisibleCols);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -120,9 +127,9 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 }));
             }
         }
-        const headersToRemove = isRealtime 
-            ? ['Xếp hạng trong miền', 'HẠNG VÙNG', 'TOP/BOTTOM VÙNG', 'Hạng vùng', 'Top/Bottom Vùng'] 
-            : ['Xếp hạng trong miền', 'Top/Bottom Trong Miền', 'HẠNG VÙNG', 'TOP/BOTTOM VÙNG', 'Hạng vùng', 'Top/Bottom Vùng'];
+        const headersToRemove = [
+            'Xếp hạng trong miền', 'HẠNG VÙNG', 'TOP/BOTTOM VÙNG', 'Hạng vùng', 'Top/Bottom Vùng', 'Top/Bottom Trong Miền'
+        ];
         const headerRenames: Record<string, string> = isRealtime ? { 
             'DOANH THU (RT)': 'Realtime',
             'SỐ LƯỢNG (RT)': 'Realtime',
@@ -130,54 +137,115 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             'SỐ LƯỢNG': 'Realtime',
             'TARGET': 'Target',
             '% HT NGÀY': '%HT',
-            '% DỰ BÁO': '%HTDK',
+            '% DỰ BÁO': '%DKHT',
             'DT Realtime': 'Realtime', 
-            'DT Realtime (QĐ)': 'Realtime (QĐ)', 
+            'DT Realtime (QĐ)': 'Realtime', 
             'SL Realtime': 'Realtime', 
             'Target Ngày': 'Target', 
             '% HT Target Ngày': '%HT', 
-            '%HT Target V.Trội': '%HT V.Trội' 
+            '%HT Target V.Trội': '%HT V.Trội',
+            '%HTDK V.Trội': '%HT V.Trội'
         } : { 
             'DOANH THU': 'L.Kế',
             'SỐ LƯỢNG': 'L.Kế',
             'TARGET': 'Target',
             '% HT THÁNG': '%HT',
-            '% DỰ BÁO': '%HTDK',
+            '% DỰ BÁO': '%DKHT',
             'DTLK': 'L.Kế', 
-            'DTQĐ': 'L.Kế (QĐ)', 
+            'DTQĐ': 'L.Kế', 
             'SLLK': 'L.Kế', 
             'Target': 'Target', 
             '% HT Target Tháng': '%HT', 
-            '% HT Dự Kiến': '%HTDK', 
+            '% HT Dự Kiến': '%DKHT', 
             'Target V.Trội': 'Target V.Trội', 
             '%HT Target V.Trội': '%HT V.Trội', 
-            '%HTDK V.Trội': '%HTDK V.Trội' 
+            '%HTDK V.Trội': '%HT V.Trội',
+            '%HTDK': '%DKHT'
         };
+
+        const allowedColumns: readonly string[] = isRealtime ? ALLOWED_REALTIME_COLUMNS : ALLOWED_LUYKE_COLUMNS;
         const indicesToRemove: number[] = [];
-        processedHeaders = processedHeaders.map((header, index) => { if (headersToRemove.includes(header)) indicesToRemove.push(index); return headerRenames[header] || header; }).filter((_, index) => !indicesToRemove.includes(index));
-        processedPrograms = processedPrograms.map((program) => ({ ...program, data: program.data.filter((_, index) => !indicesToRemove.includes(index)) }));
-        processedPrograms = processedPrograms.map((program) => {
+        processedHeaders = processedHeaders.map((header, index) => {
+            if (headersToRemove.includes(header)) {
+                indicesToRemove.push(index);
+                return header;
+            }
+            const renamed = headerRenames[header] || header;
+            // Tách biệt rõ giữa Realtime và Luỹ kế: chỉ giữ cột thuộc chế độ hiện tại
+            if (!allowedColumns.includes(renamed)) {
+                indicesToRemove.push(index);
+                return header;
+            }
+            return renamed;
+        }).filter((_, index) => !indicesToRemove.includes(index));
+
+        processedPrograms = processedPrograms.map((program) => ({
+            ...program,
+            data: program.data.filter((_, index) => !indicesToRemove.includes(index))
+        }));
+
+        if (processedHeaders.length > 0 && !processedHeaders.includes('Còn Lại')) {
+            processedHeaders.push('Còn Lại');
+        }
+
+        // Sắp xếp lại các cột theo thứ tự chuẩn
+        const orderedHeaders = allowedColumns.filter(c => processedHeaders.includes(c));
+        const finalHeaders = [...orderedHeaders, ...processedHeaders.filter(c => !orderedHeaders.includes(c))];
+
+        const remappedPrograms = processedPrograms.map((program) => {
+            const reorderedData = finalHeaders.map(h => {
+                const oldIdx = processedHeaders.indexOf(h);
+                return oldIdx !== -1 ? program.data[oldIdx] : '';
+            });
+
             let conLaiValue: number | null = null;
-            let actualIndex = isRealtime ? processedHeaders.findIndex(h => h.startsWith('Realtime')) : processedHeaders.findIndex(h => h.startsWith('L.Kế'));
-            let targetIndex = processedHeaders.indexOf('Target');
-            if(actualIndex !== -1 && targetIndex !== -1) {
-                const actual = parseNumber(program.data[actualIndex]);
-                const target = parseNumber(program.data[targetIndex]);
+            const actualIndex = isRealtime ? finalHeaders.indexOf('Realtime') : finalHeaders.indexOf('L.Kế');
+            let targetIndex = finalHeaders.indexOf('Target V.Trội');
+            if (targetIndex === -1) {
+                targetIndex = finalHeaders.indexOf('Target');
+            }
+            if (actualIndex !== -1 && targetIndex !== -1) {
+                const actual = parseNumber(reorderedData[actualIndex]);
+                const target = parseNumber(reorderedData[targetIndex]);
                 conLaiValue = actual - target;
             }
-            return { ...program, conLai: conLaiValue };
+            return { ...program, data: reorderedData, conLai: conLaiValue };
         });
-        if (processedHeaders.length > 0 && !processedHeaders.includes('Còn Lại')) processedHeaders.push('Còn Lại');
-        return { headers: processedHeaders, programs: processedPrograms };
+
+        return { headers: finalHeaders, programs: remappedPrograms };
     }, [supermarketData, isRealtime]);
+
+    const allColumns = useMemo(() => processedSupermarketData?.headers || [], [processedSupermarketData]);
+    // Bỏ những cột đã lưu nhưng không còn trong dữ liệu hiện tại; thứ tự giữ nguyên như lúc bật.
+    const visibleColumns = useMemo(
+        () => visibleColumnOrder.filter(col => allColumns.includes(col)),
+        [visibleColumnOrder, allColumns]
+    );
+    const hasHiddenColumn = allColumns.length > 0 && visibleColumns.length < allColumns.length;
+    /** Bật/tắt cột theo quy tắc nhóm loại trừ tương hỗ giữa Cơ bản và Vượt trội */
+    const toggleColumn = (header: string) => {
+        setVisibleColumnOrder(prev => toggleCompetitionColumn(header, prev, allColumns, isRealtime));
+    };
 
     useEffect(() => {
         if (isSortConfigLoaded && processedSupermarketData && processedSupermarketData.headers && !defaultSortSet) {
             if (sortConfig === null) {
-                const sortHeader = isRealtime ? '%HT' : '%HTDK';
-                const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
-                if (sortIndex !== -1) {
-                    setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
+                // Thứ tự ưu tiên giảm dần: %HT V.Trội > %DKHT > %HT
+                const candidates = isRealtime 
+                    ? ['%HT V.Trội', '%HTDK', '%HT'] 
+                    : ['%HTDK V.Trội', '%HT V.Trội', '%HTDK', '%HT'];
+                let sortHeader: string | undefined;
+                for (const cand of candidates) {
+                    if (processedSupermarketData.headers.includes(cand)) {
+                        sortHeader = cand;
+                        break;
+                    }
+                }
+                if (sortHeader) {
+                    const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
+                    if (sortIndex !== -1) {
+                        setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
+                    }
                 }
             }
             setDefaultSortSet(true);
@@ -192,17 +260,18 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
         const selectedSet = new Set(validSelected);
         const visible = processedSupermarketData.programs.filter((p) => selectedSet.size === 0 || selectedSet.has(p.name));
-        if (sortConfig === null) return visible;
-        return [...visible].sort((a, b) => {
-            let aValue: string | number, bValue: string | number;
-            if (sortConfig.columnIndex === 'conLai') { aValue = a.conLai ?? -Infinity; bValue = b.conLai ?? -Infinity; }
-            else if (sortConfig.columnIndex === 'htdkVT') { aValue = a.htdkVT ?? -Infinity; bValue = b.htdkVT ?? -Infinity; }
-            else if (sortConfig.columnIndex === -1) { aValue = shortenName(a.name, nameOverrides); bValue = shortenName(b.name, nameOverrides); }
-            else { if (a.data.length <= sortConfig.columnIndex || b.data.length <= sortConfig.columnIndex) return 0; aValue = parseNumber(a.data[sortConfig.columnIndex]); bValue = parseNumber(b.data[sortConfig.columnIndex]); }
-            if (typeof aValue === 'string' && typeof bValue === 'string') return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-            return sortConfig.direction === 'asc' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number);
+
+        // Cột Còn Lại được tính dựa trên cột được hiển thị: SẼ LẤY THỰC HIỆN - MỤC TIÊU V.TRỘI (nếu có hiển thị)
+        const programsWithDynamicRemaining = visible.map(program => {
+            const dynamicRemaining = calculateProgramRemaining(program, visibleColumns, allColumns, isRealtime);
+            return {
+                ...program,
+                conLai: dynamicRemaining !== null ? dynamicRemaining : program.conLai
+            };
         });
-    }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides]);
+
+        return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides);
+    }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides, visibleColumns, allColumns, isRealtime]);
 
     const groupedAndSortedPrograms = useMemo(() => {
         return sortedPrograms.reduce((acc, program) => {
@@ -212,18 +281,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             return acc;
         }, {} as Partial<Record<Criterion, ProcessedProgram[]>>);
     }, [sortedPrograms]);
-
-    const allColumns = useMemo(() => processedSupermarketData?.headers || [], [processedSupermarketData]);
-    // Bỏ những cột đã lưu nhưng không còn trong dữ liệu hiện tại; thứ tự giữ nguyên như lúc bật.
-    const visibleColumns = useMemo(
-        () => visibleColumnOrder.filter(col => allColumns.includes(col)),
-        [visibleColumnOrder, allColumns]
-    );
-    const hasHiddenColumn = allColumns.length > 0 && visibleColumns.length < allColumns.length;
-    /** Bật cột thì đưa xuống CUỐI danh sách — cột mới bật luôn nằm cuối bảng. */
-    const toggleColumn = (header: string) => setVisibleColumnOrder(prev => (
-        prev.includes(header) ? prev.filter(h => h !== header) : [...prev, header]
-    ));
 
     const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
     const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));
@@ -358,11 +415,11 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                     <Button
                                         variant="unstyled" size="none"
                                         type="button"
-                                        onClick={() => setVisibleColumnOrder(allColumns)}
+                                        onClick={() => setVisibleColumnOrder(defaultVisibleCols)}
                                         className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
-                                        title="Hiện tất cả các cột"
+                                        title="Khôi phục các cột mặc định"
                                     >
-                                        Hiện tất cả
+                                        Mặc định
                                     </Button>
                                 </div>
 

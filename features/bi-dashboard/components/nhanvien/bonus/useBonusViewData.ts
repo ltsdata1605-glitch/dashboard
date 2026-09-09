@@ -3,6 +3,8 @@ import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { useMonthlyBonusArchive } from '../../../hooks/useMonthlyBonusArchive';
 import { Employee, BonusMetrics, RevenueRow } from '../../../types/nhanVienTypes';
 import { BonusDisplayRow } from './BonusDisplayRow';
+import { getRevenueForEmployee } from './bonusTableHelpers';
+import { extractEmployeeId, standardizeEmployeeName, formatEmployeeName } from '../../../utils/nhanVienHelpers';
 
 interface UseBonusViewDataParams {
     employees: Employee[];
@@ -221,8 +223,35 @@ export function useBonusViewData({
     }, [employees, bonusData, allDates, colStats, getEmployeeWeeksBelowAvgCount, isActive]);
 
     const revenueMap = useMemo(() => {
-        if (isActive === false) return new Map();
-        const m = new Map<string, RevenueRow>(); revenueRows.forEach((r) => r.type === 'employee' && r.originalName && m.set(r.originalName, r)); return m;
+        if (isActive === false) return new Map<string, RevenueRow>();
+        const m = new Map<string, RevenueRow>();
+        revenueRows.forEach((r) => {
+            if (r.type === 'employee') {
+                if (r.originalName) {
+                    m.set(r.originalName, r);
+                    m.set(r.originalName.toLowerCase().trim(), r);
+                    const canonical = standardizeEmployeeName(r.originalName);
+                    m.set(canonical, r);
+                    m.set(canonical.toLowerCase().trim(), r);
+                    const formatted = formatEmployeeName(r.originalName);
+                    m.set(formatted, r);
+                    m.set(formatted.toLowerCase().trim(), r);
+                    const empId = extractEmployeeId(r.originalName);
+                    if (empId) m.set(empId, r);
+                    if (r.originalName.includes(' - ')) {
+                        const parts = r.originalName.split(' - ').map(p => p.trim());
+                        m.set(`${parts[1]} - ${parts[0]}`, r);
+                    }
+                }
+                if (r.name) {
+                    m.set(r.name, r);
+                    m.set(r.name.toLowerCase().trim(), r);
+                    const empId = extractEmployeeId(r.name);
+                    if (empId) m.set(empId, r);
+                }
+            }
+        });
+        return m;
     }, [revenueRows, isActive]);
 
     const displayList = useMemo(() => {
@@ -234,11 +263,13 @@ export function useBonusViewData({
         if (viewMode === 'list') {
             const list = employees.filter(e => isFiltering ? activeDepartments.includes(e.department) : true);
             list.sort((a, b) => {
-                const bA = bonusData[a.originalName], bB = bonusData[b.originalName], rA = revenueMap.get(a.originalName), rB = revenueMap.get(b.originalName);
+                const bA = bonusData[a.originalName], bB = bonusData[b.originalName];
+                const rA = getRevenueForEmployee(revenueMap, a.originalName, a.name);
+                const rB = getRevenueForEmployee(revenueMap, b.originalName, b.name);
                 let vA = 0, vB = 0;
                 if (sortField === 'name') return sortDir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
                 if (sortField === 'dtqd') { vA = rA?.dtqd || 0; vB = rB?.dtqd || 0; }
-                else if (sortField === 'hqqd') { vA = rA?.hieuQuaQD || 0; vB = rB?.hieuQuaQD || 0; }
+                else if (sortField === 'hqqd') { vA = (rA?.hieuQuaQD || 0) * 100; vB = (rB?.hieuQuaQD || 0) * 100; }
                 else if (sortField === 'weekBelowAvg') {
                     vA = getEmployeeWeeksBelowAvgCount(a.originalName);
                     vB = getEmployeeWeeksBelowAvgCount(b.originalName);
@@ -270,7 +301,10 @@ export function useBonusViewData({
             });
             const result: BonusDisplayRow[] = list.map((e, idx) => ({ ...e, rank: idx + 1 }));
             if (result.length > 0) {
-                const sumDtqd = result.reduce((s, e) => s + (revenueMap.get(e.originalName)?.dtqd || 0), 0);
+                const sumDtqd = result.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtqd || 0), 0);
+                const sumDtlk = result.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtlk || 0), 0);
+                const origTotalRow = revenueRows.find(r => r.type === 'total');
+                const sumHqqd = origTotalRow && origTotalRow.hieuQuaQD ? (origTotalRow.hieuQuaQD * 100) : (sumDtlk > 0 ? ((sumDtqd - sumDtlk) / sumDtlk) * 100 : 0);
                 const sumErp = result.reduce((s, e) => s + (bonusData[e.originalName]?.erp || 0), 0);
                 const sumTnong = result.reduce((s, e) => s + (bonusData[e.originalName]?.tNong || 0), 0);
                 const sumTong = result.reduce((s, e) => s + (bonusData[e.originalName]?.tong || 0), 0);
@@ -284,7 +318,7 @@ export function useBonusViewData({
                 result.push({
                     type: 'total',
                     name: 'TỔNG CỘNG',
-                    sumDtqd, sumErp, sumTnong, sumTong, sumDkien, dailySums
+                    sumDtqd, sumHqqd, sumDtlk, sumErp, sumTnong, sumTong, sumDkien, dailySums
                 });
             }
             return result;
@@ -293,11 +327,13 @@ export function useBonusViewData({
         let deptGroups = depts.map(d => {
             let emps = employees.filter(e => e.department === d);
             emps.sort((a, b) => {
-                const bA = bonusData[a.originalName], bB = bonusData[b.originalName], rA = revenueMap.get(a.originalName), rB = revenueMap.get(b.originalName);
+                const bA = bonusData[a.originalName], bB = bonusData[b.originalName];
+                const rA = getRevenueForEmployee(revenueMap, a.originalName, a.name);
+                const rB = getRevenueForEmployee(revenueMap, b.originalName, b.name);
                 let vA = 0, vB = 0;
                 if (sortField === 'name') return sortDir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
                 if (sortField === 'dtqd') { vA = rA?.dtqd || 0; vB = rB?.dtqd || 0; }
-                else if (sortField === 'hqqd') { vA = rA?.hieuQuaQD || 0; vB = rB?.hieuQuaQD || 0; }
+                else if (sortField === 'hqqd') { vA = (rA?.hieuQuaQD || 0) * 100; vB = (rB?.hieuQuaQD || 0) * 100; }
                 else if (sortField === 'weekBelowAvg') {
                     vA = getEmployeeWeeksBelowAvgCount(a.originalName);
                     vB = getEmployeeWeeksBelowAvgCount(b.originalName);
@@ -328,7 +364,10 @@ export function useBonusViewData({
                 return sortDir === 'asc' ? vA - vB : vB - vA;
             });
 
-            const sumDtqd = emps.reduce((s, e) => s + (revenueMap.get(e.originalName)?.dtqd || 0), 0);
+            const sumDtqd = emps.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtqd || 0), 0);
+            const sumDtlk = emps.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtlk || 0), 0);
+            const origDeptRow = revenueRows.find(r => r.type === 'department' && r.name === d);
+            const sumHqqd = origDeptRow && origDeptRow.hieuQuaQD ? (origDeptRow.hieuQuaQD * 100) : (sumDtlk > 0 ? ((sumDtqd - sumDtlk) / sumDtlk) * 100 : 0);
             const sumErp = emps.reduce((s, e) => s + (bonusData[e.originalName]?.erp || 0), 0);
             const sumTnong = emps.reduce((s, e) => s + (bonusData[e.originalName]?.tNong || 0), 0);
             const sumTong = emps.reduce((s, e) => s + (bonusData[e.originalName]?.tong || 0), 0);
@@ -341,6 +380,7 @@ export function useBonusViewData({
 
             let sortValue = 0;
             if (sortField === 'dtqd') sortValue = sumDtqd;
+            else if (sortField === 'hqqd') sortValue = sumHqqd;
             else if (sortField === 'erp') sortValue = sumErp;
             else if (sortField === 'tNong') sortValue = sumTnong;
             else if (sortField === 'tong') sortValue = sumTong;
@@ -370,7 +410,7 @@ export function useBonusViewData({
                 sortValue = sumDkien;
             }
 
-            return { name: d, employees: emps, sumDtqd, sumErp, sumTnong, sumTong, sumDkien, dailySums, sortValue };
+            return { name: d, employees: emps, sumDtqd, sumHqqd, sumDtlk, sumErp, sumTnong, sumTong, sumDkien, dailySums, sortValue };
         });
 
         deptGroups.sort((a, b) => {
@@ -379,7 +419,7 @@ export function useBonusViewData({
         });
 
         let out: BonusDisplayRow[] = [];
-        let grandSumDtqd = 0, grandSumErp = 0, grandSumTnong = 0, grandSumTong = 0, grandSumDkien = 0;
+        let grandSumDtqd = 0, grandSumDtlk = 0, grandSumErp = 0, grandSumTnong = 0, grandSumTong = 0, grandSumDkien = 0;
         const grandDailySums: Record<string, number> = {};
         allDates.forEach(dateStr => {
             grandDailySums[dateStr] = 0;
@@ -387,10 +427,22 @@ export function useBonusViewData({
 
         deptGroups.forEach(group => {
             if (group.employees.length > 0) {
-                out.push({ type: 'department', name: group.name, sumDtqd: group.sumDtqd, sumErp: group.sumErp, sumTnong: group.sumTnong, sumTong: group.sumTong, sumDkien: group.sumDkien, dailySums: group.dailySums });
+                out.push({
+                    type: 'department',
+                    name: group.name,
+                    sumDtqd: group.sumDtqd,
+                    sumHqqd: group.sumHqqd,
+                    sumDtlk: group.sumDtlk,
+                    sumErp: group.sumErp,
+                    sumTnong: group.sumTnong,
+                    sumTong: group.sumTong,
+                    sumDkien: group.sumDkien,
+                    dailySums: group.dailySums
+                });
                 out.push(...group.employees.map((e, idx) => ({ ...e, rank: idx + 1 })));
 
                 grandSumDtqd += group.sumDtqd;
+                grandSumDtlk += group.sumDtlk || 0;
                 grandSumErp += group.sumErp;
                 grandSumTnong += group.sumTnong;
                 grandSumTong += group.sumTong;
@@ -403,10 +455,24 @@ export function useBonusViewData({
         });
 
         if (out.length > 0) {
-            out.push({ type: 'total', name: 'TỔNG CỘNG', sumDtqd: grandSumDtqd, sumErp: grandSumErp, sumTnong: grandSumTnong, sumTong: grandSumTong, sumDkien: grandSumDkien, dailySums: grandDailySums });
+            const grandOrigTotalRow = revenueRows.find(r => r.type === 'total');
+            const grandSumHqqd = grandOrigTotalRow && grandOrigTotalRow.hieuQuaQD ? (grandOrigTotalRow.hieuQuaQD * 100) : (grandSumDtlk > 0 ? ((grandSumDtqd - grandSumDtlk) / grandSumDtlk) * 100 : 0);
+
+            out.push({
+                type: 'total',
+                name: 'TỔNG CỘNG',
+                sumDtqd: grandSumDtqd,
+                sumHqqd: grandSumHqqd,
+                sumDtlk: grandSumDtlk,
+                sumErp: grandSumErp,
+                sumTnong: grandSumTnong,
+                sumTong: grandSumTong,
+                sumDkien: grandSumDkien,
+                dailySums: grandDailySums
+            });
         }
         return out;
-    }, [employees, activeDepartments, bonusData, revenueMap, sortField, sortDir, viewMode, isActive, allDates, getEmployeeWeeksBelowAvgCount, colStats]);
+    }, [employees, activeDepartments, bonusData, revenueMap, revenueRows, sortField, sortDir, viewMode, isActive, allDates, getEmployeeWeeksBelowAvgCount, colStats]);
 
     return {
         sortField, setSortField, sortDir, setSortDir,

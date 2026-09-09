@@ -4,7 +4,7 @@ import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { FilterIcon, ChevronDownIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
-import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
+import { roundUp, shortenName, getYesterdayDateString, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
@@ -139,17 +139,17 @@ const EmployeeProfileCard: React.FC<{
     
     const empRevenue = useMemo(() => {
         if (!revenueRows) return null;
-        return revenueRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+        return revenueRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
     }, [revenueRows, selectedEmployee]);
 
     const empInstallment = useMemo(() => {
         if (!installmentRows) return null;
-        return installmentRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+        return installmentRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
     }, [installmentRows, selectedEmployee]);
 
     const empBanKem = useMemo(() => {
         if (!banKemRows) return null;
-        return banKemRows.find((r) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+        return banKemRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
     }, [banKemRows, selectedEmployee]);
 
     const empBonus = useMemo(() => {
@@ -162,7 +162,7 @@ const EmployeeProfileCard: React.FC<{
         const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
             const empRows = (rows || []).filter(r => r.type === 'employee');
             const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
-            const idx = sorted.findIndex(r => r.originalName === selectedEmployee.originalName);
+            const idx = sorted.findIndex(r => isSameEmployee(r.originalName, selectedEmployee.originalName));
             return { rank: idx >= 0 ? idx + 1 : empRows.length, total: empRows.length };
         };
         return {
@@ -544,13 +544,13 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">#</th>
-                                    <th className="text-left px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-right px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle whitespace-nowrap bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400">M.TIÊU</th>
-                                    <th className="text-right px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle whitespace-nowrap bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400">T.HIỆN</th>
-                                    <th className="text-right px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle whitespace-nowrap bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400">%HT</th>
-                                    <th className="text-right px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle whitespace-nowrap bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400">%DKHT</th>
-                                    <th className="text-right px-3 py-2.5 border-b border-slate-300 dark:border-slate-700 align-middle whitespace-nowrap bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400">C.LẠI</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300">M.TIÊU</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300">T.HIỆN</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-emerald-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300">%HT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-rose-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300">%DKHT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300">C.LẠI</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -577,15 +577,15 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                    const dkhtPillColor = !hasTarget ? undefined : dkht >= 100 ? '#059669' : dkht >= 80 ? '#d97706' : '#e11d48';
                                                    return (
                                                        <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-b-0">
-                                                           <td className="px-3 py-2.5 text-center text-[13px] text-slate-400 tabular-nums">{index + 1}</td>
-                                                           <td className="px-3 py-2.5 text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                                                           <td className="px-3 py-2.5 text-center text-[13px] text-slate-400 tabular-nums border-r border-slate-100 dark:border-slate-800/60">#{index + 1}</td>
+                                                           <td className="px-3 py-2.5 text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                                {item.name}
                                                            </td>
-                                                           <td className="px-3 py-2.5 text-right text-[13px] font-bold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
-                                                           <td className="px-3 py-2.5 text-right text-[13px] font-bold text-slate-800 dark:text-slate-100 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
-                                                           <td className="px-3 py-2.5 text-right text-[13px] font-bold tabular-nums whitespace-nowrap"><div className="flex items-center gap-1 justify-end"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-10"><ProgressBar value={item.completion} /></div></div></td>
-                                                           <td className="px-3 py-2.5 text-right tabular-nums whitespace-nowrap"><Pill color={dkhtPillColor}>{daysPassed > 0 ? `${Math.round(dkht)}%` : '-'}</Pill></td>
-                                                           <td className={`px-3 py-2.5 text-right text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
+                                                           <td className="px-3 py-2.5 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">{f.format(roundUp(item.target))}</td>
+                                                           <td className="px-3 py-2.5 text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">{f.format(roundUp(item.actual))}</td>
+                                                           <td className="px-3 py-2.5 text-center text-[13px] font-bold tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60"><div className="flex items-center gap-1 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-10"><ProgressBar value={item.completion} /></div></div></td>
+                                                           <td className="px-3 py-2.5 text-center tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60"><Pill color={dkhtPillColor}>{daysPassed > 0 ? `${Math.round(dkht)}%` : '-'}</Pill></td>
+                                                           <td className={`px-3 py-2.5 text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
                                                        </tr>
                                                    );
                                                })}

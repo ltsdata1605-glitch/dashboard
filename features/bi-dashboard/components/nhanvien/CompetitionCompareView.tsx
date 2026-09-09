@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
-import { shortenName } from '../../utils/nhanVienHelpers';
+import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -174,15 +174,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     const getEmpStats = (emp: Employee | null) => {
         if (!emp) return { dtqd: 0, dtlk: 0, tg: 0, bk: 0, thuong: 0, dtRank: 0, tgRank: 0, bkRank: 0, compStats: { total: 0, dkhtDat: 0, noSale: 0 } };
         
-        const rev = revenueRows?.find(r => r.type === 'employee' && r.originalName === emp.originalName);
-        const inst = installmentRows?.find(r => r.type === 'employee' && r.originalName === emp.originalName);
-        const bk = banKemRows?.find(r => r.type === 'employee' && r.originalName === emp.originalName);
+        const rev = revenueRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
+        const inst = installmentRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
+        const bk = banKemRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
         const bns = bonusData?.[emp.originalName];
 
         const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
             const empRows = (rows || []).filter(r => r.type === 'employee');
             const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
-            const idx = sorted.findIndex(r => r.originalName === emp.originalName);
+            const idx = sorted.findIndex(r => isSameEmployee(r.originalName, emp.originalName));
             return idx >= 0 ? idx + 1 : empRows.length;
         };
 
@@ -455,7 +455,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                                 </tr>
                                                 {critRows.map((row, idx) => (
                                                     <tr key={`${row.criterion}-${row.originalTitle}`} className="border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                                                        <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">{idx + 1}</td>
+                                                        <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">#{idx + 1}</td>
                                                         <td className="px-4 py-1 border-r border-slate-100 dark:border-slate-800/50">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200">{row.name}</span>

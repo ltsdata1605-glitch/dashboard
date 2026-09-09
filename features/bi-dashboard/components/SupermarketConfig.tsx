@@ -952,14 +952,15 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             </div>
                         </div>
 
-                        {/* NHÓM 3: TRẢ GÓP & CHI TIẾT NHÂN VIÊN */}
+                        {/* NHÓM 3: TRẢ GÓP NHÂN VIÊN */}
                         <div>
                             <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 bg-rose-500 rounded-sm"></div>
-                                Trả góp & CHI TIẾT NH
+                                Trả góp nhân viên
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
-                                <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
+                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                                {/* Tạm ẩn ô nhập liệu HQ BÁN KÈM theo yêu cầu */}
+                                {/* <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
                                     icon={<ChartBarIcon className="h-4 w-4" />} colorTheme="emerald"
                                     onChange={(v) => { setBanKemData(v); handleUpdate('banKem', v, s => s.includes('Nhân viên	DTLK	DTLK áp dụng MNGN'), setBanKemTs, `Nhân viên (BK) - ${supermarketName}`, ids.bk!); }}
                                     onClear={(title) => { 
@@ -967,8 +968,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setBanKemTs(null); 
                                         removeUpdate(ids.bk!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
-                                    }} />
+                                    }} /> */}
 
                                 <StatusTile title="Trả góp NV" lastUpdated={traGopTs} value={traGopData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/tra-cham"
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
@@ -985,7 +985,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setTraGopTs(null); 
                                         removeUpdate(ids.tg!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
                                     }} />
                             </div>
                         </div>

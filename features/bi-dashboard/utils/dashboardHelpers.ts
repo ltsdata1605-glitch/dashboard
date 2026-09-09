@@ -12,7 +12,19 @@ export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 /** Nhãn hiển thị của cột bảng Thi đua khi khác với tên cột trong dữ liệu — dùng chung cho bảng và
  *  popup "Bộ lọc bảng Thi đua" để 2 nơi không gọi cột bằng 2 tên khác nhau. */
 const COMPETITION_COLUMN_LABELS: Record<string, string> = {
+    'Realtime': 'T.HIỆN',
+    'Realtime (QĐ)': 'T.HIỆN (QĐ)',
+    'Target': 'TARGET',
+    'Target V.Trội': 'M.TIÊU V.TRỘI',
+    'L.Kế': 'L.KẾ',
+    'L.Kế (QĐ)': 'L.KẾ (QĐ)',
+    '%HT': '%HT',
+    '%HT V.Trội': '%HT V.Trội',
+    '%HTDK V.Trội': '%HT V.Trội',
     '%HTDK': '%DKHT',
+    '%DKHT': '%DKHT',
+    'Còn Lại': 'C.LẠI',
+    'CÒN LẠI': 'C.LẠI',
 };
 
 export const getCompetitionColumnLabel = (header: string): string => COMPETITION_COLUMN_LABELS[header] || header;

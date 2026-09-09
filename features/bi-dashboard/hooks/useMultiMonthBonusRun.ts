@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Employee, BonusMetrics } from '../types/nhanVienTypes';
 import { parseBonusBlock } from '../utils/bonusParser';
-import { formatEmployeeName } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { detectUserscript } from '../utils/bonusBridge';
 import { runSingleBonusJob } from '../utils/bonusJobRunner';
 import { getYearMonthPlan } from '../utils/bonusDateRange';
@@ -104,11 +104,11 @@ export function useMultiMonthBonusRun(
             }
 
             const parsedEmployees = allEmployees.map(e => {
-                const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
+                const employeeId = extractEmployeeId(e.originalName) || extractEmployeeId(e.name);
                 return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
             });
             const jobEmployees = parsedEmployees.filter(e => e.employeeId);
-            // Xem chú thích tương tự ở useBonusAutoBridge.ts — trước đây loại âm thầm, không
+            // Nhân viên không tìm thấy mã NV (dạng số) trước đây bị loại âm thầm, không
             // báo cho user biết N nhân viên nào đã bị bỏ qua suốt cả năm chạy.
             const skippedNames = parsedEmployees.filter(e => !e.employeeId).map(e => e.originalName);
 

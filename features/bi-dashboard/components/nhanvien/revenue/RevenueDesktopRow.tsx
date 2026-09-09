@@ -36,7 +36,7 @@ export const RevenueDesktopRow = React.memo(({
 
     return (
         <tr className={`transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-            <td className="px-3 py-2.5 whitespace-nowrap min-w-[180px]">
+            <td className="px-3 py-2.5 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
@@ -45,28 +45,28 @@ export const RevenueDesktopRow = React.memo(({
                     </div>
                 </div>
             </td>
-            <td className="px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
+            <td className="px-3 py-2.5 text-[13px] text-center font-semibold tabular-nums border-r border-slate-100 dark:border-slate-700/50" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
-            <td className="px-3 py-2.5 text-[13px] text-right font-bold tabular-nums" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
+            <td className="px-3 py-2.5 text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
                 <div>{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
-            <td className="px-3 py-2.5 text-[13px] text-right font-medium text-slate-400 dark:text-slate-500 tabular-nums">
+            <td className="px-3 py-2.5 text-[13px] text-center font-medium text-slate-400 dark:text-slate-500 tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
-            <td className="px-3 py-2.5 text-right tabular-nums">
+            <td className="px-3 py-2.5 text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <Pill color={getHtColor(row.calculatedCompletion, hasTarget)}>{hasTarget ? `${roundUp(row.calculatedCompletion)}%` : '—'}</Pill>
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
             </td>
             {isShowRemaining && (
                 <>
-                    <td className="px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
+                    <td className="px-3 py-2.5 text-[13px] text-center font-semibold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
-                    <td className={`px-3 py-2.5 text-[13px] text-right font-semibold tabular-nums bg-amber-50/10 dark:bg-amber-950/5 ${
+                    <td className={`px-3 py-2.5 text-[13px] text-center font-semibold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-amber-50/10 dark:bg-amber-950/5 ${
                         row.type === 'employee' && row.remaining_daily_status === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                         row.type === 'employee' && row.remaining_daily_status === 'success' ? 'text-emerald-600 dark:text-emerald-400' :
                         'text-amber-700 dark:text-amber-400'
@@ -75,19 +75,19 @@ export const RevenueDesktopRow = React.memo(({
                     </td>
                 </>
             )}
-            <td className="px-3 py-2.5 text-right tabular-nums">
+            <td className="px-3 py-2.5 text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <Pill color={getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>
-            <td className="px-3 py-2.5 text-right tabular-nums">
+            <td className="px-3 py-2.5 text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <Pill color={getDynamicColor(row.calculatedInstallment, colorSettings.tragop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
-            <td className="px-3 py-2.5 text-right tabular-nums">
+            <td className="px-3 py-2.5 text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <Pill color={getDynamicColor(row.pctBillBk, colorSettings.bankem)}>{roundUp(row.pctBillBk)}%</Pill>
                 <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
             </td>
-            <td className={`px-3 py-2.5 text-right tabular-nums ${
+            <td className={`px-3 py-2.5 text-center tabular-nums ${
                 !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
                 row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
                 row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getEmployeesFromAnalysis, getDepartmentsFromAnalysis } from './employeeParser';
 import type { AnalysisEmployeeItem } from './analysisEmployeeSyncService';
+import { extractEmployeeId } from '../utils/nhanVienHelpers';
 
 describe('employeeParser - Analysis Employees Priority', () => {
     const mockAnalysisEmployees: AnalysisEmployeeItem[] = [
@@ -54,3 +55,29 @@ describe('employeeParser - Analysis Employees Priority', () => {
         expect(depts[0].employeeCount).toBe(3);
     });
 });
+
+describe('extractEmployeeId - Mã số nhân viên', () => {
+    it('trích xuất đúng khi chuỗi có dạng "Mã NV - Tên NV" (chuẩn ERP/Phân Tích)', () => {
+        expect(extractEmployeeId('195025 - Nguyễn Thị Mỹ Linh')).toBe('195025');
+        expect(extractEmployeeId('17952 - Đỗ Thị Mai Hường')).toBe('17952');
+        expect(extractEmployeeId('174687 - Huỳnh Thị Mỹ Như')).toBe('174687');
+        expect(extractEmployeeId('23522 - Nguyễn Văn Hiệp')).toBe('23522');
+    });
+
+    it('trích xuất đúng khi chuỗi có dạng "Tên NV - Mã NV" (chuẩn BI cũ)', () => {
+        expect(extractEmployeeId('Nguyễn Thị Mỹ Linh - 195025')).toBe('195025');
+        expect(extractEmployeeId('Đỗ Thị Mai Hường - 17952')).toBe('17952');
+    });
+
+    it('trích xuất đúng khi chuỗi chứa tiền tố U hoặc nhiều dấu gạch ngang', () => {
+        expect(extractEmployeeId('U195025 - Nguyễn Thị Mỹ Linh')).toBe('195025');
+        expect(extractEmployeeId('195025 - Nguyễn Thị Mỹ Linh - Kho Siêu Thị')).toBe('195025');
+    });
+
+    it('trích xuất đúng khi chuỗi chỉ chứa mã số hoặc chuỗi rỗng', () => {
+        expect(extractEmployeeId('195025')).toBe('195025');
+        expect(extractEmployeeId('')).toBe('');
+        expect(extractEmployeeId('   ')).toBe('');
+    });
+});
+

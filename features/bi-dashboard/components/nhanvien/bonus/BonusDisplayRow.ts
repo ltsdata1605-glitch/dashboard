@@ -6,6 +6,8 @@ export interface BonusDisplayRow {
     department?: string;
     rank?: number;
     sumDtqd?: number;
+    sumHqqd?: number;
+    sumDtlk?: number;
     sumErp?: number;
     sumTnong?: number;
     sumTong?: number;

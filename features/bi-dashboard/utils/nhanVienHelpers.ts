@@ -27,6 +27,60 @@ export const standardizeEmployeeName = (rawName: string): string => {
     return rawName;
 };
 
+/**
+ * Trích xuất Mã Số Nhân Viên (chuỗi số) từ bất kỳ định dạng nào:
+ * - "195025 - Nguyễn Thị Mỹ Linh" -> "195025"
+ * - "Nguyễn Thị Mỹ Linh - 195025" -> "195025"
+ * - "U195025 - Nguyễn Thị Mỹ Linh" -> "195025"
+ * - "195025" -> "195025"
+ */
+export const extractEmployeeId = (input: string): string => {
+    if (!input) return '';
+    const trimmed = input.trim();
+    if (trimmed.includes(' - ')) {
+        const parts = trimmed.split(' - ').map(p => p.trim());
+        for (const part of parts) {
+            if (/^\d+$/.test(part)) return part;
+        }
+    }
+    const match = trimmed.match(/\b\d+\b/) || trimmed.match(/\d+/);
+    if (match) return match[0];
+    return '';
+};
+
+/**
+ * So sánh 2 tên nhân viên xem có cùng là 1 người hay không.
+ * Hỗ trợ so sánh qua:
+ * - Chuỗi thô bằng nhau (kể cả case-insensitive/trimmed)
+ * - Mã số nhân viên (Employee ID) trùng nhau
+ * - Tên chuẩn hóa (standardizeEmployeeName) trùng nhau
+ * - Tên hiển thị rút gọn (formatEmployeeName) trùng nhau
+ */
+export const isSameEmployee = (aName?: string, bName?: string): boolean => {
+    if (!aName || !bName) return false;
+    if (aName === bName) return true;
+    const aTrim = aName.trim();
+    const bTrim = bName.trim();
+    if (aTrim.toLowerCase() === bTrim.toLowerCase()) return true;
+
+    // So sánh qua Mã số nhân viên (chuỗi số duy nhất trong MWG)
+    const idA = extractEmployeeId(aTrim);
+    const idB = extractEmployeeId(bTrim);
+    if (idA && idB && idA === idB) return true;
+
+    // So sánh qua dạng chuẩn hóa
+    const canA = standardizeEmployeeName(aTrim);
+    const canB = standardizeEmployeeName(bTrim);
+    if (canA && canB && canA.toLowerCase() === canB.toLowerCase()) return true;
+
+    // So sánh qua dạng rút gọn
+    const fmtA = formatEmployeeName(aTrim);
+    const fmtB = formatEmployeeName(bTrim);
+    if (fmtA && fmtB && fmtA.toLowerCase() === fmtB.toLowerCase()) return true;
+
+    return false;
+};
+
 export const formatEmployeeName = (fullName: string): string => {
     const nameParts = fullName.split(' - ');
     if (nameParts.length < 2) return fullName;

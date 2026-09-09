@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Employee, BonusMetrics } from '../types/nhanVienTypes';
 import { parseBonusBlock } from '../utils/bonusParser';
-import { formatEmployeeName } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { detectUserscript } from '../utils/bonusBridge';
 import { runSingleBonusJob } from '../utils/bonusJobRunner';
 import { getCurrentRangeDefault } from '../utils/bonusDateRange';
@@ -97,11 +97,11 @@ export function useBonusAutoBridge(
             }
 
             const parsedEmployees = allEmployees.map(e => {
-                const employeeId = e.originalName.split(' - ')[1]?.trim() || '';
+                const employeeId = extractEmployeeId(e.originalName) || extractEmployeeId(e.name);
                 return { employeeId, originalName: e.originalName, displayName: formatEmployeeName(e.originalName) };
             });
             const jobEmployees = parsedEmployees.filter(e => e.employeeId);
-            // Nhân viên tên không đúng khuôn "Tên - Mã NV" trước đây bị loại âm thầm khỏi job,
+            // Nhân viên không tìm thấy mã NV (dạng số) trước đây bị loại âm thầm khỏi job,
             // không hề xuất hiện trong summary — khiến toast "N/N thành công" không đối chiếu
             // đúng tổng số nhân viên thật. Giữ lại để báo rõ trong kết quả cuối cùng.
             const skippedEmployees = parsedEmployees.filter(e => !e.employeeId);
@@ -152,7 +152,7 @@ export function useBonusAutoBridge(
                 if (toSave.length > 0) await handleSaveBonusBatch(toSave);
 
                 skippedEmployees.forEach(e => {
-                    items.push({ originalName: e.originalName, employeeId: '', status: 'error', reason: 'Tên không đúng khuôn "Tên - Mã NV" — đã bỏ qua, không lấy được điểm thưởng.' });
+                    items.push({ originalName: e.originalName, employeeId: '', status: 'error', reason: 'Không tìm thấy mã số nhân viên (ID) — đã bỏ qua, không lấy được điểm thưởng.' });
                 });
 
                 setStatus('done');

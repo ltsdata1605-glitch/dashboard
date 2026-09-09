@@ -99,7 +99,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                         {programs.map((program, index: number) => {
                                             const conLai = program.conLai;
                                             const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
-                                            const percentHeadersToRound = new Set(['%HT', '%HTDK', '%HT V.Trội', '%HTDK V.Trội']);
+                                            const percentHeadersToRound = new Set(['%HT', '%HTDK', '%DKHT', '%HT V.Trội', '%HTDK V.Trội']);
 
                                             return (
                                                 <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
@@ -142,7 +142,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                             if (isDash) {
                                                                 return <span className="text-slate-400 dark:text-slate-500 font-bold">-</span>;
                                                             }
-                                                            const isProgressBarColumn = headerKey === (isRealtime ? '%HT' : '%HTDK') || headerKey === '%HT V.Trội' || headerKey === '%HTDK V.Trội';
+                                                            const isProgressBarColumn = headerKey === '%HT' || headerKey === '%HT V.Trội' || headerKey === '%DKHT' || headerKey === '%HTDK' || headerKey === '%HTDK V.Trội';
                                                             
                                                             if (isProgressBarColumn) {
                                                                 const htValue = parseNumber(cell);
@@ -163,7 +163,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                             const isActualCol = header.startsWith('L.Kế') || header.startsWith('Realtime');
                                                             if (isActualCol) return <span className="font-bold text-slate-800 dark:text-slate-100">{cellDisplayValue}</span>;
                                                             
-                                                            if (headerKey === '%HTDK' || headerKey === '%HTDK V.Trội') {
+                                                            if (headerKey === '%HTDK' || headerKey === '%DKHT' || headerKey === '%HTDK V.Trội') {
                                                                 const pVal = parseNumber(cell);
                                                                 const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
                                                                 return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
