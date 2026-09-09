@@ -144,6 +144,62 @@ describe('competitionSortAndCalc', () => {
             // P1: HT VT = 10%, DKHT = 80%, HT = 50%
             expect(sorted.map(p => p.name)).toEqual(['P2', 'P3', 'P4', 'P1']);
         });
+
+        it('correctly sorts real user screenshot SLLK data descending by %HT V.Trội', () => {
+            const headers = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+            const programs: ProcessedProgram[] = [
+                { name: 'OTT MANGO/, ICALLME/', data: [202, 600, '113%', -398], metric: 'SLLK', conLai: -398 },
+                { name: 'VAS', data: [308, 586, '176%', -278], metric: 'SLLK', conLai: -278 },
+                { name: 'SIM MOBI/VINA/SIM', data: [87, 515, '57%', -428], metric: 'SLLK', conLai: -428 },
+                { name: 'SIM TỔNG', data: [116, 835, '47%', -719], metric: 'SLLK', conLai: -719 },
+                { name: 'NẠP/RÚT NH', data: [142, 819, '58%', -677], metric: 'SLLK', conLai: -677 },
+                { name: 'MỞ THẺ TÍN DỤNG', data: [0, 1, '0%', -1], metric: 'SLLK', conLai: -1 },
+            ];
+
+            // Mặc định (sortConfig = null)
+            const sortedDefault = sortProgramsList(programs, null, headers);
+            expect(sortedDefault.map(p => p.name)).toEqual([
+                'VAS', // 176%
+                'OTT MANGO/, ICALLME/', // 113%
+                'NẠP/RÚT NH', // 58%
+                'SIM MOBI/VINA/SIM', // 57%
+                'SIM TỔNG', // 47%
+                'MỞ THẺ TÍN DỤNG' // 0%
+            ]);
+
+            // Khi click vào cột %HT V.Trội (columnIndex = 2)
+            const sortedByCol = sortProgramsList(programs, { columnIndex: 2, direction: 'desc' }, headers);
+            expect(sortedByCol.map(p => p.name)).toEqual([
+                'VAS',
+                'OTT MANGO/, ICALLME/',
+                'NẠP/RÚT NH',
+                'SIM MOBI/VINA/SIM',
+                'SIM TỔNG',
+                'MỞ THẺ TÍN DỤNG'
+            ]);
+        });
+
+        it('correctly sorts real user screenshot DTLK data descending by %HT V.Trội', () => {
+            const headers = ['L.Kế', 'Target V.Trội', '%HT V.Trội', 'Còn Lại'];
+            const programs: ProcessedProgram[] = [
+                { name: 'VÍ TRẢ SAU', data: [329, 941, '117%', -611], metric: 'DTLK', conLai: -611 },
+                { name: 'TAI NGHE', data: [36, 150, '79%', -114], metric: 'DTLK', conLai: -114 },
+                { name: 'CE-ĐGD TOSHIBA', data: [722, 1269, '190%', -547], metric: 'DTLK', conLai: -547 },
+                { name: 'SẠC DỰ PHÒNG', data: [64, 386, '56%', -321], metric: 'DTLK', conLai: -321 },
+                { name: 'GIA DỤNG KANGAROO', data: [392, 803, '163%', -411], metric: 'DTLK', conLai: -411 },
+                { name: 'ĐIỆN TỬ SONY', data: [144, 366, '132%', -221], metric: 'DTLK', conLai: -221 },
+            ];
+
+            const sorted = sortProgramsList(programs, null, headers);
+            expect(sorted.map(p => p.name)).toEqual([
+                'CE-ĐGD TOSHIBA', // 190%
+                'GIA DỤNG KANGAROO', // 163%
+                'ĐIỆN TỬ SONY', // 132%
+                'VÍ TRẢ SAU', // 117%
+                'TAI NGHE', // 79%
+                'SẠC DỰ PHÒNG' // 56%
+            ]);
+        });
     });
 
     describe('toggleCompetitionColumn and Mutual Exclusivity', () => {

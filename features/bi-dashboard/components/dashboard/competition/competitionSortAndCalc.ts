@@ -104,41 +104,49 @@ export function getProgramCompletionMetrics(program: ProcessedProgram, headers: 
 } {
     // 1. %HT V.Trội
     let htVT: number | null = null;
-    const htVTIndex = headers.findIndex(h => 
-        h === '%HT V.Trội' || 
-        h === '%HTDK V.Trội' || 
-        h === '%HT Target V.Trội' ||
-        (h.includes('%') && h.toLowerCase().includes('v.trội'))
-    );
+    const htVTIndex = headers.findIndex(h => {
+        const lower = h.toLowerCase().trim();
+        return lower === '%ht v.trội' || 
+               lower === '%htdk v.trội' || 
+               lower === '%ht target v.trội' ||
+               (lower.includes('%') && lower.includes('trội'));
+    });
     if (htVTIndex !== -1 && program.data[htVTIndex] !== undefined && program.data[htVTIndex] !== '' && program.data[htVTIndex] !== '-') {
-        htVT = parseNumber(program.data[htVTIndex]);
-    } else if (program.htdkVT !== undefined && program.htdkVT !== null) {
-        htVT = program.htdkVT;
+        const val = parseNumber(program.data[htVTIndex]);
+        if (!isNaN(val)) htVT = val;
+    }
+    if (htVT === null && program.htdkVT !== undefined && program.htdkVT !== null) {
+        const val = typeof program.htdkVT === 'number' ? program.htdkVT : parseNumber(program.htdkVT);
+        if (!isNaN(val)) htVT = val;
     }
 
     // 2. %DKHT (%HTDK)
     let htDK: number | null = null;
-    const htDKIndex = headers.findIndex(h => 
-        h === '%HTDK' || 
-        h === '%DKHT' || 
-        h === '% DỰ BÁO' || 
-        h === '% HT Dự Kiến'
-    );
+    const htDKIndex = headers.findIndex(h => {
+        const lower = h.toLowerCase().trim();
+        return lower === '%htdk' || 
+               lower === '%dkht' || 
+               lower === '% dự báo' || 
+               lower === '% ht dự kiến';
+    });
     if (htDKIndex !== -1 && program.data[htDKIndex] !== undefined && program.data[htDKIndex] !== '' && program.data[htDKIndex] !== '-') {
-        htDK = parseNumber(program.data[htDKIndex]);
+        const val = parseNumber(program.data[htDKIndex]);
+        if (!isNaN(val)) htDK = val;
     }
 
     // 3. %HT (% HT NGÀY / % HT THÁNG)
     let ht: number | null = null;
-    const htIndex = headers.findIndex(h => 
-        h === '%HT' || 
-        h === '% HT NGÀY' || 
-        h === '% HT THÁNG' || 
-        h === '% HT Target Ngày' ||
-        h === '% HT Target Tháng'
-    );
+    const htIndex = headers.findIndex(h => {
+        const lower = h.toLowerCase().trim();
+        return lower === '%ht' || 
+               lower === '% ht ngày' || 
+               lower === '% ht tháng' || 
+               lower === '% ht target ngày' ||
+               lower === '% ht target tháng';
+    });
     if (htIndex !== -1 && program.data[htIndex] !== undefined && program.data[htIndex] !== '' && program.data[htIndex] !== '-') {
-        ht = parseNumber(program.data[htIndex]);
+        const val = parseNumber(program.data[htIndex]);
+        if (!isNaN(val)) ht = val;
     }
 
     return { htVT, htDK, ht };
@@ -160,22 +168,22 @@ export function compareByCompletionPriority(
     const mult = direction === 'asc' ? 1 : -1;
 
     // Ưu tiên 1: %HT V.Trội
-    const aVT = aMetrics.htVT ?? -Infinity;
-    const bVT = bMetrics.htVT ?? -Infinity;
+    const aVT = (aMetrics.htVT !== null && !isNaN(aMetrics.htVT)) ? aMetrics.htVT : -Infinity;
+    const bVT = (bMetrics.htVT !== null && !isNaN(bMetrics.htVT)) ? bMetrics.htVT : -Infinity;
     if (aVT !== bVT) {
         return (aVT - bVT) * mult;
     }
 
     // Ưu tiên 2: %DKHT (%HTDK)
-    const aDK = aMetrics.htDK ?? -Infinity;
-    const bDK = bMetrics.htDK ?? -Infinity;
+    const aDK = (aMetrics.htDK !== null && !isNaN(aMetrics.htDK)) ? aMetrics.htDK : -Infinity;
+    const bDK = (bMetrics.htDK !== null && !isNaN(bMetrics.htDK)) ? bMetrics.htDK : -Infinity;
     if (aDK !== bDK) {
         return (aDK - bDK) * mult;
     }
 
     // Ưu tiên 3: %HT
-    const aHT = aMetrics.ht ?? -Infinity;
-    const bHT = bMetrics.ht ?? -Infinity;
+    const aHT = (aMetrics.ht !== null && !isNaN(aMetrics.ht)) ? aMetrics.ht : -Infinity;
+    const bHT = (bMetrics.ht !== null && !isNaN(bMetrics.ht)) ? bMetrics.ht : -Infinity;
     if (aHT !== bHT) {
         return (aHT - bHT) * mult;
     }
@@ -236,11 +244,10 @@ export function calculateProgramRemaining(
 /**
  * Sắp xếp danh sách chương trình:
  * - Khi sortConfig === null: Mặc định LUÔN sắp xếp giảm dần theo chuỗi ưu tiên %HT V.Trội > %DKHT > %HT.
+ * - Khi sortConfig theo các cột % hoàn thành (%HT V.Trội, %DKHT, %HT): LUÔN sắp xếp theo chuỗi ưu tiên này.
  * - Khi sortConfig theo 'conLai': sắp xếp theo Còn Lại, tie-break bằng chuỗi % ưu tiên.
  * - Khi sortConfig theo tên (-1): sắp xếp theo tên hiển thị.
- * - Khi sortConfig theo 1 cột dữ liệu:
- *   + Nếu là cột % hoàn thành, khi bằng nhau tie-break bằng các cột % ưu tiên còn lại.
- *   + Nếu là cột số lượng/doanh thu, khi bằng nhau tie-break bằng chuỗi % ưu tiên.
+ * - Khi sortConfig theo 1 cột dữ liệu khác: khi bằng nhau tie-break bằng chuỗi % ưu tiên.
  */
 export function sortProgramsList(
     programs: ProcessedProgram[],
@@ -251,6 +258,15 @@ export function sortProgramsList(
     return [...programs].sort((a, b) => {
         if (!sortConfig) {
             return compareByCompletionPriority(a, b, headers, 'desc');
+        }
+
+        // Nếu sort theo cột % hoàn thành: áp dụng trực tiếp chuỗi ưu tiên
+        if (typeof sortConfig.columnIndex === 'number' && sortConfig.columnIndex >= 0 && sortConfig.columnIndex < headers.length) {
+            const colHeader = headers[sortConfig.columnIndex] || '';
+            const lowerHeader = colHeader.toLowerCase();
+            if (lowerHeader.includes('%') || lowerHeader.includes('trội')) {
+                return compareByCompletionPriority(a, b, headers, sortConfig.direction);
+            }
         }
 
         let aValue: string | number;
@@ -279,8 +295,8 @@ export function sortProgramsList(
             return compareByCompletionPriority(a, b, headers, 'desc');
         }
 
-        const numA = aValue as number;
-        const numB = bValue as number;
+        const numA = (typeof aValue === 'number' && !isNaN(aValue)) ? aValue : -Infinity;
+        const numB = (typeof bValue === 'number' && !isNaN(bValue)) ? bValue : -Infinity;
         if (numA !== numB) {
             return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
         }

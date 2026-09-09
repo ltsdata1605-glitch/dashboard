@@ -56,11 +56,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     );
 
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>(`competition-selected-programs-${modeKey}`, []);
-    // Hậu tố -v5: bỏ cấu hình sort cũ, ưu tiên sắp xếp giảm dần theo %HT V.Trội > %DKHT > %HT.
-    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v5`, null);
+    // Hậu tố -v7: Mặc định luôn null để áp dụng chuỗi ưu tiên giảm dần %HT V.Trội > %DKHT > %HT
+    const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${modeKey}-v7`, null);
     // Hậu tố -v5: đồng bộ bộ cột hiển thị mới tách biệt và cố định thứ tự chuẩn giữa Realtime và Luỹ kế
     const [visibleColumnOrder, setVisibleColumnOrder] = useIndexedDBState<string[]>(`competition-visible-cols-${modeKey}-v5`, defaultVisibleCols);
-    const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
@@ -90,7 +89,11 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const handleSort = (columnIndex: number | 'conLai' | 'htdkVT' | -1) => {
         setSortConfig(current => {
             if (current && current.columnIndex === columnIndex) {
-                return { columnIndex, direction: current.direction === 'asc' ? 'desc' : 'asc' };
+                if (current.direction === 'desc') {
+                    return { columnIndex, direction: 'asc' };
+                }
+                // Click lần 3: Khôi phục về mặc định (sắp xếp giảm dần theo %HT V.Trội > %DKHT > %HT)
+                return null;
             }
             return { columnIndex, direction: 'desc' };
         });
@@ -227,33 +230,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         setVisibleColumnOrder(prev => toggleCompetitionColumn(header, prev, allColumns, isRealtime));
     };
 
-    useEffect(() => {
-        if (isSortConfigLoaded && processedSupermarketData && processedSupermarketData.headers && !defaultSortSet) {
-            if (sortConfig === null) {
-                // Thứ tự ưu tiên giảm dần: %HT V.Trội > %DKHT > %HT
-                const candidates = isRealtime 
-                    ? ['%HT V.Trội', '%HTDK', '%HT'] 
-                    : ['%HTDK V.Trội', '%HT V.Trội', '%HTDK', '%HT'];
-                let sortHeader: string | undefined;
-                for (const cand of candidates) {
-                    if (processedSupermarketData.headers.includes(cand)) {
-                        sortHeader = cand;
-                        break;
-                    }
-                }
-                if (sortHeader) {
-                    const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
-                    if (sortIndex !== -1) {
-                        setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
-                    }
-                }
-            }
-            setDefaultSortSet(true);
-        }
-    }, [processedSupermarketData, defaultSortSet, isRealtime, setSortConfig, sortConfig, isSortConfigLoaded]);
-    
-    useEffect(() => { setDefaultSortSet(false); }, [activeSupermarket, isRealtime]);
-
     const sortedPrograms = useMemo(() => {
         if (!processedSupermarketData?.programs) return [];
         const currentProgramNames = processedSupermarketData.programs.map((p) => p.name);
@@ -273,14 +249,18 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides);
     }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides, visibleColumns, allColumns, isRealtime]);
 
+    // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN %HT V.Trội > %DKHT > %HT TRONG TỪNG TIÊU CHÍ (SLLK, DTLK, DTQĐ)
     const groupedAndSortedPrograms = useMemo(() => {
-        return sortedPrograms.reduce((acc, program) => {
-            const metric = program.metric as Criterion;
-            if (!acc[metric]) acc[metric] = [];
-            acc[metric]!.push(program);
-            return acc;
-        }, {} as Partial<Record<Criterion, ProcessedProgram[]>>);
-    }, [sortedPrograms]);
+        const groups: Partial<Record<Criterion, ProcessedProgram[]>> = {};
+        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
+            const criterionPrograms = sortedPrograms.filter(p => p.metric === criterion);
+            if (criterionPrograms.length > 0) {
+                // Đảm bảo từng nhóm tiêu chí con luôn được sắp xếp theo đúng sortConfig (mặc định giảm dần %HT V.Trội > %DKHT > %HT)
+                groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides);
+            }
+        });
+        return groups;
+    }, [sortedPrograms, sortConfig, allColumns, nameOverrides]);
 
     const currentProgramNames = processedSupermarketData?.programs?.map((p) => p.name) || [];
     const validSelectedPrograms = selectedPrograms.filter(p => currentProgramNames.includes(p));
