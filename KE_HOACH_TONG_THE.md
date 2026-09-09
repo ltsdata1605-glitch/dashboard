@@ -316,7 +316,9 @@ Phần này là **nâng cấp năng lực**, chỉ nên bắt đầu sau khi ph�
 
 ### Giai đoạn 3 — Chia sẻ & vận hành
 
-- **Xuất báo cáo có lịch**: gửi định kỳ qua Telegram (đã có `telegram-agent`) hoặc email.
+- **Xuất báo cáo có lịch**: gửi định kỳ qua Telegram hoặc email. (Cập nhật 2026-09-09: thư mục
+  `telegram-agent/` đã được XOÁ ở Đợt 5 theo quyết định của user — nếu sau này làm mục này thì
+  dựng lại từ đầu, ưu tiên Cloud Functions đã có sẵn thay vì script chạy trên máy cá nhân.)
 - **Nhật ký truy cập dữ liệu**: ai xem gì, khi nào — cần cho dữ liệu doanh thu nhiều siêu thị.
 - **Phân quyền theo cấp**: hiện là admin/manager/employee theo Kho. Doanh nghiệp thật cần thêm cấp
   vùng/miền.

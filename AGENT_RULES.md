@@ -35,10 +35,12 @@ PHẠM VI:
 
 ---
 
-# QUY TRÌNH THỰC THI TASK TỪ XA (TELEGRAM AGENT WORKFLOW)
+<!--
+  Mục "QUY TRÌNH THỰC THI TASK TỪ XA (TELEGRAM AGENT WORKFLOW)" đã được GỠ ngày 2026-09-09
+  (Đợt 5 — dọn code). Lý do: toàn bộ hạ tầng của quy trình này không còn tồn tại —
+  thư mục `telegram-agent/` đã xoá theo quyết định của user, thư mục `tasks/` không có,
+  `safety.js` chỉ còn trong file backup cũ ở `archive/`, và các đường dẫn trong mục đó trỏ
+  vào máy của một người dùng khác (`/Users/dangkhoa/...`). Giữ lại chỉ gây hiểu nhầm cho
+  agent đọc file này. Xem implementation_plan.md mục "Đợt 5" để biết chi tiết.
+-->
 
-Khi nhận lệnh và làm việc trong project này, Agent bắt buộc tuân thủ:
-1. **Kiểm tra Approved Tasks**: Đọc file [approved.md](file:///Users/dangkhoa/Downloads/Vide%20Coding/dashboardycx/tasks/approved.md) và hàng đợi [tasks.json](file:///Users/dangkhoa/Downloads/Vide%20Coding/dashboardycx/telegram-agent/queue/tasks.json) để xác định xem Task ID nào đang ở trạng thái `approved` cần được thực thi.
-2. **Đọc Kế hoạch (Plan)**: Đọc file kế hoạch tương ứng tại `tasks/plan-[TASK-ID].md` trước khi tiến hành sửa đổi bất kỳ code nào.
-3. **Tuân thủ Tuyệt đối Safety Guard**: Không viết các lệnh, code hoặc cấu hình vi phạm bộ lọc bảo mật trong `safety.js` (không thay đổi .env, không xóa db/file dữ liệu, không tự ý push/deploy).
-4. **Báo cáo Thực thi**: Sau khi hoàn thành, ghi báo cáo kết quả chi tiết (bao gồm cả walkthrough/diff) vào file [reports.md](file:///Users/dangkhoa/Downloads/Vide%20Coding/dashboardycx/tasks/reports.md) để bot có thể tự động gửi phản hồi kết quả về điện thoại cho User.

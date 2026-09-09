@@ -47,7 +47,6 @@ export default tseslint.config(
       'dist/**',
       'archive/**',
       'scratch/**',
-      'telegram-agent/**',
       'functions/**',
       'design-system/**',
       '.claude/worktrees/**',

@@ -2318,3 +2318,32 @@ rủi ro hồi quy thật, và 2 file trong danh sách (`nhanVienHelpers.ts`, `S
 **c) Số phận `price-scraper-server/` và `telegram-agent/`**: cần bạn xác nhận còn dùng hay bỏ —
 đây là thao tác xoá thư mục, không tự quyết. (`services/dataService.ts::processSalesFile` — hàm
 chết 0 caller phát hiện ở Đợt 4 — cũng nằm trong nhóm chờ quyết định xoá này.)
+
+### Quyết định của user (2026-09-09) cho 3 việc trên
+
+**a) `uiService` — GIỮ NGUYÊN 3 bản, chỉ ghi nhận.** User chọn không nới quy tắc cách ly (nhất
+quán với quyết định ở Đợt 2 về gom cấu hình Firebase). Hệ quả cần NHỚ khi bảo trì: **sửa 1 bug ở
+tầng xuất ảnh phải sửa ở CẢ 3 chỗ** — `services/uiService.ts`, `features/phan-ca/services/uiService.ts`,
+`features/sticker-event/services/uiService.ts` (bi-dashboard dùng bản đã tách riêng
+`features/bi-dashboard/services/uiExport/`). Trùng lặp đo được: root↔sticker-event ~88%,
+root↔phan-ca ~87%, phan-ca↔sticker-event ~96,5%.
+
+**b) Tách 9 file > 800 dòng — KHÔNG làm hàng loạt.** Giữ nguyên cho tới khi có lý do cụ thể (sắp
+sửa lớn vào đúng file đó), vì đây là refactor thuần hình thức nhưng rủi ro hồi quy thật.
+
+**c) `price-scraper-server/` — GIỮ, đang dùng thật** (không phải code chết như kế hoạch phỏng đoán):
+`components/views/PriceComparisonView.tsx` hướng dẫn người dùng chạy `cd price-scraper-server &&
+npm start`, và chính `http://localhost:3456` trong `connect-src` của CSP là server này.
+**`telegram-agent/` (1.808 dòng) — ĐÃ XOÁ** theo quyết định user (3 tháng không đụng, không file
+nào trong app import tới, README trỏ đường dẫn máy người dùng khác `/Users/dangkhoa/...`).
+- Trước khi xoá đã sao lưu 2 thứ KHÔNG nằm trong git (xoá là mất vĩnh viễn):
+  `telegram-agent/.env` (chứa `TELEGRAM_BOT_TOKEN`) → `archive/telegram-agent.env.backup-20260909`,
+  và thư mục `logs/` → `archive/telegram-agent-logs-backup-20260909/`. `archive/` đã nằm trong
+  `.gitignore` nên 2 bản sao này chỉ ở máy local, KHÔNG lên GitHub.
+- 15 file còn lại đều được git theo dõi nên khôi phục được bằng `git revert`/`git checkout` nếu cần.
+- ⚠️ **Việc user nên tự làm**: token bot Telegram trong `.env` cũ vẫn còn hiệu lực trên máy chủ
+  Telegram — nếu chắc chắn không dùng bot này nữa, nên thu hồi token qua @BotFather (`/revoke`),
+  vì xoá file local không vô hiệu hoá được token.
+- Gỡ kèm mục "QUY TRÌNH THỰC THI TASK TỪ XA (TELEGRAM AGENT WORKFLOW)" trong `AGENT_RULES.md` —
+  toàn bộ hạ tầng của quy trình đó đã không còn (`tasks/` không tồn tại, `safety.js` chỉ còn trong
+  file backup cũ), để lại chỉ khiến agent đọc file này hiểu nhầm là quy trình vẫn đang chạy.
