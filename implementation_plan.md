@@ -2508,3 +2508,42 @@ lại đi ngang trong biên độ nhiễu — hợp lý, vì phép đo này đi 
 file parse MỚI chứ không phải dữ liệu đã cache sẵn mà phép đo này đang đọc. Cải thiện chắc chắn và
 đo trực tiếp được (không nhiễu) là **kích thước chunk**: `DashboardView` 1.051 kB → 221 kB
 (291 → 60,5 kB gzip), lấy thẳng từ output `npm run build`.
+
+---
+
+## Đợt 7 — ĐO TRƯỚC KHI LÀM: tiêu chí hoàn thành ĐÃ ĐẠT SẴN (2026-09-09)
+
+Kế hoạch đặt tiêu chí hoàn thành Đợt 7 là **"lọc 100k dòng < 200 ms"**, và đề xuất cách đạt là viết
+lại mô hình dữ liệu sang **dạng cột** (`Float64Array`, dictionary-encode) + lưu IndexedDB nhị phân —
+một cuộc đại phẫu tầng dữ liệu, rủi ro rất cao vì đụng vào đúng nơi tính tiền.
+
+Trước khi bỏ công vào đó, tôi dựng phép đo thật trên **100.000 dòng tổng hợp** với khoá ngắn (mô
+hình sau Đợt 4), chạy qua đúng các hàm production (`computeRbacFilteredData`,
+`computeBaseAndPeriodData`, `calculateRowMetrics`). Kết quả, ổn định qua 4 lần chạy:
+
+| Bước | Thời gian | Ghi chú |
+|---|---|---|
+| Lọc RBAC (theo Kho/nhân viên) | **7 ms** | 100k → 40k dòng |
+| Lọc chính (ngày/kho/xuất/trạng thái...) | **~40 ms** | quét toàn bộ 100k dòng |
+| Tính doanh thu + DTQĐ toàn bộ | ~120 ms | phần TỐN NHẤT, không phải khâu lọc |
+| **Tổng 1 lượt lọc + tính** | **~166 ms** | **dưới mục tiêu 200 ms** |
+
+**Kết luận: mô hình object hiện tại ĐÃ ĐẠT tiêu chí của Đợt 7 mà không cần viết lại gì.** Khâu lọc
+chỉ tốn 40 ms; phần nặng là tính toán chỉ số (120 ms) — mà mô hình cột cũng không giúp được nhiều
+vì đó là chi phí số học trên từng dòng, không phải chi phí truy cập bộ nhớ. Thêm nữa, toàn bộ khâu
+này đã chạy trong **Web Worker** nên không chặn giao diện.
+
+⇒ **Khuyến nghị: KHÔNG làm mô hình cột (Đợt 7 bước 2-3) ở thời điểm này.** Đây là ví dụ rõ nhất
+trong cả loạt rà soát cho việc "đo trước khi tin kế hoạch": hạng mục tốn kém và rủi ro nhất của Đợt
+7 hoá ra không cần thiết. Nếu sau này dữ liệu tăng lên hàng triệu dòng và phép đo này vượt ngưỡng,
+lúc đó mới cân nhắc lại — phép đo đã được giữ lại để chạy bất cứ lúc nào.
+
+**Giữ lại phép đo**: `tests/bench/filter-100k.test.ts`, chạy bằng `BENCH=1 npx vitest run tests/bench`.
+Mặc định BỊ BỎ QUA (không nằm trong `npm run check`) vì đây là phép đo chứ không phải test pass/fail
+— cùng cách làm với `tests/e2e/perf-audit.spec.ts`.
+
+**Phần còn lại của Đợt 7-8 (pivot động, so sánh kỳ, cảnh báo ngưỡng, drill-down xuyên suốt,
+catalog chỉ số, snapshot lịch sử) là PHÁT TRIỂN TÍNH NĂNG MỚI**, mỗi mục là một dự án riêng nhiều
+tuần, không phải việc dọn dẹp/sửa lỗi như Đợt 0-6. Kế hoạch chi tiết đã có sẵn ở
+`KE_HOACH_TONG_THE.md` mục 6 — nên triển khai theo từng tính năng có ưu tiên rõ ràng từ người dùng
+thật, không nên làm ồ ạt.
