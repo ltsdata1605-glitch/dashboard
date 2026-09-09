@@ -3,13 +3,13 @@ import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber } from '../../utils/dashboardHelpers';
+import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { renderHeaderText } from './SafeHeaderText';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
-import { Pill } from '../shared/Pill';
 
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
@@ -441,10 +441,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     return <span className="text-slate-400 font-bold">-</span>;
                 }
                 return (
-                    <div className="flex justify-end items-center">
-                        <Pill color={rounded >= 100 ? '#059669' : rounded >= 85 ? '#d97706' : '#e11d48'}>
+                    <div className="flex justify-center items-center">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
                             {rounded}%
-                        </Pill>
+                        </span>
                     </div>
                 );
             }
@@ -461,11 +461,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         };
 
         let cellClasses = `
-            px-3 whitespace-nowrap
-            border-b border-slate-100 dark:border-slate-800/60
+            px-2 whitespace-nowrap
+            border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
             tabular-nums align-middle
-            ${originalCellIndex > 0 ? 'text-right' : `text-left sticky left-0 z-[5] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-slate-900'}`}
-            ${isHang ? 'py-1.5 text-[11px]' : 'py-1.5 text-[13px]'}
+            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-slate-900' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}`}
+            ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
         `;
         
         if (isTotalRow) {
@@ -499,7 +499,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-sm sm:text-base lg:text-lg font-medium uppercase text-slate-700 dark:text-slate-200 tracking-wide">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                             {/* ─── DESKTOP TABLE VIEW ─── */}
@@ -514,11 +514,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 <th
                                                     rowSpan={2}
                                                     className={`
-                                                        px-3 py-2.5 text-left text-[11px] font-black
-                                                        text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900
-                                                        border-b border-slate-300 dark:border-slate-700
+                                                        px-3 py-1 text-left text-[11px] font-black
+                                                        text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
+                                                        border-b-2 border-b-slate-100 dark:border-b-slate-700
+                                                        border-r border-slate-200 dark:border-slate-700
                                                         sticky left-0 z-20 align-middle
-                                                        shadow-[2px_0_4px_-2px_rgba(0,0,0,0.12)]
                                                         uppercase tracking-wider min-w-[120px]
                                                     `}
                                                 >
@@ -534,11 +534,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             key={`group-${idx}`}
                                                             rowSpan={2}
                                                             className={`
-                                                                py-2.5 px-3 text-[11px] font-black uppercase tracking-wider text-right
+                                                                py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                                 align-middle whitespace-nowrap cursor-pointer
-                                                                border-b border-slate-300 dark:border-slate-700
-                                                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
-                                                                bg-white dark:bg-slate-900 ${g.text}
+                                                                border-b-2 border-r border-slate-200 dark:border-slate-700
+                                                                hover:opacity-80 transition-opacity select-none
+                                                                ${g.bg} ${g.text}
                                                                 ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
                                                             `}
                                                             onClick={() => handleColumnSort(g.singleHeader)}
@@ -554,8 +554,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={`group-${idx}`}
                                                         colSpan={g.colspan}
                                                         className={`
-                                                            py-1 px-3 text-[9px] font-black uppercase tracking-widest text-right
-                                                            bg-white dark:bg-slate-900 ${g.text}
+                                                            py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
+                                                            border-b border-r border-slate-200 dark:border-slate-700
+                                                            ${g.bg} ${g.text}
                                                         `}
                                                     >
                                                         {g.label}
@@ -579,11 +580,12 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={h}
                                                         scope="col"
                                                         className={`
-                                                            px-3 py-2.5 text-[11px] font-bold uppercase
-                                                            tracking-wider border-b border-slate-300 dark:border-slate-700
-                                                            text-right align-middle whitespace-nowrap
-                                                            cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none
-                                                            bg-white dark:bg-slate-900 ${g.text}
+                                                            px-1.5 py-1 text-[11px] font-bold uppercase
+                                                            tracking-wider border-r border-slate-200 dark:border-slate-700
+                                                            border-b-[3px] !${getBorderAccentFromColorClass(g.bg)}
+                                                            text-center align-middle whitespace-nowrap
+                                                            cursor-pointer hover:opacity-80 transition-opacity select-none
+                                                            ${g.bg} ${g.text}
                                                             ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
                                                         `}
                                                         onClick={() => handleColumnSort(h)}
@@ -639,15 +641,19 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 
                                                 return displayRows.map((flatRow) => {
                                                     const isTotalRow = flatRow.level === -1;
+                                                    const isNNH = flatRow.level === 0;
+                                                    const isNhomHang = flatRow.level === 1;
 
                                                     return (
-                                                        <tr 
-                                                            key={flatRow.rowKey} 
+                                                        <tr
+                                                            key={flatRow.rowKey}
                                                             className={`
                                                                 transition-colors duration-100 group
                                                                 ${isTotalRow
-                                                                    ? 'bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800'
-                                                                    : 'bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60'
+                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800'
+                                                                    : isNNH ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
+                                                                    : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700'
+                                                                    : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/10 border-b border-slate-100 dark:border-slate-700'
                                                                 }
                                                             `}
                                                         >
