@@ -5,7 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Tra Cứu Thưởng Thi Đua</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- xlsx 0.20.3 từ CDN CHÍNH CHỦ SheetJS (cdn.sheetjs.com), KHÔNG dùng bản trên npm/cdnjs.
+         Lý do: bản 0.18.5 trước đây ở đây dính 2 lỗ hổng đã công bố — CVE-2023-30533
+         (Prototype Pollution) và CVE-2024-22363 (ReDoS) — mà file này thì parse đúng file
+         Excel do người dùng tải lên. SheetJS đã rời npm nên bản vá CHỈ có trên CDN riêng của
+         họ; package.json của app cũng đã trỏ về đúng nguồn này từ Đợt 1. File check-thuong.html
+         bị bỏ sót lúc đó vì nó là app vanilla độc lập, không đi qua npm. -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
