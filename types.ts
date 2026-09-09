@@ -437,6 +437,9 @@ export interface VisibilityState {
     industryGrid: boolean;
     employeeAnalysis: boolean;
     summaryTable: boolean;
+    /** Bảng Pivot động (components/pivot/PivotTable.tsx). Mặc định TẮT vì là công cụ nâng cao —
+     *  người dùng bật khi cần, tránh làm nặng trang Phân Tích cho đa số chỉ xem KPI. */
+    pivotTable?: boolean;
 }
 
 export interface AnalysisRecord {

@@ -27,6 +27,7 @@ const IndustryGrid = React.lazy(() => import('../charts/IndustryGrid'));
 const EmployeeAnalysis = React.lazy(() => import('../employees/EmployeeAnalysis'));
 const SummaryTable = React.lazy(() => import('../tables/SummaryTable'));
 const WarehouseSummary = React.lazy(() => import('../summary/WarehouseSummary'));
+const PivotTable = React.lazy(() => import('../pivot/PivotTable'));
 
 // Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
 // (sau khi tách các section ở trên + các modal này, chunk DashboardView còn ~60kB gzip,
@@ -62,6 +63,7 @@ const defaultVisibilityState: VisibilityState = {
     industryGrid: true,
     employeeAnalysis: true,
     summaryTable: true,
+    pivotTable: false,
 };
 
 const debugInitialData = {
@@ -73,6 +75,7 @@ const debugInitialData = {
     IndustryGrid: { name: "Lưới/Biểu đồ Tỷ trọng Ngành hàng (IndustryGrid.tsx)", description: "...", design: "..." },
     EmployeeAnalysis: { name: "Phân tích Hiệu suất Nhân viên (EmployeeAnalysis.tsx)", description: "...", design: "..." },
     SummaryTable: { name: "Bảng Chi tiết Ngành hàng (SummaryTable.tsx)", description: "...", design: "..." },
+    PivotTable: { name: "Bảng Phân tích động (PivotTable.tsx)", description: "...", design: "..." },
 };
 
 const DashboardView = React.memo(function DashboardView({ isActive }: { isActive?: boolean }) {
@@ -597,6 +600,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                             <React.Suspense fallback={<TabbedTableSkeleton />}>
                                                 <SummaryTable />
+                                            </React.Suspense>
+                                        </div>
+                                    )}
+
+                                    {visibleComponents.pivotTable && (
+                                        <div data-debug-id="PivotTable" data-debug-info={JSON.stringify(debugInitialData.PivotTable)} id="pivot-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                            <React.Suspense fallback={<TableSkeleton />}>
+                                                <PivotTable />
                                             </React.Suspense>
                                         </div>
                                     )}

@@ -173,6 +173,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         { key: 'industryGrid', label: 'Ngành hàng', icon: 'layout-grid', color: 'emerald' },
         { key: 'employeeAnalysis', label: 'Nhân viên', icon: 'users-round', color: 'rose' },
         { key: 'summaryTable', label: 'Chi tiết', icon: 'table', color: 'amber' },
+        // Bảng Pivot động — mặc định TẮT (xem `defaultVisibilityState` ở DashboardView), người
+        // dùng bật khi cần vì đây là công cụ nâng cao, không phải thứ đa số cần mỗi ngày.
+        // Dùng 'sky' (đúng nhánh default của getColorClasses) thay vì đặt tên màu không có case —
+        // đặt màu lạ sẽ âm thầm rơi vào default, code nói một đằng hiển thị một nẻo.
+        { key: 'pivotTable', label: 'Phân tích động', icon: 'sliders-horizontal', color: 'sky' },
     ];
 
     const handleSubmit = () => {
