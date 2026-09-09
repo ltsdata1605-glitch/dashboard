@@ -1,12 +1,1 @@
-{
-  "features/bi-dashboard/components/SupermarketConfig.tsx": {
-    "nonSemanticColor": 1,
-    "indigoAlias": 27,
-    "missingMobileToolbar": 0
-  },
-  "features/sticker-event/services/printService.ts": {
-    "nonSemanticColor": 8,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0
-  }
-}
+{}

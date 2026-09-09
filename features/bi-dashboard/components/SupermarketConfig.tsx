@@ -28,7 +28,7 @@ const COMPETITION_ROW_THEMES = [
     { label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500', btnHover: 'hover:text-sky-600 hover:bg-sky-100 dark:hover:bg-sky-900', btnText: 'text-sky-500/50' },
     { label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500', btnHover: 'hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900', btnText: 'text-amber-500/50' },
     { label: 'text-rose-700 dark:text-rose-400', after: 'text-rose-600 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-rose-200 dark:border-rose-700/50', inputText: 'text-rose-600', ring: 'focus-within:ring-rose-500', track: 'bg-rose-200 dark:bg-rose-900', thumb: 'accent-rose-500', btnHover: 'hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900', btnText: 'text-rose-500/50' },
-    { label: 'text-indigo-700 dark:text-indigo-400', after: 'text-indigo-600 dark:text-indigo-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-indigo-200 dark:border-indigo-700/50', inputText: 'text-indigo-600', ring: 'focus-within:ring-indigo-500', track: 'bg-indigo-200 dark:bg-indigo-900', thumb: 'accent-indigo-500', btnHover: 'hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900', btnText: 'text-indigo-500/50' },
+    { label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500', btnHover: 'hover:text-sky-600 hover:bg-sky-100 dark:hover:bg-sky-900', btnText: 'text-sky-500/50' },
 ];
 
 // Màu cố định (sky — màu primary) cho cụm điều khiển % Target, thay vì xoay màu theo từng dòng
@@ -296,7 +296,7 @@ const StatusTile: React.FC<{
     onClear: (title: string) => void;
     error?: string | null;
     icon?: React.ReactNode;
-    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo';
+    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber';
     downloadUrl?: string;
 }> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl }) => {
     const [isPasting, setIsPasting] = useState(false);
@@ -327,12 +327,9 @@ const StatusTile: React.FC<{
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700 shadow-sm',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
-        indigo: {
-            wrapper: 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800',
-            text: 'text-indigo-800 dark:text-indigo-200',
-            iconActive: 'text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 shadow-sm',
-            ring: 'border-indigo-500 ring-2 ring-indigo-500/20'
-        }
+        // Đã gỡ nhánh `indigo` (Đợt 6): nó là bản SAO Y của nhánh `sky` ở trên — `styles.css`
+        // map --color-indigo-* thành đúng hex của sky nên 2 nhánh render giống hệt nhau, giữ cả
+        // 2 chỉ khiến người đọc tưởng đang có 2 màu khác nhau.
     };
 
     const currentTheme = themeColors[colorTheme];
@@ -919,7 +916,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             )}
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
-                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="indigo"
+                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="sky"
                                     onChange={(v) => { 
                                         setDanhSachData(v); 
                                         handleUpdate('danhSach', v, s => {

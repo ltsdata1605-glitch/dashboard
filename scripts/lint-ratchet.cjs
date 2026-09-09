@@ -57,6 +57,34 @@ const INDIGO_ALIAS_PATTERN = new RegExp(
   'g'
 );
 
+/**
+ * Bỏ qua các DÒNG mà chuỗi "kiểu-Tailwind" trong đó KHÔNG phải class Tailwind của app này,
+ * nên bảng màu semantic không có thẩm quyền (Đợt 6 — sửa dương tính giả, không phải nới lỏng):
+ *
+ * 1. Dòng CSS tự viết tay dạng `.text-gray-600 { color: #4b5563; }` — gặp ở
+ *    features/sticker-event/services/printService.ts, là stylesheet cho BẢN IN, không nạp
+ *    Tailwind. Đổi tên class ở đó chỉ khiến tên nói "slate" trong khi giá trị vẫn là hex gray.
+ * 2. Dòng chứa chuỗi mã hoá URL (`%20`, `%28`...) — gặp ở SupermarketConfig.tsx, là code
+ *    bookmarklet chèn vào WEBSITE KHÁC (baocao.dienmayxanh.com), phải dùng class của site đó.
+ *
+ * Lọc theo DÒNG chứ không loại cả file, để phần còn lại của 2 file này vẫn được kiểm tra.
+ */
+function isNotOurTailwindClass(line) {
+  if (/%[0-9A-Fa-f]{2}/.test(line)) return true;              // chuỗi mã hoá URL
+  if (/^\s*\.[\w-]+\s*(,\s*\.[\w-]+\s*)*\{/.test(line)) return true; // định nghĩa CSS tự viết
+  return false;
+}
+
+function countMatchesSkippingFalsePositives(content, pattern) {
+  let total = 0;
+  for (const line of content.split('\n')) {
+    if (isNotOurTailwindClass(line)) continue;
+    const m = line.match(pattern);
+    if (m) total += m.length;
+  }
+  return total;
+}
+
 function walk(dir, files) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (IGNORE_DIRS.has(entry.name)) continue;
@@ -75,13 +103,11 @@ function relPath(p) {
 }
 
 function countOffPaletteColors(content) {
-  const matches = content.match(OFF_PALETTE_COLOR_PATTERN);
-  return matches ? matches.length : 0;
+  return countMatchesSkippingFalsePositives(content, OFF_PALETTE_COLOR_PATTERN);
 }
 
 function countIndigoAlias(content) {
-  const matches = content.match(INDIGO_ALIAS_PATTERN);
-  return matches ? matches.length : 0;
+  return countMatchesSkippingFalsePositives(content, INDIGO_ALIAS_PATTERN);
 }
 
 function countMissingMobileToolbar(content) {

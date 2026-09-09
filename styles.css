@@ -11,29 +11,15 @@
 @theme {
   --font-sans: "UTM Avo", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* DI SẢN — sắp bỏ được (Đợt 6, 2026-09-09).
-     Khối này ép `indigo` hiển thị y hệt `sky`, tức 1 màu mang 2 tên khác nhau. Hệ quả xấu:
-     dải màu xoay vòng "6 họ semantic" mà CLAUDE.md mô tả (5 màu chuẩn + indigo) thực chất
-     CHƯA BAO GIỜ có 6 màu phân biệt — 2 trong 6 slot luôn trùng nhau, nên 2 hạng mục dữ
-     liệu khác nhau bị tô cùng màu.
-     Đợt 6 đã đổi 1.380/1.407 class `indigo-*` sang `sky-*` (giữ nguyên sắc độ nên KHÔNG
-     đổi pixel nào, vì hex vốn đã bằng nhau). Chỉ còn 27 class ở
-     features/bi-dashboard/components/SupermarketConfig.tsx chưa đổi vì lúc đó có phiên
-     làm việc khác đang sửa file này.
-     ⚠️ VIỆC CÒN LẠI: sau khi đổi nốt 27 class đó sang `sky-*`, XOÁ HẲN 10 dòng dưới đây.
-     Lúc ấy `indigo` sẽ trở lại là màu tím thật của Tailwind và có thể dùng làm màu thứ 6
-     THẬT SỰ phân biệt cho dải xoay vòng — nhưng đó phải là quyết định thiết kế có chủ ý,
-     không phải hệ quả phụ. Xem implementation_plan.md mục "Đợt 6". */
-  --color-indigo-50: #f0f9ff;
-  --color-indigo-100: #e0f2fe;
-  --color-indigo-200: #bae6fd;
-  --color-indigo-300: #7dd3fc;
-  --color-indigo-400: #38bdf8;
-  --color-indigo-500: #0ea5e9;
-  --color-indigo-600: #0584c7;
-  --color-indigo-700: #0369a1;
-  --color-indigo-800: #075985;
-  --color-indigo-900: #0c4a6e;
+  /* ĐÃ XOÁ khối override `--color-indigo-*` (Đợt 6 hoàn tất, 2026-09-09).
+     Khối cũ ép `indigo` hiển thị y hệt `sky` — 1 màu mang 2 tên. Hệ quả: dải màu xoay vòng
+     "6 họ semantic" mà CLAUDE.md mô tả (5 màu chuẩn + indigo) thực chất CHƯA BAO GIỜ có 6 màu
+     phân biệt, 2 trong 6 slot luôn trùng nhau nên 2 hạng mục dữ liệu khác nhau bị tô cùng màu.
+     Đã đổi toàn bộ 1.407 class `indigo-*` sang `sky-*` (giữ nguyên sắc độ → hex vốn bằng nhau
+     nên KHÔNG đổi pixel nào) rồi mới xoá khối này, nên việc xoá là no-op về hiển thị.
+     Từ nay `indigo` lại là màu TÍM THẬT của Tailwind. Nếu sau này dải xoay vòng cần màu thứ 6
+     phân biệt thật, dùng `indigo` là hợp lệ — nhưng phải là quyết định thiết kế có chủ ý.
+     Xem implementation_plan.md mục "Đợt 6". */
 
   /* Semantic Colors from Design System */
   --color-primary: var(--color-sky-500);
@@ -71,7 +57,7 @@
 
 @layer base {
   body {
-    @apply bg-[#f1f5f9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-indigo-100 selection:text-indigo-700;
+    @apply bg-[#f1f5f9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-sky-100 selection:text-sky-700;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     font-synthesis: none;
     overflow-x: hidden;

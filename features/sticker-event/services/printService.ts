@@ -180,7 +180,7 @@ const generateModernPriceTagHTML = (product: Product, employeeName: string, sett
                         <section class="flex items-center justify-center gap-6 mb-0">
                             <!-- Original Price -->
                             ${settings.showOriginalPrice && originalPrice > finalPrice ? `
-                            <div class="text-5xl font-bold text-gray-600 line-through decoration-gray-600 decoration-4">
+                            <div class="text-5xl font-bold text-slate-600 line-through decoration-slate-600 decoration-4">
                                 ${originalPriceFormatted}
                             </div>
                             ` : ''}
@@ -615,18 +615,18 @@ const getPrintStyles = (settings: PrintSettings): string => {
       .leading-none { line-height: 1; }
       .tracking-tighter { letter-spacing: -0.05em; }
       
-      .text-gray-600 { color: #4b5563; }
-      .text-gray-500 { color: #6b7280; }
-      .text-gray-400 { color: #9ca3af; }
-      .decoration-gray-600 { text-decoration-color: #4b5563; }
-      .decoration-gray-400 { text-decoration-color: #9ca3af; }
+      .text-slate-600 { color: #475569; }
+      .text-slate-500 { color: #64748b; }
+      .text-slate-400 { color: #94a3b8; }
+      .decoration-slate-600 { text-decoration-color: #475569; }
+      .decoration-slate-400 { text-decoration-color: #94a3b8; }
       .text-white { color: #ffffff; }
       
       .bg-black { background-color: #000000; }
       .bg-white { background-color: #ffffff; }
       
       .line-through { text-decoration: line-through; }
-      .decoration-gray-400 { text-decoration-color: #9ca3af; }
+      .decoration-slate-400 { text-decoration-color: #94a3b8; }
       .decoration-4 { text-decoration-thickness: 4px; }
       
       .flex { display: flex; }
