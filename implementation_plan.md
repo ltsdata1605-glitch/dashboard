@@ -2743,3 +2743,58 @@ Lúc chạy kiểm tra cuối, `npm run check` và 1 test E2E đỏ vì thay đ�
 `CompetitionListView.tsx` — **không liên quan pivot**. Đã xác minh bằng cách tạm `git stash` phần
 WIP đó: `npm run check` **exit 0**, 132 test xanh, ratchet OK; rồi trả lại nguyên vẹn. Riêng test
 `bi-competition` đỏ do commit đã merge của họ thêm 1 cột — đã nới khẳng định (xem commit sau).
+
+---
+
+## Đợt 8 (mục 2): So sánh kỳ — tách cơ chế dùng chung (2026-09-09)
+
+Kế hoạch ghi *"có sẵn ở vài chỗ, cần chuẩn hoá thành cơ chế chung"* — đọc code thì đúng như vậy:
+logic 11 chế độ so sánh đã có và khá đầy đủ, nhưng nằm **lẫn trong `useEffect`** của
+`useSummaryComparison.ts`, trộn với state setter của React và với `processSummaryTable()` riêng
+của bảng Chi tiết Ngành hàng. Không bảng nào khác dùng lại được.
+
+### Tách `services/periodService.ts` — hàm thuần
+
+"mode + mốc thời gian → 2 khoảng ngày". **Port nguyên văn** logic từ hook cũ để hành vi không lệch
+với bảng đang chạy — kể cả các chi tiết dễ sai mà nếu tự viết lại rất dễ hỏng:
+
+| Ca dễ sai | Hành vi đúng |
+|---|---|
+| Quý 1 lùi 1 quý | về **Quý 4 năm trước**, không phải "quý 0" |
+| 31/3 lùi về tháng trước | **28/2** (hoặc 29/2 năm nhuận), không tràn sang 2-3/3 |
+| Tuần 1 không có tuần trước trong tháng | kỳ trước trùng kỳ này (chênh lệch 0), không vỡ |
+| Tháng trước ít tuần hơn | **kẹp** về tuần cuối cùng, không trả rỗng |
+
+Kèm `clampToDataMaxDate()`: cắt kỳ trước theo đúng số ngày kỳ này đã có dữ liệu. Không có nó thì so
+tháng mới chạy 8 ngày với cả tháng trước 30 ngày là **so sai** — tháng này chắc chắn "thua".
+
+**23 test đơn vị**, phần lớn nhắm thẳng vào các ca lịch trên (đây là loại lỗi không lộ ra ngay mà
+âm thầm cho số sai).
+
+### Áp vào bảng Pivot
+
+`computePivotComparison()` + UI: bật "So sánh kỳ" thì bảng đổi sang 4 cột **Kỳ này / Kỳ trước /
+Chênh lệch / %**, chọn được 10 kiểu so sánh.
+
+Hai quyết định đáng ghi:
+- **Hạng mục chỉ có ở MỘT kỳ vẫn liệt kê** (kỳ kia = 0). Nếu lọc bỏ thì người dùng không thấy được
+  hạng mục MỚI phát sinh hoặc đã BIẾN MẤT — vốn là thông tin đáng giá nhất của một bảng so sánh.
+- **Kỳ trước = 0 → % trả `null`, hiện "—"** thay vì Infinity/NaN. Có test E2E khẳng định cột % không
+  bao giờ ra NaN/Infinity.
+
+Phân quyền giữ nguyên nguyên tắc của pivot: **cả 2 kỳ** đều cắt từ `baseFilteredData` đã qua
+`computeRbacFilteredData`, có test riêng khẳng định nhân viên so sánh cũng chỉ thấy dữ liệu mình.
+
+### Kiểm chứng
+- vitest: **79 test** ở `services/` (23 periodService + 21 pivotService + …).
+- **3 test E2E**, gồm test khẳng định tổng "Kỳ này" vẫn **khớp thẻ KPI của trang**.
+- Ảnh chụp thật: bảng 4 cột + dòng mô tả *"THÁNG (LIỀN KỀ) — So sánh tháng 9/2026 với tháng trước
+  đó"*, tổng 62 Tr khớp KPI, cột % hiện "—" đúng khi kỳ trước = 0.
+- `npm run check` **exit 0**, 162 test (đo khi tạm cất WIP bi-dashboard của phiên song song ra, rồi
+  trả lại nguyên vẹn).
+
+### CHƯA làm — cân nhắc có chủ đích, không phải bỏ sót
+Chưa refactor `useSummaryComparison` để dùng lại `periodService`. Hook đó **đang chạy đúng**, và
+logic đã được port y nguyên nên không có rủi ro lệch số giữa 2 nơi. Đổi nó là sửa 370 dòng đang
+hoạt động chỉ để lấy lợi ích gọn code — nên làm riêng một đợt có đối chiếu trước/sau, không ghép
+vào đợt thêm tính năng.
