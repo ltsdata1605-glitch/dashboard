@@ -7,8 +7,19 @@ import ExportButton from '../ExportButton';
 import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon, ChevronDownIcon, DownloadAllIcon, SpinnerIcon } from '../Icons';
 import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
-import { roundUp, getYesterdayDateString, shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
-import { calculateRunRate } from '../../services/metricService';
+import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
+import {
+    resolveEmployeeTarget,
+    getMonthProgress,
+    computeColumnAverages,
+    computeColumnRankings,
+    computeTongBotMap,
+    computeNoSaleMap,
+    computeDatMap,
+    computeStoreDatPercent,
+    computeStoreColumnDatCount,
+    computeTongBotRedCutoff,
+} from '../../services/competitionSummaryCalc';
 import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -200,124 +211,36 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     }, [allHeaders]);
 
     // Helper tra cứu Target cho nhân viên an toàn & linh hoạt (chuẩn hoá tên, id, casing)
-    const getTargetForEmployee = useCallback((origTitle?: string, empOrigName?: string): number => {
-        if (!origTitle || !empOrigName) return 0;
-        const exactMap = employeeCompetitionTargets.get(origTitle);
-        if (exactMap) {
-            const val = exactMap.get(empOrigName);
-            if (val !== undefined) return val;
-            for (const [eName, v] of exactMap.entries()) {
-                if (isSameEmployee(eName, empOrigName)) return v;
-            }
-        }
-        const cleanTitle = origTitle.trim().toLowerCase();
-        for (const [progTitle, tMap] of employeeCompetitionTargets.entries()) {
-            const cleanProg = progTitle.trim().toLowerCase();
-            if (cleanProg === cleanTitle || cleanProg.includes(cleanTitle) || cleanTitle.includes(cleanProg)) {
-                const val = tMap.get(empOrigName);
-                if (val !== undefined) return val;
-                for (const [eName, v] of tMap.entries()) {
-                    if (isSameEmployee(eName, empOrigName)) return v;
-                }
-            }
-        }
-        return 0;
-    }, [employeeCompetitionTargets]);
+    const getTargetForEmployee = useCallback(
+        (origTitle?: string, empOrigName?: string): number =>
+            resolveEmployeeTarget(employeeCompetitionTargets, origTitle, empOrigName),
+        [employeeCompetitionTargets]
+    );
 
     // Compute column averages across all employees
-    const columnAverages = useMemo(() => {
-        const averages: Record<string, { actual: number; percent: number }> = {};
-        visibleHeaders.forEach(header => {
-            let sumActual = 0;
-            let sumPercent = 0;
-            employees.forEach(emp => {
-                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
-                const ht = target > 0 ? (actual / target) * 100 : 0;
-                sumActual += actual;
-                sumPercent += ht;
-            });
-            averages[header.title] = {
-                actual: employees.length > 0 ? sumActual / employees.length : 0,
-                percent: employees.length > 0 ? sumPercent / employees.length : 0
-            };
-        });
-        return averages;
-    }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee]);
+    const columnAverages = useMemo(
+        () => computeColumnAverages(visibleHeaders, employees, employeeDataMap, getTargetForEmployee),
+        [visibleHeaders, employees, employeeDataMap, getTargetForEmployee]
+    );
 
-    // Compute dense ranks for each column (descending order, excluding values <= 0)
-    const columnRankings = useMemo(() => {
-        const rankings: Record<string, Map<string, number>> = {};
-        visibleHeaders.forEach(header => {
-            const empValues = employees.map(emp => {
-                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
-                const ht = target > 0 ? (actual / target) * 100 : 0;
-                const value = showPercent ? ht : actual;
-                return { empName: emp.name, value };
-            });
-
-            // Sort descending
-            empValues.sort((a, b) => b.value - a.value);
-
-            // Assign dense ranks
-            const rankMap = new Map<string, number>();
-            let currentRank = 0;
-            let prevValue = -1;
-            empValues.forEach((item) => {
-                if (item.value <= 0) {
-                    rankMap.set(item.empName, 999);
-                    return;
-                }
-                if (item.value !== prevValue) {
-                    currentRank++;
-                    prevValue = item.value;
-                }
-                rankMap.set(item.empName, currentRank);
-            });
-            rankings[header.title] = rankMap;
-        });
-        return rankings;
-    }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee, showPercent]);
+    const columnRankings = useMemo(
+        () => computeColumnRankings(visibleHeaders, employees, employeeDataMap, getTargetForEmployee, showPercent),
+        [visibleHeaders, employees, employeeDataMap, getTargetForEmployee, showPercent]
+    );
 
     // "Tổng BOT" (số hạng mục dưới trung bình cột) và "NoSale" (số hạng mục actual=0) cho mỗi nhân
     // viên — tính 1 lần thành Map thay vì gọi lại hàm quét toàn bộ visibleHeaders ở ~5 nơi render
     // khác nhau mỗi lần re-render (sort cột, filter, đổi tên bảng...).
-    const employeeTongBotMap = useMemo(() => {
-        const map = new Map<string, number>();
-        employees.forEach(emp => {
-            let count = 0;
-            visibleHeaders.forEach(header => {
-                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
-                const ht = target > 0 ? (actual / target) * 100 : 0;
-                const averages = columnAverages[header.title];
-                if (averages) {
-                    if (showPercent) {
-                        if (ht < averages.percent) count++;
-                    } else {
-                        if (actual < averages.actual) count++;
-                    }
-                }
-            });
-            map.set(emp.name, count);
-        });
-        return map;
-    }, [employees, visibleHeaders, columnAverages, employeeDataMap, getTargetForEmployee, showPercent]);
+    const employeeTongBotMap = useMemo(
+        () => computeTongBotMap(visibleHeaders, employees, employeeDataMap, getTargetForEmployee, columnAverages, showPercent),
+        [employees, visibleHeaders, columnAverages, employeeDataMap, getTargetForEmployee, showPercent]
+    );
     const getEmployeeTongBot = (empName: string, _empOriginalName: string) => employeeTongBotMap.get(empName) ?? 0;
 
-    const employeeNoSaleMap = useMemo(() => {
-        const map = new Map<string, number>();
-        employees.forEach(emp => {
-            let count = 0;
-            visibleHeaders.forEach(header => {
-                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                if (actual === 0) count++;
-            });
-            map.set(emp.name, count);
-        });
-        return map;
-    }, [employees, visibleHeaders, employeeDataMap]);
+    const employeeNoSaleMap = useMemo(
+        () => computeNoSaleMap(visibleHeaders, employees, employeeDataMap),
+        [employees, visibleHeaders, employeeDataMap]
+    );
     const getEmployeeNoSale = (empName: string) => employeeNoSaleMap.get(empName) ?? 0;
 
     // Tổng số nhóm thi đua đang hiển thị — mẫu số cho cột "Đạt"/"%Đạt".
@@ -325,63 +248,31 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
     // "Đạt" — số nhóm có % hoàn thành target >= 100% (theo %DKHT qua run rate hoặc thực tế >= target) cho mỗi nhân viên.
     const employeeDatMap = useMemo(() => {
-        const map = new Map<string, number>();
-        const now = new Date();
-        const daysPassed = Math.max(1, now.getDate() - 1);
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-        employees.forEach(emp => {
-            let count = 0;
-            visibleHeaders.forEach(header => {
-                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
-                if (target > 0) {
-                    const dkht = (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100;
-                    if (dkht >= 100 || actual >= target) {
-                        count++;
-                    }
-                }
-            });
-            map.set(emp.name, count);
-        });
-        return map;
+        // Vẫn đọc đồng hồ TRONG memo như bản cũ để giữ nguyên hành vi.
+        const { daysPassed, daysInMonth } = getMonthProgress();
+        return computeDatMap(visibleHeaders, employees, employeeDataMap, getTargetForEmployee, daysPassed, daysInMonth);
     }, [employees, visibleHeaders, employeeDataMap, getTargetForEmployee]);
     const getEmployeeDat = (empName: string) => employeeDatMap.get(empName) ?? 0;
 
     // %Đạt trung bình của cả siêu thị (tổng số nhóm đạt / tổng số ô có thể đạt) — dùng làm
     // ngưỡng tô đỏ cho các nhân viên có tỉ lệ đạt thấp hơn mặt bằng chung.
-    const storeDatPercent = useMemo(() => {
-        const totalPossible = employees.length * totalHeaderCount;
-        if (totalPossible === 0) return 0;
-        let totalDatSum = 0;
-        employees.forEach(emp => { totalDatSum += employeeDatMap.get(emp.name) ?? 0; });
-        return (totalDatSum / totalPossible) * 100;
-    }, [employees, totalHeaderCount, employeeDatMap]);
+    const storeDatPercent = useMemo(
+        () => computeStoreDatPercent(employees, totalHeaderCount, employeeDatMap),
+        [employees, totalHeaderCount, employeeDatMap]
+    );
 
     // "Đạt" của dòng TỔNG — số NHÓM THI ĐUA mà số liệu tổng hợp cả siêu thị (tổng actual/tổng
     // target của TẤT CẢ nhân viên cộng lại cho từng nhóm) đạt >=100% (theo DKHT run rate hoặc thực tế), trên tổng số nhóm.
     const storeColumnDatCount = useMemo(() => {
-        let count = 0;
-        const now = new Date();
-        const daysPassed = Math.max(1, now.getDate() - 1);
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-        visibleHeaders.forEach(header => {
-            const totalActual = employees.reduce((sum, emp) => sum + (employeeDataMap.get(emp.name)?.values[header.title] ?? 0), 0);
-            const totalTarget = employees.reduce((sum, emp) => sum + getTargetForEmployee(header.originalTitle, emp.originalName), 0);
-            const totalDkht = totalTarget > 0 ? (calculateRunRate(totalActual, daysPassed, daysInMonth) / totalTarget) * 100 : 0;
-            if (totalDkht >= 100 || (totalTarget > 0 && totalActual >= totalTarget)) count++;
-        });
-        return count;
+        const { daysPassed, daysInMonth } = getMonthProgress();
+        return computeStoreColumnDatCount(visibleHeaders, employees, employeeDataMap, getTargetForEmployee, daysPassed, daysInMonth);
     }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee]);
 
     // Calculate the threshold for TOP 30% of TỔNG BOT (excluding 0 values)
-    const tongBotRedCutoff = useMemo(() => {
-        const botValues = employees.map(emp => employeeTongBotMap.get(emp.name) ?? 0);
-        botValues.sort((a, b) => b - a); // descending order
-        const thresholdIndex = Math.max(0, Math.ceil(employees.length * 0.3) - 1);
-        return botValues[thresholdIndex] ?? 0;
-    }, [employees, employeeTongBotMap]);
+    const tongBotRedCutoff = useMemo(
+        () => computeTongBotRedCutoff(employees, employeeTongBotMap),
+        [employees, employeeTongBotMap]
+    );
 
     // Sort employees list based on current sortConfig - Luôn mặc định quay về %Đạt desc
     const sortedEmployees = useMemo(() => {
