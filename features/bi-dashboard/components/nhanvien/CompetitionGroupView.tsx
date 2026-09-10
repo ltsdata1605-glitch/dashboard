@@ -111,7 +111,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
 
     // Top 3 color: green for T.HIỆN
     const getTopActualStyle = (rank: number) => {
-        if (rank >= 1 && rank <= 3) return { color: 'rgb(34, 197, 94)', fontWeight: 900 } as React.CSSProperties;
+        if (rank >= 1 && rank <= 3) return { color: 'var(--color-emerald-700)', fontWeight: 900 } as React.CSSProperties;
         return null;
     };
 
@@ -123,7 +123,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
         const remaining = actual - target;
-        const remainingColor = remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+        const remainingColor = remaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
 
         const completionVal = roundUp(completion);
 
@@ -132,11 +132,11 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         let percentClass = 'font-bold';
         let percentInlineStyle: React.CSSProperties = {};
         if (completionRank >= 1 && completionRank <= 3) {
-            percentInlineStyle = { color: 'rgb(34, 197, 94)', fontWeight: 900 };
+            percentInlineStyle = { color: 'var(--color-emerald-700)', fontWeight: 900 };
         } else if (completionVal > 0 && completionVal < timeProgress.percentage) {
-            percentInlineStyle = { color: 'rgb(239, 68, 68)', fontWeight: 700 };
+            percentInlineStyle = { color: 'var(--color-rose-700)', fontWeight: 700 };
         } else if (completionVal >= timeProgress.percentage) {
-            percentInlineStyle = { color: 'rgb(234, 179, 8)', fontWeight: 700 };
+            percentInlineStyle = { color: 'var(--color-amber-700)', fontWeight: 700 };
         } else {
             percentClass = 'text-slate-700 dark:text-slate-300 font-bold';
         }
@@ -149,7 +149,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         if (topActualStyle) {
             actualInlineStyle = topActualStyle;
         } else if (actual > 0 && actual < averageActual) {
-            actualClass = 'text-rose-600 font-bold';
+            actualClass = 'text-rose-700 font-bold';
         } else {
             actualClass = 'text-slate-700 dark:text-slate-300 font-bold';
         }
@@ -201,7 +201,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             {/* Title bar — flat, professional */}
             <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex justify-center items-center relative gap-2">
-                    <div className="w-6 h-6 rounded-none flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
+                    <div className="w-6 h-6 rounded-none flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
                         <ChartBarIcon className="h-3.5 w-3.5" />
                     </div>
                     <h4 className="text-[14px] font-black uppercase text-sky-700 dark:text-sky-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
@@ -212,7 +212,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                             type="button"
                             variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1 text-slate-400 hover:text-sky-600 transition-colors"
+                            className="export-button-component p-1 text-slate-400 hover:text-sky-700 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <CameraIcon className="h-4 w-4" />
@@ -223,10 +223,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 <div className="flex flex-col gap-0.5">
                     <div className="flex justify-between items-end">
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
-                            <span className="text-[9px] font-bold text-slate-400 italic">{timeProgress.label}</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
+                            <span className="text-[11px] font-bold text-slate-400 italic">{timeProgress.label}</span>
                         </div>
-                        <span className="text-[10px] font-black text-sky-600 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
+                        <span className="text-[11px] font-black text-sky-700 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 relative overflow-hidden">
                         <div 
@@ -284,7 +284,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 return (
                                     <React.Fragment key={deptName}>
                                         <tr className="bg-slate-50/80 dark:bg-slate-800/40">
-                                            <td colSpan={5} className="px-2 py-1.5 font-black text-slate-500 dark:text-slate-400 text-left uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
+                                            <td colSpan={5} className="px-2 py-1.5 font-black text-slate-500 dark:text-slate-400 text-left uppercase text-[11px] tracking-wider border-b border-slate-100 dark:border-slate-800">
                                                 {deptName}
                                             </td>
                                         </tr>

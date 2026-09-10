@@ -123,7 +123,7 @@ const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtCh
                     <span className="text-[6px] font-bold text-white/80 uppercase leading-tight drop-shadow-sm mt-0.5">Đạt 100%</span>
                 </div>
             </div>
-            <p className="text-[9px] text-white/70 font-bold">{stats.total} nhóm</p>
+            <p className="text-[11px] text-white/70 font-bold">{stats.total} nhóm</p>
         </div>
     );
 };
@@ -138,10 +138,10 @@ const MicroBar: React.FC<{ value: number; max?: number }> = ({ value, max = 100 
 // ─── Rank Badge ───
 const RankBadge: React.FC<{ rank: number; total: number; label: string }> = ({ rank, total, label }) => {
     const pctVal = total > 0 ? ((total - rank + 1) / total) * 100 : 0;
-    const color = rank <= 3 ? 'text-emerald-600 bg-emerald-50' : rank <= Math.ceil(total / 2) ? 'text-sky-600 bg-sky-50' : 'text-slate-500 bg-slate-100';
+    const color = rank <= 3 ? 'text-emerald-700 bg-emerald-50' : rank <= Math.ceil(total / 2) ? 'text-sky-700 bg-sky-50' : 'text-slate-500 bg-slate-100';
     const barColor = rank <= 3 ? 'bg-emerald-500' : rank <= Math.ceil(total / 2) ? 'bg-sky-500' : 'bg-slate-400';
     return (
-        <div className="flex items-center gap-1.5 text-[10px]">
+        <div className="flex items-center gap-1.5 text-[11px]">
             <span className="text-slate-400 font-medium">{label}</span>
             <span className={`font-black px-1.5 py-0.5 rounded ${color}`}>#{rank}<span className="font-medium text-slate-400">/{total}</span></span>
             <div className="flex-1 min-w-[30px] bg-slate-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
@@ -240,7 +240,7 @@ const EmployeeProfileCard: React.FC<{
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
                             <CameraIcon className="w-6 h-6 drop-shadow-md" />
-                            <span className="text-[9px] font-bold mt-1 drop-shadow-md uppercase tracking-wider">Đổi ảnh</span>
+                            <span className="text-[11px] font-bold mt-1 drop-shadow-md uppercase tracking-wider">Đổi ảnh</span>
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                     </div>
@@ -255,7 +255,7 @@ const EmployeeProfileCard: React.FC<{
                         </div>
                     </div>
                     {/* Recharts Donut — tỷ lệ nhóm đạt DKHT */}
-                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5 bg-black/20 rounded-xl p-1.5 backdrop-blur-sm">
+                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5 bg-black/20 rounded-md p-1.5 backdrop-blur-sm">
                         <DkhtDonut stats={compStats} />
                     </div>
                 </div>
@@ -264,7 +264,7 @@ const EmployeeProfileCard: React.FC<{
             {/* Rank Strip */}
             {rankings.dt.total > 0 && (
                 <div className="flex items-center gap-4 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
                     <div className="flex-1 grid grid-cols-3 gap-3">
                         <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DTQĐ" />
                         <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="Trả chậm" />
@@ -276,38 +276,38 @@ const EmployeeProfileCard: React.FC<{
             {/* KPI Grid with Micro Progress Bars */}
             <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.15fr 0.8fr 0.8fr 1.25fr' }}>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
+                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
-                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
-                        <span>DTLK: <strong className="text-sky-600">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
-                        <span>HQQĐ: <strong className="text-emerald-600">{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
+                    <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
+                        <span>DTLK: <strong className="text-sky-700">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
+                        <span>HQQĐ: <strong className="text-emerald-700">{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
+                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
-                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
-                        <span>DT: <strong className="text-sky-600">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
+                    <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
+                        <span>DT: <strong className="text-sky-700">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
+                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
                     <MicroBar value={empBanKem?.pctBillBk || 0} />
-                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
-                        <span>SP: <strong className="text-sky-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
+                    <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
+                        <span>SP: <strong className="text-sky-700">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
+                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
-                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1.5">
-                        <span>ERP: <strong className="text-sky-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
-                        <span>T.Nóng: <strong className="text-emerald-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
+                    <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1.5">
+                        <span>ERP: <strong className="text-sky-700">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
+                        <span>T.Nóng: <strong className="text-emerald-700">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
                     </div>
-                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[9px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
+                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[11px] text-slate-500">%T.Nóng: <strong className="text-amber-700">{pct(empBonus.pNong)}</strong></div>}
                 </div>
             </div>
         </div>
@@ -315,7 +315,7 @@ const EmployeeProfileCard: React.FC<{
 };
 
 const PlaceholderContent: React.FC<{ title: string; message: string }> = ({ title, message }) => (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-6 mb-8">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm p-4 sm:p-6 mb-8">
         <div className="mt-4 text-center py-12">
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{title}</h3>
             <p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p>
@@ -688,11 +688,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
                                     <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
                                     <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300">M.TIÊU</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300">T.HIỆN</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-emerald-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300">%HT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-rose-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300">%DKHT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300">C.LẠI</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">M.TIÊU</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">T.HIỆN</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-emerald-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">%HT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-rose-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">%DKHT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">C.LẠI</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -719,7 +719,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                    </td>
                                                </tr>
                                                {items.map((item, index) => {
-                                                   const remainingColor = item.remaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                                                   const remainingColor = item.remaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
                                                    const hasTarget = item.target > 0;
                                                    const dkht = hasTarget ? (calculateRunRate(item.actual, daysPassed, daysInMonth) / item.target) * 100 : 0;
                                                    // Chưa cấu hình target thì trung tính (xám pill mặc định), không phải "đang tệ" (đỏ) như khi target=0 vì actual thấp thật.
