@@ -94,7 +94,7 @@ export const BonusView: React.FC<{
                         variant="secondary"
                         size="sm"
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
-                        className="gap-1.5 bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 active:scale-95"
+                        className="gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Thủ công</span>
@@ -102,10 +102,10 @@ export const BonusView: React.FC<{
                     <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} />
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-600' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-600' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-700' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" size="icon" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={isDaily ? 'text-sky-600' : 'text-slate-400'}><CalendarIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={isDaily ? 'text-sky-700' : 'text-slate-400'}><CalendarIcon className="h-4 w-4"/></Button>
                     <Button variant="ghost" size="icon" onClick={() => { setIsMonthly(prev => !prev); setIsDaily(false); }} title="Luỹ kế tháng" className={isMonthly ? 'text-sky-700' : 'text-slate-400'}><CalendarRange className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />

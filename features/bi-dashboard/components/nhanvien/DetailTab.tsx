@@ -91,7 +91,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                     )}
                     <span className="truncate">{node.name}</span>
                     {hasChildren && (
-                        <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        <span className="ml-1.5 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
                             {node.children.length}
                         </span>
                     )}
@@ -113,7 +113,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             </td>
             {/* Hiệu quả QĐ */}
             <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                         : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                     }`}>
@@ -594,7 +594,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleExpandAll}
                         title="Mở rộng tất cả"
-                        className={`h-7.5 w-7.5 p-0 shrink-0 ${isAllExpanded ? 'text-sky-600' : 'text-slate-500'}`}
+                        className={`h-7.5 w-7.5 p-0 shrink-0 ${isAllExpanded ? 'text-sky-700' : 'text-slate-500'}`}
                     >
                         <ChevronsUpDown className="h-3.5 w-3.5" />
                     </Button>
@@ -605,7 +605,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         size="icon"
                         onClick={handleCollapseAll}
                         title="Thu gọn tất cả"
-                        className={`h-7.5 w-7.5 p-0 shrink-0 ${!isAllExpanded ? 'text-sky-600' : 'text-slate-500'}`}
+                        className={`h-7.5 w-7.5 p-0 shrink-0 ${!isAllExpanded ? 'text-sky-700' : 'text-slate-500'}`}
                     >
                         <ChevronsDownUp className="h-3.5 w-3.5" />
                     </Button>

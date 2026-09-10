@@ -66,6 +66,34 @@ const VIEWS: {
         },
     },
     {
+        // RevenueTab — Nhân viên › Doanh thu (tab mặc định).
+        name: 'nhanvien-doanhthu',
+        go: async page => {
+            await page.getByRole('button', { name: /Nhân viên/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Doanh thu', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
+    {
+        // InstallmentTab — Nhân viên › Trả góp.
+        name: 'nhanvien-tragop',
+        go: async page => {
+            await page.getByRole('button', { name: /Nhân viên/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Trả góp', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
+    {
+        // BonusTab — Nhân viên › Thưởng.
+        name: 'nhanvien-thuong',
+        go: async page => {
+            await page.getByRole('button', { name: /Nhân viên/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Thưởng', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
+    // ⚠️ KHÔNG theo dõi 'nhanvien-chitiet': tài khoản dùng để chụp CHƯA DÁN dữ liệu Chi tiết,
+    //    màn hình hiện trạng thái rỗng ("Header cần có: Nhân viên DTLK DTQĐ..."). Không phải lỗi —
+    //    chỉ là không chụp được ảnh có số để đối chiếu. Thêm lại khi tài khoản có dữ liệu tab này.
+
+    {
         // CompetitionGroupView (CompetitionGroupCard) — sub-tab "Nhóm" (activeCompetitionTab === 'nhom').
         name: 'nhanvien-thidua-nhom',
         go: async page => {
