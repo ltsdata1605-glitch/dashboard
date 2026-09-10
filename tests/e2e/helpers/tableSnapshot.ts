@@ -44,6 +44,30 @@ export async function captureTables(page: Page): Promise<TableSnapshot[]> {
  * "before" bị mất, `loadSnapshot` trả null, và phép so bị BỎ QUA ÂM THẦM — test xanh dù số liệu
  * đã lệch. Đã mắc đúng lỗi này một lần khi dựng công cụ; đừng chuyển ngược lại.
  */
+/**
+ * Chụp các KHỐI KHÔNG PHẢI BẢNG (thẻ KPI, ô số liệu...) theo CSS selector.
+ *
+ * Trả về đúng kiểu `TableSnapshot` — mỗi phần tử khớp selector thành 1 "dòng" — để dùng lại nguyên
+ * bộ máy `diffSnapshots` mà không phải viết logic so sánh thứ hai.
+ */
+export async function captureCards(page: Page, selector: string): Promise<TableSnapshot[]> {
+    return page.evaluate(sel => {
+        const nodes = Array.from(document.querySelectorAll(sel));
+        return [{
+            index: 0,
+            headers: [sel],
+            // Tách theo dòng và bỏ dòng trống để ảnh chụp không phụ thuộc cách xuống dòng của CSS.
+            rows: nodes.map(n =>
+                ((n as HTMLElement).innerText || '')
+                    .split('\n')
+                    .map(x => x.replace(/\s+/g, ' ').trim())
+                    .filter(Boolean)
+            ),
+            foot: [] as string[][],
+        }];
+    }, selector);
+}
+
 const snapPath = (label: string, name: string) =>
     resolve(process.cwd(), '.ui-baseline', label, `${name}.json`);
 

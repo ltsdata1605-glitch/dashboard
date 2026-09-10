@@ -1,5 +1,5 @@
 import { test, expect, hasRealDataProfile } from './helpers/realDataContext';
-import { captureTables, saveSnapshot, loadSnapshot, diffSnapshots, countCells } from './helpers/tableSnapshot';
+import { captureTables, captureCards, saveSnapshot, loadSnapshot, diffSnapshots, countCells } from './helpers/tableSnapshot';
 import type { Page } from '@playwright/test';
 
 /**
@@ -28,7 +28,26 @@ async function openReportBi(page: Page) {
 }
 
 /** Các màn hình được theo dõi. Thêm dần khi Đợt 1 tách tới file tương ứng. */
-const VIEWS: { name: string; go: (page: Page) => Promise<void> }[] = [
+const VIEWS: {
+    name: string;
+    go: (page: Page) => Promise<void>;
+    /** Mặc định chụp mọi <table>. Đặt selector để chụp khối không phải bảng (thẻ KPI...). */
+    cardSelector?: string;
+    /** Phần tử phải xuất hiện trước khi chụp. */
+    waitFor?: string;
+}[] = [
+    {
+        // KpiOverview — 4 thẻ KPI đầu màn Tổng quan (DT Thực / DTQĐ / HQQĐ / Trả Chậm).
+        name: 'tongquan-kpi-cards',
+        cardSelector: '.premium-card-shadow',
+        waitFor: '.premium-card-shadow',
+        go: async page => {
+            await page.getByRole('button', { name: /Tổng quan/i }).first().click({ timeout: 30_000 });
+            // App NHỚ sub-tab lần trước (có thể đang ở "Thi đua"). Thẻ KPI của KpiOverview chỉ nằm
+            // ở sub-tab "Doanh thu" — không bấm thì chờ mãi không thấy.
+            await page.getByRole('button', { name: 'Doanh thu', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
     {
         // CompetitionSummaryView — chỉ render ở sub-tab "Tổng" (activeCompetitionTab === 'tatca').
         name: 'nhanvien-thidua-tong',
@@ -47,10 +66,14 @@ for (const view of VIEWS) {
 
         await openReportBi(page);
         await view.go(page);
-        await page.locator('table tbody tr').first().waitFor({ timeout: 60_000 });
+        // Phải NHỎ HƠN test timeout (60s trong playwright.config.ts): chờ đúng 60s thì test timeout bắn
+        // trước và báo "Target page has been closed" — thông báo che mất nguyên nhân thật.
+        await page.locator(view.waitFor ?? 'table tbody tr').first().waitFor({ timeout: 25_000 });
         await page.waitForTimeout(2500);
 
-        const snap = await captureTables(page);
+        const snap = view.cardSelector
+            ? await captureCards(page, view.cardSelector)
+            : await captureTables(page);
         const cells = countCells(snap);
         saveSnapshot(LABEL, view.name, snap);
         console.log(`[${LABEL}] ${view.name}: ${snap.length} bảng, ${cells} ô`);

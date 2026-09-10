@@ -2,6 +2,18 @@
 import React, { useState } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '../Icons';
 import { parseNumber, roundUp } from '../../utils/dashboardHelpers';
+import {
+    resolveDailyTarget,
+    resolveRateTarget,
+    computeHqqd,
+    computeMonthlyTarget,
+    computeMonthlyQdPercent,
+    computeDtThucProgress,
+    percentOf,
+    DEFAULT_HQQD_TARGET,
+    DEFAULT_TRA_CHAM_TARGET,
+    ALL_STORES_KEY,
+} from '../../services/kpiOverviewCalc';
 import { KpiCard } from '../../../../components/shared/ui/KpiCard';
 import { Modal } from '../../../../components/shared/ui/Modal';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -24,7 +36,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const dtqd = parseNumber(kpiData.dtqd);
     const dtDuKien = parseNumber(kpiData.dtDuKien);
     const dtDuKienQD = parseNumber(kpiData.dtDuKienQD);
-    const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
+    const hqqd = computeHqqd(dtlk, dtqd);
     const tyTrongTraGop = parseNumber(kpiData.tyTrongTraGop);
 
     // Custom Targets lưu IndexedDB
@@ -37,27 +49,13 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const [inputTarget, setInputTarget] = useState('');
 
     // --- 1. Target DTQĐ ---
-    let totalVuotTroi = 0;
-    if (activeSupermarket === 'Tổng') {
-        if (customDTQDTargets && customDTQDTargets['Tổng'] !== undefined && customDTQDTargets['Tổng'] > 0) {
-            totalVuotTroi = customDTQDTargets['Tổng'];
-        } else {
-            const storeKeys = Object.keys(supermarketDailyTargets);
-            if (storeKeys.length > 0) {
-                totalVuotTroi = storeKeys.reduce((acc, k) => acc + ((customDTQDTargets && customDTQDTargets[k]) ?? supermarketDailyTargets[k] ?? 0), 0);
-            } else {
-                totalVuotTroi = Object.values(supermarketDailyTargets).reduce<number>((sum, value) => sum + Number(value), 0);
-            }
-        }
-    } else {
-        if (customDTQDTargets && customDTQDTargets[activeSupermarket] !== undefined && customDTQDTargets[activeSupermarket] > 0) {
-            totalVuotTroi = customDTQDTargets[activeSupermarket];
-        } else {
-            totalVuotTroi = supermarketDailyTargets[activeSupermarket] || 0;
-        }
-    }
+    // Không có siêu thị nào trong danh sách ⇒ cộng thẳng bảng target mặc định (thực tế ra 0).
+    const totalVuotTroi = resolveDailyTarget(
+        activeSupermarket, customDTQDTargets, supermarketDailyTargets,
+        () => Object.values(supermarketDailyTargets).reduce<number>((sum, value) => sum + Number(value), 0)
+    );
 
-    const htTargetVuotTroi = totalVuotTroi > 0 ? (dtqd / totalVuotTroi) * 100 : 0;
+    const htTargetVuotTroi = percentOf(dtqd, totalVuotTroi);
 
     const renderGrowth = (val: string | undefined) => {
         if (!val || val === 'N/A' || val === '0%') return null;
@@ -73,15 +71,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         );
     };
 
-    let totalVuotTroiMonthly = 0;
-    if (!isRealtime && supermarketMonthlyTargets) {
-        totalVuotTroiMonthly = supermarketMonthlyTargets[activeSupermarket] || 0;
-        if (activeSupermarket === 'Tổng') {
-            totalVuotTroiMonthly = Object.values(supermarketMonthlyTargets).reduce<number>((sum, value) => sum + Number(value), 0);
-        }
-    }
+    const totalVuotTroiMonthly = computeMonthlyTarget(isRealtime, activeSupermarket, supermarketMonthlyTargets);
 
-    const htTargetVuotTroiMonthly = totalVuotTroiMonthly > 0 ? (dtDuKienQD / totalVuotTroiMonthly) * 100 : parseNumber(kpiData.htTargetDuKienQD);
+    const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD);
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
     const secondaryLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
     const secondaryTargetStr = isRealtime
@@ -89,42 +81,22 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
 
     // --- 2. Target DT THỰC ---
-    let totalDTThucDailyTarget = 0;
-    if (activeSupermarket === 'Tổng') {
-        if (customDTThucTargets && customDTThucTargets['Tổng'] !== undefined && customDTThucTargets['Tổng'] > 0) {
-            totalDTThucDailyTarget = customDTThucTargets['Tổng'];
-        } else {
-            const storeKeys = Object.keys(supermarketDailyTargets);
-            if (storeKeys.length > 0) {
-                totalDTThucDailyTarget = storeKeys.reduce((acc, k) => acc + ((customDTThucTargets && customDTThucTargets[k]) ?? supermarketDailyTargets[k] ?? 0), 0);
-            } else {
-                totalDTThucDailyTarget = totalVuotTroi;
-            }
-        }
-    } else {
-        if (customDTThucTargets && customDTThucTargets[activeSupermarket] !== undefined && customDTThucTargets[activeSupermarket] > 0) {
-            totalDTThucDailyTarget = customDTThucTargets[activeSupermarket];
-        } else {
-            totalDTThucDailyTarget = supermarketDailyTargets[activeSupermarket] || 0;
-        }
-    }
+    // Khác nhánh DTQĐ ở dự phòng: không có siêu thị nào thì DÙNG LẠI target DTQĐ. Khác biệt CÓ CHỦ
+    // ĐÍCH của bản gốc, đừng gộp chung.
+    const totalDTThucDailyTarget = resolveDailyTarget(
+        activeSupermarket, customDTThucTargets, supermarketDailyTargets, () => totalVuotTroi
+    );
 
-    let dtThucProgress: number | undefined = undefined;
-    let dtThucLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
-    let dtThucTargetStr: string | undefined = undefined;
-
-    if (isRealtime) {
-        dtThucProgress = totalDTThucDailyTarget > 0 ? Math.ceil((dtlk / totalDTThucDailyTarget) * 100) : undefined;
-        dtThucTargetStr = totalDTThucDailyTarget > 0 ? `${roundUp(totalDTThucDailyTarget).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT';
-    } else {
-        const monthlyTarget = (supermarketMonthlyTargets && supermarketMonthlyTargets[activeSupermarket]) || dtDuKien;
-        dtThucProgress = monthlyTarget > 0 ? Math.ceil((dtlk / monthlyTarget) * 100) : undefined;
-        dtThucTargetStr = monthlyTarget > 0 ? `${roundUp(monthlyTarget).toLocaleString('vi-VN')} Tr` : undefined;
-    }
+    const dtThucLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
+    const dtThucMonthlyTarget = (supermarketMonthlyTargets && supermarketMonthlyTargets[activeSupermarket]) || dtDuKien;
+    const dtThucProgress = computeDtThucProgress(isRealtime, dtlk, totalDTThucDailyTarget, dtThucMonthlyTarget);
+    const dtThucTargetStr = isRealtime
+        ? (totalDTThucDailyTarget > 0 ? `${roundUp(totalDTThucDailyTarget).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
+        : (dtThucMonthlyTarget > 0 ? `${roundUp(dtThucMonthlyTarget).toLocaleString('vi-VN')} Tr` : undefined);
 
     // --- 3. Target HQQĐ & TRẢ CHẬM ---
-    const currentQuyDoiTarget = (customHQQDTargets && customHQQDTargets[activeSupermarket]) ?? targets.quyDoi ?? 40;
-    const currentTraGopTarget = (customTraChamTargets && customTraChamTargets[activeSupermarket]) ?? targets.traGop ?? 45;
+    const currentQuyDoiTarget = resolveRateTarget(activeSupermarket, customHQQDTargets, targets.quyDoi, DEFAULT_HQQD_TARGET);
+    const currentTraGopTarget = resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
 
     const dtThucIsGood = dtThucProgress !== undefined && dtThucProgress >= 100;
     const dtqdIsGood = secondaryPct >= 100;
