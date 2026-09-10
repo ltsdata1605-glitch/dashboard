@@ -15,6 +15,13 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { calculateRunRate } from '../../services/metricService';
+import {
+    findEmployeeRow,
+    computeRank,
+    computeCompetitionStats,
+    getIndividualMonthProgress,
+    computePerformanceRow,
+} from '../../services/individualCompetitionCalc';
 import { PieChart, Pie, Cell } from 'recharts';
 import { Pill } from '../shared/Pill';
 
@@ -173,20 +180,20 @@ const EmployeeProfileCard: React.FC<{
         }
     };
     
-    const empRevenue = useMemo(() => {
-        if (!revenueRows) return null;
-        return revenueRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
-    }, [revenueRows, selectedEmployee]);
+    const empRevenue = useMemo(
+        () => findEmployeeRow(revenueRows, selectedEmployee.originalName),
+        [revenueRows, selectedEmployee]
+    );
 
-    const empInstallment = useMemo(() => {
-        if (!installmentRows) return null;
-        return installmentRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
-    }, [installmentRows, selectedEmployee]);
+    const empInstallment = useMemo(
+        () => findEmployeeRow(installmentRows, selectedEmployee.originalName),
+        [installmentRows, selectedEmployee]
+    );
 
-    const empBanKem = useMemo(() => {
-        if (!banKemRows) return null;
-        return banKemRows.find((r) => r.type === 'employee' && isSameEmployee(r.originalName, selectedEmployee.originalName));
-    }, [banKemRows, selectedEmployee]);
+    const empBanKem = useMemo(
+        () => findEmployeeRow(banKemRows, selectedEmployee.originalName),
+        [banKemRows, selectedEmployee]
+    );
 
     const empBonus = useMemo(() => {
         if (!bonusData) return null;
@@ -194,40 +201,20 @@ const EmployeeProfileCard: React.FC<{
     }, [bonusData, selectedEmployee]);
 
     // Rankings
-    const rankings = useMemo(() => {
-        const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
-            const empRows = (rows || []).filter(r => r.type === 'employee');
-            const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
-            const idx = sorted.findIndex(r => isSameEmployee(r.originalName, selectedEmployee.originalName));
-            return { rank: idx >= 0 ? idx + 1 : empRows.length, total: empRows.length };
-        };
-        return {
-            dt: getRank(revenueRows || [], 'dtlk'),
-            tg: getRank(installmentRows || [], 'totalPercent'),
-            bk: getRank(banKemRows || [], 'pctBillBk'),
-        };
-    }, [revenueRows, installmentRows, banKemRows, selectedEmployee]);
+    const rankings = useMemo(() => ({
+        dt: computeRank(revenueRows || [], 'dtlk', selectedEmployee.originalName),
+        tg: computeRank(installmentRows || [], 'totalPercent', selectedEmployee.originalName),
+        bk: computeRank(banKemRows || [], 'pctBillBk', selectedEmployee.originalName),
+    }), [revenueRows, installmentRows, banKemRows, selectedEmployee]);
 
     const compStats = useMemo(() => {
         const allItems: { name: string; completion: number; remaining: number; target: number; actual: number }[] = [];
         Object.values(groupedPerformanceData || {}).forEach((items) => {
             if (Array.isArray(items)) allItems.push(...items);
         });
-        const now = new Date();
-        const daysPassed = now.getDate() - 1;
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const total = allItems.length;
-        // Calculate %DKHT for each item
-        const dkhtValues = allItems.map(i => {
-            if (!i.target || i.target <= 0) return 0;
-            return (calculateRunRate(i.actual, daysPassed, daysInMonth) / i.target) * 100;
-        });
-        const dkhtDat = dkhtValues.filter(d => d >= 100).length;
-        const dkhtGanDat = dkhtValues.filter(d => d >= 80 && d < 100).length;
-        const dkhtChuaDat = dkhtValues.filter(d => d > 0 && d < 80).length;
-        const noSale = dkhtValues.filter(d => d === 0).length;
-        const avgDkht = total > 0 ? dkhtValues.reduce((s, d) => s + d, 0) / total : 0;
-        return { total, dkhtDat, dkhtGanDat, dkhtChuaDat, noSale, avgDkht };
+        // Vẫn đọc đồng hồ TRONG memo như bản cũ để giữ nguyên hành vi.
+        const { daysPassed, daysInMonth } = getIndividualMonthProgress();
+        return computeCompetitionStats(allItems, daysPassed, daysInMonth);
     }, [groupedPerformanceData]);
 
     const f = (v?: number) => v != null && !isNaN(v) ? roundUp(v).toLocaleString('vi-VN') : '-';
@@ -395,8 +382,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 let rows = filteredHeaders.map(comp => {
                     const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
                     const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
-                    const completion = target > 0 ? (actual / target) * 100 : 0;
-                    const remaining = actual - target;
+                    const { completion, remaining } = computePerformanceRow(target, actual);
                     return { name: shortenName(comp.originalTitle, nameOverrides), originalTitle: comp.originalTitle, target, actual, completion, remaining };
                 }).filter(d => d.target > 0 || d.actual > 0);
                 
