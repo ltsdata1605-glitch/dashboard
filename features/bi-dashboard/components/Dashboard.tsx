@@ -22,7 +22,7 @@ interface DashboardProps {
 }
 
 const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
-    <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-sky-500/20 selection:text-sky-600 pb-8">
+    <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-sky-500/20 selection:text-sky-700 pb-8">
         
         {/* Ambient Background Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
@@ -56,7 +56,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                             
                             <div className="flex flex-col items-center gap-4">
                                 <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 rounded-xl flex items-center justify-center border border-sky-100 dark:border-sky-800/50">
-                                    <UploadIcon className="h-6 w-6 text-sky-600 dark:text-sky-400" />
+                                    <UploadIcon className="h-6 w-6 text-sky-700 dark:text-sky-400" />
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                                     <Button
@@ -85,15 +85,15 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
             {/* Footer / Trust Indicators */}
             <div className="mt-8 flex items-center justify-center gap-6 text-center">
                 <div className="flex flex-col items-center gap-1.5 text-slate-400">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Local Processing</span>
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Local Processing</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                 <div className="flex flex-col items-center gap-1.5 text-slate-400">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Instant Speed</span>
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Instant Speed</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                 <div className="flex flex-col items-center gap-1.5 text-slate-400">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Smart UI</span>
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Smart UI</span>
                 </div>
             </div>
 

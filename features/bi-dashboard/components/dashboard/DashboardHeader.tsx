@@ -76,7 +76,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
             <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <Icon name="bar-chart-3" size={4.5} className="sm:hidden" />
                         <Icon name="bar-chart-3" size={5} className="hidden sm:block" />
                     </div>
@@ -96,7 +96,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setActiveMainTab('realtime')}
-                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Realtime
                             </Button>
@@ -104,7 +104,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setActiveMainTab('cumulative')}
-                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Luỹ kế
                             </Button>
@@ -131,7 +131,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none shadow-sm">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 hide-on-export">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
                     <Tabs
                         items={SUB_TABS.map(({ tab, label }) => ({ id: tab, label }))}
                         activeId={activeSubTab}
@@ -147,7 +147,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
                                 {contentTitle}
                             </h2>
-                            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
+                            <p className="text-[11px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
                                 {QUOTES[activeSubTab]}
                             </p>
                         </div>

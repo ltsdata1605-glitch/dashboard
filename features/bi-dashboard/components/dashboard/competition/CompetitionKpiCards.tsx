@@ -34,16 +34,16 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
             >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-emerald-400" />
                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
+                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
                         % Nhóm Đạt ≥100%
                     </span>
-                    <div className="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60">
+                    <div className="w-6 h-6 rounded-md bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-700 tabular-nums">
                         {Math.round(stats.pctOver100)}%
                     </span>
                 </div>
@@ -68,16 +68,16 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
             >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-rose-500 to-rose-400" />
                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
+                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
                         % Nhóm Chưa Đạt
                     </span>
-                    <div className="w-6 h-6 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200/60">
+                    <div className="w-6 h-6 rounded-md bg-rose-50 text-rose-700 flex items-center justify-center shrink-0 border border-rose-200/60">
                         <AlertCircle className="w-3.5 h-3.5" />
                     </div>
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-rose-600 tabular-nums">
+                    <span className="text-2xl sm:text-3xl font-black text-rose-700 tabular-nums">
                         {Math.round(stats.pctUnder100)}%
                     </span>
                 </div>
@@ -102,16 +102,16 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
             >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-amber-400" />
                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
+                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
                         80% &lt; Nhóm &lt; 100%
                     </span>
-                    <div className="w-6 h-6 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60">
+                    <div className="w-6 h-6 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/60">
                         <TrendingUp className="w-3.5 h-3.5" />
                     </div>
                 </div>
 
                 <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-700 tabular-nums">
                         {stats.countNear100}
                     </span>
                     <span className="text-xs font-bold text-slate-400">nhóm</span>
@@ -137,7 +137,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
             >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-slate-400 to-slate-300" />
                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
+                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
                         Nhóm Kết Quả 0%
                     </span>
                     <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200/60">

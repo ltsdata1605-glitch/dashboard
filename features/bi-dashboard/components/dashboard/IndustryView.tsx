@@ -212,7 +212,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
                     className={`p-1.5 transition-colors ${
                         hiddenIndustries.length > 0
-                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Lọc ngành hàng"
@@ -221,7 +221,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 </Button>
                 {isIndustryFilterOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
                         <Input
                             type="text"
                             value={industryFilterSearch}
@@ -258,19 +258,19 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
                         className={`p-1.5 transition-colors ${
                             hiddenSubIndustries.length > 0
-                                ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
+                                ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                         }`}
                         title="Lọc nhóm hàng"
                     >
                         <div className="relative">
                             <FilterIcon className="h-4 w-4" />
-                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black text-slate-400">N</span>
+                            <span className="absolute -bottom-1 -right-1 text-[11px] font-black text-slate-400">N</span>
                         </div>
                     </Button>
                     {isSubIndustryFilterOpen && (
                         <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
+                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
                             <Input
                                 type="text"
                                 value={subIndustryFilterSearch}
@@ -307,7 +307,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
                     className={`p-1.5 transition-colors ${
                         isColumnSelectorOpen
-                            ? 'text-sky-600 dark:text-sky-400'
+                            ? 'text-sky-700 dark:text-sky-400'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
@@ -316,7 +316,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 </Button>
                 {isColumnSelectorOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                         <div className="grid gap-0.5">
                             {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h) => (
                                 <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -420,7 +420,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             {displayName}
                         </span>
                         {hasChildren && (
-                            <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                            <span className="ml-1.5 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
                                 {childrenCount}
                             </span>
                         )}
@@ -442,7 +442,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 }
                 return (
                     <div className="flex justify-center items-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-black inline-block min-w-[45px] text-center ${rounded >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : rounded >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
                             {rounded}%
                         </span>
                     </div>
@@ -481,13 +481,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             cellClasses += originalCellIndex === 0 ? ' font-bold text-slate-700 dark:text-slate-300' : ' font-bold';
 
             if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
-                if (numericValue >= 100) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
-                else if (numericValue >= 85) cellClasses += ' text-amber-600 dark:text-amber-400 font-bold';
-                else if (numericValue > 0) cellClasses += ' text-rose-600 dark:text-rose-400 font-bold';
+                if (numericValue >= 100) cellClasses += ' text-emerald-700 dark:text-emerald-400 font-bold';
+                else if (numericValue >= 85) cellClasses += ' text-amber-700 dark:text-amber-400 font-bold';
+                else if (numericValue > 0) cellClasses += ' text-rose-700 dark:text-rose-400 font-bold';
                 else cellClasses += ' text-slate-700 dark:text-slate-300';
             } else if (isQdCkCol && !isNaN(numericValue)) {
-                if (numericValue > 20) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
-                else if (numericValue < 0) cellClasses += ' text-rose-600 dark:text-rose-400 font-bold';
+                if (numericValue > 20) cellClasses += ' text-emerald-700 dark:text-emerald-400 font-bold';
+                else if (numericValue < 0) cellClasses += ' text-rose-700 dark:text-rose-400 font-bold';
                 else cellClasses += ' text-slate-700 dark:text-slate-300';
             } else if (!isDtqdCol) {
                 cellClasses += ' text-slate-700 dark:text-slate-300';
