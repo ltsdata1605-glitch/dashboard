@@ -3038,3 +3038,40 @@ Bắt buộc, vì user chọn "chuẩn MỚI cho cả dự án". Cập nhật `s
   đợt sửa; hiện working tree sạch nhưng có thể đổi bất cứ lúc nào.
 - Đợt 1 là refactor thuần, **không được đổi bất kỳ con số nào**. Nếu một số liệu buộc phải đổi, dừng
   lại hỏi user thay vì tự quyết.
+
+---
+
+## Đợt 2 XONG + Đợt 3 bắt đầu: chuẩn thiết kế "Bảng điều khiển ca trực" (2026-09-10)
+
+### Đợt 2 — user đã chọn
+Dựng 6 hướng thiết kế trên **cùng bộ số liệu thật** (Hùng Vương 9/9, trích từ lưới an toàn Đợt 1):
+A/B/C khác nhau ở *mật độ thông tin*; D/E/F khác nhau ở *nơi con số được nhìn thấy* (ảnh gửi Zalo /
+mã hoá bằng hình / điện thoại).
+
+**User chọn A — "Bảng điều khiển ca trực"**. Nguyên tắc gốc: *mỗi pixel dành cho số, không dành cho
+trang trí*. Đặc tả đầy đủ ở artifact, nội dung đã chép vào `DESIGN_SYSTEM.md`.
+
+### 🔴 Tôi đã tự sửa một đề xuất SAI của mình
+Bản đặc tả đầu tiên đề xuất **đổi phông** sang IBM Plex Sans + Barlow Semi Condensed. Kiểm tra lại
+thì `UTM Avo`:
+- tự host tại `public/fonts/UTM Avo.ttf` + `UTM AvoBold.ttf`,
+- có `@font-face` ánh xạ trọng lượng thủ công kèm chú thích *"prevent browser artificial fake bolding"*,
+- `styles.css:112` ghi rõ *"Report BI — tiêu đề & chú thích mặc định dùng UTM Avo"*.
+
+UTM là foundry phông Việt — chọn vì dấu tiếng Việt hiển thị đúng. Đây là quyết định có chủ đích.
+**Đã rút lại đề xuất**: giữ nguyên UTM Avo, nhãn condensed dùng `Roboto Condensed` (đã nạp sẵn trong
+`index.html`, có dấu Việt, không thêm request nào).
+
+Bài học: trước khi đề xuất đổi thứ gì trông như "mặc định bỏ quên", kiểm tra xem nó có phải lựa chọn
+có chủ đích không — nhất là phông và màu ở dự án tiếng Việt.
+
+### Đã sửa tài liệu (bước 1 của Đợt 3)
+- `CLAUDE.md` §2: bo góc 4px/6px, bỏ `rounded-xl` cho card, cấm đổ bóng khối tĩnh, mật độ bảng 26px,
+  vạch trạng thái thay pill, cỡ chữ nhỏ nhất 11px, và **ĐẢO NGƯỢC** quy tắc "lấy Phân Tích làm chuẩn
+  vàng" → nay Report BI là chuẩn, Phân Tích theo sau ở Đợt 5.
+- `DESIGN_SYSTEM.md`: viết lại hoàn toàn — 13 token màu kèm hex, thang chữ 6 cỡ, bảng mật độ, mẫu
+  bảng 48 cột, quy tắc điện thoại.
+
+### Còn lại của Đợt 3
+Dựng lại giao diện từng màn một, mỗi màn 1 commit, nghiệm thu bằng lưới an toàn 6 màn hình
+(`SNAPSHOT_LABEL=before/after`): **số phải giữ nguyên từng ô, chỉ hình thức đổi**.

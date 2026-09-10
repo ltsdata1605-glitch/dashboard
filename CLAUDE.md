@@ -94,13 +94,32 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 - **UI Components**: Mọi phần tử tương tác (button, input, modal, confirm dialog, badge, select, dropdown) **bắt buộc** dùng components ở `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0` mới.
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
-- **Bo góc**: `rounded-md` (cho input/button), `rounded-xl` (cho card/modal). Tránh dùng `rounded-3xl`. Bảng biểu dùng `rounded-none` (phẳng).
+- **Bo góc** *(sửa 2026-09-10 theo chuẩn "Bảng điều khiển ca trực")*: `rounded` (4px — input/button),
+  `rounded-md` (6px — modal/dropdown, thứ NỔI LÊN trên). Bảng và vùng dữ liệu: `rounded-none`.
+  ❌ Bỏ `rounded-xl` cho card, ❌ bỏ `rounded-3xl`. Nguyên tắc: **bo góc và đổ bóng nói "tôi ở tầng
+  khác" — chỉ dùng cho thứ thật sự nổi lên trên**, đừng nói bừa.
+- **Đổ bóng** *(mới 2026-09-10)*: KHÔNG đổ bóng cho khối tĩnh. Chỉ modal và dropdown.
+- **Mật độ bảng** *(mới 2026-09-10)*: dòng dữ liệu cao **26px** (đệm `3px 8px`), đầu bảng **28px** và
+  bắt buộc dính trên (`sticky`), dải nhóm **24px**. Bảng nhiều cột phải **ghim cột đầu** (`sticky left`,
+  viền phải 2px).
+- **Trạng thái đạt/chưa đạt**: mã hoá bằng **vạch màu 3px ở mép trái dòng**, KHÔNG dùng viên pill giữa
+  bảng. Pill chiếm chiều ngang — thứ khan hiếm nhất ở bảng 48 cột.
+- **Cỡ chữ nhỏ nhất là 11px** và phải dùng phông condensed. ❌ Bỏ `text-[10px]` — màn hình siêu thị
+  thường là laptop cũ, độ phân giải thấp.
+- **Phông**: `UTM Avo` (tự host, `public/fonts/`) cho số và nội dung — **giữ nguyên, không đổi**: đây là
+  phông Việt được chọn có chủ đích, đã tinh chỉnh ánh xạ trọng lượng để tránh giả đậm.
+  `Roboto Condensed` (đã nạp sẵn trong `index.html`) cho nhãn cột viết hoa.
 - **Bảng biểu (Tables)**: Viền mỏng `border-slate-200`, header bảng viết hoa `text-[11px] font-bold tracking-wider`.
   ⚠️ *Sửa 2026-09-10: mục này trước ghi `tracking-tight` là SAI.* Đo trên code thật: trong class mang
   dấu hiệu header bảng, `tracking-wider` **46 lần** vs `tracking-tight` **9 lần** — và `DESIGN_SYSTEM.md`
   cũng ghi `tracking-wider`. Quy tắc sai này đã khiến code mới viết theo bị lệch chuẩn; 8 header còn
   sót dùng `tracking-tight` là di sản của lỗi đó, dọn dần khi có dịp chạm vào file.
-- **Đồng nhất thiết kế**: Lấy module **Phân Tích** (`components/views/DashboardView.tsx` và các bảng biểu con của nó) làm chuẩn vàng thiết kế. Tất cả các module khác điều chỉnh theo chuẩn này.
+- **Đồng nhất thiết kế** *(ĐẢO NGƯỢC 2026-09-10)*: chuẩn mới là **"Bảng điều khiển ca trực"**, áp cho
+  **Report BI trước** (Đợt 3), rồi **Phân Tích và các module còn lại đi theo** (Đợt 5).
+  Trước đây quy tắc là "lấy Phân Tích làm chuẩn vàng" — nay không còn đúng.
+  Đặc tả đầy đủ (13 token màu kèm mã hex, thang chữ, mật độ, mẫu bảng 48 cột) ở `DESIGN_SYSTEM.md`.
+  Nguyên tắc gốc: **mỗi pixel dành cho số, không dành cho trang trí** — người dùng là quản lý siêu thị
+  liếc màn hình giữa hai lượt khách.
 
 ---
 
