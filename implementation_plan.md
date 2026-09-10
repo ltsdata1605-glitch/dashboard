@@ -3075,3 +3075,46 @@ có chủ đích không — nhất là phông và màu ở dự án tiếng Vi�
 ### Còn lại của Đợt 3
 Dựng lại giao diện từng màn một, mỗi màn 1 commit, nghiệm thu bằng lưới an toàn 6 màn hình
 (`SNAPSHOT_LABEL=before/after`): **số phải giữ nguyên từng ô, chỉ hình thức đổi**.
+
+### Đợt 3 HOÀN TẤT — áp chuẩn "Bảng điều khiển ca trực" (2026-09-10)
+
+5 đợt nhỏ, mỗi đợt 1 commit kèm ảnh chụp đối chiếu:
+
+| # | Màn | Commit | Kết quả đo |
+|---|---|---|---|
+| 3.1 | Thi đua Luỹ kế | `97cd8ff6` | bảng 43 dòng: **1.174px → 1.065px** (thấy thêm ~4 dòng) |
+| 3.2 | Bảng 48 cột | `2ef27792` | **sửa lỗi mất tên cột khi cuộn** + bỏ 10 chỗ chữ 9px |
+| 3.3 | Tổng quan (KPI + Siêu thị) | `6bef9bff` | bỏ 2 chỗ chữ **8px**, 9 chỗ 10px |
+| 3.4 | Thi đua Nhóm & Cá nhân | `442621b5` | bỏ 3 màu **rgb() thô ngoài palette** |
+| 3.5 | 4 tab Nhân viên | `b3a03b6d` | lưới an toàn 6 → **9 màn / 2.891 ô** |
+
+**Nghiệm thu**: mọi đợt đều so ảnh chụp số liệu dữ liệu thật trước/sau — **không lệch một ký tự**.
+`npm run check` exit 0, 334 test.
+
+### 🔴 BA LỖI TÔI TỰ GÂY RA TRONG ĐỢT 3 — chỉ ảnh chụp mới bắt được
+1. **`git checkout --`** trên file có thay đổi chưa commit → mất sạch, phải làm lại. Từ nay lưu bản
+   mới ra `/tmp` trước khi đụng lệnh git khôi phục.
+2. **`sticky top-0` làm dòng tiêu đề chui xuống dưới thanh app.** Thanh đó là
+   `hidden lg:block lg:sticky lg:top-0 z-[150]` cao 69px — grep trượt vì nó viết `lg:sticky lg:top-0`
+   chứ không phải `sticky top-0`. Đã đo thật bằng Playwright → token `--app-header-h`.
+3. **`sticky` đặt lên từng `<th>`** làm 2 dòng tiêu đề cùng dính một mốc và chồng lên nhau. Sửa bằng
+   cách dính cả khối `<thead>` — đúng cách 4 bảng khác trong dự án đã làm.
+
+Cả 3 lần test số liệu đều XANH. Lưới an toàn chỉ đọc nội dung chữ, **không biết gì về cỡ chữ, vị trí
+hay chuyện tiêu đề bị che**. Đó là lý do mỗi đợt đều phải chụp ảnh nhìn tận mắt.
+
+### Còn lại toàn module (đo sau Đợt 3)
+- **120 chỗ** `text-[8|9|10]px` chưa dọn (từ 139)
+- **186 chỗ** màu ngữ nghĩa còn sắc độ 600
+- **0 chỗ** màu `rgb()` thô — đã sạch
+
+CỐ Ý không quét hàng loạt: trong 120 chỗ đó chắc chắn có chỗ cỡ chữ nhỏ là CÓ CHỦ ĐÍCH (huy hiệu,
+chú thích trong ảnh xuất Zalo). Dọn theo từng màn, mỗi màn nhìn ảnh trước khi commit.
+
+### Chưa xác minh được bằng mắt
+`DetailTab` — tài khoản chụp chưa có dữ liệu tab Chi tiết. Đã áp chuẩn (4 thay đổi thuần đổi class,
+giống hệt 5 file đã kiểm chứng) nhưng chưa nhìn thấy kết quả thật.
+
+### Tiếp theo — Đợt 4 & 5
+Đợt 4 (viết lại `CLAUDE.md` §2 + `DESIGN_SYSTEM.md`) **đã làm trước** ở commit `09f25f34`.
+Còn **Đợt 5**: đưa module Phân Tích và các module còn lại theo chuẩn mới.
