@@ -294,6 +294,13 @@
   --console-radius-overlay: 6px;   /* modal, dropdown */
   /* bảng và vùng dữ liệu: 0 — không khai token, dùng rounded-none */
 
+  /* Chiều cao thanh đầu app khi dính trên (đo thật bằng Playwright: 69px).
+     Mọi đầu bảng `sticky` phải lùi xuống dưới nó, nếu không dòng tiêu đề đầu
+     tiên bị che khuất — đã gặp thật khi làm Đợt 3.2. Thanh này chỉ dính ở
+     desktop (`hidden lg:block lg:sticky lg:top-0 z-[150]`); mobile có thanh
+     riêng nên bảng vẫn dùng top-0. */
+  --app-header-h: 69px;
+
   /* Nhãn cột: phông condensed đã nạp sẵn trong index.html, có dấu tiếng Việt.
      KHÔNG đổi --font-sans (UTM Avo) — xem DESIGN_SYSTEM.md mục 2. */
   --console-font-label: "Roboto Condensed", "Arial Narrow", ui-sans-serif, sans-serif;

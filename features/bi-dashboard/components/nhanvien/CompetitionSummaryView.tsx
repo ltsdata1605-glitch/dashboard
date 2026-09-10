@@ -359,21 +359,21 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         
         if (value <= 0) {
             if (avg > 0) {
-                return 'text-rose-600 dark:text-rose-400 font-bold';
+                return 'text-rose-700 dark:text-rose-400 font-bold';
             }
             return 'text-slate-300 dark:text-slate-600';
         }
 
         const rank = columnRankings[headerTitle]?.get(empName) ?? 999;
         if (rank <= 3) {
-            return 'text-emerald-600 dark:text-emerald-400 font-extrabold';
+            return 'text-emerald-700 dark:text-emerald-400 font-extrabold';
         }
         if (rank <= 6) {
             return 'text-amber-500 dark:text-amber-405 font-bold';
         }
         
         if (value < avg) {
-            return 'text-rose-600 dark:text-rose-400 font-bold';
+            return 'text-rose-700 dark:text-rose-400 font-bold';
         }
         
         return 'text-slate-700 dark:text-slate-300 font-medium';
@@ -514,7 +514,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
-                    <Button type="button" variant="unstyled" size="none" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="p-0 text-emerald-600">
+                    <Button type="button" variant="unstyled" size="none" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="p-0 text-emerald-700">
                         <CheckCircleIcon className="h-6 w-6" />
                     </Button>
                     <Button type="button" variant="unstyled" size="none" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="p-0 text-slate-400">
@@ -542,14 +542,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     >
                         <FilterIcon className="h-5 w-5" />
                         {selectedTitles.length > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[11px] rounded-full w-4 h-4 flex items-center justify-center">
                                 {selectedTitles.length}
                             </span>
                         )}
                     </Button>
                     {isFilterOpen && (
                         <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
-                            <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                            <div className="px-2 py-[5px] border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                                 <Input
                                     type="text"
                                     value={filterSearch}
@@ -637,10 +637,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors no-print"
+                    className="text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
                 >
                     {isExportingByGroup ? (
-                        <SpinnerIcon className="h-4 w-4 animate-spin text-sky-600" />
+                        <SpinnerIcon className="h-4 w-4 animate-spin text-sky-700" />
                     ) : (
                         <DownloadAllIcon className="h-4 w-4" />
                     )}
@@ -652,7 +652,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
@@ -684,28 +684,28 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <table className="min-w-max w-full table-auto border-collapse">
-                                <thead>
+                                <thead className="sticky top-0 lg:top-[var(--app-header-h)] z-20">
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th
                                             rowSpan={2}
                                             onClick={() => handleSort('employee')}
-                                            className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-center border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="sticky left-0 z-30 bg-slate-50 dark:bg-slate-800 px-2 py-[5px] text-center border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Nhân viên</span>
-                                                <span className="text-sky-600 dark:text-sky-400 font-bold">{getSortIndicator('employee')}</span>
+                                                <span className="text-sky-700 dark:text-sky-400 font-bold">{getSortIndicator('employee')}</span>
                                             </div>
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.emerald} text-[9px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.emerald} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="%HT 100%"
                                         >
                                             %HT 100%
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.rose} text-[9px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.rose} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="Hiệu quả"
                                         >
                                             HIỆU QUẢ
@@ -714,7 +714,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             <th
                                                 key={`group-${runIndex}-${run.group}`}
                                                 colSpan={run.span}
-                                                className={`competition-dynamic-col px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES[run.colorKey]} text-[9px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                                className={`competition-dynamic-col px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES[run.colorKey]} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                                 title={run.group}
                                             >
                                                 {run.group}
@@ -728,7 +728,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Đạt</span>
-                                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 ml-0.5">{getSortIndicator('dat')}</span>
+                                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 ml-0.5">{getSortIndicator('dat')}</span>
                                             </div>
                                         </th>
                                         <th
@@ -737,7 +737,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>%Đạt</span>
-                                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 ml-0.5">{getSortIndicator('dat')}</span>
+                                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 ml-0.5">{getSortIndicator('dat')}</span>
                                             </div>
                                         </th>
                                         <th
@@ -746,7 +746,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
-                                                <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 ml-0.5">{getSortIndicator('tongBot')}</span>
+                                                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
                                         <th
@@ -755,7 +755,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
-                                                <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 ml-0.5">{getSortIndicator('noSale')}</span>
+                                                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 ml-0.5">{getSortIndicator('noSale')}</span>
                                             </div>
                                         </th>
                                         {(() => {
@@ -776,8 +776,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     >
                                                         <div className="flex flex-col items-center justify-center gap-0.5">
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-normal no-print leading-none">⋮⋮</span>
-                                                                <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 leading-none">{getSortIndicator(header.title)}</span>
+                                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal no-print leading-none">⋮⋮</span>
+                                                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-none">{getSortIndicator(header.title)}</span>
                                                             </div>
                                                             <span className="whitespace-normal break-words leading-tight uppercase">{shortenName(header.originalTitle, nameOverrides)}</span>
                                                         </div>
@@ -795,8 +795,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         return (
                                             <tr key={emp.originalName} className={`${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
                                                 <td 
-                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-1 font-bold border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
-                                                    style={{ color: 'var(--color-sky-600)' }}
+                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-[3px] font-bold border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
+                                                    style={{ color: 'var(--color-sky-700)' }}
                                                 >
                                                     {emp.name}
                                                 </td>
@@ -805,7 +805,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const datPercent = totalHeaderCount > 0 ? (dat / totalHeaderCount) * 100 : 0;
                                                     const isBelowStore = datPercent < storeDatPercent;
                                                     const datColorClass = isBelowStore
-                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
                                                         : 'text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50/40 dark:bg-emerald-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
@@ -818,7 +818,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const datPercent = totalHeaderCount > 0 ? (dat / totalHeaderCount) * 100 : 0;
                                                     const isBelowStore = datPercent < storeDatPercent;
                                                     const datPercentColorClass = isBelowStore
-                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
                                                         : 'text-emerald-700 dark:text-emerald-400 font-extrabold bg-emerald-50/40 dark:bg-emerald-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datPercentColorClass}`}>
@@ -829,7 +829,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 {(() => {
                                                     const isRed = tongBot > 0 && tongBotRedCutoff > 0 && tongBot >= tongBotRedCutoff;
                                                     const tongBotColorClass = isRed
-                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
@@ -841,7 +841,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const noSale = getEmployeeNoSale(emp.name);
                                                     const isNoSaleRed = noSale > 0;
                                                     const noSaleColorClass = isNoSaleRed
-                                                        ? 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${noSaleColorClass}`}>
@@ -873,7 +873,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     })}
                                     {/* TRUNG BÌNH row */}
                                     <tr className="bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t-2 border-slate-300 dark:border-slate-600">
-                                        <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                        <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
                                         <td className="px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
@@ -924,7 +924,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     </tr>
                                     {/* Grand Total — sky accent */}
                                     <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
-                                         <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-sky-200 dark:border-sky-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                         <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-sky-200 dark:border-sky-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                              TỔNG
                                          </td>
                                          <td className="px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
