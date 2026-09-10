@@ -7,6 +7,7 @@ import {
     computeCompetitionStats,
     computePerformanceRow,
     getIndividualMonthProgress,
+    getMonthProgress,
     type EmployeeLikeRow,
     type PerformanceItem,
 } from './individualCompetitionCalc';
@@ -68,13 +69,22 @@ describe('computeRank', () => {
     });
 });
 
-describe('getIndividualMonthProgress — CỐ Ý khác bản của bảng Tổng hợp', () => {
-    it('daysPassed = hôm nay - 1, KHÔNG có chốt tối thiểu 1', () => {
+describe('getIndividualMonthProgress — ĐÃ VÁ LỖI MÙNG 1 (2026-09-10)', () => {
+    it('daysPassed = hôm nay - 1', () => {
         expect(getIndividualMonthProgress(new Date(2026, 8, 10)).daysPassed).toBe(9);
     });
 
-    it('ngày mùng 1 cho daysPassed = 0 (khác competitionSummaryCalc, giữ đúng bản gốc)', () => {
-        expect(getIndividualMonthProgress(new Date(2026, 8, 1)).daysPassed).toBe(0);
+    it('🔴 ngày MÙNG 1 phải cho daysPassed = 1, KHÔNG phải 0', () => {
+        // Trước bản vá, hàm này trả 0 ⇒ calculateRunRate trả 0 ⇒ mọi %DKHT = 0 ⇒ TOÀN BỘ hạng mục
+        // rơi vào "NoSale" đúng ngày đầu tháng. Test này khoá lại để không tái diễn.
+        expect(getIndividualMonthProgress(new Date(2026, 8, 1)).daysPassed).toBe(1);
+    });
+
+    it('nay dùng CHUNG một hàm với bảng Tổng hợp — không thể lệch nhau nữa', () => {
+        for (const d of [1, 2, 15, 28, 31]) {
+            const day = new Date(2026, 7, d);
+            expect(getIndividualMonthProgress(day), `ngày ${d}`).toEqual(getMonthProgress(day));
+        }
     });
 });
 
@@ -107,10 +117,18 @@ describe('computeCompetitionStats — phân nhóm theo %DKHT', () => {
         expect(s).toEqual({ total: 0, dkhtDat: 0, dkhtGanDat: 0, dkhtChuaDat: 0, noSale: 0, avgDkht: 0 });
     });
 
-    it('ngày mùng 1 (daysPassed = 0): TẤT CẢ rơi vào NoSale — hệ quả có thật của bản gốc', () => {
+    it('🔴 MÙNG 1 sau khi vá: người đã vượt target được tính ĐẠT, không còn rơi vào NoSale', () => {
+        // Đây là bài kiểm chứng bản vá. Mùng 1, getMonthProgress trả daysPassed = 1 (không phải 0).
+        const { daysPassed, daysInMonth } = getIndividualMonthProgress(new Date(2026, 8, 1));
+        const s = computeCompetitionStats([item(100, 999)], daysPassed, daysInMonth);
+        expect(s.noSale, 'không còn bị xếp NoSale').toBe(0);
+        expect(s.dkhtDat, 'đã vượt target thì phải tính là đạt').toBe(1);
+    });
+
+    it('daysPassed = 0 truyền thẳng vẫn cho NoSale — hàm thuần giữ nguyên hành vi toán học', () => {
+        // Bản vá nằm ở getMonthProgress (không bao giờ trả 0 nữa), KHÔNG phải ở đây.
         const s = computeCompetitionStats([item(100, 999)], 0, 30);
-        expect(s.noSale, 'run rate trả 0 khi daysPassed <= 0').toBe(1);
-        expect(s.dkhtDat).toBe(0);
+        expect(s.noSale).toBe(1);
     });
 });
 

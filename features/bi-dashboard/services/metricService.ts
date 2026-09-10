@@ -44,6 +44,26 @@ export function calculateAOV(revenue: number, quantity: number): number {
  * Calculates Run Rate revenue projection.
  * Returns 0 if daysPassed is 0 or negative.
  */
+/**
+ * Tiến độ tháng dùng cho mọi phép run rate.
+ *
+ * `daysPassed = ngày hôm nay - 1` vì dữ liệu chốt tới hết hôm qua, và **tối thiểu 1**.
+ *
+ * 🔴 Chốt `Math.max(1, ...)` KHÔNG phải chi tiết vặt: thiếu nó thì đúng ngày MÙNG 1,
+ * `daysPassed = 0` ⇒ `calculateRunRate` trả 0 ⇒ mọi %DKHT thành 0 ⇒ TOÀN BỘ hạng mục bị
+ * xếp vào nhóm "NoSale". Cả siêu thị mở báo cáo đầu tháng thấy trắng bảng mà không hiểu vì sao.
+ *
+ * Trước 2026-09-10 có HAI bản của hàm này — `competitionSummaryCalc.getMonthProgress` (có chốt)
+ * và `individualCompetitionCalc.getIndividualMonthProgress` (KHÔNG có chốt). Đã gộp về đây để
+ * chúng không thể lệch nhau lần nữa. ĐỪNG tạo bản thứ ba.
+ */
+export function getMonthProgress(now: Date = new Date()): { daysPassed: number; daysInMonth: number } {
+    return {
+        daysPassed: Math.max(1, now.getDate() - 1),
+        daysInMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+    };
+}
+
 export function calculateRunRate(revenue: number, daysPassed: number, totalDays: number): number {
     if (daysPassed <= 0) return 0;
     return (revenue / daysPassed) * totalDays;

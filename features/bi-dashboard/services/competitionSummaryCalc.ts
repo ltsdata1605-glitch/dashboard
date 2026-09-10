@@ -1,6 +1,9 @@
 import type { Employee, CompetitionHeader } from '../types/nhanVienTypes';
 import { isSameEmployee } from '../utils/nhanVienHelpers';
-import { calculateRunRate } from './metricService';
+import { calculateRunRate, getMonthProgress } from './metricService';
+
+/** Tiến độ tháng — nguồn duy nhất ở `metricService`. Re-export để nơi gọi cũ không phải sửa. */
+export { getMonthProgress };
 
 /**
  * Logic tính toán của bảng "Tổng hợp Thi đua" — TÁCH RA từ `CompetitionSummaryView.tsx` (Đợt 1 của
@@ -77,18 +80,6 @@ const actualOf = (data: EmployeeDataMap, empName: string, colTitle: string): num
 /** % hoàn thành so với target; target = 0 thì trả 0 (không chia cho 0). */
 const htOf = (actual: number, target: number): number => (target > 0 ? (actual / target) * 100 : 0);
 
-/**
- * Tiến độ tháng dùng cho run rate.
- *
- * `daysPassed = ngày hôm nay - 1` (dữ liệu thi đua chốt tới hết hôm qua), tối thiểu 1 để không bao
- * giờ chia cho 0 vào ngày mùng 1.
- */
-export function getMonthProgress(now: Date = new Date()): { daysPassed: number; daysInMonth: number } {
-    return {
-        daysPassed: Math.max(1, now.getDate() - 1),
-        daysInMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
-    };
-}
 
 export interface ColumnAverage {
     actual: number;

@@ -1,5 +1,13 @@
 import { isSameEmployee } from '../utils/nhanVienHelpers';
-import { calculateRunRate } from './metricService';
+import { calculateRunRate, getMonthProgress } from './metricService';
+
+/**
+ * 🔴 SỬA LỖI 2026-09-10: trước đây file này có `getIndividualMonthProgress` riêng, THIẾU chốt
+ * `Math.max(1, ...)` nên đúng ngày mùng 1 mọi hạng mục rơi vào "NoSale". Đã xoá hẳn và dùng chung
+ * `getMonthProgress` của `metricService`. Tên cũ re-export để nơi gọi không phải sửa.
+ */
+export { getMonthProgress };
+export const getIndividualMonthProgress = getMonthProgress;
 
 /**
  * Logic báo cáo Thi đua CÁ NHÂN — tách từ `IndividualCompetitionView.tsx` (Đợt 1.3 của dự án làm
@@ -73,22 +81,6 @@ export interface CompetitionStats {
     avgDkht: number;
 }
 
-/**
- * Tiến độ tháng dùng cho báo cáo cá nhân.
- *
- * ⚠️ KHÁC `competitionSummaryCalc.getMonthProgress()`: ở đây KHÔNG có chốt `Math.max(1, ...)`, nên
- * ngày mùng 1 cho `daysPassed = 0`. Khi đó `calculateRunRate` trả 0 ⇒ mọi %DKHT thành 0 và cả siêu
- * thị bị xếp vào nhóm "NoSale" trong đúng ngày đầu tháng.
- *
- * Đây là hành vi CÓ THẬT của bản gốc, giữ nguyên trong đợt refactor này để không trộn sửa lỗi vào
- * refactor. Nếu muốn thống nhất 2 chỗ, phải làm thành thay đổi riêng có đối chiếu số trước/sau.
- */
-export function getIndividualMonthProgress(now: Date = new Date()): { daysPassed: number; daysInMonth: number } {
-    return {
-        daysPassed: now.getDate() - 1,
-        daysInMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
-    };
-}
 
 /**
  * Thống kê tổng hợp các hạng mục thi đua của một nhân viên, phân nhóm theo %DKHT (dự kiến hoàn

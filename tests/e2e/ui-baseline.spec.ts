@@ -11,6 +11,16 @@ import type { Page } from '@playwright/test';
  *   SNAPSHOT_LABEL=after SNAPSHOT_COMPARE=1 ...                               # sau + so luôn
  *
  * So NỘI DUNG SỐ chứ không so ảnh pixel: giao diện thì CỐ Ý đổi, còn số thì KHÔNG ĐƯỢC đổi.
+ *
+ * ⚠️ GIỚI HẠN QUAN TRỌNG — đọc trước khi hoảng vì thấy 'LỆCH':
+ * Ảnh chụp lấy từ DỮ LIỆU THẬT ĐANG SỐNG. Nếu ai đó dán dữ liệu mới hoặc sửa target trong lúc
+ * giữa hai lần chụp, mọi con số phụ thuộc sẽ lệch — KHÔNG PHẢI code hỏng. Đã xảy ra thật
+ * 2026-09-10: mục tiêu tháng đổi 40.052 Tr → 41.592 Tr, kéo theo %HT ở 3 màn.
+ *
+ * Cách phân biệt: lệch do CODE thường thay đổi CẤU TRÚC (số cột, số dòng, tên cột) hoặc lệch đồng
+ * loạt theo một quy luật; lệch do DỮ LIỆU chỉ đổi giá trị và các số liên quan vẫn nhất quán với
+ * nhau (kiểm tra bằng cách chia tay: 15.639 / 41.592 = 38% ✓). Nghi ngờ thì chụp lại `before` rồi
+ * chạy lại ngay — nếu lần hai khớp thì là dữ liệu, không phải code.
  */
 test.skip(!hasRealDataProfile(), 'cần .e2e-chrome-profile — chạy node scripts/e2e-auth-setup.mjs');
 
