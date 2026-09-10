@@ -41,13 +41,26 @@ export interface SupermarketCompetitionCommentary {
     isRealtime: boolean;
     isSuperMode: boolean;
     groups: GroupCommentary[];
-    totalActual: number;
-    totalTarget: number;
-    totalRemaining: number;
+    /**
+     * Tiến độ chung = TRUNG BÌNH CỘNG %HT của các nhóm.
+     *
+     * KHÔNG được tính bằng (tổng actual / tổng target) toàn siêu thị: các nhóm có ĐƠN VỊ KHÁC
+     * NHAU (SLLK = số lượng *cái*, DTLK/DTQĐ = doanh thu *VNĐ*). Doanh thu cỡ 10^8 còn số lượng
+     * cỡ 10^2 nên cộng chung thì nhóm số lượng có trọng số ~0,00005% — tức bị xoá sổ. Bug thật
+     * đã gặp: siêu thị đạt SLLK 20% + DTLK 100% được báo "Tiến độ chung 100% — XUẤT SẮC VỀ ĐÍCH
+     * TOÀN DIỆN", trong khi cả một tiêu chí đang báo động đỏ. Con số này đi thẳng vào bản tin
+     * Zalo gửi toàn siêu thị nên sai là sai ra ngoài.
+     *
+     * Trung bình cộng cho mỗi nhóm trọng số ngang nhau — đúng tinh thần "mỗi tiêu chí đều phải
+     * đạt", và không phụ thuộc vào đơn vị đo.
+     */
     overallRate: number;
     reachedGroupsCount: number;
+    /** Số nhóm CHƯA phát sinh gì (actual = 0). Nhóm đạt 0,4% KHÔNG tính vào đây. */
     zeroGroupsCount: number;
     totalGroupsCount: number;
+    /** Số ngành hàng chưa đạt 100%, cộng trên mọi nhóm. Là phép ĐẾM nên không lệ thuộc đơn vị. */
+    unreachedProgramsCount: number;
     generalAssessment: {
         sticker: string;
         headline: string;
@@ -129,9 +142,6 @@ export function calculateCompetitionCommentary(
     const isSuperMode = isSuperCompetitionActive(visibleColumns);
     const groupKeys = Object.keys(groupedPrograms);
 
-    let totalSuperActual = 0;
-    let totalSuperTarget = 0;
-    let totalSuperRemaining = 0;
     let reachedGroupsCount = 0;
 
     const groups: GroupCommentary[] = groupKeys.map(groupKey => {
@@ -169,10 +179,6 @@ export function calculateCompetitionCommentary(
             ? Math.round((groupActual / groupTarget) * 100) 
             : (groupActual > 0 ? 100 : 0);
 
-        totalSuperActual += groupActual;
-        totalSuperTarget += groupTarget;
-        totalSuperRemaining += groupRemaining;
-
         if (completionRate >= 100) {
             reachedGroupsCount++;
         }
@@ -187,8 +193,8 @@ export function calculateCompetitionCommentary(
             statusBadge = {
                 sticker: '🏆',
                 title: 'Xuất sắc về đích',
-                colorClass: 'text-emerald-700 dark:text-emerald-300',
-                bgClass: 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800'
+                colorClass: 'text-emerald-700',
+                bgClass: 'bg-emerald-50 border-emerald-200'
             };
             commentaryText = `Nhóm đã hoàn thành vượt ${completionRate - 100}% chỉ tiêu, đạt ${over100Count}/${progs.length} ngành hàng. Cần giữ vững phong độ! 👏`;
         } else if (completionRate >= 80) {
@@ -196,8 +202,8 @@ export function calculateCompetitionCommentary(
             statusBadge = {
                 sticker: '⚡',
                 title: 'Sát nút về đích',
-                colorClass: 'text-sky-700 dark:text-sky-300',
-                bgClass: 'bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800'
+                colorClass: 'text-sky-700',
+                bgClass: 'bg-sky-50 border-sky-200'
             };
             const diff = Math.abs(Math.round(groupRemaining));
             commentaryText = `Tiến độ bám sát kế hoạch (${completionRate}%), chỉ còn thiếu ${new Intl.NumberFormat('vi-VN').format(diff)} để về đích. Dồn lực bứt phá! 🚀`;
@@ -206,8 +212,8 @@ export function calculateCompetitionCommentary(
             statusBadge = {
                 sticker: '🔥',
                 title: 'Cần tăng tốc',
-                colorClass: 'text-amber-700 dark:text-amber-300',
-                bgClass: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800'
+                colorClass: 'text-amber-700',
+                bgClass: 'bg-amber-50 border-amber-200'
             };
             const diff = Math.abs(Math.round(groupRemaining));
             commentaryText = `Đạt ${completionRate}%, còn thiếu ${new Intl.NumberFormat('vi-VN').format(diff)}. Cần tập trung tư vấn chốt đơn cho các ngành hàng chậm. 💪`;
@@ -216,8 +222,8 @@ export function calculateCompetitionCommentary(
             statusBadge = {
                 sticker: '⚠️',
                 title: 'Báo động đỏ',
-                colorClass: 'text-rose-700 dark:text-rose-300',
-                bgClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800'
+                colorClass: 'text-rose-700',
+                bgClass: 'bg-rose-50 border-rose-200'
             };
             const diff = Math.abs(Math.round(groupRemaining));
             commentaryText = `Chỉ mới đạt ${completionRate}%, khoảng cách còn thiếu ${new Intl.NumberFormat('vi-VN').format(diff)}. Cần rà soát lại phương án tiếp cận khách hàng! 🚨`;
@@ -251,10 +257,15 @@ export function calculateCompetitionCommentary(
     });
 
     const totalGroupsCount = groups.length;
-    const zeroGroupsCount = groups.filter(g => g.totalActual === 0 || g.completionRate === 0).length;
-    const overallRate = totalSuperTarget > 0 
-        ? Math.round((totalSuperActual / totalSuperTarget) * 100) 
-        : (totalSuperActual > 0 ? 100 : 0);
+    // "Chưa khai thác" = THẬT SỰ chưa phát sinh gì. Trước đây còn bắt cả `completionRate === 0`,
+    // nhưng tỷ lệ đó đã qua Math.round nên nhóm đạt 0,4% cũng thành 0 → bị gán oan là chưa làm gì.
+    const zeroGroupsCount = groups.filter(g => g.totalActual === 0).length;
+    const unreachedProgramsCount = groups.reduce((s, g) => s + g.unreachedPrograms.length, 0);
+
+    // Trung bình cộng %HT các nhóm — xem giải thích dài ở khai báo `overallRate` trong interface.
+    const overallRate = totalGroupsCount > 0
+        ? Math.round(groups.reduce((s, g) => s + g.completionRate, 0) / totalGroupsCount)
+        : 0;
 
     // Đánh giá chung toàn siêu thị
     let generalAssessment: SupermarketCompetitionCommentary['generalAssessment'];
@@ -289,13 +300,11 @@ export function calculateCompetitionCommentary(
         isRealtime,
         isSuperMode,
         groups,
-        totalActual: Math.round(totalSuperActual),
-        totalTarget: Math.round(totalSuperTarget),
-        totalRemaining: Math.round(totalSuperRemaining),
         overallRate,
         reachedGroupsCount,
         zeroGroupsCount,
         totalGroupsCount,
+        unreachedProgramsCount,
         generalAssessment
     };
 }

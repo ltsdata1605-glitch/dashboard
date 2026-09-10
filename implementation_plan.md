@@ -2856,3 +2856,55 @@ NGUYÊN hàm `evaluateAlerts()` ở phía server, không phải viết lại.
 - **Một lỗi UX do chính test này tìm ra và đã sửa**: nút "Thêm quy tắc" lúc chưa có quy tắc nào chỉ
   mở trình sửa mà không thêm gì, người dùng nhìn vào khoảng trắng. Nay bấm là có ngay 1 quy tắc.
 - `npm run check` **exit 0**; **197 test đơn vị** pass (1 skip); **26 test E2E** pass (1 skip).
+
+---
+
+## Rà soát Report BI vòng 3 — sửa bug "Tiến độ chung" cộng sai đơn vị (2026-09-10)
+
+### Vấn đề
+`calculateCompetitionCommentary()` cộng `actual`/`target` **xuyên qua các nhóm khác đơn vị**:
+`CompetitionView.tsx` gom nhóm theo `SLLK` (số lượng — *cái*) và `DTLK`/`DTQĐ` (doanh thu —
+*VNĐ*), rồi lấy `overallRate = tổng actual / tổng target`.
+
+Doanh thu cỡ 10^8, số lượng cỡ 10^2 → nhóm số lượng có trọng số ~0,00005%, **bị nhấn chìm
+hoàn toàn**. Chứng minh bằng script chạy thật: SLLK 20% + DTLK 100% → hệ thống báo
+**"Tiến độ chung: 100% — SIÊU THỊ ĐÃ XUẤT SẮC VỀ ĐÍCH TOÀN DIỆN!"** (đúng phải 60%).
+
+Không phải lỗi vô hại: `generateZaloCommentaryMessage()` đưa con số này vào bản tin
+**copy gửi Zalo cho toàn siêu thị**.
+
+### Cách sửa (user chọn qua AskUserQuestion)
+1. **`overallRate` = trung bình cộng `completionRate` của các nhóm.** Mỗi nhóm nội bộ cùng
+   đơn vị nên tỷ lệ của nó hợp lệ; lấy trung bình thì mọi nhóm có trọng số ngang nhau,
+   nhóm số lượng không còn bị doanh thu nhấn chìm.
+2. **Bỏ hẳn `totalActual`/`totalTarget`/`totalRemaining` ở CẤP TỔNG** khỏi kiểu trả về —
+   chúng là tổng của các đơn vị khác nhau nên không có ý nghĩa nào cả. Xoá khỏi interface
+   (thay vì để lại kèm chú thích) để không ai vô tình dùng lại và tái sinh đúng bug này.
+   Giữ nguyên `group.totalActual/totalTarget/totalRemaining` — trong 1 nhóm thì cùng đơn vị,
+   hợp lệ.
+3. Thẻ **"Tổng Còn lại"** trong modal (đang hiện số gộp sai) đổi thành **"Ngành hàng chưa đạt"**
+   — một phép ĐẾM nên không bao giờ sai đơn vị, và đồng dạng với 3 thẻ còn lại.
+4. **`zeroGroupsCount`**: bỏ điều kiện `completionRate === 0`. Nhóm đạt 0,4% bị `Math.round`
+   đưa về 0 và bị gán nhãn "Chưa khai thác" dù đã có hoạt động thật. Chỉ đếm `totalActual === 0`.
+5. Dọn class `dark:` ở 4 file **tạo mới ngày 2026-09-09** (CLAUDE.md mục 2 cấm viết `dark:`
+   mới). KHÔNG đụng `CompetitionListView.tsx` (có từ 2026-05-24 — class cũ giữ nguyên theo
+   đúng quy tắc).
+
+### Kiểm chứng
+Thêm test đơn vị khẳng định: nhóm số lượng KHÔNG bị nhóm doanh thu nhấn chìm, và nhóm có
+hoạt động nhỏ không bị đếm là "chưa khai thác".
+
+### Bug thứ 2 phát hiện trong cùng đợt: hook gọi có điều kiện (crash thật)
+
+`IndividualCompetitionView.tsx` — `useMemo` tạo `filterGroups` nằm **sau 2 lệnh `return` sớm**
+("không có nhân viên nào" / "chưa chọn nhân viên"). React đếm hook theo THỨ TỰ GỌI, nên:
+mở tab lúc chưa chọn ai → N hook; chọn 1 nhân viên → N+1 hook → React ném
+*"Rendered more hooks than during the previous render"* và **màn hình trắng**.
+
+Đã sửa bằng cách chuyển nguyên khối `useMemo` lên TRƯỚC các lệnh return sớm. An toàn vì nó chỉ
+phụ thuộc `[groupingMode, allCompetitionsByCriterion, groupOverrides, nameOverrides,
+filterSearch, selectedCompetitions]` — đã kiểm chứng không dùng biến nào định nghĩa ở giữa.
+
+⚠️ Lỗi này **đang làm `npm run check` ĐỎ** (eslint `react-hooks/rules-of-hooks`) kể từ commit
+`70c4d2be`. Suýt bị bỏ sót vì lệnh chạy dạng `npm run check | tail -25` trả về exit code của
+`tail` (luôn 0), che mất thất bại của npm — từ nay chạy `npm run check > file; echo $?`.

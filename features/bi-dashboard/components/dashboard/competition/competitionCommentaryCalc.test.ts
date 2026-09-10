@@ -153,3 +153,66 @@ describe('competitionCommentaryCalc', () => {
         expect(realtimeText).toContain('VAY TIỀN MẶT: thiếu 164');
     });
 });
+
+describe('Tiến độ chung KHÔNG được cộng gộp các nhóm khác đơn vị (bug 2026-09-10)', () => {
+    const headers = ['L.Kế', 'Target', '%HT', '%DKHT', 'Target V.Trội', '%HT V.Trội', '%DKHT V.Trội', 'Còn Lại'];
+    const visible = ['L.Kế', 'Target', '%HT', 'Còn Lại'];
+
+    // SLLK đo bằng *cái* (hàng trăm), DTLK đo bằng *VNĐ* (hàng trăm triệu).
+    const sllkKem: ProcessedProgram[] = [
+        { name: 'SIM MANGO', data: [120, 600, '20%', '0%', 700, '17%', '0%', -480], metric: 'SLLK', conLai: -480 },
+        { name: 'VAY TIỀN MẶT', data: [80, 400, '20%', '0%', 500, '16%', '0%', -320], metric: 'SLLK', conLai: -320 },
+    ];
+    const dtlkDat: ProcessedProgram[] = [
+        { name: 'ICT', data: [600_000_000, 600_000_000, '100%', '0%', 650_000_000, '92%', '0%', 0], metric: 'DTLK', conLai: 0 },
+        { name: 'CE', data: [400_000_000, 400_000_000, '100%', '0%', 450_000_000, '89%', '0%', 0], metric: 'DTLK', conLai: 0 },
+    ];
+
+    it('nhóm SỐ LƯỢNG kém KHÔNG bị nhóm DOANH THU nhấn chìm', () => {
+        const r = calculateCompetitionCommentary({ SLLK: sllkKem, DTLK: dtlkDat }, headers, visible, false, 'Test');
+
+        expect(r.groups.find(g => g.groupKey === 'SLLK')!.completionRate).toBe(20);
+        expect(r.groups.find(g => g.groupKey === 'DTLK')!.completionRate).toBe(100);
+
+        // Trung bình (20 + 100) / 2 = 60. Công thức cũ (tổng/tổng) cho ra 100 vì 10^8 đè bẹp 10^2.
+        expect(r.overallRate, 'phải là trung bình các nhóm, không phải tỷ lệ của tổng gộp').toBe(60);
+        expect(r.generalAssessment.headline, 'không được khen "xuất sắc" khi 1 tiêu chí báo động đỏ')
+            .not.toContain('XUẤT SẮC');
+    });
+
+    it('đổi đơn vị của nhóm KHÔNG làm đổi Tiến độ chung', () => {
+        // Cùng tỷ lệ 20%/100%, nhưng doanh thu ghi bằng NGHÌN đồng thay vì đồng.
+        const dtlkNghin: ProcessedProgram[] = dtlkDat.map(p => ({
+            ...p,
+            data: p.data.map(v => (typeof v === 'number' && v > 1000 ? v / 1000 : v)),
+        }));
+        const a = calculateCompetitionCommentary({ SLLK: sllkKem, DTLK: dtlkDat }, headers, visible, false, 'A');
+        const b = calculateCompetitionCommentary({ SLLK: sllkKem, DTLK: dtlkNghin }, headers, visible, false, 'B');
+
+        expect(b.overallRate, 'chỉ số đúng thì không phụ thuộc đơn vị đo').toBe(a.overallRate);
+    });
+
+    it('"Chưa khai thác" chỉ đếm nhóm THẬT SỰ chưa phát sinh, không đếm nhóm bị làm tròn về 0%', () => {
+        const gan0: ProcessedProgram[] = [
+            { name: 'MỚI CHẠY', data: [3, 1000, '0%', '0%', 1200, '0%', '0%', -997], metric: 'SLLK', conLai: -997 },
+        ];
+        const chuaCoGi: ProcessedProgram[] = [
+            { name: 'CHƯA BÁN', data: [0, 500, '0%', '0%', 600, '0%', '0%', -500], metric: 'SLLK', conLai: -500 },
+        ];
+        const r = calculateCompetitionCommentary({ 'ĐÃ CHẠY': gan0, 'CHƯA CHẠY': chuaCoGi }, headers, visible, false, 'Test');
+
+        expect(r.groups[0].completionRate, 'làm tròn 0,3% → 0%').toBe(0);
+        expect(r.zeroGroupsCount, 'nhóm đã bán được 3 cái KHÔNG phải "chưa khai thác"').toBe(1);
+    });
+
+    it('đếm được tổng số ngành hàng chưa đạt (thay cho "Tổng Còn lại" cộng sai đơn vị)', () => {
+        const r = calculateCompetitionCommentary({ SLLK: sllkKem, DTLK: dtlkDat }, headers, visible, false, 'Test');
+        expect(r.unreachedProgramsCount).toBe(2); // 2 chương trình SLLK chưa đạt, 2 DTLK đã đạt
+    });
+
+    it('không vỡ khi không có nhóm nào', () => {
+        const r = calculateCompetitionCommentary({}, headers, visible, false, 'Rỗng');
+        expect(r.overallRate).toBe(0);
+        expect(r.unreachedProgramsCount).toBe(0);
+    });
+});

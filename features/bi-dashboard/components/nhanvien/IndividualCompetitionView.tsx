@@ -558,18 +558,6 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         return allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeSearchTerm.toLowerCase()));
     }, [allEmployees, employeeSearchTerm]);
 
-    if (allEmployees.length === 0) return <PlaceholderContent title="Báo cáo Cá nhân" message="Không có nhân viên nào trong bộ phận đã chọn." />;
-    if (!selectedEmployee) return <PlaceholderContent title="Báo cáo Cá nhân" message="Vui lòng chọn một nhân viên để xem báo cáo chi tiết." />;
-
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-    const allRelevantHeaders = (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []);
-    const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.originalTitle)).length;
-    const totalFilterCount = allRelevantHeaders.length;
-    const isFiltered = activeFilterCount < totalFilterCount;
-    const handleToggleAllCompetitions = () => {
-        if (activeFilterCount === totalFilterCount) handleDeselectAllCompetitions();
-        else handleSelectAllCompetitions();
-    };
     // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải originalTitle thô — nếu
     // không, gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
     const filterGroups = useMemo(() => {
@@ -609,6 +597,19 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
             }));
         }
     }, [groupingMode, allCompetitionsByCriterion, groupOverrides, nameOverrides, filterSearch, selectedCompetitions]);
+
+    if (allEmployees.length === 0) return <PlaceholderContent title="Báo cáo Cá nhân" message="Không có nhân viên nào trong bộ phận đã chọn." />;
+    if (!selectedEmployee) return <PlaceholderContent title="Báo cáo Cá nhân" message="Vui lòng chọn một nhân viên để xem báo cáo chi tiết." />;
+
+    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+    const allRelevantHeaders = (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []);
+    const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.originalTitle)).length;
+    const totalFilterCount = allRelevantHeaders.length;
+    const isFiltered = activeFilterCount < totalFilterCount;
+    const handleToggleAllCompetitions = () => {
+        if (activeFilterCount === totalFilterCount) handleDeselectAllCompetitions();
+        else handleSelectAllCompetitions();
+    };
 
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-4 sm:p-6 mb-8">
