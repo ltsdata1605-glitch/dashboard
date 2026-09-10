@@ -49,3 +49,4 @@ backup_dashboard.zip
 
 # Price scraper server
 price-scraper-server/node_modules/
+.ui-baseline/
