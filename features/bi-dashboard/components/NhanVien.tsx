@@ -5,7 +5,6 @@ import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
 import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
 import { CompetitionTab } from './nhanvien/CompetitionTab';
-import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
@@ -29,7 +28,6 @@ import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
-    // { tab: 'crossSelling', label: 'Bán kèm' }, // Tạm ẩn theo yêu cầu
     { tab: 'installment', label: 'Trả góp' },
     { tab: 'competition', label: 'Thi đua' },
     { tab: 'bonus', label: 'Thưởng' },
@@ -51,9 +49,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [isActive, setActiveTab]);
 
-    // Nếu tab hiện tại đang là crossSelling (do cache cũ lưu), tự động chuyển sang revenue
+    // Cache IndexedDB của người dùng cũ có thể còn giữ tab đã bị gỡ (vd 'crossSelling' — tab Bán
+    // kèm, xoá 2026-09-10). Ép về Doanh thu thay vì để màn hình trống không hiểu vì sao.
     useEffect(() => {
-        if (activeTab === 'crossSelling') {
+        if (activeTab && !NAV_TABS.some(t => t.tab === activeTab)) {
             setActiveTab('revenue');
         }
     }, [activeTab, setActiveTab]);
@@ -419,7 +418,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
 
             {/* 3. Tab Switcher — MỘT khung viền duy nhất bọc chung tab switcher + nội dung.
-                Card/SectionCard bên trong mỗi tab con (RevenueTab/CrossSellingTab/InstallmentTab/
+                Card/SectionCard bên trong mỗi tab con (RevenueTab/InstallmentTab/
                 CompetitionTab/BonusTab/DetailTab) truyền bordered={false} để không tự vẽ thêm viền
                 riêng nữa — tránh viền lồng viền. */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
@@ -436,11 +435,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 {visitedTabs.has('revenue') && (
                     <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
                         <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
-                    </div>
-                )}
-                {visitedTabs.has('crossSelling') && (
-                    <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
-                        <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'crossSelling'} />
                     </div>
                 )}
                 {visitedTabs.has('installment') && (
