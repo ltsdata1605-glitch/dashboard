@@ -31,9 +31,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
     const [isPending, startTransition] = useTransition();
 
     const mainTabs = [
-        { id: 'analysis', label: 'Phân tích', icon: BarChart3 },
-        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard },
+        { id: 'analysis', label: 'Phân tích YCX', icon: BarChart3 },
         { id: 'employees', label: 'Report BI', icon: Users },
+        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard },
 
     ];
 

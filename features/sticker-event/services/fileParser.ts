@@ -232,7 +232,7 @@ export const parseInventoryFile = async (file: File): Promise<InventoryItem[]> =
       dataStartIndex = 1;
     }
 
-  return json.slice(dataStartIndex).map((row) => {
+  return json.slice(dataStartIndex).map((row): InventoryItem | null => {
     if (!row || !Array.isArray(row)) return null;
 
     const maSanPham = String(row[colMaSanPham] || '').trim();

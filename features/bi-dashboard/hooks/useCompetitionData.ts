@@ -50,7 +50,6 @@ export const useCompetitionData = ({
             activeCompetitionTab === 'tong' || 
             activeCompetitionTab === 'tatca' ||
             activeCompetitionTab === 'sosanh' ||
-            activeCompetitionTab === 'tuychinh' ||
             !allCompetitionsByCriterion[activeCompetitionTab as Criterion]
         ) {
              return allCompetitionsByCriterion;

@@ -207,9 +207,9 @@ export default function Sidebar() {
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
 
     const menuItems = [
-        { id: 'analysis', label: 'Phân tích', icon: BarChart3, path: '/analysis' },
-        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
+        { id: 'analysis', label: 'Phân tích YCX', icon: BarChart3, path: '/analysis' },
         { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
+        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
 
         { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/' },
         { 
