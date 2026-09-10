@@ -45,7 +45,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : displayTitle}
                             </h2>
                             {isComparisonMode && (
-                                <p className="text-[10px] lg:text-[11px] font-medium text-sky-600 dark:text-sky-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                <p className="text-[11px] lg:text-[11px] font-medium text-sky-700 dark:text-sky-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                     {({
                                         day_adjacent: 'Ngày (Liền kề)',
                                         day_same_period: 'Ngày (CK tháng trước)',
@@ -70,11 +70,11 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 </p>
                             )}
                             {displayDescription && (
-                                <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                     {displayDescription}
                                 </p>
                             )}
-                            <div className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                            <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
                                 {reportSubTitle ? `${reportSubTitle} | ` : ''}{filterState.dateRange !== 'all'
                                     ? `Từ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} đến ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
                                     : 'TẤT CẢ THỜI GIAN'}
@@ -89,7 +89,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 onClick={() => setTableMode('standard')}
                                 className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'standard'
-                                    ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
+                                    ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="Tiêu chuẩn"
@@ -102,7 +102,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 onClick={() => setTableMode('comparison')}
                                 className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'comparison'
-                                    ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
+                                    ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="So sánh"

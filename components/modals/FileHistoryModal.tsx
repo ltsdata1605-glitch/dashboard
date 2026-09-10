@@ -62,7 +62,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
             {/* Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 text-sky-700 dark:text-sky-400 flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
                         <Icon name="database" size={4} />
                     </div>
                     <div>

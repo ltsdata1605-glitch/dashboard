@@ -66,7 +66,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
                         <Icon name="alert-triangle" size={5} className="animate-bounce" />
                     </div>
                     <div>
@@ -113,7 +113,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col gap-0.5">
                                                     <span className="font-semibold text-slate-700 dark:text-slate-300">{group.nganhHang}</span>
-                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Nhóm AO: <span className="font-mono text-slate-500 dark:text-slate-400">{group.nhomHang}</span></span>
+                                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Nhóm AO: <span className="font-mono text-slate-500 dark:text-slate-400">{group.nhomHang}</span></span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-right pr-4">
@@ -121,7 +121,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                     <Button
                                                         variant="unstyled" size="none"
                                                         onClick={() => handleCopyText(`${group.nganhHang}\t${group.nhomHang}\t\t${group.nhomHang.includes(' - ') ? group.nhomHang.split(' - ').slice(1).join(' - ').trim() : group.nhomHang.trim()}\t100%`, index)}
-                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 rounded transition-colors flex items-center gap-1 text-[11px] font-bold"
                                                         title="Sao chép dòng cấu hình"
                                                     >
                                                         <Icon name="copy" size={3} />
@@ -133,7 +133,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                             onIgnoreGroup(group.nhomHang);
                                                             toast.success(`Đã loại bỏ cảnh báo: ${group.nhomHang}`);
                                                         }}
-                                                        className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-350 rounded transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                                        className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-350 rounded transition-colors flex items-center gap-1 text-[11px] font-bold"
                                                         title="Loại bỏ không hiển thị cảnh báo"
                                                     >
                                                         <Icon name="eye-off" size={3} />
@@ -151,14 +151,14 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-xl text-slate-500 dark:text-slate-400">
                         <Icon name="check-circle-2" className="mx-auto text-emerald-500 mb-2" size={8} />
                         <p className="font-semibold text-xs text-slate-700 dark:text-slate-300">Không có nhóm hàng mới cần cấu hình</p>
-                        <p className="text-[10px] mt-0.5">Tất cả các nhóm hàng trong dữ liệu đều đã được cấu hình hoặc đã được loại bỏ.</p>
+                        <p className="text-[11px] mt-0.5">Tất cả các nhóm hàng trong dữ liệu đều đã được cấu hình hoặc đã được loại bỏ.</p>
                     </div>
                 )}
 
                 {/* Ignored List Section */}
                 {ignoredUnconfiguredGroups.length > 0 && (
                     <div className="pt-2 space-y-2">
-                        <h4 className="font-bold text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        <h4 className="font-bold text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             Danh sách nhóm đã loại bỏ ({ignoredUnconfiguredGroups.length})
                         </h4>
                         <div className="border border-slate-100 dark:border-slate-850 rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
@@ -172,7 +172,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                 <td className="px-4 py-2 text-slate-400 dark:text-slate-500">
                                                     <div className="flex flex-col">
                                                         <span className="font-medium line-clamp-1">{group.nganhHang}</span>
-                                                        <span className="text-[9px] font-mono opacity-80">{group.nhomHang}</span>
+                                                        <span className="text-[11px] font-mono opacity-80">{group.nhomHang}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-2 text-right pr-4">
@@ -182,7 +182,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                             onRestoreGroup(group.nhomHang);
                                                             toast.success(`Đã khôi phục cảnh báo: ${group.nhomHang}`);
                                                         }}
-                                                        className="p-1 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded transition-colors text-[10px] font-bold"
+                                                        className="p-1 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded transition-colors text-[11px] font-bold"
                                                         title="Khôi phục hiển thị cảnh báo"
                                                     >
                                                         Khôi phục
@@ -204,9 +204,9 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         <li>Bấm nút <strong>Sao chép toàn bộ dòng mới</strong> (dưới chân modal).</li>
                         <li>Bấm nút <strong>Mở file Google Sheets cấu hình</strong> bên dưới để truy cập vào sheet <strong>Ngành hàng</strong>.</li>
                         <li>Cuộn xuống dưới cùng của danh sách.</li>
-                        <li>Chọn ô trống đầu tiên ở <strong>Cột A (Ngành hàng)</strong> và nhấn <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-mono shadow-sm">Ctrl + V</kbd> (hoặc <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-mono shadow-sm">Cmd + V</kbd>).</li>
+                        <li>Chọn ô trống đầu tiên ở <strong>Cột A (Ngành hàng)</strong> và nhấn <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono shadow-sm">Ctrl + V</kbd> (hoặc <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono shadow-sm">Cmd + V</kbd>).</li>
                         <li>Hệ thống đã tự điền sẵn Tên Ngành hàng (cột A), Nhóm hàng (cột B), Nhóm con (cột D) và Hệ số quy đổi (cột E).</li>
-                        <li>Bạn chỉ cần bổ sung cột <strong>NhomCha</strong> (cột C) (ví dụ: <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[10px]">DCNB</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[10px]">Gia dụng</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[10px]">CE</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[10px]">ICT</code>) và điều chỉnh lại cột NhomCon, Hệ số quy đổi nếu cần.</li>
+                        <li>Bạn chỉ cần bổ sung cột <strong>NhomCha</strong> (cột C) (ví dụ: <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">DCNB</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">Gia dụng</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">CE</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">ICT</code>) và điều chỉnh lại cột NhomCon, Hệ số quy đổi nếu cần.</li>
                     </ol>
                 </div>
 

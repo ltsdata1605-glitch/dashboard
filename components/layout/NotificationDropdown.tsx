@@ -229,7 +229,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                         <h3 className="font-bold text-sm sm:text-base text-slate-800 dark:text-white flex items-center gap-1.5 sm:gap-2">
                             Thông báo
                             {unreadCount > 0 && (
-                                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] sm:text-xs">{unreadCount} mới</span>
+                                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-[11px] sm:text-xs">{unreadCount} mới</span>
                             )}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -237,14 +237,14 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsAdminModalOpen(true)}
-                                    className="p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
+                                    className="p-1.5 text-slate-500 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
                                     title="Cấu hình thông báo hệ thống"
                                 >
                                     <Icon name="megaphone" size={3.5} />
                                 </Button>
                             )}
                             {unreadCount > 0 && (
-                                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
+                                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="text-[11px] sm:text-xs font-bold text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
                                     Đánh dấu đã đọc
                                 </Button>
                             )}
@@ -276,10 +276,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                     >
                                         <div className="mt-0.5 flex-shrink-0">
                                             <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
-                                                notif.type === 'success' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' :
-                                                notif.type === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
-                                                notif.type === 'error' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' :
-                                                'bg-sky-100 text-sky-600 dark:bg-sky-900/30'
+                                                notif.type === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' :
+                                                notif.type === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30' :
+                                                notif.type === 'error' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30' :
+                                                'bg-sky-100 text-sky-700 dark:bg-sky-900/30'
                                             }`}>
                                                 <Icon name={
                                                     notif.type === 'success' ? 'check-circle' :
@@ -299,11 +299,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                             <h4 className={`text-xs sm:text-sm tracking-tight truncate ${!notif.read ? 'font-bold text-slate-800 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-300'}`}>
                                                 {notif.title}
                                             </h4>
-                                            <p className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 line-clamp-2 ${!notif.read ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'}`}>
+                                            <p className={`text-[11px] sm:text-xs mt-0.5 sm:mt-1 line-clamp-2 ${!notif.read ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'}`}>
                                                 {notif.message}
                                             </p>
                                             {notif.createdAt && (
-                                                <span className="text-[10px] text-slate-400 mt-2 block">
+                                                <span className="text-[11px] text-slate-400 mt-2 block">
                                                     {notif.createdAt.toDate().toLocaleString('vi-VN')}
                                                 </span>
                                             )}

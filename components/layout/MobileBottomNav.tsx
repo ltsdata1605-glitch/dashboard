@@ -97,7 +97,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
                             {/* Tools section */}
                             <div className="px-4 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
                                 <div className="grid grid-cols-4 gap-2.5">
                                     {moreTabs.filter(t => t.id.startsWith('tools-')).map(tab => (
                                         'externalUrl' in tab ? (
@@ -109,9 +109,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-sky-600 dark:text-sky-400" />
+                                                    <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
                                                 </div>
-                                                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
+                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                             </a>
                                         ) : (
                                             <Button
@@ -121,9 +121,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 className="justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-sky-600 dark:text-sky-400" />
+                                                    <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
                                                 </div>
-                                                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
+                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                             </Button>
                                         )
                                     ))}
@@ -132,7 +132,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
                             {/* System section */}
                             <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800 mt-1">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Hệ thống<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Hệ thống<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
                                 <div className="space-y-1">
                                     {moreTabs.filter(t => !t.id.startsWith('tools-')).map(tab => {
                                         const isActive = activeTab === tab.id;
@@ -159,7 +159,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 onClick={() => handleTabClick(tab.id)}
                                                 className={`justify-start w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                                                     isActive
-                                                        ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
+                                                        ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                                 } ${isPending ? 'opacity-70' : ''}`}
                                             >
@@ -186,7 +186,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 key={tab.id}
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                                    isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
+                                    isActive ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
                                 } ${isPending ? 'opacity-70' : ''}`}
                             >
                                 {isActive && (
@@ -207,7 +207,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                         variant="unstyled" size="none"
                         onClick={() => setIsMoreOpen(!isMoreOpen)}
                         className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                            isMoreActive || isMoreOpen ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
+                            isMoreActive || isMoreOpen ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'
                         }`}
                     >
                         {(isMoreActive && !isMoreOpen) && (

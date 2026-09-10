@@ -91,7 +91,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-500 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
                         </span>
-                        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-sky-700 dark:text-sky-300">
+                        <span className="text-[11px] sm:text-[11px] font-bold uppercase tracking-widest text-sky-700 dark:text-sky-300">
                             AI Engine Processing
                         </span>
                     </div>
@@ -106,12 +106,12 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     {/* Metrics Bar */}
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
-                            <Icon name="clock" size={3.5} className="text-sky-600 dark:text-sky-400" />
+                            <Icon name="clock" size={3.5} className="text-sky-700 dark:text-sky-400" />
                             <div className="flex items-baseline gap-1">
-                                <span className="text-sm sm:text-base font-mono font-bold text-sky-600 dark:text-sky-400 tabular-nums">
+                                <span className="text-sm sm:text-base font-mono font-bold text-sky-700 dark:text-sky-400 tabular-nums">
                                     {seconds}s
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                                     Thời gian
                                 </span>
                             </div>
@@ -119,12 +119,12 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
 
                         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
                             <div className="flex items-baseline gap-0.5">
-                                <span className="text-sm sm:text-base font-mono font-bold text-sky-600 dark:text-sky-400 tabular-nums">
+                                <span className="text-sm sm:text-base font-mono font-bold text-sky-700 dark:text-sky-400 tabular-nums">
                                     {progressPercent}
                                 </span>
-                                <span className="text-[10px] font-bold text-sky-500">%</span>
+                                <span className="text-[11px] font-bold text-sky-500">%</span>
                             </div>
-                            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                                 Tiến độ
                             </span>
                         </div>

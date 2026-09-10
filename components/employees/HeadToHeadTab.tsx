@@ -261,20 +261,20 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
                                 {activeTable ? activeTable.tableName : '7 Ngày'}
                             </h3>
-                            <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
+                            <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
                             <Icon name="plus" size={4} className="lg:hidden"/><Icon name="plus" size={4.5} className="hidden lg:block"/>
                         </Button>
                         {activeTable && (
                             <>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                     <Icon name="pencil" size={4} className="lg:hidden"/><Icon name="pencil" size={4.5} className="hidden lg:block"/>
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
                                     <Icon name="trash-2" size={4} className="lg:hidden"/><Icon name="trash-2" size={4.5} className="hidden lg:block"/>
                                 </Button>
                             </>
@@ -290,7 +290,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             onClick={() => setIncludeToday(p => !p)}
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                 includeToday
-                                ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
+                                ? 'text-sky-700 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                             title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
@@ -301,14 +301,14 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             variant="unstyled" size="none"
                             onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
+                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
                             {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="images" size={4} className="lg:hidden" />}
                             {isBatchExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="images" size={4.5} className="hidden lg:block" />}
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                 {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                             </Button>
@@ -328,7 +328,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                     variant="unstyled" size="none"
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
                                         ? theme.activeTab || 'bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-white border-b-[2.5px] border-slate-800 dark:border-white'
                                         : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
@@ -385,7 +385,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     onClose={() => setModalState({ type: null })}
                     title="Xác nhận Xóa Bảng"
                     subTitle={`Bạn có chắc muốn xóa bảng "${modalState.data?.tableName}" không?`}
-                    titleColorClass="text-rose-600 dark:text-rose-400"
+                    titleColorClass="text-rose-700 dark:text-rose-400"
                     maxWidth="md"
                     footer={
                         <div className="flex justify-end gap-2 sm:gap-3">

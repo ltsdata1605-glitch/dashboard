@@ -241,16 +241,16 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     };
 
     const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {
-        'Doanh Thu': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
-        'SP CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
-        'MÙA VỤ': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
+        'Doanh Thu': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-700 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'SP CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-700 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
+        'MÙA VỤ': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
         'TRAFFIC': { bg: 'bg-slate-50/30 dark:bg-slate-900/10', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-800' },
-        'SL PHỤ KIỆN': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
-        'SL DỊCH VỤ': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
-        'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
-        'BẢO HIỂM ALL': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
-        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
-        'BẢO HIỂM ĐMX': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-600 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
+        'SL PHỤ KIỆN': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-700 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'SL DỊCH VỤ': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-700 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
+        'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
+        'BẢO HIỂM ALL': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-700 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-700 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'BẢO HIỂM ĐMX': { bg: 'bg-rose-50/30 dark:bg-rose-900/10', text: 'text-rose-700 dark:text-rose-400', indicator: 'bg-rose-500', border: 'border-rose-200 dark:border-rose-800' },
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 
@@ -271,7 +271,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
                     <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-md">
-                        <Button variant="unstyled" size="none" onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
+                        <Button variant="unstyled" size="none" onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
                             <Icon name="check-square" size={3.5} /> Bật tất cả
                         </Button>
                         <Button variant="unstyled" size="none" onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
@@ -307,11 +307,11 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             {/* Header Group */}
                             <div className={`px-3 py-2 flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pointer-events-none`}>
                                 <div className="flex flex-col">
-                                    <h4 className={`text-[9px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
+                                    <h4 className={`text-[11px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
                                         <Icon name="layers" size={3} className="opacity-70 sm:hidden" /><Icon name="layers" size={3.5} className="opacity-70 hidden sm:block" />
                                         {mainHeader}
                                     </h4>
-                                    <span className="text-[10px] font-medium text-slate-500 mt-1">
+                                    <span className="text-[11px] font-medium text-slate-500 mt-1">
                                         Hiển thị {visibleCount}/{cols.length} cột
                                     </span>
                                 </div>
@@ -333,7 +333,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                     return (
                                     <div 
                                         key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-sm text-[10px] font-semibold transition-all cursor-pointer select-none border
+                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-sm text-[11px] font-semibold transition-all cursor-pointer select-none border
                                             ${col.isVisible 
                                                 ? `${itemStyle.bg} border-transparent ${itemStyle.text}` 
                                                 : 'bg-white text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50'
@@ -346,7 +346,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         <div className="flex items-center ml-0.5 border-l border-black/10 dark:border-white/10 opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 transition-opacity pl-1">
                                             <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 opacity-70 hover:opacity-100 transition-opacity" title="Chỉnh sửa"><Icon name="edit-3" size={3.5} /></Button>
                                             {col.isCustom ? (
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-rose-500 hover:text-rose-600 transition-colors" title="Xóa cột"><Icon name="trash-2" size={3.5} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-rose-500 hover:text-rose-700 transition-colors" title="Xóa cột"><Icon name="trash-2" size={3.5} /></Button>
                                             ) : (
                                                 <div className="w-[20px]"></div> /* Placeholder for alignment */
                                             )}
@@ -383,7 +383,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                         <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
                     </Button>
-                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
+                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
                         Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
                     </Button>
                 </div>

@@ -151,7 +151,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                                 variant="unstyled" size="none"
                                 onClick={handleExport}
                                 disabled={isExporting}
-                                className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors shadow-sm"
+                                className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shadow-sm"
                                 title="Xuất ảnh"
                             >
                                 {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}

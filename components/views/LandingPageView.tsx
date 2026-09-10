@@ -30,7 +30,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
     const canManageFiles = userRole === 'admin' || userRole === 'manager';
 
     return (
-        <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-sky-500/20 selection:text-sky-600 pb-8">
+        <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-sky-500/20 selection:text-sky-700 pb-8">
             
             {/* Ambient Background Grid */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
@@ -80,7 +80,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                                     </>
                                 ) : (
                                     <div className="flex flex-col items-center text-center py-10 px-4">
-                                        <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
+                                        <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-3">
                                             <Icon name="clock" size={6} />
                                         </div>
                                         <h3 className="text-sm font-bold text-slate-800 dark:text-white">Đang chờ dữ liệu từ Quản lý Kho</h3>
@@ -98,17 +98,17 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                 <div className="mt-6 flex items-center justify-center gap-6 text-center">
                     <div className="flex items-center gap-1.5 text-slate-400">
                         <Icon name="shield-check" size={3.5} />
-                        <span className="text-[10px] font-semibold text-slate-500">Local Processing</span>
+                        <span className="text-[11px] font-semibold text-slate-500">Local Processing</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                     <div className="flex items-center gap-1.5 text-slate-400">
                         <Icon name="zap" size={3.5} />
-                        <span className="text-[10px] font-semibold text-slate-500">Instant Speed</span>
+                        <span className="text-[11px] font-semibold text-slate-500">Instant Speed</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                     <div className="flex items-center gap-1.5 text-slate-400">
                         <Icon name="sparkles" size={3.5} />
-                        <span className="text-[10px] font-semibold text-slate-500">Smart UI</span>
+                        <span className="text-[11px] font-semibold text-slate-500">Smart UI</span>
                     </div>
                 </div>
 

@@ -42,7 +42,7 @@ export default function AboutView() {
             {/* Core Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 mb-3 sm:mb-4">
                         <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-1.5 sm:mb-2">Tốc Độ Xử Lý Nhanh</h3>
@@ -52,7 +52,7 @@ export default function AboutView() {
                 </div>
                 
                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 mb-3 sm:mb-4">
                         <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-1.5 sm:mb-2">Bảo Mật Tuyệt Đối</h3>
@@ -62,7 +62,7 @@ export default function AboutView() {
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 mb-3 sm:mb-4">
                         <Cpu className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-1.5 sm:mb-2">Trợ Lý AI Tích Hợp</h3>
@@ -74,7 +74,7 @@ export default function AboutView() {
 
             {/* Feature Breakdown */}
             <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3">
-                <Layers className="text-sky-600 dark:text-sky-400 w-5 h-5 sm:w-6 sm:h-6" /> Chi Tiết Tính Năng Chuyên Sâu
+                <Layers className="text-sky-700 dark:text-sky-400 w-5 h-5 sm:w-6 sm:h-6" /> Chi Tiết Tính Năng Chuyên Sâu
             </h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -82,7 +82,7 @@ export default function AboutView() {
                 {/* 1. Hệ Sinh Thái Dashboard */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="bg-slate-50 dark:bg-slate-800/80 p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2.5 sm:gap-3">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-sky-600/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center">
                             <BarChart3 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-white">Hệ Sinh Thái Dashboard</h3>
@@ -108,7 +108,7 @@ export default function AboutView() {
                 {/* 2. Quản Lý & Tự Động Hoá */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="bg-slate-50 dark:bg-slate-800/80 p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2.5 sm:gap-3">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-sky-500/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center">
                             <Users className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-white">Quản Lý & Tự Động Hoá</h3>

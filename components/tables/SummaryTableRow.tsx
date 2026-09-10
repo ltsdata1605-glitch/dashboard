@@ -30,9 +30,9 @@ interface RecursiveRowProps {
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= target) return 'text-emerald-600 dark:text-emerald-500 font-bold';
-    if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
-    return 'text-rose-600 dark:text-rose-500 font-bold';
+    if (percentage >= target) return 'text-emerald-700 dark:text-emerald-500 font-bold';
+    if (percentage >= target - 5) return 'text-amber-700 dark:text-amber-500';
+    return 'text-rose-700 dark:text-rose-500 font-bold';
 };
 
 // Colors matching PILL_COLORS in SummaryTable.tsx but tuned for text visibility
@@ -156,10 +156,10 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     }
 
     const renderDelta = (val: number, type: 'currency' | 'number' | 'percent' | 'decimal1') => {
-        if (val === 0 && (type !== 'percent' || Math.abs(val) < 0.1)) return <span className="text-slate-300 text-[10px]">-</span>;
+        if (val === 0 && (type !== 'percent' || Math.abs(val) < 0.1)) return <span className="text-slate-300 text-[11px]">-</span>;
         
         const isPositive = val > 0;
-        const colorClass = isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+        const colorClass = isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
         
         let formattedVal = '';
         if (type === 'currency') formattedVal = formatCurrency(Math.abs(val));
@@ -243,7 +243,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* %SL */}
                 {visibleColumns.includes('slPercent') && (
                     isComparisonMode ? (
-                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
                             {(() => {
                                 const qCurr = quantity;
                                 const qPrev = prevNode?.totalQuantity || 0;
@@ -253,7 +253,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                             })()}
                         </td>
                     ) : (
-                        <td className={`${cellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
+                        <td className={`${cellClass} font-bold text-emerald-700 dark:text-emerald-400 ${separatorClass}`}>
                             {parentQuantity > 0 ? `${Math.ceil(slPercent)}%` : '-'}
                         </td>
                     )
@@ -276,7 +276,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* % DT Thuc */}
                 {visibleColumns.includes('dtThucPercent') && (
                     isComparisonMode ? (
-                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
                             {(() => {
                                 const rCurr = revenue;
                                 const rPrev = prevNode?.totalRevenue || 0;
@@ -286,7 +286,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                             })()}
                         </td>
                     ) : (
-                        <td className={`${cellClass} font-bold text-amber-600 dark:text-amber-400 ${separatorClass}`}>
+                        <td className={`${cellClass} font-bold text-amber-700 dark:text-amber-400 ${separatorClass}`}>
                             {parentRevenue > 0 ? `${Math.ceil(dtThucPercent)}%` : '-'}
                         </td>
                     )
@@ -295,7 +295,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* Avg Quantity (TrB SL) */}
                 {visibleColumns.includes('avgQuantity') && (
                     <>
-                        <td className={`${cellClass} font-bold text-sky-600 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-bold text-sky-700 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
                             {avgQuantity > 0 ? formatQuantity(avgQuantity) : '-'}
                         </td>
                         {isComparisonMode && (
@@ -357,7 +357,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                         </td>
                         {isComparisonMode && (
                             <td className={`${deltaCellClass} ${separatorClass}`}>
-                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
                                     {deltaAOV === 0 ? '-' : (deltaAOV > 0 ? '+' : '') + (deltaAOV / 1000000).toFixed(1)}
                                 </span>
                             </td>

@@ -156,7 +156,7 @@ const EmployeeCategoryTable: React.FC<EmployeeCategoryTableProps> = ({ rows, pro
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full min-w-max text-[11px] sm:text-xs text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
                     <thead>
-                        <tr className="text-[10px] sm:text-[11px] font-bold uppercase tracking-tight">
+                        <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
                             {groupedHeaders.map((group, index) => {
                                 const styles = WAREHOUSE_HEADER_COLORS[group.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                 return (
@@ -166,7 +166,7 @@ const EmployeeCategoryTable: React.FC<EmployeeCategoryTableProps> = ({ rows, pro
                                 );
                             })}
                         </tr>
-                        <tr className="text-[10px] sm:text-[11px] font-bold uppercase tracking-tight">
+                        <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
                             {columns.map(col => {
                                 const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader || ''] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                 return (

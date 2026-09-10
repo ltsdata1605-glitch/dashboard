@@ -148,7 +148,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                         <tr>
-                            <th colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-left text-[9px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 uppercase tracking-wider cursor-pointer select-none min-w-[110px] sm:min-w-[150px] sticky left-0 z-20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
+                            <th colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-left text-[11px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 uppercase tracking-wider cursor-pointer select-none min-w-[110px] sm:min-w-[150px] sticky left-0 z-20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                 <div className="flex items-center gap-1">
                                     NHÂN VIÊN
                                     <span className="hide-on-export"><Icon name="chevrons-up-down" size={3} className="text-slate-400 opacity-80"/></span>
@@ -158,19 +158,19 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                 const dateKey = toLocalISOString(date);
                                 const isSorted = sortConfig.key === dateKey;
                                 return (
-                                    <th key={date.toISOString()} onClick={() => handleSort(dateKey)} className={`px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold ${tableColorTheme.header} uppercase tracking-wider cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 ${isSorted ? '!brightness-90 dark:!brightness-125' : ''} hover:brightness-95 transition-all`}>
+                                    <th key={date.toISOString()} onClick={() => handleSort(dateKey)} className={`px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold ${tableColorTheme.header} uppercase tracking-wider cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 ${isSorted ? '!brightness-90 dark:!brightness-125' : ''} hover:brightness-95 transition-all`}>
                                         <div className="flex flex-col items-center justify-center gap-0">
                                             <span>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</span>
-                                            <span className="text-[8px] sm:text-[10px] font-bold opacity-70 tracking-normal">{date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
+                                            <span className="text-[11px] sm:text-[11px] font-bold opacity-70 tracking-normal">{date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
                                         </div>
                                     </th>
                                 )
                             })}
-                            <th onClick={() => handleSort('total')} className="px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider cursor-pointer select-none bg-sky-50/50 dark:bg-sky-900/20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 transition-colors">
+                            <th onClick={() => handleSort('total')} className="px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider cursor-pointer select-none bg-sky-50/50 dark:bg-sky-900/20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 transition-colors">
                                 {config.totalCalculationMethod === 'average' ? 'T.BÌNH' : 'TỔNG'}
                                 {sortConfig.key === 'total' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-sky-500" /></span>}
                             </th>
-                            <th onClick={() => handleSort('daysWithNoSales')} className="px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider cursor-pointer select-none bg-rose-50/50 dark:bg-rose-900/20 hover:bg-rose-100 transition-colors">
+                            <th onClick={() => handleSort('daysWithNoSales')} className="px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider cursor-pointer select-none bg-rose-50/50 dark:bg-rose-900/20 hover:bg-rose-100 transition-colors">
                                 NS
                                 {sortConfig.key === 'daysWithNoSales' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-rose-500" /></span>}
                             </th>
@@ -186,7 +186,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                         <td colSpan={100} className={`px-2 py-1 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700 sticky left-0 z-10`}>
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
+                                                <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -211,14 +211,14 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                                         </td>
                                                     );
                                                 })}
-                                                <td className={`px-2 py-1 text-center font-black text-sky-600 dark:text-sky-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-sky-50/20`}>
+                                                <td className={`px-2 py-1 text-center font-black text-sky-700 dark:text-sky-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-sky-50/20`}>
                                                     <div className="inline-block px-1 sm:px-1.5 py-0.5" style={getCellStyle(row.total, row, 'total')}>
                                                         {formatValue(row.total)}
                                                     </div>
                                                 </td>
                                                 <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-rose-50/20">
                                                     {row.daysWithNoSales > 0 ? (
-                                                        <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[11px] sm:text-[13px] font-black shadow-sm border ${row.daysWithNoSales >= 4 ? 'bg-rose-100/80 text-rose-600 border-rose-200' : 'bg-white text-slate-500 border-slate-200'}`}>
+                                                        <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[11px] sm:text-[13px] font-black shadow-sm border ${row.daysWithNoSales >= 4 ? 'bg-rose-100/80 text-rose-700 border-rose-200' : 'bg-white text-slate-500 border-slate-200'}`}>
                                                             {row.daysWithNoSales}
                                                         </span>
                                                     ) : <span className="text-slate-300">-</span>}
@@ -228,7 +228,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                     })}
                                     {deptTotalData && processedData.sortedDepartments.length > 1 && (
                                         <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
-                                            <td colSpan={2} className="px-2 py-1 text-left text-[9px] sm:text-[11px] uppercase font-black text-slate-500 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700 tracking-widest">Tổng {department}</td>
+                                            <td colSpan={2} className="px-2 py-1 text-left text-[11px] sm:text-[11px] uppercase font-black text-slate-500 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700 tracking-widest">Tổng {department}</td>
                                             {processedData.dateHeaders.map(date => {
                                                 const dateKey = toLocalISOString(date);
                                                 return (
@@ -249,7 +249,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                     </tbody>
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                         <tr>
-                            <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
+                            <td colSpan={2} className="px-2 py-1 text-center text-[11px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
                             {processedData.dateHeaders.map(date => (
                                 <td key={date.toISOString()} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatValue(processedData.totals.daily.get(toLocalISOString(date)) || 0)}</td>
                             ))}

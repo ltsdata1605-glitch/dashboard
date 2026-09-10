@@ -27,7 +27,7 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                 onClick={handleToggle}
                 className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                     hideZeroRevenue
-                    ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
+                    ? 'text-sky-700 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title={hideZeroRevenue ? 'Đang ẩn nhân viên No Sale — Nhấn để hiện' : 'Đang hiện tất cả — Nhấn để ẩn No Sale'}

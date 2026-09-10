@@ -79,7 +79,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                     <Icon name="bell" size={3.5} className="text-amber-500" />
                     Cảnh báo ngưỡng
                     {hits.length > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                             {hits.length}
                         </span>
                     )}
@@ -93,7 +93,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                         if (!editing && rules.length === 0) persist([createEmptyRule()]);
                         setEditing(v => !v);
                     }}
-                    className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 hover:underline hide-on-export"
+                    className="text-[11px] font-semibold text-sky-700 hover:text-sky-800 hover:underline hide-on-export"
                 >
                     {editing ? 'Xong' : rules.length ? 'Sửa quy tắc' : 'Thêm quy tắc'}
                 </Button>
@@ -119,7 +119,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                                 {h.metricLabel} <strong className="text-rose-700">{fmtValue(h.value, rules.find(r => r.id === h.ruleId)?.metric ?? 'revenue')}</strong>
                                 {' '}{h.operator === 'lt' ? 'thấp hơn' : 'vượt'} ngưỡng {fmtValue(h.threshold, rules.find(r => r.id === h.ruleId)?.metric ?? 'revenue')}
                             </span>
-                            <span className="text-[10px] text-rose-500 font-semibold">
+                            <span className="text-[11px] text-rose-500 font-semibold">
                                 (lệch {h.deviationPercent.toFixed(0)}%)
                             </span>
                         </div>
@@ -177,7 +177,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => persist(rules.filter(x => x.id !== r.id))}
-                                className="p-1 text-slate-400 hover:text-rose-600"
+                                className="p-1 text-slate-400 hover:text-rose-700"
                                 title="Xoá quy tắc"
                             >
                                 <Icon name="trash-2" size={3.5} />
@@ -191,7 +191,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                     >
                         <Icon name="plus" size={3.5} className="mr-1" /> Thêm quy tắc
                     </Button>
-                    <p className="text-[10px] text-slate-400 leading-snug">
+                    <p className="text-[11px] text-slate-400 leading-snug">
                         Cảnh báo được tính trên đúng dữ liệu bạn đang xem (theo bộ lọc và phạm vi quyền của bạn).
                         Hiện chỉ hiển thị trong ứng dụng — chưa gửi thông báo định kỳ ra ngoài.
                     </p>

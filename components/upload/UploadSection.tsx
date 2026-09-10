@@ -56,7 +56,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         />
                     </div>
                     <div className="text-right">
-                        <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="text-[12px] font-bold text-sky-600 dark:text-sky-400 hover:underline">Hoàn tất</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="text-[12px] font-bold text-sky-700 dark:text-sky-400 hover:underline">Hoàn tất</Button>
                     </div>
                 </div>
             ) : (
@@ -90,7 +90,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     </div>
 
                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                        <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
+                        <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
                             <Icon name="database" size={4.5} />
                         </div>
                         <div className="text-left flex-1">
@@ -130,7 +130,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                                 <Icon name="upload" size={5} />
                             </div>
                             <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 text-center">
-                                <span className="text-sky-600 dark:text-sky-400 font-semibold">
+                                <span className="text-sky-700 dark:text-sky-400 font-semibold">
                                     {uploadType === 'realtime' ? 'Chọn file Realtime' : 'Chọn file Lũy kế'}
                                 </span> hoặc thả các file Excel vào đây
                             </p>

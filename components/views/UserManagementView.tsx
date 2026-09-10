@@ -324,7 +324,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {/* Header */}
                 <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Quản Trị Hệ Thống & Phân Quyền</h1>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
@@ -355,7 +355,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <option value="dept">Mã Kho</option>
                                 <option value="logins">Truy cập</option>
                             </Select>
-                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                 <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
                             </Button>
                         </div>
@@ -438,7 +438,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {listMode === 'pending' ? (
                                                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
                                                             <Icon name="x" size={3.5} />
                                                         </Button>
                                                         <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors flex items-center gap-1">
@@ -447,11 +447,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1.5">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
                                                             <Icon name="user-minus" size={3.5} />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
-                                                            <span className="text-[10px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
+                                                            <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
                                                                 <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
                                                             </span>
                                                         )}
@@ -464,12 +464,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {userRole === 'admin' ? (
                                                     <div className="flex flex-col gap-1 w-[100px]">
-                                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">KHO/BỘ PHẬN</span>
+                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">KHO/BỘ PHẬN</span>
                                                         <Input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px] font-mono uppercase" />
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col gap-1">
-                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Mã Kho:</span>
+                                                        <span className="text-[11px] uppercase font-bold text-slate-400">Mã Kho:</span>
                                                         <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{req.departmentId || '—'}</span>
                                                     </div>
                                                 )}
@@ -478,32 +478,32 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {userRole === 'admin' ? (
                                                     <div className="flex flex-col gap-1 w-[100px]">
-                                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">MÃ NHÂN VIÊN</span>
+                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">MÃ NHÂN VIÊN</span>
                                                         <Input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px]" />
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col gap-1">
-                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Mã NV:</span>
-                                                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{req.employeeName || '—'}</span>
+                                                        <span className="text-[11px] uppercase font-bold text-slate-400">Mã NV:</span>
+                                                        <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{req.employeeName || '—'}</span>
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 <div className="flex flex-col gap-1 w-[130px]">
-                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">NGÀY HẾT HẠN</span>
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">NGÀY HẾT HẠN</span>
                                                     <Input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs px-2 w-[130px]" />
                                                 </div>
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex flex-col gap-1 shrink-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Đăng ký:</span>
+                                                <span className="text-[11px] uppercase font-bold text-slate-400 whitespace-nowrap">Đăng ký:</span>
                                                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</span>
                                             </div>
                                             <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex items-center gap-1.5 shrink-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
-                                                <span className="text-xs font-bold text-sky-600 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
+                                                <span className="text-[11px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
+                                                <span className="text-xs font-bold text-sky-700 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
                                             </div>
                                         </div>
                                     </motion.div>

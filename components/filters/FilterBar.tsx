@@ -158,7 +158,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             variant="unstyled" size="none"
                             onClick={onNewFile}
                             title="Tải YCX lên"
-                            className="flex items-center justify-center w-8 h-8 text-emerald-600 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-8 h-8 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="upload" size={5} />
                         </Button>
@@ -169,7 +169,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             onClick={onOpenHistory}
                             id="btn-mobile-history"
                             title="Quản lý tệp đã lưu"
-                            className="flex items-center justify-center w-8 h-8 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-8 h-8 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="database" size={5} />
                         </Button>
@@ -187,7 +187,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         variant="unstyled" size="none"
                         onClick={onToggleAdvanced}
                         title="Bộ lọc nâng cao"
-                        className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 rounded-lg transition-all active:scale-95 shrink-0"
+                        className="flex items-center justify-center w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg transition-all active:scale-95 shrink-0"
                     >
                         <Icon name="settings" size={5} />
                     </Button>

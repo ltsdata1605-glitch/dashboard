@@ -35,10 +35,10 @@ const COLOR_ALIAS: Record<string, string> = {
 const normColor = (c: string): string => COLOR_ALIAS[c] || c;
 // Tailwind safelist — các class dưới đây được dựng ĐỘNG từ tên màu (bg-${color}-...),
 // liệt kê tường minh để JIT sinh ra, không bị purge:
-// bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400
-// bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400
-// bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400
-// bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400
+// bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400
+// bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400
+// bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400
+// bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400
 // bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400
 
 const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave }) => {
@@ -225,8 +225,8 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 {/* Left Side: List */}
                 <div className="w-[30%] sm:w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
-                        <h3 className="font-bold text-[10px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
-                        <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-sky-50 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400 font-semibold rounded-lg hover:bg-sky-100 transition-colors flex items-center gap-0.5 sm:gap-1">
+                        <h3 className="font-bold text-[11px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
+                        <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[11px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-sky-50 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 font-semibold rounded-lg hover:bg-sky-100 transition-colors flex items-center gap-0.5 sm:gap-1">
                             <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Thêm
                         </Button>
                     </div>
@@ -242,7 +242,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white dark:bg-slate-900 rounded-md border ${editingCard?.id === config.id ? 'border-sky-500 shadow-sm' : 'border-slate-200 dark:border-slate-800'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-sky-500' : ''} transition-all cursor-pointer hover:border-sky-300`}
                                 onClick={() => setEditingCard(config)}
                             >
-                                <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-sky-600 p-1">
+                                <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-sky-700 p-1">
                                     <Icon name="grip-vertical" size={4.5} />
                                 </div>
                                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${normColor(config.iconColor)}-100 text-${normColor(config.iconColor)}-600 dark:bg-${normColor(config.iconColor)}-500/20 dark:text-${normColor(config.iconColor)}-400`}>
@@ -251,13 +251,13 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 </div>
                                 <div className="flex-1 min-w-0 hidden sm:block">
                                     <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{config.title}</h4>
-                                    <p className="text-[10px] text-slate-500 truncate">
+                                    <p className="text-[11px] text-slate-500 truncate">
                                         {config.type === 'metric' || !config.type 
                                             ? AVAILABLE_METRICS.find(m => m.value === config.metric)?.label 
                                             : config.type === 'data' ? 'Bộ lọc Tùy Biên' : 'Công Thức'}
                                     </p>
                                 </div>
-                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-600 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
+                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={3.5} className="sm:hidden" />
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} className="hidden sm:block" />
                                 </Button>
@@ -269,9 +269,9 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 {/* Right Side: Editor */}
                 <div className="w-[70%] sm:w-2/3 flex flex-col bg-white dark:bg-slate-900">
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 h-10 sm:h-14 flex items-center">
-                        <h3 className="font-semibold text-[10px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
+                        <h3 className="font-semibold text-[11px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
                         {editingCard && (
-                            <Button variant="unstyled" size="none" onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-[10px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                            <Button variant="unstyled" size="none" onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-[11px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
                                 <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" /> Xóa thẻ
                             </Button>
                         )}
@@ -280,7 +280,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                         {editingCard ? (
                             <div className="space-y-3 sm:space-y-6">
                                 <div>
-                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">TIÊU ĐỀ HIỂN THỊ</label>
+                                    <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">TIÊU ĐỀ HIỂN THỊ</label>
                                     <Input 
                                         type="text" 
                                         value={editingCard.title}
@@ -299,7 +299,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 setActiveTab(tab);
                                                 updateEditingCard({ type: tab });
                                             }}
-                                            className={`flex-1 text-[10px] sm:text-sm font-medium py-1.5 px-2 rounded transition-colors ${
+                                            className={`flex-1 text-[11px] sm:text-sm font-medium py-1.5 px-2 rounded transition-colors ${
                                                 (editingCard.type || 'metric') === tab
                                                 ? 'bg-white text-slate-800 shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
                                                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 border border-transparent dark:hover:bg-slate-800/50'
@@ -313,7 +313,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 {/* Metric Type rendering */}
                                 {(!editingCard.type || editingCard.type === 'metric') && (
                                     <div>
-                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">NGUỒN DỮ LIỆU</label>
+                                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">NGUỒN DỮ LIỆU</label>
                                         <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                                             {AVAILABLE_METRICS.map(m => (
                                                 <Button
@@ -332,28 +332,28 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 {/* Data Builder Type rendering */}
                                 {editingCard.type === 'data' && (
                                     <div className="space-y-3 sm:space-y-4">
-                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2 sm:p-3 text-[10px] sm:text-sm text-amber-800 dark:text-amber-400 font-medium flex gap-1.5 sm:gap-2">
+                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2 sm:p-3 text-[11px] sm:text-sm text-amber-800 dark:text-amber-400 font-medium flex gap-1.5 sm:gap-2">
                                             <Icon name="info" size={3.5} className="mt-0.5 shrink-0" />
                                             <span>Thẻ này sẽ lọc dữ liệu trên danh sách Đơn Hàng qua Kho được chọn.</span>
                                         </div>
                                         
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
                                             <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 h-fit">
-                                                <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Loại Chỉ Số:</label>
+                                                <label className="block text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Loại Chỉ Số:</label>
                                                 <Select 
                                                     value={editingCard.dataFilters?.metricType || 'revenue'} 
                                                     onChange={(e) => updateEditingCard({ dataFilters: { ...editingCard.dataFilters, metricType: e.target.value as 'quantity' | 'revenue' | 'revenueQD' }})}
-                                                    className="mb-3 sm:mb-4 text-[10px] sm:text-sm"
+                                                    className="mb-3 sm:mb-4 text-[11px] sm:text-sm"
                                                 >
                                                     <option value="revenue">Tổng Doanh Thu Thực</option>
                                                     <option value="revenueQD">Tổng Doanh Thu QĐ</option>
                                                     <option value="quantity">Tổng Số Lượng</option>
                                                 </Select>
-                                                <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Định Dạng Số Liệu:</label>
+                                                <label className="block text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Định Dạng Số Liệu:</label>
                                                 <Select
                                                     value={editingCard.format}
                                                     onChange={(e) => updateEditingCard({ format: e.target.value as 'currency' | 'percentage' | 'number' })}
-                                                    className="text-[10px] sm:text-sm"
+                                                    className="text-[11px] sm:text-sm"
                                                 >
                                                     <option value="currency">Tiền Tệ (VNĐ)</option>
                                                     <option value="number">Số thông thường</option>
@@ -404,7 +404,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <Select 
                                                 value={editingCard.operand1_cardId || ''}
                                                 onChange={(e) => updateEditingCard({ operand1_cardId: e.target.value })}
-                                                className="flex-1 text-[10px] sm:text-sm"
+                                                className="flex-1 text-[11px] sm:text-sm"
                                             >
                                                 <option value="" disabled>-- Chọn Thẻ 1 --</option>
                                                 {internalConfigs.filter(c => c.id !== editingCard.id).map(c => (
@@ -415,7 +415,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <Select 
                                                 value={editingCard.operation || '+'}
                                                 onChange={(e) => updateEditingCard({ operation: e.target.value as '+' | '-' | '*' | '/' })}
-                                                className="w-16 sm:w-20 text-center font-bold text-sky-600 text-sm sm:text-lg"
+                                                className="w-16 sm:w-20 text-center font-bold text-sky-700 text-sm sm:text-lg"
                                             >
                                                 <option value="+">+</option>
                                                 <option value="-">-</option>
@@ -426,7 +426,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <Select 
                                                 value={editingCard.operand2_cardId || ''}
                                                 onChange={(e) => updateEditingCard({ operand2_cardId: e.target.value })}
-                                                className="flex-1 text-[10px] sm:text-sm"
+                                                className="flex-1 text-[11px] sm:text-sm"
                                             >
                                                 <option value="" disabled>-- Chọn Thẻ 2 --</option>
                                                 {internalConfigs.filter(c => c.id !== editingCard.id).map(c => (
@@ -437,11 +437,11 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         
                                         <div className="mt-2.5 sm:mt-4 flex gap-2 sm:gap-4">
                                             <div>
-                                                <label className="text-[10px] sm:text-xs font-semibold text-slate-500">Định dạng hiển thị</label>
+                                                <label className="text-[11px] sm:text-xs font-semibold text-slate-500">Định dạng hiển thị</label>
                                                 <Select
                                                     value={editingCard.format}
                                                     onChange={(e) => updateEditingCard({ format: e.target.value as 'currency' | 'percentage' | 'number' })}
-                                                    className="mt-0.5 sm:mt-1 w-32 sm:w-36 text-[10px] sm:text-sm"
+                                                    className="mt-0.5 sm:mt-1 w-32 sm:w-36 text-[11px] sm:text-sm"
                                                 >
                                                     <option value="percentage">Phần Trăm (%)</option>
                                                     <option value="currency">Tiền VNĐ</option>
@@ -454,14 +454,14 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                                 <div className="grid grid-cols-2 gap-2 sm:gap-6">
                                     <div>
-                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">BIỂU TƯỢNG</label>
+                                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">BIỂU TƯỢNG</label>
                                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {ICONS.map(icon => (
                                                 <Button
                                                     variant="unstyled" size="none"
                                                     key={icon}
                                                     onClick={() => updateEditingCard({ icon })}
-                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-sky-100 border-sky-300 text-sky-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-sky-100 border-sky-300 text-sky-700 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
                                                 >
                                                     <Icon name={icon} size={3.5} className="sm:hidden" /><Icon name={icon} size={5} className="hidden sm:block" />
                                                 </Button>
@@ -469,7 +469,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">MÀU SẮC</label>
+                                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">MÀU SẮC</label>
                                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {COLORS.map(color => (
                                                 <Button
@@ -486,19 +486,19 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 </div>
 
                                 <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-emerald-200 dark:border-emerald-800/30">
-                                    <label className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 cursor-pointer">
+                                    <label className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={editingCard.hasTarget}
                                             onChange={(e) => updateEditingCard({ hasTarget: e.target.checked, targetType: e.target.checked ? 'custom' : 'none', customTargetValue: editingCard.customTargetValue || 0 })}
-                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500"
                                         />
                                         Kích hoạt Mục tiêu tháng (Target)
                                     </label>
                                     
                                     {editingCard.hasTarget && (
                                         <div className="mt-2 sm:mt-3 animate-fade-in pl-4 sm:pl-6 border-l-2 border-emerald-200 dark:border-emerald-800/50 ml-1 sm:ml-1.5">
-                                            <label className="block text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Chỉ tiêu ({editingCard.format === 'percentage' ? '%' : 'VNĐ'})</label>
+                                            <label className="block text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Chỉ tiêu ({editingCard.format === 'percentage' ? '%' : 'VNĐ'})</label>
                                             <Input 
                                                 type="number"
                                                 value={editingCard.customTargetValue ?? ''}
@@ -506,7 +506,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 placeholder={editingCard.format === 'percentage' ? "Ví dụ: 80" : "Ví dụ: 10000000"}
                                                 className="text-xs sm:text-sm"
                                             />
-                                            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 sm:mt-1.5 font-medium leading-relaxed">Tự động hiển thị thanh tiến độ, tính % đạt và đổi màu trạng thái.</p>
+                                            <p className="text-[11px] sm:text-[11px] text-slate-400 mt-1 sm:mt-1.5 font-medium leading-relaxed">Tự động hiển thị thanh tiến độ, tính % đạt và đổi màu trạng thái.</p>
                                         </div>
                                     )}
                                 </div>
@@ -515,7 +515,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-slate-400 px-4">
                                 <Icon name="layout-template" size={10} className="sm:!w-16 sm:!h-16 mb-2 sm:mb-4 opacity-20" />
-                                <p className="text-[10px] sm:text-base text-center">Bấm vào một thẻ bên trái để tùy chỉnh giao diện và dữ liệu</p>
+                                <p className="text-[11px] sm:text-base text-center">Bấm vào một thẻ bên trái để tùy chỉnh giao diện và dữ liệu</p>
                             </div>
                         )}
                     </div>

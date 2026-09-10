@@ -39,7 +39,7 @@ export const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
     if (rank === 1) return <span className="text-[11px] sm:text-[14px] font-black text-slate-400">#2</span>;
     if (rank === 2) return <span className="text-[11px] sm:text-[14px] font-black text-amber-700">#3</span>;
     return (
-        <span className="text-[10px] sm:text-[13px] font-bold text-slate-400 dark:text-slate-500">
+        <span className="text-[11px] sm:text-[13px] font-bold text-slate-400 dark:text-slate-500">
             #{rank + 1}
         </span>
     );
@@ -72,7 +72,7 @@ export const TAB_THEMES = {
         gradient: 'from-emerald-500 to-emerald-700',
         headerBg: 'bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/30',
         iconBlockBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        iconBlockText: 'text-emerald-600 dark:text-emerald-400',
+        iconBlockText: 'text-emerald-700 dark:text-emerald-400',
         icon: 'wallet',
         title: 'Hiệu Quả Doanh Thu',
         subtitle: 'Phân tích doanh thu & hiệu quả quy đổi',
@@ -82,7 +82,7 @@ export const TAB_THEMES = {
         gradient: 'from-sky-500 to-sky-700',
         headerBg: 'bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-900/30',
         iconBlockBg: 'bg-sky-100 dark:bg-sky-900/30',
-        iconBlockText: 'text-sky-600 dark:text-sky-400',
+        iconBlockText: 'text-sky-700 dark:text-sky-400',
         icon: 'layers',
         title: 'Hiệu Quả Trả Chậm',
         subtitle: 'Tiếp cận khách hàng & Bán kèm',
@@ -92,7 +92,7 @@ export const TAB_THEMES = {
         gradient: 'from-amber-500 to-amber-700',
         headerBg: 'bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/30',
         iconBlockBg: 'bg-amber-100 dark:bg-amber-900/30',
-        iconBlockText: 'text-amber-600 dark:text-amber-400',
+        iconBlockText: 'text-amber-700 dark:text-amber-400',
         icon: 'trophy',
         title: 'Mục Tiêu Vượt Trội',
         subtitle: `Cập nhật ngày ${new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`,

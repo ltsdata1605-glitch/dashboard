@@ -30,7 +30,7 @@ const PendingApprovalBanner: React.FC = () => {
                 </span>
             </div>
 
-            <div className="flex-shrink-0 ml-3 bg-white/20 px-3 py-1 rounded-full text-xs font-bold font-mono group-hover:bg-white text-white group-hover:text-amber-600 transition-colors">
+            <div className="flex-shrink-0 ml-3 bg-white/20 px-3 py-1 rounded-full text-xs font-bold font-mono group-hover:bg-white text-white group-hover:text-amber-700 transition-colors">
                 XEM NGAY
             </div>
         </div>

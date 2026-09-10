@@ -193,14 +193,14 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             onKeyDown={onActivateKey(onToggleAll)}
             className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors"
           >
-            <span className="text-xs font-black text-sky-600 dark:text-sky-400">{allLabel}</span>
+            <span className="text-xs font-black text-sky-700 dark:text-sky-400">{allLabel}</span>
             <ToggleDot checked={allChecked} />
           </div>
         )}
         {groups
           ? groups.filter(g => g.options.length > 0).map(group => (
               <div key={group.key} className="pt-1.5 first:pt-0">
-                <h5 className="px-2 py-1 mb-0.5 text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 rounded-md">{group.label}</h5>
+                <h5 className="px-2 py-1 mb-0.5 text-[11px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-wider bg-sky-50 dark:bg-sky-900/30 rounded-md">{group.label}</h5>
                 <div className="space-y-0.5">
                   {group.options.map(opt => <OptionRow key={opt.key} option={opt} onToggle={onToggleOption} />)}
                 </div>
@@ -222,13 +222,13 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           className={cn(
             'relative h-7 w-7 transition-colors',
             isOpen || (typeof count === 'number' && count > 0)
-              ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+              ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
               : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
           )}
         >
           {icon}
           {typeof count === 'number' && count > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sky-500 text-[8px] font-black text-white">
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sky-500 text-[11px] font-black text-white">
               {count}
             </span>
           )}
@@ -246,7 +246,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           </div>
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1.5 sm:ml-2">
             {typeof count === 'number' && (
-              <span className="text-[9px] sm:text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+              <span className="text-[11px] sm:text-[11px] font-black text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
             )}
             <ChevronDown size={14} className={cn('text-slate-400 transition-transform duration-200 sm:w-4 sm:h-4 w-3.5 h-3.5', isOpen && 'rotate-180')} />
           </div>

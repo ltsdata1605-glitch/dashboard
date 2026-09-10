@@ -85,7 +85,7 @@ export const Tabs = React.memo<TabsProps>(({
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
-                  ? 'text-sky-600 dark:text-sky-400'
+                  ? 'text-sky-700 dark:text-sky-400'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200',
                 item.disabled && 'opacity-40 cursor-not-allowed'
               )}
@@ -94,7 +94,7 @@ export const Tabs = React.memo<TabsProps>(({
               {item.label}
               {item.badge !== undefined && (
                 <span className={cn(
-                  'min-w-[18px] h-[18px] rounded-full px-1 text-[10px] font-bold flex items-center justify-center leading-none',
+                  'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
                   isActive
                     ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
@@ -146,7 +146,7 @@ export const Tabs = React.memo<TabsProps>(({
               {item.label}
               {item.badge !== undefined && (
                 <span className={cn(
-                  'min-w-[18px] h-[18px] rounded-full px-1 text-[10px] font-bold flex items-center justify-center leading-none',
+                  'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
                   isActive
                     ? 'bg-white/20 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
@@ -194,7 +194,7 @@ export const Tabs = React.memo<TabsProps>(({
             {item.label}
             {item.badge !== undefined && (
               <span className={cn(
-                'min-w-[18px] h-[18px] rounded-full px-1 text-[10px] font-bold flex items-center justify-center leading-none',
+                'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
                 isActive
                   ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'

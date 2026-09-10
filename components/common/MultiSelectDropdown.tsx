@@ -93,20 +93,20 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         if (selected.length === 0) return <span className="text-slate-500 font-normal text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
         
         if (selected.length === allUniqueOptions.length) {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">
+            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
         }
         
         if (variant === 'compact') {
-            return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
+            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
             return (
                 <div className="flex flex-wrap gap-1">
                     {selected.map(item => (
-                        <span key={item} className="bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-xs px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 max-w-[80px] truncate">
+                        <span key={item} className="bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-xs px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 max-w-[80px] truncate">
                             {item}
                         </span>
                     ))}
@@ -114,7 +114,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-sky-600 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
+        return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     const isFiltered = selected.length > 0 && selected.length < allUniqueOptions.length;
@@ -128,7 +128,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     onClick={() => setIsOpen(!isOpen)}
                     className={`relative p-1.5 lg:p-2 rounded-md transition-colors flex items-center justify-center ${
                         isOpen || isFiltered
-                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-300 dark:border-sky-700'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-300 dark:border-sky-700'
                             : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                     title={label}
@@ -136,7 +136,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     <Icon name={iconName} size={4} className="lg:hidden" />
                     <Icon name={iconName} size={5} className="hidden lg:block" />
                     {isFiltered && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[9px] flex items-center justify-center font-bold">
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[11px] flex items-center justify-center font-bold">
                             {selected.length}
                         </span>
                     )}
@@ -159,7 +159,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
                         {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-sky-600 text-white text-[9px] sm:text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
+                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-sky-600 text-white text-[11px] sm:text-[11px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
                                 {selected.length}
                             </div>
                         )}
@@ -226,9 +226,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                 <Icon name="check" size={2.5} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 sm:hidden" />
                                 <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 hidden sm:block" />
                             </div>
-                            <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-600 transition-colors">Tất cả {label}</span>
+                            <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-700 transition-colors">Tất cả {label}</span>
                         </label>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
+                        <span className="text-[11px] sm:text-[11px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
                     </div>
 
                     {/* Options List */}
@@ -259,7 +259,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     );
                                 })}
                                 {filteredOptions.length > 200 && (
-                                    <div className="text-center py-2 text-[10px] items-center italic text-slate-400 font-medium">
+                                    <div className="text-center py-2 text-[11px] items-center italic text-slate-400 font-medium">
                                         Hiển thị 200 kết quả đầu tiên. Vui lòng sử dụng ô tìm kiếm để xem thêm.
                                     </div>
                                 )}

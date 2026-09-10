@@ -33,7 +33,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                     </div>
                     <div>
                         <h2 className="text-base sm:text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">Lịch sử cập nhật</h2>
-                        <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
+                        <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
                     </div>
                 </div>
                 <Button variant="unstyled" size="none" onClick={onClose} className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
@@ -48,7 +48,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-primary-500 pb-5 sm:pb-8">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-white dark:border-slate-900"></div>
                     <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</h3>
-                    <p className="text-[10px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Cuối Tháng 03/2026</p>
+                    <p className="text-[11px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Cuối Tháng 03/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                         <li className="flex gap-2">
                             <Icon name="table-2" size={4} className="text-emerald-500 shrink-0 mt-0.5" />
@@ -73,7 +73,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-slate-700 pb-5 sm:pb-8">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-600 border-4 border-white dark:border-slate-900"></div>
                     <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.0.0 (High Performance & Core Update)</h3>
-                    <p className="text-[10px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Tháng 03/2026</p>
+                    <p className="text-[11px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Tháng 03/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                         <li className="flex gap-2">
                             <Icon name="zap" size={4} className="text-amber-500 shrink-0 mt-0.5" />
@@ -98,7 +98,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-slate-700 pb-2">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-600 border-4 border-white dark:border-slate-900"></div>
                     <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1 opacity-70">Phiên bản 2.1.0 (Intelligence Hub 2.0)</h3>
-                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Tháng 02/2026</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Tháng 02/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                         <li className="flex gap-2">
                             <Icon name="check-circle-2" size={4} className="shrink-0 mt-0.5" />

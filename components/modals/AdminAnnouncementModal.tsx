@@ -121,12 +121,12 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                     className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl cursor-pointer select-none transition-all hover:brightness-95"
                 >
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-lg shrink-0">
+                        <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-lg shrink-0">
                             <Icon name="megaphone" size={4} />
                         </div>
                         <div>
                             <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">Kích hoạt thông báo</span>
-                            <span className="block text-[10px] text-slate-400 dark:text-slate-500">Hiển thị đường chạy ngang dưới tiêu đề Phân Tích</span>
+                            <span className="block text-[11px] text-slate-400 dark:text-slate-500">Hiển thị đường chạy ngang dưới tiêu đề Phân Tích</span>
                         </div>
                     </div>
                     

@@ -36,17 +36,17 @@ const industryColors: { [key: string]: string } = {
 };
 
 // Tailwind JIT compiler hints
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 bg-amber-500
-// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 bg-sky-500
-// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
+// border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 bg-amber-500
+// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 bg-rose-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
+// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
+// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
+// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 bg-rose-500
 // border-slate-500 bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 bg-slate-500
 
 
@@ -562,7 +562,7 @@ Link: ${url}`;
             onClose={onClose}
             title="ĐƠN HÀNG CHƯA THU | CHƯA HỦY"
             subTitle={`DTQĐ: ${formatCurrency(totalUncollectedRevenueQD)}`}
-            titleColorClass="text-rose-600 dark:text-rose-400"
+            titleColorClass="text-rose-700 dark:text-rose-400"
             controls={controls}
             maxWidth="xl"
             noRounded
@@ -590,7 +590,7 @@ Link: ${url}`;
                                                 <p className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 truncate leading-tight mb-0.5" title={item.name}>{item.name}</p>
                                                 <div className="flex items-baseline gap-1.5 flex-wrap">
                                                     <p className={`font-black text-sm sm:text-base text-${color}-600 dark:text-${color}-400 leading-none`}>{formatCurrency(item.revenue)}</p>
-                                                    <p className="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 leading-none">({percentage.toFixed(1)}%)</p>
+                                                    <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 leading-none">({percentage.toFixed(1)}%)</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -603,9 +603,9 @@ Link: ${url}`;
                                 <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-900 overflow-hidden" open>
                                 <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
                                         <p className="font-bold text-sm sm:text-[17px] text-sky-950 dark:text-sky-100 pl-1">{creator.name}</p>
-                                        <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[10px] sm:text-sm font-semibold">
-                                            <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-600 dark:text-rose-400">{formatCurrency(creator.totalRevenue)}</span></span>
-                                            <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
+                                        <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[11px] sm:text-sm font-semibold">
+                                            <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-700 dark:text-rose-400">{formatCurrency(creator.totalRevenue)}</span></span>
+                                            <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
                                             <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${creator.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{creator.hieuQuaQD.toFixed(0)}%</span></span>
                                             <Button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hide-on-export ml-2">
                                                 <Icon name="camera" size={4} />
@@ -632,7 +632,7 @@ Link: ${url}`;
                                                 <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
                                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
                                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
-                                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-600 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
+                                                    <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
                                                     <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
                                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                                         <Icon name="chevron-down" />
@@ -661,7 +661,7 @@ Link: ${url}`;
                                                             return (
                                                                 <tr key={orderId || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                                                                     <td
-                                                                        className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 break-all font-mono cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                                                                        className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 break-all font-mono cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                                                                         title="Nhấn để sao chép"
                                                                         onClick={() => {
                                                                             if (orderId) {
@@ -685,7 +685,7 @@ Link: ${url}`;
                                                                     <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</td>
                                                                     <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(price)}</td>
-                                                                    <td className="py-2.5 px-2 text-right font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
+                                                                    <td className="py-2.5 px-2 text-right font-semibold text-amber-700 dark:text-amber-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
                                                                 </tr>
                                                             );
                                                         })}

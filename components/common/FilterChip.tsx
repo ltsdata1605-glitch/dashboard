@@ -18,11 +18,11 @@ const FilterChip: React.FC<FilterChipProps> = ({
 }) => {
     const getColorClasses = () => {
         switch (color) {
-            case 'emerald': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30';
-            case 'amber': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800/40 hover:bg-amber-100 dark:hover:bg-amber-900/30';
-            case 'rose': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/40 hover:bg-rose-100 dark:hover:bg-rose-900/30';
+            case 'emerald': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30';
+            case 'amber': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800/40 hover:bg-amber-100 dark:hover:bg-amber-900/30';
+            case 'rose': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800/40 hover:bg-rose-100 dark:hover:bg-rose-900/30';
             case 'slate': return 'bg-slate-100 dark:bg-slate-700/40 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700/60';
-            default: return 'bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border-sky-100 dark:border-sky-800/40 hover:bg-sky-100 dark:hover:bg-sky-900/30';
+            default: return 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 border-sky-100 dark:border-sky-800/40 hover:bg-sky-100 dark:hover:bg-sky-900/30';
         }
     };
 
@@ -33,7 +33,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
     if (!value || (Array.isArray(value) && value.length === 0)) return null;
 
     return (
-        <div className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-xl border text-[10px] font-medium uppercase tracking-wider transition-all shadow-sm animate-in fade-in zoom-in duration-200 ${getColorClasses()}`}>
+        <div className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-xl border text-[11px] font-medium uppercase tracking-wider transition-all shadow-sm animate-in fade-in zoom-in duration-200 ${getColorClasses()}`}>
             <span className="opacity-60">{label}:</span>
             <span className="max-w-[120px] truncate">{displayValue}</span>
             <Button

@@ -11,7 +11,7 @@ export interface ModalProps {
   title?: React.ReactNode;
   /** Dòng phụ nhỏ hiển thị phía trên title trong header (tương đương subTitle của ModalWrapper cũ). */
   subTitle?: React.ReactNode;
-  /** Override màu chữ của title, vd. "text-rose-600 dark:text-rose-400". Mặc định dùng màu slate chuẩn. */
+  /** Override màu chữ của title, vd. "text-rose-700 dark:text-rose-400". Mặc định dùng màu slate chuẩn. */
   titleColorClass?: string;
   /** Nội dung tùy chỉnh (nút phụ...) hiển thị cạnh nút đóng trong header. */
   controls?: React.ReactNode;
@@ -124,7 +124,7 @@ export function Modal({
               <div className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
                 <div>
                   {subTitle && (
-                    <p className="text-[10px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
+                    <p className="text-[11px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
                   )}
                   {title && (
                     <h3 className={cn("font-bold text-sm sm:text-lg tracking-tight", titleColorClass)}>

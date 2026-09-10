@@ -130,7 +130,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
     const renderSortIcon = (key: 'id' | 'name' | 'dept') => {
         if (sortConfig?.key !== key) return <Icon name="chevrons-up-down" size={3.5} className="opacity-30" />;
-        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-sky-600" />;
+        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-sky-700" />;
     };
 
     const handleEdit = (emp: { id: string, dept: string, name: string }) => {
@@ -188,7 +188,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             title="Quản Lý Danh Sách Nhân Viên"
             subTitle={`Tổng số: ${Object.keys(localMap).length} nhân viên`}
             maxWidth="2xl"
-            titleColorClass="text-sky-600 dark:text-sky-400"
+            titleColorClass="text-sky-700 dark:text-sky-400"
             footer={
                 <div className="flex justify-between gap-2 sm:gap-3">
                     <Button
@@ -232,9 +232,9 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
                 {/* Table */}
                 <div className="flex-grow overflow-y-auto custom-scrollbar">
-                    <table className="min-w-full text-[10px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
+                    <table className="min-w-full text-[11px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
                         <thead className="bg-sky-50 dark:bg-sky-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
-                            <tr className="text-[10px] sm:text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-tight whitespace-nowrap">
+                            <tr className="text-[11px] sm:text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
                                 <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[13%] sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
@@ -266,7 +266,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
                                 <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
-                                    <td className="px-1 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" title={emp.id}>{emp.id}</td>
+                                    <td className="px-1 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" title={emp.id}>{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
                                         <>
@@ -293,10 +293,10 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             </td>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center">
                                                 <div className="flex justify-center gap-1">
-                                                    <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
+                                                    <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 text-emerald-700 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
                                                         <Icon name="check" size={3.5} />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => setEditingId(null)} className="p-1 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
+                                                    <Button variant="unstyled" size="none" onClick={() => setEditingId(null)} className="p-1 text-rose-700 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
                                                         <Icon name="x" size={3.5} />
                                                     </Button>
                                                 </div>
@@ -308,18 +308,18 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 truncate">
                                                 <span 
                                                     title={emp.dept}
-                                                    className="inline-block max-w-full truncate px-1 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs font-semibold bg-sky-50/80 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/20"
+                                                    className="inline-block max-w-full truncate px-1 sm:px-2 py-0.5 rounded text-[11px] sm:text-xs font-semibold bg-sky-50/80 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/20"
                                                 >
                                                     {emp.dept}
                                                 </span>
                                             </td>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center w-[13%] sm:w-24">
                                                 <div className="flex justify-center gap-0.5 sm:gap-1">
-                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-0.5 sm:p-1 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
+                                                    <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-0.5 sm:p-1 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
                                                         <Icon name="pencil" size={3} className="sm:hidden" />
                                                         <Icon name="pencil" size={3.5} className="hidden sm:block" />
                                                     </Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-0.5 sm:p-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
+                                                    <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-0.5 sm:p-1 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
                                                         <Icon name="trash-2" size={3} className="sm:hidden" />
                                                         <Icon name="trash-2" size={3.5} className="hidden sm:block" />
                                                     </Button>

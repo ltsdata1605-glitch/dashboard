@@ -154,7 +154,7 @@ const PivotTable: React.FC = () => {
                     >
                         <Icon name={expanded.has(r.key) ? 'chevron-down' : 'chevron-right'} size={3.5} className="text-slate-400 shrink-0" />
                         <span>{r.label}</span>
-                        <span className="ml-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
+                        <span className="ml-1 text-[11px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
                             {r.children.length}
                         </span>
                     </Button>
@@ -190,7 +190,7 @@ const PivotTable: React.FC = () => {
     );
 
     const fmtDelta = (v: number) => (v > 0 ? `+${fmt(v)}` : fmt(v));
-    const deltaClass = (v: number) => (v > 0 ? 'text-emerald-600' : v < 0 ? 'text-rose-600' : 'text-slate-400');
+    const deltaClass = (v: number) => (v > 0 ? 'text-emerald-700' : v < 0 ? 'text-rose-700' : 'text-slate-400');
 
     const renderCompRow = (r: import('../../services/pivotService').PivotComparisonRow, isChild: boolean) => (
         <tr
@@ -206,7 +206,7 @@ const PivotTable: React.FC = () => {
                     >
                         <Icon name={expanded.has(r.key) ? 'chevron-down' : 'chevron-right'} size={3.5} className="text-slate-400 shrink-0" />
                         <span>{r.label}</span>
-                        <span className="ml-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{r.children.length}</span>
+                        <span className="ml-1 text-[11px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{r.children.length}</span>
                     </Button>
                 ) : <span>{r.label}</span>}
             </td>
@@ -241,7 +241,7 @@ const PivotTable: React.FC = () => {
                         <span className="inline-flex items-center gap-2 flex-wrap">
                             <span>Tự chọn chiều phân tích và chỉ số</span>
                             {scopeNote && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                     <Icon name="lock" size={3} />
                                     {scopeNote}
                                 </span>
@@ -256,19 +256,19 @@ const PivotTable: React.FC = () => {
             {/* Bộ chọn chiều & chỉ số */}
             <div className="px-2 lg:px-4 pb-2 grid grid-cols-2 lg:grid-cols-4 gap-2 hide-on-export">
                 <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hàng</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Hàng</span>
                     <Select value={rowDim1} onChange={e => setRowDim1(e.target.value as PivotDimension)} options={dimOptions} />
                 </label>
                 <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hàng (cấp 2)</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Hàng (cấp 2)</span>
                     <Select value={rowDim2} onChange={e => setRowDim2(e.target.value as PivotDimension)} options={dimOptionsWithNone} />
                 </label>
                 <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Cột</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cột</span>
                     <Select value={colDim} onChange={e => setColDim(e.target.value as PivotDimension)} options={dimOptionsWithNone} />
                 </label>
                 <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Chỉ số</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Chỉ số</span>
                     <Select
                         value={metric}
                         onChange={e => setMetric(e.target.value as PivotMetric)}
@@ -295,7 +295,7 @@ const PivotTable: React.FC = () => {
                 {compareOn && (
                     <>
                         <label className="flex flex-col gap-1 min-w-[200px]">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Kiểu so sánh</span>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kiểu so sánh</span>
                             <Select
                                 value={periodMode}
                                 onChange={e => setPeriodMode(e.target.value as PeriodMode)}
@@ -306,7 +306,7 @@ const PivotTable: React.FC = () => {
                         {/* Mốc thời gian: chế độ theo ngày/YTD dùng ngày, còn lại dùng tháng */}
                         {(periodMode === 'day_adjacent' || periodMode === 'day_same_period' || periodMode === 'ytd_same_period_year') ? (
                             <label className="flex flex-col gap-1">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ngày</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Ngày</span>
                                 <Input
                                     type="date" value={anchorDate} onChange={e => setAnchorDate(e.target.value)}
                                     fullWidth={false} className="h-9 text-xs"
@@ -314,7 +314,7 @@ const PivotTable: React.FC = () => {
                             </label>
                         ) : periodMode !== 'custom_range' ? (
                             <label className="flex flex-col gap-1">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tháng</span>
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Tháng</span>
                                 <Input
                                     type="month" value={anchorMonth} onChange={e => setAnchorMonth(e.target.value)}
                                     fullWidth={false} className="h-9 text-xs"
@@ -345,7 +345,7 @@ const PivotTable: React.FC = () => {
                 </div>
             )}
             {compareOn && !ranges && (
-                <div className="px-2 lg:px-4 pb-2 text-[11px] text-rose-600">
+                <div className="px-2 lg:px-4 pb-2 text-[11px] text-rose-700">
                     Không xác định được khoảng thời gian cho lựa chọn này — thử đổi mốc hoặc kiểu so sánh.
                 </div>
             )}
@@ -363,13 +363,13 @@ const PivotTable: React.FC = () => {
                             <table className="w-full border-collapse compact-export-table">
                                 <thead>
                                     <tr>
-                                        <th className="px-2 py-1 text-left text-[11px] font-bold tracking-tight uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
+                                        <th className="px-2 py-1 text-left text-[11px] font-bold tracking-wider uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
                                             {PIVOT_DIMENSIONS.find(d => d.id === rowDim1)?.label}
                                         </th>
-                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-sky-700 bg-sky-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ này</th>
-                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-slate-600 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ trước</th>
-                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100 border-r border-slate-200">Chênh lệch</th>
-                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100">%</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-sky-700 bg-sky-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ này</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-slate-600 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200">Kỳ trước</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100 border-r border-slate-200">Chênh lệch</th>
+                                        <th className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100">%</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -405,15 +405,15 @@ const PivotTable: React.FC = () => {
                         <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr>
-                                    <th className="px-2 py-1 text-left text-[11px] font-bold tracking-tight uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
+                                    <th className="px-2 py-1 text-left text-[11px] font-bold tracking-wider uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
                                         {PIVOT_DIMENSIONS.find(d => d.id === rowDim1)?.label}
                                     </th>
                                     {hasCols && result.colKeys.map(ck => (
-                                        <th key={ck} className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-sky-700 bg-sky-50 border-b-2 border-b-slate-100 border-r border-slate-200 whitespace-nowrap">
+                                        <th key={ck} className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-sky-700 bg-sky-50 border-b-2 border-b-slate-100 border-r border-slate-200 whitespace-nowrap">
                                             {ck}
                                         </th>
                                     ))}
-                                    <th className="px-2 py-1 text-center text-[11px] font-bold tracking-tight uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100 whitespace-nowrap">
+                                    <th className="px-2 py-1 text-center text-[11px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 border-b-2 border-b-slate-100 whitespace-nowrap">
                                         Tổng
                                     </th>
                                 </tr>
@@ -442,7 +442,7 @@ const PivotTable: React.FC = () => {
                                 </tr>
                                 {metric === 'orderCount' && (
                                     <tr>
-                                        <td colSpan={colSpanTotal} className="px-2 py-1 text-left text-[10px] text-slate-400 italic">
+                                        <td colSpan={colSpanTotal} className="px-2 py-1 text-left text-[11px] text-slate-400 italic">
                                             Lưu ý: “Số đơn” đếm số đơn KHÔNG TRÙNG, nên các phần cộng lại có thể lớn hơn tổng —
                                             một đơn nhiều sản phẩm sẽ được tính ở nhiều nhóm hàng/cột nhưng chỉ tính 1 lần ở tổng.
                                         </td>

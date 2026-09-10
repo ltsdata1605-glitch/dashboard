@@ -405,7 +405,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     <div className="flex items-center gap-2 lg:gap-3 min-w-0">
                         <div className="min-w-0">
                             <h3 className="text-sm lg:text-lg font-medium uppercase text-slate-700 dark:text-slate-200 tracking-wide truncate leading-tight">{config.tableName}</h3>
-                            <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
+                            <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
@@ -415,7 +415,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             <Icon name="settings-2" size={4} className="lg:hidden" /><Icon name="settings-2" size={5} className="hidden lg:block" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors">
                             <Icon name="trash-2" size={4} className="lg:hidden" /><Icon name="trash-2" size={5} className="hidden lg:block" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
@@ -471,7 +471,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
                                                 <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
                                             </div>
                                         </th>
                                     );
@@ -499,7 +499,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
                                                 <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
                                             </div>
                                         </th>
                                     );
@@ -518,7 +518,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 py-1 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
                                                     <div className="flex items-center gap-1.5 sm:gap-2">
                                                         <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                        <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
+                                                        <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -548,7 +548,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
                                             <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
-                                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
+                                                <td colSpan={2} className="px-2 py-1 text-center text-[11px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
                                                     <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                         {formatValue(deptTotals.get(col.id), col)}
@@ -562,7 +562,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         </tbody>
                         <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                             <tr>
-                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
+                                <td colSpan={2} className="px-2 py-1 text-center text-[11px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);

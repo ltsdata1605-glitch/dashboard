@@ -377,7 +377,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <ArrowUpDown className="w-6 h-6 text-sky-600" />
+            <ArrowUpDown className="w-6 h-6 text-sky-700" />
             So sánh giá đối thủ
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -416,7 +416,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {serverStatus === 'offline' && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-700 mt-0.5 shrink-0" />
             <div>
               <p className="font-medium text-amber-800 dark:text-amber-300">Server scraping chưa chạy</p>
               <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
@@ -474,7 +474,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                     type="checkbox"
                     checked={site.enabled}
                     onChange={() => toggleSite(site.key)}
-                    className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                    className="rounded border-slate-300 text-sky-700 focus:ring-sky-500"
                   />
                   <span className={`text-sm ${site.enabled ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
                     {site.name}
@@ -583,7 +583,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                 />
               </div>
               {progress.searchQuery && (
-                <p className="text-xs text-sky-600 dark:text-sky-400 mt-1">
+                <p className="text-xs text-sky-700 dark:text-sky-400 mt-1">
                   Từ khóa: "{progress.searchQuery}"
                 </p>
               )}
@@ -670,11 +670,11 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                   {allDisplaySites.map(site => (
                     <th key={site.key} className={`text-right px-3 py-2.5 text-xs font-semibold uppercase whitespace-nowrap min-w-[140px] ${
                       site.key === mainSite 
-                        ? 'text-sky-600 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-900/20' 
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-900/20' 
                         : 'text-slate-500 dark:text-slate-400'
                     }`}>
                       {site.name}
-                      {site.key === mainSite && <span className="ml-1 text-[10px]">★</span>}
+                      {site.key === mainSite && <span className="ml-1 text-[11px]">★</span>}
                     </th>
                   ))}
                   <th className="text-right px-3 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap min-w-[100px]">Chênh lệch</th>
@@ -718,8 +718,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                             {p?.found ? (
                               <div>
                                 <span className={`font-semibold ${
-                                  isMin ? 'text-emerald-600 dark:text-emerald-400' :
-                                  isMax ? 'text-rose-600 dark:text-rose-400' :
+                                  isMin ? 'text-emerald-700 dark:text-emerald-400' :
+                                  isMax ? 'text-rose-700 dark:text-rose-400' :
                                   'text-slate-800 dark:text-slate-200'
                                 }`}>
                                   {formatVND(p.price)}
@@ -748,7 +748,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                       <td className="px-3 py-2.5 text-right">
                         {diff !== 0 ? (
                           <span className={`font-semibold ${
-                            diff > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                            diff > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'
                           }`}>
                             {diff > 0 ? '+' : ''}{formatVND(Math.abs(diff))}
                           </span>

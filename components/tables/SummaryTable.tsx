@@ -106,7 +106,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
     const renderDelta = (val: number, type: 'currency' | 'number' | 'percent') => {
         if (val === 0) return <span className="text-slate-300">-</span>;
         const isPositive = val > 0;
-        const colorClass = isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+        const colorClass = isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
         let formattedVal = '';
         if (type === 'currency') formattedVal = formatCurrency(Math.abs(val));
         else if (type === 'percent') formattedVal = `${Math.abs(val).toFixed(0)}%`; 
@@ -202,7 +202,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
               {isExpanding && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]">
                       <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">
-                          <Icon name="loader-2" size={8} className="animate-spin text-sky-600 dark:text-sky-400 mb-3" />
+                          <Icon name="loader-2" size={8} className="animate-spin text-sky-700 dark:text-sky-400 mb-3" />
                           <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Đang chuẩn bị khung dữ liệu bảng...</span>
                       </div>
                   </div>
@@ -446,7 +446,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         </tbody>
                         <tfoot className="bg-sky-100 dark:bg-sky-900/40 font-bold text-sm border-t-2 border-sky-200 dark:border-sky-800">
                            <tr>
-                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-left sticky left-0 z-40 bg-sky-100 dark:bg-sky-900/60 font-extrabold text-[10px] sm:text-[13px] uppercase tracking-widest text-sky-700 dark:text-sky-300 ${separatorClass}`}>TỔNG</td>
+                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-left sticky left-0 z-40 bg-sky-100 dark:bg-sky-900/60 font-extrabold text-[11px] sm:text-[13px] uppercase tracking-widest text-sky-700 dark:text-sky-300 ${separatorClass}`}>TỔNG</td>
                                 {/* Quantity */}
                                 {visibleColumns.includes('totalQuantity') && (
                                     <>
@@ -461,7 +461,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     if (!h || !visibleColumns.includes(h.key)) return null;
 
                                     if (!isComparisonMode) {
-                                        return <td className={`${footerCellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
+                                        return <td className={`${footerCellClass} font-bold text-emerald-700 dark:text-emerald-400 ${separatorClass}`}>
                                             {grandTotal.totalQuantity > 0 ? '100%' : '-'}
                                         </td>;
                                     } else {
@@ -477,7 +477,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     const avgQty = Math.ceil(grandTotal.totalQuantity / daysCountData.current);
                                     return (
                                         <>
-                                            <td className={`${footerCellClass} font-bold text-sky-600 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                                            <td className={`${footerCellClass} font-bold text-sky-700 dark:text-sky-400 ${!isComparisonMode ? separatorClass : ''}`}>
                                                 {avgQty > 0 ? formatQuantity(avgQty) : '-'}
                                             </td>
                                             {isComparisonMode && (() => {
@@ -503,7 +503,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     if (!h || !visibleColumns.includes(h.key)) return null;
 
                                     if (!isComparisonMode) {
-                                        return <td className={`${footerCellClass} font-bold text-amber-600 dark:text-amber-400 ${separatorClass}`}>
+                                        return <td className={`${footerCellClass} font-bold text-amber-700 dark:text-amber-400 ${separatorClass}`}>
                                             {grandTotal.totalRevenue > 0 ? '100%' : '-'}
                                         </td>;
                                     } else {

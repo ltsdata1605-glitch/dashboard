@@ -67,7 +67,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
             onClose={onClose}
             title="Cấu hình Mục Tiêu GTĐH (AOV)"
             subTitle="Thiết lập chỉ tiêu cảnh báo màu đỏ"
-            titleColorClass="text-rose-600 dark:text-rose-400"
+            titleColorClass="text-rose-700 dark:text-rose-400"
             maxWidth="lg"
         >
             <div className="-m-5 h-full flex flex-col bg-slate-50 dark:bg-slate-900">
@@ -110,7 +110,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                     setTargetValue(raw);
                                 }}
                                 placeholder="Ví dụ: 9.5"
-                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
+                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm font-bold text-rose-700 dark:text-rose-400"
                             />
                         </div>
                         <div className="w-full">
@@ -151,10 +151,10 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                             {gtdhList.map(([nhom, value]) => (
                                 <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-3 rounded-lg shadow-sm hover:border-sky-300 dark:hover:border-sky-500 transition-colors group">
                                     <div className="flex flex-col overflow-hidden pr-2">
-                                        <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
+                                        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
                                             {nhom}
                                         </span>
-                                        <span className="text-[10px] sm:text-[11px] font-semibold text-rose-600 dark:text-rose-400 mt-0.5">
+                                        <span className="text-[11px] sm:text-[11px] font-semibold text-rose-700 dark:text-rose-400 mt-0.5">
                                             GTĐH: {formatCurrency(value / 1000000)} T
                                         </span>
                                     </div>

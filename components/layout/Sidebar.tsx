@@ -100,7 +100,7 @@ const NavItem = React.memo(({
                     flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
                     ${isActive
                         ? 'bg-sky-100 dark:bg-sky-900/40 text-sky-700 font-semibold hover:bg-sky-200 dark:hover:bg-sky-900/60'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-500'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-sky-700 dark:hover:text-sky-500'
                     }
                 `}
             >
@@ -178,8 +178,8 @@ const NavItem = React.memo(({
                                         className={`
                                             flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative
                                             ${activeTab === sub.id
-                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-sky-700 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }
                                         `}
                                     >
@@ -297,7 +297,7 @@ export default function Sidebar() {
                             className="flex flex-col whitespace-nowrap"
                         >
                             <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
-                            <span className="text-[10px] font-bold text-sky-500 dark:text-sky-400 uppercase tracking-widest">Vibe Dashboard</span>
+                            <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400 uppercase tracking-widest">Vibe Dashboard</span>
                         </motion.div>
                     </div>
                 </div>
@@ -306,7 +306,7 @@ export default function Sidebar() {
                 <div className="flex-grow overflow-y-auto py-6 px-4 custom-scrollbar">
                     <div className="space-y-1">
                         {!effectiveCollapsed && (
-                            <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Menu Chính</p>
+                            <p className="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Menu Chính</p>
                         )}
                         {menuItems.map(item => (
                             <NavItem 
@@ -325,7 +325,7 @@ export default function Sidebar() {
                     {secondaryItems.length > 0 && (
                         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50 space-y-1">
                             {!effectiveCollapsed && (
-                                <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
+                                <p className="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
                             )}
                             {secondaryItems.map(item => (
                                 <NavItem
@@ -359,7 +359,7 @@ export default function Sidebar() {
                             {user?.photoURL ? (
                                 <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                             ) : (
-                                <span className="font-bold text-sky-600 dark:text-sky-400">
+                                <span className="font-bold text-sky-700 dark:text-sky-400">
                                     {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
                                 </span>
                             )}
@@ -373,7 +373,7 @@ export default function Sidebar() {
                             className="flex flex-col overflow-hidden whitespace-nowrap text-left"
                         >
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{user?.displayName || (isDemoMode ? "Tài khoản Thử nghiệm" : "Guest")}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
                         </motion.div>
                     </Button>
                 </div>

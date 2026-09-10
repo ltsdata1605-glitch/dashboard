@@ -27,15 +27,32 @@ async function openReportBi(page: Page) {
     await page.getByRole('button', { name: /Tổng quan/i }).first().waitFor({ timeout: 30_000 });
 }
 
+/** Vào module Phân Tích (root). Icon `BarChart3` của lucide render ra class
+ *  `lucide-chart-column` — KHÔNG phải `lucide-bar-chart-3` như tên component. */
+async function openPhanTich(page: Page) {
+    await page.goto('/');
+    const sidebar = page.locator('aside').first();
+    await sidebar.waitFor({ state: 'visible', timeout: 60_000 });
+    await sidebar.locator('button:has(svg.lucide-chart-column)').first().click();
+}
+
 /** Các màn hình được theo dõi. Thêm dần khi Đợt 1 tách tới file tương ứng. */
 const VIEWS: {
     name: string;
     go: (page: Page) => Promise<void>;
+    /** Mặc định vào Report BI. Đặt true để vào module Phân Tích. */
+    phanTich?: boolean;
     /** Mặc định chụp mọi <table>. Đặt selector để chụp khối không phải bảng (thẻ KPI...). */
     cardSelector?: string;
     /** Phần tử phải xuất hiện trước khi chụp. */
     waitFor?: string;
 }[] = [
+    {
+        // Phân Tích (root) — Đợt 5. Bảng "Chi tiết theo Kho".
+        name: 'phantich-chitiet-kho',
+        phanTich: true,
+        go: async () => { /* mở sẵn ở màn chính */ },
+    },
     {
         // KpiOverview — 4 thẻ KPI đầu màn Tổng quan (DT Thực / DTQĐ / HQQĐ / Trả Chậm).
         name: 'tongquan-kpi-cards',
@@ -127,7 +144,7 @@ for (const view of VIEWS) {
         const errors: string[] = [];
         page.on('pageerror', e => errors.push(String(e)));
 
-        await openReportBi(page);
+        if (view.phanTich) await openPhanTich(page); else await openReportBi(page);
         await view.go(page);
         // Phải NHỎ HƠN test timeout (60s trong playwright.config.ts): chờ đúng 60s thì test timeout bắn
         // trước và báo "Target page has been closed" — thông báo che mất nguyên nhân thật.

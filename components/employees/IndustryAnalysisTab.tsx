@@ -64,8 +64,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         });
         return formatAs === 'percentage' ? `${formattedVal}%` : formattedVal;
     };
-    const boldBlueText = 'font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2 py-0.5 rounded-lg';
-    const warningText = 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
+    const boldBlueText = 'font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2 py-0.5 rounded-lg';
+    const warningText = 'text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
     
     // ----------------------------
 
@@ -143,7 +143,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                     {formatPct(rowData.hieuQuaQD)}
                                                 </div>
                                             ) : (
-                                                <span className="text-sky-600 dark:text-sky-400">{formatPct(rowData.hieuQuaQD)}</span>
+                                                <span className="text-sky-700 dark:text-sky-400">{formatPct(rowData.hieuQuaQD)}</span>
                                             )}
                                         </td>
                                     );
@@ -303,18 +303,18 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className="min-w-0">
                         <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Phân Tích Khai Thác</h3>
-                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
                     <div className="flex items-center gap-1 sm:gap-1.5">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
                                 <Icon name="list" size={4} className="lg:hidden" />
                                 <Icon name="list" size={4.5} className="hidden lg:block" />
                                 <span className="hidden sm:inline">Chi tiết</span>
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
                                 <Icon name="percent" size={4} className="lg:hidden" />
                                 <Icon name="percent" size={4.5} className="hidden lg:block" />
                                 <span className="hidden sm:inline">Hiệu quả</span>
@@ -344,7 +344,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 variant="unstyled" size="none"
                                 key={f.key}
                                 onClick={() => handleToggleGroup(f.key)}
-                                className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                     isActive
                                     ? 'text-slate-800 dark:text-white'
                                     : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
@@ -361,7 +361,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                  variant="unstyled" size="none"
                                  onClick={() => onManageCustomTabs(viewMode)}
                                  title="Tạo thẻ mới"
-                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-sky-600 flex items-center justify-center shrink-0"
+                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-sky-700 flex items-center justify-center shrink-0"
                              >
                                  <Icon name="plus" size={4} className="lg:hidden" />
                                  <Icon name="plus" size={5} className="hidden lg:block" />
@@ -373,7 +373,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                                 <tr>
-                                    <th colSpan={2} rowSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-3 py-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[100px] sm:min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
+                                    <th colSpan={2} rowSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-3 py-1 text-center text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[100px] sm:min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                         <div className="flex items-center justify-center gap-1">
                                             NHÂN VIÊN
                                             {sortConfig.key === 'name' && (
@@ -385,13 +385,13 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         const f = dynamicQuickFilters.find(filter => filter.key === key);
                                         if (!f) return null;
                                         return (
-                                        <th key={f.key} colSpan={dynamicHeaderGroups[f.key]?.colSpan || 1} className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${dynamicHeaderGroups[f.key]?.bg || ''} ${dynamicHeaderGroups[f.key]?.text || ''} relative group/th`}>
+                                        <th key={f.key} colSpan={dynamicHeaderGroups[f.key]?.colSpan || 1} className={`px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${dynamicHeaderGroups[f.key]?.bg || ''} ${dynamicHeaderGroups[f.key]?.text || ''} relative group/th`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-sky-600 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={4}/></Button>}
-                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={4}/></Button>}
+                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-sky-700 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={4}/></Button>}
+                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={4}/></Button>}
                                             </div>
                                         </th>
                                     )})}
@@ -434,7 +434,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         <td colSpan={100} className={`px-2 sm:px-3 py-1 sm:py-1.5 ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700 sticky left-0 z-10`}>
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {employees.length} người</span>
+                                                <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {employees.length} người</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -459,7 +459,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 })}
                                 {Object.keys(processedData).length > 1 && groupTotals[dept] && (
                                     <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
-                                        <td colSpan={2} className="px-2 py-1 text-left text-[10px] sm:text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-800 z-20 border-b border-r border-slate-200 dark:border-slate-700">Tổng Nhóm</td>
+                                        <td colSpan={2} className="px-2 py-1 text-left text-[11px] sm:text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-800 z-20 border-b border-r border-slate-200 dark:border-slate-700">Tổng Nhóm</td>
                                          {renderDetailModeCells(groupTotals[dept])}
                                     </tr>
                                 )}
@@ -468,7 +468,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     </tbody>
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                          <tr>
-                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
+                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center text-[11px] sm:text-[12px] font-extrabold text-sky-700 dark:text-sky-300 uppercase tracking-widest sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 border-r border-slate-200 dark:border-slate-700">∑ Tổng</td>
                             {renderDetailModeCells(grandTotal)}
                         </tr>
                     </tfoot>

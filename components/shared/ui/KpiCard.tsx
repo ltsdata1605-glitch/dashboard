@@ -21,7 +21,7 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     sky: {
         gradient: 'from-sky-500 via-sky-400 to-sky-300',
         iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
-        iconText: 'text-sky-600 dark:text-sky-400',
+        iconText: 'text-sky-700 dark:text-sky-400',
         progressBg: 'bg-sky-100 dark:bg-sky-500/10',
         progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
         glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
@@ -39,7 +39,7 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     emerald: {
         gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
         iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
-        iconText: 'text-emerald-600 dark:text-emerald-400',
+        iconText: 'text-emerald-700 dark:text-emerald-400',
         progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
         progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
         glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
@@ -48,7 +48,7 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     amber: {
         gradient: 'from-amber-500 via-amber-400 to-amber-300',
         iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
-        iconText: 'text-amber-600 dark:text-amber-400',
+        iconText: 'text-amber-700 dark:text-amber-400',
         progressBg: 'bg-amber-100 dark:bg-amber-500/10',
         progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
         glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
@@ -57,7 +57,7 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     rose: {
         gradient: 'from-rose-500 via-rose-400 to-rose-300',
         iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
-        iconText: 'text-rose-600 dark:text-rose-400',
+        iconText: 'text-rose-700 dark:text-rose-400',
         progressBg: 'bg-rose-100 dark:bg-rose-500/10',
         progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
         glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',

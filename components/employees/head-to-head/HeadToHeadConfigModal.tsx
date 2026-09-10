@@ -337,7 +337,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             onClose={onClose}
             title={editingConfig ? "Chỉnh Sửa Bảng" : "Tạo Bảng Mới"}
             subTitle="Tùy chỉnh bảng so sánh hiệu suất trong 7 ngày"
-            titleColorClass="text-sky-600 dark:text-sky-400"
+            titleColorClass="text-sky-700 dark:text-sky-400"
             maxWidth="4xl"
             footer={
                 <div className="flex items-center justify-between">
@@ -365,13 +365,13 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     {/* Tabs for Table Type */}
                     <div className="border-b border-slate-200 dark:border-slate-800">
                         <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto custom-scrollbar">
-                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'data' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'data' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="database" size={4} /> Truy vấn Data
                             </Button>
-                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'calculated' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'calculated' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="calculator" size={4} /> Bảng Tính Toán
                             </Button>
-                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'target' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            <Button type="button" variant="unstyled" size="none" onClick={() => setTableType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'target' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="target" size={4} /> Thiết lập Target
                             </Button>
                         </nav>
@@ -382,7 +382,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                         <div ref={headersRef} className="relative z-50">
                             <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
                                 Tiêu đề nhóm (Cha)
-                                {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs text-slate-400">Chọn từ danh sách</span>}
+                                {existingMainHeaders.length > 0 && <span className="text-[11px] sm:text-xs text-slate-400">Chọn từ danh sách</span>}
                             </label>
                             <div className="relative">
                                 <Input 
@@ -401,7 +401,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                             {showHeadersList && (
                                 <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg max-h-56 overflow-y-auto py-1 z-20">
                                     {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
-                                        <div className="px-3 py-2 text-xs text-slate-500 italic bg-slate-50">Tạo nhóm chỉ số mới: <span className="font-semibold text-sky-600">{mainHeader}</span></div>
+                                        <div className="px-3 py-2 text-xs text-slate-500 italic bg-slate-50">Tạo nhóm chỉ số mới: <span className="font-semibold text-sky-700">{mainHeader}</span></div>
                                     )}
                                     {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
                                         <div 
@@ -410,7 +410,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                             onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
                                         >
                                             {h}
-                                            {mainHeader === h && <Icon name="check" size={4} className="text-sky-600" />}
+                                            {mainHeader === h && <Icon name="check" size={4} className="text-sky-700" />}
                                         </div>
                                     ))}
                                 </div>

@@ -42,7 +42,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setShowShareModal(true)}
-                        className="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 dark:hover:bg-sky-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-sky-100 dark:border-sky-800 rounded-lg"
+                        className="px-4 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-400 dark:hover:bg-sky-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-sky-100 dark:border-sky-800 rounded-lg"
                     >
                         <Icon name="share-2" size={4} />
                         Đăng Bài Chia Sẻ
@@ -62,7 +62,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                             <div>
                                 <div className="flex items-start justify-between gap-2 mb-3">
                                     <h4 className="font-bold text-slate-800 dark:text-white line-clamp-1">{config.description}</h4>
-                                    <span className={`px-2 py-1 text-[10px] font-bold whitespace-nowrap uppercase tracking-wider flex-shrink-0 rounded-md ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'}`}>
+                                    <span className={`px-2 py-1 text-[11px] font-bold whitespace-nowrap uppercase tracking-wider flex-shrink-0 rounded-md ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'}`}>
                                         {config.role === 'admin' ? 'Super Admin' : config.role === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
                                     </span>
                                 </div>
@@ -88,7 +88,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => onApplyConfig(config)}
-                                    className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 text-sm font-bold flex items-center gap-2 transition-colors rounded-lg"
+                                    className="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 text-sm font-bold flex items-center gap-2 transition-colors rounded-lg"
                                 >
                                     <Icon name="download-cloud" size={4} />
                                     Đồng Bộ Về Máy

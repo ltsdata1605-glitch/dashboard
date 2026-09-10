@@ -20,16 +20,16 @@ const CHART_COLORS = ['#0284c7', '#059669', '#f59e0b', '#f43f5e', '#6366f1', '#0
 // Giữ nguyên các key (blue/cyan/orange/pink/teal/violet/lime/fuchsia) để tra cứu cũ vẫn chạy,
 // nhưng ánh xạ về sắc độ semantic + indigo. Dùng sắc độ khác nhau để vẫn phân biệt được nhóm.
 const colorClasses: Record<string, { bg: string, text: string }> = {
-    blue:   { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
-    emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400' },
-    amber:  { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400' },
-    rose:   { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400' },
-    indigo: { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
+    blue:   { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
+    emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
+    amber:  { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
+    rose:   { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
+    indigo: { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
     cyan:   { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
     orange: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300' },
     pink:   { bg: 'bg-rose-100 dark:bg-rose-500/20', text: 'text-rose-700 dark:text-rose-300' },
     teal:   { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300' },
-    sky:    { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400' },
+    sky:    { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
     violet: { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
     slate:  { bg: 'bg-slate-100 dark:bg-slate-700/60', text: 'text-slate-500 dark:text-slate-400' },
     lime:   { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-500 dark:text-emerald-300' },
@@ -211,7 +211,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         return (
             <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
                 <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 truncate text-xs">{d.name}</div>
-                <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-sky-600 dark:text-sky-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
+                <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400' : 'text-emerald-700 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
                 <div className="text-slate-500 dark:text-slate-400 flex justify-between gap-3 text-[11px]"><span>Tỷ trọng:</span><span className="font-bold">{pct}%</span></div>
             </div>
         );
@@ -232,12 +232,12 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <div className="flex items-center gap-3">
                             <span>{getTitle('card')}</span>
                             {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
-                            <nav className="flex items-center text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
+                            <nav className="flex items-center text-[11px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
                                 {drilldownPath.length > 0 && (
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => handleBreadcrumbClick(0)}
-                                        className="px-1 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                                        className="px-1 hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                                     >
                                         Tất cả
                                     </Button>
@@ -248,7 +248,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => handleBreadcrumbClick(idx + 1)}
-                                            className="px-1 max-w-[110px] truncate hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                                            className="px-1 max-w-[110px] truncate hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                                             title={item}
                                         >
                                             {item}
@@ -269,7 +269,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('quantity')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
                         <Icon name="package" size={4} className="lg:hidden" />
@@ -278,7 +278,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('revenue')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
                         <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
@@ -308,7 +308,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         {/* Left Side Header (Level indicator) - always rendered for export, hidden on mobile screen only */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
                             {currentLevelLabel && (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 text-xs font-extrabold uppercase tracking-widest border border-sky-100 dark:border-sky-800/40">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 text-xs font-extrabold uppercase tracking-widest border border-sky-100 dark:border-sky-800/40">
                                     <Icon name="layers" size={3.5} />
                                     {currentLevelLabel}
                                     {isDrillable && drilldownPath.length < 2 && (
@@ -352,11 +352,11 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 <Icon name={icon} size={3} />
                                             </div>
                                             <div className="flex items-center gap-1 min-w-0 flex-1 lg:hidden">
-                                                <span className={`text-[9px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
-                                                <span className="text-[9px] font-black text-slate-800 dark:text-white truncate">
+                                                <span className={`text-[11px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
+                                                <span className="text-[11px] font-black text-slate-800 dark:text-white truncate">
                                                     {formatCurrency(revenue)}
                                                 </span>
-                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
+                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
                                                     {formatQuantity(quantity)} SP
                                                 </span>
                                             </div>
@@ -372,19 +372,19 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
                                                     <Icon name={icon} size={3.5} />
                                                 </div>
-                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
+                                                <span className={`text-[11px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-widerer`}>
                                                     {pct.toFixed(1)}%
                                                 </span>
                                             </div>
                                             <div className="hidden lg:block min-w-0">
-                                                <div className={`text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
-                                                <div className="text-[11px] font-black tracking-tight leading-none truncate">
+                                                <div className={`text-[11px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
+                                                <div className="text-[11px] font-black tracking-wider leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
                                                         : <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span>
                                                     }
                                                 </div>
-                                                <div className="mt-1 flex items-center gap-1 text-[8px] font-bold">
+                                                <div className="mt-1 flex items-center gap-1 text-[11px] font-bold">
                                                     <Icon name={metricToDisplay === 'revenue' ? 'package' : 'dollar-sign'} size={2.5} className="text-slate-400 dark:text-slate-500" />
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span> 
@@ -409,13 +409,13 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         {/* Right Side Header (Pie Chart Title) - always rendered for export */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
                             <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
                                     <Icon name="pie-chart" size={3.5} />
                                     {drilldownPath.length === 0
                                         ? (metricToDisplay === 'revenue' ? 'Tỷ trọng doanh thu' : 'Tỷ trọng số lượng')
                                         : `Top — ${drilldownPath[drilldownPath.length - 1]}`}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
                                     {pieChartData.length} mục
                                 </span>
                             </div>
@@ -468,7 +468,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mr-1" style={{ background: COLORS[idx % COLORS.length] }} />
                                                         <span className="text-[9.5px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
                                                     </div>
-                                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1">{pct}%</span>
+                                                    <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1">{pct}%</span>
                                                 </div>
                                             );
                                         })}

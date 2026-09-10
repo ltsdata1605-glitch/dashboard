@@ -109,13 +109,13 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
     // Responsive sizing based on mode
     // compact takes priority (used in 2-column grid for both draft + saved)
     // isDraft only enlarges when compact is false (full-width mode)
-    const dayNumSize  = compact  ? 'text-[8px] md:text-[9px]'
+    const dayNumSize  = compact  ? 'text-[11px] md:text-[11px]'
                       : isDraft  ? 'text-[16px] md:text-[20px] lg:text-[24px]'
                       :            'text-[12px] md:text-[14px]';
 
-    const lunarSize   = compact  ? 'text-[7px] md:text-[8px]'
+    const lunarSize   = compact  ? 'text-[7px] md:text-[11px]'
                       : isDraft  ? 'text-[12px] md:text-[14px]'
-                      :            'text-[9px] md:text-[10px]';
+                      :            'text-[11px] md:text-[11px]';
 
     // Revenue / % value size MUST be larger than day number size and completely symmetrical
     const valueSize   = compact  ? 'text-[13px] md:text-[14px] lg:text-[15px] xl:text-[17px]'
@@ -146,7 +146,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         <h2 className={`font-black uppercase tracking-tight text-slate-800 dark:text-slate-100 ${titleSize} flex items-center gap-2`}>
                             {title}
                             {isDraft && (
-                                <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 text-[9px] font-bold rounded border border-amber-200 dark:border-amber-700/50 hide-on-export leading-none">NHÁP</span>
+                                <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 text-[11px] font-bold rounded border border-amber-200 dark:border-amber-700/50 hide-on-export leading-none">NHÁP</span>
                             )}
                         </h2>
                         {actionButtons && (
@@ -155,24 +155,24 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             </div>
                         )}
                     </div>
-                    <div className={`font-bold mt-0.5 text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 flex-wrap ${compact ? 'text-[9px]' : 'text-[11px] md:text-[12px]'}`}>
+                    <div className={`font-bold mt-0.5 text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 flex-wrap ${compact ? 'text-[11px]' : 'text-[11px] md:text-[12px]'}`}>
                         <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md whitespace-nowrap">THÁNG {monthStr}.{year}</span>
                         {subtitle && (
                             <>
                                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                                <span className="bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
+                                <span className="bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
                             </>
                         )}
                         {displayTotal !== null && (
                             <>
                                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-black whitespace-nowrap whitespace-pre">TỔNG: {displayTotal}</span>
+                                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-black whitespace-nowrap whitespace-pre">TỔNG: {displayTotal}</span>
                             </>
                         )}
                         {!compact && (
                             <>
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                <span className="text-sky-600 dark:text-sky-400 font-extrabold flex items-center gap-1">
+                                <span className="text-sky-700 dark:text-sky-400 font-extrabold flex items-center gap-1">
                                     <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
                                     CẬP NHẬT MỚI
                                 </span>
@@ -186,7 +186,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                     {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, idx) => {
                         const isWeekend = idx >= 5;
                         return (
-                            <div key={day} className={`${compact ? 'py-0.5 text-[8px] md:text-[9px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-600 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
+                            <div key={day} className={`${compact ? 'py-0.5 text-[11px] md:text-[11px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-700 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
                                 {compact ? day : (idx === 0 ? 'THỨ HAI' : idx === 1 ? 'THỨ BA' : idx === 2 ? 'THỨ TƯ' : idx === 3 ? 'THỨ NĂM' : idx === 4 ? 'THỨ SÁU' : idx === 5 ? 'THỨ BẢY' : 'CHỦ NHẬT')}
                             </div>
                         );
@@ -223,7 +223,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             bgClass = 'bg-amber-50/40 dark:bg-[#2c1d11]';
                             borderClass = 'border-amber-100 dark:border-amber-900/40';
                             textClass = 'text-amber-700 dark:text-amber-400';
-                            dayNumClass = 'text-amber-600 dark:text-amber-500';
+                            dayNumClass = 'text-amber-700 dark:text-amber-500';
                             barColor = 'bg-amber-500';
                         }
 
@@ -237,7 +237,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             bgClass = 'bg-rose-50/80 dark:bg-rose-900/20';
                             borderClass = 'border-rose-300 dark:border-rose-800/50';
                             textClass = 'text-rose-700 dark:text-rose-400';
-                            dayNumClass = 'text-rose-600 dark:text-rose-500';
+                            dayNumClass = 'text-rose-700 dark:text-rose-500';
                             barColor = 'bg-rose-500';
                             if (isToday) borderClass = 'border-rose-500 ring-2 ring-rose-500/30';
                         }
@@ -249,7 +249,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             >
                                 {/* Top Row: Solar & Lunar Date */}
                                 <div className="flex justify-between items-start w-full">
-                                    <span className={`font-black ${isToday ? 'text-sky-600 dark:text-sky-400' : dayNumClass} ${dayNumSize} leading-none`}>
+                                    <span className={`font-black ${isToday ? 'text-sky-700 dark:text-sky-400' : dayNumClass} ${dayNumSize} leading-none`}>
                                         {dayData.day}
                                     </span>
                                     <span className={`font-bold ${lunarSize} text-slate-400 dark:text-slate-500 leading-none`}>
@@ -265,7 +265,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                                 {/* Bottom Row: Bar & Holiday */}
                                 <div className="flex flex-col items-center justify-end w-full mt-auto">
                                     {dayData.holidayName && (
-                                        <span className={`font-bold text-rose-500 dark:text-rose-400 whitespace-nowrap overflow-hidden text-ellipsis mb-0.5 ${compact ? 'text-[8px] max-w-[40px]' : 'text-[10px] md:text-[11px] max-w-[80px]'}`} title={dayData.holidayName}>
+                                        <span className={`font-bold text-rose-500 dark:text-rose-400 whitespace-nowrap overflow-hidden text-ellipsis mb-0.5 ${compact ? 'text-[11px] max-w-[40px]' : 'text-[11px] md:text-[11px] max-w-[80px]'}`} title={dayData.holidayName}>
                                             {dayData.holidayName}
                                         </span>
                                     )}

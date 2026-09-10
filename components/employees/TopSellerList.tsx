@@ -83,7 +83,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Top Nhân Viên</h3>
-                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
+                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export shrink-0">
@@ -91,7 +91,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(false)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Top/Bot 20%"
                         >
                             <Icon name="percent" size={4} className="lg:hidden" />
@@ -100,7 +100,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(true)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Tất cả"
                         >
                             <Icon name="layout-list" size={4} className="lg:hidden" />
@@ -142,7 +142,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                 {showHeader && (
                                     <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-slate-800/50 px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
                                         <span className="w-1 sm:w-1.5 h-3 sm:h-4 rounded-full flex-shrink-0" style={{background: '#3b82f6'}} />
-                                        <span className="text-[9px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
+                                        <span className="text-[11px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
                                             {dept} <span className="opacity-60 ml-1 sm:ml-2 font-medium bg-slate-200/50 dark:bg-slate-700 px-1.5 sm:px-2 py-0.5 rounded-full">{groupedSellers[dept].length} NS</span>
                                         </span>
                                     </div>
@@ -161,7 +161,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">
                                                         <p className="font-bold text-slate-800 dark:text-slate-100 text-[11px] sm:text-sm truncate">{abbreviateName(seller.name)}</p>
-                                                        <div className="text-[9px] sm:text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-1.5 sm:gap-x-3 gap-y-0 sm:gap-y-0.5 mt-0 sm:mt-1">
+                                                        <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-1.5 sm:gap-x-3 gap-y-0 sm:gap-y-0.5 mt-0 sm:mt-1">
                                                             <span><strong className="text-slate-600 dark:text-slate-300">Thực:</strong> {formatCurrency(seller.doanhThuThuc, 0)}</span>
                                                             <span className="inline-flex items-center"><strong className="text-slate-600 dark:text-slate-300">HQQĐ:</strong><span className={`ml-0.5 ${hieuQuaClass}`}>{Number(seller.hieuQuaValue || 0).toFixed(0)}%</span></span>
                                                             <span><strong className="text-slate-600 dark:text-slate-300">T.Cận:</strong> {formatQuantity(seller.slTiepCan)}</span>
@@ -170,8 +170,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                                         </div>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
-                                                        <p className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
-                                                        <p className="font-bold text-sm sm:text-lg text-sky-600 dark:text-sky-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
+                                                        <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
+                                                        <p className="font-bold text-sm sm:text-lg text-sky-700 dark:text-sky-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
                                                     </div>
                                                 </div>
                                             </div>

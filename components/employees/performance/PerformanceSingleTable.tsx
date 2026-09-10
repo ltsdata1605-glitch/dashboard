@@ -187,7 +187,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className="min-w-0">
                         <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{theme.title}</h3>
-                        <p className="text-[10px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
+                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
                     </div>
                 </div>
 
@@ -203,7 +203,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     variant="unstyled" size="none"
-                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     title={tabLabel}
                                 >
                                     <Icon name={tabIcon} size={4} className="lg:hidden" />
@@ -247,7 +247,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* Thead */}
                     <thead className="sticky top-0 z-20">
                         {/* Group Headers */}
-                        <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
                             <th 
                                 colSpan={2} 
                                 rowSpan={2} 
@@ -281,7 +281,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             ))}
                         </tr>
                         {/* Sub Headers */}
-                        <tr className="bg-white dark:bg-slate-900 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <tr className="bg-white dark:bg-slate-900 text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             {/* Data cols */}
                             {headers.map(h => {
                                 if (h.noSubHeader) return null;
@@ -319,7 +319,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         if (e.key === 'Escape') setIsEditingTarget(false);
                                                     }}
                                                 />
-                                                <span className="text-[9px] font-bold text-sky-500 dark:text-sky-400 whitespace-nowrap">Tr</span>
+                                                <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400 whitespace-nowrap">Tr</span>
                                             </div>
                                         ) : (
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
@@ -327,7 +327,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 {h.label}
                                                 {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-sky-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-sky-600 dark:hover:text-sky-400 transition-opacity shrink-0 hide-on-export">
+                                                    <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-sky-700 dark:hover:text-sky-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
                                                     </Button>
                                                 )}
@@ -335,7 +335,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                     <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                                 {copyKey === h.key && (
-                                                    <span className="ml-1 text-emerald-600 text-[10px] font-bold animate-pulse absolute -top-1 right-1 hide-on-export">✓</span>
+                                                    <span className="ml-1 text-emerald-700 text-[11px] font-bold animate-pulse absolute -top-1 right-1 hide-on-export">✓</span>
                                                 )}
                                             </div>
                                         )}
@@ -362,7 +362,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             <td colSpan={2 + headers.length} className={`px-2 sm:px-4 py-1 sm:py-1.5 ${dc.strip} border-y border-slate-200 dark:border-slate-700`}>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                                     <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${dc.badge} flex-shrink-0`} />
-                                                    <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${dc.text}`}>
+                                                    <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${dc.text}`}>
                                                         {dept || 'Không Phân Ca'} — {employees.length} người
                                                     </span>
                                                 </div>
@@ -408,18 +408,18 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             <span className="font-extrabold text-slate-800 dark:text-slate-100">{formatCurrency(emp.doanhThuQD)}</span>
                                                         )}
                                                         {h.key === 'hieuQuaValue' && (
-                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0), kpiTargets?.hieuQua)}`}>
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0), kpiTargets?.hieuQua)}`}>
                                                                 {Number(emp.hieuQuaValue || 0).toFixed(0)}%
                                                             </span>
                                                         )}
                                                         {h.key === 'dtTraChamPercent_CE_ICT' && (
-                                                            <span className={`text-[10px] ${getTraChamBadge(Number(emp.dtTraChamPercent_CE_ICT || 0), kpiTargets?.traGop)}`}>
+                                                            <span className={`text-[11px] ${getTraChamBadge(Number(emp.dtTraChamPercent_CE_ICT || 0), kpiTargets?.traGop)}`}>
                                                                 {Number(emp.dtTraChamPercent_CE_ICT || 0).toFixed(0)}%
                                                             </span>
                                                         )}
                                                         {(h.key === 'weakPointsRevenue' || h.key === 'weakPointsExploitation') && (
-                                                            <span className={`inline-flex items-center justify-center min-w-[18px] px-1 py-0.5 rounded-full text-[10px] font-black ${Number(emp[h.key] || 0) > 0
-                                                                ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'
+                                                            <span className={`inline-flex items-center justify-center min-w-[18px] px-1 py-0.5 rounded-full text-[11px] font-black ${Number(emp[h.key] || 0) > 0
+                                                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400'
                                                                 : 'text-slate-300 dark:text-slate-700'}`}>
                                                                 {emp[h.key] || '—'}
                                                             </span>
@@ -437,7 +437,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             <span className="font-bold text-slate-600 dark:text-slate-400">{formatQuantity(emp.slTraCham_CE_ICT)}</span>
                                                         )}
                                                         {h.key === 'traChamPercent_CE_ICT' && (
-                                                            <span className={`text-[10px] ${getTraChamBadge(Number(emp.traChamPercent_CE_ICT || 0))}`}>
+                                                            <span className={`text-[11px] ${getTraChamBadge(Number(emp.traChamPercent_CE_ICT || 0))}`}>
                                                                 {Number(emp.traChamPercent_CE_ICT || 0).toFixed(0)}%
                                                             </span>
                                                         )}
@@ -446,7 +446,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         )}
                                                         {h.key === 'percentHT' && (
                                                             <div className="flex flex-col items-center gap-1 min-w-[64px]">
-                                                                <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${getPercentBadge(Number(emp.percentHT || 0))}`}>
+                                                                <span className={`text-[11px] font-extrabold px-1.5 py-0.5 rounded ${getPercentBadge(Number(emp.percentHT || 0))}`}>
                                                                     {Number(emp.percentHT || 0).toFixed(0)}%
                                                                 </span>
                                                                 <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -458,7 +458,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             </div>
                                                         )}
                                                         {h.key === 'dtVuot' && (
-                                                            <span className={`font-extrabold text-[11px] ${Number(emp.dtVuot || 0) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-700'}`}>
+                                                            <span className={`font-extrabold text-[11px] ${Number(emp.dtVuot || 0) > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-700'}`}>
                                                                 {Number(emp.dtVuot || 0) > 0 ? `+${formatCurrency(emp.dtVuot)}` : '—'}
                                                             </span>
                                                         )}
@@ -475,7 +475,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* ── Footer ── */}
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
                         <tr>
-                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[10px] sm:text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[11px] sm:text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
                                 ∑ Tổng
                             </td>
                             {headers.map(h => (
@@ -493,7 +493,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                         {h.key === 'target' && formatCurrency(grandTotal?.target ?? 0, 0)}
                                         {h.key === 'percentHT' && (
                                             <div className="flex flex-col items-center gap-0.5">
-                                                <span className="text-[10px] font-bold">{Number(grandTotal?.percentHT ?? 0).toFixed(0)}%</span>
+                                                <span className="text-[11px] font-bold">{Number(grandTotal?.percentHT ?? 0).toFixed(0)}%</span>
                                                 <div className="w-12 h-1 bg-sky-200/50 dark:bg-sky-800/50 rounded-full overflow-hidden">
                                                     <div className="h-full bg-sky-500 transition-all duration-500" style={{ width: `${Math.min(Number(grandTotal?.percentHT ?? 0), 100)}%` }} />
                                                 </div>

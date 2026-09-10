@@ -53,7 +53,7 @@ const LoginView: React.FC = () => {
             <div className="max-w-md w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50 animate-fade-in-up">
                 <div className="flex justify-center mb-8">
                     <div className="w-16 h-16 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center shadow-lg shadow-sky-100 dark:shadow-sky-900/20">
-                        <Icon name="layout-dashboard" className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+                        <Icon name="layout-dashboard" className="w-8 h-8 text-sky-700 dark:text-sky-400" />
                     </div>
                 </div>
                 
@@ -68,14 +68,14 @@ const LoginView: React.FC = () => {
                         <p className="leading-relaxed">
                             Anh/Chị đang truy cập qua trình duyệt của <strong>Zalo/Facebook</strong>. Trình duyệt này chặn cửa sổ đăng nhập Google.
                         </p>
-                        <p className="font-semibold text-sky-600 dark:text-sky-400">
+                        <p className="font-semibold text-sky-700 dark:text-sky-400">
                             👉 Vui lòng nhấn vào nút ba dấu chấm (...) ở góc màn hình rồi chọn "Mở bằng trình duyệt" (hoặc "Mở bằng Safari / Chrome") để đăng nhập nhé!
                         </p>
                     </div>
                 )}
                 
                 {error && (
-                    <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium border border-rose-100 dark:border-rose-800 whitespace-pre-line">
+                    <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 rounded-xl text-sm font-medium border border-rose-100 dark:border-rose-800 whitespace-pre-line">
                         {error}
                         <div className="mt-2 text-xs opacity-80 font-normal">(Anh/Chị cần chắc chắn đã cấu hình mã Firebase đúng trong thư mục services/firebase.ts nhé!)</div>
                     </div>
@@ -117,7 +117,7 @@ const LoginView: React.FC = () => {
                         <Icon name="glasses" size={5} />
                         Kích hoạt Chế độ Dùng Thử
                     </Button>
-                    <p className="text-[10px] text-center text-slate-400 mt-2 px-2 leading-relaxed">
+                    <p className="text-[11px] text-center text-slate-400 mt-2 px-2 leading-relaxed">
                         Phiên bản Offline sẽ không lưu được Setting hay File lên Cloud, dữ liệu chỉ xử lý ở local. 
                     </p>
                 </div>

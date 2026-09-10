@@ -53,7 +53,7 @@ const FilterProcessingOverlay: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide uppercase">
                         Đang xử lý bộ lọc
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                         Vui lòng đợi trong giây lát...
                     </span>
                 </div>

@@ -96,17 +96,17 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         >
                                             {file.filename}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-sky-50/50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/30 shrink-0">
+                                        <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50/50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/30 shrink-0">
                                             {file.rowCount.toLocaleString('vi-VN')} dòng
                                         </span>
                                         {file.isMissingLocalData && (
-                                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
+                                            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
                                                 <Icon name="alert-triangle" size={2.5} className="text-rose-500 animate-pulse" />
                                                 Thiếu dữ liệu - Hãy nạp lại
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                                    <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                                         <span className="flex items-center gap-1">
                                             <Icon name="clock" size={3} />
                                             {formatDate(file.savedAt)}

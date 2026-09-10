@@ -172,14 +172,14 @@ export const CheckThuongView: React.FC = () => {
                 <input
                     type="text"
                     placeholder="Kho 1"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-36 px-4 py-2 text-sm'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-36 px-4 py-2 text-sm'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                     value={codes.code1}
                     onChange={(e) => handleCodeChange('code1', e.target.value)}
                 />
                 <input
                     type="text"
                     placeholder="Kho 2"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-32 px-4 py-2 text-sm border-l border-slate-100 dark:border-slate-700'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                    className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-32 px-4 py-2 text-sm border-l border-slate-100 dark:border-slate-700'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                     value={codes.code2}
                     onChange={(e) => handleCodeChange('code2', e.target.value)}
                 />

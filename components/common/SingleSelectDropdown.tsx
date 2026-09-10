@@ -72,17 +72,17 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
     const selectedLabel = selectedOption ? selectedOption.label : label;
 
     const renderContent = () => {
-        // We always use the text-[10px] with uppercase and tracking-wider to match other inputs.
+        // We always use the text-[11px] with uppercase and tracking-wider to match other inputs.
         // If variant=compact OR there is no selection, show it plainly (with indigo color if selected)
         if (!hasSelection || variant === 'compact') {
-            return <span className={`font-medium uppercase tracking-wider whitespace-nowrap text-[10px] ${hasSelection ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`}>
+            return <span className={`font-medium uppercase tracking-wider whitespace-nowrap text-[11px] ${hasSelection ? 'text-sky-700 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`}>
                 {variant === 'compact' && hasSelection && selectedLabel !== 'Tất cả' ? selectedLabel : label}
             </span>;
         }
 
         // Default variant with a selection shows a pill
         return (
-            <span className="bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 font-medium max-w-[120px] truncate">
+            <span className="bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-[11px] px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 font-medium max-w-[120px] truncate">
                 {selectedLabel}
             </span>
         );
@@ -165,7 +165,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                             }`}
                                         >
                                             <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option.label}</span>
-                                            {isSelected && <Icon name="check" size={3.5} className="text-sky-600 dark:text-sky-400 flex-shrink-0" />}
+                                            {isSelected && <Icon name="check" size={3.5} className="text-sky-700 dark:text-sky-400 flex-shrink-0" />}
                                         </Button>
                                     );
                                 })}

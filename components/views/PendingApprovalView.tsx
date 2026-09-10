@@ -77,7 +77,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                 className="w-full h-full rounded-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 flex items-center justify-center text-3xl font-bold uppercase">
+                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 flex items-center justify-center text-3xl font-bold uppercase">
                                 {user?.email ? user.email[0] : '?'}
                             </div>
                         )}

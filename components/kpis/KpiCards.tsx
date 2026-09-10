@@ -12,10 +12,10 @@ interface KpiCardsProps {
 /** Map iconColor (kể cả tên màu cũ) sang class text màu tương ứng — dùng cho cả 2 nhánh valueColor bên dưới */
 function iconColorToTextClass(iconColor: string): string {
     switch (iconColor) {
-        case 'blue': case 'sky': return 'text-sky-600 dark:text-sky-400';
-        case 'emerald': case 'teal': return 'text-emerald-600 dark:text-emerald-400';
-        case 'pink': case 'red': case 'rose': return 'text-rose-600 dark:text-rose-400';
-        case 'orange': case 'amber': return 'text-amber-600 dark:text-amber-400';
+        case 'blue': case 'sky': return 'text-sky-700 dark:text-sky-400';
+        case 'emerald': case 'teal': return 'text-emerald-700 dark:text-emerald-400';
+        case 'pink': case 'red': case 'rose': return 'text-rose-700 dark:text-rose-400';
+        case 'orange': case 'amber': return 'text-amber-700 dark:text-amber-400';
         case 'purple': case 'violet': case 'slate': return 'text-slate-600 dark:text-slate-400';
         case 'indigo': return 'text-sky-700 dark:text-sky-400';
         default: return 'text-slate-800 dark:text-slate-200';
@@ -55,7 +55,7 @@ const KpiTargetEditor: React.FC<{
                 }}
                 className="w-16 px-1.5 py-0.5 text-center text-xs font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 rounded-md focus:ring-2 focus:ring-sky-500 outline-none"
             />
-            {suffix && <span className="text-[10px] font-bold text-slate-500">{suffix}</span>}
+            {suffix && <span className="text-[11px] font-bold text-slate-500">{suffix}</span>}
         </div>
     );
 };
@@ -308,11 +308,11 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         finalTrendValue = revenueTarget > 0
                             ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                 <span>{formatCurrency(activeTarget)}</span>
-                                <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                     {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
                                 </span>
                             </span>
-                            : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
+                            : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[11px] transition-colors">Nhấp để cài đặt</span>;
                     } else if (config.targetRef === 'hieuQua') {
                         finalTrendLabel = "Mục tiêu";
                         editableField = 'hieuQua';
@@ -325,7 +325,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                     <span>{hieuQuaTarget}%</span>
-                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                    <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
                                     </span>
                                 </span>
@@ -343,7 +343,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                                     <span>{traGopTarget}%</span>
-                                    <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                    <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                         {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
                                     </span>
                                 </span>
@@ -380,9 +380,9 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="flex flex-col items-center lg:items-end leading-tight">
                             <span>{formattedActive} / {pctHT.toFixed(0)}%</span>
-                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
+                            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
                           </span>
-                        : <span className="text-slate-400 italic text-[10px]">Chưa cài đặt</span>;
+                        : <span className="text-slate-400 italic text-[11px]">Chưa cài đặt</span>;
                 }
  
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
@@ -403,11 +403,11 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
-                            <span className={`text-[9px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                            <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                 {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
                             </span>
                         </span>
-                        : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
+                        : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[11px] transition-colors">Chưa cài đặt</span>;
                 }
  
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
@@ -422,15 +422,15 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         // Dòng phụ bên dưới để đồng bộ bố cục footer 2 dòng với các thẻ khác (HQQĐ/TRẢ CHẬM...)
                         finalTrendValue = (
                             <span className="flex flex-col items-center lg:items-end leading-tight">
-                                <span className="text-rose-600 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
-                                <span className="text-[9px] font-medium text-rose-400 dark:text-rose-500">Chờ xuất</span>
+                                <span className="text-rose-700 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
+                                <span className="text-[11px] font-medium text-rose-400 dark:text-rose-500">Chờ xuất</span>
                             </span>
                         );
                     } else {
                         finalTrendValue = (
                             <span className="flex flex-col items-center lg:items-end leading-tight">
-                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">Không có đơn chờ</span>
-                                <span className="text-[9px] font-medium text-emerald-400 dark:text-emerald-500">Đã xử lý hết</span>
+                                <span className="text-emerald-700 dark:text-emerald-400 font-bold">Không có đơn chờ</span>
+                                <span className="text-[11px] font-medium text-emerald-400 dark:text-emerald-500">Đã xử lý hết</span>
                             </span>
                         );
                     }
@@ -441,10 +441,10 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                 if ((config.hasTarget && config.targetType !== 'none') || (isDTThucCard && dtThucTarget > 0)) {
                     // "Chưa đạt mục tiêu" dùng đúng màu định danh riêng của thẻ (thay vì amber chung cho mọi thẻ)
                     // để tránh 2 thẻ khác màu (vd. HQQĐ=slate, TRẢ CHẬM=amber) hiển thị con số trùng màu khi cùng dưới target.
-                    valueColor = isGood ? 'text-emerald-600 dark:text-emerald-400' : iconColorToTextClass(config.iconColor);
-                    if (config.metric === 'doanhThuQD') valueColor = 'text-sky-600 dark:text-sky-400';
+                    valueColor = isGood ? 'text-emerald-700 dark:text-emerald-400' : iconColorToTextClass(config.iconColor);
+                    if (config.metric === 'doanhThuQD') valueColor = 'text-sky-700 dark:text-sky-400';
                 } else if (isSpecialUnshipped) {
-                    valueColor = rawValue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500';
+                    valueColor = rawValue > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500';
                 } else {
                     valueColor = iconColorToTextClass(config.iconColor);
                 }

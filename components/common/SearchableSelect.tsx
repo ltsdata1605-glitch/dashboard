@@ -81,7 +81,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                             >
                                 <span className="block truncate italic">{placeholder}</span>
                                 {!value && (
-                                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-600">
+                                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-700">
                                         <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
                                     </span>
                                 )}
@@ -95,7 +95,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                     >
                                         <span className="block truncate">{opt}</span>
                                         {value === opt && (
-                                            <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-600">
+                                            <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-700">
                                                 <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
                                             </span>
                                         )}
@@ -105,7 +105,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                 allowCustom && searchTerm.trim() ? (
                                     <li
                                         onClick={() => handleSelect(searchTerm.trim())}
-                                        className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-slate-700 font-medium"
+                                        className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-slate-700 font-medium"
                                     >
                                         <span className="block truncate">Sử dụng "{searchTerm.trim()}"</span>
                                     </li>

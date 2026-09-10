@@ -61,7 +61,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
             <div className="-m-5 flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
                         <Icon name="alert-triangle" size={6} className="animate-pulse" />
                     </div>
                     <div>
@@ -77,7 +77,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                 {/* Details Section */}
                 <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/80 rounded-xl p-4 space-y-3 text-xs">
                     <div>
-                        <span className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                        <span className="block text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                             Tệp mới tải lên
                         </span>
                         <div className="flex items-center gap-2">
@@ -85,14 +85,14 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             <strong className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[280px]" title={newFilename}>
                                 {newFilename}
                             </strong>
-                            <span className="px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[9px] shrink-0">
+                            <span className="px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[11px] shrink-0">
                                 {newDateRangeStr}
                             </span>
                         </div>
                     </div>
 
                     <div className="border-t border-slate-200/60 dark:border-slate-800/60 pt-3">
-                        <span className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+                        <span className="block text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
                             Dữ liệu xung đột phát hiện được
                         </span>
                         <div className="space-y-2.5 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
@@ -102,23 +102,23 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                         <span className="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title={conflict.conflictingFilename}>
                                             📄 {conflict.conflictingFilename}
                                         </span>
-                                        <span className={`px-1 rounded text-[8px] font-extrabold uppercase shrink-0 ${
+                                        <span className={`px-1 rounded text-[11px] font-extrabold uppercase shrink-0 ${
                                             conflict.targetType === 'realtime' 
-                                            ? 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-400'
+                                            ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400'
                                             : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                                         }`}>
                                             {conflict.targetType === 'realtime' ? 'Bảng ĐK Hiện Tại' : 'Lịch Sử'}
                                         </span>
                                     </div>
                                     {conflict.type === 'exact_duplicate' ? (
-                                        <span className="text-amber-600 dark:text-amber-500 font-medium">⚠️ Trùng lặp hoàn toàn tên tệp & thời gian</span>
+                                        <span className="text-amber-700 dark:text-amber-500 font-medium">⚠️ Trùng lặp hoàn toàn tên tệp & thời gian</span>
                                     ) : (
                                         <div className="text-slate-500 dark:text-slate-400 flex flex-col gap-0.5 pl-4">
                                             <span>
                                                 • {conflict.overlappingDates.length} ngày bị trùng ({formatOverlappingDates(conflict.overlappingDates)})
                                             </span>
                                             {conflict.totalOverlappingOrdersCount !== undefined && conflict.totalOverlappingOrdersCount > 0 && (
-                                                <span className="text-amber-600 dark:text-amber-500 font-medium">
+                                                <span className="text-amber-700 dark:text-amber-500 font-medium">
                                                     • {conflict.totalOverlappingOrdersCount} đơn hàng có thể bị lặp
                                                 </span>
                                             )}
@@ -132,7 +132,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
 
                 {/* Resolution Choices */}
                 <div className="space-y-2">
-                    <span className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                    <span className="block text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                         Vui lòng chọn cách xử lý dữ liệu trùng
                     </span>
 
@@ -148,10 +148,10 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                 1
                             </div>
                             <div className="flex-1 min-w-0">
-                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xs sm:text-[13px]">
+                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-700 dark:group-hover:text-amber-400 text-xs sm:text-[13px]">
                                     Ghi đè & Tắt tệp cũ bị trùng
                                 </span>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                                     Tắt các tệp cũ có trùng lặp ngày khỏi báo cáo. Chỉ sử dụng dữ liệu mới nạp này để xem doanh thu khoảng trùng.
                                 </p>
                             </div>
@@ -171,7 +171,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-500 dark:group-hover:text-rose-400 text-xs sm:text-[13px]">
                                     Gộp đè toàn bộ (Cộng dồn số liệu)
                                 </span>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
                                     Không loại bỏ đơn hàng nào. Số liệu của những ngày trùng nhau sẽ bị cộng dồn lên (có thể gây lệch báo cáo thực tế).
                                 </p>
                             </div>

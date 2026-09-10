@@ -42,7 +42,7 @@ export const TabModal: React.FC<{
             onClose={onClose}
             title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"}
             subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"}
-            titleColorClass="text-sky-600 dark:text-sky-400"
+            titleColorClass="text-sky-700 dark:text-sky-400"
             maxWidth="md"
             footer={
                 <div className="flex justify-end gap-2 sm:gap-3">
@@ -107,7 +107,7 @@ export const TableModal: React.FC<{
             onClose={onClose}
             title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"}
             subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"}
-            titleColorClass="text-emerald-600 dark:text-emerald-400"
+            titleColorClass="text-emerald-700 dark:text-emerald-400"
             maxWidth="md"
             footer={
                 <div className="flex justify-end gap-2 sm:gap-3">
@@ -119,7 +119,7 @@ export const TableModal: React.FC<{
             <form onSubmit={handleSubmit}>
                 <div className="space-y-3 sm:space-y-4">
                     <div>
-                        <label htmlFor="tableName" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Bảng</label>
+                        <label htmlFor="tableName" className="block text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Bảng</label>
                         <Input
                             ref={inputRef}
                             id="tableName"
@@ -133,7 +133,7 @@ export const TableModal: React.FC<{
                     </div>
                     {isEditing && columns.length > 0 && (
                         <div>
-                            <label htmlFor="sortColumn" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Sắp xếp mặc định (giảm dần)</label>
+                            <label htmlFor="sortColumn" className="block text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Sắp xếp mặc định (giảm dần)</label>
                             <Select
                                 id="sortColumn"
                                 value={sortColumnId}

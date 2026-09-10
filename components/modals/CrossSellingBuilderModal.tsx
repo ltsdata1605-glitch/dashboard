@@ -220,7 +220,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
             onClose={onClose}
             title="Cấu Hình Bảng Động"
             subTitle="Tuỳ biến cột/dòng"
-            titleColorClass="text-sky-600"
+            titleColorClass="text-sky-700"
             maxWidth="xl"
             footer={
                 <div className="flex items-center justify-end gap-2 sm:gap-3">
@@ -238,11 +238,11 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     <Button
                         variant="unstyled" size="none"
                         onClick={loadSampleConfig}
-                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
                     >
                         <Icon name="layout-template" size={3.5} /> Nạp Cấu Hình Mẫu
                     </Button>
-                    <div className="text-[9px] sm:text-[10px] text-slate-400 italic">Tính năng thiết lập Cấu hình mẫu tự động dựa vào ảnh mẫu</div>
+                    <div className="text-[11px] sm:text-[11px] text-slate-400 italic">Tính năng thiết lập Cấu hình mẫu tự động dựa vào ảnh mẫu</div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 sm:p-5 custom-scrollbar space-y-5 sm:space-y-8">
@@ -250,18 +250,18 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
-                                <Icon name="columns" size={4} className="text-sky-600 dark:text-sky-400 hidden sm:block" />
-                                <Icon name="columns" size={3.5} className="text-sky-600 dark:text-sky-400 sm:hidden" />
+                                <Icon name="columns" size={4} className="text-sky-700 dark:text-sky-400 hidden sm:block" />
+                                <Icon name="columns" size={3.5} className="text-sky-700 dark:text-sky-400 sm:hidden" />
                                 Cấu Hình Cột
                             </h3>
                             <div className="flex gap-1.5 sm:gap-2">
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
                                     <Icon name="target" size={3} className="sm:hidden" /><Icon name="target" size={3.5} className="hidden sm:block" /> Mục Tiêu
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                     <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Dữ Liệu
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
                                     <Icon name="percent" size={3} className="sm:hidden" /><Icon name="percent" size={3.5} className="hidden sm:block" /> Tỉ Lệ
                                 </Button>
                             </div>
@@ -270,7 +270,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                         <div className="p-2.5 sm:p-4 space-y-2.5 sm:space-y-3">
                             {config.columns.map((col, cIdx) => (
                                 <div key={col.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                    <div className={`w-12 flex items-center justify-center rounded font-black text-sm ${col.type === 'target' ? 'bg-amber-100 text-amber-600' : col.type === 'ratio' ? 'bg-rose-100 text-rose-600' : 'bg-sky-100 text-sky-600'}`}>
+                                    <div className={`w-12 flex items-center justify-center rounded font-black text-sm ${col.type === 'target' ? 'bg-amber-100 text-amber-700' : col.type === 'ratio' ? 'bg-rose-100 text-rose-700' : 'bg-sky-100 text-sky-700'}`}>
                                         Cột {cIdx + 1}
                                     </div>
                                     <div className="flex-1 space-y-2">
@@ -347,7 +347,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                 </div>
                                             )}
                                             {col.type === 'target' && (
-                                                <div className="flex-1 text-xs text-amber-600 dark:text-amber-500 font-medium italic">
+                                                <div className="flex-1 text-xs text-amber-700 dark:text-amber-500 font-medium italic">
                                                     Cột này sẽ vạch ra mốc Chỉ Tiêu (Target %) dựa trên thiết lập từng Dòng bên dưới.
                                                 </div>
                                             )}
@@ -364,11 +364,11 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
-                                <Icon name="list" size={3.5} className="text-sky-600 dark:text-sky-400 sm:hidden" />
-                                <Icon name="list" size={4.5} className="text-sky-600 dark:text-sky-400 hidden sm:block" />
+                                <Icon name="list" size={3.5} className="text-sky-700 dark:text-sky-400 sm:hidden" />
+                                <Icon name="list" size={4.5} className="text-sky-700 dark:text-sky-400 hidden sm:block" />
                                 Cấu Hình Dòng
                             </h3>
-                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
+                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                 <Icon name="plus" size={3.5} /> Thêm Nhóm
                             </Button>
                         </div>
@@ -377,7 +377,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                             {config.sections.map((section, sIdx) => (
                                 <div key={section.id} className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all focus-within:border-sky-400 dark:focus-within:border-sky-500">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="h-8 w-8 rounded bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black">
+                                        <div className="h-8 w-8 rounded bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center font-black">
                                             {sIdx + 1}
                                         </div>
                                         <div className="flex-1 flex gap-2">
@@ -434,14 +434,14 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                             placeholder="Mã SP (phẩy để tách)"
                                                         />
                                                         <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded p-1 px-1.5 focus-within:ring-1 focus-within:ring-amber-500">
-                                                            <div className="text-[9px] font-black text-amber-700 dark:text-amber-500 uppercase leading-none tracking-tighter w-8 shrink-0">
+                                                            <div className="text-[11px] font-black text-amber-700 dark:text-amber-500 uppercase leading-none tracking-widerer w-8 shrink-0">
                                                                 Mục<br/>Tiêu
                                                             </div>
                                                             <Input 
                                                                 type="number" 
                                                                 value={row.targetValue === undefined ? '' : row.targetValue} 
                                                                 onChange={e => updateRow(section.id, row.id, 'targetValue', e.target.value ? Number(e.target.value) : undefined)}
-                                                                className="w-full h-8 text-sm font-black text-amber-600 dark:text-amber-400 border-none bg-transparent shadow-none focus-visible:ring-0 text-right pr-1"
+                                                                className="w-full h-8 text-sm font-black text-amber-700 dark:text-amber-400 border-none bg-transparent shadow-none focus-visible:ring-0 text-right pr-1"
                                                                 placeholder="%"
                                                             />
                                                         </div>
@@ -454,7 +454,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => addRow(section.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-400 transition"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-700 dark:hover:text-sky-400 transition"
                                         >
                                             <Icon name="plus" size={3.5} /> Thêm dòng
                                         </Button>

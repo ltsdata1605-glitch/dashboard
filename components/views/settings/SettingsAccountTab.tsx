@@ -116,7 +116,7 @@ export const SettingsAccountTab: React.FC = () => {
                                 </div>
                             )}
                             <div className="md:col-span-2 mt-1">
-                                <p className={`text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${userRole === 'manager' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'}`}>
+                                <p className={`text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${userRole === 'manager' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'}`}>
                                     {userRole === 'manager' 
                                         ? <><Icon name="check-circle" size={4} /> Quản lý có thể cập nhật chuỗi Mã Kho và áp dụng ngay lập tức mà không cần duyệt lại.</>
                                         : <><Icon name="alert-triangle" size={4} /> Gửi yêu cầu đổi Mã Kho sẽ tạm khóa quyền làm việc (về trạng thái Pending) cho đến khi Quản Lý Kho đó phê duyệt.</>}
@@ -126,20 +126,20 @@ export const SettingsAccountTab: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Danh sách Mã Kho</span>
+                                <span className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Danh sách Mã Kho</span>
                                 <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm truncate uppercase">{departmentId || 'Chưa Đăng Ký'}</span>
                             </div>
                             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Tên Đối Chiếu NV</span>
-                                <span className="font-bold text-amber-600 dark:text-amber-400 text-sm truncate px-1 italic">{employeeName || 'Không áp dụng'}</span>
+                                <span className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Tên Đối Chiếu NV</span>
+                                <span className="font-bold text-amber-700 dark:text-amber-400 text-sm truncate px-1 italic">{employeeName || 'Không áp dụng'}</span>
                             </div>
                             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Chức năng khả dụng</span>
+                                <span className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Chức năng khả dụng</span>
                                 <span className="font-bold text-slate-700 dark:text-slate-300 text-sm truncate">{userRole === 'admin' ? 'Toàn bộ tính năng' : userRole === 'manager' ? 'Quản Lý Doanh Thu Kho' : 'Xem Báo Cáo Cá Nhân'}</span>
                             </div>
                             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Thời hạn Cấp Phép</span>
-                                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm truncate">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô Thời Hạn'}</span>
+                                <span className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Thời hạn Cấp Phép</span>
+                                <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm truncate">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô Thời Hạn'}</span>
                             </div>
                         </div>
                     )}

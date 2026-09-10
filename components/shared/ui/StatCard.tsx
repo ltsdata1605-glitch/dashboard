@@ -30,16 +30,16 @@ export interface StatCardProps {
 }
 
 const accentClasses: Record<string, { bg: string; icon: string }> = {
-  sky:     { bg: 'bg-sky-50 dark:bg-sky-500/10', icon: 'text-sky-600 dark:text-sky-400' },
-  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', icon: 'text-emerald-600 dark:text-emerald-400' },
-  amber:   { bg: 'bg-amber-50 dark:bg-amber-500/10', icon: 'text-amber-600 dark:text-amber-400' },
-  rose:    { bg: 'bg-rose-50 dark:bg-rose-500/10', icon: 'text-rose-600 dark:text-rose-400' },
+  sky:     { bg: 'bg-sky-50 dark:bg-sky-500/10', icon: 'text-sky-700 dark:text-sky-400' },
+  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', icon: 'text-emerald-700 dark:text-emerald-400' },
+  amber:   { bg: 'bg-amber-50 dark:bg-amber-500/10', icon: 'text-amber-700 dark:text-amber-400' },
+  rose:    { bg: 'bg-rose-50 dark:bg-rose-500/10', icon: 'text-rose-700 dark:text-rose-400' },
   slate:   { bg: 'bg-slate-100 dark:bg-slate-800', icon: 'text-slate-600 dark:text-slate-400' },
 };
 
 const trendColors: Record<TrendDirection, string> = {
-  up:   'text-emerald-600 dark:text-emerald-400',
-  down: 'text-rose-600 dark:text-rose-400',
+  up:   'text-emerald-700 dark:text-emerald-400',
+  down: 'text-rose-700 dark:text-rose-400',
   flat: 'text-slate-500 dark:text-slate-400',
 };
 

@@ -250,25 +250,25 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         if (timePct >= 100) {
             if (pct < 100) {
                 // Hết giờ mà < 100% -> TÔ ĐỎ NỔI BẬT (phẳng không bo viền)
-                return 'text-rose-600 dark:text-rose-400 font-extrabold';
+                return 'text-rose-700 dark:text-rose-400 font-extrabold';
             }
             // Hết giờ mà >= 100% -> TÔ XANH LÁ CÂY NỔI BẬT (phẳng không bo viền)
-            return 'text-emerald-600 dark:text-emerald-400 font-black';
+            return 'text-emerald-700 dark:text-emerald-400 font-black';
         }
         
         // 2. Chưa hết quỹ thời gian (timePct < 100)
         if (pct < timePct) {
             // Tỉ lệ hoàn thành < % quỹ thời gian đã sử dụng -> TÔ ĐỎ NỔI BẬT (phẳng không bo viền)
-            return 'text-rose-600 dark:text-rose-400 font-extrabold';
+            return 'text-rose-700 dark:text-rose-400 font-extrabold';
         }
 
         if (pct >= 100) {
             // Đã đạt >= 100% -> XANH LÁ CÂY NỔI BẬT (phẳng không bo viền)
-            return 'text-emerald-600 dark:text-emerald-400 font-black';
+            return 'text-emerald-700 dark:text-emerald-400 font-black';
         }
 
         // Đạt tiến độ thời gian (%HT >= timePct)
-        return 'text-emerald-600 dark:text-emerald-400 font-bold';
+        return 'text-emerald-700 dark:text-emerald-400 font-bold';
     };
 
     const getHqqdClass = (hqqdValue: number | undefined): string => {
@@ -603,24 +603,24 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
                             <Icon name="layers" size={4.5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[10px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Lũy kế</span>
+                            <span className="hidden lg:inline text-[11px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Lũy kế</span>
                         </Button>
 
                         {/* Toggle Ngang/Dọc */}
                         <Button
                             variant="unstyled" size="none"
                             onClick={toggleViewMode}
-                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${viewMode === 'vertical' ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-center gap-1 h-8 px-2 lg:h-9 lg:px-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4} className="lg:hidden" />
                             <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4.5} className="hidden lg:block" />
-                            <span className="hidden lg:inline text-[10px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
+                            <span className="hidden lg:inline text-[11px] lg:text-[11px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">{viewMode === 'horizontal' ? 'Dọc' : 'Ngang'}</span>
                         </Button>
 
                         {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
@@ -664,24 +664,24 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     className="px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors select-none group hide-on-export"
                     title="Nhấp đúp (2 cái) để thay đổi giờ Mở / Đóng cửa siêu thị"
                 >
-                    <div className="flex items-center justify-between mb-1.5 text-[10px] sm:text-xs">
+                    <div className="flex items-center justify-between mb-1.5 text-[11px] sm:text-xs">
                         <div className="flex items-center gap-2 min-w-0">
                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
                                 <Icon name="clock" size={3} className="text-slate-400 dark:text-slate-500" />
-                                <span className="text-[10px] font-black uppercase tracking-wider">Quỹ thời gian</span>
+                                <span className="text-[11px] font-black uppercase tracking-wider">Quỹ thời gian</span>
                             </div>
-                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+                            <span className="text-[11px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
                                 ({storeHours.open} - {storeHours.close})
                             </span>
-                            <span className="text-[9px] font-normal text-slate-400 dark:text-slate-500 hidden sm:inline">
+                            <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 hidden sm:inline">
                                 • Nhấp đúp để đổi giờ mở/đóng cửa
                             </span>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[11px] font-black text-sky-600 dark:text-sky-400 tabular-nums">
+                            <span className="text-[11px] font-black text-sky-700 dark:text-sky-400 tabular-nums">
                                 {Math.round(timeUsedPct)}%
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 hidden sm:inline">
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 hidden sm:inline">
                                 đã dùng
                             </span>
                         </div>
@@ -736,7 +736,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 </div>
                             ))}
                         </div>
-                        <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                        <div className="flex items-center justify-center gap-2 mt-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                             <svg className="w-3.5 h-3.5 animate-spin text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
                             Đang tải cấu hình cột...
                         </div>
@@ -748,8 +748,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
                         <thead>
                             {/* Top Level Group Headers */}
-                            <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
@@ -763,7 +763,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         return colsInGroup.map((col, idx) => {
                                             const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                             return (
-                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                         {sortConfig.key === col.id && (
@@ -777,7 +777,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                                     const styles = groupColorMap[group.name] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] sm:text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
                                         </th>
                                     );
@@ -791,7 +791,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     }
                                     const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                 {sortConfig.key === col.id && (
@@ -879,10 +879,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                             let classNameStr = customColor ? "font-bold" : "font-bold text-amber-500";
                                             if (value !== undefined && value >= 120) {
                                                 extraIcon = <span title="Tuyệt đỉnh" className="ml-1 text-[13px]">🔥</span>;
-                                                if (!customColor) classNameStr = "font-black text-rose-600 drop-shadow-sm";
+                                                if (!customColor) classNameStr = "font-black text-rose-700 drop-shadow-sm";
                                             } else if (value !== undefined && value >= 100) {
                                                 extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 text-[13px]">🏆</span>;
-                                                if (!customColor) classNameStr = "font-extrabold text-emerald-600";
+                                                if (!customColor) classNameStr = "font-extrabold text-emerald-700";
                                             }
                                             content = (
                                                 <div className="flex items-center justify-center">
@@ -900,7 +900,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                 content = <span className={customColor ? "font-bold" : "font-bold text-slate-700 dark:text-slate-300"} style={textColorStyle}>{`${formatted}%`}</span>;
                                             } else {
                                                 const formatted = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-                                                content = <span className={customColor ? "font-bold text-sky-600" : "font-semibold text-sky-700 dark:text-sky-400"} style={textColorStyle}>{formatted}</span>;
+                                                content = <span className={customColor ? "font-bold text-sky-700" : "font-semibold text-sky-700 dark:text-sky-400"} style={textColorStyle}>{formatted}</span>;
                                             }
                                         } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
                                             content = <span style={textColorStyle}>{formatRevenueForKho(value)}</span>;
@@ -922,7 +922,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[9px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
+                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
                                     if (col.isCustom) {
@@ -992,8 +992,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
                     <table className="w-full text-[11px] sm:text-sm border-collapse border border-slate-200 dark:border-slate-700 tabular-nums">
                         <thead>
-                            <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[10px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] align-middle">
+                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                                <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[11px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] align-middle">
                                     Nhóm / Chỉ Số
                                 </th>
                                 {displayedVerticalData.map(row => (
@@ -1007,7 +1007,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     </th>
                                 )}
                             </tr>
-                            <tr className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
+                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
                                 {displayedVerticalData.map(row => (
                                     <React.Fragment key={`sub-${row.khoName}`}>
                                         <th className="px-1 py-1 text-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 font-bold border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
@@ -1046,7 +1046,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         const icon = GROUP_ICONS[col.mainHeader.toUpperCase()] || '📋';
                                         rows.push(
                                             <tr key={`group-${col.mainHeader}-${colIdx}`} className={styles.sub}>
-                                                <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[10px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
+                                                <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[11px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
                                                     <span className="mr-1.5">{icon}</span>
                                                     {col.mainHeader}
                                                 </td>
@@ -1067,7 +1067,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                                         rows.push(
                                             <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 transition-colors">
-                                                <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[10px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                                <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                                     {col.subHeader}
                                                 </td>
                                                 {displayedVerticalData.map(row => {
@@ -1121,7 +1121,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                                                 setEditingTargetCell(null);
                                                                             }
                                                                         }}
-                                                                        className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[10px] sm:text-[11px] font-semibold text-slate-700"
+                                                                        className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[11px] sm:text-[11px] font-semibold text-slate-700"
                                                                     />
                                                                 ) : (
                                                                     <span className={hasTarget ? 'font-semibold text-slate-700 dark:text-slate-200' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
@@ -1181,7 +1181,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     rows.push(
                                         <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             {/* Metric name (sticky left) */}
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[10px] sm:text-[12px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                                 {col.subHeader}
                                             </td>
                                             {/* Values for each kho */}
@@ -1228,7 +1228,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                         const pctVal = (value || 0) * 100;
                                                         content = <span className={customColor ? 'font-bold' : 'font-bold text-slate-700 dark:text-slate-300'} style={textColorStyle}>{value !== undefined && value !== 0 ? `${pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}%` : '0%'}</span>;
                                                     } else {
-                                                        content = <span className={customColor ? 'font-bold text-sky-600' : 'font-semibold text-sky-700 dark:text-sky-400'} style={textColorStyle}>{(value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
+                                                        content = <span className={customColor ? 'font-bold text-sky-700' : 'font-semibold text-sky-700 dark:text-sky-400'} style={textColorStyle}>{(value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
                                                     }
                                                 } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
                                                     content = <span style={textColorStyle}>{Math.round(value || 0).toLocaleString('vi-VN')}</span>;
@@ -1336,14 +1336,14 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 onClose={() => setEditingTargetKho(null)}
                 title="Nhập Target Tháng"
                 subTitle={`Đặt chỉ tiêu doanh thu tháng cho kho ${editingTargetKho?.name}`}
-                titleColorClass="text-sky-600 dark:text-sky-400"
+                titleColorClass="text-sky-700 dark:text-sky-400"
                 maxWidth="lg"
             >
                 <div>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         {/* DT Thực */}
                         <div>
-                            <label className="block text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1.5 uppercase tracking-wider">
+                            <label className="block text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-1.5 uppercase tracking-wider">
                                 Doanh Thu Thực (Tr)
                             </label>
                             <input
@@ -1359,7 +1359,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         </div>
                         {/* DT QĐ */}
                         <div>
-                            <label className="block text-xs font-bold text-amber-600 dark:text-amber-400 mb-1.5 uppercase tracking-wider">
+                            <label className="block text-xs font-bold text-amber-700 dark:text-amber-400 mb-1.5 uppercase tracking-wider">
                                 Doanh Thu Q.Đổi (Tr)
                             </label>
                             <input
@@ -1394,13 +1394,13 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         {valDTThuc > 0 && (
                                             <div className="flex items-center justify-between text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT Thực/ngày</span>
-                                                <span className="font-bold text-emerald-600 dark:text-emerald-400">{(valDTThuc / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
+                                                <span className="font-bold text-emerald-700 dark:text-emerald-400">{(valDTThuc / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
                                             </div>
                                         )}
                                         {valDTQD > 0 && (
                                             <div className="flex items-center justify-between text-sm bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT QĐ/ngày</span>
-                                                <span className="font-bold text-amber-600 dark:text-amber-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
+                                                <span className="font-bold text-amber-700 dark:text-amber-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
                                             </div>
                                         )}
                                     </div>
@@ -1422,7 +1422,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 onClose={() => setIsStoreHoursModalOpen(false)}
                 title="Cập Nhật Quỹ Thời Gian Siêu Thị"
                 subTitle="Nhập giờ mở và đóng cửa hàng ngày (Định dạng HH:mm)"
-                titleColorClass="text-sky-600 dark:text-sky-400"
+                titleColorClass="text-sky-700 dark:text-sky-400"
                 maxWidth="sm"
             >
                 <div className="space-y-4 py-2">

@@ -42,7 +42,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                 {info ? (
                     <div className="space-y-4">
                         <div>
-                            <h4 className="font-bold text-xl text-sky-600 dark:text-sky-400">{info.name}</h4>
+                            <h4 className="font-bold text-xl text-sky-700 dark:text-sky-400">{info.name}</h4>
                         </div>
                         <div>
                             <h5 className="font-semibold text-base mb-1 border-b border-slate-300 dark:border-slate-600 pb-1">Chức năng</h5>

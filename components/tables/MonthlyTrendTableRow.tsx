@@ -24,9 +24,9 @@ interface MonthlyTrendTableRowProps {
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= target) return 'text-emerald-600 dark:text-emerald-500 font-bold';
-    if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
-    return 'text-rose-600 dark:text-rose-500 font-bold';
+    if (percentage >= target) return 'text-emerald-700 dark:text-emerald-500 font-bold';
+    if (percentage >= target - 5) return 'text-amber-700 dark:text-amber-500';
+    return 'text-rose-700 dark:text-rose-500 font-bold';
 };
 
 const ROW_TEXT_COLORS: Record<string, string> = {
@@ -126,7 +126,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                         {indentGuides}
                         {isExpandable ? (
                             <Button variant="unstyled" size="none" className={`w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-sky-400 bg-sky-50 dark:border-sky-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
-                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-300'} />
+                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-sky-700 dark:text-sky-400' : 'text-slate-500 dark:text-slate-300'} />
                             </Button>
                         ) : (
                             <span className="w-5 h-5 shrink-0 z-10"></span>
@@ -173,7 +173,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     const revPct = (pRev && pRev > 0) ? (myRev / pRev * 100) : 0;
                     return (
                         <td key={`revpct-${m.id}`} className="px-3 py-3 text-right">
-                            <span className="font-semibold text-sky-600/70 dark:text-sky-400/70 text-xs">
+                            <span className="font-semibold text-sky-700/70 dark:text-sky-400/70 text-xs">
                                 {(pRev && pRev > 0) ? `${revPct.toFixed(1)}%` : '-'}
                             </span>
                         </td>
@@ -198,7 +198,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
 
                 {visibleColumns.includes('totalRevenueQD') && months.map(m => (
                     <td key={`qd-${m.id}`} className="px-3 py-3 text-right">
-                        <span className="font-semibold text-amber-600 dark:text-amber-400 text-xs">
+                        <span className="font-semibold text-amber-700 dark:text-amber-400 text-xs">
                             {formatCurrency(trendNodes[m.id]?.totalRevenueQD || 0, 0)}
                         </span>
                     </td>
@@ -209,7 +209,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                     const aov = (node && node.totalQuantity > 0) ? node.totalRevenue / node.totalQuantity : 0;
                     return (
                         <td key={`aov-${m.id}`} className="px-3 py-3 text-right">
-                            <span className="text-sky-600 dark:text-sky-400 font-medium text-[11px]">
+                            <span className="text-sky-700 dark:text-sky-400 font-medium text-[11px]">
                                 {aov > 0 ? formatCurrency(aov, 0) : '-'}
                             </span>
                         </td>

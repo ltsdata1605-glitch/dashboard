@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Button
                         variant="unstyled" size="none"
                         onClick={onLoadShiftFile}
-                        className="flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-semibold text-sm transition-colors"
                         title="Tải lên báo cáo Phân ca"
                     >
                         <Icon name="users-round" size={4} />
@@ -115,7 +115,7 @@ const Header: React.FC<HeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setShowEmployeeModal(true)}
-                                className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                className="p-2 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                                 title="Quản lý danh sách nhân viên"
                             >
                                 <Icon name="settings" size={4} />
@@ -127,7 +127,7 @@ const Header: React.FC<HeaderProps> = ({
                         <a 
                             href="#" 
                             onClick={handleExternalLinkClick}
-                            className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                            className="p-2 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                             title="Mở trang quản lý phân ca"
                         >
                             <Icon name="link" size={4} />
@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={onNewFile}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold text-sm transition-colors"
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
                                 <Icon name="upload" size={4} />
@@ -171,7 +171,7 @@ const Header: React.FC<HeaderProps> = ({
                                     onClick={onOpenHistory}
                                     id="btn-desktop-history"
                                     title="Quản lý tệp đã lưu (Lũy kế)"
-                                    className="flex items-center justify-center p-2 text-rose-600 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 border-l border-slate-100 dark:border-slate-700 transition-colors"
+                                    className="flex items-center justify-center p-2 text-rose-700 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 border-l border-slate-100 dark:border-slate-700 transition-colors"
                                 >
                                     <Icon name="database" size={4} />
                                 </Button>
@@ -182,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({
                         href="https://report.mwgroup.vn/home/dashboard/77"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                        className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                         title="Tải dữ liệu báo cáo"
                     >
                         <Icon name="link" size={4} />
@@ -209,7 +209,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* Notification Group */}
                 <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
-                    <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
+                    <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
                 </div>
             </div>,
             document.getElementById('global-header-actions')!
@@ -221,7 +221,7 @@ const Header: React.FC<HeaderProps> = ({
                 onClose={() => setShowInstructionModal(false)}
                 title="Hướng Dẫn Nhập DS Nhân Viên"
                 subTitle="Thao tác trên Hệ thống BCNB"
-                titleColorClass="text-sky-600 dark:text-sky-400"
+                titleColorClass="text-sky-700 dark:text-sky-400"
                 maxWidth="md"
                 footer={
                     <div className="flex justify-end gap-2 sm:gap-3">

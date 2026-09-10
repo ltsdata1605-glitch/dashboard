@@ -181,7 +181,7 @@ export function DataTable<T>({
                     key={`g-${i}`}
                     colSpan={g.colSpan}
                     className={cn(
-                      'text-[10px] font-bold uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-700/50 py-1.5 px-2',
+                      'text-[11px] font-bold uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-700/50 py-1.5 px-2',
                       g.label ? groupColorClasses[g.color] || groupColorClasses.slate : 'bg-transparent'
                     )}
                   >
