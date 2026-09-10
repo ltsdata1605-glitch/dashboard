@@ -2942,7 +2942,28 @@ THẬT: `KpiData` của nó khớp `types.ts:53` (chỉ thiếu 2 field, đã b�
 dự án khác sang → **giữ lại**, gỡ frontmatter `role`/`parent` trỏ tới skill đã xoá, và thêm ghi chú
 "nguồn chân lý là `calculateRowMetrics()`".
 
-### CÒN LẠI — cần user quyết
-`design`, `design-system`, `banner-design`, `brand` là cụm skill **thiết kế marketing** (banner mạng
-xã hội, logo, brand voice) — không liên quan dashboard BI nội bộ, mang cùng xung đột shadcn/dark
-mode, và giờ có **tham chiếu gãy** tới `ui-ux-pro-max`/`ui-styling` vừa xoá. Khuyến nghị gỡ nốt.
+### Đợt gỡ thứ 2 — cụm thiết kế marketing (user duyệt)
+Gỡ nốt `design`, `design-system`, `banner-design`, `brand` (704 KB, 82 file): banner mạng xã hội,
+logo, brand voice — không liên quan dashboard BI nội bộ, cùng xung đột shadcn/dark mode, và đang có
+tham chiếu gãy tới `ui-ux-pro-max`/`ui-styling`.
+
+Đã kiểm tra trước khi xoá: **0 file** trong 4 skill này nhắc tới dự án (không như
+`retail-revenue-dashboard-expert`), và **không skill giữ lại nào thực sự GỌI** chúng — các match
+chữ "design" chỉ là từ tiếng Anh trong văn xuôi.
+
+**Hiệu ứng phụ tốt, đáng ghi**: skill `design` cục bộ đang **che mất** skill `design` DỰNG SẴN của
+Claude Code (canvas editor xuất bản qua Artifact). Gỡ xong thì skill gốc hiện trở lại.
+
+### Kết quả đo lại bằng đúng phép đo ban đầu
+
+| Xung đột | Trước | Sau |
+|---|---|---|
+| Skill dạy dark mode | 10 | **2** |
+| Skill giả định shadcn | 5 | **0** |
+| Skill giả định Next.js | 6 | **3** |
+| Tổng dung lượng | 3.584 KB | **684 KB** |
+| Số skill | 33 | **21** |
+
+Còn sót không đáng ngại: `tailwind-patterns` + `planning-with-files` mỗi cái 1 file nhắc dark mode
+(là tính năng của Tailwind, không phải chỉ thị áp dụng); `architecture`/`react-best-practices`/
+`web-performance-optimization` nhắc Next.js như một ngữ cảnh trong hướng dẫn React chung.
