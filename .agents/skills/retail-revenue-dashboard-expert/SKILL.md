@@ -2,8 +2,10 @@
 name: retail-revenue-dashboard-expert
 description: "BI Director — Chuyên gia nghiệp vụ bán lẻ Điện Máy Xanh. Phân tích KPI doanh thu, đánh giá nhân viên, phát hiện ngành hàng yếu/mạnh, dự báo doanh thu, tạo AI insights, đề xuất hành động. Kích hoạt khi: phân tích doanh thu, KPI, revenue, nhân viên, ngành hàng, forecast, report, insights."
 version: 2.0.0
-role: director
-parent: dien-may-xanh-dashboard-master
+# Gỡ 2026-09-10: skill này từng là "director" trong lớp AIOS (parent:
+# dien-may-xanh-dashboard-master). Lớp đó đã bị gỡ vì mâu thuẫn CLAUDE.md —
+# xem implementation_plan.md. Skill giữ lại vì kiến thức NGHIỆP VỤ bán lẻ
+# là thật và đã đối chiếu với types.ts. Nay chạy độc lập, không có cha/con.
 children: []
 ---
 
@@ -55,9 +57,14 @@ interface KpiData {
     traGopPercent: number;      // Tỷ lệ trả góp (%)
     traGopValue: number;        // Giá trị trả góp (VNĐ)
     traGopCount: number;        // Số lượng đơn trả góp
-    crossSellRate: number;      // Tỷ lệ bán chéo (Phụ kiện / ICT)
+    doanhThuThucChoXuat: number;// DT thực của đơn CHỜ XUẤT (đã đối chiếu types.ts)
+    doanhThuQDChoXuat: number;  // DTQĐ của đơn CHỜ XUẤT (đã đối chiếu types.ts)
     runRateRevenue: number;     // Run rate doanh thu dự kiến
+    crossSellRate: number;      // Tỷ lệ bán chéo (Phụ kiện / ICT)
 }
+// Nguồn chân lý: types.ts:53. Mọi số liệu DT/DTQĐ phải tính qua
+// utils/dataUtils.ts → calculateRowMetrics() (CLAUDE.md mục 1), CẤM viết
+// lại công thức cục bộ.
 ```
 
 ### Ngành hàng trọng tâm

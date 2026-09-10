@@ -2908,3 +2908,41 @@ filterSearch, selectedCompetitions]` — đã kiểm chứng không dùng biến
 ⚠️ Lỗi này **đang làm `npm run check` ĐỎ** (eslint `react-hooks/rules-of-hooks`) kể từ commit
 `70c4d2be`. Suýt bị bỏ sót vì lệnh chạy dạng `npm run check | tail -25` trả về exit code của
 `tail` (luôn 0), che mất thất bại của npm — từ nay chạy `npm run check > file; echo $?`.
+
+---
+
+## Rà soát 33 skill AI đối chiếu CLAUDE.md (2026-09-10)
+
+`.claude/skills` là **symlink** tới `.agents/skills`, và toàn bộ **đã được commit vào repo** —
+tức ảnh hưởng mọi phiên làm việc và mọi người clone, không phải cấu hình cá nhân.
+
+### Gốc rễ: CLAUDE.md trỏ tới file không tồn tại
+Header CLAUDE.md viện dẫn `DESIGN_SYSTEM.md`, `DESIGN_SYSTEM_MODERN.md`, `AUDIT.md` — **cả 3 đều
+không có trong repo**. `DESIGN_SYSTEM.md` bị xoá nhầm ở `8675fd05`; skill `ui-system-master` cũng
+trỏ vào đúng file đó. Chuỗi hỏng: agent tìm chuẩn thiết kế → không thấy → rơi xuống `ui-ux-pro-max`
+với 161 bảng màu ngoài palette → phá mốc 0 vi phạm của `lint-ratchet`.
+→ Đã khôi phục + đối chiếu code thật, và sửa CLAUDE.md (commit `e89c7705`).
+
+### Đã GỠ — 8 mục, 2.196 KB / 3.584 KB
+
+| Mục | Bằng chứng mâu thuẫn |
+|---|---|
+| `ui-system-master` | Cho phép "Dark mode implementation" (CLAUDE.md: đã tắt, cấm `dark:` mới); bước 5 bắt dùng **shadcn/Radix** (dự án không có); bước 1 chọn từ 161 bảng màu |
+| `dien-may-xanh-dashboard-master` | "❌ KHÔNG BAO GIỜ viết code React/TypeScript" — dự án LÀ React/TS; điều phối theo "Apps Script/Google Sheets": repo có **0 file `.gs`** |
+| `ui-styling` | Giả định shadcn/ui ở 8 file, Next.js ở 5 file |
+| `ui-ux-pro-max` | 22 file dạy dark mode, 5 file giả định Next.js; lõi là sinh bảng màu mới |
+| `quality-master` | Tự nhận "cổng chất lượng cuối" nhưng chỉ biết `npm run build`; cổng thật là `npm run check` |
+| `engineering-master`, `ai-operation-master`, `AIOS.md` | Lớp điều phối AIOS, trùng vai trò với CLAUDE.md → hai nguồn chân lý |
+
+Stack thật đã đo: **Tailwind v4.2.1 + Vite 6, KHÔNG shadcn, KHÔNG Next.js, KHÔNG Apps Script.**
+
+### ĐIỀU CHỈNH so với kế hoạch ban đầu — giữ `retail-revenue-dashboard-expert`
+Kế hoạch ban đầu là gỡ CẢ lớp Director. Nhưng khi đọc kỹ, skill này chứa kiến thức nghiệp vụ bán lẻ
+THẬT: `KpiData` của nó khớp `types.ts:53` (chỉ thiếu 2 field, đã bổ sung). Không phải rác mang từ
+dự án khác sang → **giữ lại**, gỡ frontmatter `role`/`parent` trỏ tới skill đã xoá, và thêm ghi chú
+"nguồn chân lý là `calculateRowMetrics()`".
+
+### CÒN LẠI — cần user quyết
+`design`, `design-system`, `banner-design`, `brand` là cụm skill **thiết kế marketing** (banner mạng
+xã hội, logo, brand voice) — không liên quan dashboard BI nội bộ, mang cùng xung đột shadcn/dark
+mode, và giờ có **tham chiếu gãy** tới `ui-ux-pro-max`/`ui-styling` vừa xoá. Khuyến nghị gỡ nốt.
