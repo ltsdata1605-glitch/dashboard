@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isSameEmployee } from '../../../utils/nhanVienHelpers';
 import { getRevenueForEmployee } from './bonusTableHelpers';
+import { getBonusForEmployee } from '../../../utils/bonusParser';
 import { RevenueRow } from '../../../types/nhanVienTypes';
 
 describe('Employee Revenue Matching in Bonus Tab', () => {
@@ -92,4 +93,48 @@ describe('Employee Revenue Matching in Bonus Tab', () => {
             expect(result).toBeUndefined();
         });
     });
+
+    describe('getBonusForEmployee', () => {
+        const mockBonusData = {
+            // Old record from 5/9/2026 (stored as Name - ID) with old bonus 5.513
+            'Nguyễn Chí Tâm - 111395': {
+                erp: 2500000,
+                tNong: 3012732,
+                tong: 5512732,
+                dKien: 20000000,
+                pNong: 54.6,
+                updatedAt: '12:03:13 5/9/2026',
+            },
+            // Latest record from 9/9/2026 (stored as ID - Name) with new bonus 8.219
+            '111395 - Nguyễn Chí Tâm': {
+                erp: 3945481,
+                tNong: 4264960,
+                tong: 8218441,
+                dKien: 30820000,
+                pNong: 51.9,
+                updatedAt: '20:16:34 9/9/2026',
+            },
+        };
+
+        it('resolves the latest bonus (8.219) even when queried with the old canonical name (Nguyễn Chí Tâm - 111395)', () => {
+            const result = getBonusForEmployee(mockBonusData, 'Nguyễn Chí Tâm - 111395');
+            expect(result).toBeDefined();
+            expect(result?.tong).toBe(8218441);
+            expect(Math.ceil((result?.tong || 0) / 1000)).toBe(8219);
+        });
+
+        it('resolves the latest bonus (8.219) when queried with raw short revenue name (111395 - C.Tâm)', () => {
+            const result = getBonusForEmployee(mockBonusData, '111395 - C.Tâm', '111395 - C.Tâm');
+            expect(result).toBeDefined();
+            expect(result?.tong).toBe(8218441);
+            expect(Math.ceil((result?.tong || 0) / 1000)).toBe(8219);
+        });
+
+        it('resolves the latest bonus (8.219) when queried with employee ID directly (111395)', () => {
+            const result = getBonusForEmployee(mockBonusData, '111395');
+            expect(result).toBeDefined();
+            expect(result?.tong).toBe(8218441);
+        });
+    });
 });
+

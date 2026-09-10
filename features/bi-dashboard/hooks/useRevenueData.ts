@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { RevenueRow, BonusMetrics } from '../types/nhanVienTypes';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { getBonusForEmployee } from '../utils/bonusParser';
 
 interface UseRevenueDataProps {
     rows: RevenueRow[];
@@ -109,20 +110,7 @@ export const useRevenueData = ({
             const avgDaily = emp.dtqd / daysPassed;
             const remaining_daily_status: 'warning' | 'success' | undefined = empTarget > 0 ? (avgDaily < remaining_daily ? 'warning' : 'success') : undefined;
             
-            const getBonusTong = (origName?: string): number => {
-                if (!bonusData || !origName) return 0;
-                if (bonusData[origName]?.tong !== undefined) return bonusData[origName]?.tong || 0;
-                const canonical = standardizeEmployeeName(origName);
-                if (bonusData[canonical]?.tong !== undefined) return bonusData[canonical]?.tong || 0;
-                if (origName.includes(' - ')) {
-                    const parts = origName.split(' - ').map(p => p.trim());
-                    const swapped = `${parts[1]} - ${parts[0]}`;
-                    if (bonusData[swapped]?.tong !== undefined) return bonusData[swapped]?.tong || 0;
-                }
-                return 0;
-            };
-
-            const bonus_tong = getBonusTong(emp.originalName);
+            const bonus_tong = getBonusForEmployee(bonusData, emp.originalName, emp.name)?.tong || 0;
 
             return { 
                 ...emp, 

@@ -5,7 +5,8 @@ import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
 import { logAuditEvent } from '../utils/auditTrail';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
-import { formatEmployeeName, standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
+import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem } from '../services/analysisEmployeeSyncService';
 
@@ -107,6 +108,48 @@ export function useNhanVienData(isActive?: boolean) {
                         allWeights[dept].push(w);
                     });
                 }
+            });
+
+            // Chuẩn hóa và đồng bộ các biến thể tên cho combinedBonus:
+            // Với mỗi nhân viên (cùng extractEmployeeId), nếu tồn tại nhiều key (VD "Mã - Tên" và "Tên - Mã")
+            // có updatedAt khác nhau, luôn lấy bản ghi có updatedAt mới nhất để gán cho tất cả các biến thể key.
+            const empIdToLatestBonus = new Map<string, BonusMetrics>();
+            Object.entries(combinedBonus).forEach(([key, metrics]) => {
+                if (!metrics) return;
+                const empId = extractEmployeeId(key);
+                if (!empId) return;
+                const existing = empIdToLatestBonus.get(empId);
+                if (!existing) {
+                    empIdToLatestBonus.set(empId, metrics);
+                } else {
+                    const tNew = parseBonusUpdatedAt(metrics.updatedAt);
+                    const tOld = parseBonusUpdatedAt(existing.updatedAt);
+                    if (tNew > tOld || (tNew === tOld && (metrics.tong || 0) > (existing.tong || 0))) {
+                        empIdToLatestBonus.set(empId, metrics);
+                    }
+                }
+            });
+
+            // Gán bản ghi mới nhất cho tất cả các key tương ứng
+            Object.keys(combinedBonus).forEach(key => {
+                const empId = extractEmployeeId(key);
+                if (empId && empIdToLatestBonus.has(empId)) {
+                    combinedBonus[key] = empIdToLatestBonus.get(empId)!;
+                }
+            });
+
+            // Đồng thời đồng bộ sang cả dạng canonical và swapped
+            empIdToLatestBonus.forEach((metrics, empId) => {
+                Object.keys(combinedBonus).forEach(key => {
+                    if (extractEmployeeId(key) === empId) {
+                        const canonical = standardizeEmployeeName(key);
+                        combinedBonus[canonical] = metrics;
+                        if (key.includes(' - ')) {
+                            const parts = key.split(' - ').map(p => p.trim());
+                            combinedBonus[`${parts[1]} - ${parts[0]}`] = metrics;
+                        }
+                    }
+                });
             });
 
             const finalWeights: Record<string, number> = {};
@@ -541,12 +584,34 @@ export function useNhanVienData(isActive?: boolean) {
 
     const handleSaveBonus = useCallback(async (originalName: string, metrics: BonusMetrics) => {
         const safeName = shortenSupermarketName(resolveEmployeeSupermarket(originalName));
-        setAggregatedData(prev => ({
-            ...prev,
-            bonusData: { ...prev.bonusData, [originalName]: metrics }
-        }));
+        const canonical = standardizeEmployeeName(originalName);
+        const empId = extractEmployeeId(originalName);
+        let swapped = '';
+        if (originalName.includes(' - ')) {
+            const parts = originalName.split(' - ').map(p => p.trim());
+            swapped = `${parts[1]} - ${parts[0]}`;
+        }
+
+        setAggregatedData(prev => {
+            const nextBonusData = { ...prev.bonusData, [originalName]: metrics, [canonical]: metrics };
+            if (swapped) nextBonusData[swapped] = metrics;
+            if (empId) {
+                Object.keys(nextBonusData).forEach(k => {
+                    if (extractEmployeeId(k) === empId) nextBonusData[k] = metrics;
+                });
+            }
+            return { ...prev, bonusData: nextBonusData };
+        });
+
         const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
-        await db.set(`bonus-data-${safeName}`, { ...currentDbData, [originalName]: metrics });
+        const nextDbData = { ...currentDbData, [originalName]: metrics, [canonical]: metrics };
+        if (swapped) nextDbData[swapped] = metrics;
+        if (empId) {
+            Object.keys(nextDbData).forEach(k => {
+                if (extractEmployeeId(k) === empId) nextDbData[k] = metrics;
+            });
+        }
+        await db.set(`bonus-data-${safeName}`, nextDbData);
     }, [resolveEmployeeSupermarket]);
 
     // Ghi hàng loạt cho chế độ Tự động — gom nhóm theo ĐÚNG siêu thị của từng nhân viên (trước
@@ -558,7 +623,21 @@ export function useNhanVienData(isActive?: boolean) {
 
         setAggregatedData(prev => {
             const nextBonusData = { ...prev.bonusData };
-            entries.forEach(({ originalName, metrics }) => { nextBonusData[originalName] = metrics; });
+            entries.forEach(({ originalName, metrics }) => {
+                nextBonusData[originalName] = metrics;
+                const canonical = standardizeEmployeeName(originalName);
+                nextBonusData[canonical] = metrics;
+                if (originalName.includes(' - ')) {
+                    const parts = originalName.split(' - ').map(p => p.trim());
+                    nextBonusData[`${parts[1]} - ${parts[0]}`] = metrics;
+                }
+                const empId = extractEmployeeId(originalName);
+                if (empId) {
+                    Object.keys(nextBonusData).forEach(k => {
+                        if (extractEmployeeId(k) === empId) nextBonusData[k] = metrics;
+                    });
+                }
+            });
             return { ...prev, bonusData: nextBonusData };
         });
 
@@ -572,7 +651,21 @@ export function useNhanVienData(isActive?: boolean) {
         await Promise.all(Array.from(groups.entries()).map(async ([safeName, groupEntries]) => {
             const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
             const mergedDbData = { ...currentDbData };
-            groupEntries.forEach(({ originalName, metrics }) => { mergedDbData[originalName] = metrics; });
+            groupEntries.forEach(({ originalName, metrics }) => {
+                mergedDbData[originalName] = metrics;
+                const canonical = standardizeEmployeeName(originalName);
+                mergedDbData[canonical] = metrics;
+                if (originalName.includes(' - ')) {
+                    const parts = originalName.split(' - ').map(p => p.trim());
+                    mergedDbData[`${parts[1]} - ${parts[0]}`] = metrics;
+                }
+                const empId = extractEmployeeId(originalName);
+                if (empId) {
+                    Object.keys(mergedDbData).forEach(k => {
+                        if (extractEmployeeId(k) === empId) mergedDbData[k] = metrics;
+                    });
+                }
+            });
             await db.set(`bonus-data-${safeName}`, mergedDbData);
         }));
 

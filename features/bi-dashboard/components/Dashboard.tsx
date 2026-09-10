@@ -17,7 +17,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 interface DashboardProps {
-    onNavigateToUpdater: () => void;
+    onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget' }) => void;
     isActive?: boolean;
 }
 

@@ -8,6 +8,9 @@ import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigratio
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { setAuditActor } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
+import * as db from '../utils/db';
+import { configStore } from '../store/configStore';
+import type { ConfigTab } from './SupermarketConfig';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -79,10 +82,20 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
             .then(() => migrateOldAvatars())
             .catch(err => console.warn('[BI Migration] Error:', err));
         pruneOldBonusMonthlyKeys().catch(err => console.warn('[BI Migration] Prune bonus-monthly error:', err));
+        // Mặc định luôn đưa tab cấu hình siêu thị về 'data' (Dữ liệu) khi khởi động
+        db.set('supermarket-config-active-tab', 'data');
+        configStore.setCache('supermarket-config-active-tab', 'data');
+        configStore.setLoaded('supermarket-config-active-tab', true);
     }, []);
 
-    const handleTabChange = useCallback((id: string) => {
+    const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab }) => {
         setActiveView(id as 'dashboard' | 'employee' | 'updater' | 'settings');
+        if (id === 'updater') {
+            const targetTab = options?.configTab ?? 'data';
+            db.set('supermarket-config-active-tab', targetTab);
+            configStore.setCache('supermarket-config-active-tab', targetTab);
+            configStore.setLoaded('supermarket-config-active-tab', true);
+        }
         setMountedViews(prev => {
             if (prev.has(id)) return prev;
             const next = new Set(prev);
@@ -91,7 +104,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         });
     }, []);
 
-    const handleNavigateToUpdater = useCallback(() => handleTabChange('updater'), [handleTabChange]);
+    const handleNavigateToUpdater = useCallback((options?: { configTab?: ConfigTab }) => {
+        handleTabChange('updater', options);
+    }, [handleTabChange]);
     const handleNavigateToDashboard = useCallback(() => handleTabChange('dashboard'), [handleTabChange]);
 
     const navigationLinks = [
@@ -143,9 +158,6 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     .bi-report-module .mb-6 { margin-bottom: 12px !important; }
                     .bi-report-module .mb-4 { margin-bottom: 8px !important; }
                     
-                    .bi-report-module .rounded-2xl { border-radius: 12px !important; }
-                    .bi-report-module .rounded-xl { border-radius: 8px !important; }
-                    
                     /* Icon sizes */
                     .bi-report-module .w-12 { width: 32px !important; }
                     .bi-report-module .h-12 { height: 32px !important; }
@@ -153,6 +165,20 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     /* Ẩn scrollbar trên bảng dữ liệu/mobile */
                     .bi-report-module ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
                     .bi-report-module * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+                }
+
+                /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn) */
+                .bi-report-module table,
+                .bi-report-module thead,
+                .bi-report-module tbody,
+                .bi-report-module tfoot,
+                .bi-report-module tr,
+                .bi-report-module th,
+                .bi-report-module td,
+                .bi-report-module .card,
+                .bi-report-module .rounded,
+                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]) {
+                    border-radius: 0px !important;
                 }
             `}</style>
             {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(

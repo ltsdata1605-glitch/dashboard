@@ -3,6 +3,7 @@ import { Employee, BonusMetrics, RevenueRow } from '../../../types/nhanVienTypes
 import { BonusDesktopRow } from './BonusDesktopRow';
 import { BonusDisplayRow } from './BonusDisplayRow';
 import { getCellColor, isUpdatedToday, getRevenueForEmployee } from './bonusTableHelpers';
+import { getBonusForEmployee } from '../../../utils/bonusParser';
 
 interface BonusGroupListTableProps {
     displayList: BonusDisplayRow[];
@@ -62,7 +63,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
 
                     const keyName = item.originalName || item.name;
                     const isHighlighted = highlightedEmployees.has(keyName);
-                    const bonus = item.originalName ? bonusData[item.originalName] : null;
+                    const bonus = getBonusForEmployee(bonusData, item.originalName, item.name);
                     const rev = getRevenueForEmployee(revenueMap, item.originalName, item.name);
                     const dtqdVal = rev?.dtqd || 0, hqqdVal = rev ? (rev.hieuQuaQD * 100) : 0, erpVal = bonus?.erp || 0, tnongVal = bonus?.tNong || 0, pnongVal = bonus?.pNong || 0, tongVal = bonus?.tong || 0, dkienVal = bonus?.dKien || 0;
                     const isStale = !isUpdatedToday(bonus?.updatedAt);

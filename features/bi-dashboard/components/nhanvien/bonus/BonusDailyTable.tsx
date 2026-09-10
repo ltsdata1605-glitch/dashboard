@@ -4,6 +4,7 @@ import { onActivateKey } from '../../../../../components/shared/ui';
 import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import { MedalBadge, getWeekdayAbbr, isUpdatedToday } from './bonusTableHelpers';
+import { getBonusForEmployee } from '../../../utils/bonusParser';
 import { BonusDisplayRow } from './BonusDisplayRow';
 
 interface Week { id: string; name: string; dates: string[] }
@@ -287,7 +288,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                     }
 
                     const isHighlighted = highlightedEmployees.has(item.originalName);
-                    const bonus = bonusData[item.originalName];
+                    const bonus = getBonusForEmployee(bonusData, item.originalName, item.name);
                     const isStale = !isUpdatedToday(bonus?.updatedAt);
                     const weeksBelowAvgCount = getEmployeeWeeksBelowAvgCount(item.originalName);
                     const belowAvgCount = allDates.reduce((count, dateStr) => {

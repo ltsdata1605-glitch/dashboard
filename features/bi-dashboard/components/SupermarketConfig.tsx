@@ -21,7 +21,7 @@ import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY 
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
-type ConfigTab = 'data' | 'revenueTarget' | 'competitionTarget';
+export type ConfigTab = 'data' | 'revenueTarget' | 'competitionTarget';
 
 // Bảng màu xoay vòng cho từng dòng tiêu chí thi đua — hoist ra ngoài để không tạo lại mỗi lần render dòng
 const COMPETITION_ROW_THEMES = [
@@ -1020,11 +1020,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     </span>
                                 )}
                             </div>
-                            {analysisEmployees && analysisEmployees.employees.length > 0 && (
-                                <div className="mb-2 p-2 rounded-lg bg-sky-50/70 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-800/40 text-[11px] text-sky-800 dark:text-sky-300 flex items-center justify-between">
-                                    <span>Hệ thống đang ưu tiên sử dụng <b>{analysisEmployees.employees.length} nhân viên</b> từ chức năng Phân Tích để tính toán toàn bộ các tab.</span>
-                                </div>
-                            )}
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="sky"

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Settings, Search, Layers, MessageSquareQuote } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
+import { configStore } from '../../store/configStore';
 import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel, getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import CompetitionListView from './competition/CompetitionListView';
 import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
@@ -40,7 +41,7 @@ interface CompetitionViewProps {
     isBatchExporting: boolean; 
     updateTimestamp?: string | null;
     onExport?: () => Promise<void>;
-    onNavigateToUpdater?: () => void;
+    onNavigateToUpdater?: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget' }) => void;
 }
 
 const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((props, ref) => {
@@ -342,11 +343,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const handleOpenTargetThiDua = async () => {
         await db.set('supermarket-config-active-tab', 'competitionTarget');
+        configStore.setCache('supermarket-config-active-tab', 'competitionTarget');
+        configStore.setLoaded('supermarket-config-active-tab', true);
         if (activeSupermarket && activeSupermarket !== 'Tổng') {
             await db.set('updater-active-supermarket', activeSupermarket);
         }
         if (props.onNavigateToUpdater) {
-            props.onNavigateToUpdater();
+            props.onNavigateToUpdater({ configTab: 'competitionTarget' });
         } else {
             const updaterBtn = document.querySelector('button[title="Cập nhật"]') as HTMLButtonElement;
             if (updaterBtn) updaterBtn.click();

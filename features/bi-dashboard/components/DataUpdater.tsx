@@ -15,6 +15,7 @@ import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
+import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -261,6 +262,20 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
     const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const [activeSupermarket, setActiveSupermarket] = useIndexedDBState<string | null>('updater-active-supermarket', null);
+    const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);
+
+    useEffect(() => {
+        getAnalysisEmployees().then(setAnalysisEmployees).catch(console.error);
+        const handler = (e: CustomEvent<AnalysisEmployeesPayload>) => {
+            if (e.detail) setAnalysisEmployees(e.detail);
+        };
+        window.addEventListener(ANALYSIS_EMPLOYEES_KEY as any, handler as EventListener);
+        window.addEventListener('analysis-employees-updated' as any, handler as EventListener);
+        return () => {
+            window.removeEventListener(ANALYSIS_EMPLOYEES_KEY as any, handler as EventListener);
+            window.removeEventListener('analysis-employees-updated' as any, handler as EventListener);
+        };
+    }, []);
 
     useEffect(() => {
         if (supermarkets.length > 0 && (!activeSupermarket || !supermarkets.includes(activeSupermarket))) {
@@ -480,6 +495,14 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <Card
                         title="Cấu hình siêu thị chi tiết"
                         icon="settings-2"
+                        subtitle={
+                            analysisEmployees && analysisEmployees.employees.length > 0 ? (
+                                <span className="normal-case text-[11px] text-sky-700 dark:text-sky-400 font-medium inline-flex items-center gap-1.5 tracking-normal">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+                                    <span>Ưu tiên sử dụng <b className="font-bold text-sky-800 dark:text-sky-300">{analysisEmployees.employees.length} NV</b> từ Phân Tích để tính toán toàn bộ các tab</span>
+                                </span>
+                            ) : undefined
+                        }
                         actionButton={
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                                 {supermarkets.map((sm) => (

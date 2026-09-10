@@ -114,7 +114,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
                   <div className="absolute -left-8 top-0 w-6 h-6 bg-sky-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Lấy dữ liệu từ Report</h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
-                    Click vào <span className="text-rose-600 font-bold">"Lấy file tồn kho"</span>. 
+                    Click vào <a href="https://report.mwgroup.vn/home/dashboard/4286" target="_blank" rel="noopener noreferrer" className="text-rose-600 font-bold underline hover:text-rose-800">"Lấy file tồn kho"</a>. 
                     Chọn các nhóm cần in giá: <span className="font-medium">ĐGD, DCNB, Phụ Kiện</span>. 
                     Chọn siêu thị và trạng thái <span className="font-medium">MỚI</span>. 
                     Xem báo cáo và tải file về máy.

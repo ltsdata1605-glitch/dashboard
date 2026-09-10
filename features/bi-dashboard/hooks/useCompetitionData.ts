@@ -44,10 +44,18 @@ export const useCompetitionData = ({
 
     const relevantCompetitions = useMemo(() => {
         if (isActive === false) return {} as Record<string, { headers: CompetitionHeader[] }>;
-        if (activeCompetitionTab === 'nhom' || activeCompetitionTab === 'canhan' || activeCompetitionTab === 'tong' || activeCompetitionTab === 'tatca') {
+        if (
+            activeCompetitionTab === 'nhom' || 
+            activeCompetitionTab === 'canhan' || 
+            activeCompetitionTab === 'tong' || 
+            activeCompetitionTab === 'tatca' ||
+            activeCompetitionTab === 'sosanh' ||
+            activeCompetitionTab === 'tuychinh' ||
+            !allCompetitionsByCriterion[activeCompetitionTab as Criterion]
+        ) {
              return allCompetitionsByCriterion;
         }
-        return { [activeCompetitionTab]: allCompetitionsByCriterion[activeCompetitionTab] } as Record<string, { headers: CompetitionHeader[] }>;
+        return { [activeCompetitionTab]: allCompetitionsByCriterion[activeCompetitionTab as Criterion] } as Record<string, { headers: CompetitionHeader[] }>;
     }, [activeCompetitionTab, allCompetitionsByCriterion, isActive]);
 
     const filteredEmployees = useMemo(() => {

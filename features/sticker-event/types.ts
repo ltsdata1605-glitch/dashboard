@@ -58,6 +58,7 @@ export interface InventoryItem {
   maSieuThi: string;
   tenSieuThi: string;
   thuongHieu: string;
+  nhaSanXuat?: string;
   nganhHang: string;
   nhomHang: string;
   maSanPham: string;

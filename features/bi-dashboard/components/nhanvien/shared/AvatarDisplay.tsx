@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { UsersIcon, UploadIcon } from '../../Icons';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { Button } from '../../../../../components/shared/ui/Button';
-import { standardizeEmployeeName } from '../../../utils/nhanVienHelpers';
+import { standardizeEmployeeName, extractEmployeeId } from '../../../utils/nhanVienHelpers';
 import * as db from '../../../utils/db';
 
 interface AvatarDisplayProps {
@@ -24,6 +24,10 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
             let isMounted = true;
             (async () => {
                 const keys: string[] = [`avatar-${employeeName}`, `avatar-${canonicalName}`];
+                const empId = extractEmployeeId(employeeName);
+                if (empId) {
+                    keys.push(`avatar-${empId}`);
+                }
                 if (employeeName.includes(' - ')) {
                     const parts = employeeName.split(' - ').map(p => p.trim());
                     if (parts.length >= 2) {
@@ -43,10 +47,32 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                         // ignore
                     }
                 }
+
+                // Nếu vẫn chưa thấy và có empId hợp lệ, quét IndexedDB
+                if (empId && empId.length >= 3) {
+                    try {
+                        const allItems = await db.getAll();
+                        for (const item of allItems) {
+                            if (item.key.startsWith('avatar-')) {
+                                const keyContent = item.key.slice('avatar-'.length);
+                                if (extractEmployeeId(keyContent) === empId || keyContent.includes(empId)) {
+                                    const val = item.value as string;
+                                    if (val && isMounted) {
+                                        setFallbackSrc(val);
+                                        await db.set(dbKey as any, val);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
             })();
             return () => { isMounted = false; };
         }
-    }, [avatarSrc, employeeName, canonicalName]);
+    }, [avatarSrc, employeeName, canonicalName, dbKey]);
 
     const activeSrc = avatarSrc || fallbackSrc;
 

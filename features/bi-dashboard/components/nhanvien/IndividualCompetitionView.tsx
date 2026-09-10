@@ -1,10 +1,15 @@
 
 import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { FilterIcon, ChevronDownIcon } from '../Icons';
+import toast from 'react-hot-toast';
+import { FilterIcon, ChevronDownIcon, CameraIcon } from '../Icons';
+import { Layers } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString, isSameEmployee } from '../../utils/nhanVienHelpers';
+import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
+import { getBonusForEmployee } from '../../utils/bonusParser';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
@@ -13,7 +18,21 @@ import { calculateRunRate } from '../../services/metricService';
 import { PieChart, Pie, Cell } from 'recharts';
 import { Pill } from '../shared/Pill';
 
-// 1 chương trình thi đua đã tính target/actual/completion cho nhân viên đang xem, gộp theo Criterion (SLLK/DTLK/DTQĐ)
+const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; badge: string }> = {
+    'DTLK': { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-white', border: 'border-sky-700 dark:border-sky-800', badge: 'bg-sky-500/80' },
+    'DTQĐ': { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-white', border: 'border-emerald-700 dark:border-emerald-800', badge: 'bg-emerald-500/80' },
+    'SLLK': { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-white', border: 'border-rose-700 dark:border-rose-800', badge: 'bg-rose-500/80' },
+};
+
+const GROUP_PALETTES = [
+    { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-white', border: 'border-sky-700 dark:border-sky-800', badge: 'bg-sky-500/80' },
+    { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-white', border: 'border-emerald-700 dark:border-emerald-800', badge: 'bg-emerald-500/80' },
+    { main: 'bg-amber-600', light: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-white', border: 'border-amber-700 dark:border-amber-800', badge: 'bg-amber-500/80' },
+    { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-white', border: 'border-rose-700 dark:border-rose-800', badge: 'bg-rose-500/80' },
+    { main: 'bg-slate-700', light: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-white', border: 'border-slate-800 dark:border-slate-900', badge: 'bg-slate-600' },
+];
+
+// 1 chương trình thi đua đã tính target/actual/completion cho nhân viên đang xem
 interface CompetitionPerformanceItem {
     name: string;
     originalTitle: string;
@@ -22,7 +41,7 @@ interface CompetitionPerformanceItem {
     completion: number;
     remaining: number;
 }
-type GroupedPerformanceData = Partial<Record<Criterion, CompetitionPerformanceItem[]>>;
+type GroupedPerformanceData = Record<string, CompetitionPerformanceItem[]>;
 
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
@@ -135,7 +154,24 @@ const EmployeeProfileCard: React.FC<{
     bonusData?: Record<string, BonusMetrics | null>;
     groupedPerformanceData: GroupedPerformanceData;
 }> = ({ selectedEmployee, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
-    const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${selectedEmployee.originalName}`, null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { avatarSrc, uploadAvatar } = useEmployeeAvatar({
+        employeeName: selectedEmployee.name,
+        originalName: selectedEmployee.originalName,
+        fallbackEmployees: revenueRows?.filter(r => r.type === 'employee')
+    });
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            await uploadAvatar(file);
+            toast.success('Đã cập nhật ảnh đại diện thành công!');
+        } catch (err) {
+            console.error(err);
+            toast.error('Không thể tải ảnh lên. Vui lòng thử lại!');
+        }
+    };
     
     const empRevenue = useMemo(() => {
         if (!revenueRows) return null;
@@ -154,7 +190,7 @@ const EmployeeProfileCard: React.FC<{
 
     const empBonus = useMemo(() => {
         if (!bonusData) return null;
-        return bonusData[selectedEmployee.originalName];
+        return getBonusForEmployee(bonusData, selectedEmployee.originalName, selectedEmployee.name);
     }, [bonusData, selectedEmployee]);
 
     // Rankings
@@ -203,7 +239,11 @@ const EmployeeProfileCard: React.FC<{
             <div className="bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-sky-600/30 dark:border-slate-700">
                 <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 shadow-lg">
+                    <div 
+                        className="relative group w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 shadow-lg cursor-pointer hover:border-white transition-all"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Bấm để tải lên hoặc đổi ảnh đại diện"
+                    >
                         {avatarSrc ? (
                             <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
                         ) : (
@@ -211,6 +251,11 @@ const EmployeeProfileCard: React.FC<{
                                 <span className="text-2xl font-black text-white">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
                             </div>
                         )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
+                            <CameraIcon className="w-6 h-6 drop-shadow-md" />
+                            <span className="text-[9px] font-bold mt-1 drop-shadow-md uppercase tracking-wider">Đổi ảnh</span>
+                        </div>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-black text-white uppercase truncate leading-tight drop-shadow-sm">{selectedEmployee.name}</h3>
@@ -315,7 +360,9 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     const employeeSelectorRef = useRef<HTMLDivElement>(null);
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
-
+    const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
+    const [customOrder] = useIndexedDBState<Record<string, string[]>>('competition-custom-order', {});
+    const [groupingMode, setGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -335,32 +382,97 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     }));
 
 
-    const groupedPerformanceData = useMemo(() => {
+    const groupedPerformanceData = useMemo((): GroupedPerformanceData => {
         if (!selectedEmployee) return {};
-        const result: Partial<Record<Criterion, { name: string; originalTitle: string; target: number; actual: number; completion: number; remaining: number }[]>> = {};
-        
-        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
-            const headers = allCompetitionsByCriterion[criterion]?.headers || [];
-            const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.originalTitle));
-            if (filteredHeaders.length === 0) return;
 
-            let rows = filteredHeaders.map(comp => {
-                const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
-                const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
-                const completion = target > 0 ? (actual / target) * 100 : 0;
-                const remaining = actual - target;
-                return { name: shortenName(comp.originalTitle, nameOverrides), originalTitle: comp.originalTitle, target, actual, completion, remaining };
-            }).filter(d => d.target > 0 || d.actual > 0);
+        if (groupingMode === 'default') {
+            const result: GroupedPerformanceData = {};
+            (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
+                const headers = allCompetitionsByCriterion[criterion]?.headers || [];
+                const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.originalTitle));
+                if (filteredHeaders.length === 0) return;
+
+                let rows = filteredHeaders.map(comp => {
+                    const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
+                    const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
+                    const completion = target > 0 ? (actual / target) * 100 : 0;
+                    const remaining = actual - target;
+                    return { name: shortenName(comp.originalTitle, nameOverrides), originalTitle: comp.originalTitle, target, actual, completion, remaining };
+                }).filter(d => d.target > 0 || d.actual > 0);
+                
+                const criterionOrder = customOrder[criterion];
+                if (criterionOrder && criterionOrder.length > 0) {
+                    rows.sort((a, b) => {
+                        const idxA = criterionOrder.indexOf(a.originalTitle);
+                        const idxB = criterionOrder.indexOf(b.originalTitle);
+                        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                        if (idxA !== -1) return -1;
+                        if (idxB !== -1) return 1;
+                        return b.completion - a.completion;
+                    });
+                } else if (sortConfig.key === 'completion') {
+                    rows.sort((a, b) => b.completion - a.completion);
+                }
+
+                if (rows.length > 0) result[criterion] = rows;
+            });
+            return result;
+        } else {
+            // Chế độ Tuỳ chỉnh: Gom nhóm theo cấu hình trong Target Thi đua
+            const rawGroups: Record<string, CompetitionPerformanceItem[]> = {};
             
-            rows.sort((a, b) => {
-                if (sortConfig.key === 'completion') return b.completion - a.completion;
-                return 0;
+            (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
+                const headers = allCompetitionsByCriterion[criterion]?.headers || [];
+                const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.originalTitle));
+                if (filteredHeaders.length === 0) return;
+
+                filteredHeaders.forEach(comp => {
+                    const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
+                    const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
+                    const completion = target > 0 ? (actual / target) * 100 : 0;
+                    const remaining = actual - target;
+                    if (target <= 0 && actual <= 0) return;
+
+                    const defaultGroup = getDefaultGroupLabel(criterion) || criterion;
+                    const customGroup = (groupOverrides[comp.originalTitle] && groupOverrides[comp.originalTitle].trim())
+                        ? groupOverrides[comp.originalTitle].trim()
+                        : defaultGroup;
+
+                    if (!rawGroups[customGroup]) {
+                        rawGroups[customGroup] = [];
+                    }
+                    rawGroups[customGroup].push({
+                        name: shortenName(comp.originalTitle, nameOverrides),
+                        originalTitle: comp.originalTitle,
+                        target,
+                        actual,
+                        completion,
+                        remaining
+                    });
+                });
             });
 
-            if (rows.length > 0) result[criterion] = rows;
-        });
-        return result;
-    }, [selectedEmployee, allCompetitionsByCriterion, employeeDataMap, employeeCompetitionTargets, selectedCompetitions, nameOverrides]);
+            const sortedGroups: GroupedPerformanceData = {};
+            Object.keys(rawGroups).forEach(groupKey => {
+                const rows = [...rawGroups[groupKey]];
+                const groupOrder = customOrder[groupKey];
+                if (groupOrder && groupOrder.length > 0) {
+                    rows.sort((a, b) => {
+                        const idxA = groupOrder.indexOf(a.originalTitle);
+                        const idxB = groupOrder.indexOf(b.originalTitle);
+                        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                        if (idxA !== -1) return -1;
+                        if (idxB !== -1) return 1;
+                        return b.completion - a.completion;
+                    });
+                } else if (sortConfig.key === 'completion') {
+                    rows.sort((a, b) => b.completion - a.completion);
+                }
+                sortedGroups[groupKey] = rows;
+            });
+            return sortedGroups;
+        }
+    }, [selectedEmployee, groupingMode, allCompetitionsByCriterion, selectedCompetitions, employeeCompetitionTargets, employeeDataMap, nameOverrides, customOrder, sortConfig.key, groupOverrides]);
     
     const { showExportOptions } = useExportOptionsContext();
 
@@ -417,7 +529,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     };
 
     const handleSelectAllCompetitions = () => {
-         const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.originalTitle);
+         const allRelevantTitles = (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []).map(h => h.originalTitle);
          setSelectedCompetitions(prev => {
              const newSet = new Set(prev);
              allRelevantTitles.forEach(t => newSet.add(t));
@@ -425,7 +537,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
          });
     };
     const handleDeselectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers).map(h => h.originalTitle);
+        const allRelevantTitles = (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []).map(h => h.originalTitle);
         setSelectedCompetitions(prev => {
              const newSet = new Set(prev);
              allRelevantTitles.forEach(t => newSet.delete(t));
@@ -450,7 +562,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     if (!selectedEmployee) return <PlaceholderContent title="Báo cáo Cá nhân" message="Vui lòng chọn một nhân viên để xem báo cáo chi tiết." />;
 
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-    const allRelevantHeaders = (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[]).flatMap(c => c.headers);
+    const allRelevantHeaders = (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []);
     const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.originalTitle)).length;
     const totalFilterCount = allRelevantHeaders.length;
     const isFiltered = activeFilterCount < totalFilterCount;
@@ -460,26 +572,69 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     };
     // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải originalTitle thô — nếu
     // không, gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
-    const filterGroups = (Object.entries(allCompetitionsByCriterion) as [string, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => ({
-        key: criterion,
-        label: `Tiêu chí ${criterion}`,
-        options: (data.headers || [])
-            .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
-            .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides), checked: selectedCompetitions.has(c.originalTitle) }))
-    }));
-    const getCriterionStyle = (crit: Criterion) => {
-        switch (crit) {
-            case 'SLLK': return { bg: 'bg-rose-600', text: 'text-white', badge: 'bg-rose-500/80', border: 'border-rose-700 dark:border-rose-800' };
-            case 'DTLK': return { bg: 'bg-sky-600', text: 'text-white', badge: 'bg-sky-500/80', border: 'border-sky-700 dark:border-sky-800' };
-            case 'DTQĐ': return { bg: 'bg-emerald-600', text: 'text-white', badge: 'bg-emerald-500/80', border: 'border-emerald-700 dark:border-emerald-800' };
-            default: return { bg: 'bg-slate-600', text: 'text-white', badge: 'bg-slate-500/80', border: 'border-slate-700 dark:border-slate-800' };
+    const filterGroups = useMemo(() => {
+        if (groupingMode === 'default') {
+            return (Object.entries(allCompetitionsByCriterion || {}) as [string, { headers?: CompetitionHeader[] }][])
+                .filter(([, data]) => Boolean(data && data.headers))
+                .map(([criterion, data]) => ({
+                    key: criterion,
+                    label: `Tiêu chí ${criterion}`,
+                    options: (data?.headers || [])
+                        .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
+                        .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides).toUpperCase(), checked: selectedCompetitions.has(c.originalTitle) }))
+                }));
+        } else {
+            const groupMap = new Map<string, { key: string; label: string; checked: boolean }[]>();
+            (Object.entries(allCompetitionsByCriterion || {}) as [string, { headers?: CompetitionHeader[] }][])
+                .forEach(([criterion, data]) => {
+                    (data?.headers || []).forEach(c => {
+                        const defaultGroup = getDefaultGroupLabel(criterion) || criterion;
+                        const customGroup = (groupOverrides[c.originalTitle] && groupOverrides[c.originalTitle].trim())
+                            ? groupOverrides[c.originalTitle].trim()
+                            : defaultGroup;
+                        if (!groupMap.has(customGroup)) groupMap.set(customGroup, []);
+                        if (shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase())) {
+                            groupMap.get(customGroup)!.push({
+                                key: c.originalTitle,
+                                label: shortenName(c.originalTitle, nameOverrides).toUpperCase(),
+                                checked: selectedCompetitions.has(c.originalTitle)
+                            });
+                        }
+                    });
+                });
+            return Array.from(groupMap.entries()).map(([groupName, options]) => ({
+                key: groupName,
+                label: `Nhóm ${groupName}`,
+                options
+            }));
         }
-    };
+    }, [groupingMode, allCompetitionsByCriterion, groupOverrides, nameOverrides, filterSearch, selectedCompetitions]);
 
     return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-4 sm:p-6 mb-8">
                 <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar relative z-50">
                     <div className="flex items-center gap-2 flex-wrap">
+                        {/* Nút chuyển đổi Chế độ xem: Mặc định vs Tuỳ chỉnh (giống Tổng quan > Thi đua) */}
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold border transition-all cursor-pointer rounded-none ${
+                                groupingMode === 'configured'
+                                    ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
+                                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                            }`}
+                            title={
+                                groupingMode === 'configured'
+                                    ? 'Chế độ xem: Tuỳ chỉnh (Click để chuyển về Mặc định SLLK/DTLK/DTQĐ)'
+                                    : 'Chế độ xem: Mặc định (Click để chuyển sang Tuỳ chỉnh theo nhóm target)'
+                            }
+                            aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
+                        >
+                            <Layers className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />
+                            <span>{groupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
+                        </Button>
+
                         {/* Lọc nhóm — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
                             style với các bộ lọc khác trong dự án */}
                         <MultiSelectDropdown
@@ -498,12 +653,12 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                             maxHeightClass="max-h-[80vh]"
                         />
                         <div className="relative" ref={employeeSelectorRef}>
-                            <Button variant="unstyled" size="none" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
+                            <Button variant="unstyled" size="none" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded-none">
                                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
                                 <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400" />
                             </Button>
                             {isEmployeeSelectorOpen && (
-                                <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
+                                <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
                                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 sticky top-0">
                                         <Input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." leftIcon="search" autoFocus />
                                     </div>
@@ -534,7 +689,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         bonusData={bonusData}
                         groupedPerformanceData={groupedPerformanceData}
                     />
-                    <div className="overflow-x-auto scrollbar-hide rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm lg:hover:shadow-md transition-shadow" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="overflow-x-auto scrollbar-hide rounded-none border border-slate-200 dark:border-slate-700 shadow-sm transition-shadow" style={{ WebkitOverflowScrolling: 'touch' }}>
                         <div className="text-center py-3 px-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600">
                             <h3 className="text-xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                 {selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}
@@ -558,15 +713,22 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                    const now = new Date();
                                    const daysPassed = now.getDate() - 1;
                                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                                   return (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map((criterion, _criterionIndex) => {
-                                       const items = groupedPerformanceData[criterion];
+                                   const groupKeys = groupingMode === 'configured'
+                                       ? Object.keys(groupedPerformanceData)
+                                       : (['SLLK', 'DTLK', 'DTQĐ'] as string[]).filter(c => groupedPerformanceData[c]?.length);
+
+                                   return groupKeys.map((groupKey, groupIdx) => {
+                                       const items = groupedPerformanceData[groupKey];
                                        if (!items || items.length === 0) return null;
-                                       const cStyle = getCriterionStyle(criterion);
+                                       const theme = CRITERIA_THEMES[groupKey] || GROUP_PALETTES[groupIdx % GROUP_PALETTES.length];
                                        return (
-                                           <React.Fragment key={criterion}>
-                                               <tr className={`${cStyle.bg} ${cStyle.text} font-extrabold border-t-2 ${cStyle.border}`}>
+                                           <React.Fragment key={groupKey}>
+                                               <tr className={`${theme.main} ${theme.text} font-extrabold border-t-2 ${theme.border}`}>
                                                    <td colSpan={7} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
-                                                       <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
+                                                       <span className={`px-2 py-0.5 rounded-none mr-2 ${theme.badge}`}>
+                                                           {groupingMode === 'configured' ? 'Nhóm tiêu chí' : 'Tiêu chí'}
+                                                       </span>
+                                                       {groupKey} ({items.length})
                                                    </td>
                                                </tr>
                                                {items.map((item, index) => {
@@ -576,9 +738,9 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                    // Chưa cấu hình target thì trung tính (xám pill mặc định), không phải "đang tệ" (đỏ) như khi target=0 vì actual thấp thật.
                                                    const dkhtPillColor = !hasTarget ? undefined : dkht >= 100 ? '#059669' : dkht >= 80 ? '#d97706' : '#e11d48';
                                                    return (
-                                                       <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-b-0">
+                                                       <tr key={`${groupKey}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-b-0">
                                                            <td className="px-3 py-2.5 text-center text-[13px] text-slate-400 tabular-nums border-r border-slate-100 dark:border-slate-800/60">#{index + 1}</td>
-                                                           <td className="px-3 py-2.5 text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
+                                                           <td className="px-3 py-2.5 text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60 uppercase">
                                                                {item.name}
                                                            </td>
                                                            <td className="px-3 py-2.5 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">{f.format(roundUp(item.target))}</td>
@@ -590,7 +752,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                    );
                                                })}
                                            </React.Fragment>
-                                       )
+                                       );
                                    });
                                })()}
                                {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={7} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}

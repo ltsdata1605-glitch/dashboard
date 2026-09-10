@@ -20,6 +20,8 @@ const isLocalOnlyKey = (key: string): boolean => {
         k === 'dashboard-active-supermarket' ||
         k === 'nhanvien-active-supermarkets' ||
         k === 'nhanvien-active-depts-multi' ||
+        k === 'global-selected-competitions' ||
+        k === 'nhanvien-active-version' ||
         k.startsWith('active-')
     );
 };
@@ -156,7 +158,7 @@ export const useCloudSync = () => {
             // 1. Setup real-time Firestore listeners
             const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
             unsubConfig = onSnapshot(configRef, async (snapshot) => {
-                if (!snapshot.exists()) return;
+                if (!snapshot.exists() || snapshot.metadata.hasPendingWrites) return;
                 
                 // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
                 if (hasUnsavedChanges.current) {

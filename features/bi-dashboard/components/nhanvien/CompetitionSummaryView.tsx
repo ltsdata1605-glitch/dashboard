@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -7,7 +7,8 @@ import ExportButton from '../ExportButton';
 import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon, ChevronDownIcon, DownloadAllIcon, SpinnerIcon } from '../Icons';
 import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
-import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
+import { roundUp, getYesterdayDateString, shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
+import { calculateRunRate } from '../../services/metricService';
 import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -198,6 +199,31 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         return new Map(allHeaders.map(h => [h.title, h.originalTitle]));
     }, [allHeaders]);
 
+    // Helper tra cứu Target cho nhân viên an toàn & linh hoạt (chuẩn hoá tên, id, casing)
+    const getTargetForEmployee = useCallback((origTitle?: string, empOrigName?: string): number => {
+        if (!origTitle || !empOrigName) return 0;
+        const exactMap = employeeCompetitionTargets.get(origTitle);
+        if (exactMap) {
+            const val = exactMap.get(empOrigName);
+            if (val !== undefined) return val;
+            for (const [eName, v] of exactMap.entries()) {
+                if (isSameEmployee(eName, empOrigName)) return v;
+            }
+        }
+        const cleanTitle = origTitle.trim().toLowerCase();
+        for (const [progTitle, tMap] of employeeCompetitionTargets.entries()) {
+            const cleanProg = progTitle.trim().toLowerCase();
+            if (cleanProg === cleanTitle || cleanProg.includes(cleanTitle) || cleanTitle.includes(cleanProg)) {
+                const val = tMap.get(empOrigName);
+                if (val !== undefined) return val;
+                for (const [eName, v] of tMap.entries()) {
+                    if (isSameEmployee(eName, empOrigName)) return v;
+                }
+            }
+        }
+        return 0;
+    }, [employeeCompetitionTargets]);
+
     // Compute column averages across all employees
     const columnAverages = useMemo(() => {
         const averages: Record<string, { actual: number; percent: number }> = {};
@@ -206,7 +232,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             let sumPercent = 0;
             employees.forEach(emp => {
                 const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
                 const ht = target > 0 ? (actual / target) * 100 : 0;
                 sumActual += actual;
                 sumPercent += ht;
@@ -217,7 +243,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             };
         });
         return averages;
-    }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets]);
+    }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee]);
 
     // Compute dense ranks for each column (descending order, excluding values <= 0)
     const columnRankings = useMemo(() => {
@@ -225,7 +251,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         visibleHeaders.forEach(header => {
             const empValues = employees.map(emp => {
                 const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
                 const ht = target > 0 ? (actual / target) * 100 : 0;
                 const value = showPercent ? ht : actual;
                 return { empName: emp.name, value };
@@ -252,7 +278,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             rankings[header.title] = rankMap;
         });
         return rankings;
-    }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets, showPercent]);
+    }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee, showPercent]);
 
     // "Tổng BOT" (số hạng mục dưới trung bình cột) và "NoSale" (số hạng mục actual=0) cho mỗi nhân
     // viên — tính 1 lần thành Map thay vì gọi lại hàm quét toàn bộ visibleHeaders ở ~5 nơi render
@@ -263,7 +289,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             let count = 0;
             visibleHeaders.forEach(header => {
                 const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
                 const ht = target > 0 ? (actual / target) * 100 : 0;
                 const averages = columnAverages[header.title];
                 if (averages) {
@@ -277,7 +303,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             map.set(emp.name, count);
         });
         return map;
-    }, [employees, visibleHeaders, columnAverages, employeeDataMap, employeeCompetitionTargets, showPercent]);
+    }, [employees, visibleHeaders, columnAverages, employeeDataMap, getTargetForEmployee, showPercent]);
     const getEmployeeTongBot = (empName: string, _empOriginalName: string) => employeeTongBotMap.get(empName) ?? 0;
 
     const employeeNoSaleMap = useMemo(() => {
@@ -297,21 +323,29 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     // Tổng số nhóm thi đua đang hiển thị — mẫu số cho cột "Đạt"/"%Đạt".
     const totalHeaderCount = visibleHeaders.length;
 
-    // "Đạt" — số nhóm có % hoàn thành target >= 100% cho mỗi nhân viên.
+    // "Đạt" — số nhóm có % hoàn thành target >= 100% (theo %DKHT qua run rate hoặc thực tế >= target) cho mỗi nhân viên.
     const employeeDatMap = useMemo(() => {
         const map = new Map<string, number>();
+        const now = new Date();
+        const daysPassed = Math.max(1, now.getDate() - 1);
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
         employees.forEach(emp => {
             let count = 0;
             visibleHeaders.forEach(header => {
                 const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
-                const ht = target > 0 ? (actual / target) * 100 : 0;
-                if (ht >= 100) count++;
+                const target = getTargetForEmployee(header.originalTitle, emp.originalName);
+                if (target > 0) {
+                    const dkht = (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100;
+                    if (dkht >= 100 || actual >= target) {
+                        count++;
+                    }
+                }
             });
             map.set(emp.name, count);
         });
         return map;
-    }, [employees, visibleHeaders, employeeDataMap, employeeCompetitionTargets]);
+    }, [employees, visibleHeaders, employeeDataMap, getTargetForEmployee]);
     const getEmployeeDat = (empName: string) => employeeDatMap.get(empName) ?? 0;
 
     // %Đạt trung bình của cả siêu thị (tổng số nhóm đạt / tổng số ô có thể đạt) — dùng làm
@@ -325,20 +359,21 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     }, [employees, totalHeaderCount, employeeDatMap]);
 
     // "Đạt" của dòng TỔNG — số NHÓM THI ĐUA mà số liệu tổng hợp cả siêu thị (tổng actual/tổng
-    // target của TẤT CẢ nhân viên cộng lại cho từng nhóm) đạt >=100%, trên tổng số nhóm. KHÁC với
-    // cách tính "Đạt" của từng nhân viên (đếm theo cá nhân) — đây tính theo NHÓM để khớp đúng cách
-    // dòng TỔNG hiển thị số liệu tổng hợp ở các cột khác (vd cột động cũng show totalActual/
-    // totalTarget của cả siêu thị, không phải cộng dồn % của từng nhân viên).
+    // target của TẤT CẢ nhân viên cộng lại cho từng nhóm) đạt >=100% (theo DKHT run rate hoặc thực tế), trên tổng số nhóm.
     const storeColumnDatCount = useMemo(() => {
         let count = 0;
+        const now = new Date();
+        const daysPassed = Math.max(1, now.getDate() - 1);
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
         visibleHeaders.forEach(header => {
             const totalActual = employees.reduce((sum, emp) => sum + (employeeDataMap.get(emp.name)?.values[header.title] ?? 0), 0);
-            const totalTarget = employees.reduce((sum, emp) => sum + (employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0), 0);
-            const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
-            if (totalHt >= 100) count++;
+            const totalTarget = employees.reduce((sum, emp) => sum + getTargetForEmployee(header.originalTitle, emp.originalName), 0);
+            const totalDkht = totalTarget > 0 ? (calculateRunRate(totalActual, daysPassed, daysInMonth) / totalTarget) * 100 : 0;
+            if (totalDkht >= 100 || (totalTarget > 0 && totalActual >= totalTarget)) count++;
         });
         return count;
-    }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets]);
+    }, [visibleHeaders, employees, employeeDataMap, getTargetForEmployee]);
 
     // Calculate the threshold for TOP 30% of TỔNG BOT (excluding 0 values)
     const tongBotRedCutoff = useMemo(() => {
@@ -382,7 +417,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     const actual = employeeDataMap.get(emp.name)?.values[key] ?? 0;
                     if (showPercent) {
                         const origTitle = headerOriginalTitleMap.get(key) || '';
-                        const target = employeeCompetitionTargets.get(origTitle)?.get(emp.originalName) ?? 0;
+                        const target = getTargetForEmployee(origTitle, emp.originalName);
                         return target > 0 ? (actual / target) * 100 : 0;
                     }
                     return actual;
@@ -396,7 +431,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             }
         });
         return sorted;
-    }, [employees, sortConfig, employeeDataMap, employeeCompetitionTargets, showPercent, headerOriginalTitleMap, columnAverages]);
+    }, [employees, sortConfig, employeeDataMap, getTargetForEmployee, showPercent, headerOriginalTitleMap, columnAverages]);
 
     // Handle sort toggling - Luôn fallback về %Đạt desc (mặc định mới thay cho BOT asc)
     const handleSort = (key: string) => {
@@ -644,7 +679,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 checked={isSelected}
                                                 onChange={() => handleToggleTitle(header.title)}
                                             />
-                                            <span className="truncate">{shortenName(header.originalTitle, nameOverrides)}</span>
+                                            <span className="truncate uppercase">{shortenName(header.originalTitle, nameOverrides)}</span>
                                         </label>
                                     );
                                 })}
@@ -853,7 +888,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                                 <span className="text-[9px] text-slate-400 dark:text-slate-500 font-normal no-print leading-none">⋮⋮</span>
                                                                 <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 leading-none">{getSortIndicator(header.title)}</span>
                                                             </div>
-                                                            <span className="whitespace-normal break-words leading-tight">{shortenName(header.originalTitle, nameOverrides)}</span>
+                                                            <span className="whitespace-normal break-words leading-tight uppercase">{shortenName(header.originalTitle, nameOverrides)}</span>
                                                         </div>
                                                     </th>
                                                 );
@@ -925,7 +960,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 })()}
                                                 {groupedVisibleHeaders.map(header => {
                                                     const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                                                    const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                                                    const target = getTargetForEmployee(header.originalTitle, emp.originalName);
                                                     const ht = target > 0 ? (actual / target) * 100 : 0;
                                                     const cellColorClass = getCellStyle(actual, ht, header.title, emp.name);
                                                     return (

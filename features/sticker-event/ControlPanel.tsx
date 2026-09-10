@@ -124,7 +124,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             <h3 className="text-sm font-semibold text-slate-800">Nhập dữ liệu (Admin)</h3>
                             <div className="flex items-center gap-1">
                                 <a 
-                                    href="https://report.mwgroup.vn/home/dashboard/17" 
+                                    href="https://report.mwgroup.vn/home/dashboard/4286" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-xs font-bold text-rose-600 underline hover:text-rose-800 px-1"

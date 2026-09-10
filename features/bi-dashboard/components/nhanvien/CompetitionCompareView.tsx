@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
+import { getBonusForEmployee } from '../../utils/bonusParser';
 import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
@@ -69,15 +71,39 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
     return <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
 };
 
-const ProfileAvatar: React.FC<{ emp: Employee, colorClass: string }> = ({ emp, colorClass }) => {
-    const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${emp.originalName}`, null);
+const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmployees?: RevenueRow[] }> = ({ emp, colorClass, fallbackEmployees }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { avatarSrc, uploadAvatar } = useEmployeeAvatar({
+        employeeName: emp.name,
+        originalName: emp.originalName,
+        fallbackEmployees: fallbackEmployees?.filter(r => r.type === 'employee')
+    });
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            await uploadAvatar(file);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
-        <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden shadow-lg mx-auto bg-white flex items-center justify-center shrink-0`}>
+        <div 
+            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden shadow-lg mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
+            onClick={() => fileInputRef.current?.click()}
+            title="Bấm để tải lên hoặc đổi ảnh đại diện"
+        >
             {avatarSrc ? (
                 <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
                 <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
+                <CameraIcon className="w-5 h-5 drop-shadow-md" />
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </div>
     );
 };
@@ -110,7 +136,7 @@ const EmployeeSelector: React.FC<{
                 <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400 shrink-0" />
             </Button>
             {isOpen && (
-                <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
+                <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
                         <Input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" autoFocus />
                     </div>
@@ -177,7 +203,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const rev = revenueRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
         const inst = installmentRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
         const bk = banKemRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
-        const bns = bonusData?.[emp.originalName];
+        const bns = getBonusForEmployee(bonusData, emp.originalName, emp.name);
 
         const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
             const empRows = (rows || []).filter(r => r.type === 'employee');
@@ -315,7 +341,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 pb-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-6 mt-4">
+        <div className="space-y-4 pb-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-4 sm:p-6 mt-4">
             {/* Auto Pairing Quick Select */}
             {autoPairs.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
@@ -365,18 +391,18 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             </div>
 
             {(!empA || !empB) ? (
-                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-none border-2 border-dashed border-slate-200 dark:border-slate-800">
                     Vui lòng chọn 2 nhân viên để bắt đầu so sánh.
                 </div>
             ) : (
-                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
                     {/* Header Banner */}
                     <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                         
                         {/* NV A */}
                         <div className="flex-1 flex flex-col items-center relative z-10">
-                            <ProfileAvatar emp={empA} colorClass="border-sky-500" />
+                            <ProfileAvatar emp={empA} colorClass="border-sky-500" fallbackEmployees={revenueRows} />
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
                             <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
@@ -393,7 +419,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
 
                         {/* NV B */}
                         <div className="flex-1 flex flex-col items-center relative z-10">
-                            <ProfileAvatar emp={empB} colorClass="border-rose-500" />
+                            <ProfileAvatar emp={empB} colorClass="border-rose-500" fallbackEmployees={revenueRows} />
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
                             <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
@@ -458,7 +484,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                                         <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">#{idx + 1}</td>
                                                         <td className="px-4 py-1 border-r border-slate-100 dark:border-slate-800/50">
                                                             <div className="flex items-center gap-1.5">
-                                                                <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200">{row.name}</span>
+                                                                <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200 uppercase">{row.name}</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-2 py-1 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">

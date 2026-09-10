@@ -419,8 +419,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         setSelectedCompetitions(prev => { const newSet = new Set(prev); if (newSet.has(competitionTitle)) newSet.delete(competitionTitle); else newSet.add(competitionTitle); return newSet; });
     };
 
-    const activeFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().filter(h => selectedCompetitions.has(h.originalTitle)).length;
-    const totalFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().length;
+    const activeFilterCount = (Object.values(relevantCompetitions || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []).filter(h => selectedCompetitions.has(h.originalTitle)).length;
+    const totalFilterCount = (Object.values(relevantCompetitions || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[]).flatMap(c => c?.headers || []).length;
     const isFiltered = activeFilterCount < totalFilterCount;
     const handleToggleAllCompetitions = () => {
         if (activeFilterCount === totalFilterCount) handleDeselectAllCompetitions();
@@ -428,19 +428,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     };
     // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải originalTitle thô — nếu
     // không, gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
-    const filterGroups = (Object.entries(relevantCompetitions) as [Criterion, { headers?: CompetitionHeader[] }][]).map(([criterion, data]) => ({
-        key: criterion,
-        label: `Tiêu chí ${criterion}`,
-        options: (data.headers || [])
-            .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
-            .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides), checked: selectedCompetitions.has(c.originalTitle) }))
-    }));
+    const filterGroups = (Object.entries(relevantCompetitions || {}) as [Criterion, { headers?: CompetitionHeader[] }][])
+        .filter(([, data]) => Boolean(data && data.headers))
+        .map(([criterion, data]) => ({
+            key: criterion,
+            label: `Tiêu chí ${criterion}`,
+            options: (data?.headers || [])
+                .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
+                .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides).toUpperCase(), checked: selectedCompetitions.has(c.originalTitle) }))
+        }));
 
     // Tab "Tổng" — luôn hiển thị TẤT CẢ nhóm hàng thi đua hiện có (không cho tự chọn cột,
     // khác với tab "Tuỳ chỉnh" nơi người dùng tự chọn/lưu nhiều bảng riêng).
     const allCompetitionTitles = useMemo(() => {
-        return (Object.values(allCompetitionsByCriterion) as { headers: CompetitionHeader[] }[])
-            .flatMap(c => c.headers.map(h => h.title));
+        return (Object.values(allCompetitionsByCriterion || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[])
+            .flatMap(c => c?.headers ? c.headers.map(h => h.title) : []);
     }, [allCompetitionsByCriterion]);
 
     // --- Logic cho tab Tổng ---

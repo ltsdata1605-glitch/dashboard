@@ -52,12 +52,12 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
   const [showFilters, setShowFilters] = useState(false);
 
   const options = useMemo(() => {
-    const maSieuThi = Array.from(new Set(inventory.map(item => item.maSieuThi))).sort();
-    const nganhHang = Array.from(new Set(inventory.map(item => item.nganhHang))).sort();
+    const maSieuThi = Array.from(new Set(inventory.map(item => item.maSieuThi).filter(Boolean))).sort();
+    const nganhHang = Array.from(new Set(inventory.map(item => item.nganhHang).filter(Boolean))).sort();
     if (hasManualProducts && !nganhHang.includes('Nhóm thủ công')) {
       nganhHang.unshift('Nhóm thủ công');
     }
-    const nhomHang = Array.from(new Set(inventory.map(item => item.nhomHang))).sort();
+    const nhomHang = Array.from(new Set(inventory.map(item => item.nhomHang).filter(Boolean))).sort();
     
     return { maSieuThi, nganhHang, nhomHang };
   }, [inventory, hasManualProducts]);
@@ -170,15 +170,17 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
       {/* Collapsible filter row */}
       {showFilters && (
         <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="flex-1 min-w-0">
-            <MultiSelectDropdown
-              label=""
-              options={options.maSieuThi}
-              selectedValues={filters.maSieuThi}
-              onChange={(values) => onFilterChange('maSieuThi', values)}
-              placeholder="Siêu thị"
-            />
-          </div>
+          {options.maSieuThi.length > 0 && (
+            <div className="flex-1 min-w-0">
+              <MultiSelectDropdown
+                label=""
+                options={options.maSieuThi}
+                selectedValues={filters.maSieuThi}
+                onChange={(values) => onFilterChange('maSieuThi', values)}
+                placeholder="Siêu thị"
+              />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <MultiSelectDropdown
               label=""
