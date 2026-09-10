@@ -8,6 +8,12 @@ node archive/backup.cjs
 This script will handle both pushing the changes to Github and creating a zipped backup under the `archive` directory with sequential numbering.
 
 
+## Push Commands
+Mỗi khi người dùng yêu cầu push (ví dụ: "push", "hãy push", "push code", "commit và push", v.v.):
+- Agent BẮT BUỘC tự động thực thi quy trình git commit và push trực tiếp (chạy script `bash .agents/skills/git-pushing/scripts/smart_commit.sh` hoặc git add/commit/push) lên kho lưu trữ từ xa mà không cần hỏi lại.
+- Sau khi hoàn thành, báo cáo rõ ràng trạng thái: "✅ Đã đẩy code thành công lên GitHub!".
+
+
 ## Auto-Review & Error Tracking
 - Whenever the user requests an upgrade, modification, or new feature, the Agent MUST proactively use appropriate Skills (e.g., `quality-master`, `analyze-project`, `performance-optimizer`) to review the code, detect potential errors, and optimize the system.
 - The Agent MUST ensure that robust error handling (try/catch, Error Boundaries, null-checks) is integrated into new or modified modules.
