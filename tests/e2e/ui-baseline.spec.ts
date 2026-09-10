@@ -49,6 +49,14 @@ const VIEWS: {
         },
     },
     {
+        // SummaryTableView — bảng tổng hợp siêu thị, cùng màn với thẻ KPI (Tổng quan > Doanh thu).
+        name: 'tongquan-summary-table',
+        go: async page => {
+            await page.getByRole('button', { name: /Tổng quan/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Doanh thu', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
+    {
         // IndividualCompetitionView — sub-tab "Cá nhân" (activeCompetitionTab === 'canhan').
         name: 'nhanvien-thidua-canhan',
         go: async page => {
