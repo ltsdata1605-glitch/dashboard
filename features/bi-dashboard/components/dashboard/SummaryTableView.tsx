@@ -172,7 +172,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
                 className={`p-1.5 transition-colors ${
                     hiddenSupermarkets.length > 0
-                        ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
                 title="Lọc danh sách siêu thị"
@@ -180,8 +180,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 <FilterIcon className="h-4 w-4" />
             </Button>
             {isSupermarketFilterOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
                     <Input
                         type="text"
                         value={supermarketFilterSearch}
@@ -194,7 +194,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         {allSupermarketNames
                             .filter(name => shortenSupermarketName(name).toLowerCase().includes(supermarketFilterSearch.toLowerCase()))
                             .map((sm: string) => (
-                            <div key={sm} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div key={sm} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <label
                                     className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
                                     onClick={() => setHiddenSupermarkets(prev => prev.includes(sm) ? prev.filter(i => i !== sm) : [...prev, sm])}
@@ -221,7 +221,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
                 className={`p-1.5 transition-colors ${
                     isColumnSelectorOpen
-                        ? 'text-sky-600 dark:text-sky-400'
+                        ? 'text-sky-700 dark:text-sky-400'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
@@ -229,11 +229,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 <CogIcon className="h-4 w-4" />
             </Button>
             {isColumnSelectorOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                     <div className="grid gap-0.5">
                         {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
-                            <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div key={h} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <label
                                     htmlFor={`col-toggle-sum-${h}`}
                                     className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
@@ -273,12 +273,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         <table className="w-full min-w-max text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
-                                <tr className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wider">
+                                <tr className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider">
                                     {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th
                                             rowSpan={2}
-                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
+                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
                                         >
                                             SIÊU THỊ
                                         </th>
@@ -290,7 +290,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                 >
                                                     {renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}
                                                 </th>
@@ -301,7 +301,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
-                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px] sm:text-[12px] font-bold border-r text-center align-middle`}
+                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] sm:text-[12px] font-bold border-r text-center align-middle`}
                                             >
                                                 {g.label}
                                             </th>
@@ -321,7 +321,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         return (
                                             <th
                                                 key={h}
-                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                className={`px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                             >
                                                 {renderHeaderText(headerMapping[h] || h)}
                                             </th>
@@ -358,14 +358,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 tabular-nums align-middle
                                                                 bg-slate-100 dark:bg-slate-800
                                                                 ${h === 'Tên miền'
-                                                                    ? 'uppercase tracking-tight sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
+                                                                    ? 'uppercase tracking-wider sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
                                                                     : 'text-center'}
                                                             `}
                                                         >
                                                             {cell?.isMerged ? (
                                                                 <div className="flex flex-col items-center leading-tight justify-center">
                                                                     <span>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
-                                                                    <span className="text-[8px] font-black opacity-70">
+                                                                    <span className="text-[11px] font-black opacity-70">
                                                                         {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                                     </span>
                                                                 </div>
@@ -398,8 +398,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const smKey = row[nameIdx];
 
                                                 let colorCls = '';
-                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
-                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-600 dark:text-rose-400 font-bold';
+                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-700 dark:text-amber-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
+                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
                                                 if (h === 'DTQĐ') colorCls = ' text-sky-700 dark:text-sky-400 font-semibold';
 
                                                 return (
@@ -416,8 +416,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         {cell?.isMerged ? (
                                                             <div className="flex flex-col items-center leading-tight justify-center">
                                                                 <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-sky-700 dark:text-sky-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
-                                                                <span className={`text-[8px] font-black ${
-                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
+                                                                <span className={`text-[11px] font-black ${
+                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
                                                                 }`}>
                                                                     {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                                 </span>

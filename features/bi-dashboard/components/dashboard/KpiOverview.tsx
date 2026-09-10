@@ -62,8 +62,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         const num = parseNumber(val);
         const isPositive = num >= 0;
         return (
-            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold leading-none ${
-                isPositive ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400'
+            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-bold leading-none ${
+                isPositive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400'
             }`}>
                 {isPositive ? <ChevronUpIcon className="h-2 w-2" /> : <ChevronDownIcon className="h-2 w-2" />}
                 {Math.abs(Math.ceil(num))}%
@@ -222,7 +222,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={dtThucTargetStr}
                         onClick={() => handleOpenModal('dtThuc')}
                     >
-                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                             {roundUp(dtlk).toLocaleString('vi-VN')} Tr
                         </div>
                     </KpiCard>
@@ -237,7 +237,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={secondaryTargetStr || '-'}
                         onClick={() => handleOpenModal('dtQd')}
                     >
-                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                             {roundUp(dtqd).toLocaleString('vi-VN')} Tr
                         </div>
                     </KpiCard>
@@ -252,7 +252,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={`${currentQuyDoiTarget}%`}
                         onClick={() => handleOpenModal('hqqd')}
                     >
-                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                             {Math.ceil(hqqd)}%
                         </div>
                     </KpiCard>
@@ -267,7 +267,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         trendValue={`${currentTraGopTarget}%`}
                         onClick={() => handleOpenModal('traCham')}
                     >
-                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
                             {Math.ceil(tyTrongTraGop)}%
                         </div>
                     </KpiCard>
@@ -276,25 +276,25 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* ROW 2: CHỈ SỐ PHỤ */}
                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
                     <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
-                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-sky-600 dark:text-sky-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
                             {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
-                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-amber-600 dark:text-amber-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
                             {Math.ceil(parseNumber(kpiData.tlpv))}%
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
-                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                             {kpiData.lbillBH ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : '0'}
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="wallet" iconColor="rose" title="Bill T.Hộ">
-                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
+                        <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
                             {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                         </div>
                     </KpiCard>
@@ -336,9 +336,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                                 onChange={(e) => setInputTarget(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') handleSaveTarget(); }}
                                 placeholder={modalDetails.placeholder}
-                                className="w-full pl-3.5 pr-16 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-base focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-full pl-3.5 pr-16 py-2.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-base focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700/80 text-xs font-bold text-slate-500 dark:text-slate-300 pointer-events-none select-none">
+                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-700/80 text-xs font-bold text-slate-500 dark:text-slate-300 pointer-events-none select-none">
                                 {modalDetails.unit}
                             </span>
                         </div>
@@ -350,7 +350,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                                 type="button"
                                 variant="unstyled"
                                 onClick={() => setInputTarget(Math.round(totalVuotTroi).toString())}
-                                className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
+                                className="text-xs font-semibold text-sky-700 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
                             >
                                 ⚡ Lấy theo Target DTQĐ ({roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr)
                             </Button>
@@ -360,7 +360,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                             type="button"
                             variant="unstyled"
                             onClick={handleRemoveTarget}
-                            className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 hover:text-rose-700 transition-colors"
+                            className="text-xs font-bold text-rose-700 dark:text-rose-400 hover:underline inline-flex items-center gap-1 hover:text-rose-700 transition-colors"
                         >
                             Loại bỏ
                         </Button>
