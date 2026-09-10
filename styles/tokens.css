@@ -247,6 +247,57 @@
   --shadow-focus: var(--p-shadow-ring) rgba(14, 165, 233, 0.2);
 
 
+  /* ─── CHUẨN "BẢNG ĐIỀU KHIỂN CA TRỰC" (2026-09-10) ───
+     Xem DESIGN_SYSTEM.md. Nguyên tắc: mỗi pixel dành cho số, không dành cho trang trí.
+
+     ĐƠN GIẢN HOÁ SO VỚI BẢN ĐẶC TẢ: đặc tả ban đầu đặt 6 mã hex mới (#f4f6f8, #d8dee5,
+     #eaeef2, #0f1720, #47535f, #7c8894). Tất cả đều nằm giữa 2 nấc Tailwind và LỆCH KHÔNG
+     QUÁ 2% so với nấc gần nhất — mắt không phân biệt được. Thêm 6 màu gần trùng vào một dự
+     án vừa mất cả Đợt 6 để dọn màu là đi ngược lại chính việc đó. Nên: bám nguyên primitive
+     có sẵn. Chỉ giữ lại phần THẬT SỰ đổi — sắc độ đậm hơn một bậc cho màu ngữ nghĩa. */
+
+  /* Nền & bề mặt */
+  --console-ground:   var(--p-slate-100);   /* nền ngoài cùng */
+  --console-surface:  #ffffff;              /* nền bảng, vùng dữ liệu */
+  --console-band:     var(--p-slate-100);   /* dải nhóm trong bảng */
+  --console-hover:    var(--p-sky-50);      /* dòng đang rê chuột — tông xanh để KHÁC dải nhóm */
+
+  /* Mực */
+  --console-ink-1:    var(--p-slate-900);   /* số và chữ chính */
+  --console-ink-2:    var(--p-slate-600);   /* chữ mô tả */
+  --console-ink-3:    var(--p-slate-500);   /* nhãn cột — dùng 500 chứ không 400: nhãn 11px
+                                               trên nền trắng cần đủ tương phản để đọc */
+
+  /* Hai cấp đường kẻ — KHÔNG thêm cấp thứ ba */
+  --console-line-1:   var(--p-slate-200);   /* chia khối, viền bảng, cột ghim */
+  --console-line-2:   var(--p-slate-100);   /* chia dòng */
+
+  /* Ngữ nghĩa — ĐẬM HƠN MỘT BẬC so với bản cũ (600 → 700).
+     Lý do: chữ 11–13px trên nền trắng, sắc độ 600 không đủ tương phản trên màn hình
+     laptop cũ ở siêu thị. Đây là thay đổi màu THẬT SỰ duy nhất của chuẩn mới. */
+  --console-accent:   var(--p-sky-700);
+  --console-good:     var(--p-emerald-700);
+  --console-warn:     var(--p-amber-700);
+  --console-bad:      var(--p-rose-700);
+
+  /* Mật độ — con số cụ thể để lập trình */
+  --console-row-h:      26px;   /* dòng dữ liệu (bản cũ ~30px) */
+  --console-head-h:     28px;   /* đầu bảng, luôn sticky */
+  --console-band-h:     24px;   /* dải nhóm — thấp hơn dòng vì nó là vách ngăn */
+  --console-row-px:     8px;
+  --console-row-py:     3px;
+  --console-stripe-w:   3px;    /* vạch trạng thái mép trái, THAY cho pill */
+  --console-pin-w:      148px;  /* bề rộng tối thiểu cột ghim */
+
+  /* Bo góc — bo góc nói "tôi ở tầng khác", chỉ dùng cho thứ nổi lên trên */
+  --console-radius-control: 4px;   /* nút, ô nhập */
+  --console-radius-overlay: 6px;   /* modal, dropdown */
+  /* bảng và vùng dữ liệu: 0 — không khai token, dùng rounded-none */
+
+  /* Nhãn cột: phông condensed đã nạp sẵn trong index.html, có dấu tiếng Việt.
+     KHÔNG đổi --font-sans (UTM Avo) — xem DESIGN_SYSTEM.md mục 2. */
+  --console-font-label: "Roboto Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+
   /* ─── COMPONENT TOKENS ─── */
 
   /* Card */

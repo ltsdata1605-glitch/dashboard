@@ -87,9 +87,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 w-10">#</th>
+                                    <th className="text-center px-2 py-[5px] border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 w-10">#</th>
                                     <th
-                                        className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 whitespace-nowrap hover:bg-sky-200 dark:hover:bg-sky-800/50 transition-colors"
+                                        className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 whitespace-nowrap hover:bg-sky-200 dark:hover:bg-sky-800/50 transition-colors"
                                         onClick={() => handleSort(-1)}
                                     >
                                         NHÓM THI ĐUA
@@ -103,7 +103,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                             <th
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
-                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
+                                                className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
                                             >
                                                 {renderHeaderText(getFormattedHeader(column))}
                                             </th>
@@ -126,14 +126,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                     return (
                                         <tbody key={groupKey}>
                                             <tr className={`${theme.light} border-t-2 ${theme.border}`}>
-                                                <td colSpan={100} className={`px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider border-l-4 ${theme.accent} ${theme.text}`}>
+                                                <td colSpan={100} className={`px-2 py-[3px] text-[11px] font-extrabold uppercase tracking-wider border-l-4 ${theme.accent} ${theme.text}`}>
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <div className="flex items-center">
-                                                            <span className="px-2 py-0.5 rounded bg-white/70 dark:bg-black/20 mr-2 text-[9px]">
+                                                            <span className="px-2 py-0.5 rounded bg-white/70 dark:bg-black/20 mr-2 text-[11px]">
                                                                 {groupingMode === 'configured' ? 'NHÓM TIÊU CHÍ' : 'TIÊU CHÍ'}
                                                             </span>
                                                             <span>{groupKey}</span>
-                                                            <span className="ml-1.5 text-[10px] font-semibold opacity-75">
+                                                            <span className="ml-1.5 text-[11px] font-semibold opacity-75">
                                                                 ({programs.length})
                                                             </span>
                                                         </div>
@@ -141,14 +141,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                         {/* Badges số lượng ngành hàng >100% và <100% */}
                                                         <div className="flex items-center gap-1.5 font-sans normal-case tracking-normal ml-1">
                                                             <span 
-                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/60 shadow-xs tabular-nums"
+                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/60 shadow-xs tabular-nums"
                                                                 title={`Số ngành hàng đạt >100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.over100}/${programs.length}`}
                                                             >
                                                                 <span className="opacity-80 font-medium">&gt;100%:</span>
                                                                 <span className="font-black text-emerald-700 dark:text-emerald-200">{stats.over100}</span>
                                                             </span>
                                                             <span 
-                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100/90 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/80 dark:border-rose-700/60 shadow-xs tabular-nums"
+                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-rose-100/90 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/80 dark:border-rose-700/60 shadow-xs tabular-nums"
                                                                 title={`Số ngành hàng dưới 100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.under100}/${programs.length}`}
                                                             >
                                                                 <span className="opacity-80 font-medium">&lt;100%:</span>
@@ -165,14 +165,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
 
                                             return (
                                                 <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
-                                                    <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
-                                                    <td className="px-2 py-1 text-[13px] font-bold text-sky-600 dark:text-sky-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
+                                                    <td className="px-2 py-[3px] text-center text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
+                                                    <td className="px-2 py-[3px] text-[13px] font-bold text-sky-700 dark:text-sky-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>
                                                     {visibleColumns.map(header => {
                                                         if (header === 'Còn Lại') {
                                                             return (
-                                                                <td key={header} className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}`}>
+                                                                <td key={header} className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400')}`}>
                                                                     {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
                                                                 </td>
                                                             );
@@ -213,7 +213,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                                 const isUnder100 = htValue < 100;
                                                                 // Nếu là cột %DKHT (%DKHT V.Trội / %HTDK) và < 100% thì chữ và thanh bar màu đỏ
                                                                 const textColorClass = (isDkhtCol && isUnder100) 
-                                                                    ? 'text-rose-600 dark:text-rose-400' 
+                                                                    ? 'text-rose-700 dark:text-rose-400' 
                                                                     : '';
                                                                 const barColorClass = (isDkhtCol && isUnder100) 
                                                                     ? 'bg-rose-500' 
@@ -238,7 +238,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             
                                                             if (headerKey === '%HTDK' || headerKey === '%DKHT' || headerKey === '%HTDK V.Trội') {
                                                                 const pVal = parseNumber(cell);
-                                                                const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                                                                const color = pVal >= 100 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
                                                                 return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
                                                             }
 
@@ -246,7 +246,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                         };
 
                                                         return (
-                                                            <td key={header} className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${isProgressBarColumn ? 'min-w-[105px] w-[105px]' : ''}`}>
+                                                            <td key={header} className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${isProgressBarColumn ? 'min-w-[105px] w-[105px]' : ''}`}>
                                                                 {cellContent()}
                                                             </td>
                                                         );
