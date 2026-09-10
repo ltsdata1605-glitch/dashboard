@@ -1,5 +1,5 @@
-import { parseNumber, shortenName } from '../../../utils/dashboardHelpers';
-import type { ProcessedProgram } from '../CompetitionView';
+import { parseNumber, shortenName } from '../utils/dashboardHelpers';
+import type { ProcessedProgram } from './competitionViewCalc';
 import { 
     isSuperCompetitionActive,
     getProgramEvaluatedCompletion

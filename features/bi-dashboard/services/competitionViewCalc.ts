@@ -2,7 +2,7 @@ import { parseNumber, roundUp, type SupermarketCompetitionData } from '../utils/
 import {
     ALLOWED_REALTIME_COLUMNS,
     ALLOWED_LUYKE_COLUMNS,
-} from '../components/dashboard/competition/competitionSortAndCalc';
+} from './competitionSortAndCalc';
 
 /**
  * Dựng bảng Thi đua của một siêu thị — tách NGUYÊN KHỐI từ `CompetitionView.tsx` (Đợt 1.5).
@@ -13,11 +13,8 @@ import {
  *
  * Tách bằng script, chép nguyên văn — KHÔNG đổi con số nào.
  *
- * ⚠️ NỢ KỸ THUẬT CÒN LẠI: file này phải import `ALLOWED_*_COLUMNS` từ
- * `components/dashboard/competition/competitionSortAndCalc.ts` — tức logic ở `services/` đang phụ
- * thuộc ngược vào `components/`. `competitionSortAndCalc.ts` và `competitionCommentaryCalc.ts`
- * đều là logic thuần bị đặt nhầm trong `components/`; PHẢI chuyển sang `services/` trước Đợt 3,
- * nếu không chúng sẽ bị vứt cùng giao diện.
+ * (Nợ kỹ thuật "logic nằm trong components/" đã trả: `competitionSortAndCalc.ts` và
+ * `competitionCommentaryCalc.ts` đã chuyển sang `services/` cùng đợt.)
  */
 
 /** Một chương trình thi đua sau khi đã xử lý cột.

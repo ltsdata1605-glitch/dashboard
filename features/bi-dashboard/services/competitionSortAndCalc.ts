@@ -1,5 +1,5 @@
-import { parseNumber, shortenName } from '../../../utils/dashboardHelpers';
-import type { ProcessedProgram } from '../CompetitionView';
+import { parseNumber, shortenName } from '../utils/dashboardHelpers';
+import type { ProcessedProgram } from './competitionViewCalc';
 
 export const ALLOWED_REALTIME_COLUMNS = [
     'Realtime',

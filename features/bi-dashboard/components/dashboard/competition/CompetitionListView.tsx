@@ -4,7 +4,7 @@ import { Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel
 import { ProgressBar } from '../DashboardWidgets';
 import { renderHeaderText } from '../SafeHeaderText';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
-import { calculateGroupAchievementStats } from './competitionSortAndCalc';
+import { calculateGroupAchievementStats } from '../../../services/competitionSortAndCalc';
 import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionListViewProps {

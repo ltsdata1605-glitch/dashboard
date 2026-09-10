@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { Copy, Check, Sparkles, MessageSquareQuote } from 'lucide-react';
-import type { SupermarketCompetitionCommentary, GroupCommentary } from './competitionCommentaryCalc';
-import { generateZaloCommentaryMessage } from './competitionCommentaryCalc';
+import type { SupermarketCompetitionCommentary, GroupCommentary } from '../../../services/competitionCommentaryCalc';
+import { generateZaloCommentaryMessage } from '../../../services/competitionCommentaryCalc';
 
 interface CompetitionCommentaryModalProps {
     isOpen: boolean;

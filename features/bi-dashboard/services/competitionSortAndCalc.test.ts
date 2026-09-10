@@ -8,7 +8,7 @@ import {
     calculateOverallCompetitionKpiStats,
     sortProgramsList
 } from './competitionSortAndCalc';
-import type { ProcessedProgram } from '../CompetitionView';
+import type { ProcessedProgram } from './competitionViewCalc';
 
 /**
  * Lưới an toàn cho quy tắc LIÊN KẾT NHÓM CỘT của bảng Thi đua (thêm ngày 2026-09-09).

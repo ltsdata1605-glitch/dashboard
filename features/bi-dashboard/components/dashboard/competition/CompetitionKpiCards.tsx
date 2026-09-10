@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { CheckCircle2, AlertCircle, TrendingUp, XCircle } from 'lucide-react';
 import type { ProcessedProgram } from '../CompetitionView';
-import { calculateOverallCompetitionKpiStats } from './competitionSortAndCalc';
+import { calculateOverallCompetitionKpiStats } from '../../../services/competitionSortAndCalc';
 
 interface CompetitionKpiCardsProps {
     programs: ProcessedProgram[];

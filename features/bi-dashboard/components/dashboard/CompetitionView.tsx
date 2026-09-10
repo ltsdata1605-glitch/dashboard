@@ -9,7 +9,7 @@ import { buildCompetitionTable, type ProcessedProgram } from '../../services/com
 import CompetitionListView from './competition/CompetitionListView';
 import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
 import { CompetitionCommentaryModal } from './competition/CompetitionCommentaryModal';
-import { calculateCompetitionCommentary } from './competition/competitionCommentaryCalc';
+import { calculateCompetitionCommentary } from '../../services/competitionCommentaryCalc';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -22,7 +22,7 @@ import {
     toggleCompetitionColumn,
     ALLOWED_REALTIME_COLUMNS,
     ALLOWED_LUYKE_COLUMNS
-} from './competition/competitionSortAndCalc';
+} from '../../services/competitionSortAndCalc';
 
 // Program đã qua xử lý: thêm htdkVT (chỉ khi !isRealtime) và conLai (luôn có, tính từ actual - target)
 // Kiểu này nay khai ở services/competitionViewCalc.ts để sống sót qua đợt lột xác giao diện.

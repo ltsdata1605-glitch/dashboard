@@ -5,7 +5,7 @@ import {
     getGroupSticker,
     extractProgramNumbers
 } from './competitionCommentaryCalc';
-import type { ProcessedProgram } from '../CompetitionView';
+import type { ProcessedProgram } from './competitionViewCalc';
 
 describe('competitionCommentaryCalc', () => {
     const mockHeaders = [
