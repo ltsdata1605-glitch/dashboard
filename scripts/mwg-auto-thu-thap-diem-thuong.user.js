@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      3.6
+// @version      3.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://bi.thegioididong.com/*
@@ -30,6 +30,12 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 3.7 — SỬA LỖI KHÔNG CÓ DỮ LIỆU KHI CHẠY TỰ ĐỘNG DO SAI ĐỊNH DẠNG MÃ NV:
+ * - Khi danh sách nhân viên từ Dashboard / Phân Tích có khuôn dạng "Mã NV - Tên NV" (ví dụ: 195025 - Nguyễn Thị Mỹ Linh),
+ *   nếu tham số employeeId bị gửi lẫn họ tên tiếng Việt, API GetReward của MWG sẽ trả về rỗng vì không khớp mã NV.
+ * - Sửa: Thêm lớp phòng vệ bóc tách mã số tự động (\d+) từ employeeId, originalName, hoặc displayName
+ *   trong runBatch trước khi gọi fetchOne. Đảm bảo strRewardUser luôn luôn là mã số NV nguyên bản.
  *
  * BẢN 3.5 — ĐỒNG BỘ TOAST & BẢO ĐẢM TƯƠNG THÍCH VỚI BOOKMARKLET COPYALL:
  * - Tương thích hoàn toàn với bookmarklet CopyAll trên trang BI Thegioididong.
@@ -242,7 +248,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '1.5';
+  const SCRIPT_VERSION = '3.7';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -505,19 +511,33 @@
     for (let i = 0; i < employees.length; i++) {
       if (shouldStop && shouldStop()) { stoppedEarly = true; break; }
       const { employeeId, originalName, displayName } = employees[i];
-      if (onStart) onStart(i, employees.length, employeeId, displayName);
+
+      // Phòng vệ kép: bóc tách chuỗi số nguyên thuần tuý làm mã NV trước khi gọi API
+      let cleanEmpId = String(employeeId || '').trim();
+      if (!/^\d+$/.test(cleanEmpId)) {
+        const match = cleanEmpId.match(/\d+/)
+          || String(originalName || '').match(/\d+/)
+          || String(displayName || '').match(/\d+/);
+        if (match) cleanEmpId = match[0];
+      }
+
+      if (onStart) onStart(i, employees.length, cleanEmpId, displayName);
       try {
-        const tsv = await fetchOne(employeeId, fromDateApi, toDateApi);
+        if (!cleanEmpId) {
+          throw new Error('Không tìm thấy mã số nhân viên để truy vấn');
+        }
+        const tsv = await fetchOne(cleanEmpId, fromDateApi, toDateApi);
         const diemThucLanh = extractDiemThucLanh(tsv);
-        blocks.push(`===${employeeId}===\n${tsv}`);
-        results.push({ employeeId, originalName, status: 'ok', tsv, diemThucLanh });
-        if (onItemDone) onItemDone(i, employees.length, employeeId, displayName, { status: 'ok', diemThucLanh });
+        blocks.push(`===${cleanEmpId}===\n${tsv}`);
+        results.push({ employeeId: cleanEmpId, originalName, status: 'ok', tsv, diemThucLanh });
+        if (onItemDone) onItemDone(i, employees.length, cleanEmpId, displayName, { status: 'ok', diemThucLanh });
       } catch (e) {
         const msg = (e && e.message) || String(e);
-        blocks.push(`===${employeeId}===\nLỖI: ${msg}`);
-        errors.push(`${employeeId}: ${msg}`);
-        results.push({ employeeId, originalName, status: 'error', error: msg });
-        if (onItemDone) onItemDone(i, employees.length, employeeId, displayName, { status: 'error', error: msg });
+        const targetId = cleanEmpId || employeeId;
+        blocks.push(`===${targetId}===\nLỖI: ${msg}`);
+        errors.push(`${targetId}: ${msg}`);
+        results.push({ employeeId: targetId, originalName, status: 'error', error: msg });
+        if (onItemDone) onItemDone(i, employees.length, targetId, displayName, { status: 'error', error: msg });
       }
       if (i < employees.length - 1) {
         if (shouldStop && shouldStop()) { stoppedEarly = true; break; }
