@@ -49,6 +49,15 @@ const VIEWS: {
         },
     },
     {
+        // CompetitionView — bảng Thi đua Luỹ kế (Tổng quan > Thi đua). Nguồn của %HT V.Trội và Còn Lại.
+        name: 'tongquan-thidua',
+        go: async page => {
+            await page.getByRole('button', { name: /Tổng quan/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click({ timeout: 30_000 });
+            await page.getByText('Luỹ kế', { exact: true }).first().click();
+        },
+    },
+    {
         // SummaryTableView — bảng tổng hợp siêu thị, cùng màn với thẻ KPI (Tổng quan > Doanh thu).
         name: 'tongquan-summary-table',
         go: async page => {
