@@ -2967,3 +2967,74 @@ Claude Code (canvas editor xuất bản qua Artifact). Gỡ xong thì skill gố
 Còn sót không đáng ngại: `tailwind-patterns` + `planning-with-files` mỗi cái 1 file nhắc dark mode
 (là tính năng của Tailwind, không phải chỉ thị áp dụng); `architecture`/`react-best-practices`/
 `web-performance-optimization` nhắc Next.js như một ngữ cảnh trong hướng dẫn React chung.
+
+---
+
+# DỰ ÁN LỚN: Làm lại Report BI — giữ chức năng, lột xác giao diện (bắt đầu 2026-09-10)
+
+Quyết định của user qua AskUserQuestion:
+1. **Chuẩn thiết kế MỚI cho cả dự án** — Report BI làm trước, Phân Tích và các module khác theo sau.
+2. **Tách logic trước rồi mới thay UI** — ưu tiên khả năng kiểm chứng hơn tốc độ.
+3. **Deploy hiện trạng trước** khi bắt đầu.
+
+## Vì sao KHÔNG "đập bỏ xây lại" theo nghĩa đen
+
+Số đo thực tế (2026-09-10):
+
+| Chỉ số | Giá trị |
+|---|---|
+| Tổng module | 102 file / 27.619 dòng |
+| Giao diện `.tsx` | 52 file / 16.044 dòng |
+| Logic `.ts` | 44 file / 10.789 dòng |
+| **Logic nằm TRONG file giao diện** | **19/52 file, 287 biểu thức tính toán** |
+| **Lưới an toàn** | **6 file test / 1.003 dòng** |
+
+Hai con số in đậm là lý do. Vứt giao diện = vứt luôn 287 biểu thức tính toán, mà chỉ có 1.003 dòng
+test bảo vệ 27.619 dòng code. "Giữ nguyên chức năng" sẽ thành lời hứa suông không kiểm chứng được.
+
+Bằng chứng rủi ro không phải giả định: ngày 2026-09-10 phát hiện `overallRate` cộng *cái* với *đồng*,
+sai âm thầm nhiều tuần, trong file CÓ test nhưng không test đúng con số đó — và con số ấy được copy
+gửi Zalo cho toàn siêu thị.
+
+## Lộ trình
+
+### Đợt 0 — Deploy hiện trạng (VIỆC CỦA USER, agent bị chặn quyền)
+```bash
+npm run deploy:rules   # test đã xanh 40/40
+npm run deploy         # 159 commit đang tồn, production còn ở bản 21/08
+```
+Mục đích: có một mốc ổn định để quay về và để đối chiếu số trước/sau. Sau deploy nhớ nhập lại 1 dòng
+map `"ĐML_STR_STR - 99 Hùng Vương"` → `910`.
+
+### Đợt 1 — Tách logic ra khỏi giao diện + khoá bằng test
+Rút 287 biểu thức từ 19 file `.tsx` sang `hooks/` + `services/`, mỗi phần kèm **characterization
+test**: ghi lại ĐÚNG con số hiện tại làm đặc tả, kể cả khi thấy nó khả nghi (nếu nghi sai thì báo
+user chứ không tự sửa trong đợt này — trộn refactor với sửa lỗi là cách chắc chắn nhất để mất dấu
+nguyên nhân).
+
+Thứ tự theo mức độ dính, nặng nhất trước:
+`CompetitionSummaryView` (39) → `CrossSellingTab` (25) → `KpiOverview` (25) →
+`IndividualCompetitionView` (22) → `SummaryTableView` (19) → `CompetitionGroupView` (17) →
+`CompetitionView` (17) → còn lại.
+
+**Tiêu chí hoàn thành Đợt 1**: mọi con số hiển thị đều tính từ hàm thuần có test; `npm run check`
+xanh; số test module tăng từ 6 file lên đủ phủ các hàm vừa tách.
+
+### Đợt 2 — Chốt ngôn ngữ thiết kế mới (CẦN USER DUYỆT)
+Chưa làm được nếu chưa biết user muốn hướng thẩm mỹ nào. Sẽ dựng 2-3 phương án mockup trên dữ liệu
+thật để user chọn, TRƯỚC khi viết code UI.
+
+### Đợt 3 — Dựng lại giao diện Report BI trên nền logic đã tách
+Verify bằng "cùng đầu vào → cùng con số" (test Đợt 1 chạy lại phải xanh nguyên).
+
+### Đợt 4 — Viết lại CLAUDE.md §2 + DESIGN_SYSTEM.md theo chuẩn mới
+Bắt buộc, vì user chọn "chuẩn MỚI cho cả dự án". Cập nhật `scripts/lint-ratchet.cjs` nếu palette đổi.
+
+### Đợt 5 — Đưa Phân Tích + các module còn lại theo chuẩn mới
+Đảo ngược quy tắc hiện hành ("lấy Phân Tích làm chuẩn vàng") — Report BI thành chuẩn mới.
+
+## Rủi ro đã biết
+- **Phiên song song** đang làm việc trong `features/bi-dashboard`. Phải kiểm `git status` trước mỗi
+  đợt sửa; hiện working tree sạch nhưng có thể đổi bất cứ lúc nào.
+- Đợt 1 là refactor thuần, **không được đổi bất kỳ con số nào**. Nếu một số liệu buộc phải đổi, dừng
+  lại hỏi user thay vì tự quyết.
