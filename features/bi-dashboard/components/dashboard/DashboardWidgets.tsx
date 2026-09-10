@@ -27,14 +27,17 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: str
     </Button>
   );
 
-export const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
+export const ProgressBar: React.FC<{ value: number; customColorClass?: string }> = ({ value, customColorClass }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
     const displayPercentage = Math.min(percentage, 100);
 
-    let colorClass = 'bg-sky-500';
-    if (value >= 100) colorClass = 'bg-emerald-500';
-    else if (value < 100) colorClass = 'bg-amber-500';
-    if (value < 50) colorClass = 'bg-rose-500';
+    let colorClass = customColorClass;
+    if (!colorClass) {
+        colorClass = 'bg-sky-500';
+        if (value >= 100) colorClass = 'bg-emerald-500';
+        else if (value < 100) colorClass = 'bg-amber-500';
+        if (value < 50) colorClass = 'bg-rose-500';
+    }
 
     return (
         <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 my-1 relative overflow-hidden">

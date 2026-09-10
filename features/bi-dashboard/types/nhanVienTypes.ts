@@ -26,6 +26,8 @@ export interface PrevCompData {
     hqqd: number;
     installment: number;
     pctBillBk: number;
+    duKien?: number;
+    dkht?: number;
 }
 
 export interface RevenueRow {
@@ -49,6 +51,8 @@ export interface RevenueRow {
     remaining_daily_status?: 'warning' | 'success';
     bonus_tong?: number;
     bonus_tier?: 'top' | 'bot' | 'normal';
+    duKien?: number;
+    pctDkht?: number;
 }
 
 export interface CrossSellingRow {

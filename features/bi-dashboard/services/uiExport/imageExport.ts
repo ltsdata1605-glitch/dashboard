@@ -404,6 +404,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         // Tìm index của cột "NHÓM THI ĐUA" và các cột thanh tiến độ ProgressBar (%HT, %DKHT)
         let nhomThiDuaColIdx = -1;
         const progressBarColIndices = new Set<number>();
+        const snugNumericColIndices = new Set<number>();
         const ths = table.querySelectorAll('thead th');
         ths.forEach((th, idx) => {
             const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
@@ -412,6 +413,16 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
             if (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK')) {
                 progressBarColIndices.add(idx);
+            }
+            // Các cột LUỸ KẾ/REALTIME (THỰC HIỆN), TARGET (TAR), CÒN LẠI (C.LẠI), SỐ LƯỢNG
+            if (
+                text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
+                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') ||
+                text.includes('TAR') || text.includes('M.TIÊU') ||
+                text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
+                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG')
+            ) {
+                snugNumericColIndices.add(idx);
             }
         });
 
@@ -422,20 +433,23 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isSttCol = idx === 0 || text === '#' || text === 'STT';
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
             const isProgressBarCol = progressBarColIndices.has(idx);
+            const isSnugNumericCol = snugNumericColIndices.has(idx);
 
             // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
             th.style.setProperty('font-size', '11px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
-            th.style.setProperty('padding', '3px 5px', 'important');
+            th.style.setProperty('padding', '3px 4px', 'important');
 
             if (isSttCol) {
-                th.style.setProperty('min-width', '36px', 'important');
-                th.style.setProperty('width', '36px', 'important');
-                th.style.setProperty('max-width', '42px', 'important');
+                th.style.setProperty('min-width', '28px', 'important');
+                th.style.setProperty('width', '28px', 'important');
+                th.style.setProperty('max-width', '34px', 'important');
                 th.style.setProperty('text-align', 'center', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
             } else if (isNhomThiDuaCol) {
-                th.style.setProperty('min-width', '140px', 'important');
+                // Fix độ rộng vừa khít nội dung Nhóm thi đua (width: auto, min-width: 0, nowrap)
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('min-width', '0px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
 
@@ -450,10 +464,16 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 th.style.setProperty('width', '105px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
+            } else if (isSnugNumericCol) {
+                // Độ rộng cột Luỹ kế/Realtime, Tar, C.Lại... fix vừa khít với nội dung số
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('min-width', '0px', 'important');
+                th.style.setProperty('max-width', 'none', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
-                th.style.setProperty('min-width', '55px', 'important');
+                th.style.setProperty('min-width', '45px', 'important');
             }
 
             th.querySelectorAll('span').forEach(span => {
@@ -479,6 +499,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 const isSttCol = idx === 0;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
                 const isProgressBarCol = progressBarColIndices.has(idx) || !!td.querySelector('.w-10') || !!td.querySelector('[class*="progress"]');
+                const isSnugNumericCol = snugNumericColIndices.has(idx);
 
                 // Ép cỡ chữ chuẩn 13px và padding 3px 5px giúp hàng gọn gàng, siêu sắc nét chuẩn như bảng Trả Góp
                 td.style.setProperty('font-size', '13px', 'important');
@@ -514,14 +535,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 });
 
                 if (isSttCol) {
-                    td.style.setProperty('min-width', '36px', 'important');
-                    td.style.setProperty('width', '36px', 'important');
-                    td.style.setProperty('max-width', '42px', 'important');
+                    td.style.setProperty('min-width', '28px', 'important');
+                    td.style.setProperty('width', '28px', 'important');
+                    td.style.setProperty('max-width', '34px', 'important');
                     td.style.setProperty('text-align', 'center', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
                 } else if (isNhomThiDuaCol) {
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                    td.style.setProperty('min-width', '140px', 'important');
+                    td.style.setProperty('width', 'auto', 'important');
+                    td.style.setProperty('min-width', '0px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
 
                     // Bọc thẻ span con chống ngắt dòng
@@ -535,10 +557,20 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     td.style.setProperty('width', '105px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
+                } else if (isSnugNumericCol) {
+                    // Cột Luỹ kế/Realtime, Tar, C.Lại: fix vừa khít với nội dung số
+                    td.style.setProperty('white-space', 'nowrap', 'important');
+                    td.style.setProperty('width', 'auto', 'important');
+                    td.style.setProperty('min-width', '0px', 'important');
+                    td.style.setProperty('max-width', 'none', 'important');
+                    if (!td.querySelector('.export-nowrap-wrapper')) {
+                        const content = td.innerHTML;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                    }
                 } else {
                     if (!td.classList.contains('sticky')) {
-                        td.style.setProperty('min-width', '45px', 'important');
-                        td.style.setProperty('max-width', '80px', 'important');
+                        td.style.setProperty('min-width', '35px', 'important');
+                        td.style.setProperty('max-width', 'none', 'important');
 
                         // Tự động nhận diện các ô số, phần trăm để chống ngắt dòng
                         const text = td.textContent?.trim() || '';
@@ -887,12 +919,61 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (cls.includes('lg:pt-8') || cls.includes('lg:pt-6') || cls.includes('pt-8')) {
             el.style.setProperty('padding-top', '6px', 'important');
         }
-        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5') || cls.includes('lg:px-4') || cls.includes('lg:pb-4')) && !cls.includes('kpi-grid')) {
+        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5') || cls.includes('lg:px-4') || cls.includes('lg:pb-4')) && !cls.includes('kpi-grid') && !cls.includes('competition-kpi-container')) {
             el.style.setProperty('padding-top', '4px', 'important');
             el.style.setProperty('padding-bottom', '4px', 'important');
             el.style.setProperty('padding-left', '6px', 'important');
             el.style.setProperty('padding-right', '6px', 'important');
         }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // THI ĐUA: THU GỌN CÁC THẺ KPI VÀ CO VỪA THEO BẢNG CỘT
+    // ═══════════════════════════════════════════════════════════════════════
+    clone.querySelectorAll<HTMLElement>('.competition-kpi-container').forEach((kpiGrid) => {
+        kpiGrid.style.setProperty('padding-left', '2px', 'important');
+        kpiGrid.style.setProperty('padding-right', '2px', 'important');
+        kpiGrid.style.setProperty('margin-bottom', '8px', 'important');
+        kpiGrid.style.setProperty('gap', '6px', 'important');
+        kpiGrid.style.setProperty('width', '100%', 'important');
+
+        // Thu gọn từng thẻ KPI & đảm bảo giữ viền sắc nét
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const cardBorderColor = isDarkMode ? '#334155' : '#cbd5e1';
+        kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
+            if (!(child instanceof HTMLElement)) return;
+            child.style.setProperty('padding', '6px 8px', 'important');
+            child.style.setProperty('border-radius', '6px', 'important');
+            child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
+            child.style.setProperty('box-sizing', 'border-box', 'important');
+
+            // Cỡ số chính trong thẻ KPI
+            child.querySelectorAll<HTMLElement>('.text-2xl, .text-3xl').forEach((numEl) => {
+                numEl.style.setProperty('font-size', '18px', 'important');
+                numEl.style.setProperty('line-height', '1.2', 'important');
+            });
+            // Cỡ icon trong thẻ KPI
+            child.querySelectorAll<HTMLElement>('.w-6.h-6').forEach((iconWrap) => {
+                iconWrap.style.setProperty('width', '18px', 'important');
+                iconWrap.style.setProperty('height', '18px', 'important');
+            });
+            child.querySelectorAll<HTMLElement>('svg').forEach((svgEl) => {
+                svgEl.style.setProperty('width', '12px', 'important');
+                svgEl.style.setProperty('height', '12px', 'important');
+            });
+            // Cỡ chữ tiêu đề & nhãn
+            child.querySelectorAll<HTMLElement>('span, div').forEach((textEl) => {
+                const textCls = textEl.getAttribute('class') || '';
+                if (textCls.includes('tracking-wider') || textCls.includes('uppercase')) {
+                    textEl.style.setProperty('font-size', '9.5px', 'important');
+                    textEl.style.setProperty('line-height', '1.2', 'important');
+                }
+                if (textCls.includes('text-[11px]')) {
+                    textEl.style.setProperty('font-size', '9.5px', 'important');
+                    textEl.style.setProperty('line-height', '1.2', 'important');
+                }
+            });
+        });
     });
 
     // Strip border-radius from the clone root itself

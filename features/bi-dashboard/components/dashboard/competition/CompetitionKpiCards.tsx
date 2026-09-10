@@ -26,7 +26,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     const modeLabel = stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản';
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-3 sm:mb-4 px-1.5 sm:px-2 lg:px-6">
+        <div className="competition-kpi-container grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-3 sm:mb-4 px-1.5 sm:px-2 lg:px-6">
             {/* THẺ 1: % số nhóm đạt 100% */}
             <div 
                 className="relative bg-white rounded-xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"

@@ -200,6 +200,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                         }
 
                                                         const isProgressBarColumn = header === '%HT' || header === '%HT V.Trội' || header === '%DKHT' || header === '%HTDK' || header === '%DKHT V.Trội' || header === '%HTDK V.Trội';
+                                                        const isDkhtCol = header === '%DKHT' || header === '%HTDK' || header === '%DKHT V.Trội' || header === '%HTDK V.Trội';
 
                                                         const cellContent = () => {
                                                             const headerKey = header;
@@ -209,10 +210,19 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             
                                                             if (isProgressBarColumn) {
                                                                 const htValue = parseNumber(cell);
+                                                                const isUnder100 = htValue < 100;
+                                                                // Nếu là cột %DKHT (%DKHT V.Trội / %HTDK) và < 100% thì chữ và thanh bar màu đỏ
+                                                                const textColorClass = (isDkhtCol && isUnder100) 
+                                                                    ? 'text-rose-600 dark:text-rose-400' 
+                                                                    : '';
+                                                                const barColorClass = (isDkhtCol && isUnder100) 
+                                                                    ? 'bg-rose-500' 
+                                                                    : undefined;
+
                                                                 return (
                                                                     <div className="flex items-center gap-1 justify-center tabular-nums w-full">
-                                                                        <span className="font-bold text-center w-9 shrink-0 text-[13px]">{`${roundUp(htValue)}%`}</span>
-                                                                        <div className="w-10 shrink-0 block"> <ProgressBar value={htValue} /> </div>
+                                                                        <span className={`font-bold text-center w-9 shrink-0 text-[13px] ${textColorClass}`}>{`${roundUp(htValue)}%`}</span>
+                                                                        <div className="w-10 shrink-0 block"> <ProgressBar value={htValue} customColorClass={barColorClass} /> </div>
                                                                     </div>
                                                                 );
                                                             }
@@ -228,7 +238,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             
                                                             if (headerKey === '%HTDK' || headerKey === '%DKHT' || headerKey === '%HTDK V.Trội') {
                                                                 const pVal = parseNumber(cell);
-                                                                const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
+                                                                const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
                                                                 return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
                                                             }
 

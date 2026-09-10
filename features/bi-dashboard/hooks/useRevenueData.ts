@@ -90,9 +90,13 @@ export const useRevenueData = ({
 
             const prevData = prevMonthRows.length > 0 ? (prevMonthRowsMap.get(emp.originalName) ?? null) : null;
 
+            const empDuKien = daysPassed > 0 ? (emp.dtqd / daysPassed) * totalDays : 0;
+            const empPctDkht = empTarget > 0 ? (empDuKien / empTarget) * 100 : 0;
+
             let prevCompData = null;
             if (prevData) {
                 const prevTarget = empTarget; 
+                const prevDk = daysPassed > 0 ? (prevData.dtqd / daysPassed) * totalDays : 0;
                 prevCompData = {
                     dtlk: prevData.dtlk,
                     dtqd: prevData.dtqd,
@@ -100,7 +104,9 @@ export const useRevenueData = ({
                     completion: prevTarget > 0 ? (prevData.dtqd / prevTarget) * 100 : 0,
                     hqqd: prevData.dtlk > 0 ? (prevData.dtqd / prevData.dtlk) - 1 : 0,
                     installment: 0,
-                    pctBillBk: prevData.pctBillBk || 0
+                    pctBillBk: prevData.pctBillBk || 0,
+                    duKien: prevDk,
+                    dkht: prevTarget > 0 ? (prevDk / prevTarget) * 100 : 0
                 };
             }
 
@@ -121,6 +127,8 @@ export const useRevenueData = ({
                 remaining_daily,
                 remaining_daily_status,
                 bonus_tong,
+                duKien: empDuKien,
+                pctDkht: empPctDkht,
                 prevCompData
             };
         };
@@ -134,6 +142,8 @@ export const useRevenueData = ({
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'target') { valA = a.calculatedTarget; valB = b.calculatedTarget; }
                 else if (sortConfig.key === 'completion') { valA = a.calculatedCompletion; valB = b.calculatedCompletion; }
+                else if (sortConfig.key === 'duKien') { valA = a.duKien; valB = b.duKien; }
+                else if (sortConfig.key === 'pctDkht') { valA = a.pctDkht; valB = b.pctDkht; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
@@ -149,6 +159,8 @@ export const useRevenueData = ({
                 const sumDtlk = result.reduce((s, e) => s + e.dtlk, 0);
                 const sumDtqd = result.reduce((s, e) => s + e.dtqd, 0);
                 const sumTarget = result.reduce((s, e) => s + (e.calculatedTarget || 0), 0);
+                const sumDuKien = daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0;
+                const sumPctDkht = sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0;
                 const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
                 const avgInstallment = result.reduce((s, e) => s + e.calculatedInstallment, 0) / result.length;
                 const avgBk = result.reduce((s, e) => s + (e.pctBillBk || 0), 0) / result.length;
@@ -157,6 +169,7 @@ export const useRevenueData = ({
                 const prevDtlk = result.reduce((s, e) => s + (e.prevCompData?.dtlk || 0), 0);
                 const prevDtqd = result.reduce((s, e) => s + (e.prevCompData?.dtqd || 0), 0);
                 const prevTarget = result.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
+                const prevDk = daysPassed > 0 ? (prevDtqd / daysPassed) * totalDays : 0;
 
                 result.push({
                     type: 'total',
@@ -165,6 +178,8 @@ export const useRevenueData = ({
                     dtqd: sumDtqd,
                     calculatedTarget: sumTarget,
                     calculatedCompletion: sumTarget > 0 ? (sumDtqd / sumTarget) * 100 : 0,
+                    duKien: sumDuKien,
+                    pctDkht: sumPctDkht,
                     hieuQuaQD: avgHqqd,
                     calculatedInstallment: avgInstallment,
                     pctBillBk: avgBk,
@@ -178,7 +193,9 @@ export const useRevenueData = ({
                         completion: prevTarget > 0 ? (prevDtqd / prevTarget) * 100 : 0,
                         hqqd: prevDtlk > 0 ? (prevDtqd / prevDtlk) - 1 : 0,
                         installment: 0,
-                        pctBillBk: 0
+                        pctBillBk: 0,
+                        duKien: prevDk,
+                        dkht: prevTarget > 0 ? (prevDk / prevTarget) * 100 : 0
                     } : null
                 });
             }
@@ -194,6 +211,8 @@ export const useRevenueData = ({
                 if (sortConfig.key === 'name') { valA = a.originalName || a.name; valB = b.originalName || b.name; }
                 else if (sortConfig.key === 'target') { valA = a.calculatedTarget; valB = b.calculatedTarget; }
                 else if (sortConfig.key === 'completion') { valA = a.calculatedCompletion; valB = b.calculatedCompletion; }
+                else if (sortConfig.key === 'duKien') { valA = a.duKien; valB = b.duKien; }
+                else if (sortConfig.key === 'pctDkht') { valA = a.pctDkht; valB = b.pctDkht; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
                 else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
@@ -205,6 +224,8 @@ export const useRevenueData = ({
             const sumDtlk = deptEmployees.reduce((s, e) => s + e.dtlk, 0);
             const sumDtqd = deptEmployees.reduce((s, e) => s + e.dtqd, 0);
             const sumTarget = deptEmployees.reduce((s, e) => s + (e.calculatedTarget || 0), 0);
+            const sumDuKien = daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0;
+            const deptPctDkht = sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0;
             const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + e.calculatedInstallment, 0) / deptEmployees.length : 0;
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
             const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
@@ -216,11 +237,13 @@ export const useRevenueData = ({
                 sumDtlk,
                 sumDtqd,
                 sumTarget,
+                sumDuKien,
+                deptPctDkht,
                 avgInstallment,
                 avgBk,
                 avgHqqd,
                 sumBonusTong,
-                sortValue: sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'name' ? deptName : (sortConfig.key === 'bonus_tong' ? sumBonusTong : sumDtqd)))
+                sortValue: sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'target' ? sumTarget : (sortConfig.key === 'duKien' ? sumDuKien : (sortConfig.key === 'name' ? deptName : (sortConfig.key === 'bonus_tong' ? sumBonusTong : sumDtqd)))))
             };
         });
 
@@ -237,6 +260,11 @@ export const useRevenueData = ({
 
         deptGroups.forEach(group => {
             if (group.employees.length > 0) {
+                const prevDeptDtlk = group.employees.reduce((s, e) => s + (e.prevCompData?.dtlk || 0), 0);
+                const prevDeptDtqd = group.employees.reduce((s, e) => s + (e.prevCompData?.dtqd || 0), 0);
+                const prevDeptTarget = group.employees.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
+                const prevDeptDk = daysPassed > 0 ? (prevDeptDtqd / daysPassed) * totalDays : 0;
+
                 finalOutput.push({ 
                     type: 'department', 
                     name: group.name, 
@@ -244,12 +272,25 @@ export const useRevenueData = ({
                     dtqd: group.sumDtqd, 
                     calculatedTarget: group.sumTarget, 
                     calculatedCompletion: group.sumTarget > 0 ? (group.sumDtqd / group.sumTarget) * 100 : 0,
+                    duKien: group.sumDuKien,
+                    pctDkht: group.deptPctDkht,
                     hieuQuaQD: group.avgHqqd,
                     calculatedInstallment: group.avgInstallment,
                     pctBillBk: group.avgBk,
                     remaining_total: Math.max(0, group.sumTarget - group.sumDtqd),
                     remaining_daily: Math.max(0, group.sumTarget - group.sumDtqd) / remainingDays,
-                    bonus_tong: group.sumBonusTong
+                    bonus_tong: group.sumBonusTong,
+                    prevCompData: (prevDeptDtlk || prevDeptDtqd) ? {
+                        dtlk: prevDeptDtlk,
+                        dtqd: prevDeptDtqd,
+                        target: prevDeptTarget,
+                        completion: prevDeptTarget > 0 ? (prevDeptDtqd / prevDeptTarget) * 100 : 0,
+                        hqqd: prevDeptDtlk > 0 ? (prevDeptDtqd / prevDeptDtlk) - 1 : 0,
+                        installment: 0,
+                        pctBillBk: 0,
+                        duKien: prevDeptDk,
+                        dkht: prevDeptTarget > 0 ? (prevDeptDk / prevDeptTarget) * 100 : 0
+                    } : null
                 });
                 finalOutput.push(...group.employees.map((emp, index) => ({ ...emp, rank: index + 1 })));
                 
@@ -260,9 +301,9 @@ export const useRevenueData = ({
                 grandSumInstallment += group.employees.reduce((s, e) => s + e.calculatedInstallment, 0);
                 grandSumBk += group.employees.reduce((s, e) => s + (e.pctBillBk || 0), 0);
 
-                grandPrevDtlk += group.employees.reduce((s, e) => s + (e.prevCompData?.dtlk || 0), 0);
-                grandPrevDtqd += group.employees.reduce((s, e) => s + (e.prevCompData?.dtqd || 0), 0);
-                grandPrevTarget += group.employees.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
+                grandPrevDtlk += prevDeptDtlk;
+                grandPrevDtqd += prevDeptDtqd;
+                grandPrevTarget += prevDeptTarget;
             }
         });
 
@@ -271,6 +312,10 @@ export const useRevenueData = ({
 
         if (finalOutput.length > 0 && !exportDeptFilter) {
             const grandSumBonusTong = finalOutput.filter(r => r.type === 'department').reduce((s, d) => s + (d.bonus_tong || 0), 0);
+            const grandSumDuKien = daysPassed > 0 ? (grandSumDtqd / daysPassed) * totalDays : 0;
+            const grandPctDkht = grandSumTarget > 0 ? (grandSumDuKien / grandSumTarget) * 100 : 0;
+            const grandPrevDk = daysPassed > 0 ? (grandPrevDtqd / daysPassed) * totalDays : 0;
+
             finalOutput.push({
                 type: 'total',
                 name: 'TỔNG CỘNG',
@@ -278,6 +323,8 @@ export const useRevenueData = ({
                 dtqd: grandSumDtqd,
                 calculatedTarget: grandSumTarget,
                 calculatedCompletion: grandSumTarget > 0 ? (grandSumDtqd / grandSumTarget) * 100 : 0,
+                duKien: grandSumDuKien,
+                pctDkht: grandPctDkht,
                 hieuQuaQD: grandSumDtlk > 0 ? (grandSumDtqd / grandSumDtlk) - 1 : 0,
                 calculatedInstallment: grandTotalEmps > 0 ? grandSumInstallment / grandTotalEmps : 0,
                 pctBillBk: grandTotalEmps > 0 ? grandSumBk / grandTotalEmps : 0,
@@ -291,7 +338,9 @@ export const useRevenueData = ({
                     completion: grandPrevTarget > 0 ? (grandPrevDtqd / grandPrevTarget) * 100 : 0,
                     hqqd: grandPrevDtlk > 0 ? (grandPrevDtqd / grandPrevDtlk) - 1 : 0,
                     installment: 0,
-                    pctBillBk: 0
+                    pctBillBk: 0,
+                    duKien: grandPrevDk,
+                    dkht: grandPrevTarget > 0 ? (grandPrevDk / grandPrevTarget) * 100 : 0
                 } : null
             });
         }

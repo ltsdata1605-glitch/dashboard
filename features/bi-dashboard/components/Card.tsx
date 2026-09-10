@@ -18,10 +18,10 @@ interface CardProps {
   bordered?: boolean;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon = 'bar-chart-3', subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true }, ref) => {
+const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true }, ref) => {
   const body = (
     <>
-      <SectionHeader title={title} icon={icon} subtitle={subtitle}>
+      <SectionHeader title={title} subtitle={subtitle}>
         {actionButton}
       </SectionHeader>
       <div className={`${noPadding ? '' : 'p-3 lg:p-6'} relative flex-grow`}>
