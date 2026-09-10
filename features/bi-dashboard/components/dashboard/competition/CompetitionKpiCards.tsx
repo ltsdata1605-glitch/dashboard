@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { CheckCircle2, AlertCircle, TrendingUp, XCircle } from 'lucide-react';
 import type { ProcessedProgram } from '../CompetitionView';
 import { calculateOverallCompetitionKpiStats } from '../../../services/competitionSortAndCalc';
 
@@ -9,6 +8,23 @@ interface CompetitionKpiCardsProps {
     visibleColumns: string[];
     isRealtime: boolean;
 }
+
+/**
+ * Dải chỉ số Thi đua — chuẩn "Bảng điều khiển ca trực" (2026-09-10).
+ *
+ * Bản cũ là 4 THẺ bo góc, mỗi thẻ có dải gradient trên đỉnh, biểu tượng trong ô vuông bo góc, viền
+ * riêng và đổ bóng. Bốn khối trang trí cạnh nhau, mỗi khối chỉ để nói MỘT con số.
+ *
+ * Chuẩn mới: một dải phẳng, các ô ngăn nhau bằng kẻ mảnh. Bo góc và đổ bóng nói "tôi ở tầng khác"
+ * — dải chỉ số nằm ngay trong luồng đọc chứ không nổi lên trên, nên không được nói vậy. Biểu tượng
+ * bỏ hẳn: nhãn chữ đã nói rõ hơn biểu tượng mà không tranh chỗ với con số.
+ */
+const UNITS = [
+    { key: 'over',  label: '% Nhóm đạt ≥100%',  tone: 'text-emerald-700 dark:text-emerald-400', bar: 'bg-emerald-600' },
+    { key: 'under', label: '% Nhóm chưa đạt',   tone: 'text-rose-700 dark:text-rose-400',       bar: 'bg-rose-600' },
+    { key: 'near',  label: '80% < nhóm < 100%', tone: 'text-amber-700 dark:text-amber-400',     bar: 'bg-amber-600' },
+    { key: 'zero',  label: 'Nhóm kết quả 0%',   tone: 'text-slate-700 dark:text-slate-300',     bar: 'bg-slate-400' },
+] as const;
 
 export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     programs,
@@ -25,145 +41,58 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
 
     const modeLabel = stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản';
 
+    /** Số lớn, dòng phụ, và % dùng để vẽ vạch tiến độ của từng ô. */
+    const valueOf = (key: typeof UNITS[number]['key']) => {
+        switch (key) {
+            case 'over':
+                return { big: `${Math.round(stats.pctOver100)}%`, sub: `Đạt ${stats.countOver100}/${stats.total} nhóm`, pct: stats.pctOver100 };
+            case 'under':
+                return { big: `${Math.round(stats.pctUnder100)}%`, sub: `Chưa đạt ${stats.countUnder100}/${stats.total} nhóm`, pct: stats.pctUnder100 };
+            case 'near':
+                return { big: `${stats.countNear100}`, sub: `${Math.round(stats.pctNear100)}% tổng nhóm`, pct: stats.pctNear100 };
+            default:
+                return { big: `${stats.countZero}`, sub: `${Math.round(stats.pctZero)}% tổng nhóm`, pct: stats.pctZero };
+        }
+    };
+
     return (
-        <div className="competition-kpi-container grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-3 sm:mb-4 px-1.5 sm:px-2 lg:px-6">
-            {/* THẺ 1: % số nhóm đạt 100% */}
-            <div 
-                className="relative bg-white rounded-xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
-                title={`Tỷ lệ nhóm đạt từ 100% chỉ tiêu trở lên (${modeLabel})`}
-            >
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-emerald-400" />
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
-                        % Nhóm Đạt ≥100%
-                    </span>
-                    <div className="w-6 h-6 rounded-md bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+        <div
+            className="competition-kpi-container mx-1.5 sm:mx-2 lg:mx-6 mb-3 sm:mb-4 grid grid-cols-2 lg:grid-cols-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+            title={`Tính theo ${modeLabel}`}
+        >
+            {UNITS.map((u, i) => {
+                const v = valueOf(u.key);
+                return (
+                    <div
+                        key={u.key}
+                        /* Kẻ mảnh ngăn ô. KHÔNG viền riêng từng ô, không bo góc, không đổ bóng.
+                           Màn hẹp xếp 2×2 nên 2 ô đầu cần viền dưới; desktop 1×4 thì bỏ viền đó. */
+                        className={[
+                            'px-3 py-2.5 border-slate-100 dark:border-slate-800',
+                            i % 2 === 0 ? 'border-r' : 'lg:border-r',
+                            i === 3 ? 'lg:border-r-0' : '',
+                            i < 2 ? 'border-b lg:border-b-0' : '',
+                        ].filter(Boolean).join(' ')}
+                    >
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                            {u.label}
+                        </div>
+                        <div className={`mt-0.5 text-2xl font-bold tabular-nums leading-tight ${u.tone}`}>
+                            {v.big}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {v.sub}
+                        </div>
+                        {/* Vạch tiến độ 3px, KHÔNG bo tròn — cùng ngôn ngữ với vạch trạng thái ở bảng. */}
+                        <div className="mt-1.5 h-[3px] w-full bg-slate-100 dark:bg-slate-800">
+                            <div
+                                className={`h-full ${u.bar}`}
+                                style={{ width: `${Math.min(100, Math.max(0, v.pct))}%` }}
+                            />
+                        </div>
                     </div>
-                </div>
-
-                <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-emerald-700 tabular-nums">
-                        {Math.round(stats.pctOver100)}%
-                    </span>
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold mb-1">
-                        <span>Đạt {stats.countOver100}/{stats.total} nhóm</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(0, stats.pctOver100))}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* THẺ 2: % số nhóm < 100% */}
-            <div 
-                className="relative bg-white rounded-xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
-                title={`Tỷ lệ nhóm chưa đạt 100% chỉ tiêu (${modeLabel})`}
-            >
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-rose-500 to-rose-400" />
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
-                        % Nhóm Chưa Đạt
-                    </span>
-                    <div className="w-6 h-6 rounded-md bg-rose-50 text-rose-700 flex items-center justify-center shrink-0 border border-rose-200/60">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                    </div>
-                </div>
-
-                <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-rose-700 tabular-nums">
-                        {Math.round(stats.pctUnder100)}%
-                    </span>
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold mb-1">
-                        <span>Chưa đạt {stats.countUnder100}/{stats.total} nhóm</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                            className="bg-rose-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(0, stats.pctUnder100))}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* THẺ 3: 80% < Số nhóm < 100% */}
-            <div 
-                className="relative bg-white rounded-xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
-                title={`Số nhóm đạt từ 80% đến dưới 100% (${modeLabel})`}
-            >
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-amber-400" />
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
-                        80% &lt; Nhóm &lt; 100%
-                    </span>
-                    <div className="w-6 h-6 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/60">
-                        <TrendingUp className="w-3.5 h-3.5" />
-                    </div>
-                </div>
-
-                <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-700 tabular-nums">
-                        {stats.countNear100}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400">nhóm</span>
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold mb-1">
-                        <span>Chiếm {Math.round(stats.pctNear100)}% tổng nhóm</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                            className="bg-amber-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(0, stats.pctNear100))}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* THẺ 4: Số nhóm kết quả 0% */}
-            <div 
-                className="relative bg-white rounded-xl p-3 sm:p-3.5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
-                title={`Số nhóm có kết quả 0% hoặc chưa phát sinh (${modeLabel})`}
-            >
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-slate-400 to-slate-300" />
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
-                        Nhóm Kết Quả 0%
-                    </span>
-                    <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200/60">
-                        <XCircle className="w-3.5 h-3.5" />
-                    </div>
-                </div>
-
-                <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-700 tabular-nums">
-                        {stats.countZero}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400">nhóm</span>
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold mb-1">
-                        <span>Chiếm {Math.round(stats.pctZero)}% tổng nhóm</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                            className="bg-slate-400 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(0, stats.pctZero))}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
+                );
+            })}
         </div>
     );
 };

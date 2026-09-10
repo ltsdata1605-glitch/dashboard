@@ -64,22 +64,15 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
         return mapping[header] || getCompetitionColumnLabel(header);
     };
 
-    // NhanVien-style header color mapping — thick bottom-border with colored backgrounds
-    const getHeaderCellClass = (header: string) => {
-        const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
-        if (h.includes('TAR') || h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('THỰC HIỆN') || h.includes('REAL TIME') || h.includes('LUỸ KẾ') || h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
-        if (h.includes('V.TRỘI') && h.includes('%')) {
-            if (h.includes('%DKHT') || h.includes('%HTDK')) {
-                return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
-            }
-            return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
-        }
-        if (h.includes('%HTDK') || h.includes('%DKHT')) return 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border-b-[3px] border-b-rose-400';
-        if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
-        if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
-        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
-    };
+    /**
+     * Đầu cột: MỘT tông xám cho tất cả.
+     *
+     * Bản cũ tô nền màu riêng cho từng nhóm cột (sky/emerald/rose/amber) — 5 mảng màu ở hàng tiêu
+     * đề cạnh tranh sự chú ý với chính con số bên dưới. Chuẩn "Bảng điều khiển ca trực": nhãn chỉ
+     * để định vị, màu dành cho DỮ LIỆU. Phân nhóm cột nay thể hiện bằng viền, không bằng nền.
+     */
+    const getHeaderCellClass = (_header: string) =>
+        'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700';
 
     return (
         <div className="overflow-hidden">
@@ -87,9 +80,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-2 py-[5px] border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 w-10">#</th>
+                                    <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
                                     <th
-                                        className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 whitespace-nowrap hover:bg-sky-200 dark:hover:bg-sky-800/50 transition-colors"
+                                        className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                                         onClick={() => handleSort(-1)}
                                     >
                                         NHÓM THI ĐUA
@@ -103,7 +96,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                             <th
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
-                                                className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
+                                                className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
                                             >
                                                 {renderHeaderText(getFormattedHeader(column))}
                                             </th>
@@ -125,11 +118,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
 
                                     return (
                                         <tbody key={groupKey}>
-                                            <tr className={`${theme.light} border-t-2 ${theme.border}`}>
-                                                <td colSpan={100} className={`px-2 py-[3px] text-[11px] font-extrabold uppercase tracking-wider border-l-4 ${theme.accent} ${theme.text}`}>
+                                            <tr className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+                                                <td colSpan={100} className="px-2 py-[3px] text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <div className="flex items-center">
-                                                            <span className="px-2 py-0.5 rounded bg-white/70 dark:bg-black/20 mr-2 text-[11px]">
+                                                            <span className="mr-2 text-[11px] text-slate-400 dark:text-slate-500">
                                                                 {groupingMode === 'configured' ? 'NHÓM TIÊU CHÍ' : 'TIÊU CHÍ'}
                                                             </span>
                                                             <span>{groupKey}</span>
@@ -138,23 +131,16 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             </span>
                                                         </div>
 
-                                                        {/* Badges số lượng ngành hàng >100% và <100% */}
-                                                        <div className="flex items-center gap-1.5 font-sans normal-case tracking-normal ml-1">
-                                                            <span 
-                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/60 shadow-xs tabular-nums"
-                                                                title={`Số ngành hàng đạt >100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.over100}/${programs.length}`}
-                                                            >
-                                                                <span className="opacity-80 font-medium">&gt;100%:</span>
-                                                                <span className="font-black text-emerald-700 dark:text-emerald-200">{stats.over100}</span>
-                                                            </span>
-                                                            <span 
-                                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-rose-100/90 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/80 dark:border-rose-700/60 shadow-xs tabular-nums"
-                                                                title={`Số ngành hàng dưới 100% (${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}): ${stats.under100}/${programs.length}`}
-                                                            >
-                                                                <span className="opacity-80 font-medium">&lt;100%:</span>
-                                                                <span className="font-black text-rose-700 dark:text-rose-200">{stats.under100}</span>
-                                                            </span>
-                                                        </div>
+                                                        {/* Chuẩn mới: CHỮ THUẦN, không huy hiệu bo góc có nền màu.
+                                                            Dải nhóm là VÁCH NGĂN — nó chỉ cần nói "đây là nhóm gì, bao nhiêu
+                                                            đạt". Hai viên pill màu ở đây tranh chỗ với chính dữ liệu bên dưới. */}
+                                                        <span
+                                                            className="font-sans normal-case tracking-normal text-[11px] text-slate-500 dark:text-slate-400 ml-1"
+                                                            title={`Tính theo ${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}`}
+                                                        >
+                                                            · đạt <span className="font-bold text-emerald-700 dark:text-emerald-400">{stats.over100}</span>
+                                                            {' · chưa đạt '}<span className="font-bold text-rose-700 dark:text-rose-400">{stats.under100}</span>
+                                                        </span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -163,10 +149,19 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                             const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'THỰC HIỆN', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
                                             const percentHeadersToRound = new Set(['%HT', '%HTDK', '%DKHT', '%HT V.Trội', '%DKHT V.Trội', '%HTDK V.Trội']);
 
+                                            // Vạch trạng thái mép trái — thay cho thanh pill vừa bỏ. Đọc theo %DKHT của
+                                            // chương trình; không có cột đó thì suy từ Còn Lại (âm = chưa đạt).
+                                            const dkhtHeader = visibleColumns.find(h => h.startsWith('%DKHT') || h.startsWith('%HTDK'));
+                                            const dkhtIdx = dkhtHeader ? headers.indexOf(dkhtHeader) : -1;
+                                            const dkhtVal = dkhtIdx !== -1 ? parseNumber(program.data[dkhtIdx]) : (conLai !== null && conLai >= 0 ? 100 : 0);
+                                            const stripeClass = dkhtVal >= 100
+                                                ? 'border-l-emerald-600'
+                                                : dkhtVal >= 80 ? 'border-l-amber-600' : 'border-l-rose-600';
+
                                             return (
-                                                <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700">
+                                                <tr key={program.name} className={`border-l-[3px] ${stripeClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
                                                     <td className="px-2 py-[3px] text-center text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
-                                                    <td className="px-2 py-[3px] text-[13px] font-bold text-sky-700 dark:text-sky-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
+                                                    <td className="px-2 py-[3px] text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>
                                                     {visibleColumns.map(header => {
@@ -209,24 +204,19 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             }
                                                             
                                                             if (isProgressBarColumn) {
+                                                                // Chuẩn mới: SỐ THUẦN, không thanh pill.
+                                                                // Thanh pill chiếm ~40px chiều ngang mỗi cột — thứ khan hiếm nhất ở bảng
+                                                                // này — mà chỉ lặp lại thông tin con số đã nói. Trạng thái đạt/chưa đạt
+                                                                // nay đọc ở VẠCH MÀU mép trái dòng.
                                                                 const htValue = parseNumber(cell);
-                                                                const isUnder100 = htValue < 100;
-                                                                // Nếu là cột %DKHT (%DKHT V.Trội / %HTDK) và < 100% thì chữ và thanh bar màu đỏ
-                                                                const textColorClass = (isDkhtCol && isUnder100) 
-                                                                    ? 'text-rose-700 dark:text-rose-400' 
-                                                                    : '';
-                                                                const barColorClass = (isDkhtCol && isUnder100) 
-                                                                    ? 'bg-rose-500' 
-                                                                    : undefined;
-
-                                                                return (
-                                                                    <div className="flex items-center gap-1 justify-center tabular-nums w-full">
-                                                                        <span className={`font-bold text-center w-9 shrink-0 text-[13px] ${textColorClass}`}>{`${roundUp(htValue)}%`}</span>
-                                                                        <div className="w-10 shrink-0 block"> <ProgressBar value={htValue} customColorClass={barColorClass} /> </div>
-                                                                    </div>
-                                                                );
+                                                                const color = htValue >= 100
+                                                                    ? 'text-emerald-700 dark:text-emerald-400'
+                                                                    : htValue >= 80
+                                                                        ? 'text-amber-700 dark:text-amber-400'
+                                                                        : 'text-rose-700 dark:text-rose-400';
+                                                                return <span className={`font-bold tabular-nums ${color}`}>{`${roundUp(htValue)}%`}</span>;
                                                             }
-                                                            
+
                                                             // Target columns
                                                             if (header === 'Target' || header === 'Target V.Trội') {
                                                                 return <span className="font-bold text-slate-500 dark:text-slate-400">{cellDisplayValue}</span>;
