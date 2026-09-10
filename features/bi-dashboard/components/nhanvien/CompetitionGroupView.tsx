@@ -4,6 +4,13 @@ import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { ChevronDownIcon, ChevronUpIcon, CameraIcon, ChartBarIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
+import {
+    selectAndSortEmployees,
+    computeGrandTotals,
+    computeHighlightStats,
+    groupByDepartment,
+    computeTimeProgress,
+} from '../../services/competitionGroupCalc';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
@@ -19,7 +26,6 @@ interface CompetitionGroupCardProps {
 }
 
 // Exclude store-level summary rows (e.g. "ĐMX - I.One") from employee lists
-const isStoreRow = (name: string) => /^ĐMX\s*-/i.test(name) || /^DMX\s*-/i.test(name);
 
 export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     header,
@@ -38,24 +44,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     const displayTitle = useMemo(() => shortenName(header.originalTitle, nameOverrides), [header.originalTitle, nameOverrides]);
 
     // Time budget calculation
-    const timeProgress = useMemo(() => {
-        const now = new Date();
-        if (isRealtime) {
-            const startMinutes = 8 * 60; // 8h00
-            const endMinutes = 21 * 60 + 30; // 21h30 (9h30 tối)
-            const totalMinutes = endMinutes - startMinutes;
-            const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-            let pct = 0;
-            if (nowMinutes <= startMinutes) pct = 0;
-            else if (nowMinutes >= endMinutes) pct = 100;
-            else pct = ((nowMinutes - startMinutes) / totalMinutes) * 100;
-            return { label: '(8h00 - 21h30)', percentage: Math.min(100, Math.max(0, pct)) };
-        }
-        const dayPassed = now.getDate();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const percentage = ((dayPassed - 1) / daysInMonth) * 100;
-        return { label: `(${dayPassed} / ${daysInMonth} ngày)`, percentage };
-    }, [isRealtime]);
+    const timeProgress = useMemo(() => computeTimeProgress(isRealtime), [isRealtime]);
 
     const handleCardSort = (key: SortKey) => {
         setSortConfig(prev => {
@@ -93,87 +82,32 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         }
     };
     
-    const sortedEmployeesForCard = useMemo(() => {
-        const employeesForThisComp = sortedEmployees.filter(emp => {
-            // Exclude store summary rows
-            if (isStoreRow(emp.name)) return false;
-            const actual = employeeDataMap.get(emp.name)?.values[header.title];
-            const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName);
-            return actual !== undefined || target !== undefined;
-        });
-
-        return [...employeesForThisComp].sort((empA, empB) => {
-            const targetA = employeeCompetitionTargets.get(header.originalTitle)?.get(empA.originalName) ?? 0;
-            const actualA = employeeDataMap.get(empA.name)?.values[header.title] ?? 0;
-            const completionA = targetA > 0 ? (actualA / targetA) * 100 : 0;
-            const remainingA = actualA - targetA;
-
-            const targetB = employeeCompetitionTargets.get(header.originalTitle)?.get(empB.originalName) ?? 0;
-            const actualB = employeeDataMap.get(empB.name)?.values[header.title] ?? 0;
-            const completionB = targetB > 0 ? (actualB / targetB) * 100 : 0;
-            const remainingB = actualB - targetB;
-            
-            let valA, valB;
-            switch (sortConfig.key) {
-                case 'name':
-                    const compare = empA.name.localeCompare(empB.name);
-                    return sortConfig.direction === 'asc' ? compare : -compare;
-                case 'target': valA = targetA; valB = targetB; break;
-                case 'actual': valA = actualA; valB = actualB; break;
-                case 'completion': valA = completionA; valB = completionB; break;
-                case 'remaining': valA = remainingA; valB = remainingB; break;
-                default: return 0;
-            }
-            const diff = valA - valB;
-            return sortConfig.direction === 'asc' ? diff : -diff;
-        });
-    }, [sortedEmployees, sortConfig, employeeCompetitionTargets, employeeDataMap, header]);
+    const sortedEmployeesForCard = useMemo(
+        () => selectAndSortEmployees(sortedEmployees, header, employeeDataMap, employeeCompetitionTargets, sortConfig),
+        [sortedEmployees, sortConfig, employeeCompetitionTargets, employeeDataMap, header]
+    );
 
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
     
-    const employeesByDept = useMemo(() => {
-        if (viewMode === 'list') return { 'Tất cả': sortedEmployeesForCard };
-        return sortedEmployeesForCard.reduce((acc, emp) => {
-            if (!acc[emp.department]) acc[emp.department] = [];
-            acc[emp.department].push(emp);
-            return acc;
-        }, {} as Record<string, Employee[]>);
-    }, [sortedEmployeesForCard, viewMode]);
+    const employeesByDept = useMemo(
+        () => groupByDepartment(sortedEmployeesForCard, viewMode),
+        [sortedEmployeesForCard, viewMode]
+    );
 
     const departmentNames = Object.keys(employeesByDept).sort((a,b) => a.localeCompare(b));
     
-    let grandTotalTarget = 0;
-    let grandTotalActual = 0;
-    sortedEmployeesForCard.forEach(emp => {
-        grandTotalTarget += employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
-        grandTotalActual += employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-    });
-    const grandTotalRemaining = grandTotalActual - grandTotalTarget;
-    const grandTotalCompletion = grandTotalTarget > 0 ? (grandTotalActual / grandTotalTarget) * 100 : 0;
+    const {
+        target: grandTotalTarget,
+        actual: grandTotalActual,
+        remaining: grandTotalRemaining,
+        completion: grandTotalCompletion,
+    } = computeGrandTotals(sortedEmployeesForCard, header, employeeDataMap, employeeCompetitionTargets);
 
     // Compute stats for conditional coloring: average, TOP 3 actual, TOP 3 completion
-    const { averageActual, rankedByActual, rankedByCompletion } = useMemo(() => {
-        const stats: { emp: string; actual: number; completion: number }[] = [];
-        sortedEmployeesForCard.forEach(emp => {
-            const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-            const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
-            const completion = target > 0 ? (actual / target) * 100 : 0;
-            stats.push({ emp: emp.originalName, actual, completion });
-        });
-        
-        const validActuals = stats.filter(s => s.actual > 0);
-        const avg = validActuals.length > 0 ? validActuals.reduce((s, a) => s + a.actual, 0) / validActuals.length : 0;
-        
-        // Ranked maps for O(1) lookup
-        const byActual = new Map<string, number>();
-        [...validActuals].sort((a, b) => b.actual - a.actual).forEach((s, i) => byActual.set(s.emp, i + 1));
-        
-        const validCompletions = stats.filter(s => s.completion > 0);
-        const byCompletion = new Map<string, number>();
-        [...validCompletions].sort((a, b) => b.completion - a.completion).forEach((s, i) => byCompletion.set(s.emp, i + 1));
-        
-        return { averageActual: avg, rankedByActual: byActual, rankedByCompletion: byCompletion };
-    }, [sortedEmployeesForCard, employeeDataMap, employeeCompetitionTargets, header]);
+    const { averageActual, rankedByActual, rankedByCompletion } = useMemo(
+        () => computeHighlightStats(sortedEmployeesForCard, header, employeeDataMap, employeeCompetitionTargets),
+        [sortedEmployeesForCard, employeeDataMap, employeeCompetitionTargets, header]
+    );
 
     // Top 3 color: green for T.HIỆN
     const getTopActualStyle = (rank: number) => {

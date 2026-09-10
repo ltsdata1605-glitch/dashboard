@@ -66,6 +66,15 @@ const VIEWS: {
         },
     },
     {
+        // CompetitionGroupView (CompetitionGroupCard) — sub-tab "Nhóm" (activeCompetitionTab === 'nhom').
+        name: 'nhanvien-thidua-nhom',
+        go: async page => {
+            await page.getByRole('button', { name: /Nhân viên/i }).first().click({ timeout: 30_000 });
+            await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click();
+            await page.getByRole('button', { name: 'Nhóm', exact: true }).first().click({ timeout: 30_000 });
+        },
+    },
+    {
         // IndividualCompetitionView — sub-tab "Cá nhân" (activeCompetitionTab === 'canhan').
         name: 'nhanvien-thidua-canhan',
         go: async page => {
