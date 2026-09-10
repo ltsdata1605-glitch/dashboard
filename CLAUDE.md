@@ -1,7 +1,12 @@
 # CLAUDE.md — Hướng dẫn phát triển & Quy tắc dự án Dashboard YCX
 
-> File này tổng hợp các quy tắc quan trọng nhất từ `RULES.md`, `AGENT_RULES.md`, `DESIGN_SYSTEM.md`, `DESIGN_SYSTEM_MODERN.md` và `AUDIT.md`.
+> File này tổng hợp các quy tắc quan trọng nhất từ `RULES.md`, `AGENT_RULES.md` và `DESIGN_SYSTEM.md`.
 > **Quy tắc ưu tiên**: `AGENT_RULES.md` (an toàn) > `RULES.md` (kiến trúc) > `DESIGN_SYSTEM.md` (giao diện UI).
+>
+> *(Sửa 2026-09-10: bản cũ còn viện dẫn `DESIGN_SYSTEM_MODERN.md` và `AUDIT.md` — cả hai KHÔNG tồn
+> tại trong repo. `DESIGN_SYSTEM.md` cũng đã bị xoá nhầm ở commit `8675fd05` và vừa được khôi phục.
+> Trỏ tới file không có thật là nguy hiểm thật: agent đi tìm không thấy chuẩn thiết kế sẽ tự bịa
+> ra một chuẩn khác.)*
 
 ---
 
@@ -90,7 +95,11 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
 - **Bo góc**: `rounded-md` (cho input/button), `rounded-xl` (cho card/modal). Tránh dùng `rounded-3xl`. Bảng biểu dùng `rounded-none` (phẳng).
-- **Bảng biểu (Tables)**: Viền mỏng `border-slate-200`, header bảng viết hoa `text-[11px] font-bold tracking-tight`.
+- **Bảng biểu (Tables)**: Viền mỏng `border-slate-200`, header bảng viết hoa `text-[11px] font-bold tracking-wider`.
+  ⚠️ *Sửa 2026-09-10: mục này trước ghi `tracking-tight` là SAI.* Đo trên code thật: trong class mang
+  dấu hiệu header bảng, `tracking-wider` **46 lần** vs `tracking-tight` **9 lần** — và `DESIGN_SYSTEM.md`
+  cũng ghi `tracking-wider`. Quy tắc sai này đã khiến code mới viết theo bị lệch chuẩn; 8 header còn
+  sót dùng `tracking-tight` là di sản của lỗi đó, dọn dần khi có dịp chạm vào file.
 - **Đồng nhất thiết kế**: Lấy module **Phân Tích** (`components/views/DashboardView.tsx` và các bảng biểu con của nó) làm chuẩn vàng thiết kế. Tất cả các module khác điều chỉnh theo chuẩn này.
 
 ---

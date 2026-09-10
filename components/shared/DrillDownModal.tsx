@@ -114,7 +114,7 @@ export const DrillDownModal: React.FC<DrillDownModalProps> = ({
                                         {['Mã đơn', 'Ngày', 'Sản phẩm', 'Nhóm hàng', 'Nhân viên', 'SL', 'Doanh thu', 'DTQĐ'].map((h, i) => (
                                             <th
                                                 key={h}
-                                                className={`px-2 py-1 text-[11px] font-bold tracking-tight uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 ${i >= 5 ? 'text-center' : 'text-left'}`}
+                                                className={`px-2 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 ${i >= 5 ? 'text-center' : 'text-left'}`}
                                             >
                                                 {h}
                                             </th>
