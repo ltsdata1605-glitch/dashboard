@@ -3118,3 +3118,33 @@ giống hệt 5 file đã kiểm chứng) nhưng chưa nhìn thấy kết quả 
 ### Tiếp theo — Đợt 4 & 5
 Đợt 4 (viết lại `CLAUDE.md` §2 + `DESIGN_SYSTEM.md`) **đã làm trước** ở commit `09f25f34`.
 Còn **Đợt 5**: đưa module Phân Tích và các module còn lại theo chuẩn mới.
+
+### Đợt 5 — áp chuẩn cho Phân Tích + components dùng chung (2026-09-10)
+
+**XONG `components/`** (Phân Tích + `shared/ui/*`): 788 thay đổi / 93 file — cỡ chữ dưới 11px
+(359 chỗ), màu ngữ nghĩa 600 → 700 (429 chỗ), 6 file header `tracking-tight` → `tracking-wider`.
+Đo lại: `components/` nay **0 vi phạm** cả hai loại.
+
+Lưới an toàn thêm `phantich-chitiet-kho` (114 ô) → **10 màn / 3.005 ô**.
+Ghi chú: icon `BarChart3` của lucide render class `lucide-chart-column`, KHÔNG phải
+`lucide-bar-chart-3` — mất một lượt mới lần ra khi viết selector.
+
+### 🔴 CỐ Ý DỪNG — 3 phạm vi KHÔNG áp, kèm lý do cụ thể
+
+**1. `rounded-xl|2xl|3xl` (164 chỗ) — không quét hàng loạt.**
+Chuẩn có 3 cấp bo góc (0 / 4px / 6px) tuỳ thẻ / modal / dropdown / bảng; quét mù sẽ gộp nhầm.
+Và `components/shared/ui/*` được **86 file trong `features/`** dùng chung — sai một chỗ là hỏng cả
+sticker-event lẫn phan-ca, hai khu vực KHÔNG có lưới an toàn nào.
+
+**2. `features/sticker-event` (60 chữ nhỏ + 112 màu) — KHÔNG ĐỤNG.**
+Kiểm tra ra `StickerPrintPreview.tsx`, `ControlPanel.tsx`, `StickerEventApp.tsx` vừa có chữ 9–10px
+vừa có logic in ấn. **Nhãn in có kích thước VẬT LÝ** — nâng chữ 9px lên 11px có thể làm tràn nhãn
+thật, và không có cách nào test tự động bắt được (phải in ra giấy mới biết). Ngoài ra chuẩn "bảng
+điều khiển ca trực" thiết kế cho BẢNG SỐ DÀY, không phải cho app in nhãn.
+
+**3. `features/phan-ca` (26 chữ nhỏ + 65 màu) — chưa áp.**
+App xếp ca, giao diện dạng lịch, không phải bảng số dày. Zero lưới an toàn. Cần user xác nhận có
+thật sự muốn áp chuẩn BI vào đây không.
+
+→ Quyết định "chuẩn mới cho CẢ dự án" hợp lý với Report BI và Phân Tích (đều là bảng số dày), nhưng
+**cần xem lại** với 2 mini-app còn lại — chúng làm việc khác hẳn.
