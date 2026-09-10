@@ -682,9 +682,16 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     </div>
                 ) : (
                     <div className="w-full overflow-hidden px-4 pb-4">
-                        <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <div
+                            /* `sticky` của <thead> tính theo VÙNG CUỘN gần nhất, mà container này đã
+                               là vùng cuộn (overflow-x:auto ⇒ trình duyệt tự đặt overflow-y:auto).
+                               Không giới hạn chiều cao thì nó không cuộn dọc ⇒ thead KHÔNG BAO GIỜ
+                               dính. Cho max-height để đây thành vùng cuộn dọc thật. */
+                            className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-13rem)] border border-slate-200 dark:border-slate-700"
+                            style={{ WebkitOverflowScrolling: 'touch' }}
+                        >
                             <table className="min-w-max w-full table-auto border-collapse">
-                                <thead className="sticky top-0 lg:top-[var(--app-header-h)] z-20">
+                                <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900">
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th
                                             rowSpan={2}

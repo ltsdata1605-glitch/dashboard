@@ -49,6 +49,9 @@ const VIEWS: {
 }[] = [
     {
         // Phân Tích (root) — Đợt 5. Bảng "Chi tiết theo Kho".
+        // ⚠️ Bảng này có nút xoay hướng NGANG/DỌC và app NHỚ lựa chọn lần trước trong IndexedDB.
+        //    Đổi hướng làm ảnh chụp lệch hoàn toàn (31 dòng × 5 cột ↔ 1 dòng × 38 cột) dù DỮ LIỆU
+        //    y hệt. Nếu thấy 'LỆCH' ở màn này, kiểm tra hướng bảng TRƯỚC khi nghi code hỏng.
         name: 'phantich-chitiet-kho',
         phanTich: true,
         go: async () => { /* mở sẵn ở màn chính */ },
