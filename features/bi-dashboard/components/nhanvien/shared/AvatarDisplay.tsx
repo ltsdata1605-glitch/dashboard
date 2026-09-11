@@ -120,10 +120,10 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
             reader.readAsDataURL(file);
         }
     };
-    if (isHidden) return <div className="w-8 h-8 flex-shrink-0" />;
+    if (isHidden) return <div className="w-5 h-5 flex-shrink-0" />;
     return (
         <div 
-            className="relative group w-8 h-8 flex-shrink-0"
+            className="relative group w-5 h-5 flex-shrink-0"
             onClick={(e) => e.stopPropagation()} 
         >
             {activeSrc ? (
@@ -131,20 +131,20 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                     src={activeSrc} 
                     alt={employeeName} 
                     onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full object-cover shadow-sm ring-2 ring-white dark:ring-slate-700 cursor-pointer hover:scale-110 transition-transform" 
+                    className="w-full h-full rounded-full object-cover cursor-pointer" 
                 />
             ) : (
                 <div 
                     onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center ring-2 ring-slate-200 dark:ring-slate-600 cursor-pointer hover:bg-slate-200"
+                    className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-200"
                 >
-                    <UsersIcon className="h-4 w-4 text-slate-400" />
+                    <UsersIcon className="h-3 w-3 text-slate-400" />
                 </div>
             )}
             <Button
                 variant="unstyled" size="none"
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-125 no-print border border-slate-100"
+                className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity no-print border border-slate-200"
             >
                 <UploadIcon className="h-2 w-2 text-sky-600" />
             </Button>
