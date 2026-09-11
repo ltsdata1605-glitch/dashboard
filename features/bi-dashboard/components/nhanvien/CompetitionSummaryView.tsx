@@ -703,14 +703,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b border-l-2 border-l-slate-300 dark:border-l-slate-600 ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="%HT 100%"
                                         >
                                             %HT 100%
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b border-l-2 border-l-slate-300 dark:border-l-slate-600 ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="Hiệu quả"
                                         >
                                             HIỆU QUẢ
@@ -719,7 +719,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             <th
                                                 key={`group-${runIndex}-${run.group}`}
                                                 colSpan={run.span}
-                                                className={`competition-dynamic-col px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                                className={`competition-dynamic-col px-1 py-1 text-center border-b border-l-2 border-l-slate-300 dark:border-l-slate-600 ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                                 title={run.group}
                                             >
                                                 {run.group}
@@ -729,7 +729,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Đạt</span>
@@ -738,7 +738,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>%Đạt</span>
@@ -747,7 +747,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
@@ -756,7 +756,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
@@ -824,7 +824,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-emerald-700 dark:text-emerald-400 font-bold ';
                                                     return (
-                                                        <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
+                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
                                                             {dat}/{totalHeaderCount}
                                                         </td>
                                                     );
@@ -837,7 +837,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-emerald-700 dark:text-emerald-400 font-extrabold ';
                                                     return (
-                                                        <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datPercentColorClass}`}>
+                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datPercentColorClass}`}>
                                                             {datPercent > 0 ? `${roundUp(datPercent)}%` : '0%'}
                                                         </td>
                                                     );
@@ -848,7 +848,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
-                                                        <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
+                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
                                                             {tongBot > 0 ? tongBot : '-'}
                                                         </td>
                                                     );
@@ -860,7 +860,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
-                                                        <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${noSaleColorClass}`}>
+                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${noSaleColorClass}`}>
                                                             {noSale > 0 ? noSale : '-'}
                                                         </td>
                                                     );
