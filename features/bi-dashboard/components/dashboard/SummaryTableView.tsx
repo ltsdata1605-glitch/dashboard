@@ -367,6 +367,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                                 text-[11px] sm:text-[13px] font-bold
                                                                 tabular-nums align-middle
+                                                                border-r border-slate-200 dark:border-slate-700
                                                                 bg-slate-100 dark:bg-slate-800
                                                                 ${h === 'Tên miền'
                                                                     ? 'uppercase tracking-wider sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
@@ -421,7 +422,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             tabular-nums align-middle whitespace-nowrap
                                                             ${h === 'Tên miền'
                                                                 ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`
-                                                                : `text-center text-[11px] sm:text-[13px] ${colorCls || ''}`}
+                                                                : `text-center text-[11px] sm:text-[13px] border-r border-slate-100 dark:border-slate-700/50 ${colorCls || ''}`}
                                                         `}
                                                     >
                                                         {cell?.isMerged ? (

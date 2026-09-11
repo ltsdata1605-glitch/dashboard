@@ -824,7 +824,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-emerald-700 dark:text-emerald-400 font-bold ';
                                                     return (
-                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
+                                                        <td className={`px-1 py-1 border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
                                                             {dat}/{totalHeaderCount}
                                                         </td>
                                                     );
@@ -848,7 +848,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
-                                                        <td className={`px-1 py-1 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
+                                                        <td className={`px-1 py-1 border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
                                                             {tongBot > 0 ? tongBot : '-'}
                                                         </td>
                                                     );
@@ -892,14 +892,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
-                                        <td className="px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                                        <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
                                             {(() => {
                                                 const totalDatSum = employees.reduce((sum, emp) => sum + getEmployeeDat(emp.name), 0);
                                                 const avgDat = employees.length > 0 ? totalDatSum / employees.length : 0;
                                                 return avgDat > 0 ? `${avgFormatter.format(avgDat)}/${totalHeaderCount}` : '-';
                                             })()}
                                         </td>
-                                        <td className="px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-emerald-800 dark:text-emerald-300 tabular-nums">
+                                        <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap font-bold text-emerald-800 dark:text-emerald-300 tabular-nums">
                                             {(() => {
                                                 const totalDatSum = employees.reduce((sum, emp) => sum + getEmployeeDat(emp.name), 0);
                                                 const totalPossible = employees.length * totalHeaderCount;
@@ -907,14 +907,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 return avgDatPercent > 0 ? `${avgDatPercent.toFixed(1)}%` : '-';
                                             })()}
                                         </td>
-                                        <td className="px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                                        <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
                                             {(() => {
                                                 const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
                                                 const avgBot = employees.length > 0 ? totalBotSum / employees.length : 0;
                                                 return avgBot > 0 ? avgFormatter.format(avgBot) : '-';
                                             })()}
                                         </td>
-                                        <td className="px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                                        <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
                                             {(() => {
                                                 const totalNoSaleSum = employees.reduce((sum, emp) => sum + getEmployeeNoSale(emp.name), 0);
                                                 const avgNoSale = employees.length > 0 ? totalNoSaleSum / employees.length : 0;
