@@ -90,14 +90,14 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
 
     return (
         <div 
-            className={`relative group w-10 h-10 rounded-full border-2 ${colorClass} overflow-hidden bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
+            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
             onClick={() => fileInputRef.current?.click()}
             title="Bấm để tải lên hoặc đổi ảnh đại diện"
         >
             {avatarSrc ? (
                 <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
-                <span className="text-sm font-bold text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
+                <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
                 <CameraIcon className="w-5 h-5 drop-shadow-md" />
@@ -395,40 +395,37 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 </div>
             ) : (
                 <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
-                    {/* Dải nhận diện 2 người — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
-                        Bản cũ: nền slate-800 phủ ảnh hoạ tiết tải từ transparenttextures.com (tài nguyên
-                        NGOÀI — mỗi lần mở là một request ra internet), avatar 80px viền 4px, chữ "VS"
-                        60px viền nét, 3 ô đếm nền bán trong suốt. Cả khối là trang trí cho một việc rất
-                        nhỏ: nói "đây là ai đấu với ai". Nay là dải phẳng, số đếm tô CHỮ. */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:px-6 py-3 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-700">
+                    {/* Header Banner */}
+                    <div className="bg-slate-800 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+                        
                         {/* NV A */}
-                        <div className="flex items-center gap-3 min-w-0 border-l-[3px] border-l-sky-600 pl-3">
-                            <ProfileAvatar emp={empA} colorClass="border-sky-600" fallbackEmployees={revenueRows} />
-                            <div className="min-w-0">
-                                <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide truncate">{empA.name}</h3>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">{empA.department}</p>
-                                <p className="text-[11px] font-bold tabular-nums mt-0.5 flex gap-2">
-                                    <span className="text-emerald-700 dark:text-emerald-400">{statsA.compStats.dkhtDat} đạt</span>
-                                    {statsA.compStats.dkhtNotDat > 0 && <span className="text-amber-700 dark:text-amber-400">{statsA.compStats.dkhtNotDat} chưa đạt</span>}
-                                    {statsA.compStats.noSale > 0 && <span className="text-rose-700 dark:text-rose-400">{statsA.compStats.noSale} no sale</span>}
-                                </p>
+                        <div className="flex-1 flex flex-col items-center relative z-10">
+                            <ProfileAvatar emp={empA} colorClass="border-sky-500" fallbackEmployees={revenueRows} />
+                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
+                            <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
+                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
+                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
 
-                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-2">vs</div>
+                        {/* VS Center */}
+                        <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-6 relative z-10">
+                            <div className="text-4xl sm:text-6xl font-black italic text-slate-200" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
+                        </div>
 
                         {/* NV B */}
-                        <div className="flex items-center gap-3 min-w-0 justify-end text-right border-r-[3px] border-r-rose-600 pr-3">
-                            <div className="min-w-0">
-                                <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide truncate">{empB.name}</h3>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">{empB.department}</p>
-                                <p className="text-[11px] font-bold tabular-nums mt-0.5 flex gap-2 justify-end">
-                                    <span className="text-emerald-700 dark:text-emerald-400">{statsB.compStats.dkhtDat} đạt</span>
-                                    {statsB.compStats.dkhtNotDat > 0 && <span className="text-amber-700 dark:text-amber-400">{statsB.compStats.dkhtNotDat} chưa đạt</span>}
-                                    {statsB.compStats.noSale > 0 && <span className="text-rose-700 dark:text-rose-400">{statsB.compStats.noSale} no sale</span>}
-                                </p>
+                        <div className="flex-1 flex flex-col items-center relative z-10">
+                            <ProfileAvatar emp={empB} colorClass="border-rose-500" fallbackEmployees={revenueRows} />
+                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
+                            <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
+                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
+                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsB.compStats.noSale} No Sale</div>}
                             </div>
-                            <ProfileAvatar emp={empB} colorClass="border-rose-600" fallbackEmployees={revenueRows} />
                         </div>
                     </div>
 
