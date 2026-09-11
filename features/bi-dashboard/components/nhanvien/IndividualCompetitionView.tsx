@@ -688,11 +688,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
                                     <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
                                     <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">M.TIÊU</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-sky-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">T.HIỆN</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-emerald-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">%HT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-rose-400 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">%DKHT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">C.LẠI</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">M.TIÊU</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">T.HIỆN</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%HT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%DKHT</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">C.LẠI</th>
                                 </tr>
                             </thead>
                             <tbody>

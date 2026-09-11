@@ -214,7 +214,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
                     </tr>
                 </tfoot>
             </table>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 px-1">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 px-1">
                 * Ô &quot;—&quot;: tháng chưa có dữ liệu. Mỗi cột (tháng/T.Bình/Tổng) tự so hạng riêng: TOP 3 tô xanh, BOT 30% tô đỏ. Đơn vị: triệu đồng.
             </p>
         </div>

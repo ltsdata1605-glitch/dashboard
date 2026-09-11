@@ -76,7 +76,7 @@ export const AutoBonusInstallGuideModal: React.FC<{
                         <div className="space-y-2 mt-1">
                             <p className="text-slate-500 dark:text-slate-400">Tiện ích quản lý userscript cho Chrome.</p>
                             <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
-                                <span className="font-extrabold uppercase text-[10px] tracking-wider bg-amber-200 dark:bg-amber-900/50 px-1.5 py-0.5 rounded mr-1">⚠️ BẮT BUỘC</span>
+                                <span className="font-extrabold uppercase text-[11px] tracking-wider bg-amber-200 dark:bg-amber-900/50 px-1.5 py-0.5 rounded mr-1">⚠️ BẮT BUỘC</span>
                                 Để extension hoạt động trên Chrome, bạn cần kích hoạt <span className="font-bold underline">Developer Mode</span> theo các bước sau:
                                 <ol className="list-decimal list-inside mt-2 space-y-1 ml-1 text-slate-700 dark:text-slate-300">
                                     <li>Mở một tab mới và truy cập địa chỉ: <code className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 rounded font-mono text-[11px] text-amber-900 dark:text-amber-200">chrome://extensions</code></li>

@@ -126,14 +126,14 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
         >
             <div className="space-y-5">
                     <div>
-                        <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
+                        <label className="block text-[11px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
                         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="font-bold placeholder:font-normal" />
                     </div>
 
                     {/* Selected employees summary with remove buttons */}
                     {selectedEmps.size > 0 && (
                         <div>
-                            <label className="block text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
+                            <label className="block text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
                                 Đã chọn ({selectedEmps.size})
                             </label>
                             <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-xl bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
@@ -151,7 +151,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
 
                     <div>
                         <div className="flex justify-between items-end mb-2">
-                            <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest">
+                            <label className="block text-[11px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest">
                                 Chọn nhân sự
                             </label>
                             <div className="flex items-center gap-2">
@@ -165,12 +165,12 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                                 setSelectedEmps(new Set(availableEmps.map(e => e.originalName)));
                                             }
                                         }}
-                                        className="p-0 text-[9px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
+                                        className="p-0 text-[11px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
                                     >
                                         {selectedEmps.size === availableEmps.length ? 'Bỏ tất cả' : 'Chọn tất cả'}
                                     </Button>
                                 )}
-                                <span className="text-[10px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
+                                <span className="text-[11px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
                             </div>
                         </div>
                         <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." leftIcon="search" className="mb-3 font-medium" />
@@ -192,7 +192,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                 </div>
                             )) : <div className="flex flex-col items-center justify-center py-8 opacity-60">
                                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
-                                    <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
+                                    <p className="text-center text-[11px] font-black uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
                                 </div>}
                         </div>
                     </div>
@@ -244,15 +244,15 @@ const CompactTargetItem: React.FC<{
                     </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                    <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
+                    <span className="text-[11px] font-black uppercase opacity-70">Gốc:</span>
                     <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
-                    <span className="text-[9px] opacity-40">|</span>
-                    <span className="text-[9px] font-black uppercase">Sau:</span>
+                    <span className="text-[11px] opacity-40">|</span>
+                    <span className="text-[11px] font-black uppercase">Sau:</span>
                     <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
                     {perPerson != null && perPerson > 0 && (
                         <>
-                            <span className="text-[9px] opacity-40">|</span>
-                            <span className="text-[9px] font-black uppercase">{f.format(perPerson)}Tr/ng</span>
+                            <span className="text-[11px] opacity-40">|</span>
+                            <span className="text-[11px] font-black uppercase">{f.format(perPerson)}Tr/ng</span>
                         </>
                     )}
                 </div>
@@ -278,7 +278,7 @@ const CompactTargetItem: React.FC<{
                         }}
                         className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
-                    <span className="text-[9px] font-bold opacity-60">%</span>
+                    <span className="text-[11px] font-bold opacity-60">%</span>
                 </div>
             </div>
         </div>
@@ -364,7 +364,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                             {analysisEmployees && analysisEmployees.employees.length > 0 && totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -398,7 +398,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-emerald-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                             {totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -428,13 +428,13 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
                     <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden">
                         <div className="flex justify-between items-center mb-2 z-10 relative">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tổng Ngân Sách Phân Bổ</span>
+                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tổng Ngân Sách Phân Bổ</span>
                             <div className="flex items-center gap-2">
                                 <span className={`text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-rose-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
-                                    {totalAllocatedWeight.toFixed(1)}<span className="text-[10px]">%</span>
+                                    {totalAllocatedWeight.toFixed(1)}<span className="text-[11px]">%</span>
                                 </span>
                                 {totalAllocatedWeight !== 100 && (
-                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                    <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                                         {totalAllocatedWeight > 100.01 ? `VƯỢT ${(totalAllocatedWeight - 100).toFixed(1)}%` : `DƯ ${(100 - totalAllocatedWeight).toFixed(1)}%`}
                                     </span>
                                 )}
@@ -466,7 +466,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     <div className="mb-2">
                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                                             <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
-                                            <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
+                                            <span className="text-[11px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                     <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></Button>
@@ -491,8 +491,8 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                                            <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[8px] opacity-60 ml-0.5 uppercase">Tr</span></span>
-                                            <span className="text-[9px] opacity-50">—</span>
+                                            <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[11px] opacity-60 ml-0.5 uppercase">Tr</span></span>
+                                            <span className="text-[11px] opacity-50">—</span>
                                             <span className={`text-[11px] font-black ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
                                         </div>
                                     </div>
@@ -517,12 +517,12 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                 }}
                                                 className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                             />
-                                            <span className="text-[9px] font-bold opacity-60">%</span>
+                                            <span className="text-[11px] font-bold opacity-60">%</span>
                                         </div>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest">Trống</div>}
+                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-[11px] font-black uppercase tracking-widest">Trống</div>}
                     </div>
                 </div>
             </div>

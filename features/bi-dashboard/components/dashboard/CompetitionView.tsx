@@ -292,7 +292,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 >
                     <FilterIcon className="h-4 w-4" />
                     {isProgramFiltered && (
-                        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sky-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sky-500 px-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                             {validSelectedPrograms.length}
                         </span>
                     )}
@@ -395,7 +395,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                             >
                                                 <span className="flex items-center gap-1.5 min-w-0 pr-2">
                                                     {/* Số thứ tự = vị trí cột trên bảng, giúp thấy ngay thứ tự đang bật */}
-                                                    <span className={`w-4 text-[10px] font-bold tabular-nums ${order === -1 ? 'text-transparent' : 'text-sky-600 dark:text-sky-400'}`}>
+                                                    <span className={`w-4 text-[11px] font-bold tabular-nums ${order === -1 ? 'text-transparent' : 'text-sky-600 dark:text-sky-400'}`}>
                                                         {order === -1 ? '' : order + 1}
                                                     </span>
                                                     <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">

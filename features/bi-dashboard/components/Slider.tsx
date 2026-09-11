@@ -49,7 +49,7 @@ const Slider: React.FC<SliderProps> = ({
                                 }}
                                 className="w-12 bg-transparent text-right text-xs font-black text-sky-600 dark:text-sky-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="text-[10px] font-bold text-slate-400">{unit}</span>
+                            <span className="text-[11px] font-bold text-slate-400">{unit}</span>
                         </div>
                     )}
                     

@@ -155,7 +155,7 @@ const GroupCombobox: React.FC<{
                     style={menuStyle}
                     className="w-max bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden py-0.5 max-h-72 overflow-y-auto"
                 >
-                    <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 whitespace-nowrap">
+                    <div className="px-2.5 py-1 text-[11px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 whitespace-nowrap">
                         <span>Nhóm có sẵn ({availableGroups.length})</span>
                         <div className="flex items-center gap-2 shrink-0">
                             {hasDeletedGroups && onResetGroups && (
@@ -167,7 +167,7 @@ const GroupCombobox: React.FC<{
                                         e.stopPropagation();
                                         onResetGroups();
                                     }}
-                                    className="text-sky-500 hover:underline text-[10px] font-normal whitespace-nowrap"
+                                    className="text-sky-500 hover:underline text-[11px] font-normal whitespace-nowrap"
                                     title="Khôi phục lại các nhóm mặc định đã xoá"
                                 >
                                     Khôi phục
@@ -183,7 +183,7 @@ const GroupCombobox: React.FC<{
                                         onChange('');
                                         onCommit?.('');
                                     }}
-                                    className="text-rose-500 hover:underline text-[10px] font-normal whitespace-nowrap"
+                                    className="text-rose-500 hover:underline text-[11px] font-normal whitespace-nowrap"
                                     title="Xoá nhóm đã chọn"
                                 >
                                     Bỏ chọn
@@ -211,7 +211,7 @@ const GroupCombobox: React.FC<{
                                     <span className="truncate flex-1">{group}</span>
                                     <div className="flex items-center gap-1 shrink-0">
                                         {isSelected && (
-                                            <span className="text-[10px] text-sky-600 font-bold">✓</span>
+                                            <span className="text-[11px] text-sky-600 font-bold">✓</span>
                                         )}
                                         {onDeleteGroup && (
                                             <Button
@@ -361,7 +361,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
@@ -373,11 +373,11 @@ const StatusTile: React.FC<{
                                 <h4 className={`text-[11px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                    <span className={`text-[10px] font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
+                                    <span className={`text-[11px] font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
                                         <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                     </span>
                                 )) : (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để cập nhật</span>
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để cập nhật</span>
                                 )}
                             </div>
                         </div>
@@ -411,7 +411,7 @@ const StatusTile: React.FC<{
                     <TrashIcon className="h-3.5 w-3.5" />
                 </Button>
             )}
-            {error && <p className="mt-1 text-[10px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200 px-1">{error}</p>}
+            {error && <p className="mt-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200 px-1">{error}</p>}
         </div>
     );
 };
@@ -523,7 +523,7 @@ const CompetitionTarget: React.FC<{
                     <div className="w-1 h-3 bg-amber-600 rounded-full"></div>
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                     {totalEmployees > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                             {totalEmployees} NV
                         </span>
                     )}
@@ -689,7 +689,7 @@ const CompetitionTarget: React.FC<{
                                             }}
                                             className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                         />
-                                        <span className="text-[9px] font-bold opacity-60">%</span>
+                                        <span className="text-[11px] font-bold opacity-60">%</span>
                                     </div>
                                 </div>
                             );
@@ -721,7 +721,7 @@ const CompetitionTarget: React.FC<{
                                 <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
                                     Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
+                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
                                 </h3>
                                 <DataTable
                                     columns={columns}
@@ -946,7 +946,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         <div className="space-y-4">
             <div className="flex items-start justify-between gap-3 mb-2 overflow-x-auto scrollbar-hide">
                 <div className="min-w-max flex-1">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nội dung cấu hình</p>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nội dung cấu hình</p>
                     <Tabs
                         items={[
                             { id: 'data', label: 'Dữ liệu' },
@@ -979,7 +979,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* NHÓM 1: BC D.THU NGÀNH HÀNG (DÀNH CHO SIÊU THỊ) */}
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
                                 BC D.Thu Ngành Hàng
                             </h3>
@@ -1009,12 +1009,12 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         {/* NHÓM 2: BC D.THU THEO NHÂN VIÊN */}
                         <div>
                             <div className="flex items-center justify-between px-1 pb-2">
-                                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
                                     BC D.Thu theo NV
                                 </h3>
                                 {analysisEmployees && analysisEmployees.employees.length > 0 && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                         {analysisEmployees.employees.length} NV từ Phân Tích
                                     </span>
@@ -1060,7 +1060,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
                         {/* NHÓM 3: TRẢ GÓP NHÂN VIÊN */}
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 bg-rose-500 rounded-sm"></div>
                                 Trả góp nhân viên
                             </h3>

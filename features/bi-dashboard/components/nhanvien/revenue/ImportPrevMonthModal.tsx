@@ -30,7 +30,7 @@ export const ImportPrevMonthModal: React.FC<{
                 value={pastedData}
                 onChange={e => setPastedData(e.target.value)}
                 placeholder="Nhấn Ctrl + V để dán..."
-                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-sky-500 outline-none"
+                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl font-mono text-[11px] focus:ring-2 focus:ring-sky-500 outline-none"
             />
         </Modal>
     );

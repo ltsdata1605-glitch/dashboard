@@ -26,7 +26,7 @@ export const DeltaBadge: React.FC<{ current: number, previous?: number, isPercen
     }
 
     return (
-        <div className={`text-[9px] font-black leading-none mt-0.5 flex items-center justify-center gap-0.5 ${colorClass}`}>
+        <div className={`text-[11px] font-black leading-none mt-0.5 flex items-center justify-center gap-0.5 ${colorClass}`}>
             <span>{icon}</span>
             <span>{displayDiff}</span>
         </div>

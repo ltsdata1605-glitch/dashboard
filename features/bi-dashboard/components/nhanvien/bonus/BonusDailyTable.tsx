@@ -132,7 +132,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                 <th
                                     key={week.id}
                                     colSpan={week.dates.length}
-                                    className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
+                                    className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-800 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
                                 >
                                     <span
                                         onClick={() => toggleWeek(week.id)}

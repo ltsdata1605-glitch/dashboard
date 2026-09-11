@@ -603,7 +603,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
                                         <Button variant="unstyled" size="none" onClick={handleToggleEmployeeFilter} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
-                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
+                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
                                         {isEmployeeFilterOpen && createPortal(
                                             <div
@@ -613,7 +613,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                                     <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
-                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="unstyled" size="none" onClick={handleSelectAllEmployees} className="p-0 text-[10px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="unstyled" size="none" onClick={handleDeselectAllEmployees} className="p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
+                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="unstyled" size="none" onClick={handleSelectAllEmployees} className="p-0 text-[11px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="unstyled" size="none" onClick={handleDeselectAllEmployees} className="p-0 text-[11px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
                                                     {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {

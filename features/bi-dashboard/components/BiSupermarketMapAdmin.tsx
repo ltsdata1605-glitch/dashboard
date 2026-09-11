@@ -235,7 +235,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
             ) : (
                 <div className="flex items-center justify-center gap-1">
                     {editingName === row.name ? (
-                        <Button variant="unstyled" size="none" onClick={() => handleSaveEdit(row.name)} className="px-2 py-1 text-[10px] font-bold text-sky-600 hover:bg-sky-50 rounded-md" disabled={savingKey === row.name}>Lưu</Button>
+                        <Button variant="unstyled" size="none" onClick={() => handleSaveEdit(row.name)} className="px-2 py-1 text-[11px] font-bold text-sky-600 hover:bg-sky-50 rounded-md" disabled={savingKey === row.name}>Lưu</Button>
                     ) : (
                         <Button variant="unstyled" size="none" onClick={() => { setEditingName(row.name); setEditingKho(row.maKho); }} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md" title="Sửa Mã Kho">
                             <PencilIcon className="h-3.5 w-3.5" />

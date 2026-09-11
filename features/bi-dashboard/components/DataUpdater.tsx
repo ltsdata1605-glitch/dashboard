@@ -148,7 +148,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
@@ -160,12 +160,12 @@ const StatusTile: React.FC<{
                                 <h4 className={`text-[11px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[10px] font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
+                                        <span className={`text-[11px] font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
                                             <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate">
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate">
                                         {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để cập nhật'}
                                     </span>
                                 )}
@@ -205,7 +205,7 @@ const StatusTile: React.FC<{
                 </div>
             )}
             {error && (
-                <div className="mt-1 flex items-center gap-1 px-1 text-[10px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
+                <div className="mt-1 flex items-center gap-1 px-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
                     <AlertTriangleIcon className="h-3 w-3 shrink-0" />
                     <span>{error}</span>
                 </div>
@@ -356,7 +356,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {/* NHÓM BÁO CÁO TỔNG HỢP */}
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
                                 Báo cáo Tổng hợp
                             </h3>
@@ -421,7 +421,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
                         {/* NHÓM BÁO CÁO THI ĐUA */}
                         <div>
-                            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
                                 Thi đua Cụm
                             </h3>

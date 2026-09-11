@@ -42,9 +42,9 @@ export const BonusDesktopRow = React.memo(({
                     </div>
                 </div>
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(erpVal, 'erp')}`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(erpVal, 'erp')}`}>
                 {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
             </td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(tnongVal, 'tnong')}`}>
@@ -54,7 +54,7 @@ export const BonusDesktopRow = React.memo(({
             <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-extrabold ${getCellColor(tongVal, 'tong')}`}>
                 {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center ${isHighlighted ? 'bg-amber-100/50 dark:bg-amber-900/30' : 'bg-amber-50/40 dark:bg-amber-900/10'} tabular-nums font-black text-amber-700 dark:text-amber-400`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 ${isHighlighted ? 'bg-amber-100/50 dark:bg-amber-900/30' : 'bg-amber-50/40 dark:bg-amber-900/10'} tabular-nums font-black text-amber-700 dark:text-amber-400`}>
                 {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
             </td>
         </tr>

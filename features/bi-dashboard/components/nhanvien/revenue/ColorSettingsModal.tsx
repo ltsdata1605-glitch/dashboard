@@ -83,7 +83,7 @@ export const ColorSettingsModal: React.FC<{
                 <div className="space-y-3">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Tốt (≥)</span>
+                            <span className="text-[11px] font-bold text-slate-400 uppercase">Tốt (≥)</span>
                             <input 
                                 type="number" 
                                 value={config.good.threshold} 
@@ -98,7 +98,7 @@ export const ColorSettingsModal: React.FC<{
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">TB (≥)</span>
+                            <span className="text-[11px] font-bold text-slate-400 uppercase">TB (≥)</span>
                             <input 
                                 type="number" 
                                 value={config.average.threshold} 
@@ -113,8 +113,8 @@ export const ColorSettingsModal: React.FC<{
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Yếu (&lt;)</span>
-                            <div className="w-12 text-[10px] text-slate-400 italic">Auto</div>
+                            <span className="text-[11px] font-bold text-slate-400 uppercase">Yếu (&lt;)</span>
+                            <div className="w-12 text-[11px] text-slate-400 italic">Auto</div>
                         </div>
                         <CompactColorPicker 
                             selected={config.bad.color} 
