@@ -24,6 +24,11 @@ interface IndustryViewProps {
     onExport?: () => Promise<void>;
 }
 
+/** Viền 2px MỞ ĐẦU mỗi nhóm cột — giống `GROUP_EDGE` ở SummaryTableView.tsx và `colEdge` ở
+ *  CompetitionSummaryView.tsx. Chuẩn "Bảng điều khiển ca trực": nhóm cột phân tách bằng VIỀN,
+ *  viền dày chỉ dùng ở mép cột ghim và đầu mỗi nhóm. */
+const GROUP_EDGE = 'border-l-2 border-l-slate-300 dark:border-l-slate-600';
+
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
     'Nhóm ngành hàng': { label: 'DANH MỤC', bg: 'bg-slate-50', text: 'text-slate-700' },
@@ -103,6 +108,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         });
         return groups;
     }, [orderedHeaders, visibleColumns]);
+
+    // Cột MỞ ĐẦU mỗi nhóm — nơi kẻ viền 2px. Tính từ chính `headerGroups` để luôn khớp khi người
+    // dùng ẩn/hiện cột. Giống hệt cách làm ở SummaryTableView.tsx (2 bảng này nằm cùng một màn,
+    // lệch nhau thì chính là thứ chuẩn thiết kế muốn tránh).
+    const groupStartHeaders = useMemo(() => {
+        const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Nhóm ngành hàng');
+        const starts = new Set<string>();
+        let cursor = 0;
+        headerGroups.forEach(g => {
+            if (visH[cursor]) starts.add(visH[cursor]);
+            cursor += g.colspan;
+        });
+        return starts;
+    }, [headerGroups, orderedHeaders, visibleColumns]);
 
     // --- Column Sort Handler ---
     const handleColumnSort = useCallback((headerName: string) => {
@@ -463,6 +482,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         let cellClasses = `
             px-2 whitespace-nowrap
             border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
+            ${groupStartHeaders.has(headerName) ? GROUP_EDGE : ''}
             tabular-nums align-middle
             ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-slate-900' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}`}
             ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
@@ -537,6 +557,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                                 py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                                 align-middle whitespace-nowrap cursor-pointer
                                                                 border-b-2 border-r border-slate-200 dark:border-slate-700
+                                                                ${GROUP_EDGE}
                                                                 hover:opacity-80 transition-opacity select-none
                                                                 ${g.bg} ${g.text}
                                                                 ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
@@ -556,6 +577,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                             border-b border-r border-slate-200 dark:border-slate-700
+                                                            ${GROUP_EDGE}
                                                             ${g.bg} ${g.text}
                                                         `}
                                                     >
@@ -582,6 +604,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             px-1.5 py-1 text-[11px] font-bold uppercase
                                                             tracking-wider border-r border-slate-200 dark:border-slate-700
+                                                            ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
                                                             border-b-[3px] !${getBorderAccentFromColorClass(g.bg)}
                                                             text-center align-middle whitespace-nowrap
                                                             cursor-pointer hover:opacity-80 transition-opacity select-none
