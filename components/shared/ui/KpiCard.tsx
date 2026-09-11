@@ -2,14 +2,16 @@ import React from 'react';
 import { Icon } from '../../common/Icon';
 
 interface KpiColorStyle {
-    gradient: string;
-    iconBg: string;
     iconText: string;
     progressBg: string;
     progressFill: string;
-    glowColor: string;
     borderHover: string;
 }
+
+/* Chuẩn "Bảng điều khiển ca trực" (2026-09-11) đã gỡ 3 khoá khỏi kiểu này:
+   `gradient` (dải chuyển màu trên đỉnh thẻ), `iconBg` (nền bo góc quanh biểu tượng) và
+   `glowColor` (bóng phát sáng). Cả ba chỉ để trang trí, và ở màn hình dày số thì chúng
+   tranh chỗ với chính con số. `progressFill` cũng đổi từ gradient sang MÀU ĐẶC. */
 
 // Bảng màu TĨNH (literal, không dựng qua template string) — Tailwind chỉ sinh CSS cho class
 // xuất hiện y hệt dạng chuỗi tĩnh trong source. Trước đây makeStyle(c) dựng class kiểu
@@ -19,48 +21,33 @@ interface KpiColorStyle {
 // sinh CSS, bất kể nơi khác trong code có dùng chuỗi đó hay không.
 const COLOR_STYLES: Record<string, KpiColorStyle> = {
     sky: {
-        gradient: 'from-sky-500 via-sky-400 to-sky-300',
-        iconBg: 'bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-500/15 dark:to-sky-500/10',
         iconText: 'text-sky-700 dark:text-sky-400',
         progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-        progressFill: 'bg-gradient-to-r from-sky-500 to-sky-300',
-        glowColor: 'shadow-sky-200/50 dark:shadow-sky-500/20',
+        progressFill: 'bg-sky-600',
         borderHover: 'hover:border-sky-300 dark:hover:border-sky-600',
     },
     slate: {
-        gradient: 'from-slate-500 via-slate-400 to-slate-300',
-        iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-500/15 dark:to-slate-500/10',
         iconText: 'text-slate-600 dark:text-slate-400',
         progressBg: 'bg-slate-100 dark:bg-slate-500/10',
-        progressFill: 'bg-gradient-to-r from-slate-500 to-slate-300',
-        glowColor: 'shadow-slate-200/50 dark:shadow-slate-500/20',
+        progressFill: 'bg-slate-600',
         borderHover: 'hover:border-slate-300 dark:hover:border-slate-600',
     },
     emerald: {
-        gradient: 'from-emerald-500 via-emerald-400 to-emerald-300',
-        iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-500/15 dark:to-emerald-500/10',
         iconText: 'text-emerald-700 dark:text-emerald-400',
         progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-        progressFill: 'bg-gradient-to-r from-emerald-500 to-emerald-300',
-        glowColor: 'shadow-emerald-200/50 dark:shadow-emerald-500/20',
+        progressFill: 'bg-emerald-600',
         borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600',
     },
     amber: {
-        gradient: 'from-amber-500 via-amber-400 to-amber-300',
-        iconBg: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/15 dark:to-amber-500/10',
         iconText: 'text-amber-700 dark:text-amber-400',
         progressBg: 'bg-amber-100 dark:bg-amber-500/10',
-        progressFill: 'bg-gradient-to-r from-amber-500 to-amber-300',
-        glowColor: 'shadow-amber-200/50 dark:shadow-amber-500/20',
+        progressFill: 'bg-amber-600',
         borderHover: 'hover:border-amber-300 dark:hover:border-amber-600',
     },
     rose: {
-        gradient: 'from-rose-500 via-rose-400 to-rose-300',
-        iconBg: 'bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-500/15 dark:to-rose-500/10',
         iconText: 'text-rose-700 dark:text-rose-400',
         progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-        progressFill: 'bg-gradient-to-r from-rose-500 to-rose-300',
-        glowColor: 'shadow-rose-200/50 dark:shadow-rose-500/20',
+        progressFill: 'bg-rose-600',
         borderHover: 'hover:border-rose-300 dark:hover:border-rose-600',
     },
     // Màu thứ 6 được CLAUDE.md xác nhận hợp lệ ngoài 5 màu semantic chính (dùng cho
@@ -70,12 +57,9 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
     // dùng cùng tông với các thẻ khác (500/400/300) khiến indigo đọc gần giống sky (đều
     // là "màu xanh" khi nhìn nhanh). Tông đậm này ngả tím rõ, tách biệt hẳn khỏi sky.
     indigo: {
-        gradient: 'from-sky-700 via-sky-600 to-sky-500',
-        iconBg: 'bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-500/20 dark:to-sky-500/15',
         iconText: 'text-sky-700 dark:text-sky-400',
         progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-        progressFill: 'bg-gradient-to-r from-sky-700 to-sky-500',
-        glowColor: 'shadow-sky-300/50 dark:shadow-sky-500/20',
+        progressFill: 'bg-sky-600',
         borderHover: 'hover:border-sky-400 dark:hover:border-sky-600',
     },
 };
@@ -115,16 +99,17 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-slate-900 rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-slate-900 overflow-hidden border border-slate-200 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
-            {/* Gradient accent strip */}
-            <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
+            {/* Vạch nhận diện 3px — màu ĐẶC, không gradient, không bo góc. Cùng ngôn ngữ với
+                vạch trạng thái ở mép trái các bảng. */}
+            <div className={`h-[3px] w-full ${style.progressFill}`} />
 
             {/* Layout cho desktop (lg trở lên) */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">
                 {/* Hàng 1: Icon + Title (chiếm trọn chiều ngang, không bị Value chèn ép) */}
                 <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                    <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
                         <Icon name={icon} size={3} />
                     </div>
                     <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate flex-1 min-w-0" title={title}>{title}</h3>
@@ -140,19 +125,19 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                     <div className="mt-0.5 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
                         {clampedProgress !== undefined && (
                             <div className="flex items-center gap-1.5">
-                                <div className={`flex-1 h-1.5 rounded-full ${style.progressBg} overflow-hidden`}>
+                                <div className={`flex-1 h-[3px] ${style.progressBg} overflow-hidden`}>
                                     <div
-                                        className={`h-full rounded-full ${style.progressFill} transition-all duration-700 ease-out progress-shimmer`}
+                                        className={`h-full ${style.progressFill}`}
                                         style={{ width: `${clampedProgress}%` }}
                                     />
                                 </div>
-                                <span className={`text-[9.5px] font-bold ${style.iconText} shrink-0 tabular-nums`}>
+                                <span className={`text-[11px] font-bold ${style.iconText} shrink-0 tabular-nums`}>
                                     {Math.round(clampedProgress)}%
                                 </span>
                             </div>
                         )}
                         {(trendLabel || trendValue) && (
-                            <div className="flex items-center justify-between gap-1 text-[9.5px] leading-none">
+                            <div className="flex items-center justify-between gap-1 text-[11px] leading-none">
                                 <span className="text-slate-400 dark:text-slate-500 font-semibold tracking-wide truncate">{trendLabel}</span>
                                 <div className="font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
                                     {trendValue}
@@ -166,7 +151,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
             <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1.5 py-1.5 text-center h-full">
                 {/* Hàng 1: Icon */}
-                <div className={`w-6 h-6 rounded-md flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 mb-0.5`}>
+                <div className={`flex items-center justify-center ${style.iconText} shrink-0 mb-0.5`}>
                     <Icon name={icon} size={3} />
                 </div>
                 

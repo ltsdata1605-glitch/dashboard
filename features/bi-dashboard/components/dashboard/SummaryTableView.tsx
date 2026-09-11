@@ -11,50 +11,60 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 
+/**
+ * Nhóm cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
+ *
+ * Bản cũ gán mỗi nhóm một MÀU NỀN riêng (DT THỰC xanh, DOANH THU QĐ vàng, HIỆU QUẢ xanh lá,
+ * TRẢ CHẬM hồng). Bốn mảng màu chạy ngang hàng tiêu đề, tranh chỗ với chính con số bên dưới.
+ * Nay tất cả dùng MỘT tông xám; phân nhóm đọc bằng nhãn `label` và viền, không bằng nền.
+ */
+const GROUP_TONE_BG = 'bg-slate-100 dark:bg-slate-800';
+const GROUP_TONE_TEXT = 'text-slate-600 dark:text-slate-300';
+
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
-    'Tên miền': { label: 'DANH MỤC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
+    'Tên miền': { label: 'DANH MỤC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // H.QUA
-    'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
+    'DT Hôm Qua': { label: 'H.QUA', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 
     // DT THỰC (doanh thu thực tế)
-    'DTLK': { label: 'DT THỰC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
-    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300' },
+    'DTLK': { label: 'DT THỰC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến': { label: 'DT THỰC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 
     // DOANH THU QĐ (quy đổi)
-    'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
-    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300' },
+    'DTQĐ': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // HIỆU QUẢ (đổi indigo → emerald cho khớp quy ước %HT/hiệu quả toàn dự án, implementation_plan.md mục 61)
-    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '%HQQĐ': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // TRAFFIC
-    'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    'Lượt Bill Bán Hàng': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    'Lượt bill': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    'TLPVTC LK': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
-    'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300' },
+    'Lượt Khách LK': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Lượt Bill Bán Hàng': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Lượt bill': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TLPVTC LK': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // TRẢ CHẬM
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // KHÁC
-    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' },
+    'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 };
 
 // --- Helpers ---
@@ -136,7 +146,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Tên miền');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-800 dark:text-rose-300' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -274,11 +284,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
                                 <tr className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider">
-                                    {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
+                                    {/* Ô tiêu đề 'SIÊU THỊ' ghim trái (rowSpan=2). Trước là nền hồng + viền dày 3px màu;
+                                        nay xám như mọi tiêu đề khác — chuẩn ca trực: màu dành cho DỮ LIỆU. */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th
                                             rowSpan={2}
-                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
+                                            className="px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] sm:text-[12px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b !border-b-slate-200 dark:!border-b-slate-700 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
                                         >
                                             SIÊU THỊ
                                         </th>
