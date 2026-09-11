@@ -203,21 +203,27 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
 
 // Dùng chung cho CompactTargetItem + TargetHero — tránh tạo lại Intl.NumberFormat/object theme mỗi render
 const TARGET_HERO_DECIMAL_FORMATTER = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+/**
+ * Theme thẻ target — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
+ * Bản cũ tô NỀN cả thẻ theo màu (sky-50 / emerald-50 / amber-50) + viền màu + thanh trượt màu — màu
+ * để NHẬN DIỆN thẻ, không phải trạng thái. Chuẩn: nền trắng, nhận diện bằng vạch 3px mép trái; màu
+ * chỉ còn ở con số kết quả ("SAU") và núm thanh trượt để nối mắt với vạch.
+ */
 const COMPACT_TARGET_ITEM_THEMES: Record<'sky' | 'emerald' | 'amber' | 'slate', { bg: string; border: string; shadow: string; label: string; after: string; inputBg: string; inputBorder: string; inputText: string; ring: string; track: string; thumb: string }> = {
-    sky: { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', shadow: 'shadow-sm', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', shadow: 'shadow-sm', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
-    amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', shadow: 'shadow-sm', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
-    slate: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-200 dark:border-slate-700', shadow: 'shadow-sm', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-600', ring: 'focus-within:ring-slate-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-500' }
+    sky: { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-sky-600', shadow: '', label: 'text-slate-600 dark:text-slate-300', after: 'text-sky-700 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-sky-600' },
+    emerald: { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-emerald-600', shadow: '', label: 'text-slate-600 dark:text-slate-300', after: 'text-emerald-700 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-emerald-600' },
+    amber: { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-amber-600', shadow: '', label: 'text-slate-600 dark:text-slate-300', after: 'text-amber-700 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-amber-600' },
+    slate: { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-slate-600', shadow: '', label: 'text-slate-600 dark:text-slate-300', after: 'text-slate-800 dark:text-white', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-slate-600' }
 };
 
 // Bảng màu pastel xoay vòng cho từng thẻ phòng ban — hoist ra ngoài để không tạo lại mỗi phần tử
 // trong combinedDepts.map() (từng bị tạo mới cho mọi phòng ban, ở mọi lần render).
 const DEPARTMENT_PASTEL_THEMES = [
-    { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500' },
-    { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
-    { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', label: 'text-amber-700 dark:text-amber-400', after: 'text-amber-600 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-amber-200 dark:border-amber-700/50', inputText: 'text-amber-600', ring: 'focus-within:ring-amber-500', track: 'bg-amber-200 dark:bg-amber-900', thumb: 'accent-amber-500' },
-    { bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-800', label: 'text-rose-700 dark:text-rose-400', after: 'text-rose-600 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-rose-200 dark:border-rose-700/50', inputText: 'text-rose-600', ring: 'focus-within:ring-rose-500', track: 'bg-rose-200 dark:bg-rose-900', thumb: 'accent-rose-500' },
-    { bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-200 dark:border-sky-800', label: 'text-sky-700 dark:text-sky-400', after: 'text-sky-600 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500' },
+    { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-emerald-600', label: 'text-slate-700 dark:text-slate-200', after: 'text-emerald-700 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-emerald-600' },
+    { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-sky-600', label: 'text-slate-700 dark:text-slate-200', after: 'text-sky-700 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-sky-600' },
+    { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-amber-600', label: 'text-slate-700 dark:text-slate-200', after: 'text-amber-700 dark:text-amber-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-amber-600' },
+    { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-rose-600', label: 'text-slate-700 dark:text-slate-200', after: 'text-rose-700 dark:text-rose-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-rose-600' },
+    { bg: 'bg-white dark:bg-slate-900', border: 'border-slate-200 dark:border-slate-700 border-l-[3px] border-l-sky-600', label: 'text-slate-700 dark:text-slate-200', after: 'text-sky-700 dark:text-sky-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-slate-200 dark:border-slate-700', inputText: 'text-slate-900 dark:text-slate-100', ring: 'focus-within:ring-sky-500', track: 'bg-slate-200 dark:bg-slate-700', thumb: 'accent-sky-600' },
 ];
 
 const CompactTargetItem: React.FC<{
@@ -235,7 +241,7 @@ const CompactTargetItem: React.FC<{
     const t = COMPACT_TARGET_ITEM_THEMES[colorTheme] || COMPACT_TARGET_ITEM_THEMES.slate;
 
     return (
-        <div className={`p-2 sm:p-2.5 rounded-lg transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
+        <div className={`p-2 sm:p-2.5 transition-colors border ${t.bg} ${t.border}`}>
             <div className="mb-2">
                 <div className="flex items-center justify-between">
                     <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
@@ -462,7 +468,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const t = DEPARTMENT_PASTEL_THEMES[idx % DEPARTMENT_PASTEL_THEMES.length];
 
                             return (
-                                <div key={dept.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} rounded-lg shadow-sm transition-all hover:scale-[1.01]`}>
+                                <div key={dept.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} transition-colors`}>
                                     <div className="mb-2">
                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                                             <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>

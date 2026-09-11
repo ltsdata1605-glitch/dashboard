@@ -82,39 +82,39 @@ const StatusTile: React.FC<{
 
     const themeColors = {
         emerald: {
-            wrapper: 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600',
             text: 'text-emerald-800 dark:text-emerald-200',
-            iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 shadow-sm',
+            iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
             ring: 'border-emerald-500 ring-2 ring-emerald-500/20'
         },
         sky: {
-            wrapper: 'border-sky-200 bg-sky-50 dark:bg-sky-900/20 dark:border-sky-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
             text: 'text-sky-800 dark:text-sky-200',
-            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700 shadow-sm',
+            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
             ring: 'border-sky-500 ring-2 ring-sky-500/20'
         },
         rose: {
-            wrapper: 'border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600',
             text: 'text-rose-800 dark:text-rose-200',
-            iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 shadow-sm',
+            iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700',
             ring: 'border-rose-500 ring-2 ring-rose-500/20'
         },
         amber: {
-            wrapper: 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600',
             text: 'text-amber-800 dark:text-amber-200',
-            iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700 shadow-sm',
+            iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
         indigo: {
-            wrapper: 'border-sky-200 bg-sky-50 dark:bg-sky-900/20 dark:border-sky-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
             text: 'text-sky-800 dark:text-sky-200',
-            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700 shadow-sm',
+            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
             ring: 'border-sky-500 ring-2 ring-sky-500/20'
         },
         slate: {
-            wrapper: 'border-slate-200 bg-slate-100 dark:bg-slate-700/40 dark:border-slate-700',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-slate-400',
             text: 'text-slate-800 dark:text-slate-200',
-            iconActive: 'text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-sm',
+            iconActive: 'text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
             ring: 'border-slate-500 ring-2 ring-slate-500/20'
         }
     };
@@ -126,7 +126,7 @@ const StatusTile: React.FC<{
             <div
                 onClick={() => !isPasting && !readOnly && setIsPasting(true)}
                 className={`
-                    min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden group/tile border hover:scale-[1.01] active:scale-[0.99] shadow-sm
+                    min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden group/tile border shadow-sm
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                     ${isPasting
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`

@@ -305,27 +305,27 @@ const StatusTile: React.FC<{
 
     const themeColors = {
         emerald: {
-            wrapper: 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600',
             text: 'text-emerald-800 dark:text-emerald-200',
-            iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 shadow-sm',
+            iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
             ring: 'border-emerald-500 ring-2 ring-emerald-500/20'
         },
         sky: {
-            wrapper: 'border-sky-200 bg-sky-50 dark:bg-sky-900/20 dark:border-sky-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
             text: 'text-sky-800 dark:text-sky-200',
-            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700 shadow-sm',
+            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
             ring: 'border-sky-500 ring-2 ring-sky-500/20'
         },
         rose: {
-            wrapper: 'border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600',
             text: 'text-rose-800 dark:text-rose-200',
-            iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 shadow-sm',
+            iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700',
             ring: 'border-rose-500 ring-2 ring-rose-500/20'
         },
         amber: {
-            wrapper: 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600',
             text: 'text-amber-800 dark:text-amber-200',
-            iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700 shadow-sm',
+            iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
         // Đã gỡ nhánh `indigo` (Đợt 6): nó là bản SAO Y của nhánh `sky` ở trên — `styles.css`
@@ -340,7 +340,7 @@ const StatusTile: React.FC<{
             <div 
                 onClick={() => !isPasting && setIsPasting(true)}
                 className={`
-                    cursor-pointer min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden active:scale-[0.99] border hover:scale-[1.01] shadow-sm
+                    cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
                     ${isPasting 
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
                         : hasData 
@@ -540,7 +540,7 @@ const CompetitionTarget: React.FC<{
                                 closeConfirm();
                             }
                         });
-                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </Button>
                 </div>
