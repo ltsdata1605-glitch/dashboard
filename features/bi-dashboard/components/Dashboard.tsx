@@ -8,13 +8,11 @@ import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
 import KpiOverview from './dashboard/KpiOverview';
-import { parseBackupFile, restoreFromBackup } from '../utils/backupRestore';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiService';
 import { Button } from '../../../components/shared/ui/Button';
-import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 interface DashboardProps {
     onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget' }) => void;
@@ -34,7 +32,7 @@ interface DashboardProps {
  *
  * Giữ nguyên: nội dung chữ, 2 nút hành động, dải nhãn chân trang.
  */
-const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
+const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ onNavigate, message }) => (
     <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center items-center font-sans bg-slate-50 dark:bg-slate-900 pb-8">
         <div className="w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
 
@@ -61,14 +59,6 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                                 className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded text-white bg-sky-600 hover:bg-sky-700 transition-colors"
                             >
                                 Cập nhật dữ liệu
-                            </Button>
-                            <span className="text-slate-400 dark:text-slate-500 hidden sm:block text-[11px] font-medium uppercase tracking-wider">hoặc</span>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onRestore}
-                                className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                <UploadIcon className="h-4 w-4" /> Khôi phục
                             </Button>
                         </div>
                     </div>
@@ -113,61 +103,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const industryTableRef = useRef<HTMLDivElement>(null);
     const competitionViewRef = useRef<HTMLDivElement>(null);
     const pageRef = useRef<HTMLDivElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const exportOptions = useExportOptions();
     const exportOptionsContextValue = useMemo(
         () => ({ showExportOptions: exportOptions.showExportOptions }),
         [exportOptions.showExportOptions]
     );
     const [isHeaderExporting, setIsHeaderExporting] = useState(false);
-    const [restoreConfirm, setRestoreConfirm] = useState<{ isOpen: boolean; message: string; data: { key: string; value: unknown }[] }>({ isOpen: false, message: '', data: [] });
-
-    // --- Restore Logic ---
-    const handleRestoreClick = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-            fileInputRef.current.click();
-        }
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target?.result;
-                if (typeof content !== 'string') throw new Error('Định dạng file không hợp lệ.');
-
-                const { data: dataToRestore, metadata } = parseBackupFile(content);
-                const backupTime = metadata?.timestamp ? new Date(metadata.timestamp).toLocaleString('vi-VN') : null;
-                setRestoreConfirm({
-                    isOpen: true,
-                    data: dataToRestore,
-                    message: `Thao tác này sẽ GHI ĐÈ toàn bộ dữ liệu Report BI hiện có trên thiết bị này bằng ${dataToRestore.length} mục từ file đã chọn${backupTime ? ` (sao lưu lúc ${backupTime})` : ''}.\n\nDữ liệu hiện tại sẽ KHÔNG thể khôi phục lại sau khi ghi đè. Hãy chắc chắn đây đúng là file bạn muốn dùng.`
-                });
-            } catch (error) {
-                console.error('Restore failed:', error);
-                toast.error(`Khôi phục thất bại: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
-            } finally {
-                if (fileInputRef.current) fileInputRef.current.value = '';
-            }
-        };
-        reader.readAsText(file);
-    };
-
-    const handleConfirmRestore = async () => {
-        const dataToRestore = restoreConfirm.data;
-        setRestoreConfirm({ isOpen: false, message: '', data: [] });
-        try {
-            await restoreFromBackup(dataToRestore);
-            // db.set()/db.setMany() tự bắn event indexeddb-change nên không cần dispatch thêm
-        } catch (error) {
-            console.error('Restore failed:', error);
-            toast.error(`Khôi phục thất bại: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
-        }
-    };
 
     // --- Export Logic Tối Ưu Tuyệt Đối Cho Bảng Báo Cáo ---
     const handleExportPNG = async (targetRef: React.RefObject<HTMLDivElement | null>, filenamePart: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
@@ -236,17 +177,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     if (!hasRealtimeData && !hasCumulativeData) {
         return (
             <>
-                <EmptyState onNavigate={onNavigateToUpdater} onRestore={handleRestoreClick} />
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
-                <ConfirmDialog
-                    isOpen={restoreConfirm.isOpen}
-                    onClose={() => setRestoreConfirm({ isOpen: false, message: '', data: [] })}
-                    onConfirm={handleConfirmRestore}
-                    title="Khôi phục dữ liệu?"
-                    message={restoreConfirm.message}
-                    variant="danger"
-                    confirmText="Khôi phục, ghi đè"
-                />
+                <EmptyState onNavigate={onNavigateToUpdater} />
             </>
         );
     }
@@ -268,18 +199,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                 />
                 <EmptyState
                     onNavigate={onNavigateToUpdater}
-                    onRestore={handleRestoreClick}
                     message={`Không có dữ liệu ${isRealtimeView ? 'Realtime' : 'Luỹ kế'}. Vui lòng cập nhật.`}
-                />
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
-                <ConfirmDialog
-                    isOpen={restoreConfirm.isOpen}
-                    onClose={() => setRestoreConfirm({ isOpen: false, message: '', data: [] })}
-                    onConfirm={handleConfirmRestore}
-                    title="Khôi phục dữ liệu?"
-                    message={restoreConfirm.message}
-                    variant="danger"
-                    confirmText="Khôi phục, ghi đè"
                 />
             </div>
         );
@@ -375,16 +295,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                         </div>
                     )}
                 </div>
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
-                <ConfirmDialog
-                    isOpen={restoreConfirm.isOpen}
-                    onClose={() => setRestoreConfirm({ isOpen: false, message: '', data: [] })}
-                    onConfirm={handleConfirmRestore}
-                    title="Khôi phục dữ liệu?"
-                    message={restoreConfirm.message}
-                    variant="danger"
-                    confirmText="Khôi phục, ghi đè"
-                />
                 <ExportOptionsModal
                     isOpen={!!exportOptions.pendingExport}
                     onClose={exportOptions.handleClose}

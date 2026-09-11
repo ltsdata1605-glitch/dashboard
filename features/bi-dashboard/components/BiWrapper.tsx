@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { useAuth } from '../../../contexts/AuthContext';
 import { Icon } from '../../../components/common/Icon';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
-import { setAuditActor } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
@@ -16,7 +14,6 @@ import type { ConfigTab } from './SupermarketConfig';
 const Dashboard = lazy(() => import('./Dashboard'));
 const NhanVien = lazy(() => import('./NhanVien'));
 const DataUpdater = lazy(() => import('./DataUpdater'));
-const Settings = lazy(() => import('./Settings'));
 
 const getTabColorClasses = (color: string, isActive: boolean) => {
     if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
@@ -53,16 +50,7 @@ const TabSpinner = () => (
  */
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
-    const { user } = useAuth();
-
-    // Bridge danh tính user vào audit trail nội bộ của bi-dashboard (utils/auditTrail.ts) —
-    // đọc contexts/AuthContext ở root, có tiền lệ hợp lệ (component này đã import
-    // contexts/LayoutContext gốc); CLAUDE.md chỉ cấm cross-import hooks/*|services/* gốc,
-    // không cấm contexts/*.
-    useEffect(() => {
-        setAuditActor(user?.email);
-    }, [user]);
-    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>('dashboard');
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
     const [mounted, setMounted] = useState(false);
@@ -89,7 +77,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     }, []);
 
     const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab }) => {
-        setActiveView(id as 'dashboard' | 'employee' | 'updater' | 'settings');
+        setActiveView(id as 'dashboard' | 'employee' | 'updater');
         if (id === 'updater') {
             const targetTab = options?.configTab ?? 'data';
             db.set('supermarket-config-active-tab', targetTab);
@@ -113,7 +101,6 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan', color: 'sky' },
         { id: 'employee', icon: 'users', label: 'Nhân viên', color: 'emerald' },
         { id: 'updater', icon: 'upload-cloud', label: 'Cập nhật', color: 'amber' },
-        { id: 'settings', icon: 'settings', label: '', color: 'rose' },
     ];
 
     return (
@@ -211,7 +198,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     // nhóm điều hướng (Tổng quan/Nhân viên/Cập nhật) trong 1 pill, nhóm tiện ích (Cài đặt/Font) trong pill khác.
                     <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
                         <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            {navigationLinks.filter(tab => tab.id !== 'settings').map((tab, idx) => {
+                            {navigationLinks.map((tab, idx) => {
                                 const isActive = activeView === tab.id;
                                 return (
                                     <Button
@@ -229,17 +216,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                         </div>
 
                         <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => handleTabChange('settings')}
-                                className={`flex items-center justify-center p-2 transition-colors focus:outline-none ${activeView === 'settings' ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30' : 'text-slate-500 hover:text-rose-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50'}`}
-                                title="Cài đặt"
-                            >
-                                <Icon name="settings" size={4} />
-                            </Button>
-                            <div className="border-l border-slate-100 dark:border-slate-700">
                                 <FontSelector />
-                            </div>
                         </div>
                     </div>
                 ),
@@ -272,8 +249,6 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                         </div>
                     )}
 
-                    {/* Settings view - lightweight, can use conditional */}
-                    {activeView === 'settings' && <Settings />}
                 </Suspense>
             </main>
 

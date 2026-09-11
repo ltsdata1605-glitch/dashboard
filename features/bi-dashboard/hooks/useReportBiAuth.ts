@@ -1,8 +1,9 @@
 /**
  * Cầu nối lấy role/departmentId (Mã Kho) từ contexts/AuthContext.tsx ở root — dùng cho tính
- * năng phân quyền theo siêu thị (implementation_plan.md mục "Đợt 4"). Có tiền lệ hợp lệ:
- * BiWrapper.tsx đã import contexts/AuthContext trước đó cho audit trail (utils/auditTrail.ts);
- * CLAUDE.md mục 1 chỉ cấm cross-import hooks/*|services/* ở root, không cấm contexts/*.
+ * năng phân quyền theo siêu thị (implementation_plan.md mục "Đợt 4"). CLAUDE.md mục 1 chỉ cấm
+ * cross-import hooks/*|services/* ở root, không cấm contexts/* (BiWrapper.tsx cũng import
+ * contexts/LayoutContext gốc). Tiền lệ audit trail từng ghi ở đây đã bị gỡ 2026-09-11 cùng màn
+ * "Cài đặt & Quản lý" theo yêu cầu user.
  */
 
 import { useAuth } from '../../../contexts/AuthContext';

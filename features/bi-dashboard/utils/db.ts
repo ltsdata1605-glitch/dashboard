@@ -83,7 +83,6 @@ export type BIKey =
   | `bonus-history-${string}`
   | `bonus-monthly-${string}`
   | `competition-history-${string}`
-  | 'audit-trail-log'
   | `bonus-current-period-label-${string}`
   | `hidden-cols-industry-${string}`
   | `hidden-industries-${string}`

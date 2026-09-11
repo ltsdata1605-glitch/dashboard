@@ -8,7 +8,6 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
 import { extractSupermarketList } from '../utils/dashboardHelpers';
-import { logAuditEvent } from '../utils/auditTrail';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
@@ -248,7 +247,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         const timestamp = getDetailedTimestamp();
         const newUpdate: Update = { id, message, timestamp, category };
         setLastUpdates(prev => [newUpdate, ...prev.filter(u => u.id !== id)].slice(0, 10));
-        logAuditEvent({ action: `paste:${id}`, label: `Dán dữ liệu "${message}"`, meta: { category } });
     };
     
     const removeUpdate = (id: string) => setLastUpdates(prev => prev.filter(u => u.id !== id));
@@ -292,7 +290,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         await db.clearStore();
         // Ghi log SAU khi xoá — audit-trail-log cũng nằm trong phạm vi clearStore() nên ghi
         // trước sẽ bị xoá mất ngay, không còn dấu vết hành động vừa xảy ra.
-        await logAuditEvent({ action: 'clear-all', label: 'Xoá tất cả dữ liệu Report BI (Làm mới tất cả)' });
         toast.success('Đã xoá thành công! Các thiết lập đã được đặt về mặc định.');
 
         // Broadcast that everything is gone so all listeners drop their cache
