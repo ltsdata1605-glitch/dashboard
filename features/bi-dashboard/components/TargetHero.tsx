@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import { XIcon, PlusIcon, TrashIcon, PencilIcon, ResetIcon } from './Icons';
+import { XIcon, TrashIcon, PencilIcon, ResetIcon } from './Icons';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -346,7 +346,6 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const {
         combinedDepts,
         effectiveWeights,
-        totalAllocatedWeight,
         totalAllocatedEmployees
     } = useDepartments({
         defaultDepartments,
@@ -426,36 +425,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
-                                <PlusIcon className="h-4 w-4" />
+                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Chỉnh sửa bộ phận">
+                                <PencilIcon className="h-4 w-4" />
                             </Button>
                         </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden">
-                        <div className="flex justify-between items-center mb-2 z-10 relative">
-                            <span className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Tổng Ngân Sách Phân Bổ</span>
-                            <div className="flex items-center gap-2">
-                                <span className={`text-xs sm:text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-rose-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
-                                    {totalAllocatedWeight.toFixed(1)}<span className="text-xs font-bold">%</span>
-                                </span>
-                                {totalAllocatedWeight !== 100 && (
-                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
-                                        {totalAllocatedWeight > 100.01 ? `VƯỢT ${(totalAllocatedWeight - 100).toFixed(1)}%` : `DƯ ${(100 - totalAllocatedWeight).toFixed(1)}%`}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-700/50 h-2 rounded overflow-hidden flex z-10 relative">
-                            {combinedDepts.map((d, idx) => {
-                                const w = effectiveWeights[d.name] || 0;
-                                if (w <= 0) return null;
-                                const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-amber-500', 'bg-sky-500', 'bg-rose-500', 'bg-slate-500'];
-                                return <div key={d.name} style={{ width: `${Math.max(w, 100)}%` }} className={`${colors[idx % colors.length]} h-full opacity-90 transition-all`} title={`${d.name}: ${w.toFixed(1)}%`} />
-                            })}
-                        </div>
-                        {totalAllocatedWeight === 100 && <div className="absolute inset-0 bg-emerald-50 dark:bg-emerald-900/10 pointer-events-none mix-blend-multiply opacity-50 z-0"></div>}
-                        {totalAllocatedWeight > 100.01 && <div className="absolute inset-0 bg-rose-50 dark:bg-rose-900/10 pointer-events-none mix-blend-multiply opacity-50 z-0"></div>}
                     </div>
 
                     <div className="space-y-3">

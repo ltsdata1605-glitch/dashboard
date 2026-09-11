@@ -981,7 +981,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         <div>
                             <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
-                                BC D.Thu Ngành Hàng
+                                SIÊU THỊ
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
@@ -1011,14 +1011,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             <div className="flex items-center justify-between px-1 pb-2">
                                 <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                                     <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
-                                    BC D.Thu theo NV
+                                    NHÂN VIÊN
                                 </h3>
-                                {analysisEmployees && analysisEmployees.employees.length > 0 && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        {analysisEmployees.employees.length} NV từ Phân Tích
-                                    </span>
-                                )}
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
