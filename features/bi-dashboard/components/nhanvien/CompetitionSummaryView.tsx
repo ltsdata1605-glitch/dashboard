@@ -191,12 +191,17 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             }
         });
 
-        // Cột MỞ ĐẦU mỗi nhóm — nơi vẽ viền dày 2px ngăn nhóm. Bỏ nhóm đầu tiên vì mép trái
-        // của nó đã có viền của cột ghim "Nhân viên".
+        // Cột MỞ ĐẦU mỗi nhóm — nơi vẽ viền dày 2px ngăn nhóm.
+        //
+        // ⚠️ 2026-09-11: trước đây bỏ qua nhóm ĐẦU TIÊN (`if (i > 0)`) với lý do "mép trái của nó
+        // đã có viền của cột ghim Nhân viên". Lý do đó SAI: giữa cột ghim và nhóm động đầu tiên
+        // còn 4 cột CỐ ĐỊNH (Đạt, %Đạt, BOT, NoSale) thuộc 2 nhóm khác. Vì vậy nhóm động đầu tiên
+        // chỉ được kẻ 2px ở hàng tiêu đề nhóm (nơi `headerGroupRuns.map` kẻ vô điều kiện) rồi đứt
+        // xuống 1px ở hàng tiêu đề con và toàn bộ dòng dữ liệu.
         const groupStartTitles = new Set<string>();
         let cursor = 0;
-        runs.forEach((run, i) => {
-            if (i > 0) groupStartTitles.add(sorted[cursor].header.title);
+        runs.forEach(run => {
+            groupStartTitles.add(sorted[cursor].header.title);
             cursor += run.span;
         });
 
@@ -729,7 +734,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Đạt</span>
@@ -747,7 +752,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
@@ -943,22 +948,22 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                          <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-sky-200 dark:border-sky-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                              TỔNG
                                          </td>
-                                         <td className="px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap tabular-nums">
                                              {formatter.format(storeColumnDatCount)}/{formatter.format(totalHeaderCount)}
                                          </td>
-                                         <td className="px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap tabular-nums">
                                              {(() => {
                                                  const storeColumnDatPercent = totalHeaderCount > 0 ? (storeColumnDatCount / totalHeaderCount) * 100 : 0;
                                                  return storeColumnDatPercent > 0 ? `${storeColumnDatPercent.toFixed(1)}%` : '0%';
                                              })()}
                                          </td>
-                                         <td className="px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap tabular-nums">
                                              {(() => {
                                                  const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
                                                  return totalBotSum > 0 ? formatter.format(totalBotSum) : '-';
                                              })()}
                                          </td>
-                                         <td className="px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                         <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap tabular-nums">
                                              {(() => {
                                                  const totalNoSaleSum = employees.reduce((sum, emp) => sum + getEmployeeNoSale(emp.name), 0);
                                                  return totalNoSaleSum > 0 ? formatter.format(totalNoSaleSum) : '-';
