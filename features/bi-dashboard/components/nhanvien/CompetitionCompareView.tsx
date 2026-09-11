@@ -38,23 +38,22 @@ const TugOfWar: React.FC<{
     textA?: string;
     colorB?: string;
     textB?: string;
-}> = ({ label, valA, valB, formatter, colorA = 'bg-sky-500', textA = 'text-sky-600 dark:text-sky-400', colorB = 'bg-rose-500', textB = 'text-rose-600 dark:text-rose-400' }) => {
+}> = ({ label, valA, valB, formatter, colorA = 'bg-sky-600', textA = 'text-sky-700 dark:text-sky-400', colorB = 'bg-rose-600', textB = 'text-rose-700 dark:text-rose-400' }) => {
     const total = valA + valB;
     const pctA = total > 0 ? (valA / total) * 100 : 50;
+    /* Chuẩn "Bảng điều khiển ca trực": vạch 3px, không bo, không gradient phủ, không shadow-inner.
+       Mỗi người MỘT màu xuyên suốt (A = sky, B = rose) để mắt học một lần rồi đọc mọi thanh
+       — bản cũ đổi cặp màu theo từng chỉ tiêu, mỗi thanh phải đọc lại chú giải. */
     return (
-        <div className="flex flex-col gap-1 w-full my-3 px-4">
-            <div className="flex justify-between text-[14px] font-black items-end">
+        <div className="flex flex-col gap-1 w-full py-2 px-4 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
+            <div className="flex justify-between text-[14px] font-bold items-end tabular-nums">
                 <span className={textA}>{formatter(valA)}</span>
-                <span className="text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[11px] font-bold pb-0.5">{label}</span>
+                <span className="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] font-bold pb-0.5">{label}</span>
                 <span className={textB}>{formatter(valB)}</span>
             </div>
-            <div className="h-3 w-full rounded bg-slate-200 dark:bg-slate-700 overflow-hidden flex border border-white/20 dark:border-black/20 shadow-inner">
-                <div className={`${colorA} h-full transition-all duration-700 relative`} style={{ width: `${pctA}%` }}>
-                    <div className="absolute inset-0 bg-white/20 w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3))' }}/>
-                </div>
-                <div className={`${colorB} h-full transition-all duration-700 flex-1 relative`}>
-                    <div className="absolute inset-0 bg-black/10 w-full" style={{ background: 'linear-gradient(-90deg, transparent, rgba(0,0,0,0.1))' }}/>
-                </div>
+            <div className="h-[3px] w-full bg-slate-200 dark:bg-slate-700 flex">
+                <div className={`${colorA} h-full`} style={{ width: `${pctA}%` }} />
+                <div className={`${colorB} h-full flex-1`} />
             </div>
         </div>
     );
@@ -66,9 +65,9 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
 
     // Epsilon tránh sai số dấu phẩy động (vd 2000/3000*100 vs 4000/6000*100) hiển thị nhầm
     // "+0%" thay vì "Hòa" dù 2 tỉ lệ về mặt toán học là bằng nhau.
-    if (diff > 1e-9) return <span className="text-[11px] font-black text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
-    if (diff < -1e-9) return <span className="text-[11px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
-    return <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
+    if (diff > 1e-9) return <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 tabular-nums">◀ +{formatDiff(diff)}</span>;
+    if (diff < -1e-9) return <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 tabular-nums">+{formatDiff(Math.abs(diff))} ▶</span>;
+    return <span className="text-[11px] font-bold text-slate-400">Hòa</span>;
 };
 
 const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmployees?: RevenueRow[] }> = ({ emp, colorClass, fallbackEmployees }) => {
@@ -91,14 +90,14 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
 
     return (
         <div 
-            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
+            className={`relative group w-10 h-10 rounded-full border-2 ${colorClass} overflow-hidden bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
             onClick={() => fileInputRef.current?.click()}
             title="Bấm để tải lên hoặc đổi ảnh đại diện"
         >
             {avatarSrc ? (
                 <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
-                <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
+                <span className="text-sm font-bold text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
                 <CameraIcon className="w-5 h-5 drop-shadow-md" />
@@ -333,10 +332,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
 
     const getCriterionStyle = (crit: Criterion) => {
         switch (crit) {
-            case 'SLLK': return { bg: 'bg-rose-600', text: 'text-white', badge: 'bg-rose-500/80', border: 'border-rose-700 dark:border-rose-800' };
-            case 'DTLK': return { bg: 'bg-sky-600', text: 'text-white', badge: 'bg-sky-500/80', border: 'border-sky-700 dark:border-sky-800' };
-            case 'DTQĐ': return { bg: 'bg-emerald-600', text: 'text-white', badge: 'bg-emerald-500/80', border: 'border-emerald-700 dark:border-emerald-800' };
-            default: return { bg: 'bg-slate-600', text: 'text-white', badge: 'bg-slate-500/80', border: 'border-slate-700 dark:border-slate-800' };
+            case 'SLLK': return { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300', badge: 'bg-slate-200 dark:bg-slate-700', border: 'border-slate-300 dark:border-slate-600' };
+            case 'DTLK': return { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300', badge: 'bg-slate-200 dark:bg-slate-700', border: 'border-slate-300 dark:border-slate-600' };
+            case 'DTQĐ': return { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300', badge: 'bg-slate-200 dark:bg-slate-700', border: 'border-slate-300 dark:border-slate-600' };
+            default: return { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300', badge: 'bg-slate-200 dark:bg-slate-700', border: 'border-slate-300 dark:border-slate-600' };
         }
     };
 
@@ -396,46 +395,49 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 </div>
             ) : (
                 <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
-                    {/* Header Banner */}
-                    <div className="bg-slate-800 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-                        
+                    {/* Dải nhận diện 2 người — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
+                        Bản cũ: nền slate-800 phủ ảnh hoạ tiết tải từ transparenttextures.com (tài nguyên
+                        NGOÀI — mỗi lần mở là một request ra internet), avatar 80px viền 4px, chữ "VS"
+                        60px viền nét, 3 ô đếm nền bán trong suốt. Cả khối là trang trí cho một việc rất
+                        nhỏ: nói "đây là ai đấu với ai". Nay là dải phẳng, số đếm tô CHỮ. */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:px-6 py-3 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-700">
                         {/* NV A */}
-                        <div className="flex-1 flex flex-col items-center relative z-10">
-                            <ProfileAvatar emp={empA} colorClass="border-sky-500" fallbackEmployees={revenueRows} />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
-                            <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
-                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsA.compStats.noSale} No Sale</div>}
+                        <div className="flex items-center gap-3 min-w-0 border-l-[3px] border-l-sky-600 pl-3">
+                            <ProfileAvatar emp={empA} colorClass="border-sky-600" fallbackEmployees={revenueRows} />
+                            <div className="min-w-0">
+                                <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide truncate">{empA.name}</h3>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">{empA.department}</p>
+                                <p className="text-[11px] font-bold tabular-nums mt-0.5 flex gap-2">
+                                    <span className="text-emerald-700 dark:text-emerald-400">{statsA.compStats.dkhtDat} đạt</span>
+                                    {statsA.compStats.dkhtNotDat > 0 && <span className="text-amber-700 dark:text-amber-400">{statsA.compStats.dkhtNotDat} chưa đạt</span>}
+                                    {statsA.compStats.noSale > 0 && <span className="text-rose-700 dark:text-rose-400">{statsA.compStats.noSale} no sale</span>}
+                                </p>
                             </div>
                         </div>
 
-                        {/* VS Center */}
-                        <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-6 relative z-10">
-                            <div className="text-4xl sm:text-6xl font-black italic text-slate-200" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
-                        </div>
+                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-2">vs</div>
 
                         {/* NV B */}
-                        <div className="flex-1 flex flex-col items-center relative z-10">
-                            <ProfileAvatar emp={empB} colorClass="border-rose-500" fallbackEmployees={revenueRows} />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
-                            <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
-                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsB.compStats.noSale} No Sale</div>}
+                        <div className="flex items-center gap-3 min-w-0 justify-end text-right border-r-[3px] border-r-rose-600 pr-3">
+                            <div className="min-w-0">
+                                <h3 className="text-[13px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide truncate">{empB.name}</h3>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">{empB.department}</p>
+                                <p className="text-[11px] font-bold tabular-nums mt-0.5 flex gap-2 justify-end">
+                                    <span className="text-emerald-700 dark:text-emerald-400">{statsB.compStats.dkhtDat} đạt</span>
+                                    {statsB.compStats.dkhtNotDat > 0 && <span className="text-amber-700 dark:text-amber-400">{statsB.compStats.dkhtNotDat} chưa đạt</span>}
+                                    {statsB.compStats.noSale > 0 && <span className="text-rose-700 dark:text-rose-400">{statsB.compStats.noSale} no sale</span>}
+                                </p>
                             </div>
+                            <ProfileAvatar emp={empB} colorClass="border-rose-600" fallbackEmployees={revenueRows} />
                         </div>
                     </div>
 
                     {/* Tug of war bars */}
-                    <div className="px-2 sm:px-6 py-6 bg-slate-50 dark:bg-[#151515] border-b border-slate-200 dark:border-slate-800 space-y-2">
+                    <div className="px-2 sm:px-4 py-1 border-b border-slate-200 dark:border-slate-800">
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
-                        <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} colorA="bg-emerald-500" textA="text-emerald-600 dark:text-emerald-400" colorB="bg-amber-500" textB="text-amber-600 dark:text-amber-400" />
-                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} colorA="bg-sky-500" textA="text-sky-600 dark:text-sky-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
-                        <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} colorA="bg-sky-500" textA="text-sky-600 dark:text-sky-400" colorB="bg-rose-500" textB="text-rose-600 dark:text-rose-400" />
+                        <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} />
+                        <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} />
+                        <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} />
                     </div>
 
                     {/* Ranks Strip */}
@@ -459,11 +461,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400 w-10 text-center">#</th>
-                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-400">Chương trình thi đua</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-sky-400 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-400 text-center w-28">Chênh Lệch</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-rose-400 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-300 w-10 text-center">#</th>
+                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-300">Chương trình thi đua</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center w-28">Chênh Lệch</th>
+                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
                                 </tr>
                             </thead>
                             <tbody>

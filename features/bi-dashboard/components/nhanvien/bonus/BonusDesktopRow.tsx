@@ -28,12 +28,21 @@ export const BonusDesktopRow = React.memo(({
 
     const bonus = Boolean(erpVal || tnongVal || tongVal || dkienVal);
     const rev = Boolean(dtqdVal || hqqdVal);
-    // Vạch trạng thái 3px mép trái — gọi CHÍNH `getCellColor` mà ô HQQĐ đang dùng, để vạch
+    // Vạch trạng thái 3px mép trái — lấy từ CHÍNH `getCellColor` mà ô HQQĐ đang dùng, để vạch
     // và con số không bao giờ lệch nhau khi ngưỡng đổi.
-    const stripeColor = rev ? getCellColor(hqqdVal, 'hqqd') : undefined;
+    //
+    // ⚠️ `getCellColor` trả về CLASS Tailwind (`text-emerald-600`), KHÔNG phải mã màu. Bản đầu
+    // tôi nhét thẳng vào `style={{ borderLeftColor }}` — CSS không hợp lệ, trình duyệt lặng lẽ
+    // bỏ qua, vạch hiện ra màu mặc định. Phép đo chỉ soi độ dày (3px) nên không bắt được; user
+    // nhìn ảnh mới thấy. Ánh xạ sang class viền bằng CHUỖI TĨNH để Tailwind quét được — không
+    // ghép chuỗi động (`'border-l-' + …`) vì JIT sẽ không sinh CSS cho class không có trong mã.
+    const hqqdCls = rev ? getCellColor(hqqdVal, 'hqqd') : '';
+    const stripeClass = hqqdCls.includes('emerald') ? 'border-l-emerald-600'
+        : hqqdCls.includes('rose') ? 'border-l-rose-500'
+        : 'border-l-slate-200 dark:border-l-slate-700';
 
     return (
-        <tr style={{ borderLeftColor: stripeColor }} className={`border-l-[3px] transition-all cursor-pointer text-[13px] ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750'}`} onClick={() => onEmployeeClick(item as Employee)}>
+        <tr className={`border-l-[3px] ${stripeClass} transition-all cursor-pointer text-[13px] ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750'}`} onClick={() => onEmployeeClick(item as Employee)}>
             <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={item.rank} />
