@@ -157,10 +157,10 @@ const StatusTile: React.FC<{
                                 {icon || <UploadIcon className="h-4 w-4" />}
                             </div>
                             <div className="min-w-0 flex flex-col justify-center">
-                                <h4 className={`text-[11px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
+                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[11px] font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
+                                        <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
                                             <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                         </span>
                                     )
@@ -214,7 +214,7 @@ const StatusTile: React.FC<{
     );
 };
 
-const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavigateToDashboard }) => {
+const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavigateToDashboard: _onNavigateToDashboard }) => {
     const [summaryRealtime, setSummaryRealtime] = useIndexedDBState('summary-realtime', '');
     const [summaryLuyKe, setSummaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
     const [competitionRealtime, setCompetitionRealtime] = useIndexedDBState('competition-realtime', '');
@@ -305,26 +305,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
             <div className="relative z-20 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                        <UploadIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
                     <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
                 <div className="flex flex-none justify-end gap-2">
-                    {onNavigateToDashboard && (
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={onNavigateToDashboard}
-                            title="Xem Dashboard"
-                            className="flex items-center gap-1.5 rounded-lg sm:rounded-full bg-sky-600 hover:bg-sky-700 border border-sky-600 shadow-sm px-3.5 py-2 text-xs sm:text-sm font-bold text-white transition-colors"
-                        >
-                            <ChartBarIcon className="h-4 w-4" />
-                            <span className="uppercase text-[11px] sm:text-xs tracking-wider">Xong, xem Dashboard</span>
-                        </Button>
-                    )}
                     <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <Button
                             variant="unstyled"
@@ -356,8 +341,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {/* NHÓM BÁO CÁO TỔNG HỢP */}
                         <div>
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
+                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
                                 Báo cáo Tổng hợp
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -421,8 +406,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
                         {/* NHÓM BÁO CÁO THI ĐUA */}
                         <div>
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
+                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
                                 Thi đua Cụm
                             </h3>
                             <div className="grid grid-cols-2 gap-2">

@@ -241,24 +241,24 @@ const CompactTargetItem: React.FC<{
     const t = COMPACT_TARGET_ITEM_THEMES[colorTheme] || COMPACT_TARGET_ITEM_THEMES.slate;
 
     return (
-        <div className={`p-2 sm:p-2.5 transition-colors border ${t.bg} ${t.border}`}>
+        <div className={`p-2.5 sm:p-3 transition-colors border ${t.bg} ${t.border}`}>
             <div className="mb-2">
                 <div className="flex items-center justify-between">
-                    <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
+                    <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
                     <Button variant="ghost" size="icon" onClick={onReset} title="Reset về mặc định" className="text-slate-400 hover:text-rose-500 h-5 w-5 p-0 shrink-0">
                         <ResetIcon className="h-3 w-3" />
                     </Button>
                 </div>
-                <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                    <span className="text-[11px] font-black uppercase opacity-70">Gốc:</span>
-                    <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
-                    <span className="text-[11px] opacity-40">|</span>
-                    <span className="text-[11px] font-black uppercase">Sau:</span>
-                    <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
+                    <span className="text-xs font-bold uppercase opacity-75">Gốc:</span>
+                    <span className="text-xs sm:text-[13px] font-bold tabular-nums">{f.format(baseValue)}{unit}</span>
+                    <span className="text-xs opacity-40">|</span>
+                    <span className="text-xs font-bold uppercase">Sau:</span>
+                    <span className={`text-xs sm:text-[13px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
                     {perPerson != null && perPerson > 0 && (
                         <>
-                            <span className="text-[11px] opacity-40">|</span>
-                            <span className="text-[11px] font-black uppercase">{f.format(perPerson)}Tr/ng</span>
+                            <span className="text-xs opacity-40">|</span>
+                            <span className={`text-xs sm:text-[13px] font-bold uppercase ${t.label}`}>{f.format(perPerson)}Tr/ng</span>
                         </>
                     )}
                 </div>
@@ -282,9 +282,9 @@ const CompactTargetItem: React.FC<{
                             const v = parseInt(val, 10); 
                             if (!isNaN(v)) onChange(v); 
                         }}
-                        className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                        className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
-                    <span className="text-[11px] font-bold opacity-60">%</span>
+                    <span className="text-xs font-bold opacity-75">%</span>
                 </div>
             </div>
         </div>
@@ -367,10 +367,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                 <div className="space-y-3">
                     <div className="flex justify-between items-center mb-1 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
-                            <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
+                            <div className="w-1.5 h-3.5 bg-sky-600 rounded-full"></div>
+                            <h2 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                             {analysisEmployees && analysisEmployees.employees.length > 0 && totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -401,10 +401,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                 <div className="space-y-3">
                     <div className="flex justify-between items-center px-1 mb-1">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-3 bg-emerald-600 rounded-full"></div>
-                            <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
+                            <div className="w-1.5 h-3.5 bg-emerald-600 rounded-full"></div>
+                            <h2 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                             {totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -434,13 +434,13 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
                     <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden">
                         <div className="flex justify-between items-center mb-2 z-10 relative">
-                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tổng Ngân Sách Phân Bổ</span>
+                            <span className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Tổng Ngân Sách Phân Bổ</span>
                             <div className="flex items-center gap-2">
-                                <span className={`text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-rose-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
-                                    {totalAllocatedWeight.toFixed(1)}<span className="text-[11px]">%</span>
+                                <span className={`text-xs sm:text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-rose-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
+                                    {totalAllocatedWeight.toFixed(1)}<span className="text-xs font-bold">%</span>
                                 </span>
                                 {totalAllocatedWeight !== 100 && (
-                                    <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                                         {totalAllocatedWeight > 100.01 ? `VƯỢT ${(totalAllocatedWeight - 100).toFixed(1)}%` : `DƯ ${(100 - totalAllocatedWeight).toFixed(1)}%`}
                                     </span>
                                 )}
@@ -468,11 +468,11 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const t = DEPARTMENT_PASTEL_THEMES[idx % DEPARTMENT_PASTEL_THEMES.length];
 
                             return (
-                                <div key={dept.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} transition-colors`}>
+                                <div key={dept.name} className={`relative group p-2.5 sm:p-3 ${t.bg} border ${t.border} transition-colors`}>
                                     <div className="mb-2">
-                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                                            <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
-                                            <span className="text-[11px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
+                                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                            <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{dept.name}</span>
+                                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                     <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></Button>
@@ -496,10 +496,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                                            <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[11px] opacity-60 ml-0.5 uppercase">Tr</span></span>
-                                            <span className="text-[11px] opacity-50">—</span>
-                                            <span className={`text-[11px] font-black ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
+                                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
+                                            <span className={`text-xs sm:text-[13px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-xs opacity-75 ml-0.5 uppercase">Tr</span></span>
+                                            <span className="text-xs opacity-40">—</span>
+                                            <span className={`text-xs sm:text-[13px] font-bold tabular-nums ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
                                         </div>
                                     </div>
                                     <div className="px-1 flex items-center gap-3">
@@ -521,14 +521,14 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                     const v = parseInt(val, 10); 
                                                     if (!isNaN(v)) handleDepartmentSliderChange(dept.name)(v); 
                                                 }}
-                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                             />
-                                            <span className="text-[11px] font-bold opacity-60">%</span>
+                                            <span className="text-xs font-bold opacity-75">%</span>
                                         </div>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-[11px] font-black uppercase tracking-widest">Trống</div>}
+                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs sm:text-[13px] font-bold uppercase tracking-widest">Trống</div>}
                     </div>
                 </div>
             </div>

@@ -370,10 +370,10 @@ const StatusTile: React.FC<{
                                 {icon || <UploadIcon className="h-4 w-4" />}
                             </div>
                             <div className="min-w-0">
-                                <h4 className={`text-[11px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
+                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                    <span className={`text-[11px] font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
+                                    <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
                                         <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                     </span>
                                 )) : (
@@ -520,10 +520,10 @@ const CompetitionTarget: React.FC<{
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-center mb-2 px-1">
                 <div className="flex items-center gap-2">
-                    <div className="w-1 h-3 bg-amber-600 rounded-full"></div>
-                    <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
+                    <div className="w-1.5 h-3.5 bg-amber-600 rounded-full"></div>
+                    <h2 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target Thi đua</h2>
                     {totalEmployees > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                             {totalEmployees} NV
                         </span>
                     )}
@@ -607,7 +607,7 @@ const CompetitionTarget: React.FC<{
                                                 else if (e.key === 'Escape') setEditingNameFor(null);
                                             }}
                                             placeholder={shortenName(comp.name)}
-                                            className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-[11px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
+                                            className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs sm:text-[13px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
                                         />
                                     ) : (
                                         <div
@@ -615,7 +615,7 @@ const CompetitionTarget: React.FC<{
                                                 setEditingNameFor(comp.name);
                                                 setEditingNameValue(currentDisplayName);
                                             }}
-                                            className="flex-1 text-left text-[11px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
+                                            className="flex-1 text-left text-xs sm:text-[13px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
                                             title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
                                         >
                                             {currentDisplayName}
@@ -629,18 +629,18 @@ const CompetitionTarget: React.FC<{
                         id: 'base',
                         header: 'Gốc',
                         align: 'center',
-                        width: '95px',
+                        width: '100px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
-                            return <span className="text-[11px] font-bold tabular-nums text-slate-600 dark:text-slate-400">{f.format(baseVal)}{unitSuffix}</span>;
+                            return <span className="text-xs sm:text-[13px] font-bold tabular-nums text-slate-600 dark:text-slate-400">{f.format(baseVal)}{unitSuffix}</span>;
                         },
                     },
                     {
                         id: 'after',
                         header: 'Sau',
                         align: 'center',
-                        width: '95px',
+                        width: '105px',
                         cell: (comp) => {
                             const idx = competitions.findIndex(c => c.name === comp.name);
                             const t = COMPETITION_ROW_THEMES[idx % COMPETITION_ROW_THEMES.length];
@@ -648,29 +648,29 @@ const CompetitionTarget: React.FC<{
                             const ratio = targets[comp.name] ?? 100;
                             const adjVal = baseVal * (ratio / 100);
                             const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
-                            return <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>;
+                            return <span className={`text-xs sm:text-[13px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>;
                         },
                     },
                     {
                         id: 'perPerson',
                         header: '/Người',
                         align: 'center',
-                        width: '90px',
+                        width: '105px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const ratio = targets[comp.name] ?? 100;
                             const adjVal = baseVal * (ratio / 100);
                             const perPerson = totalEmployees > 0 ? adjVal / totalEmployees : 0;
                             const perPersonUnit = comp.criteria === 'SLLK' ? 'Cái/ng' : 'Tr/ng';
-                            if (perPerson <= 0) return <span className="text-[11px] text-slate-300 dark:text-slate-600">—</span>;
-                            return <span className="text-[11px] font-bold tabular-nums text-slate-500 dark:text-slate-400">{fPerPerson.format(perPerson)} {perPersonUnit}</span>;
+                            if (perPerson <= 0) return <span className="text-xs text-slate-300 dark:text-slate-600">—</span>;
+                            return <span className="text-xs sm:text-[13px] font-bold tabular-nums text-slate-500 dark:text-slate-400">{fPerPerson.format(perPerson)} {perPersonUnit}</span>;
                         },
                     },
                     {
                         id: 'ratio',
                         header: '% Target',
                         align: 'center',
-                        width: '95px',
+                        width: '100px',
                         cell: (comp) => {
                             const t = RATIO_CONTROL_THEME;
                             const ratio = targets[comp.name] ?? 100;
@@ -687,9 +687,9 @@ const CompetitionTarget: React.FC<{
                                                 const v = parseInt(val, 10);
                                                 if (!isNaN(v)) handleSliderChange(comp.name)(v);
                                             }}
-                                            className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                            className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                         />
-                                        <span className="text-[11px] font-bold opacity-60">%</span>
+                                        <span className="text-xs font-bold opacity-75">%</span>
                                     </div>
                                 </div>
                             );
@@ -718,10 +718,10 @@ const CompetitionTarget: React.FC<{
                     <div className="space-y-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-2">
-                                <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
-                                    Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
-                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
+                                <h3 className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider px-1 flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-xs"></div>
+                                    Nhóm Tiêu Chí: <span className="text-slate-800 dark:text-slate-100 font-extrabold">{criteria}</span>
+                                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
                                 </h3>
                                 <DataTable
                                     columns={columns}
@@ -946,7 +946,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         <div className="space-y-4">
             <div className="flex items-start justify-between gap-3 mb-2 overflow-x-auto scrollbar-hide">
                 <div className="min-w-max flex-1">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nội dung cấu hình</p>
+                    <p className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Nội dung cấu hình</p>
                     <Tabs
                         items={[
                             { id: 'data', label: 'Dữ liệu' },
@@ -979,8 +979,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* NHÓM 1: BC D.THU NGÀNH HÀNG (DÀNH CHO SIÊU THỊ) */}
                         <div>
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
+                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
                                 BC D.Thu Ngành Hàng
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
@@ -1009,8 +1009,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         {/* NHÓM 2: BC D.THU THEO NHÂN VIÊN */}
                         <div>
                             <div className="flex items-center justify-between px-1 pb-2">
-                                <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
+                                <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
                                     BC D.Thu theo NV
                                 </h3>
                                 {analysisEmployees && analysisEmployees.employees.length > 0 && (
@@ -1060,8 +1060,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
                         {/* NHÓM 3: TRẢ GÓP NHÂN VIÊN */}
                         <div>
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-rose-500 rounded-sm"></div>
+                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
+                                <div className="w-2 h-2 bg-rose-500 rounded-sm"></div>
                                 Trả góp nhân viên
                             </h3>
                             <div className="grid grid-cols-1 gap-2 sm:gap-3">
