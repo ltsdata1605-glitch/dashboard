@@ -107,9 +107,17 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (isInTable) {
             if (el.classList.contains('truncate')) {
                 el.classList.remove('truncate');
-                el.style.setProperty('white-space', 'normal', 'important');
-                el.style.setProperty('word-break', 'break-word', 'important');
+                if (!isEmployeeNamePattern(text)) {
+                    el.style.setProperty('white-space', 'normal', 'important');
+                    el.style.setProperty('word-break', 'break-word', 'important');
+                } else {
+                    el.style.setProperty('white-space', 'nowrap', 'important');
+                }
                 el.style.setProperty('overflow', 'visible', 'important');
+            }
+            if (isEmployeeNamePattern(text)) {
+                el.style.setProperty('white-space', 'nowrap', 'important');
+                el.style.setProperty('word-break', 'normal', 'important');
             }
             return;
         }
@@ -399,73 +407,129 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (!(table instanceof HTMLElement)) return;
         table.style.setProperty('table-layout', 'auto', 'important');
         table.style.setProperty('width', '100%', 'important');
-        table.style.setProperty('min-width', 'auto', 'important');
+        table.style.setProperty('min-width', 'max-content', 'important');
 
-        // Tìm index của cột "NHÓM THI ĐUA" và các cột thanh tiến độ ProgressBar (%HT, %DKHT)
-        let nhomThiDuaColIdx = -1;
+        // Xây dựng ma trận thead để ánh xạ chính xác vị trí cột thị giác (visual column index)
+        const grid: HTMLTableCellElement[][] = [];
+        const theadRows = table.querySelectorAll('thead tr');
+        theadRows.forEach((row, rowIndex) => {
+            let colIndex = 0;
+            row.querySelectorAll<HTMLTableCellElement>('th').forEach(th => {
+                while (grid[rowIndex] && grid[rowIndex][colIndex]) {
+                    colIndex++;
+                }
+                const rowSpan = th.rowSpan || 1;
+                const colSpan = th.colSpan || 1;
+                for (let r = 0; r < rowSpan; r++) {
+                    if (!grid[rowIndex + r]) grid[rowIndex + r] = [];
+                    for (let c = 0; c < colSpan; c++) {
+                        grid[rowIndex + r][colIndex + c] = th;
+                    }
+                }
+                colIndex += colSpan;
+            });
+        });
+
+        const bottomRow = grid.length > 0 ? grid[grid.length - 1] : [];
+        const sttColIndices = new Set<number>();
+        const nameColIndices = new Set<number>();
         const progressBarColIndices = new Set<number>();
         const snugNumericColIndices = new Set<number>();
-        const ths = table.querySelectorAll('thead th');
-        ths.forEach((th, idx) => {
+
+        bottomRow.forEach((th, colIdx) => {
+            if (!th) return;
             const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
-            if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
-                nhomThiDuaColIdx = idx;
+            // Cột STT CHỈ được nhận diện khi tiêu đề rõ ràng là # hoặc STT (không tự gán bừa col 0)
+            if (text === '#' || text === 'STT' || text === 'SỐ TT' || text === 'NO.') {
+                sttColIndices.add(colIdx);
+            } else if (
+                text.includes('NHÂN VIÊN') || text.includes('NHÓM THI ĐUA') || text.includes('HỌ VÀ TÊN') ||
+                text === 'NHÓM' || text === 'TÊN' || text.includes('SIÊU THỊ') || text.includes('DANH MỤC')
+            ) {
+                nameColIndices.add(colIdx);
             }
+
             if (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK')) {
-                progressBarColIndices.add(idx);
+                progressBarColIndices.add(colIdx);
             }
-            // Các cột LUỸ KẾ/REALTIME (THỰC HIỆN), TARGET (TAR), CÒN LẠI (C.LẠI), SỐ LƯỢNG
+
             if (
                 text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
-                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') ||
+                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
                 text.includes('TAR') || text.includes('M.TIÊU') ||
+                text.includes('DTQĐ') || text.includes('D.KIẾN') ||
                 text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
-                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG')
+                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
+                text.includes('HQQĐ') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
+                text === 'DT' || text === '%'
             ) {
-                snugNumericColIndices.add(idx);
+                snugNumericColIndices.add(colIdx);
             }
         });
 
+        // Nếu bảng không có cột STT và chưa nhận diện được cột Tên, mặc định cột 0 là cột Tên/Nội dung chính
+        if (nameColIndices.size === 0 && !sttColIndices.has(0) && bottomRow.length > 0) {
+            nameColIndices.add(0);
+        }
+
         // Xử lý các thẻ th của bảng
-        table.querySelectorAll('thead th').forEach((th, idx) => {
-            if (!(th instanceof HTMLElement)) return;
+        table.querySelectorAll<HTMLTableCellElement>('thead th').forEach((th) => {
             const text = th.textContent?.trim() || '';
-            const isSttCol = idx === 0 || text === '#' || text === 'STT';
-            const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
-            const isProgressBarCol = progressBarColIndices.has(idx);
-            const isSnugNumericCol = snugNumericColIndices.has(idx);
+            const isMultiColGroup = (th.colSpan || 1) > 1;
+            const isSttHeader = !isMultiColGroup && (text === '#' || text.toUpperCase() === 'STT' || text.toUpperCase() === 'SỐ TT');
+            const isNameHeader = !isMultiColGroup && (
+                text.toUpperCase().includes('NHÂN VIÊN') ||
+                text.toUpperCase().includes('NHÓM THI ĐUA') ||
+                text.toUpperCase().includes('HỌ VÀ TÊN') ||
+                text.toUpperCase() === 'NHÓM' ||
+                text.toUpperCase() === 'TÊN' ||
+                text.toUpperCase().includes('SIÊU THỊ') ||
+                text.toUpperCase().includes('DANH MỤC')
+            );
+            const isProgressBarHeader = !isMultiColGroup && (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK'));
+            const isSnugNumericHeader = !isMultiColGroup && (
+                text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
+                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
+                text.includes('TAR') || text.includes('M.TIÊU') ||
+                text.includes('DTQĐ') || text.includes('D.KIẾN') ||
+                text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
+                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
+                text.includes('HQQĐ') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
+                text === 'DT' || text === '%'
+            );
 
             // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
             th.style.setProperty('font-size', '11px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
-            th.style.setProperty('padding', '3px 4px', 'important');
+            th.style.setProperty('padding', '3px 6px', 'important');
 
-            if (isSttCol) {
-                th.style.setProperty('min-width', '28px', 'important');
-                th.style.setProperty('width', '28px', 'important');
-                th.style.setProperty('max-width', '34px', 'important');
+            if (isMultiColGroup) {
+                // Nhóm header gộp cột (colSpan > 1, ví dụ: Doanh thu, Hiệu suất)
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+            } else if (isSttHeader) {
+                th.style.setProperty('min-width', '32px', 'important');
+                th.style.setProperty('width', '32px', 'important');
+                th.style.setProperty('max-width', '40px', 'important');
                 th.style.setProperty('text-align', 'center', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
-            } else if (isNhomThiDuaCol) {
-                // Fix độ rộng vừa khít nội dung Nhóm thi đua (width: auto, min-width: 0, nowrap)
+            } else if (isNameHeader) {
+                // Cột Tên nhân viên / Nhóm thi đua / Danh mục: Độ rộng tối thiểu 190px, fit vừa vặn nội dung
                 th.style.setProperty('width', 'auto', 'important');
-                th.style.setProperty('min-width', '0px', 'important');
+                th.style.setProperty('min-width', '190px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
 
-                // Bọc thẻ span con để tránh bug html2canvas/html-to-image ngắt dòng text thô
                 if (!th.querySelector('.export-nowrap-wrapper')) {
                     const content = th.innerHTML;
                     th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                 }
-            } else if (isProgressBarCol) {
-                // Cột có thanh tiến độ ProgressBar (%HT, %DKHT, ...) đồng bộ min-width 105px để không bị lệch cột
+            } else if (isProgressBarHeader) {
                 th.style.setProperty('min-width', '105px', 'important');
                 th.style.setProperty('width', '105px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
-            } else if (isSnugNumericCol) {
-                // Độ rộng cột Luỹ kế/Realtime, Tar, C.Lại... fix vừa khít với nội dung số
+            } else if (isSnugNumericHeader) {
                 th.style.setProperty('width', 'auto', 'important');
                 th.style.setProperty('min-width', '0px', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
@@ -473,13 +537,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
-                th.style.setProperty('min-width', '45px', 'important');
+                th.style.setProperty('min-width', '40px', 'important');
             }
 
             th.querySelectorAll('span').forEach(span => {
                 span.classList.remove('truncate');
                 span.style.setProperty('line-height', '1.25', 'important');
-                if (!isSttCol && !isNhomThiDuaCol && !isProgressBarCol) {
+                if (!isSttHeader && !isNameHeader && !isProgressBarHeader && !isSnugNumericHeader && !isMultiColGroup) {
                     span.style.setProperty('white-space', 'normal', 'important');
                     span.style.setProperty('word-break', 'break-word', 'important');
                 } else {
@@ -496,8 +560,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
             tr.querySelectorAll('td').forEach((td, idx) => {
                 if (!(td instanceof HTMLElement)) return;
-                const isSttCol = idx === 0;
-                const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+                const isSttCol = sttColIndices.has(idx);
+                const isNameCol = nameColIndices.has(idx) || td.querySelector('[class*="avatar"], img') !== null;
                 const isProgressBarCol = progressBarColIndices.has(idx) || !!td.querySelector('.w-10') || !!td.querySelector('[class*="progress"]');
                 const isSnugNumericCol = snugNumericColIndices.has(idx);
 
@@ -535,30 +599,37 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 });
 
                 if (isSttCol) {
-                    td.style.setProperty('min-width', '28px', 'important');
-                    td.style.setProperty('width', '28px', 'important');
-                    td.style.setProperty('max-width', '34px', 'important');
+                    td.style.setProperty('min-width', '32px', 'important');
+                    td.style.setProperty('width', '32px', 'important');
+                    td.style.setProperty('max-width', '40px', 'important');
                     td.style.setProperty('text-align', 'center', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                } else if (isNhomThiDuaCol) {
+                } else if (isNameCol) {
+                    // Cột Tên nhân viên / Nhóm thi đua / Bộ phận: Fix độ rộng tối thiểu 190px, vừa khít nội dung, không ngắt dòng
                     td.style.setProperty('white-space', 'nowrap', 'important');
                     td.style.setProperty('width', 'auto', 'important');
-                    td.style.setProperty('min-width', '0px', 'important');
+                    td.style.setProperty('min-width', '190px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
+
+                    // Các thẻ con bên trong cột tên (avatar, name span, wrapper)
+                    td.querySelectorAll<HTMLElement>('div, span, button, a').forEach(c => {
+                        c.style.setProperty('white-space', 'nowrap', 'important');
+                        c.style.setProperty('overflow', 'visible', 'important');
+                    });
 
                     // Bọc thẻ span con chống ngắt dòng
                     if (!td.querySelector('.export-nowrap-wrapper')) {
                         const content = td.innerHTML;
-                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; width: max-content !important; min-width: 190px !important; line-height: 1.25 !important;">${content}</span>`;
                     }
                 } else if (isProgressBarCol) {
-                    // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th, KHÔNG set max-width 80px và KHÔNG bọc wrap span inline-block
+                    // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th
                     td.style.setProperty('min-width', '105px', 'important');
                     td.style.setProperty('width', '105px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
                 } else if (isSnugNumericCol) {
-                    // Cột Luỹ kế/Realtime, Tar, C.Lại: fix vừa khít với nội dung số
+                    // Cột số liệu: fix vừa khít với nội dung số
                     td.style.setProperty('white-space', 'nowrap', 'important');
                     td.style.setProperty('width', 'auto', 'important');
                     td.style.setProperty('min-width', '0px', 'important');

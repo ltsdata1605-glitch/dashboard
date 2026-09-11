@@ -37,7 +37,7 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
     const oldRow = row.oldRow;
     return (
         <tr className={`transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'odd:bg-slate-50/60 hover:bg-slate-100 dark:odd:bg-slate-800/20 dark:hover:bg-slate-750')}`}>
-            <td className={`px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
+            <td className={`px-2 py-1 whitespace-nowrap min-w-[200px] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
                 <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                     {!isTotal && <MedalBadge rank={row.rank} />}
                     {!isTotal && <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />}
@@ -48,7 +48,7 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
                         onClick={isTotal ? undefined : () => onHighlightToggle(row.originalName!)}
                         onKeyDown={isTotal ? undefined : onActivateKey(() => onHighlightToggle(row.originalName!))}
                     >
-                        <span className={`font-bold ${isTotal ? '' : 'text-sky-700 dark:text-sky-400 text-[13px] whitespace-normal break-words'}`}>{row.name}</span>
+                        <span className={`font-bold ${isTotal ? '' : 'text-sky-700 dark:text-sky-400 text-[13px] whitespace-nowrap'}`}>{row.name}</span>
                     </div>
                 </div>
             </td>
@@ -344,7 +344,7 @@ const InstallmentTab: React.FC<{
                                         if (row.type === 'department') {
                                             return (
                                                 <tr key={`dept-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300 border-t border-b border-slate-200 dark:border-slate-700">
-                                                    <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 font-extrabold">{row.name}</td>
+                                                    <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 font-extrabold whitespace-nowrap min-w-[200px]">{row.name}</td>
                                                     {row.providers.map((p, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>

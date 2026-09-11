@@ -36,12 +36,12 @@ export const RevenueDesktopRow = React.memo(({
 
     return (
         <tr className={`transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-            <td className="px-3 py-2.5 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-700/50">
+            <td className="px-3 py-2.5 whitespace-nowrap min-w-[190px] border-r border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
-                    <div role="button" tabIndex={0} className="flex flex-col min-w-0 cursor-pointer" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
-                        <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px] whitespace-normal break-words">{row.name}</span>
+                    <div role="button" tabIndex={0} className="flex flex-col cursor-pointer" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
+                        <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px] whitespace-nowrap">{row.name}</span>
                     </div>
                 </div>
             </td>
