@@ -82,8 +82,11 @@ export function Modal({
 
   const isBottom = position === 'bottom';
   const showHeader = !hideHeader && !!(title || subTitle);
-  const roundedClass = noRounded ? '' : (isBottom ? 'rounded-t-2xl sm:rounded-2xl' : 'rounded-2xl');
-  const roundedFooterClass = noRounded ? '' : (isBottom ? 'sm:rounded-b-2xl' : 'rounded-b-2xl');
+  // Chuẩn "Bảng điều khiển ca trực" (2026-09-11): modal bo `rounded-md` (6px), không phải 16px.
+  // Bo góc nói "tôi ở tầng khác" — modal ĐÚNG là thứ nổi lên trên nên được bo, nhưng 16px là mức
+  // của thẻ trang trí, không phải của cửa sổ công cụ đặt trên bảng số dày.
+  const roundedClass = noRounded ? '' : (isBottom ? 'rounded-t-md sm:rounded-md' : 'rounded-md');
+  const roundedFooterClass = noRounded ? '' : (isBottom ? 'sm:rounded-b-md' : 'rounded-b-md');
 
   // Portal ra document.body — tránh modal bị kẹt/lệch vị trí nếu component cha có
   // overflow-hidden hoặc transform (tạo stacking context riêng), đây là cách chuẩn
@@ -113,7 +116,7 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, type: 'spring', bounce: 0.25 }}
             className={cn(
-              "relative w-full bg-white dark:bg-slate-900 shadow-2xl border border-slate-200/80 dark:border-slate-700/50 flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-black/5 dark:ring-white/5",
+              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden",
               roundedClass,
               maxWidthClasses[maxWidth]
             )}
@@ -140,7 +143,7 @@ export function Modal({
                       variant="unstyled"
                       size="none"
                       onClick={onClose}
-                      className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
+                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >
                       <Icon name="x" size={3.5} className="sm:hidden" />
                       <Icon name="x" size={4.5} className="hidden sm:block" />

@@ -165,10 +165,10 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                         setSortField(`date:${dateStr}`);
                                         setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                     }}
-                                    className={`px-1 py-1 text-center text-[10px] font-bold uppercase border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity ${headerBgClass}`}
+                                    className={`px-1 py-1 text-center text-[11px] font-bold uppercase border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity ${headerBgClass}`}
                                 >
                                     <div className="flex flex-col items-center leading-none">
-                                        <span className="text-[9px] opacity-70 font-semibold">{getWeekdayAbbr(dateStr)}</span>
+                                        <span className="text-[11px] opacity-70 font-semibold">{getWeekdayAbbr(dateStr)}</span>
                                         <span className="font-extrabold text-[11px] mt-0.5">{d}/{m} {isSortingThisDate ? (sortDir === 'asc' ? '↑' : '↓') : ''}</span>
                                     </div>
                                 </th>

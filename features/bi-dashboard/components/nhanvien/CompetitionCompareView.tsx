@@ -45,7 +45,7 @@ const TugOfWar: React.FC<{
         <div className="flex flex-col gap-1 w-full my-3 px-4">
             <div className="flex justify-between text-[14px] font-black items-end">
                 <span className={textA}>{formatter(valA)}</span>
-                <span className="text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px] font-bold pb-0.5">{label}</span>
+                <span className="text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[11px] font-bold pb-0.5">{label}</span>
                 <span className={textB}>{formatter(valB)}</span>
             </div>
             <div className="h-3 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex border border-white/20 dark:border-black/20 shadow-inner">
@@ -68,7 +68,7 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
     // "+0%" thay vì "Hòa" dù 2 tỉ lệ về mặt toán học là bằng nhau.
     if (diff > 1e-9) return <span className="text-[11px] font-black text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
     if (diff < -1e-9) return <span className="text-[11px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
-    return <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
+    return <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
 };
 
 const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmployees?: RevenueRow[] }> = ({ emp, colorClass, fallbackEmployees }) => {
@@ -91,7 +91,7 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
 
     return (
         <div 
-            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden shadow-lg mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
+            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
             onClick={() => fileInputRef.current?.click()}
             title="Bấm để tải lên hoặc đổi ảnh đại diện"
         >
@@ -371,15 +371,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="flex-1 flex justify-end">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empA} onSelect={setEmpA} placeholder="Chọn đối thủ 1" />
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-black italic flex items-center justify-center shrink-0 shadow-lg border-2 border-slate-700 text-sm">VS</div>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-black italic flex items-center justify-center shrink-0 border-2 border-slate-700 text-sm">VS</div>
                     <div className="flex-1 flex justify-start">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empB} onSelect={setEmpB} placeholder="Chọn đối thủ 2" alignRight />
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded border border-slate-200 dark:border-slate-700">
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
                     <Button variant="unstyled" size="none" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
                         <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-sky-500' : ''}`} />
@@ -397,7 +397,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             ) : (
                 <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
                     {/* Header Banner */}
-                    <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
+                    <div className="bg-slate-800 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                         
                         {/* NV A */}
@@ -406,15 +406,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
                             <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsA.compStats.noSale} No Sale</div>}
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
+                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
 
                         {/* VS Center */}
                         <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-6 relative z-10">
-                            <div className="text-4xl sm:text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-slate-200 to-slate-600 drop-shadow-xl" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
+                            <div className="text-4xl sm:text-6xl font-black italic text-slate-200" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
                         </div>
 
                         {/* NV B */}
@@ -423,9 +423,9 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
                             <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsB.compStats.noSale} No Sale</div>}
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
+                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsB.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
                     </div>
@@ -441,16 +441,16 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     {/* Ranks Strip */}
                     <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
                         </div>
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
                         </div>
                     </div>
 

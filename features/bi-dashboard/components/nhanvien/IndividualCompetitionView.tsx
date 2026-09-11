@@ -223,11 +223,11 @@ const EmployeeProfileCard: React.FC<{
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
             {/* Header gradient */}
-            <div className="bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-sky-600/30 dark:border-slate-700">
+            <div className="bg-sky-500 px-4 py-3 relative overflow-hidden border-b border-sky-600/30 dark:border-slate-700">
                 <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
                     <div 
-                        className="relative group w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 shadow-lg cursor-pointer hover:border-white transition-all"
+                        className="relative group w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 cursor-pointer hover:border-white transition-all"
                         onClick={() => fileInputRef.current?.click()}
                         title="Bấm để tải lên hoặc đổi ảnh đại diện"
                     >
@@ -677,7 +677,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         groupedPerformanceData={groupedPerformanceData}
                     />
                     <div className="overflow-x-auto scrollbar-hide rounded-none border border-slate-200 dark:border-slate-700 shadow-sm transition-shadow" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className="text-center py-3 px-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600">
+                        <div className="text-center py-3 px-4 bg-slate-800">
                             <h3 className="text-xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                 {selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}
                             </h3>

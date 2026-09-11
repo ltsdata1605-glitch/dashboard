@@ -3148,3 +3148,30 @@ thật sự muốn áp chuẩn BI vào đây không.
 
 → Quyết định "chuẩn mới cho CẢ dự án" hợp lý với Report BI và Phân Tích (đều là bảng số dày), nhưng
 **cần xem lại** với 2 mini-app còn lại — chúng làm việc khác hẳn.
+
+---
+
+## Đợt 6 — Hoàn tất chuẩn "Bảng điều khiển ca trực" cho TOÀN BỘ Report BI (2026-09-11)
+
+**Bối cảnh**: user báo *"Tất cả các bảng, modal, trong chức năng Report BI chưa hoàn tất cho việc
+nâng cấp giao diện"*. Các đợt trước mới chạm 4 bảng (48 cột, Thi đua Luỹ kế, Tổng quan Siêu thị,
+Chi tiết Ngành hàng). Đo lại toàn khu vực: **43 file, 490 lượt lệch chuẩn**.
+
+⚠️ Con số 490 là chặn TRÊN, không phải việc phải làm. Nhóm `nềnM` (nền màu) lẫn cả **màu DỮ LIỆU
+hợp lệ** (ô đạt/chưa đạt tô nền nhạt) — chuẩn CHO PHÉP màu ở dữ liệu, chỉ cấm ở nền tiêu đề/nhóm
+cột. Phải xác minh từng chỗ, cấm thay mù bằng sed.
+
+| Lô | Phạm vi | Vì sao xếp trước/sau |
+|---|---|---|
+| 1 | `components/shared/ui/Modal.tsx` | Vỏ chung của 59 file — đòn bẩy lớn nhất, sửa 1 chỗ ăn mọi modal |
+| 2 | 7 bảng còn lại của Report BI | Thứ user nhìn nhiều nhất |
+| 3 | 7 modal có nội dung riêng | Sau khi vỏ đã chuẩn |
+| 4 | Màn cấu hình + khung (TargetHero, SupermarketConfig, DataUpdater…) | Ít nhìn nhất |
+
+**KHÔNG đụng** (phiên song song đang sửa): `RevenueTab.tsx`, `InstallmentTab.tsx`,
+`RevenueDesktopRow.tsx`, `services/uiExport/imageExport.ts`.
+
+**Lưới an toàn cho đợt này** — có sẵn, phải chạy sau MỖI lô:
+- `npm run check`
+- `tests/e2e/table-rules.spec.ts` — đường kẻ dọc 4 bảng dày
+- `SNAPSHOT_LABEL=after SNAPSHOT_COMPARE=1` trên `ui-baseline.spec.ts` — 10 màn, số liệu KHÔNG được đổi
