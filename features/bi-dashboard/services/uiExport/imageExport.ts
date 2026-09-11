@@ -347,13 +347,11 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             mainHeaderCell.style.setProperty('z-index', '9999', 'important');
 
             const isDark = document.documentElement.classList.contains('dark');
-            let bgColor = isDark ? '#1f2937' : '#f8fafc';
-
-            if (lowerFilename.includes('chi-tiet-nganh-hang')) {
-                bgColor = isDark ? '#1f2937' : '#eef2ff';
-            } else if (lowerFilename.includes('bao-cao-kho')) {
-                bgColor = isDark ? '#881337' : '#fecdd3';
-            }
+            // Chuẩn "Bảng điều khiển ca trực" (2026-09-11): MỘT tông xám cho mọi tiêu đề, kể cả
+            // khi xuất ảnh. Trước đây chỗ này ép ngược lại màu cũ theo tên file — indigo #eef2ff
+            // cho Ngành hàng, hồng #fecdd3 cho Báo cáo kho — nên màn hình đã chuẩn mà ảnh xuất ra
+            // thì chưa. Dùng đúng slate-100 (#f1f5f9) như GROUP_TONE_BG trên màn hình.
+            const bgColor = isDark ? '#1f2937' : '#f1f5f9';
 
             mainHeaderCell.style.setProperty('background-color', bgColor, 'important');
             mainHeaderCell.style.setProperty('background-image', 'none', 'important');
@@ -1014,7 +1012,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
             if (!(child instanceof HTMLElement)) return;
             child.style.setProperty('padding', '6px 8px', 'important');
-            child.style.setProperty('border-radius', '6px', 'important');
+            // Chuẩn mới: thẻ KPI KHÔNG bo góc (khối tĩnh, không nổi lên trên) — trước là 6px.
+            child.style.setProperty('border-radius', '0', 'important');
             child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
             child.style.setProperty('box-sizing', 'border-box', 'important');
 
