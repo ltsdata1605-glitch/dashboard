@@ -28,30 +28,18 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
 
-// 6 họ màu semantic đã duyệt (CLAUDE.md mục 2), xoay vòng cho từng cột thi đua. Dùng class
-// literal đầy đủ (không nội suy chuỗi bg-${color}-50) để Tailwind JIT chắc chắn sinh CSS ở build
-// production — trước đây dùng template literal với biến, JIT không nhận diện được và còn lẫn
-// violet/teal ngoài palette.
-const HEADER_COLUMN_COLOR_KEYS = ['sky', 'emerald', 'amber', 'indigo', 'rose', 'slate'] as const;
-// Tông nhạt — dùng cho dòng tên cột con (kế thừa màu của nhóm cha nhưng nhẹ hơn).
-const HEADER_COLUMN_THEMES: Record<typeof HEADER_COLUMN_COLOR_KEYS[number], string> = {
-    sky: 'border-b-sky-400 bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50',
-    emerald: 'border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
-    amber: 'border-b-amber-400 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50',
-    indigo: 'border-b-indigo-400 bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50',
-    rose: 'border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50',
-    slate: 'border-b-slate-400 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/50',
-};
-// Tông đậm/nổi bật — dùng cho dòng "Nhóm Tiêu Chí" (tiêu đề chính), cùng họ màu với cột con
-// bên dưới nhưng sắc độ đậm hơn hẳn để phân biệt 2 cấp tiêu đề.
-const HEADER_GROUP_THEMES: Record<typeof HEADER_COLUMN_COLOR_KEYS[number], string> = {
-    sky: 'bg-sky-200 dark:bg-sky-900/60 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700',
-    emerald: 'bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
-    amber: 'bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700',
-    indigo: 'bg-sky-200 dark:bg-sky-900/60 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700',
-    rose: 'bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-700',
-    slate: 'bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200 border-slate-300 dark:border-slate-600',
-};
+/**
+ * Tiêu đề cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
+ *
+ * Bản cũ xoay vòng 6 HỌ MÀU × 2 tầng sắc độ cho tiêu đề nhóm và tiêu đề cột con. Trên bảng 48 cột
+ * thì thành 6 mảng màu chạy ngang suốt màn hình, cạnh tranh sự chú ý với chính con số bên dưới —
+ * mà con số mới là thứ người dùng vào đây để đọc.
+ *
+ * Chuẩn mới: một tông xám cho mọi tiêu đề. Ranh giới giữa các nhóm cột thể hiện bằng VIỀN 2px
+ * (xem `.grp-edge` ở dưới), không bằng nền màu. Màu chỉ dành cho DỮ LIỆU và cho vạch trạng thái.
+ */
+const HEADER_TONE_GROUP = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+const HEADER_TONE_COL   = 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b-slate-200 dark:border-b-slate-700';
 
 interface CompetitionSummaryViewProps {
     employees: Employee[];
@@ -170,10 +158,11 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     // gộp thành các ô colSpan cho dòng tiêu đề nhóm. Thứ tự nhóm lấy theo lần xuất hiện đầu
     // tiên trong visibleHeaders (tức là vẫn tôn trọng thứ tự kéo-thả của người dùng ở cấp
     // nhóm), thứ tự các cột bên trong 1 nhóm giữ nguyên tương đối (sort ổn định).
-    // Mỗi nhóm tiêu chí có đúng 1 màu riêng (colorKey gắn theo GROUP, không theo vị trí cột) —
+    // Gom cột liền kề cùng nhóm tiêu chí thành 1 ô tiêu đề `colSpan`. (Trước 2026-09-11 mỗi nhóm
+    // còn được gán 1 MÀU riêng — đã bỏ, nay phân nhóm bằng viền, xem HEADER_TONE_GROUP.)
     // cột con dùng lại đúng màu của nhóm cha (sắc độ nhạt hơn, xem HEADER_COLUMN_THEMES vs
     // HEADER_GROUP_THEMES) để người dùng nhận biết ngay cột nào thuộc nhóm nào.
-    const { groupedVisibleHeaders, headerGroupRuns, columnColorKeyMap } = useMemo(() => {
+    const { groupedVisibleHeaders, headerGroupRuns } = useMemo(() => {
         const withGroups = visibleHeaders.map(header => {
             const defaultGroup = getDefaultGroupLabel(header.metric);
             const group = groupOverrides[header.originalTitle] || defaultGroup;
@@ -185,24 +174,17 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         });
         const sorted = [...withGroups].sort((a, b) => groupOrder.indexOf(a.group) - groupOrder.indexOf(b.group));
 
-        const runs: { group: string; colorKey: typeof HEADER_COLUMN_COLOR_KEYS[number]; span: number }[] = [];
+        const runs: { group: string; span: number }[] = [];
         sorted.forEach(({ group }) => {
             const last = runs[runs.length - 1];
             if (last && last.group === group) {
                 last.span += 1;
             } else {
-                const colorKey = HEADER_COLUMN_COLOR_KEYS[runs.length % HEADER_COLUMN_COLOR_KEYS.length];
-                runs.push({ group, colorKey, span: 1 });
+                runs.push({ group, span: 1 });
             }
         });
 
-        const groupColorMap = new Map<string, typeof HEADER_COLUMN_COLOR_KEYS[number]>();
-        runs.forEach(run => {
-            if (!groupColorMap.has(run.group)) groupColorMap.set(run.group, run.colorKey);
-        });
-        const columnColorKeyMap = new Map(sorted.map(({ header, group }) => [header.title, groupColorMap.get(group)!]));
-
-        return { groupedVisibleHeaders: sorted.map(x => x.header), headerGroupRuns: runs, columnColorKeyMap };
+        return { groupedVisibleHeaders: sorted.map(x => x.header), headerGroupRuns: runs };
     }, [visibleHeaders, groupOverrides]);
 
     // Map header title to originalTitle for target lookup
@@ -705,14 +687,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.emerald} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="%HT 100%"
                                         >
                                             %HT 100%
                                         </th>
                                         <th
                                             colSpan={2}
-                                            className={`px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES.rose} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                            className={`px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                             title="Hiệu quả"
                                         >
                                             HIỆU QUẢ
@@ -721,7 +703,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                             <th
                                                 key={`group-${runIndex}-${run.group}`}
                                                 colSpan={run.span}
-                                                className={`competition-dynamic-col px-1 py-1 text-center border-b ${HEADER_GROUP_THEMES[run.colorKey]} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
+                                                className={`competition-dynamic-col px-1 py-1 text-center border-b ${HEADER_TONE_GROUP} text-[11px] font-black tracking-wide whitespace-normal break-words leading-tight`}
                                                 title={run.group}
                                             >
                                                 {run.group}
@@ -731,7 +713,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[56px] min-w-[52px] max-w-[64px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Đạt</span>
@@ -740,7 +722,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('dat')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] border-b-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>%Đạt</span>
@@ -749,7 +731,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[48px] min-w-[44px] max-w-[56px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
@@ -758,7 +740,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] border-b-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
+                                            className="px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b border-b-slate-200 dark:border-b-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-[52px] min-w-[48px] max-w-[60px] leading-tight align-middle cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
@@ -767,7 +749,6 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         {(() => {
                                             return groupedVisibleHeaders.map((header) => {
-                                                const colorKey = columnColorKeyMap.get(header.title) ?? HEADER_COLUMN_COLOR_KEYS[0];
                                                 const isDragging = draggedTitle === header.title;
                                                 return (
                                                     <th
@@ -778,7 +759,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         onDrop={(e) => handleDrop(e, header.title)}
                                                         onDragEnd={() => setDraggedTitle(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`competition-dynamic-col px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_COLUMN_THEMES[colorKey]} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
+                                                        className={`competition-dynamic-col px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_TONE_COL} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex flex-col items-center justify-center gap-0.5">
@@ -797,13 +778,25 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                                     {sortedEmployees.map((emp, idx) => {
                                         const isEven = idx % 2 === 0;
-                                        const zebraClass = isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/70 dark:bg-slate-800/30';
+                                        // Bỏ sọc ngựa vằn: mật độ 26px + kẻ mảnh đã đủ tách dòng, mà sọc thì làm nền
+                                        // nhấp nhô khiến vạch trạng thái mép trái khó đọc thành khối.
+                                        const zebraClass = 'bg-white dark:bg-slate-900';
                                         const tongBot = getEmployeeTongBot(emp.name, emp.originalName);
+
+                                        // Vạch trạng thái mép trái. Ngưỡng lấy theo MẶT BẰNG CHUNG của siêu thị
+                                        // (`storeDatPercent`), không phải mốc cứng — cùng một %Đạt có thể là giỏi ở
+                                        // siêu thị này mà đuối ở siêu thị khác.
+                                        const datPct = totalHeaderCount > 0 ? (getEmployeeDat(emp.name) / totalHeaderCount) * 100 : 0;
+                                        const stripeClass = datPct >= storeDatPercent
+                                            ? 'border-l-emerald-600'
+                                            : datPct >= storeDatPercent * 0.7 ? 'border-l-amber-600' : 'border-l-rose-600';
+
                                         return (
-                                            <tr key={emp.originalName} className={`${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
+                                            <tr key={emp.originalName} className={`border-l-[3px] ${stripeClass} ${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
                                                 <td 
                                                     className={`sticky left-0 z-10 ${zebraClass} px-2 py-[3px] font-bold border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
-                                                    style={{ color: 'var(--color-sky-700)' }}
+                                                    /* Tên NV là NHÃN, không phải dữ liệu — dùng mực đậm, nhường màu cho con số. */
+                                                    style={{ color: 'var(--color-slate-800)' }}
                                                 >
                                                     {emp.name}
                                                 </td>
@@ -812,8 +805,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const datPercent = totalHeaderCount > 0 ? (dat / totalHeaderCount) * 100 : 0;
                                                     const isBelowStore = datPercent < storeDatPercent;
                                                     const datColorClass = isBelowStore
-                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
-                                                        : 'text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50/40 dark:bg-emerald-950/10';
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold '
+                                                        : 'text-emerald-700 dark:text-emerald-400 font-bold ';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datColorClass}`}>
                                                             {dat}/{totalHeaderCount}
@@ -825,8 +818,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const datPercent = totalHeaderCount > 0 ? (dat / totalHeaderCount) * 100 : 0;
                                                     const isBelowStore = datPercent < storeDatPercent;
                                                     const datPercentColorClass = isBelowStore
-                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
-                                                        : 'text-emerald-700 dark:text-emerald-400 font-extrabold bg-emerald-50/40 dark:bg-emerald-950/10';
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold '
+                                                        : 'text-emerald-700 dark:text-emerald-400 font-extrabold ';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${datPercentColorClass}`}>
                                                             {datPercent > 0 ? `${roundUp(datPercent)}%` : '0%'}
@@ -836,7 +829,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                 {(() => {
                                                     const isRed = tongBot > 0 && tongBotRedCutoff > 0 && tongBot >= tongBotRedCutoff;
                                                     const tongBotColorClass = isRed
-                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
@@ -848,7 +841,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const noSale = getEmployeeNoSale(emp.name);
                                                     const isNoSaleRed = noSale > 0;
                                                     const noSaleColorClass = isNoSaleRed
-                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold bg-rose-50/30 dark:bg-rose-950/20'
+                                                        ? 'text-rose-700 dark:text-rose-400 font-extrabold '
                                                         : 'text-rose-700 dark:text-rose-300 font-bold bg-rose-50/20 dark:bg-rose-950/10';
                                                     return (
                                                         <td className={`px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${noSaleColorClass}`}>

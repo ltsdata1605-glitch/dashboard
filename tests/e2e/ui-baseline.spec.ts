@@ -17,6 +17,13 @@ import type { Page } from '@playwright/test';
  * giữa hai lần chụp, mọi con số phụ thuộc sẽ lệch — KHÔNG PHẢI code hỏng. Đã xảy ra thật
  * 2026-09-10: mục tiêu tháng đổi 40.052 Tr → 41.592 Tr, kéo theo %HT ở 3 màn.
  *
+ * ⚠️ NGUYÊN NHÂN DỄ NHẦM NHẤT — QUA NGÀY:
+ * Mọi con số dựa trên run rate đổi theo NGÀY vì `daysPassed = getDate() - 1`. Qua nửa đêm là toàn
+ * bộ dự báo dịch chuyển theo đúng tỷ lệ `daysPassed_cũ / daysPassed_mới`. Đã gặp thật 2026-09-11:
+ * mọi giá trị nhân đúng 0,9 (ngày 10 → 11 ⇒ 9/10 = 0,9), kéo theo cả cột "Đạt" (22/35 → 20/35) vì
+ * ít hạng mục vượt 100% hơn.
+ * ⇒ Thấy MỌI số lệch theo CÙNG MỘT TỶ LỆ thì kiểm ngày trước khi nghi code.
+ *
  * Cách phân biệt: lệch do CODE thường thay đổi CẤU TRÚC (số cột, số dòng, tên cột) hoặc lệch đồng
  * loạt theo một quy luật; lệch do DỮ LIỆU chỉ đổi giá trị và các số liên quan vẫn nhất quán với
  * nhau (kiểm tra bằng cách chia tay: 15.639 / 41.592 = 38% ✓). Nghi ngờ thì chụp lại `before` rồi
