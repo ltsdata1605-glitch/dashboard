@@ -39,6 +39,13 @@ import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
  * (xem `.grp-edge` ở dưới), không bằng nền màu. Màu chỉ dành cho DỮ LIỆU và cho vạch trạng thái.
  */
 const HEADER_TONE_GROUP = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+/** Viền ngăn CỘT (mảnh) và ngăn NHÓM cột (dày 2px) — thay cho nền màu đã bỏ.
+ *  Chuẩn: viền dày chỉ dùng đúng 2 chỗ — mép phải cột ghim, và đầu mỗi nhóm cột. */
+const colEdge = (title: string, starts: Set<string>) =>
+    starts.has(title)
+        ? 'border-r border-r-slate-100 dark:border-r-slate-700/50 border-l-2 border-l-slate-300 dark:border-l-slate-600'
+        : 'border-r border-r-slate-100 dark:border-r-slate-700/50';
+
 const HEADER_TONE_COL   = 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b-slate-200 dark:border-b-slate-700';
 
 interface CompetitionSummaryViewProps {
@@ -162,7 +169,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     // còn được gán 1 MÀU riêng — đã bỏ, nay phân nhóm bằng viền, xem HEADER_TONE_GROUP.)
     // cột con dùng lại đúng màu của nhóm cha (sắc độ nhạt hơn, xem HEADER_COLUMN_THEMES vs
     // HEADER_GROUP_THEMES) để người dùng nhận biết ngay cột nào thuộc nhóm nào.
-    const { groupedVisibleHeaders, headerGroupRuns } = useMemo(() => {
+    const { groupedVisibleHeaders, headerGroupRuns, groupStartTitles } = useMemo(() => {
         const withGroups = visibleHeaders.map(header => {
             const defaultGroup = getDefaultGroupLabel(header.metric);
             const group = groupOverrides[header.originalTitle] || defaultGroup;
@@ -184,7 +191,16 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             }
         });
 
-        return { groupedVisibleHeaders: sorted.map(x => x.header), headerGroupRuns: runs };
+        // Cột MỞ ĐẦU mỗi nhóm — nơi vẽ viền dày 2px ngăn nhóm. Bỏ nhóm đầu tiên vì mép trái
+        // của nó đã có viền của cột ghim "Nhân viên".
+        const groupStartTitles = new Set<string>();
+        let cursor = 0;
+        runs.forEach((run, i) => {
+            if (i > 0) groupStartTitles.add(sorted[cursor].header.title);
+            cursor += run.span;
+        });
+
+        return { groupedVisibleHeaders: sorted.map(x => x.header), headerGroupRuns: runs, groupStartTitles };
     }, [visibleHeaders, groupOverrides]);
 
     // Map header title to originalTitle for target lookup
@@ -759,7 +775,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         onDrop={(e) => handleDrop(e, header.title)}
                                                         onDragEnd={() => setDraggedTitle(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`competition-dynamic-col px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_TONE_COL} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
+                                                        className={`competition-dynamic-col ${colEdge(header.title, groupStartTitles)} px-1 py-1.5 text-center border-slate-200 dark:border-slate-700 border-b-[3px] ${HEADER_TONE_COL} w-[52px] min-w-[48px] max-w-[64px] leading-tight align-middle cursor-pointer transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-sky-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex flex-col items-center justify-center gap-0.5">
@@ -855,7 +871,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                     const ht = target > 0 ? (actual / target) * 100 : 0;
                                                     const cellColorClass = getCellStyle(actual, ht, header.title, emp.name);
                                                     return (
-                                                        <td key={header.title} className="competition-dynamic-col px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums">
+                                                        <td key={header.title} className={`competition-dynamic-col ${colEdge(header.title, groupStartTitles)} px-1 py-1 border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums`}>
                                                             {showPercent ? (
                                                                 actual > 0 && target > 0 ? (
                                                                     <span className={cellColorClass}>{roundUp(ht)}%</span>
@@ -908,7 +924,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         {groupedVisibleHeaders.map(header => {
                                             const averages = columnAverages[header.title];
                                             return (
-                                                <td key={header.title} className="competition-dynamic-col px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap tabular-nums">
+                                                <td key={header.title} className={`competition-dynamic-col ${colEdge(header.title, groupStartTitles)} px-1 py-1 text-center text-[13px] border-slate-200 dark:border-slate-700/50 whitespace-nowrap tabular-nums`}>
                                                     {showPercent ? (
                                                         averages && averages.percent > 0 ? (
                                                             <span>{averages.percent.toFixed(1)}%</span>
@@ -954,7 +970,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                              const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
 
                                              return (
-                                                 <td key={header.title} className="competition-dynamic-col px-1 py-1 text-center text-[13px] border-sky-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums">
+                                                 <td key={header.title} className={`competition-dynamic-col ${colEdge(header.title, groupStartTitles)} px-1 py-1 text-center text-[13px] border-slate-200 dark:border-sky-800/50 whitespace-nowrap tabular-nums`}>
                                                      {showPercent ? (
                                                          totalActual > 0 && totalTarget > 0 ? (
                                                              <span>{roundUp(totalHt).toFixed(0)}%</span>
