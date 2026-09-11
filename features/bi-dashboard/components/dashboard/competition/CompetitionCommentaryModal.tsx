@@ -60,7 +60,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
                             <span className="text-base font-bold text-slate-800">
                                 Nhận Xét & Đánh Giá Thi Đua
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200">
                                 <Sparkles className="h-3 w-3 text-sky-500 animate-pulse" />
                                 BI Analysis
                             </span>
@@ -170,7 +170,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
                     <div className="flex items-center justify-between px-1">
                         <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                             <span>📋 Chi tiết nhận xét theo nhóm tiêu chí</span>
-                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
                                 {groups.length} nhóm
                             </span>
                         </span>
@@ -209,7 +209,7 @@ const GroupCommentaryCard: React.FC<{ group: GroupCommentary; isRealtime: boolea
                 </div>
 
                 {/* Badge trạng thái kèm sticker */}
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black border ${group.statusBadge.bgClass} ${group.statusBadge.colorClass} shadow-xs`}>
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-black border ${group.statusBadge.bgClass} ${group.statusBadge.colorClass} shadow-xs`}>
                     <span className="text-xs">{group.statusBadge.sticker}</span>
                     <span>{group.statusBadge.title}</span>
                     <span className="opacity-75 font-bold">({group.completionRate}%)</span>

@@ -170,7 +170,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                         {selectedEmps.size === availableEmps.length ? 'Bỏ tất cả' : 'Chọn tất cả'}
                                     </Button>
                                 )}
-                                <span className="text-[11px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
+                                <span className="text-[11px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">{selectedEmps.size} đã chọn</span>
                             </div>
                         </div>
                         <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." leftIcon="search" className="mb-3 font-medium" />
@@ -364,7 +364,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-sky-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                             {analysisEmployees && analysisEmployees.employees.length > 0 && totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -398,7 +398,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-emerald-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                             {totalAllocatedEmployees > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                                     {totalAllocatedEmployees} NV
                                 </span>
                             )}
@@ -440,7 +440,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                 )}
                             </div>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-700/50 h-2 rounded-full overflow-hidden flex z-10 relative">
+                        <div className="w-full bg-slate-100 dark:bg-slate-700/50 h-2 rounded overflow-hidden flex z-10 relative">
                             {combinedDepts.map((d, idx) => {
                                 const w = effectiveWeights[d.name] || 0;
                                 if (w <= 0) return null;

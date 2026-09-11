@@ -91,7 +91,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                     )}
                     <span className="truncate">{node.name}</span>
                     {hasChildren && (
-                        <span className="ml-1.5 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        <span className="ml-1.5 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded flex-shrink-0">
                             {node.children.length}
                         </span>
                     )}

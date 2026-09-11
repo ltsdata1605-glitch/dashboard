@@ -48,7 +48,7 @@ const TugOfWar: React.FC<{
                 <span className="text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[11px] font-bold pb-0.5">{label}</span>
                 <span className={textB}>{formatter(valB)}</span>
             </div>
-            <div className="h-3 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex border border-white/20 dark:border-black/20 shadow-inner">
+            <div className="h-3 w-full rounded bg-slate-200 dark:bg-slate-700 overflow-hidden flex border border-white/20 dark:border-black/20 shadow-inner">
                 <div className={`${colorA} h-full transition-all duration-700 relative`} style={{ width: `${pctA}%` }}>
                     <div className="absolute inset-0 bg-white/20 w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3))' }}/>
                 </div>
@@ -352,7 +352,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                 variant="unstyled" size="none"
                                 key={pair.label}
                                 onClick={() => { setEmpA(pair.a); setEmpB(pair.b); }}
-                                className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors border ${
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded transition-colors border ${
                                     (empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName)
                                         ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                         : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400 hover:text-sky-600'
