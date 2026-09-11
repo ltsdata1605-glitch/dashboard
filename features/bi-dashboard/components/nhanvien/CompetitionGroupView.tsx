@@ -168,15 +168,17 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         // Zebra striping
         const isEven = globalRowIndex % 2 === 0;
         globalRowIndex++;
-        const zebraClass = isHighlighted ? '' : (isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/70 dark:bg-slate-800/30');
 
         return (
-            <tr key={employee.originalName} className={`
+            <tr key={employee.originalName}
+                /* Vạch trạng thái 3px mép trái — dùng lại ĐÚNG màu đã tính cho ô %HT
+                   (`percentInlineStyle`), không viết lại ngưỡng. */
+                style={{ borderLeftColor: (percentInlineStyle.color as string) || 'var(--color-slate-200)' }}
+                className={`border-l-[3px]
                 ${isHighlighted
                     ? `${highlightClass} font-bold`
                     : `hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`
                 }
-                ${zebraClass}
                 border-b border-slate-100 dark:border-slate-700`}>
                 <td className={`px-1.5 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
                     <span>{employee.name}</span>

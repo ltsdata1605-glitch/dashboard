@@ -35,8 +35,14 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
     row, isTotal, isHighlighted, onHighlightToggle, supermarketName, hidePercent, f
 }) => {
     const oldRow = row.oldRow;
+    // Vạch trạng thái 3px mép trái — ngưỡng lấy ĐÚNG từ ô %TC tổng của chính dòng này
+    // (>=45 lục, <40 hồng, còn lại hổ phách). Không tự chế ngưỡng mới: vạch và con số
+    // phải nói cùng một điều.
+    const stripeColor = isTotal ? undefined
+        : row.totalPercent >= 45 ? 'var(--color-emerald-700)'
+        : row.totalPercent < 40 ? 'var(--color-rose-500)' : 'var(--color-amber-700)';
     return (
-        <tr className={`transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800')}`}>
+        <tr style={{ borderLeftColor: stripeColor }} className={`border-l-[3px] transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800')}`}>
             <td className={`px-2 py-1 whitespace-nowrap min-w-[200px] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
                 <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                     {!isTotal && <MedalBadge rank={row.rank} />}
