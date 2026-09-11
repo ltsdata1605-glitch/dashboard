@@ -52,7 +52,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
             maxWidth="4xl"
             title={
                 <div className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-100 text-sky-600 shadow-xs">
+                    <span className="flex h-8 w-8 items-center justify-center rounded bg-sky-100 text-sky-600">
                         <MessageSquareQuote className="h-4.5 w-4.5" />
                     </span>
                     <div>
@@ -118,7 +118,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
         >
             <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
                 {/* 1. Header Banner Tổng quan */}
-                <div className="rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50/70 via-white to-slate-50 p-3.5 sm:p-4 shadow-xs">
+                <div className="rounded-none border border-slate-200 bg-slate-50 p-3.5 sm:p-4">
                     <div className="flex items-start gap-3">
                         <span className="text-2xl select-none" role="img" aria-label="sticker">
                             {generalAssessment.sticker}
@@ -135,19 +135,19 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
 
                     {/* Quick KPI stats */}
                     <div className="mt-3.5 pt-3 border-t border-sky-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <div className="bg-white/80 p-2 rounded-xl border border-slate-200/60 text-center">
+                        <div className="bg-white p-2 rounded-none border border-slate-200 text-center">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tiến độ chung</span>
                             <span className={`text-base font-black tabular-nums ${overallRate >= 100 ? 'text-emerald-600' : (overallRate >= 80 ? 'text-sky-600' : 'text-amber-600')}`}>
                                 {overallRate}%
                             </span>
                         </div>
-                        <div className="bg-white/80 p-2 rounded-xl border border-slate-200/60 text-center">
+                        <div className="bg-white p-2 rounded-none border border-slate-200 text-center">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Nhóm đạt ≥100%</span>
                             <span className="text-base font-black text-slate-800 tabular-nums">
                                 {reachedGroupsCount}/{totalGroupsCount}
                             </span>
                         </div>
-                        <div className="bg-white/80 p-2 rounded-xl border border-slate-200/60 text-center">
+                        <div className="bg-white p-2 rounded-none border border-slate-200 text-center">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Chưa khai thác</span>
                             <span className={`text-base font-black tabular-nums ${commentaryData.zeroGroupsCount > 0 ? 'text-amber-600' : 'text-slate-800'}`}>
                                 {commentaryData.zeroGroupsCount}/{totalGroupsCount}
@@ -156,7 +156,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
                         {/* Trước đây thẻ này hiện "Tổng Còn lại" = tổng Còn lại của MỌI nhóm cộng
                             lại — tức cộng *cái* (SLLK) với *VNĐ* (DTLK/DTQĐ), một con số vô nghĩa.
                             Thay bằng phép ĐẾM ngành hàng chưa đạt: không lệ thuộc đơn vị đo. */}
-                        <div className="bg-white/80 p-2 rounded-xl border border-slate-200/60 text-center">
+                        <div className="bg-white p-2 rounded-none border border-slate-200 text-center">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Ngành hàng chưa đạt</span>
                             <span className={`text-base font-black tabular-nums ${unreachedProgramsCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                                 {unreachedProgramsCount}
@@ -189,7 +189,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
 
 const GroupCommentaryCard: React.FC<{ group: GroupCommentary; isRealtime: boolean }> = ({ group, isRealtime }) => {
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs transition-all hover:border-slate-300:border-slate-600">
+        <div className="rounded-none border border-slate-200 bg-white p-3.5 transition-all hover:border-slate-300 dark:hover:border-slate-600">
             {/* Header nhóm */}
             <div className="flex items-center justify-between gap-2 flex-wrap mb-2.5">
                 <div className="flex items-center gap-2">

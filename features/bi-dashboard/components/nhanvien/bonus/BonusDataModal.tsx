@@ -134,7 +134,7 @@ export const BonusDataModal: React.FC<{
                             }
                         }}
                         placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..."
-                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-colors resize-none placeholder-slate-400"
+                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-colors resize-none placeholder-slate-400"
                     />
                     {error && <p className="mt-2 text-xs font-semibold text-rose-500">{error}</p>}
             </div>

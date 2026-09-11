@@ -68,14 +68,14 @@ export const AutoBonusInstallGuideModal: React.FC<{
                 Chế độ Tự động cần 1 tiện ích trình duyệt (userscript) để nối Dashboard với trang HRM. Làm theo 3 bước dưới đây, chỉ cần làm 1 lần.
             </p>
 
-            <div className="rounded-xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+            <div className="rounded-none border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
                 <StepRow
                     index={1}
                     title="Cài Tampermonkey & Bật Chế độ nhà phát triển"
                     description={
                         <div className="space-y-2 mt-1">
                             <p className="text-slate-500 dark:text-slate-400">Tiện ích quản lý userscript cho Chrome.</p>
-                            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
+                            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-none text-amber-800 dark:text-amber-300 text-xs">
                                 <span className="font-extrabold uppercase text-[11px] tracking-wider bg-amber-200 dark:bg-amber-900/50 px-1.5 py-0.5 rounded mr-1">⚠️ BẮT BUỘC</span>
                                 Để extension hoạt động trên Chrome, bạn cần kích hoạt <span className="font-bold underline">Developer Mode</span> theo các bước sau:
                                 <ol className="list-decimal list-inside mt-2 space-y-1 ml-1 text-slate-700 dark:text-slate-300">

@@ -32,7 +32,7 @@ export const AutoBonusErrorDetailModal: React.FC<{
                 {errorCount > 0 && <Badge variant="danger">{errorCount} lỗi</Badge>}
                 {summary.stoppedEarly && <Badge variant="warning">Đã dừng sớm — {summary.total} nhân viên đã xử lý</Badge>}
             </div>
-            <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
+            <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-none">
                 <table className="w-full text-xs">
                     <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
                         <tr>
