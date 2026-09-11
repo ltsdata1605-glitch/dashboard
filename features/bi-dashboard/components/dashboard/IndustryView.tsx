@@ -10,6 +10,7 @@ import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
+import { GROUP_TONE_BG, GROUP_TONE_TEXT, GROUP_EDGE } from '../../utils/tableTokens';
 
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
@@ -24,34 +25,36 @@ interface IndustryViewProps {
     onExport?: () => Promise<void>;
 }
 
-/** Viền 2px MỞ ĐẦU mỗi nhóm cột — giống `GROUP_EDGE` ở SummaryTableView.tsx và `colEdge` ở
- *  CompetitionSummaryView.tsx. Chuẩn "Bảng điều khiển ca trực": nhóm cột phân tách bằng VIỀN,
- *  viền dày chỉ dùng ở mép cột ghim và đầu mỗi nhóm. */
-const GROUP_EDGE = 'border-l-2 border-l-slate-300 dark:border-l-slate-600';
-
-// --- COLUMN GROUPS FOR ANALYSIS STYLE ---
+/**
+ * Nhóm cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
+ *
+ * Bản cũ gán mỗi nhóm một MÀU NỀN riêng (SỐ LƯỢNG xanh lá, DOANH THU QĐ xanh dương, TRẢ CHẬM
+ * hồng). Bảng này nằm NGAY DƯỚI bảng Tổng quan Siêu thị vốn đã về một tông xám — hai bảng cùng
+ * một màn mà một bảng rực màu, một bảng xám, chính là thứ chuẩn thiết kế muốn tránh.
+ * Nay phân nhóm đọc bằng nhãn `label` và viền `GROUP_EDGE`, không bằng nền màu.
+ */
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
-    'Nhóm ngành hàng': { label: 'DANH MỤC', bg: 'bg-slate-50', text: 'text-slate-700' },
-    'SL Realtime': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
-    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
-    'DT Realtime (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '% HT Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'DT TRẢ CHẬM': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' },
-    'Đơn giá': { label: 'GTĐH', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
-    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-400' },
+    'Nhóm ngành hàng': { label: 'DANH MỤC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'SL Realtime': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Realtime (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTQĐ': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% HT Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Target (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ CHẬM': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Đơn giá': { label: 'GTĐH', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'ĐƠN GIÁ': { label: 'GTĐH', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
@@ -97,7 +100,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Nhóm ngành hàng');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-400' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -594,7 +597,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 if (h === 'Nhóm ngành hàng') return null;
                                                 const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
                                                 if (isSingleGroup) return null;
-                                                const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300', bg: '' };
+                                                const g = COLUMN_GROUPS[h] || { text: GROUP_TONE_TEXT, bg: GROUP_TONE_BG };
                                                 const isSorted = sortConfig.column === h;
                                                 const sortIndicator = isSorted ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : '';
                                                 return (

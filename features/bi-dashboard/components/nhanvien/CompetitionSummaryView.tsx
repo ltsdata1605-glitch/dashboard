@@ -27,6 +27,7 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
+import { GROUP_EDGE } from '../../utils/tableTokens';
 
 /**
  * Tiêu đề cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
@@ -43,7 +44,7 @@ const HEADER_TONE_GROUP = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:te
  *  Chuẩn: viền dày chỉ dùng đúng 2 chỗ — mép phải cột ghim, và đầu mỗi nhóm cột. */
 const colEdge = (title: string, starts: Set<string>) =>
     starts.has(title)
-        ? 'border-r border-r-slate-100 dark:border-r-slate-700/50 border-l-2 border-l-slate-300 dark:border-l-slate-600'
+        ? `border-r border-r-slate-100 dark:border-r-slate-700/50 ${GROUP_EDGE}`
         : 'border-r border-r-slate-100 dark:border-r-slate-700/50';
 
 const HEADER_TONE_COL   = 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b-slate-200 dark:border-b-slate-700';

@@ -10,6 +10,7 @@ import { renderHeaderText } from './SafeHeaderText';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
+import { GROUP_TONE_BG, GROUP_TONE_TEXT, GROUP_EDGE } from '../../utils/tableTokens';
 
 /**
  * Nhóm cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
@@ -18,14 +19,6 @@ import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
  * TRẢ CHẬM hồng). Bốn mảng màu chạy ngang hàng tiêu đề, tranh chỗ với chính con số bên dưới.
  * Nay tất cả dùng MỘT tông xám; phân nhóm đọc bằng nhãn `label` và viền, không bằng nền.
  */
-const GROUP_TONE_BG = 'bg-slate-100 dark:bg-slate-800';
-const GROUP_TONE_TEXT = 'text-slate-600 dark:text-slate-300';
-
-/** Viền 2px MỞ ĐẦU mỗi nhóm cột — cùng ngôn ngữ với `colEdge` ở CompetitionSummaryView.tsx.
- *  Chuẩn "Bảng điều khiển ca trực": sau khi bỏ nền màu phân nhóm, nhóm cột phân tách bằng VIỀN.
- *  Viền dày chỉ dùng đúng 2 chỗ — mép phải cột ghim, và đầu mỗi nhóm cột. */
-const GROUP_EDGE = 'border-l-2 border-l-slate-300 dark:border-l-slate-600';
-
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
     'Tên miền': { label: 'DANH MỤC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
