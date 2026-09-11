@@ -215,7 +215,7 @@ const Settings: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-none p-6">
+        <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none p-6">
             {/* Header */}
             <header className="flex items-center gap-3 pb-4 border-b-2 border-slate-200 dark:border-slate-700">
                 <div className="w-1.5 h-8 bg-sky-600"></div>

@@ -191,7 +191,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded-full font-semibold text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded font-semibold text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                         isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                     }`}
                                     title={tab.label || tab.id}
@@ -209,8 +209,8 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 ) : (
                     // Nhóm thành các "pill" trắng viền riêng biệt (đúng chuẩn components/layout/Header.tsx):
                     // nhóm điều hướng (Tổng quan/Nhân viên/Cập nhật) trong 1 pill, nhóm tiện ích (Cài đặt/Font) trong pill khác.
-                    <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
-                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
+                        <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                             {navigationLinks.filter(tab => tab.id !== 'settings').map((tab, idx) => {
                                 const isActive = activeView === tab.id;
                                 return (
@@ -228,7 +228,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                             })}
                         </div>
 
-                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => handleTabChange('settings')}
