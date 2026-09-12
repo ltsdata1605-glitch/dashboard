@@ -68,7 +68,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
         >
             {/* Name column */}
             <td
-                className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit ${hasChildren ? 'cursor-pointer' : ''}`}
+                className={`py-1 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit ${hasChildren ? 'cursor-pointer' : ''}`}
                 onClick={() => hasChildren && toggleExpand(rowKey)}
             >
                 <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
@@ -98,30 +98,32 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                 </div>
             </td>
             {/* Số lượng */}
-            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+            <td className={`px-2 py-1 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
                 {fInt.format(node.soLuong)}
             </td>
             {/* DTLK */}
-            <td className={`px-2 py-1.5 text-center ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+            <td className={`px-2 py-1 text-center ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
                 <div>{f.format(node.dtlk)}</div>
                 {prevData && <DeltaBadge current={node.dtlk} previous={prevData.dtlk} isCurrency />}
             </td>
             {/* DTQD */}
-            <td className={`px-2 py-1.5 text-center ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
+            <td className={`px-2 py-1 text-center ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
                 <div>{f.format(node.dtqd)}</div>
                 {prevData && <DeltaBadge current={node.dtqd} previous={prevData.dtqd} isCurrency />}
             </td>
             {/* Hiệu quả QĐ */}
-            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+            <td className={`px-2 py-1 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
+                {/* Chuẩn "Bảng điều khiển ca trực": tô CHỮ theo ngưỡng, không tô NỀN — nền riêng từng ô
+                    làm mặt bảng vỡ thành mảng màu (cùng lý do đã đổi ở shared/Pill.tsx). Ngưỡng giữ nguyên. */}
+                <span className={`inline-block min-w-[42px] text-[12px] font-bold tabular-nums ${node.hieuQuaQD >= 0.3 ? 'text-emerald-700 dark:text-emerald-400'
+                        : node.hieuQuaQD > 0 ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-slate-500 dark:text-slate-400'
                     }`}>
                     {Math.round(node.hieuQuaQD * 100)}%
                 </span>
             </td>
             {/* Đơn giá */}
-            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
+            <td className={`px-2 py-1 text-center ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
                 {f.format(node.donGia)}
             </td>
         </tr>
