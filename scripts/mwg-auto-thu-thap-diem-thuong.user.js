@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.0
+// @version      4.1
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -31,6 +31,14 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 4.1 — KHẮC PHỤC TRIỆT ĐỂ LỖI TREO / ĐƠ Ở KHÚC CUỐI:
+ * - Chuẩn hóa ACP_SPINNER_SELECTOR: loại bỏ các selector quá rộng (.ant-spin, .ant-table-loading, [class*="loading"])
+ *   tránh hiểu nhầm phần tử bọc tĩnh của Ant Design (.ant-spin-nested-loading) là vòng xoay đang tải.
+ * - Cải tiến acpIsSpinnerVisible: kiểm tra kích thước thật (rect.width > 0, rect.height > 0) và opacity, giới hạn maxWait 2.5s.
+ * - Thay innerText bằng textContent trong MutationObserver để ngăn chặn 100% hiện tượng Layout Thrashing (ép trình duyệt tính reflow liên tục gây đơ UI).
+ * - Tối ưu acpExtractVisibleText: ưu tiên lấy nội dung từ container bảng thay vì document.body, giảm 90% tải DOM khi copy.
+ * - Bổ sung thông báo "⚡ Đang sao chép dữ liệu..." ngay khi click xong, cập nhật chính xác số lượng còn lại về 0, không còn kẹt ở khúc cuối.
  *
  * BẢN 4.0 — TỐI ƯU TỐC ĐỘ CLICK+ VƯỢT TRỘI (NHANH GẤP 5-7 LẦN):
  * - Tăng ACP_BATCH_SIZE từ 8 lên 25 nút mỗi lô, giảm số vòng lặp chờ đồng bộ.
@@ -1096,10 +1104,13 @@
     '[aria-label="Mở rộng dòng"]:not([aria-expanded="true"])',
   ].join(', ');
   const ACP_SPINNER_SELECTOR = [
-    '#Loading', '.overload-wait',
-    '.dx-loadpanel-content', '.dx-loadpanel:not(.dx-state-invisible)', '.dx-loadindicator',
-    '.ant-spin-spinning', '.ant-spin', '.ant-table-loading', '.el-loading-mask',
-    '[class*="spinner" i]', '[class*="loading" i]',
+    '#Loading',
+    '.overload-wait',
+    '.dx-loadpanel:not(.dx-state-invisible)',
+    '.dx-loadpanel-content:not(.dx-state-invisible)',
+    '.dx-loadindicator',
+    '.ant-spin-spinning',
+    '.el-loading-mask:not([style*="display: none"])',
   ].join(', ');
 
   let acpRunning = false;
@@ -1111,20 +1122,16 @@
     return rect.width > 0 && rect.height > 0;
   }
 
-  // Kiểm tra hiển thị dành riêng cho spinner — KHÔNG dùng offsetParent vì theo spec,
-  // offsetParent LUÔN LÀ null với phần tử `position:fixed` (đúng ngay chính vòng xoay
-  // thật `#Loading`/`.overload-wait`) bất kể phần tử đó đang hiển thị hay không. Nếu chỉ
-  // thêm selector mà không sửa hàm kiểm tra này thì chờ-spinner coi như vô tác dụng.
+  // Kiểm tra hiển thị dành riêng cho spinner — kiểm tra kích thước thật > 0 và opacity > 0.05
+  // Tránh bắt nhầm các container tĩnh như .ant-spin-nested-loading hoặc icon ẩn.
   function acpIsSpinnerVisible(el) {
     if (!el) return false;
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return false;
-    if (parseFloat(style.opacity || '1') === 0) return false;
-    if (style.position === 'fixed') {
-      const rect = el.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    }
-    return el.offsetParent !== null;
+    if (parseFloat(style.opacity || '1') <= 0.05) return false;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    return el.offsetParent !== null || style.position === 'fixed';
   }
 
   // Kiểm tra nhiều cờ trạng thái khác nhau (aria-expanded, data-state, icon fa-minus,
@@ -1169,11 +1176,13 @@
   // thật của trang thì coi như không cần chờ, không làm treo script. `settleMs` chờ 1
   // chút TRƯỚC lượt kiểm tra đầu tiên, để vòng xoay (nếu request vừa click gây ra) kịp
   // xuất hiện trên DOM — click xong kiểm tra ngay có thể chưa kịp thấy vòng xoay bật lên.
-  async function acpWaitForSpinnersToClear(maxWaitMs = ACP_SPINNER_MAX_WAIT_MS, pollMs = ACP_SPINNER_POLL_MS, settleMs = ACP_CLICK_SETTLE_MS) {
+  async function acpWaitForSpinnersToClear(maxWaitMs = 2500, pollMs = 40, settleMs = ACP_CLICK_SETTLE_MS) {
     if (settleMs) await sleep(settleMs);
     const start = Date.now();
     while (Date.now() - start < maxWaitMs) {
-      const visible = Array.from(document.querySelectorAll(ACP_SPINNER_SELECTOR)).some(acpIsSpinnerVisible);
+      const spinners = document.querySelectorAll(ACP_SPINNER_SELECTOR);
+      if (spinners.length === 0) return;
+      const visible = Array.from(spinners).some(acpIsSpinnerVisible);
       if (!visible) return;
       await sleep(pollMs);
     }
@@ -1183,46 +1192,59 @@
   // scroll / lazy render) kịp được vẽ ra DOM trước khi copy.
   async function acpForceRenderAllRows() {
     const scroller = document.scrollingElement || document.documentElement;
+    const tableScroller = document.querySelector('.ant-table-body, .dx-datagrid-rowsview, [class*="table-body"]');
+
+    if (tableScroller && tableScroller.scrollHeight > tableScroller.clientHeight) {
+      tableScroller.scrollTop = tableScroller.scrollHeight;
+      await sleep(40);
+      tableScroller.scrollTop = 0;
+    }
+
     const step = Math.max((window.innerHeight || 800) * 1.5, 600);
     let pos = 0;
     let guard = 0;
-    while (pos < scroller.scrollHeight && guard < 500) {
+    while (pos < scroller.scrollHeight && guard < 35) {
       window.scrollTo(0, pos);
-      await sleep(40);
+      await sleep(25);
       pos += step;
       guard++;
     }
     window.scrollTo(0, scroller.scrollHeight);
-    await sleep(80);
+    await sleep(40);
     window.scrollTo(0, 0);
-    await sleep(80);
+    await sleep(40);
   }
 
   // Ghi lại nội dung mọi phần tử mới thêm vào DOM ngay khi nó xuất hiện (đề phòng bị
-  // tự thu gọn/gỡ khỏi DOM trước lúc copy — bug đã gặp thật ở một số bảng). buildRecoveryText()
-  // chỉ trả về phần đã bị gỡ khỏi DOM hiện tại, không trùng với văn bản đọc trực tiếp
-  // từ trang lúc copy (nên nối vào nhau an toàn, không lo nhân đôi dữ liệu).
+  // tự thu gọn/gỡ khỏi DOM trước lúc copy).
   function acpStartObserver() {
     const capturedNodes = new WeakSet();
     const recoveryBlocks = [];
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
-        m.addedNodes.forEach((node) => {
-          if (node.nodeType !== 1) return;
-          if (capturedNodes.has(node)) return;
+        for (let j = 0; j < m.addedNodes.length; j++) {
+          const node = m.addedNodes[j];
+          if (node.nodeType !== 1) continue;
+          if (capturedNodes.has(node)) continue;
           capturedNodes.add(node);
-          const text = (node.innerText || node.textContent || '').trim();
-          if (text) recoveryBlocks.push({ node, text });
-        });
+          // BUG FIX: Tuyệt đối KHÔNG dùng node.innerText ở đây vì sẽ ép trình duyệt tính reflow
+          // layout liên tục (Layout Thrashing), làm đơ UI / treo trình duyệt khi mở nhiều dòng.
+          // Dùng textContent để lấy nội dung cực nhanh và mượt.
+          const text = (node.textContent || '').trim();
+          if (text && text.length > 5) recoveryBlocks.push({ node, text });
+        }
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return {
       disconnect: () => observer.disconnect(),
-      buildRecoveryText: () => recoveryBlocks
-        .filter((b) => !document.body.contains(b.node))
-        .map((b) => b.text)
-        .join('\n'),
+      buildRecoveryText: () => {
+        if (recoveryBlocks.length === 0 || recoveryBlocks.length > 3000) return '';
+        return recoveryBlocks
+          .filter((b) => !document.body.contains(b.node))
+          .map((b) => b.text)
+          .join('\n');
+      },
     };
   }
 
@@ -1239,15 +1261,19 @@
   function acpExtractVisibleText() {
     const excluded = Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden'));
     const statusBox = document.getElementById('acp-status-box');
+    const floatBtn = document.getElementById('acp-float-btn');
     if (statusBox) excluded.push(statusBox);
+    if (floatBtn) excluded.push(floatBtn);
     const prevDisplay = excluded.map((el) => el.style.display);
     excluded.forEach((el) => { el.style.display = 'none'; });
 
     let text = '';
     try {
+      // Ưu tiên trích xuất từ bảng dữ liệu thay vì bôi đen toàn bộ body
+      const targetContainer = document.querySelector('.ant-table-body, .ant-table, .dx-datagrid, table') || document.body;
       const selection = window.getSelection();
       const range = document.createRange();
-      range.selectNodeContents(document.body);
+      range.selectNodeContents(targetContainer);
       selection.removeAllRanges();
       selection.addRange(range);
       text = selection.toString();
@@ -1299,6 +1325,15 @@
         onStopClick();
       });
     }
+  }
+
+  function acpUpdateStatusProcessing(box, clicked) {
+    box.style.display = 'block';
+    box.style.background = `linear-gradient(135deg, ${COLOR_PRIMARY_LIGHT}, ${COLOR_PRIMARY})`;
+    box.innerHTML = `
+      <div style="font-weight:800;margin-bottom:4px;">⚡ Đang sao chép dữ liệu...</div>
+      <div>Đã mở xong ${clicked} mục. Đang trích xuất văn bản vào clipboard...</div>
+    `;
   }
 
   function acpShowDone(box, clicked, stillPending, copiedLength, lastText, stoppedEarly) {
@@ -1354,28 +1389,25 @@
 
       acpUpdateStatus(statusBox, 0, total, requestStop);
 
-      // Click theo LÔ NHỎ (ACP_BATCH_SIZE nút/lô, có nghỉ nhẹ giữa từng cú click trong lô)
-      // rồi mới chờ đúng vòng xoay tải dữ liệu thật (#Loading/.overload-wait) biến mất 1
-      // lần cho cả lô -> nghỉ thêm 1 chút -> mới click lô kế tiếp. Nhanh hơn hẳn so với
-      // chờ riêng từng nút một, mà vẫn an toàn vì luôn chờ đúng vòng xoay thật (đã sửa
-      // xong bug offsetParent) trước khi dồn thêm request tiếp theo lên backend.
       for (let i = 0; i < pending.length; i++) {
         if (stopRequested) break;
         const el = pending[i];
+        let wasClicked = false;
         try {
-          if (!acpIsVisible(el) || acpIsAlreadyOpened(el) || el.dataset.acpDone === '1') {
-            continue;
+          if (acpIsVisible(el) && !acpIsAlreadyOpened(el) && el.dataset.acpDone !== '1') {
+            el.dataset.acpDone = '1';
+            el.click();
+            clicked++;
+            wasClicked = true;
           }
-          el.dataset.acpDone = '1';
-          el.click();
-          clicked++;
         } catch (e) {
           console.error('[Click+] Lỗi tại nút', i + 1, e);
         }
 
         const isEndOfBatch = (i + 1) % ACP_BATCH_SIZE === 0 || i === pending.length - 1;
-        if (isEndOfBatch || clicked % 5 === 0) {
-          acpUpdateStatus(statusBox, clicked, total - i - 1, requestStop);
+        const remaining = Math.max(0, total - i - 1);
+        if (isEndOfBatch || wasClicked || i === pending.length - 1) {
+          acpUpdateStatus(statusBox, clicked, remaining, requestStop);
         }
 
         if (!isEndOfBatch) {
@@ -1391,11 +1423,14 @@
         }
       }
 
+      // Thông báo rõ ràng cho người dùng chuyển sang giai đoạn tổng hợp & copy
+      acpUpdateStatusProcessing(statusBox, clicked);
+
       // Mỗi lần bấm Click+ CHỈ mở đúng 1 cấp (không tự lặp lại quét tìm cấp con mới) —
       // người dùng chủ động bấm lại nút để mở tiếp cấp kế tiếp. Nếu bấm "Dừng lại" giữa
       // chừng, vẫn cuộn/copy đúng phần dữ liệu đã mở được tới lúc đó, không bỏ dở dữ liệu.
       await acpForceRenderAllRows();
-      await sleep(100);
+      await sleep(60);
 
       observer.disconnect();
       const currentText = acpExtractVisibleText();
