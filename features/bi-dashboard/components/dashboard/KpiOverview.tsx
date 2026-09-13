@@ -18,6 +18,9 @@ import { KpiCard } from '../../../../components/shared/ui/KpiCard';
 import { Modal } from '../../../../components/shared/ui/Modal';
 import { Button } from '../../../../components/shared/ui/Button';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import * as db from '../../utils/db';
+import { parseBaseTargetQuyDoi } from '../../services/employeeParser';
+import { shortenSupermarketName } from '../../utils/dashboardHelpers';
 
 interface KpiOverviewProps {
     isRealtime: boolean;
@@ -26,11 +29,12 @@ interface KpiOverviewProps {
     supermarketDailyTargets: Record<string, number>;
     supermarketMonthlyTargets?: Record<string, number>;
     activeSupermarket: string;
+    summaryLuyKeData?: string;
 }
 
 type TargetType = 'dtThuc' | 'dtQd' | 'hqqd' | 'traCham';
 
-const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket }) => {
+const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, summaryLuyKeData }) => {
 
     const dtlk = parseNumber(kpiData.dtlk);
     const dtqd = parseNumber(kpiData.dtqd);
@@ -75,7 +79,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
     const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD, dtqd);
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
-    const secondaryLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
+    const secondaryLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
     const secondaryTargetStr = isRealtime
         ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
         : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
@@ -87,7 +91,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         activeSupermarket, customDTThucTargets, supermarketDailyTargets, () => totalVuotTroi
     );
 
-    const dtThucLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
+    const dtThucLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
     const dtThucMonthlyTarget = (supermarketMonthlyTargets && supermarketMonthlyTargets[activeSupermarket]) || dtDuKien;
     const dtThucProgress = computeDtThucProgress(isRealtime, dtlk, totalDTThucDailyTarget, dtThucMonthlyTarget);
     const dtThucTargetStr = isRealtime
@@ -106,12 +110,16 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     // --- Open & Save Modal Handlers ---
     const handleOpenModal = (type: TargetType) => {
         setActiveTargetType(type);
+        const now = new Date();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         let val = '';
         if (type === 'dtThuc') {
             const currentVal = (customDTThucTargets && customDTThucTargets[activeSupermarket]) ?? totalDTThucDailyTarget;
             val = currentVal > 0 ? Math.round(currentVal).toString() : '';
         } else if (type === 'dtQd') {
-            const currentVal = (customDTQDTargets && customDTQDTargets[activeSupermarket]) ?? totalVuotTroi;
+            const currentVal = isRealtime
+                ? (totalVuotTroi > 0 ? totalVuotTroi : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly / daysInMonth : 0))
+                : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly : (totalVuotTroi > 0 ? totalVuotTroi * daysInMonth : 0));
             val = currentVal > 0 ? Math.round(currentVal).toString() : '';
         } else if (type === 'hqqd') {
             val = currentQuyDoiTarget.toString();
@@ -121,23 +129,56 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         setInputTarget(val);
     };
 
-    const handleSaveTarget = () => {
+    const handleSaveTarget = async () => {
         const parsed = parseFloat(inputTarget.replace(/,/g, ''));
         if (!isNaN(parsed) && parsed >= 0) {
+            const safeName = shortenSupermarketName(activeSupermarket);
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
             if (activeTargetType === 'dtThuc') {
                 setCustomDTThucTargets(prev => ({ ...(prev || {}), [activeSupermarket]: parsed }));
             } else if (activeTargetType === 'dtQd') {
-                setCustomDTQDTargets(prev => ({ ...(prev || {}), [activeSupermarket]: parsed }));
+                const monthlyVal = isRealtime ? parsed * daysInMonth : parsed;
+                const dailyVal = isRealtime ? parsed : (parsed > 0 ? parsed / daysInMonth : 0);
+
+                // Đồng bộ vào targethero-${safeName}-total (Cấu hình Target DTQĐ)
+                const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKeData || '', activeSupermarket);
+                if (baseMonthTarget > 0) {
+                    const ratio = Math.round((monthlyVal / baseMonthTarget) * 100);
+                    await db.set(`targethero-${safeName}-total`, Math.max(0, Math.min(300, ratio)));
+                } else {
+                    setCustomDTQDTargets(prev => ({ ...(prev || {}), [activeSupermarket]: dailyVal }));
+                }
+                // Xoá override riêng để KpiOverview và TargetHero dùng chung 1 nguồn đồng bộ
+                setCustomDTQDTargets(prev => {
+                    const copy = { ...(prev || {}) };
+                    delete copy[activeSupermarket];
+                    return copy;
+                });
             } else if (activeTargetType === 'hqqd') {
-                setCustomHQQDTargets(prev => ({ ...(prev || {}), [activeSupermarket]: parsed }));
+                // Target Quy đổi: Đồng bộ vào targethero-${safeName}-quydoi
+                await db.set(`targethero-${safeName}-quydoi`, parsed);
+                setCustomHQQDTargets(prev => {
+                    const copy = { ...(prev || {}) };
+                    delete copy[activeSupermarket];
+                    return copy;
+                });
             } else if (activeTargetType === 'traCham') {
-                setCustomTraChamTargets(prev => ({ ...(prev || {}), [activeSupermarket]: parsed }));
+                // Target Trả chậm: Đồng bộ vào targethero-${safeName}-tragop
+                await db.set(`targethero-${safeName}-tragop`, parsed);
+                setCustomTraChamTargets(prev => {
+                    const copy = { ...(prev || {}) };
+                    delete copy[activeSupermarket];
+                    return copy;
+                });
             }
         }
         setActiveTargetType(null);
     };
 
-    const handleRemoveTarget = () => {
+    const handleRemoveTarget = async () => {
+        const safeName = shortenSupermarketName(activeSupermarket);
         if (activeTargetType === 'dtThuc') {
             setCustomDTThucTargets(prev => {
                 const copy = { ...(prev || {}) };
@@ -145,18 +186,21 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 return copy;
             });
         } else if (activeTargetType === 'dtQd') {
+            await db.set(`targethero-${safeName}-total`, 100);
             setCustomDTQDTargets(prev => {
                 const copy = { ...(prev || {}) };
                 delete copy[activeSupermarket];
                 return copy;
             });
         } else if (activeTargetType === 'hqqd') {
+            await db.set(`targethero-${safeName}-quydoi`, 40);
             setCustomHQQDTargets(prev => {
                 const copy = { ...(prev || {}) };
                 delete copy[activeSupermarket];
                 return copy;
             });
         } else if (activeTargetType === 'traCham') {
+            await db.set(`targethero-${safeName}-tragop`, 45);
             setCustomTraChamTargets(prev => {
                 const copy = { ...(prev || {}) };
                 delete copy[activeSupermarket];
@@ -178,18 +222,22 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 };
             case 'dtQd':
                 return {
-                    title: 'Mục Tiêu Ngày — Doanh Thu Quy Đổi',
+                    title: isRealtime ? 'Mục Tiêu Ngày — Doanh Thu Quy Đổi' : 'Mục Tiêu Tháng — Doanh Thu Quy Đổi',
                     unit: 'Triệu',
-                    label: 'MỤC TIÊU NGÀY DTQĐ (TR)',
-                    desc: 'Nhập mục tiêu doanh thu quy đổi (Đơn vị: Triệu VNĐ) cho siêu thị.',
-                    placeholder: totalVuotTroi > 0 ? Math.round(totalVuotTroi).toString() : 'Ví dụ: 1292'
+                    label: isRealtime ? 'MỤC TIÊU NGÀY DTQĐ (TR)' : 'MỤC TIÊU THÁNG DTQĐ (TR)',
+                    desc: isRealtime
+                        ? 'Nhập mục tiêu ngày DTQĐ (Đơn vị: Triệu VNĐ). Hệ thống sẽ tự động đồng bộ vào Target DTQĐ trong Cấu hình siêu thị.'
+                        : 'Nhập mục tiêu tháng DTQĐ (Đơn vị: Triệu VNĐ). Hệ thống sẽ tự động đồng bộ vào Target DTQĐ trong Cấu hình siêu thị.',
+                    placeholder: isRealtime
+                        ? (totalVuotTroi > 0 ? Math.round(totalVuotTroi).toString() : 'Ví dụ: 1238')
+                        : (totalVuotTroiMonthly > 0 ? Math.round(totalVuotTroiMonthly).toString() : 'Ví dụ: 37131')
                 };
             case 'hqqd':
                 return {
                     title: 'Mục Tiêu — Hiệu Quả Quy Đổi (HQQĐ)',
                     unit: '%',
                     label: 'MỤC TIÊU HQQĐ (%)',
-                    desc: 'Nhập tỷ lệ phần trăm mục tiêu Hiệu Quả Quy Đổi mong muốn.',
+                    desc: 'Nhập tỷ lệ % mục tiêu Hiệu Quả Quy Đổi. Hệ thống sẽ tự động đồng bộ vào Target Quy đổi trong Cấu hình siêu thị.',
                     placeholder: 'Ví dụ: 40'
                 };
             case 'traCham':
@@ -197,7 +245,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title: 'Mục Tiêu — Tỷ Trọng Trả Chậm',
                     unit: '%',
                     label: 'MỤC TIÊU TRẢ CHẬM (%)',
-                    desc: 'Nhập tỷ trọng phần trăm mục tiêu bán Trả Chậm.',
+                    desc: 'Nhập tỷ trọng % mục tiêu Trả Chậm. Hệ thống sẽ tự động đồng bộ vào Target Trả chậm trong Cấu hình siêu thị.',
                     placeholder: 'Ví dụ: 45'
                 };
             default:
@@ -268,7 +316,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         onClick={() => handleOpenModal('traCham')}
                     >
                         <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                            {Math.ceil(tyTrongTraGop)}%
+                            {Math.round(tyTrongTraGop)}%
                         </div>
                     </KpiCard>
                 </div>
@@ -286,7 +334,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                             {(() => {
                                 const val = parseNumber(kpiData.tlpv);
                                 if (!val) return '0%';
-                                return val % 1 === 0 ? `${val}%` : `${val.toFixed(1)}%`;
+                                return `${Math.round(val)}%`;
                             })()}
                         </div>
                     </KpiCard>

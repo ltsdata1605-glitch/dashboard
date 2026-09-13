@@ -48,6 +48,7 @@ export interface MultiSelectDropdownProps {
   /** Mặc định `max-h-72`; panel `usePortal` thường cần cao hơn (VD `max-h-[80vh]`). */
   maxHeightClass?: string;
   className?: string;
+  triggerClassName?: string;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
@@ -101,6 +102,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   panelWidthClass = 'w-64',
   maxHeightClass = 'max-h-72',
   className,
+  triggerClassName,
   searchValue,
   onSearchChange,
   searchPlaceholder = 'Tìm kiếm...',
@@ -238,7 +240,10 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           variant="unstyled"
           size="none"
           onClick={toggle}
-          className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+          className={cn(
+            "w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors",
+            triggerClassName
+          )}
         >
           <div className="flex items-center gap-1 sm:gap-2 min-w-0">
             {icon}

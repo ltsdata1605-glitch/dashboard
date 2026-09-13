@@ -258,7 +258,7 @@ const CompactTargetItem: React.FC<{
                     {perPerson != null && perPerson > 0 && (
                         <>
                             <span className="text-xs opacity-40">|</span>
-                            <span className={`text-xs sm:text-[13px] font-bold uppercase ${t.label}`}>{f.format(perPerson)}Tr/ng</span>
+                            <span className={`text-xs sm:text-[13px] font-bold uppercase ${t.label}`}>{f.format(perPerson)}Tr/người</span>
                         </>
                     )}
                 </div>
@@ -472,7 +472,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
                                             <span className={`text-xs sm:text-[13px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-xs opacity-75 ml-0.5 uppercase">Tr</span></span>
                                             <span className="text-xs opacity-40">—</span>
-                                            <span className={`text-xs sm:text-[13px] font-bold tabular-nums ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
+                                            <span className={`text-xs sm:text-[13px] font-bold tabular-nums ${t.label}`}>{f.format(perEmployee)}Tr/người</span>
                                         </div>
                                     </div>
                                     <div className="px-1 flex items-center gap-3">

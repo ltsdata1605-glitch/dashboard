@@ -924,6 +924,20 @@ export function parseNewPortalIndustryData(text: string) {
             name = line;
             parts = lines[i + 1].split('\t').map(p => p.trim());
             i += 2;
+        } else if (/^\d+\s*-\s*/.test(line) || line.startsWith('Tổng') || isParentIndustry(line)) {
+            name = line;
+            i++;
+            parts = [];
+            while (i < lines.length) {
+                const nextLine = lines[i];
+                if (nextLine.startsWith('Đơn vị:') || nextLine.startsWith('Tỉ trọng tính') || nextLine.includes('Click+') || nextLine.includes('Đang chọn')) break;
+                // Dừng nếu gặp dòng tiêu đề của nhóm/ngành tiếp theo hoặc Tổng
+                if (/^\d+\s*-\s*/.test(nextLine) || nextLine.startsWith('Tổng') || isParentIndustry(nextLine)) {
+                    break;
+                }
+                parts.push(nextLine);
+                i++;
+            }
         } else {
             i++;
             continue;
@@ -978,18 +992,76 @@ export function parseNewPortalIndustryData(text: string) {
 
     const chiPhiMatch = text.match(/Chi phí\s*(?:\?\s*)?([\d,.]+)/i);
 
+    const portalKpis: Record<string, string> = {
+        laiGopQDDuKien: 'N/A',
+        chiPhi: chiPhiMatch ? chiPhiMatch[1] : 'N/A',
+        targetLNTT: 'N/A',
+        htTargetDuKienLNTT: 'N/A'
+    };
+
+    // 1. Tỷ trọng trả góp (Trả chậm)
+    const tgMatch = text.match(/Tỉ trọng trả góp\s*(?:[:\n\r\t ]+)?([\d,.]+%?)/i);
+    if (tgMatch) {
+        portalKpis.tyTrongTraGop = tgMatch[1].includes('%') ? tgMatch[1] : `${tgMatch[1]}%`;
+    } else {
+        const dtTgMatch = text.match(/DT trả góp\s+([\d,.]+)\s*\/\s*([\d,.]+)/i);
+        if (dtTgMatch) {
+            const tgVal = parseNumber(dtTgMatch[1]);
+            const thucVal = parseNumber(dtTgMatch[2]);
+            if (thucVal > 0) {
+                portalKpis.tyTrongTraGop = `${(Math.round((tgVal / thucVal) * 1000) / 10).toFixed(1)}%`;
+            }
+        }
+    }
+    if (!portalKpis.tyTrongTraGop && totalRow) {
+        if (totalRow[10] && totalRow[10] !== '0%' && totalRow[10] !== '—') {
+            portalKpis.tyTrongTraGop = totalRow[10];
+        } else if (totalRow[9] && totalRow[9] !== '0') {
+            const tgVal = parseNumber(totalRow[9]);
+            const thucVal = parseNumber(totalRow[2]);
+            if (thucVal > 0) {
+                portalKpis.tyTrongTraGop = `${(Math.round((tgVal / thucVal) * 1000) / 10).toFixed(1)}%`;
+            }
+        }
+    }
+
+    // 2. TLPVTC
+    const tlpvMatch = text.match(/TLPVTC(?:\s+(?:lũy kế|hôm nay))?\s*[:\n\r\t ]*([\d,.]+%?)/i);
+    if (tlpvMatch) {
+        portalKpis.tlpv = tlpvMatch[1].includes('%') ? tlpvMatch[1] : `${tlpvMatch[1]}%`;
+    }
+
+    // 3. Bill & Khách
+    const billMatch = text.match(/([\d,.]+)\s*bill\s*\/\s*([\d,.]+)\s*khách/i);
+    if (billMatch) {
+        portalKpis.lbill = billMatch[1];
+        portalKpis.lbillBH = billMatch[1];
+        portalKpis.lkhach = billMatch[2];
+    }
+
+    // 4. Các chỉ số khác
+    const dtqdMatch = text.match(/DT quy đổi\s+([\d,.]+)/i);
+    if (dtqdMatch) portalKpis.dtqd = dtqdMatch[1];
+
+    const targetMatch = text.match(/Target trọn kỳ\s+([\d,.]+)/i);
+    if (targetMatch) portalKpis.targetQD = targetMatch[1];
+
+    const htMatch = text.match(/% HT target(?:\s*\([A-Z]+\))?\s*(?:\?\s*)?([\d,.]+%?)/i);
+    if (htMatch) portalKpis.htTargetQD = htMatch[1].includes('%') ? htMatch[1] : `${htMatch[1]}%`;
+
+    const tb3tMatch = text.match(/TT vs TB 3 tháng\s*(?:\?\s*)?([-+\d,.]+%?)/i);
+    if (tb3tMatch) portalKpis.dtckThangQD = tb3tMatch[1].includes('%') ? tb3tMatch[1] : `${tb3tMatch[1]}%`;
+
+    const dukienMatch = text.match(/DT dự kiến\s*(?:\?\s*)?([\d,.]+)/i);
+    if (dukienMatch) portalKpis.dtDuKienQD = dukienMatch[1];
+
     return {
         headers: standardHeaders,
         rows,
         allRows: rows,
         tree,
         totalRow,
-        kpis: {
-            laiGopQDDuKien: 'N/A',
-            chiPhi: chiPhiMatch ? chiPhiMatch[1] : 'N/A',
-            targetLNTT: 'N/A',
-            htTargetDuKienLNTT: 'N/A'
-        }
+        kpis: portalKpis
     };
 }
 
@@ -1003,12 +1075,14 @@ export const parseIndustryRealtimeData = (
         allRows: string[][];
         tree: IndustryTreeNode[];
         totalRow: string[] | null;
+        kpis?: Record<string, string>;
     } = {
         headers: [],
         rows: [],
         allRows: [],
         tree: [],
-        totalRow: null
+        totalRow: null,
+        kpis: {}
     };
 
     if (!text) return result;
@@ -1139,3 +1213,79 @@ export const extractSupermarketList = (summaryLuyKe: string): string[] => {
     }
     return extractedNames;
 };
+
+/**
+ * Chuẩn hoá tên siêu thị để so khớp thông minh:
+ * - Loại bỏ tiền tố mã kho ở đầu (VD: "910 - ĐML_STR..." -> "ĐML_STR...")
+ * - Chuẩn hoá chữ Đ/đ thành D/d để tránh lệch bảng mã tiếng Việt
+ * - Loại bỏ dấu tiếng Việt và ký tự đặc biệt
+ */
+export const normalizeSupermarketKey = (name: string): string => {
+    if (!name) return '';
+    return name
+        .trim()
+        .replace(/^\d+\s*-\s*/, '')
+        .toLowerCase()
+        .replace(/đ/g, 'd')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+};
+
+/**
+ * So khớp xem 2 tên siêu thị có trỏ về cùng một siêu thị hay không:
+ * Hỗ trợ các trường hợp:
+ * - Khớp tuyệt đối hoặc khớp không phân biệt hoa thường / khoảng trắng
+ * - Một bên có mã kho ở đầu, một bên không (VD: "910 - ĐML_STR_STR - 99 Hùng Vương" vs "DML_STR_STR - 99 Hùng Vương")
+ * - Lệch ký tự Đ / D (VD: "ĐML_STR_STR" vs "DML_STR_STR")
+ * - Cùng tên rút gọn qua shortenSupermarketName (VD: cùng là "Hùng Vương")
+ */
+export const isSupermarketMatch = (nameA: string, nameB: string): boolean => {
+    if (!nameA || !nameB) return false;
+    const cleanA = nameA.trim();
+    const cleanB = nameB.trim();
+
+    // 1. Khớp chính xác
+    if (cleanA === cleanB) return true;
+    if (cleanA.toLowerCase() === cleanB.toLowerCase()) return true;
+
+    // 2. Không so khớp nếu một trong hai là "Tổng"
+    const isTotalA = cleanA.toUpperCase() === 'TỔNG';
+    const isTotalB = cleanB.toUpperCase() === 'TỔNG';
+    if (isTotalA || isTotalB) return isTotalA === isTotalB;
+
+    // 3. Khớp sau khi chuẩn hoá (bỏ tiền tố mã kho "910 - ", chuẩn hoá D/Đ và dấu)
+    const normA = normalizeSupermarketKey(cleanA);
+    const normB = normalizeSupermarketKey(cleanB);
+    if (normA && normB && normA === normB) return true;
+
+    // 4. Khớp theo shortenSupermarketName (VD: "Hùng Vương" == "Hùng Vương")
+    const shortA = shortenSupermarketName(cleanA).trim().toLowerCase();
+    const shortB = shortenSupermarketName(cleanB).trim().toLowerCase();
+    if (shortA && shortB && shortA === shortB) return true;
+
+    // 5. Khớp bao hàm (substring) theo tên rút gọn nếu đủ dài
+    if (shortA.length >= 3 && shortB.length >= 3) {
+        if (normA.includes(normB) || normB.includes(normA)) return true;
+    }
+
+    return false;
+};
+
+/**
+ * Tìm key khớp nhất trong danh sách candidateKeys dựa trên isSupermarketMatch
+ */
+export const findMatchingSupermarketKey = (targetName: string, candidateKeys: string[]): string | undefined => {
+    if (!targetName || !candidateKeys || candidateKeys.length === 0) return undefined;
+
+    // 1. Ưu tiên khớp chính xác tuyệt đối
+    if (candidateKeys.includes(targetName)) return targetName;
+
+    const trimmedTarget = targetName.trim();
+    const foundTrimmed = candidateKeys.find(k => k.trim() === trimmedTarget);
+    if (foundTrimmed) return foundTrimmed;
+
+    // 2. Tìm theo isSupermarketMatch
+    return candidateKeys.find(k => isSupermarketMatch(targetName, k));
+};
+

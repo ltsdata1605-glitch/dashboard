@@ -330,7 +330,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-base lg:text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
+                            <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                                 Nhân Viên
                             </h2>
                         </div>
@@ -345,6 +345,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <MultiSelectDropdown
                             className="border-r border-slate-200 dark:border-slate-700"
+                            triggerClassName="rounded-l-full"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
@@ -359,6 +360,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                             onToggleOption={toggleSupermarket}
                         />
                         <MultiSelectDropdown
+                            triggerClassName="rounded-r-full"
                             icon={<ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
                             count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}

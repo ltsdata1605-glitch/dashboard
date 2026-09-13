@@ -88,14 +88,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport } = props;
 
 
-    const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
-    const industryFilterRef = useRef<HTMLDivElement>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const filterRef = useRef<HTMLDivElement>(null);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
-
-    const [isSubIndustryFilterOpen, setIsSubIndustryFilterOpen] = useState(false);
-    const subIndustryFilterRef = useRef<HTMLDivElement>(null);
     const [subIndustryFilterSearch, setSubIndustryFilterSearch] = useState('');
 
     // --- Column Sort State ---
@@ -220,11 +217,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
                 setIsColumnSelectorOpen(false);
             }
-            if (industryFilterRef.current && !industryFilterRef.current.contains(event.target as Node)) {
-                setIsIndustryFilterOpen(false);
-            }
-            if (subIndustryFilterRef.current && !subIndustryFilterRef.current.contains(event.target as Node)) {
-                setIsSubIndustryFilterOpen(false);
+            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+                setIsFilterOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -259,100 +253,146 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
              {/* Divider: expand/collapse | filter+column */}
              {hasTreeData && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />}
 
-             {/* Filter Ngành Hàng */}
-             <div className="relative" ref={industryFilterRef}>
+             {/* Filter Ngành Hàng & Nhóm Hàng (Gộp chung 1 nút, mở popup 2 cột) */}
+             <div className="relative" ref={filterRef}>
                 <Button
                     variant="unstyled" size="none"
-                    onClick={() => setIsIndustryFilterOpen(prev => !prev)}
-                    className={`p-1.5 transition-colors ${
-                        hiddenIndustries.length > 0
+                    onClick={() => setIsFilterOpen(prev => !prev)}
+                    className={`p-1.5 transition-colors relative ${
+                        (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
-                    title="Lọc ngành hàng"
+                    title="Bộ lọc ngành hàng & nhóm hàng"
                 >
                     <FilterIcon className="h-4 w-4" />
+                    {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
+                    )}
                 </Button>
-                {isIndustryFilterOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
-                        <Input
-                            type="text"
-                            value={industryFilterSearch}
-                            onChange={(e) => setIndustryFilterSearch(e.target.value)}
-                            placeholder="Tìm kiếm..."
-                            leftIcon="search"
-                            className="mb-2 text-xs"
-                        />
-                        <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
-                            {allIndustries.filter(n => n.toLowerCase().includes(industryFilterSearch.toLowerCase())).map(industry => (
-                                <div key={industry} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <label
-                                        className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                        onClick={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
-                                    >
-                                        {formatIndustryDisplayName(industry)}
-                                    </label>
-                                    <Switch
-                                        checked={!hiddenIndustries.includes(industry)}
-                                        onChange={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
-                                    />
+                {isFilterOpen && (
+                    <div className={`absolute right-0 mt-2 ${hasTreeData ? 'w-[580px] max-w-[92vw]' : 'w-72 max-w-[90vw]'} bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 text-left animate-in fade-in zoom-in-95 duration-150`}>
+                        {/* Popup Header */}
+                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Bộ lọc hiển thị</span>
+                            {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
+                                <button
+                                    onClick={() => {
+                                        setHiddenIndustries([]);
+                                        setHiddenSubIndustries([]);
+                                    }}
+                                    className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                                >
+                                    Hiện tất cả
+                                </button>
+                            )}
+                        </div>
+
+                        {/* 2 Cột Lọc: Ngành hàng và Nhóm hàng */}
+                        <div className={`grid ${hasTreeData ? 'grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-700' : 'grid-cols-1'}`}>
+                            {/* Cột 1: Ngành hàng */}
+                            <div className="flex flex-col min-w-0">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                                        Ngành hàng ({allIndustries.length - hiddenIndustries.length}/{allIndustries.length})
+                                    </p>
+                                    <div className="flex items-center gap-1.5 text-[10px]">
+                                        <button
+                                            onClick={() => setHiddenIndustries([])}
+                                            className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                                        >
+                                            Tất cả
+                                        </button>
+                                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                                        <button
+                                            onClick={() => setHiddenIndustries([...allIndustries])}
+                                            className="text-slate-500 hover:underline cursor-pointer"
+                                        >
+                                            Bỏ chọn
+                                        </button>
+                                    </div>
                                 </div>
-                            ))}
+                                <Input
+                                    type="text"
+                                    value={industryFilterSearch}
+                                    onChange={(e) => setIndustryFilterSearch(e.target.value)}
+                                    placeholder="Tìm ngành hàng..."
+                                    leftIcon="search"
+                                    className="mb-2 text-xs"
+                                />
+                                <div className="overflow-y-auto space-y-0.5 max-h-60 pr-1">
+                                    {allIndustries.filter(n => n.toLowerCase().includes(industryFilterSearch.toLowerCase())).map(industry => (
+                                        <div key={industry} className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <label
+                                                className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none truncate pr-2"
+                                                onClick={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
+                                                title={formatIndustryDisplayName(industry)}
+                                            >
+                                                {formatIndustryDisplayName(industry)}
+                                            </label>
+                                            <Switch
+                                                checked={!hiddenIndustries.includes(industry)}
+                                                onChange={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Cột 2: Nhóm hàng (chỉ hiển thị khi có treeData) */}
+                            {hasTreeData && (
+                                <div className="flex flex-col min-w-0 sm:pl-3 pt-2 sm:pt-0">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                                            Nhóm hàng ({allSubIndustries.length - hiddenSubIndustries.length}/{allSubIndustries.length})
+                                        </p>
+                                        <div className="flex items-center gap-1.5 text-[10px]">
+                                            <button
+                                                onClick={() => setHiddenSubIndustries([])}
+                                                className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                                            >
+                                                Tất cả
+                                            </button>
+                                            <span className="text-slate-300 dark:text-slate-600">|</span>
+                                            <button
+                                                onClick={() => setHiddenSubIndustries([...allSubIndustries])}
+                                                className="text-slate-500 hover:underline cursor-pointer"
+                                            >
+                                                Bỏ chọn
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <Input
+                                        type="text"
+                                        value={subIndustryFilterSearch}
+                                        onChange={(e) => setSubIndustryFilterSearch(e.target.value)}
+                                        placeholder="Tìm nhóm hàng..."
+                                        leftIcon="search"
+                                        className="mb-2 text-xs"
+                                    />
+                                    <div className="overflow-y-auto space-y-0.5 max-h-60 pr-1">
+                                        {allSubIndustries.filter(n => n.toLowerCase().includes(subIndustryFilterSearch.toLowerCase())).map(sub => (
+                                            <div key={sub} className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                                <label
+                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none truncate pr-2"
+                                                    onClick={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
+                                                    title={formatIndustryDisplayName(sub)}
+                                                >
+                                                    {formatIndustryDisplayName(sub)}
+                                                </label>
+                                                <Switch
+                                                    checked={!hiddenSubIndustries.includes(sub)}
+                                                    onChange={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
             </div>
-
-            {/* Filter Nhóm Hàng */}
-            {hasTreeData && (
-                <div className="relative" ref={subIndustryFilterRef}>
-                    <Button
-                        variant="unstyled" size="none"
-                        onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
-                        className={`p-1.5 transition-colors ${
-                            hiddenSubIndustries.length > 0
-                                ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
-                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                        }`}
-                        title="Lọc nhóm hàng"
-                    >
-                        <div className="relative">
-                            <FilterIcon className="h-4 w-4" />
-                            <span className="absolute -bottom-1 -right-1 text-[11px] font-black text-slate-400">N</span>
-                        </div>
-                    </Button>
-                    {isSubIndustryFilterOpen && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
-                            <Input
-                                type="text"
-                                value={subIndustryFilterSearch}
-                                onChange={(e) => setSubIndustryFilterSearch(e.target.value)}
-                                placeholder="Tìm kiếm..."
-                                leftIcon="search"
-                                className="mb-2 text-xs"
-                            />
-                            <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
-                                {allSubIndustries.filter(n => n.toLowerCase().includes(subIndustryFilterSearch.toLowerCase())).map(sub => (
-                                    <div key={sub} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <label
-                                            className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                            onClick={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
-                                        >
-                                            {formatIndustryDisplayName(sub)}
-                                        </label>
-                                        <Switch
-                                            checked={!hiddenSubIndustries.includes(sub)}
-                                            onChange={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* Column settings */}
             <div className="relative" ref={selectorRef}>
@@ -417,7 +457,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     if (!headers || headers.length === 0 || !rows || rows.length === 0) {
         return (
-            <Card title={title} rounded={false} icon="bar-chart-2">
+            <Card title={title} rounded={false}>
                 <EmptyState title="Chưa có dữ liệu cho siêu thị này" compact />
             </Card>
         );
@@ -559,7 +599,14 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-base sm:text-lg lg:text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-tight tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
+            <Card 
+                ref={ref} 
+                title={title} 
+                titleClassName="text-lg sm:text-2xl font-normal uppercase text-sky-700 dark:text-sky-400 leading-normal tracking-tight py-0.5"
+                actionButton={actionButton} 
+                bordered={false} 
+                noPadding
+            >
 
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
@@ -577,7 +624,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                     className={`
                                                         px-3 py-1 text-left text-[11px] font-black
                                                         text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
-                                                        border-b-2 border-b-slate-100 dark:border-b-slate-700
+                                                        border-b border-b-slate-200 dark:border-b-slate-700
                                                         border-r border-slate-200 dark:border-slate-700
                                                         sticky left-0 z-20 align-middle
                                                         uppercase tracking-wider min-w-[120px]
@@ -597,7 +644,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             className={`
                                                                 py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                                 align-middle whitespace-nowrap cursor-pointer
-                                                                border-b-2 border-r border-slate-200 dark:border-slate-700
+                                                                border-b border-r border-slate-200 dark:border-slate-700
                                                                 ${GROUP_EDGE}
                                                                 hover:opacity-80 transition-opacity select-none
                                                                 ${g.bg} ${g.text}
@@ -644,9 +691,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         scope="col"
                                                         className={`
                                                             px-1.5 py-1 text-[11px] font-bold uppercase
-                                                            tracking-wider border-r border-slate-200 dark:border-slate-700
+                                                             border-r border-slate-200 dark:border-slate-700
                                                             ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
-                                                            border-b-[3px] !${getBorderAccentFromColorClass(g.bg)}
+                                                            border-b border-b-slate-200 dark:border-b-slate-700
                                                             text-center align-middle whitespace-nowrap
                                                             cursor-pointer hover:opacity-80 transition-opacity select-none
                                                             ${g.bg} ${g.text}
@@ -714,7 +761,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             className={`
                                                                 transition-colors duration-100 group
                                                                 ${isTotalRow
-                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800'
+                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t border-emerald-200 dark:border-emerald-800'
                                                                     : isNNH ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
                                                                     : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700'
                                                                     : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/10 border-b border-slate-100 dark:border-slate-700'
@@ -741,7 +788,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             transition-colors duration-100 group
                                                             ${isTotalRow 
-                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t border-emerald-200 dark:border-emerald-800' 
                                                                 : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700'
                                                             }
                                                         `}

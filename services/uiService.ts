@@ -1006,12 +1006,50 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (cls.includes('lg:pt-8') || cls.includes('lg:pt-6') || cls.includes('pt-8')) {
             el.style.setProperty('padding-top', '6px', 'important');
         }
-        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5') || cls.includes('lg:px-4') || cls.includes('lg:pb-4')) && !cls.includes('kpi-grid')) {
+        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5') || cls.includes('lg:px-4') || cls.includes('lg:pb-4')) && !cls.includes('kpi-grid') && !cls.includes('competition-kpi-container')) {
             el.style.setProperty('padding-top', '4px', 'important');
             el.style.setProperty('padding-bottom', '4px', 'important');
             el.style.setProperty('padding-left', '6px', 'important');
             el.style.setProperty('padding-right', '6px', 'important');
         }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // THI ĐUA: THU GỌN CÁC THẺ KPI VÀ CO VỪA THEO BẢNG CỘT
+    // ═══════════════════════════════════════════════════════════════════════
+    clone.querySelectorAll<HTMLElement>('.competition-kpi-container').forEach((kpiGrid) => {
+        kpiGrid.style.setProperty('margin-left', '0', 'important');
+        kpiGrid.style.setProperty('margin-right', '0', 'important');
+        kpiGrid.style.setProperty('padding-left', '0', 'important');
+        kpiGrid.style.setProperty('padding-right', '0', 'important');
+        kpiGrid.style.setProperty('border', 'none', 'important');
+        kpiGrid.style.setProperty('background', 'transparent', 'important');
+        kpiGrid.style.setProperty('box-shadow', 'none', 'important');
+        kpiGrid.style.setProperty('margin-bottom', '8px', 'important');
+        kpiGrid.style.setProperty('gap', '6px', 'important');
+        kpiGrid.style.setProperty('width', '100%', 'important');
+
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const cardBorderColor = isDarkMode ? '#334155' : '#cbd5e1';
+        kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
+            if (!(child instanceof HTMLElement)) return;
+            child.style.setProperty('padding', '6px 8px', 'important');
+            child.style.setProperty('border-radius', '0', 'important');
+            child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
+            child.style.setProperty('box-sizing', 'border-box', 'important');
+
+            child.querySelectorAll<HTMLElement>('.text-xl, .text-2xl, .text-3xl').forEach((numEl) => {
+                numEl.style.setProperty('font-size', '18px', 'important');
+                numEl.style.setProperty('line-height', '1.2', 'important');
+            });
+            child.querySelectorAll<HTMLElement>('span, div').forEach((textEl) => {
+                const textCls = textEl.getAttribute('class') || '';
+                if (textCls.includes('tracking-wider') || textCls.includes('uppercase') || textCls.includes('text-[11px]')) {
+                    textEl.style.setProperty('font-size', '9.5px', 'important');
+                    textEl.style.setProperty('line-height', '1.2', 'important');
+                }
+            });
+        });
     });
 
     // Strip border-radius from the clone root itself

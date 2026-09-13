@@ -8,6 +8,7 @@ interface SectionHeaderProps {
     children?: React.ReactNode;
     onClick?: (e: React.MouseEvent) => void;
     className?: string;
+    titleClassName?: string;
 }
 
 /**
@@ -16,7 +17,7 @@ interface SectionHeaderProps {
  * DESIGN_SYSTEM_MODERN.md §2). Breakpoint chính lg=1024px (mobile < lg, laptop >= lg).
  * Icon chip là tuỳ chọn (optional).
  */
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children, onClick, className = '' }) => {
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children, onClick, className = '', titleClassName }) => {
     return (
         <div 
             onClick={onClick}
@@ -39,7 +40,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     </div>
                 )}
                 <div className="min-w-0">
-                    <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{title}</h2>
+                    <h2 className={titleClassName || "text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight"}>{title}</h2>
                     {subtitle && <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{subtitle}</div>}
                 </div>
             </div>

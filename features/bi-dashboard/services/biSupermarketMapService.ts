@@ -1,60 +1,194 @@
 /**
- * Bảng map "tên siêu thị trong báo cáo Report BI" → "Mã Kho", dùng bởi biDataService.ts để biết
- * dán dữ liệu chia sẻ (biData/{maKho}) vào đúng chỗ. implementation_plan.md mục "Đợt 4" +
- * "Quản lý tự cấu hình bảng map". Lưu ở Firestore collection `biSupermarketMap`, 1 document CHO
- * MỖI Mã Kho (field `names: string[]`) — KHÔNG dùng shared_configs (chỗ đó dành cho chia sẻ cấu
- * hình tuỳ ý, sai ngữ nghĩa cho 1 bảng tra cứu cố định). Admin ghi được mọi Mã Kho, Quản lý chỉ
- * ghi được đúng (các) Kho của mình (firestore.rules), mọi user đăng nhập đọc được.
+ * Bảng map "tên siêu thị trong báo cáo Report BI" → "Mã Kho", lưu RIÊNG BIỆT theo từng tài khoản (userId).
+ * Mỗi tài khoản có cấu hình Mã Kho độc lập, hoàn toàn không ảnh hưởng lẫn nhau.
+ * - Cloud Firestore: lưu tại doc `users/{userId}/configs/biSupermarketMap` (tuân thủ firestore.rules).
+ * - Cục bộ IndexedDB: lưu tại key `supermarket-map-${userId}` qua utils/db.ts (truy xuất siêu tốc 0ms).
  */
 
-import { db } from '../../../services/firebase';
-import { doc, collection, getDocs, setDoc, writeBatch, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { auth, db } from '../../../services/firebase';
+import { doc, getDoc, getDocs, collection, setDoc, serverTimestamp } from 'firebase/firestore';
+import * as dbUtils from '../utils/db';
 
-const collRef = () => collection(db, 'biSupermarketMap');
-const khoDocRef = (maKho: string) => doc(db, 'biSupermarketMap', maKho);
-
-/** { "ĐM_TEST - 99 Test Street": "58614", ... } — key là tên ĐẦY ĐỦ, ĐÚNG NGUYÊN VĂN như
- * xuất hiện ở cột đầu báo cáo Summary/Thi đua Luỹ kế (không phải tên đã rút gọn qua
- * shortenSupermarketName()). */
 export type SupermarketToKhoMap = Record<string, string>;
 
-/** Đọc toàn bộ collection (1 document/Mã Kho, field names: string[]), gộp ngược thành flat map
- * — contract giữ nguyên như schema cũ (1 document duy nhất), mọi nơi gọi hàm này (DataUpdater.tsx,
- * useDashboardLogic.ts) không cần sửa. */
-export async function fetchSupermarketMap(): Promise<SupermarketToKhoMap> {
-    const snap = await getDocs(collRef());
-    const result: SupermarketToKhoMap = {};
-    snap.forEach(docSnap => {
-        const maKho = docSnap.id;
-        const names = docSnap.data()?.names;
-        if (!Array.isArray(names)) return;
-        for (const name of names) {
-            if (typeof name === 'string' && name) result[name] = maKho;
+/**
+ * Xác định UID của tài khoản hiện tại
+ */
+export function resolveUserId(userId?: string): string {
+    if (userId && typeof userId === 'string' && userId.trim()) {
+        return userId.trim();
+    }
+    if (auth.currentUser?.uid) {
+        return auth.currentUser.uid;
+    }
+    return 'guest';
+}
+
+/**
+ * Đọc bảng map siêu thị riêng của tài khoản hiện tại:
+ * 1. Đọc nhanh từ IndexedDB (0ms).
+ * 2. Đọc từ Firestore users/{uid}/configs/biSupermarketMap để đồng bộ từ Cloud.
+ * 3. Nếu tài khoản chưa có cấu hình và chưa từng di chuyển từ legacy, hỗ trợ khởi tạo dữ liệu một lần.
+ */
+export async function fetchSupermarketMap(userId?: string): Promise<SupermarketToKhoMap> {
+    const uid = resolveUserId(userId);
+    const localKey = `supermarket-map-${uid}`;
+
+    // 1. Kiểm tra IndexedDB cục bộ của chính tài khoản này
+    let cachedMap: SupermarketToKhoMap | null = null;
+    try {
+        cachedMap = await dbUtils.get<SupermarketToKhoMap>(localKey);
+    } catch (e) {
+        console.warn('[biSupermarketMapService] Lỗi đọc IndexedDB:', e);
+    }
+
+    if (cachedMap && typeof cachedMap === 'object' && Object.keys(cachedMap).length > 0) {
+        // Đồng bộ ngầm từ Firestore nếu đang đăng nhập
+        if (uid !== 'guest') {
+            syncFromCloudInBackground(uid, localKey).catch(() => {});
         }
-    });
-    return result;
+        return cachedMap;
+    }
+
+    // 2. Nếu local chưa có, tải từ Firestore của tài khoản
+    if (uid !== 'guest') {
+        try {
+            const userConfigRef = doc(db, 'users', uid, 'configs', 'biSupermarketMap');
+            const snap = await getDoc(userConfigRef);
+            if (snap.exists()) {
+                const cloudMap = (snap.data()?.map || {}) as SupermarketToKhoMap;
+                await dbUtils.set(localKey, cloudMap);
+                return cloudMap;
+            }
+        } catch (err) {
+            console.warn('[biSupermarketMapService] Lỗi đọc Firestore user config:', err);
+        }
+    }
+
+    // 3. Fallback di chuyển dữ liệu cũ (chỉ chạy 1 lần cho người dùng đầu tiên nếu chưa có cấu hình riêng)
+    try {
+        const migrationKey = 'bi_migrated_legacy_map';
+        if (typeof window !== 'undefined' && !localStorage.getItem(migrationKey) && uid !== 'guest') {
+            const legacySnap = await getDocs(collection(db, 'biSupermarketMap'));
+            const legacyMap: SupermarketToKhoMap = {};
+            legacySnap.forEach(docSnap => {
+                const maKho = docSnap.id;
+                const names = docSnap.data()?.names;
+                if (Array.isArray(names)) {
+                    for (const name of names) {
+                        if (typeof name === 'string' && name) legacyMap[name] = maKho;
+                    }
+                }
+            });
+            if (Object.keys(legacyMap).length > 0) {
+                localStorage.setItem(migrationKey, 'true');
+                await saveSupermarketMap(legacyMap, uid);
+                return legacyMap;
+            }
+        }
+    } catch (e) {
+        console.warn('[biSupermarketMapService] Fallback legacy map error:', e);
+    }
+
+    return cachedMap || {};
 }
 
-/** arrayUnion thay vì đọc-rồi-ghi-đè cả mảng — 2 người thêm gần như đồng thời vào CÙNG 1 Kho
- * không đè mất thay đổi của nhau. setDoc({merge:true}) để tự tạo document nếu Mã Kho này chưa
- * từng có ai map (updateDoc sẽ lỗi not-found trong trường hợp đó). */
-export async function addSupermarketNameToKho(maKho: string, name: string): Promise<void> {
-    await setDoc(khoDocRef(maKho), { names: arrayUnion(name), updatedAt: serverTimestamp() }, { merge: true });
+/**
+ * Đồng bộ ngầm từ Firestore về IndexedDB
+ */
+async function syncFromCloudInBackground(uid: string, localKey: string): Promise<void> {
+    try {
+        const userConfigRef = doc(db, 'users', uid, 'configs', 'biSupermarketMap');
+        const snap = await getDoc(userConfigRef);
+        if (snap.exists()) {
+            const cloudMap = (snap.data()?.map || {}) as SupermarketToKhoMap;
+            await dbUtils.set(localKey, cloudMap);
+        }
+    } catch {
+        // im lặng trong background
+    }
 }
 
-/** arrayRemove — xoá đúng 1 tên khỏi names[] của Mã Kho hiện tại của nó. */
-export async function removeSupermarketNameFromKho(maKho: string, name: string): Promise<void> {
-    await setDoc(khoDocRef(maKho), { names: arrayRemove(name), updatedAt: serverTimestamp() }, { merge: true });
+/**
+ * Lưu toàn bộ bảng map của tài khoản vào cả IndexedDB và Firestore
+ */
+export async function saveSupermarketMap(map: SupermarketToKhoMap, userId?: string): Promise<void> {
+    const uid = resolveUserId(userId);
+    const localKey = `supermarket-map-${uid}`;
+
+    // 1. Lưu vào IndexedDB cục bộ
+    await dbUtils.set(localKey, map);
+
+    // 2. Lưu lên Firestore của tài khoản hiện tại (users/{uid}/configs/biSupermarketMap)
+    if (uid !== 'guest') {
+        try {
+            const userConfigRef = doc(db, 'users', uid, 'configs', 'biSupermarketMap');
+            await setDoc(userConfigRef, {
+                map,
+                updatedAt: serverTimestamp(),
+            }, { merge: true });
+        } catch (err) {
+            console.error('[biSupermarketMapService] Lỗi lưu Firestore:', err);
+        }
+    }
+
+    // 3. Bắn event thông báo cập nhật cho giao diện nội bộ
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('bi-supermarket-map-changed', {
+            detail: { userId: uid, map }
+        }));
+    }
 }
 
-/** "Sửa Mã Kho" 1 dòng = xoá khỏi document Kho cũ + thêm vào document Kho mới, gộp 1 writeBatch
- * (atomic — không rơi vào trạng thái lỡ dở nếu 1 trong 2 write lỗi giữa chừng). Firestore Rules
- * kiểm tra riêng từng write theo đúng path của nó — người gọi phải có quyền ghi CẢ fromMaKho lẫn
- * toMaKho (đúng ý đồ: Quản lý chỉ "chuyển" nội bộ giữa các Kho họ quản lý). */
-export async function moveSupermarketNameToKho(fromMaKho: string, toMaKho: string, name: string): Promise<void> {
-    if (fromMaKho === toMaKho) return;
-    const batch = writeBatch(db);
-    batch.set(khoDocRef(fromMaKho), { names: arrayRemove(name), updatedAt: serverTimestamp() }, { merge: true });
-    batch.set(khoDocRef(toMaKho), { names: arrayUnion(name), updatedAt: serverTimestamp() }, { merge: true });
-    await batch.commit();
+/**
+ * Thêm hoặc gán 1 siêu thị vào Mã Kho trong cấu hình của tài khoản
+ */
+export async function addSupermarketNameToKho(maKho: string, name: string, userId?: string): Promise<void> {
+    const currentMap = await fetchSupermarketMap(userId);
+    const updated: SupermarketToKhoMap = { ...currentMap, [name]: maKho };
+    await saveSupermarketMap(updated, userId);
+}
+
+/**
+ * Xoá 1 siêu thị khỏi bảng map của tài khoản
+ * Hỗ trợ các kiểu gọi:
+ * - removeSupermarketNameFromKho(maKho, name, userId)
+ * - removeSupermarketNameFromKho(name, userId)
+ */
+export async function removeSupermarketNameFromKho(
+    maKhoOrName: string,
+    nameOrUserId?: string,
+    optionalUserId?: string
+): Promise<void> {
+    let nameToRemove = maKhoOrName;
+    let targetUserId = nameOrUserId;
+
+    if (optionalUserId !== undefined) {
+        // Gọi kiểu cũ 3 đối số: (maKho, name, userId)
+        nameToRemove = nameOrUserId || maKhoOrName;
+        targetUserId = optionalUserId;
+    } else if (nameOrUserId && (nameOrUserId.includes(' - ') || nameOrUserId.startsWith('ĐM') || nameOrUserId.startsWith('TGD') || nameOrUserId.startsWith('DML') || nameOrUserId.startsWith('DMM'))) {
+        // Gọi kiểu 2 đối số: (maKho, name)
+        nameToRemove = nameOrUserId;
+        targetUserId = undefined;
+    }
+
+    const currentMap = await fetchSupermarketMap(targetUserId);
+    const updated: SupermarketToKhoMap = { ...currentMap };
+    delete updated[nameToRemove];
+    await saveSupermarketMap(updated, targetUserId);
+}
+
+/**
+ * Đổi Mã Kho cho 1 siêu thị trong cấu hình của tài khoản
+ */
+export async function moveSupermarketNameToKho(
+    _fromMaKho: string,
+    toMaKho: string,
+    name: string,
+    userId?: string
+): Promise<void> {
+    const currentMap = await fetchSupermarketMap(userId);
+    const updated: SupermarketToKhoMap = { ...currentMap, [name]: toMaKho };
+    await saveSupermarketMap(updated, userId);
 }

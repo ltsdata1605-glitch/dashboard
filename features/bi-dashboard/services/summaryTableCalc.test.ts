@@ -236,5 +236,55 @@ describe('bổ sung cột DT Dự Kiến (QĐ) và %DKHT', () => {
         expect(r.allRows[0][dkIdx]).toBe(30000);
         expect(r.allRows[0][dkhtIdx]).toBe('100%');
     });
+
+    it('khi chỉ có 1 siêu thị trong bảng, dòng "Tổng" đồng nhất 100% các giá trị với siêu thị đó', () => {
+        const fullHeaders = [
+            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)', 'Tỷ Trọng Trả Góp', 'TB 3 Tháng'
+        ];
+        const rows = [
+            ['HÙNG VƯƠNG', '691', '1098', '1238', '89%', '44%', '968'],
+            ['Tổng', '144', '215', '2476', '9%', '22%', '968']
+        ];
+        const r = buildSummaryTable(
+            { headers: fullHeaders, rows },
+            opts({
+                supermarketMonthlyTargets: { 'HÙNG VƯƠNG': 37140, 'Tổng': 37140 },
+                daysInMonth: 30
+            })
+        );
+
+        expect(r.allRows.length).toBe(2);
+        const [hungVuongRow, tongRow] = r.allRows;
+        expect(hungVuongRow[0]).toBe('HÙNG VƯƠNG');
+        expect(tongRow[0]).toBe('Tổng');
+
+        // Mọi cột khác 'Tên miền' ở dòng Tổng phải khớp 100% với Hùng Vương
+        for (let c = 1; c < r.allHeaders.length; c++) {
+            expect(tongRow[c], `Cột ${r.allHeaders[c]} của Tổng phải bằng Hùng Vương`).toEqual(hungVuongRow[c]);
+        }
+    });
+
+    it('không cộng gộp target của dòng Tổng vào chính nó gây nhân đôi Target V.Trội', () => {
+        const fullHeaders = [
+            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)'
+        ];
+        const rows = [
+            ['ST A', '100', '120', '100', '120%'],
+            ['Tổng', '100', '120', '100', '120%']
+        ];
+        const r = buildSummaryTable(
+            { headers: fullHeaders, rows },
+            opts({
+                supermarketMonthlyTargets: { 'ST A': 3000, 'Tổng': 3000, 'ST Không Có Trong Bảng': 5000 },
+                daysInMonth: 30
+            })
+        );
+        const tarIdx = r.allHeaders.indexOf('Target(QĐ) V.Trội');
+        expect(tarIdx).toBeGreaterThan(-1);
+        const tongRow = r.allRows[1];
+        // Target của Tổng phải là target của ST A (3000 / 30 = 100), không phải (3000 + 3000 + 5000) / 30
+        expect(tongRow[tarIdx]).toBe(100);
+    });
 });
+
 

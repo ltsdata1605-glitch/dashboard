@@ -324,8 +324,20 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const isReadOnlySharedTile = !(userRole === 'admin' || userRole === 'manager');
     const [supermarketNameToKho, setSupermarketNameToKho] = useState<Record<string, string>>({});
     useEffect(() => {
-        fetchSupermarketMap().then(setSupermarketNameToKho).catch(err => console.error('[DataUpdater] Lỗi tải bảng map siêu thị:', err));
-    }, []);
+        fetchSupermarketMap(user?.uid)
+            .then(setSupermarketNameToKho)
+            .catch(err => console.error('[DataUpdater] Lỗi tải bảng map siêu thị:', err));
+    }, [user?.uid]);
+
+    useEffect(() => {
+        const handleMapChange = (e: CustomEvent<{ userId: string; map: Record<string, string> }>) => {
+            if (!user?.uid || e.detail?.userId === user?.uid) {
+                setSupermarketNameToKho(e.detail.map || {});
+            }
+        };
+        window.addEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+        return () => window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+    }, [user?.uid]);
 
     const notifySkippedNames = (skippedNames: string[]) => {
         if (skippedNames.length === 0) return;
@@ -391,7 +403,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
             <div className="relative z-20 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-base lg:text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
+                    <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
@@ -418,12 +430,13 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         allowedKhos={allowedKhos}
                         summaryLuyKe={summaryLuyKe}
                         competitionLuyKe={competitionLuyKe}
+                        userId={user?.uid}
                     />
                 </div>
             )}
 
             <div className="relative z-10">
-                <Card title="Dữ Liệu Báo Cáo Cụm" icon="upload-cloud">
+                <Card title="Dữ Liệu Báo Cáo Cụm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {/* NHÓM BÁO CÁO TỔNG HỢP */}
                         <div>
@@ -587,7 +600,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 {activeSupermarket ? (
                     <Card
                         title="Cấu hình siêu thị chi tiết"
-                        icon="settings-2"
                         actionButton={
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                                 {supermarkets.map((sm) => (

@@ -1000,8 +1000,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // THI ĐUA: THU GỌN CÁC THẺ KPI VÀ CO VỪA THEO BẢNG CỘT
     // ═══════════════════════════════════════════════════════════════════════
     clone.querySelectorAll<HTMLElement>('.competition-kpi-container').forEach((kpiGrid) => {
-        kpiGrid.style.setProperty('padding-left', '2px', 'important');
-        kpiGrid.style.setProperty('padding-right', '2px', 'important');
+        kpiGrid.style.setProperty('margin-left', '0', 'important');
+        kpiGrid.style.setProperty('margin-right', '0', 'important');
+        kpiGrid.style.setProperty('padding-left', '0', 'important');
+        kpiGrid.style.setProperty('padding-right', '0', 'important');
+        kpiGrid.style.setProperty('border', 'none', 'important');
+        kpiGrid.style.setProperty('background', 'transparent', 'important');
+        kpiGrid.style.setProperty('box-shadow', 'none', 'important');
         kpiGrid.style.setProperty('margin-bottom', '8px', 'important');
         kpiGrid.style.setProperty('gap', '6px', 'important');
         kpiGrid.style.setProperty('width', '100%', 'important');
@@ -1012,13 +1017,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
             if (!(child instanceof HTMLElement)) return;
             child.style.setProperty('padding', '6px 8px', 'important');
-            // Chuẩn mới: thẻ KPI KHÔNG bo góc (khối tĩnh, không nổi lên trên) — trước là 6px.
             child.style.setProperty('border-radius', '0', 'important');
             child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
             child.style.setProperty('box-sizing', 'border-box', 'important');
 
             // Cỡ số chính trong thẻ KPI
-            child.querySelectorAll<HTMLElement>('.text-2xl, .text-3xl').forEach((numEl) => {
+            child.querySelectorAll<HTMLElement>('.text-xl, .text-2xl, .text-3xl').forEach((numEl) => {
                 numEl.style.setProperty('font-size', '18px', 'important');
                 numEl.style.setProperty('line-height', '1.2', 'important');
             });

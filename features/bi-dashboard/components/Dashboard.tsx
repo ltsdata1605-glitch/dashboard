@@ -94,6 +94,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
         competitionRealtimeTs,
         competitionLuyKeTs,
         getKpiData,
+        summaryLuyKe,
         hasRealtimeData,
         hasCumulativeData
     } = useDashboardLogic(isActive);
@@ -191,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
         return (
             <div className="space-y-6">
                 <DashboardHeader
-                    title="Tổng quan Siêu thị"
+                    title="SIÊU THỊ"
                     activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab}
                     activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab}
                     supermarkets={supermarkets} activeSupermarket={activeSupermarket} setActiveSupermarket={setActiveSupermarket}
@@ -210,7 +211,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
             <div className="space-y-3 sm:space-y-6" ref={pageRef}>
                 <div ref={printableRef} className="space-y-3 sm:space-y-6">
                     <DashboardHeader
-                        title="Tổng quan Siêu thị"
+                        title="SIÊU THỊ"
                         activeMainTab={activeMainTab}
                         setActiveMainTab={setActiveMainTab}
                         activeSubTab={activeSubTab}
@@ -277,6 +278,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 supermarketDailyTargets={supermarketDailyTargets}
                                 supermarketMonthlyTargets={supermarketMonthlyTargets}
                                 activeSupermarket={activeSupermarket}
+                                summaryLuyKeData={summaryLuyKe}
                             />
                         </div>
                     )}

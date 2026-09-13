@@ -318,7 +318,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`${GROUP_EDGE} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !${getBorderAccentFromColorClass(g.bg)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    className={`${GROUP_EDGE} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                 >
                                                     {renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}
                                                 </th>
@@ -349,7 +349,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         return (
                                             <th
                                                 key={h}
-                                                className={`${groupStartHeaders.has(h) ? GROUP_EDGE : ''} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                className={`${groupStartHeaders.has(h) ? GROUP_EDGE : ''} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                             >
                                                 {renderHeaderText(headerMapping[h] || h)}
                                             </th>
@@ -440,7 +440,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             tabular-nums align-middle whitespace-nowrap
                                                             ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
                                                             ${h === 'Tên miền'
-                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`
+                                                                ? `px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`
                                                                 : `text-center text-[11px] sm:text-[13px] border-r border-slate-100 dark:border-slate-700/50 ${colorCls || ''}`}
                                                         `}
                                                     >

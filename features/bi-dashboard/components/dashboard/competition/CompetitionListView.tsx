@@ -18,19 +18,91 @@ interface CompetitionListViewProps {
     groupingMode?: 'default' | 'configured';
 }
 
-const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; accent: string }> = {
-    'DTLK': { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', accent: 'border-l-sky-500' },
-    'DTQĐ': { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', accent: 'border-l-emerald-500' },
-    'SLLK': { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', accent: 'border-l-rose-500' },
-};
+interface GroupTheme {
+    square: string;
+    bgRow: string;
+    label: string;
+    value: string;
+    badge: string;
+    border: string;
+}
 
-const GROUP_PALETTES = [
-    { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', accent: 'border-l-sky-500' },
-    { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', accent: 'border-l-emerald-500' },
-    { main: 'bg-amber-600', light: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800', accent: 'border-l-amber-500' },
-    { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', accent: 'border-l-rose-500' },
-    { main: 'bg-slate-600', light: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700', accent: 'border-l-slate-400' },
+const CRITERIA_GROUP_THEMES: GroupTheme[] = [
+    {
+        // 0: Sky (Dịch vụ)
+        square: 'bg-sky-500 shadow-xs',
+        bgRow: 'bg-sky-50/85 dark:bg-sky-950/35',
+        label: 'text-sky-700/90 dark:text-sky-400',
+        value: 'text-sky-950 dark:text-sky-100',
+        badge: 'bg-white/90 dark:bg-sky-900/60 text-sky-800 dark:text-sky-200 border-sky-300/80 dark:border-sky-700',
+        border: 'border-t border-b border-sky-200/80 dark:border-sky-800/60 border-l-[3px] border-l-sky-400 dark:border-l-sky-500',
+    },
+    {
+        // 1: Emerald (Doanh thu / Bán hàng)
+        square: 'bg-emerald-500 shadow-xs',
+        bgRow: 'bg-emerald-50/85 dark:bg-emerald-950/35',
+        label: 'text-emerald-700/90 dark:text-emerald-400',
+        value: 'text-emerald-950 dark:text-emerald-100',
+        badge: 'bg-white/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border-emerald-300/80 dark:border-emerald-700',
+        border: 'border-t border-b border-emerald-200/80 dark:border-emerald-800/60 border-l-[3px] border-l-emerald-400 dark:border-l-emerald-500',
+    },
+    {
+        // 2: Amber (Quy đổi / Thi đua hãng)
+        square: 'bg-amber-500 shadow-xs',
+        bgRow: 'bg-amber-50/85 dark:bg-amber-950/35',
+        label: 'text-amber-700/90 dark:text-amber-400',
+        value: 'text-amber-950 dark:text-amber-100',
+        badge: 'bg-white/90 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border-amber-300/80 dark:border-amber-700',
+        border: 'border-t border-b border-amber-200/80 dark:border-amber-800/60 border-l-[3px] border-l-amber-400 dark:border-l-amber-500',
+    },
+    {
+        // 3: Purple (Gia dụng / CE & GD / CE)
+        square: 'bg-purple-500 shadow-xs',
+        bgRow: 'bg-purple-50/85 dark:bg-purple-950/35',
+        label: 'text-purple-700/90 dark:text-purple-400',
+        value: 'text-purple-950 dark:text-purple-100',
+        badge: 'bg-white/90 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 border-purple-300/80 dark:border-purple-700',
+        border: 'border-t border-b border-purple-200/80 dark:border-purple-800/60 border-l-[3px] border-l-purple-400 dark:border-l-purple-500',
+    },
+    {
+        // 4: Rose (Điện tử / Điện lạnh / SLLK)
+        square: 'bg-rose-500 shadow-xs',
+        bgRow: 'bg-rose-50/85 dark:bg-rose-950/35',
+        label: 'text-rose-700/90 dark:text-rose-400',
+        value: 'text-rose-950 dark:text-rose-100',
+        badge: 'bg-white/90 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border-rose-300/80 dark:border-rose-700',
+        border: 'border-t border-b border-rose-200/80 dark:border-rose-800/60 border-l-[3px] border-l-rose-400 dark:border-l-rose-500',
+    },
+    {
+        // 5: Teal (Viễn thông / Phụ kiện / IT / ICT)
+        square: 'bg-teal-500 shadow-xs',
+        bgRow: 'bg-teal-50/85 dark:bg-teal-950/35',
+        label: 'text-teal-700/90 dark:text-teal-400',
+        value: 'text-teal-950 dark:text-teal-100',
+        badge: 'bg-white/90 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 border-teal-300/80 dark:border-teal-700',
+        border: 'border-t border-b border-teal-200/80 dark:border-teal-800/60 border-l-[3px] border-l-teal-400 dark:border-l-teal-500',
+    },
+    {
+        // 6: Indigo (Khác)
+        square: 'bg-indigo-500 shadow-xs',
+        bgRow: 'bg-indigo-50/85 dark:bg-indigo-950/35',
+        label: 'text-indigo-700/90 dark:text-indigo-400',
+        value: 'text-indigo-950 dark:text-indigo-100',
+        badge: 'bg-white/90 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200 border-indigo-300/80 dark:border-indigo-700',
+        border: 'border-t border-b border-indigo-200/80 dark:border-indigo-800/60 border-l-[3px] border-l-indigo-400 dark:border-l-indigo-500',
+    },
 ];
+
+const getGroupTheme = (criteria: string, index: number): GroupTheme => {
+    const c = (criteria || '').toLowerCase();
+    if (c.includes('dịch vụ') || c.includes('dich vu')) return CRITERIA_GROUP_THEMES[0]; // Sky
+    if (c.includes('doanh thu') || c.includes('dt') || c.includes('bán hàng')) return CRITERIA_GROUP_THEMES[1]; // Emerald
+    if (c.includes('quy đổi') || c.includes('quy doi') || c.includes('hãng') || c.includes('hang') || c.includes('thi đua')) return CRITERIA_GROUP_THEMES[2]; // Amber
+    if (c.includes('gia dụng') || c.includes('gia dung') || c.includes('ce')) return CRITERIA_GROUP_THEMES[3]; // Purple
+    if (c.includes('điện tử') || c.includes('dien tu') || c.includes('điện lạnh') || c === 'sllk') return CRITERIA_GROUP_THEMES[4]; // Rose
+    if (c.includes('viễn thông') || c.includes('phụ kiện') || c.includes('it') || c.includes('ict')) return CRITERIA_GROUP_THEMES[5]; // Teal
+    return CRITERIA_GROUP_THEMES[index % CRITERIA_GROUP_THEMES.length];
+};
 
 const CompetitionListView: React.FC<CompetitionListViewProps> = ({ 
     groupedAndSortedPrograms, 
@@ -79,7 +151,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
             <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
-                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
                                     <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
                                     <th
                                         className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
@@ -112,35 +184,36 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                 return groupKeys.map((groupKey, groupIdx) => {
                                     const programs = groupedAndSortedPrograms[groupKey];
                                     if (!programs || programs.length === 0) return null;
-                                    const theme = CRITERIA_THEMES[groupKey as keyof typeof CRITERIA_THEMES] || 
-                                                  GROUP_PALETTES[groupIdx % GROUP_PALETTES.length];
+
+                                    const palette = getGroupTheme(groupKey, groupIdx);
                                     const stats = calculateGroupAchievementStats(programs, headers, visibleColumns, isRealtime);
 
                                     return (
                                         <tbody key={groupKey}>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-                                                <td colSpan={100} className="px-2 py-[3px] text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <div className="flex items-center">
-                                                            <span className="mr-2 text-[11px] text-slate-400 dark:text-slate-500">
-                                                                {groupingMode === 'configured' ? 'NHÓM TIÊU CHÍ' : 'TIÊU CHÍ'}
+                                            <tr className={`${palette.bgRow} ${palette.border}`}>
+                                                <td colSpan={100} className="px-2.5 py-[3px]">
+                                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-2.5 h-2.5 rounded-xs ${palette.square} shrink-0`}></div>
+                                                            <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${palette.label}`}>
+                                                                {groupKey}
                                                             </span>
-                                                            <span>{groupKey}</span>
-                                                            <span className="ml-1.5 text-[11px] font-semibold opacity-75">
-                                                                ({programs.length})
+                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border shadow-2xs ${palette.badge}`}>
+                                                                {programs.length}
                                                             </span>
                                                         </div>
 
-                                                        {/* Chuẩn mới: CHỮ THUẦN, không huy hiệu bo góc có nền màu.
-                                                            Dải nhóm là VÁCH NGĂN — nó chỉ cần nói "đây là nhóm gì, bao nhiêu
-                                                            đạt". Hai viên pill màu ở đây tranh chỗ với chính dữ liệu bên dưới. */}
-                                                        <span
-                                                            className="font-sans normal-case tracking-normal text-[11px] text-slate-500 dark:text-slate-400 ml-1"
+                                                        <div
+                                                            className="font-sans normal-case tracking-normal text-xs sm:text-[12.5px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
                                                             title={`Tính theo ${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}`}
                                                         >
-                                                            · đạt <span className="font-bold text-emerald-700 dark:text-emerald-400">{stats.over100}</span>
-                                                            {' · chưa đạt '}<span className="font-bold text-rose-700 dark:text-rose-400">{stats.under100}</span>
-                                                        </span>
+                                                            <span className="text-slate-400 dark:text-slate-500">·</span>
+                                                            <span>đạt</span>
+                                                            <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{stats.over100}</span>
+                                                            <span className="text-slate-400 dark:text-slate-500">·</span>
+                                                            <span>chưa đạt</span>
+                                                            <span className="font-bold text-rose-700 dark:text-rose-400 tabular-nums">{stats.under100}</span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>

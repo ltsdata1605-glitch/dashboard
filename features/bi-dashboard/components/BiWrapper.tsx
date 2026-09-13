@@ -98,7 +98,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const handleNavigateToDashboard = useCallback(() => handleTabChange('dashboard'), [handleTabChange]);
 
     const navigationLinks = [
-        { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan', color: 'sky' },
+        { id: 'dashboard', icon: 'pie-chart', label: 'Siêu thị', color: 'sky' },
         { id: 'employee', icon: 'users', label: 'Nhân viên', color: 'emerald' },
         { id: 'updater', icon: 'upload-cloud', label: 'Cập nhật', color: 'amber' },
     ];
@@ -178,7 +178,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded ${isActive ? 'font-extrabold' : 'font-bold'} text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded font-medium text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                         isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                     }`}
                                     title={tab.label || tab.id}
@@ -203,7 +203,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-black tracking-wide transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
                                     title={tab.label}
                                 >
                                     <Icon name={tab.icon} size={4.5} />

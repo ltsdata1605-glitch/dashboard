@@ -411,8 +411,15 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                 <div className="flex gap-1.5 items-center">
                     <Button variant="ghost" size="icon" onClick={() => setHidePercent(v => !v)} title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'} className={`text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}><span className={hidePercent ? 'line-through' : ''}>%</span></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-700' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
+                        title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
+                        className="text-sky-700 dark:text-sky-400"
+                    >
+                        {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                    </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button variant="ghost" size="icon" onClick={handleBatchExportByDept} disabled={isExportingByDept} title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'} className="text-slate-400">{isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}</Button>
                     <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
-import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon, ClockIcon } from '../Icons';
+import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon } from '../Icons';
+import { Info } from 'lucide-react';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
@@ -75,7 +76,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
             <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-base lg:text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
+                    <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         {title}
                     </h2>
                 </div>
@@ -86,25 +87,17 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
                         xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
                     <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
-                            <ClockIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => setActiveMainTab('realtime')}
-                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'realtime' ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
-                            >
-                                Realtime
-                            </Button>
-                            <span className="text-slate-300 dark:text-slate-600">/</span>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => setActiveMainTab('cumulative')}
-                                className={`p-0 text-[11px] sm:text-sm font-bold transition-colors ${activeMainTab === 'cumulative' ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`}
-                            >
-                                Luỹ kế
-                            </Button>
-                        </div>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
+                            className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-[11px] sm:text-sm font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors select-none cursor-pointer"
+                            title="Bấm để chuyển đổi giữa Realtime và Luỹ kế"
+                        >
+                            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0 animate-pulse" />
+                            <span>{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
+                        </Button>
                         <MultiSelectDropdown
+                            triggerClassName="rounded-r-full"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
@@ -138,10 +131,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <div className="px-4 sm:px-5 py-3 sm:py-4">
                     <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                            <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
+                            <h2 className="js-report-title text-lg sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5">
                                 {contentTitle}
                             </h2>
-                            <p className="text-[11px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
+                            <p className="text-[11px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-normal leading-normal">
                                 {QUOTES[activeSubTab]}
                             </p>
                         </div>

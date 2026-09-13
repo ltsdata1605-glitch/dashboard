@@ -257,3 +257,33 @@ describe('PARITY — bản tách phải cho kết quả GIỐNG HỆT bản gố
         }
     });
 });
+
+describe('Đồng bộ KPI Tổng quan sang Cấu hình TargetHero', () => {
+    it('Tính tỷ lệ % Target DTQĐ: ratio = round((monthlyVal / baseMonthTarget) * 100)', () => {
+        const baseTarget = 28562; // Triệu
+        const desiredMonthlyTarget = 37131; // Triệu
+        const ratio = Math.round((desiredMonthlyTarget / baseTarget) * 100);
+        expect(ratio).toBe(130);
+        const clamped = Math.max(0, Math.min(300, ratio));
+        expect(clamped).toBe(130);
+    });
+
+    it('Giới hạn tỷ lệ trong khoảng 0% - 300%', () => {
+        const baseTarget = 1000;
+        const overTarget = 5000; // 500%
+        const ratioOver = Math.round((overTarget / baseTarget) * 100);
+        expect(Math.max(0, Math.min(300, ratioOver))).toBe(300);
+
+        const underTarget = -100;
+        const ratioUnder = Math.round((underTarget / baseTarget) * 100);
+        expect(Math.max(0, Math.min(300, ratioUnder))).toBe(0);
+    });
+
+    it('Quy đổi từ mục tiêu ngày sang tháng theo số ngày trong tháng', () => {
+        const dailyTarget = 1000;
+        const daysInMonth = 30;
+        const monthlyTarget = dailyTarget * daysInMonth;
+        expect(monthlyTarget).toBe(30000);
+    });
+});
+

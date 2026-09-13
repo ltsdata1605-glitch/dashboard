@@ -27,4 +27,4 @@ export const GROUP_TONE_TEXT = 'text-slate-600 dark:text-slate-300';
  * GIÁN TIẾP bằng chính token này đặt lên nhóm đầu tiên: viền đặt thẳng lên ô `sticky` trong bảng
  * `border-collapse` không đáng tin (viền thuộc về bảng chứ không đi theo ô khi cuộn ngang).
  */
-export const GROUP_EDGE = 'border-l-2 border-l-slate-300 dark:border-l-slate-600';
+export const GROUP_EDGE = 'border-l border-l-slate-200 dark:border-l-slate-700';

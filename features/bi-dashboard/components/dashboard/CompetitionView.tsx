@@ -4,7 +4,7 @@ import { Settings, Search, Layers, MessageSquareQuote } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { configStore } from '../../store/configStore';
-import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel, getDefaultGroupLabel } from '../../utils/dashboardHelpers';
+import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundUp, getCompetitionColumnLabel, getDefaultGroupLabel, findMatchingSupermarketKey } from '../../utils/dashboardHelpers';
 import { buildCompetitionTable, type ProcessedProgram } from '../../services/competitionViewCalc';
 import CompetitionListView from './competition/CompetitionListView';
 import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
@@ -120,9 +120,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const supermarketData = useMemo(() => {
         if (data[activeSupermarket]) return data[activeSupermarket];
-        // Fuzzy fallback: trim-based matching for edge cases
-        const trimmedActive = activeSupermarket.trim();
-        const matchKey = Object.keys(data).find(k => k.trim() === trimmedActive);
+        const matchKey = findMatchingSupermarketKey(activeSupermarket, Object.keys(data));
         return matchKey ? data[matchKey] : undefined;
     }, [data, activeSupermarket]);
 
@@ -436,7 +434,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
             {/* 4 Thẻ KPI tổng hợp dưới Quỹ thời gian */}
             {processedSupermarketData && sortedPrograms.length > 0 && (
-                <div className="pt-2">
+                <div className="pt-2 px-1.5 sm:px-2 lg:px-6">
                     <CompetitionKpiCards
                         programs={sortedPrograms}
                         headers={processedSupermarketData.headers}

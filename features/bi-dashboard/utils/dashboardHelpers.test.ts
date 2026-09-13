@@ -428,6 +428,90 @@ describe('parseIndustryRealtimeData and parseIndustryLuyKeData (New Portal Forma
         expect(result.totalRow?.[2]).toBe('8,650'); // DTLK (THỰC)
         expect(result.totalRow?.[3]).toBe('13,361'); // DTQĐ
     });
+
+    it('parseIndustryRealtimeData bóc tách đúng dữ liệu dạng cell-per-line (mỗi ô một dòng từ Ant Design)', () => {
+        const newlineSample = [
+            'NGÀNH HÀNG / NHÓM HÀNG',
+            'SỐ LƯỢNG',
+            'DOANH THU QĐ',
+            '% TỈ TRỌNG',
+            'DOANH THU',
+            'TARGET',
+            '% HT TARGET (LK)',
+            'TB 3 THÁNG',
+            '% TT',
+            '22 - Laptop',
+            '9',
+            '279',
+            '25.4%',
+            '200',
+            '—',
+            '—',
+            '87',
+            '+220.9%',
+            '42 - Laptop',
+            '9',
+            '279',
+            '100.0%',
+            '200',
+            '—',
+            '—',
+            '87',
+            '+220.9%',
+            'Tổng (27 dòng)',
+            '342',
+            '1,098',
+            '100.0%',
+            '691',
+            '28,562',
+            '46.8%',
+            '968',
+            '+13.5%',
+            'Đơn vị: triệu đồngTỉ trọng tính trong nhóm cùng cấp cha'
+        ].join('\n');
+
+        const result = parseIndustryRealtimeData(newlineSample);
+        expect(result.tree.length).toBe(1);
+        expect(result.tree[0].name).toBe('22 - Laptop');
+        expect(result.tree[0].children.length).toBe(1);
+        expect(result.totalRow).toBeDefined();
+        expect(result.totalRow?.[0]).toBe('Tổng');
+        expect(result.totalRow?.[1]).toBe('342'); // Số lượng
+        expect(result.totalRow?.[2]).toBe('691'); // DTLK (THỰC)
+        expect(result.totalRow?.[3]).toBe('1,098'); // DTQĐ
+    });
+
+    it('trích xuất Tỉ trọng trả góp và các KPI cổng portal từ văn bản dán', () => {
+        const textWithKpi = [
+            'Tỉ trọng trả góp',
+            '44.1%',
+            'DT trả góp 305 / 691',
+            'TLPVTC hôm nay',
+            '22.8%',
+            '281 bill / 1,235 khách',
+            'NGÀNH HÀNG / NHÓM HÀNG',
+            'SỐ LƯỢNG',
+            'DOANH THU QĐ',
+            '22 - Laptop',
+            '9',
+            '279',
+            'Tổng (27 dòng)',
+            '342',
+            '1,098',
+            '100.0%',
+            '691',
+            '28,562',
+            '46.8%',
+            '968',
+            '+13.5%'
+        ].join('\n');
+
+        const result = parseIndustryRealtimeData(textWithKpi);
+        expect(result.kpis?.tyTrongTraGop).toBe('44.1%');
+        expect(result.kpis?.tlpv).toBe('22.8%');
+        expect(result.kpis?.lkhach).toBe('1,235');
+        expect(result.kpis?.lbill).toBe('281');
+    });
 });
 
 describe('formatIndustryDisplayName', () => {
@@ -443,5 +527,33 @@ describe('formatIndustryDisplayName', () => {
     });
 });
 
+describe('isSupermarketMatch & findMatchingSupermarketKey — So khớp linh hoạt tên siêu thị', () => {
+    it('khớp chính xác giữa 2 tên giống nhau', async () => {
+        const { isSupermarketMatch } = await import('./dashboardHelpers');
+        expect(isSupermarketMatch('99 Hùng Vương', '99 Hùng Vương')).toBe(true);
+        expect(isSupermarketMatch('Tổng', 'Tổng')).toBe(true);
+    });
 
+    it('khớp khi một bên có mã kho ở đầu còn một bên không có ("910 - ĐML_STR..." vs "DML_STR...")', async () => {
+        const { isSupermarketMatch, findMatchingSupermarketKey } = await import('./dashboardHelpers');
+        const activeName = '910 - ĐML_STR_STR - 99 Hùng Vương';
+        const competitionKey = 'DML_STR_STR - 99 Hùng Vương';
 
+        expect(isSupermarketMatch(activeName, competitionKey)).toBe(true);
+        expect(isSupermarketMatch(competitionKey, activeName)).toBe(true);
+
+        const candidates = ['DMM_CTH_NKI - 43 Mậu Thân', 'DML_STR_STR - 99 Hùng Vương'];
+        expect(findMatchingSupermarketKey(activeName, candidates)).toBe('DML_STR_STR - 99 Hùng Vương');
+    });
+
+    it('khớp khi lệch ký tự Đ / D hoặc dấu tiếng Việt', async () => {
+        const { isSupermarketMatch } = await import('./dashboardHelpers');
+        expect(isSupermarketMatch('ĐML_STR_STR - 99 Hùng Vương', 'DML_STR_STR - 99 Hùng Vương')).toBe(true);
+    });
+
+    it('không bao giờ nhầm "Tổng" với siêu thị thường', async () => {
+        const { isSupermarketMatch } = await import('./dashboardHelpers');
+        expect(isSupermarketMatch('Tổng', '910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(false);
+        expect(isSupermarketMatch('910 - ĐML_STR_STR - 99 Hùng Vương', 'Tổng')).toBe(false);
+    });
+});

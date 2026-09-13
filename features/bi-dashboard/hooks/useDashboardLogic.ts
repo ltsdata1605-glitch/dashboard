@@ -36,7 +36,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
     // localCompetitionLuyKe rỗng — 2 biến "shared*" dưới đây lấp đầy chỗ trống đó. Quản lý vẫn
     // ưu tiên dữ liệu vừa dán tại chỗ (không đợi round-trip Firestore), shared chỉ bổ sung
     // phần họ CHƯA dán trên thiết bị này.
-    const { allowedKhos } = useReportBiAuth();
+    const { allowedKhos, user } = useReportBiAuth();
     const [sharedSummaryLuyKeText, setSharedSummaryLuyKeText] = useState('');
     const [sharedCompetitionLuyKeBySupermarket, setSharedCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
@@ -47,7 +47,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 const [text, competitionByKho, nameToKho] = await Promise.all([
                     fetchAllowedSummaryLuyKeText(allowedKhos),
                     fetchAllowedCompetitionLuyKeData(allowedKhos),
-                    fetchSupermarketMap(),
+                    fetchSupermarketMap(user?.uid),
                 ]);
                 if (!isMounted) return;
                 setSharedSummaryLuyKeText(text);
@@ -63,7 +63,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             }
         })();
         return () => { isMounted = false; };
-    }, [allowedKhos.join(','), isActive]);
+    }, [allowedKhos.join(','), isActive, user?.uid]);
 
     const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;
     const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
@@ -539,8 +539,128 @@ export const useDashboardLogic = (isActive?: boolean) => {
         if (!kpis.lbillTH) kpis.lbillTH = sourceData.kpis.lbillTH || 'N/A';
         if (!kpis.luotKhachChange && sourceData.kpis.luotKhachChange) kpis.luotKhachChange = sourceData.kpis.luotKhachChange;
         if (!kpis.tlpvChange && sourceData.kpis.tlpvChange) kpis.tlpvChange = sourceData.kpis.tlpvChange;
+
+        // Tự động đồng bộ số liệu Realtime mới nhất từ báo cáo Siêu thị Ngành hàng (nếu người dùng đã dán)
+        if (isRealtime && activeSupermarket !== 'Tổng' && industryRealtimeParsed) {
+            const indTot = industryRealtimeParsed.totalRow;
+            // indTot[2] = DTLK (THỰC), indTot[3] = DTQĐ
+            if (indTot && indTot[2] && indTot[2] !== '0') kpis.dtlk = indTot[2];
+            if (indTot && indTot[3] && indTot[3] !== '0') kpis.dtqd = indTot[3];
+
+            const indKpis = (industryRealtimeParsed as any).kpis;
+            if (indKpis?.tyTrongTraGop) {
+                kpis.tyTrongTraGop = indKpis.tyTrongTraGop;
+            } else if (indTot) {
+                if (indTot[10] && indTot[10] !== '0%' && indTot[10] !== '—') {
+                    kpis.tyTrongTraGop = indTot[10];
+                } else if (indTot[9] && indTot[9] !== '0') {
+                    const tgVal = parseNumber(indTot[9]);
+                    const thucVal = parseNumber(indTot[2]);
+                    if (thucVal > 0) {
+                        kpis.tyTrongTraGop = `${(Math.round((tgVal / thucVal) * 1000) / 10).toFixed(1)}%`;
+                    }
+                }
+            }
+
+            if (indKpis?.tlpv) kpis.tlpv = indKpis.tlpv;
+            if (indKpis?.lkhach) kpis.lkhach = indKpis.lkhach;
+            if (indKpis?.lbill) {
+                kpis.lbill = indKpis.lbill;
+                kpis.lbillBH = indKpis.lbill;
+            }
+        }
+
         return kpis;
     };
+
+    const augmentedSummaryRealtimeParsed = useMemo(() => {
+        if (!summaryRealtimeParsed?.table?.rows?.length) return summaryRealtimeParsed;
+        if (!industryRealtimeParsed?.totalRow || !activeSupermarket || activeSupermarket === 'Tổng') {
+            return summaryRealtimeParsed;
+        }
+        const indTot = industryRealtimeParsed.totalRow;
+        const dtlkNew = indTot[2];
+        const dtqdNew = indTot[3];
+        if (!dtlkNew || !dtqdNew || dtlkNew === '0') return summaryRealtimeParsed;
+
+        const indKpis = (industryRealtimeParsed as any).kpis;
+        let tyTrongTraGopNew = indKpis?.tyTrongTraGop;
+        if (!tyTrongTraGopNew && indTot) {
+            if (indTot[10] && indTot[10] !== '0%' && indTot[10] !== '—') {
+                tyTrongTraGopNew = indTot[10];
+            } else if (indTot[9] && indTot[9] !== '0') {
+                const tgVal = parseNumber(indTot[9]);
+                const thucVal = parseNumber(indTot[2]);
+                if (thucVal > 0) {
+                    tyTrongTraGopNew = `${(Math.round((tgVal / thucVal) * 1000) / 10).toFixed(1)}%`;
+                }
+            }
+        }
+
+        const headers = summaryRealtimeParsed.table.headers;
+        const dtlkIdx = headers.indexOf('DTLK');
+        const dtqdIdx = headers.indexOf('DTQĐ');
+        const tcIdx = headers.findIndex(h => {
+            const clean = h.trim().toLowerCase();
+            return clean === 'tỷ trọng trả góp' || clean === 'tỷ trọng trả chậm' || clean === '%tc' || clean === '% trả góp' || clean === '% trả chậm';
+        });
+        if (dtlkIdx === -1 || dtqdIdx === -1) return summaryRealtimeParsed;
+
+        const storeRows = summaryRealtimeParsed.table.rows.filter(r => r[0] !== 'Tổng');
+        const isSingleStore = storeRows.length <= 1;
+
+        let deltaDtlk = 0;
+        let deltaDtqd = 0;
+
+        const updatedRows = summaryRealtimeParsed.table.rows.map(row => {
+            const isTargetStore = row[0] === activeSupermarket || shortenSupermarketName(row[0]) === shortenSupermarketName(activeSupermarket);
+            if (isTargetStore) {
+                const oldDtlk = parseNumber(row[dtlkIdx]);
+                const oldDtqd = parseNumber(row[dtqdIdx]);
+                const newDtlkNum = parseNumber(dtlkNew);
+                const newDtqdNum = parseNumber(dtqdNew);
+                deltaDtlk = newDtlkNum - oldDtlk;
+                deltaDtqd = newDtqdNum - oldDtqd;
+
+                const newRow = [...row];
+                newRow[dtlkIdx] = dtlkNew;
+                newRow[dtqdIdx] = dtqdNew;
+                if (tcIdx !== -1 && tyTrongTraGopNew) {
+                    newRow[tcIdx] = `${Math.round(parseNumber(tyTrongTraGopNew))}%`;
+                }
+                return newRow;
+            }
+            return row;
+        });
+
+        const finalRows = updatedRows.map(row => {
+            if (row[0] === 'Tổng') {
+                const newRow = [...row];
+                if (isSingleStore) {
+                    newRow[dtlkIdx] = dtlkNew;
+                    newRow[dtqdIdx] = dtqdNew;
+                    if (tcIdx !== -1 && tyTrongTraGopNew) {
+                        newRow[tcIdx] = `${Math.round(parseNumber(tyTrongTraGopNew))}%`;
+                    }
+                } else {
+                    const currentDtlk = parseNumber(row[dtlkIdx]);
+                    const currentDtqd = parseNumber(row[dtqdIdx]);
+                    newRow[dtlkIdx] = String(Math.round(currentDtlk + deltaDtlk));
+                    newRow[dtqdIdx] = String(Math.round(currentDtqd + deltaDtqd));
+                }
+                return newRow;
+            }
+            return row;
+        });
+
+        return {
+            ...summaryRealtimeParsed,
+            table: {
+                headers,
+                rows: finalRows,
+            },
+        };
+    }, [summaryRealtimeParsed, industryRealtimeParsed, activeSupermarket]);
 
     return {
         activeMainTab, setActiveMainTab,
@@ -550,7 +670,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
         isBatchExporting, setIsBatchExporting,
         isBatchExportingCumulative, setIsBatchExportingCumulative,
         isBatchExportingCompetition, setIsBatchExportingCompetition,
-        summaryRealtimeParsed, summaryLuyKeParsed,
+        summaryRealtimeParsed: augmentedSummaryRealtimeParsed,
+        summaryLuyKeParsed,
         industryRealtimeParsed, industryLuyKeParsed,
         augmentedRealtimeData, augmentedLuyKeData,
         supermarketDailyTargets, supermarketMonthlyTargets, supermarketTargets,
@@ -558,6 +679,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         competitionRealtimeTs,
         competitionLuyKeTs,
         getKpiData,
+        summaryLuyKe,
         hasRealtimeData: summaryRealtimeParsed.table.rows.length > 0,
         hasCumulativeData: summaryLuyKeParsed.table.rows.length > 0
     };

@@ -69,6 +69,26 @@ export function buildSummaryTable(
     const daysInMonth = opts.daysInMonth ?? new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const passedDays = opts.passedDays ?? Math.max(1, now.getDate() - 1);
 
+    const getTargetForSm = (smName: string, currentRows: any[][]): number => {
+        if (smName !== 'Tổng') {
+            return supermarketMonthlyTargets[smName] ?? 0;
+        }
+        // Cho dòng 'Tổng': Nếu trong bảng có các siêu thị (khác 'Tổng'), cộng target của đúng các siêu thị đó
+        const storeRowsInTable = currentRows.filter(r => r[nameIndex] && r[nameIndex] !== 'Tổng');
+        if (storeRowsInTable.length > 0) {
+            const sumFromTableStores = storeRowsInTable.reduce<number>(
+                (sum, r) => sum + (supermarketMonthlyTargets[r[nameIndex]] ?? 0),
+                0
+            );
+            if (sumFromTableStores > 0) return sumFromTableStores;
+        }
+        // Fallback nếu không có dòng siêu thị con hoặc không tìm thấy target từng siêu thị
+        if (supermarketMonthlyTargets['Tổng']) return supermarketMonthlyTargets['Tổng'];
+        return Object.entries(supermarketMonthlyTargets)
+            .filter(([k]) => k !== 'Tổng')
+            .reduce<number>((s, [_, v]) => s + Number(v), 0);
+    };
+
     if (isCumulative) {
         const dtlkIndex = tempHeaders.indexOf('DTLK'), dtqdIndex = tempHeaders.indexOf('DTQĐ');
         if (dtlkIndex !== -1 && dtqdIndex !== -1) {
@@ -118,8 +138,7 @@ export function buildSummaryTable(
             tempHeaders.splice(hIndex + 1, 0, "Target(QĐ) V.Trội", "%HT TARGET(QĐ) V.Trội");
             tempRows = tempRows.map(row => {
                 const newRow = [...row], sm = row[nameIndex];
-                let mT = supermarketMonthlyTargets[sm] ?? 0;
-                if (sm === 'Tổng') mT = Object.values(supermarketMonthlyTargets).reduce<number>((s, v) => s + Number(v), 0);
+                const mT = getTargetForSm(sm, tempRows);
                 const dkQ = parseNumber(row[dDIndex]), ht = mT > 0 ? (dkQ / mT) * 100 : 0;
                 newRow.splice(hIndex + 1, 0, mT, `${roundUp(ht)}%`);
                 return newRow;
@@ -142,8 +161,7 @@ export function buildSummaryTable(
             if (htIndex !== -1) tempHeaders.splice(htIndex + 1, 0, "%HT V.Trội");
             tempRows = tempRows.map(row => {
                 const nr = [...row], dV = parseNumber(nr[dIndex]), qV = parseNumber(nr[qIndex]), sm = nr[nameIndex];
-                let mT = supermarketMonthlyTargets[sm] ?? 0;
-                if (sm === 'Tổng') mT = Object.values(supermarketMonthlyTargets).reduce<number>((s, v) => s + Number(v), 0);
+                const mT = getTargetForSm(sm, tempRows);
                 const dT = mT / daysInMonth, ht = dT > 0 ? (qV / dT) * 100 : 0;
 
                 const rowHeaders = [...preInsertHeaders];
@@ -245,13 +263,14 @@ export function buildSummaryTable(
 
     tempRows = cleanedRows.map(row => colIndices.map(idx => row[idx]));
     
-    let tRowIdx = tempRows.findIndex(r => r[nameIndex] === 'Tổng');
+    const nameIndexInFinal = finalH.indexOf('Tên miền');
+    let tRowIdx = tempRows.findIndex(r => r[nameIndexInFinal] === 'Tổng');
     let tRow = tRowIdx > -1 ? tempRows.splice(tRowIdx, 1)[0] : null;
 
     // Filter hidden supermarkets
     const hiddenSupermarketsSet = new Set(hiddenSupermarkets);
     tempRows = tempRows.filter(row => {
-        const smName = row[nameIndex];
+        const smName = row[nameIndexInFinal];
         return smName && !hiddenSupermarketsSet.has(smName);
     });
 
@@ -260,6 +279,17 @@ export function buildSummaryTable(
         : (finalH.includes('%HT V.Trội') ? '%HT V.Trội' : '% HT Target (QĐ)');
     const sIdx = finalH.indexOf(sK);
     if (sIdx !== -1) tempRows.sort((a,b) => parseNumber(b[sIdx]?.isMerged ? b[sIdx].value : b[sIdx]) - parseNumber(a[sIdx]?.isMerged ? a[sIdx].value : a[sIdx]));
-    if (tRow) tempRows.push(tRow);
+
+    if (tRow) {
+        if (tempRows.length === 1) {
+            // Khi bảng chỉ có đúng 1 siêu thị, dòng "Tổng" (TỔNG CỤM) phải đồng nhất các chỉ số với siêu thị đó
+            const singleRow = tempRows[0];
+            tRow = tRow.map((cell, idx) => {
+                if (idx === nameIndexInFinal) return 'Tổng';
+                return singleRow[idx];
+            });
+        }
+        tempRows.push(tRow);
+    }
     return { allHeaders: finalH, allRows: tempRows, title };
 }

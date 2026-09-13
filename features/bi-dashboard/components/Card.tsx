@@ -18,9 +18,10 @@ interface CardProps {
   bordered?: boolean;
   onHeaderClick?: (e?: React.MouseEvent) => void;
   headerClassName?: string;
+  titleClassName?: string;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true, onHeaderClick, headerClassName }, ref) => {
+const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true, onHeaderClick, headerClassName, titleClassName }, ref) => {
   const body = (
     <>
       <SectionHeader 
@@ -29,6 +30,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, act
         subtitle={subtitle}
         onClick={onHeaderClick}
         className={headerClassName || (onHeaderClick ? 'cursor-pointer select-none hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors' : '')}
+        titleClassName={titleClassName}
       >
         {actionButton}
       </SectionHeader>

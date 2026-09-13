@@ -544,8 +544,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 <div className="flex items-center gap-1">
                     {activeCompetitionTab === 'nhom' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={() => setViewMode('group')} title="Bộ phận" className={viewMode === 'group' ? 'text-sky-700' : 'text-slate-400'}><ViewGridIcon className="h-4 w-4"/></Button>
-                            <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} title="Danh sách" className={viewMode === 'list' ? 'text-sky-700' : 'text-slate-400'}><ViewListIcon className="h-4 w-4"/></Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
+                                title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
+                                className="text-sky-700 dark:text-sky-400"
+                            >
+                                {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                            </Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                             <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
                             {highlightedEmployees.size > 0 && (
