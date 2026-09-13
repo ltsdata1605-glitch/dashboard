@@ -765,7 +765,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                             return (
                                                 <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
-                                                        {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
+                                                        {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                         {sortConfig.key === col.id && (
                                                             <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
                                                         )}
@@ -793,7 +793,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     return (
                                         <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
-                                                {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
+                                                {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                 {sortConfig.key === col.id && (
                                                     <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
                                                 )}

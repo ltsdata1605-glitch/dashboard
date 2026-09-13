@@ -2,11 +2,19 @@
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
-import { ExternalLink, GripVertical } from 'lucide-react';
+import { Link2, Pencil, GripVertical } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
 import * as db from '../utils/db';
+import { TileLinkModal } from './TileLinkModal';
+import {
+    DEFAULT_TILE_LINKS,
+    getTileLink,
+    saveTileLink,
+    resetTileLink,
+    TILE_CUSTOM_LINKS_KEY,
+} from '../services/tileLinkService';
 import { shortenName, shortenSupermarketName, getDefaultGroupLabel } from '../utils/dashboardHelpers';
 import { cn } from '../../../components/shared/ui/utils';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -36,6 +44,62 @@ const COMPETITION_ROW_THEMES = [
 const RATIO_CONTROL_THEME = { inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-sky-200 dark:border-sky-700/50', inputText: 'text-sky-600', ring: 'focus-within:ring-sky-500', track: 'bg-sky-200 dark:bg-sky-900', thumb: 'accent-sky-500', btnHover: 'hover:text-sky-600 hover:bg-sky-100 dark:hover:bg-sky-900', btnText: 'text-sky-500/50' };
 
 const DEFAULT_PRESET_GROUPS = ['CE & GD', 'Điện tử', 'Điện lạnh', 'Gia dụng', 'Viễn thông', 'Phụ kiện', 'IT', 'Doanh thu', 'Số lượng', 'Doanh thu quy đổi', 'Dịch vụ'];
+
+const CRITERIA_GROUP_PALETTES = [
+    {
+        square: 'bg-sky-500 shadow-xs',
+        label: 'text-sky-700 dark:text-sky-400',
+        value: 'text-sky-950 dark:text-sky-100',
+        badge: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
+    },
+    {
+        square: 'bg-emerald-500 shadow-xs',
+        label: 'text-emerald-700 dark:text-emerald-400',
+        value: 'text-emerald-950 dark:text-emerald-100',
+        badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+    },
+    {
+        square: 'bg-amber-500 shadow-xs',
+        label: 'text-amber-700 dark:text-amber-400',
+        value: 'text-amber-950 dark:text-amber-100',
+        badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+    },
+    {
+        square: 'bg-purple-500 shadow-xs',
+        label: 'text-purple-700 dark:text-purple-400',
+        value: 'text-purple-950 dark:text-purple-100',
+        badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+    },
+    {
+        square: 'bg-rose-500 shadow-xs',
+        label: 'text-rose-700 dark:text-rose-400',
+        value: 'text-rose-950 dark:text-rose-100',
+        badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+    },
+    {
+        square: 'bg-teal-500 shadow-xs',
+        label: 'text-teal-700 dark:text-teal-400',
+        value: 'text-teal-950 dark:text-teal-100',
+        badge: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800',
+    },
+    {
+        square: 'bg-indigo-500 shadow-xs',
+        label: 'text-indigo-700 dark:text-indigo-400',
+        value: 'text-indigo-950 dark:text-indigo-100',
+        badge: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+    },
+];
+
+const getCriteriaGroupPalette = (criteria: string, index: number) => {
+    const c = (criteria || '').toLowerCase();
+    if (c.includes('dịch vụ') || c.includes('dich vu')) return CRITERIA_GROUP_PALETTES[0]; // Sky
+    if (c.includes('doanh thu') || c.includes('dt') || c.includes('bán hàng')) return CRITERIA_GROUP_PALETTES[1]; // Emerald
+    if (c.includes('quy đổi') || c.includes('quy doi')) return CRITERIA_GROUP_PALETTES[2]; // Amber
+    if (c.includes('gia dụng') || c.includes('gia dung') || c.includes('ce & gd')) return CRITERIA_GROUP_PALETTES[3]; // Purple
+    if (c.includes('điện tử') || c.includes('dien tu') || c.includes('điện lạnh')) return CRITERIA_GROUP_PALETTES[4]; // Rose
+    if (c.includes('viễn thông') || c.includes('phụ kiện') || c.includes('it')) return CRITERIA_GROUP_PALETTES[5]; // Teal
+    return CRITERIA_GROUP_PALETTES[index % CRITERIA_GROUP_PALETTES.length];
+};
 
 const GroupCombobox: React.FC<{
     value: string;
@@ -299,7 +363,9 @@ const StatusTile: React.FC<{
     icon?: React.ReactNode;
     colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber';
     downloadUrl?: string;
-}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl }) => {
+    linkUrl?: string;
+    onOpenLinkModal?: () => void;
+}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl, linkUrl, onOpenLinkModal }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
 
@@ -328,15 +394,13 @@ const StatusTile: React.FC<{
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
-        // Đã gỡ nhánh `indigo` (Đợt 6): nó là bản SAO Y của nhánh `sky` ở trên — `styles.css`
-        // map --color-indigo-* thành đúng hex của sky nên 2 nhánh render giống hệt nhau, giữ cả
-        // 2 chỉ khiến người đọc tưởng đang có 2 màu khác nhau.
     };
 
-    const currentTheme = themeColors[colorTheme];
+    const currentTheme = themeColors[colorTheme] || themeColors.sky;
+    const effectiveLink = linkUrl || downloadUrl;
 
     return (
-        <div className="relative group w-full">
+        <div className="relative group group/tile w-full">
             <div 
                 onClick={() => !isPasting && setIsPasting(true)}
                 className={`
@@ -364,7 +428,7 @@ const StatusTile: React.FC<{
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3">
+                    <div className="flex items-center justify-between w-full gap-3 pr-20 group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <UploadIcon className="h-4 w-4" />}
@@ -384,33 +448,64 @@ const StatusTile: React.FC<{
                     </div>
                 )}
             </div>
-            {downloadUrl && !isPasting && (
-                <a 
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
-                    }} 
-                    className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10 ${hasData ? 'right-10' : 'right-2'}`} 
-                    title="Mở liên kết báo cáo từ BI"
-                >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+
+            {!isPasting && (
+                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 z-10">
+                    {onOpenLinkModal && (
+                        <Button
+                            type="button"
+                            variant="unstyled"
+                            size="none"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenLinkModal();
+                            }}
+                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title="Chỉnh sửa liên kết"
+                            aria-label="Chỉnh sửa liên kết"
+                        >
+                            <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+
+                    {(effectiveLink || onOpenLinkModal) && (
+                        <a
+                            href={effectiveLink || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!effectiveLink) {
+                                    e.preventDefault();
+                                    onOpenLinkModal?.();
+                                }
+                            }}
+                            className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
+                            aria-label="Mở liên kết báo cáo"
+                        >
+                            <Link2 className="h-3.5 w-3.5" />
+                        </a>
+                    )}
+
+                    {hasData && (
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClear(title);
+                            }}
+                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title="Xoá"
+                            aria-label="Xoá dữ liệu"
+                        >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+                </div>
             )}
-            {hasData && !isPasting && (
-                <Button
-                    variant="unstyled" size="none"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onClear(title);
-                    }}
-                    className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
-                    title="Xoá"
-                >
-                    <TrashIcon className="h-3.5 w-3.5" />
-                </Button>
-            )}
+
             {error && <p className="mt-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200 px-1">{error}</p>}
         </div>
     );
@@ -716,14 +811,19 @@ const CompetitionTarget: React.FC<{
 
                 return (
                     <div className="space-y-6">
-                        {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
-                            <div key={criteria} className="space-y-2">
-                                <h3 className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider px-1 flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-xs"></div>
-                                    Nhóm Tiêu Chí: <span className="text-slate-800 dark:text-slate-100 font-extrabold">{criteria}</span>
-                                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500">({comps.length})</span>
-                                </h3>
-                                <DataTable
+                        {Object.entries(groupedCompetitions).map(([criteria, comps], groupIdx) => {
+                            const palette = getCriteriaGroupPalette(criteria, groupIdx);
+                            return (
+                                <div key={criteria} className="space-y-2">
+                                    <h3 className="text-xs sm:text-[13px] font-bold uppercase tracking-wider px-1 flex items-center gap-2">
+                                        <div className={`w-2.5 h-2.5 rounded-sm ${palette.square} shrink-0`}></div>
+                                        <span className={palette.label}>Nhóm Tiêu Chí:</span>
+                                        <span className={`${palette.value} font-black`}>{criteria}</span>
+                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border ${palette.badge}`}>
+                                            {comps.length}
+                                        </span>
+                                    </h3>
+                                    <DataTable
                                     columns={columns}
                                     data={comps}
                                     rowKey={(comp) => comp.name}
@@ -814,7 +914,8 @@ const CompetitionTarget: React.FC<{
                                     }}
                                 />
                             </div>
-                        ))}
+                        );
+                    })}
                     </div>
                 );
             })() : (
@@ -894,6 +995,39 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);
 
+    const [customLinks, setCustomLinks] = useIndexedDBState<Record<string, string> | null>(TILE_CUSTOM_LINKS_KEY as any, null);
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        tileId: string;
+        tileName?: string;
+        groupName?: string;
+        currentUrl: string;
+        defaultUrl: string;
+    } | null>(null);
+
+    const handleOpenLinkConfig = (tileId: string, tileName: string, groupName: string) => {
+        const currentUrl = getTileLink(tileId, customLinks);
+        const defaultUrl = DEFAULT_TILE_LINKS[tileId] || 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated';
+        setModalConfig({
+            isOpen: true,
+            tileId,
+            tileName,
+            groupName,
+            currentUrl,
+            defaultUrl,
+        });
+    };
+
+    const handleSaveLink = async (tileId: string, newUrl: string) => {
+        const updated = await saveTileLink(tileId, newUrl);
+        setCustomLinks(updated);
+    };
+
+    const handleResetLink = async (tileId: string) => {
+        const updated = await resetTileLink(tileId);
+        setCustomLinks(updated);
+    };
+
     useEffect(() => {
         getAnalysisEmployees().then(setAnalysisEmployees).catch(console.error);
         const handleUpdate = (e: CustomEvent) => {
@@ -944,10 +1078,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     return (
         <div className="space-y-4">
-            <div className="flex items-start justify-between gap-3 mb-2 overflow-x-auto scrollbar-hide">
-                <div className="min-w-max flex-1">
-                    <p className="text-xs sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Nội dung cấu hình</p>
-                    <Tabs
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/60 mb-2 overflow-x-auto scrollbar-hide">
+                <Tabs
                         items={[
                             { id: 'data', label: 'Dữ liệu' },
                             { id: 'revenueTarget', label: 'Target Doanh thu' },
@@ -956,23 +1088,23 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         activeId={activeTab}
                         onChange={(id) => setActiveTab(id as ConfigTab)}
                         variant="underline"
+                        className="border-b-0"
                     />
+                    <div className="shrink-0 flex items-center pr-1 pb-1">
+                        <a
+                            ref={bookmarkletRef}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium text-xs rounded-md border border-emerald-200 dark:border-emerald-800/60 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all cursor-grab active:cursor-grabbing"
+                            title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) để Tự động mở rộng cây dữ liệu và Copy toàn trang trong 1 cú click"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                toast.success('Hãy kéo nút "Auto Click+" và thả lên thanh Dấu trang (Bookmarks) của trình duyệt để cài đặt!', { icon: '🖱️', duration: 4000 });
+                            }}
+                        >
+                            <SparklesIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>Auto Click+</span>
+                        </a>
+                    </div>
                 </div>
-                <div className="shrink-0 pb-1 flex items-center pr-2">
-                    <a
-                        ref={bookmarkletRef}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded border border-emerald-300 dark:border-emerald-700/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
-                        title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) để Tự động mở rộng cây dữ liệu và Copy toàn trang trong 1 cú click"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            toast.success('Hãy kéo nút "Auto Click+" và thả lên thanh Dấu trang (Bookmarks) của trình duyệt để cài đặt!', { icon: '🖱️', duration: 4000 });
-                        }}
-                    >
-                        <SparklesIcon className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Auto Click+</span>
-                    </a>
-                </div>
-            </div>
             
             <div className="animate-in fade-in duration-200">
                 {activeTab === 'data' && (
@@ -981,28 +1113,30 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         <div>
                             <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
                                 <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
-                                SIÊU THỊ
+                                Siêu thị ngành hàng
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
-                                    onChange={(v) => { setIndustryRealtimeData(v); handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng	SL Realtime'), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); }}
+                                    linkUrl={getTileLink('industry-realtime', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('industry-realtime', 'Realtime', 'Siêu thị ngành hàng')}
+                                    onChange={(v) => { setIndustryRealtimeData(v); handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng\tSL Realtime') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); }}
                                     onClear={(title) => { 
                                         setIndustryRealtimeData(''); 
                                         setIndustryRealtimeTs(null); 
                                         removeUpdate(ids.rt!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
                                     }} />
-                                <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData} downloadUrl={`https://bi.thegioididong.com/chi-tiet-nganh-hang?id=${supermarketName}`}
+                                <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData}
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="emerald"
-                                    onChange={(v) => { setIndustryLuyKeData(v); handleUpdate('industryLuyKe', v, s => s.includes('Ngành hàng	SL'), setIndustryLuyKeTs, `Ngành hàng (LK) - ${supermarketName}`, ids.lk!); }}
+                                    linkUrl={getTileLink('industry-luyke', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('industry-luyke', 'Luỹ kế', 'Siêu thị ngành hàng')}
+                                    onChange={(v) => { setIndustryLuyKeData(v); handleUpdate('industryLuyKe', v, s => s.includes('Ngành hàng\tSL') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryLuyKeTs, `Ngành hàng (LK) - ${supermarketName}`, ids.lk!); }}
                                     onClear={(title) => { 
                                         setIndustryLuyKeData(''); 
                                         setIndustryLuyKeTs(null); 
                                         removeUpdate(ids.lk!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
                                     }} />
                             </div>
                         </div>
@@ -1015,8 +1149,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 </h3>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
-                                <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
+                                <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData}
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="sky"
+                                    linkUrl={getTileLink('nhanvien-doanhthu', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'DOANH THU', 'NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         setDanhSachData(v); 
                                         handleUpdate('danhSach', v, s => {
@@ -1030,11 +1166,12 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setDanhSachTs(null); 
                                         removeUpdate(ids.ds!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
                                     }} />
                                 
                                 <StatusTile title="THI ĐUA NV" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua NV..." error={errors.thiDua} 
                                     icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
+                                    linkUrl={getTileLink('nhanvien-thidua', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA NV', 'NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         setThiDuaData(v); 
                                         if(v && validateThiDuaData(v)) { 
@@ -1047,7 +1184,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setThiDuaTs(null); 
                                         removeUpdate(ids.td!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-                                        
                                     }} />
                             </div>
                         </div>
@@ -1070,15 +1206,17 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} /> */}
 
-                                <StatusTile title="Trả góp NV" lastUpdated={traGopTs} value={traGopData} downloadUrl="https://baocao.dienmayxanh.com/dashboard/tra-cham"
+                                <StatusTile title="Trả chậm NV" lastUpdated={traGopTs} value={traGopData}
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
+                                    linkUrl={getTileLink('nhanvien-tragop', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'Trả chậm NV', 'Trả chậm nhân viên')}
                                     onChange={(v) => { 
                                         setTraGopData(v); 
                                         handleUpdate('traGop', v, s => {
                                             const lower = s.toLowerCase();
                                             return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
                                                    (lower.includes('trả góp') || lower.includes('tra gop') || lower.includes('trả chậm') || lower.includes('tra cham') || lower.includes('homecredit') || lower.includes('dt siêu thị'));
-                                        }, setTraGopTs, `Nhân viên (TG) - ${supermarketName}`, ids.tg!); 
+                                        }, setTraGopTs, `Nhân viên (TC) - ${supermarketName}`, ids.tg!); 
                                     }}
                                     onClear={(title) => { 
                                         setTraGopData(''); 
@@ -1093,6 +1231,20 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                 {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} analysisEmployees={analysisEmployees} />}
                 {activeTab === 'competitionTarget' && <CompetitionTarget supermarketName={supermarketName!} addUpdate={addUpdate} competitions={competitions} competitionLuyKeData={competitionLuyKeData} totalEmployees={departments.reduce((s, d) => s + d.employeeCount, 0)} />}
             </div>
+
+            {modalConfig && (
+                <TileLinkModal
+                    isOpen={modalConfig.isOpen}
+                    onClose={() => setModalConfig(null)}
+                    tileId={modalConfig.tileId}
+                    tileName={modalConfig.tileName}
+                    groupName={modalConfig.groupName}
+                    currentUrl={modalConfig.currentUrl}
+                    defaultUrl={modalConfig.defaultUrl}
+                    onSave={handleSaveLink}
+                    onReset={handleResetLink}
+                />
+            )}
         </div>
     );
 };

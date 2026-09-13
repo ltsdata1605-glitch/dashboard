@@ -172,3 +172,69 @@ describe('Target V.Trội theo target tháng', () => {
         expect(mk(31)).toBeCloseTo(2800 / 31);
     });
 });
+
+describe('loại bỏ các cột SL, %TT, +/-CK, DT và giữ lại TB 3T', () => {
+    it('loại trừ Số lượng, % Tỉ trọng, +/- DTCK Tháng (QĐ), DT TRẢ GÓP và giữ lại TB 3 Tháng', () => {
+        const fullHeaders = [
+            'Tên miền',
+            'Số lượng',
+            'DTQĐ',
+            '% Tỉ trọng',
+            'DTLK',
+            'Target (QĐ)',
+            '% HT Target (QĐ)',
+            'TB 3 Tháng',
+            '+/- DTCK Tháng (QĐ)',
+            'DT TRẢ GÓP',
+            'Tỷ Trọng Trả Góp',
+        ];
+        const row = ['HÙNG VƯƠNG', '4411', '13361', '100%', '8650', '28562', '47%', '11615', '15%', '4315', '50%'];
+        const r = buildSummaryTable({ headers: fullHeaders, rows: [row] }, opts({ isCumulative: true }));
+
+        expect(r.allHeaders).not.toContain('Số lượng');
+        expect(r.allHeaders).not.toContain('% Tỉ trọng');
+        expect(r.allHeaders).not.toContain('+/- DTCK Tháng (QĐ)');
+        expect(r.allHeaders).not.toContain('DT TRẢ GÓP');
+        expect(r.allHeaders).toContain('TB 3 Tháng');
+        expect(r.allHeaders).toContain('Tỷ Trọng Trả Góp');
+        expect(r.allHeaders).toContain('DTLK');
+        expect(r.allHeaders).toContain('DTQĐ');
+    });
+});
+
+describe('bổ sung cột DT Dự Kiến (QĐ) và %DKHT', () => {
+    it('chèn DT Dự Kiến (QĐ) ngay sau DTQĐ và %DKHT ngay sau % HT Target (QĐ) với công thức nhịp ngày', () => {
+        const fullHeaders = [
+            'Tên miền',
+            'DTQĐ',
+            'DTLK',
+            'Target (QĐ)',
+            '% HT Target (QĐ)',
+            'Tỷ Trọng Trả Góp',
+            'TB 3 Tháng',
+        ];
+        // DTQĐ = 12000, Target = 30000, passedDays = 12, daysInMonth = 30
+        // projected = (12000 / 12) * 30 = 30000
+        // %DKHT = (30000 / 30000) * 100 = 100%
+        const row = ['ST A', '12000', '10000', '30000', '40%', '50%', '11000'];
+        const r = buildSummaryTable(
+            { headers: fullHeaders, rows: [row] },
+            opts({ isCumulative: true, daysInMonth: 30, passedDays: 12 })
+        );
+
+        // Vị trí cột: DT Dự Kiến (QĐ) sau DTQĐ
+        const dtqdIdx = r.allHeaders.indexOf('DTQĐ');
+        const dkIdx = r.allHeaders.indexOf('DT Dự Kiến (QĐ)');
+        expect(dkIdx).toBe(dtqdIdx + 1);
+
+        // Vị trí cột: %DKHT sau % HT Target (QĐ)
+        const htIdx = r.allHeaders.indexOf('% HT Target (QĐ)');
+        const dkhtIdx = r.allHeaders.indexOf('%DKHT');
+        expect(dkhtIdx).toBe(htIdx + 1);
+
+        // Giá trị tính toán
+        expect(r.allRows[0][dkIdx]).toBe(30000);
+        expect(r.allRows[0][dkhtIdx]).toBe('100%');
+    });
+});
+

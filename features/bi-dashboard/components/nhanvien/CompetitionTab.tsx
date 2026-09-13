@@ -489,7 +489,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
     if (!hasAnyData) {
         return (
-            <Card bordered={false} title="HIỆU QUẢ THI ĐUA THEO NHÂN VIÊN" icon="trophy">
+            <Card bordered={false} title="HIỆU QUẢ THI ĐUA THEO NHÂN VIÊN">
                 <div className="mt-4 text-center py-12">
                      <UsersIcon className="h-16 w-16 text-slate-400 mx-auto" />
                     <p className="mt-4 text-slate-600 max-w-md mx-auto">Không có dữ liệu thi đua. Vui lòng chọn siêu thị và dán dữ liệu "Chương trình thi đua" tại trang Cập nhật.</p>
@@ -571,7 +571,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                 </div>
             </div>
-            <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false} icon="trophy">
+            <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
                 <div className="px-4 pt-3 pb-1">
                     <TimeProgressBar />
                 </div>

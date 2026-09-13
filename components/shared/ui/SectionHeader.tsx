@@ -6,6 +6,8 @@ interface SectionHeaderProps {
     icon?: string | null;
     subtitle?: React.ReactNode;
     children?: React.ReactNode;
+    onClick?: (e: React.MouseEvent) => void;
+    className?: string;
 }
 
 /**
@@ -14,9 +16,21 @@ interface SectionHeaderProps {
  * DESIGN_SYSTEM_MODERN.md §2). Breakpoint chính lg=1024px (mobile < lg, laptop >= lg).
  * Icon chip là tuỳ chọn (optional).
  */
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children }) => {
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children, onClick, className = '' }) => {
     return (
-        <div className="px-2 py-1.5 lg:px-4 lg:py-2.5 flex flex-row justify-between items-center gap-1.5 lg:gap-2 border-b border-slate-100 dark:border-slate-800" style={{ borderImage: 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(14,165,233,0.1), transparent) 1' }}>
+        <div 
+            onClick={onClick}
+            role={onClick ? 'button' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            onKeyDown={onClick ? (e) => { 
+                if (e.key === 'Enter' || e.key === ' ') { 
+                    e.preventDefault(); 
+                    onClick(e as any); 
+                } 
+            } : undefined}
+            className={`px-2 py-1.5 lg:px-4 lg:py-2.5 flex flex-row justify-between items-center gap-1.5 lg:gap-2 border-b border-slate-100 dark:border-slate-800 ${className}`} 
+            style={{ borderImage: 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(14,165,233,0.1), transparent) 1' }}
+        >
             <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
                 {icon && (
                     <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">

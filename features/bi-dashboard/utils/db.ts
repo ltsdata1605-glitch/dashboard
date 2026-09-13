@@ -90,6 +90,7 @@ export type BIKey =
   | `previous-${string}`
   | `snapshot-metadata-${string}`
   | `snapshot-data-${string}`
+  | 'tile-custom-links'
   | (string & {});
 
 // Thêm prefix để key BI module không xung đột với key của Dashboard chính

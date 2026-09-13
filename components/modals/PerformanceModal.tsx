@@ -452,7 +452,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                      </span>
                                                                      {isInstallment && (
                                                                          <span className="inline-flex items-center px-1 py-0.5 rounded text-[11px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex-shrink-0 whitespace-nowrap leading-none">
-                                                                             Trả góp
+                                                                             Trả chậm
                                                                          </span>
                                                                      )}
                                                                  </div>

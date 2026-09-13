@@ -16,12 +16,20 @@ interface CardProps {
    *  component cha (vd NhanVien.tsx bọc chung 1 viền cho tab switcher + nội dung từng tab) —
    *  tránh viền lồng viền sát nhau. Mặc định true để không đổi hành vi các nơi dùng Card độc lập. */
   bordered?: boolean;
+  onHeaderClick?: (e?: React.MouseEvent) => void;
+  headerClassName?: string;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true }, ref) => {
+const Card = forwardRef<HTMLDivElement, CardProps>(({ title, icon, subtitle, actionButton, children, noPadding = false, rounded = false, bordered = true, onHeaderClick, headerClassName }, ref) => {
   const body = (
     <>
-      <SectionHeader title={title} subtitle={subtitle}>
+      <SectionHeader 
+        title={title} 
+        icon={icon} 
+        subtitle={subtitle}
+        onClick={onHeaderClick}
+        className={headerClassName || (onHeaderClick ? 'cursor-pointer select-none hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors' : '')}
+      >
         {actionButton}
       </SectionHeader>
       <div className={`${noPadding ? '' : 'p-3 lg:p-6'} relative flex-grow`}>

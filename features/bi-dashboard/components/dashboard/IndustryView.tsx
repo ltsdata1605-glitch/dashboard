@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
-import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber } from '../../utils/dashboardHelpers';
+import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { renderHeaderText } from './SafeHeaderText';
@@ -22,10 +22,32 @@ interface IndustryViewProps {
     realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
     luykeData: ReturnType<typeof parseIndustryLuyKeData>;
     isRealtime: boolean;
+    activeSupermarket?: string;
     onExport?: () => Promise<void>;
 }
 
+export const formatIndustryDisplayName = (text: string): string => {
+    if (!text) return '';
+    let str = text.replace(/^NNH\s+/i, '').trim();
+    // Loại bỏ số mã ở đầu (ví dụ: "464 - giao dịch airtime" -> "giao dịch airtime")
+    str = str.replace(/^\d+\s*-\s*/, '').trim();
+    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+    return str
+        .replace(/\bDmx\b/gi, 'DMX')
+        .replace(/\bIt\b/gi, 'IT')
+        .replace(/\bBi\b/gi, 'BI')
+        .replace(/\bDv\b/gi, 'DV')
+        .replace(/\bVas\b/gi, 'VAS')
+        .replace(/\bImei\b/gi, 'IMEI')
+        .replace(/\bPc\b/gi, 'PC')
+        .replace(/\bIp\b/gi, 'IP')
+        .replace(/\bUsb\b/gi, 'USB')
+        .replace(/\bLed\b/gi, 'LED');
+};
+
 /**
+
  * Nhóm cột — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
  *
  * Bản cũ gán mỗi nhóm một MÀU NỀN riêng (SỐ LƯỢNG xanh lá, DOANH THU QĐ xanh dương, TRẢ CHẬM
@@ -37,28 +59,34 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'Nhóm ngành hàng': { label: 'DANH MỤC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'SL Realtime': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Realtime (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DTQĐ': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTLK': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Realtime (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTQĐ': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% Tỉ trọng': { label: 'TỈ TRỌNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TB 3 Tháng': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% TT': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% HT Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Target (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+
     'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT TRẢ CHẬM': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Góp': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Gộp': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ GÓP': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTTRẢGÓP': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ CHẬM': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Chậm': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Đơn giá': { label: 'GTĐH', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'ĐƠN GIÁ': { label: 'GTĐH', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
-    const { realtimeData, luykeData, isRealtime, onExport } = props;
+    const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport } = props;
+
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
@@ -174,9 +202,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         'Tỷ Trọng Trả Góp': '%TC',
         'Tỷ Trọng Trả Chậm': '%TC',
         'Số lượng': 'SL',
-        'DTQĐ': 'L.KẾ',
+        'DTQĐ': 'DTQĐ',
+        '% Tỉ trọng': '%TT',
+        'DTLK': 'THỰC',
         'Target (QĐ)': 'TAR',
         '% HT Target (QĐ)': '%HT',
+        'TB 3 Tháng': 'TB 3T',
+        '% TT': '%TT',
         '+/- DTCK Tháng (QĐ)': '+/-CK',
         'Lãi gộp QĐ': 'L.GỘP<br/>QĐ',
         'Đơn giá': 'GTĐH',
@@ -259,7 +291,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
                                         onClick={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
                                     >
-                                        {industry.replace('NNH ', '')}
+                                        {formatIndustryDisplayName(industry)}
                                     </label>
                                     <Switch
                                         checked={!hiddenIndustries.includes(industry)}
@@ -308,7 +340,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
                                             onClick={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
                                         >
-                                            {sub}
+                                            {formatIndustryDisplayName(sub)}
                                         </label>
                                         <Switch
                                             checked={!hiddenSubIndustries.includes(sub)}
@@ -368,7 +400,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         </div>
     );
 
-    const title = "CHI TIẾT NGÀNH HÀNG";
+    const getDateLabel = (isRt: boolean) => {
+        const d = new Date();
+        if (!isRt) {
+            d.setDate(d.getDate() - 1);
+        }
+        return `${d.getDate()}/${d.getMonth() + 1}`;
+    };
+
+    const dateText = isRealtime ? `NGÀY ${getDateLabel(true)}` : `ĐẾN NGÀY ${getDateLabel(false)}`;
+    const smName = activeSupermarket && activeSupermarket !== 'Tổng' ? shortenSupermarketName(activeSupermarket) : '';
+    const smText = smName ? ` - ${smName}` : '';
+    const title = `${isRealtime ? 'REALTIME' : 'LUỸ KẾ'} ${dateText}${smText}`;
+
+
 
     if (!headers || headers.length === 0 || !rows || rows.length === 0) {
         return (
@@ -379,12 +424,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }
 
 
+
     // --- Shared cell rendering logic ---
     const renderCell = (cell: string | number, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, childrenCount: number = 0) => {
         const numericValue = parseNumber(cell);
-        const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
+        const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'Tỷ Trọng Trả Chậm';
         const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;
-        const isQdCkCol = headerName === '+/- DTCK Tháng (QĐ)';
+        const isQdCkCol = headerName === '+/- DTCK Tháng (QĐ)' || headerName === '% TT';
         const isHtCol = headerName.includes('% HT');
         const isDtqdCol = (headerName === 'DT Realtime (QĐ)' || headerName === 'DTQĐ');
         const isGTDHCol = (headerName === 'Đơn giá' || headerName === 'ĐƠN GIÁ');
@@ -397,20 +443,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
         const cellContent = () => {
             if (headerName === 'Nhóm ngành hàng') {
-                const toSentenceCase = (text: string): string => {
-                    if (!text) return '';
-                    let str = text.replace(/^NNH\s+/i, '').trim();
-                    if (!str) return '';
-                    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-                    return str
-                        .replace(/\bDmx\b/g, 'DMX')
-                        .replace(/\bIt\b/g, 'IT')
-                        .replace(/\bBi\b/g, 'BI')
-                        .replace(/\bDv\b/g, 'DV');
-                };
-
                 const displayName = isTotalRow ? 'Tổng cộng' 
-                    : toSentenceCase(String(cell || ''));
+                    : formatIndustryDisplayName(String(cell || ''));
+
+
                 
                 const indent = isNhomHang ? 20 : isHang ? 40 : 0;
                 
@@ -449,6 +485,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 );
             }
+            if (cell === '—' || cell === '-' || cell === 'N/A' || cell === null || cell === undefined || cell === '') return '-';
             if (isTotalRow && (isPercentCol || isNumericCol)) {
                 if (isPercentCol) {
                     const rounded = Math.round(numericValue);
@@ -459,7 +496,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             }
             if (isHtCol) {
                 const rounded = Math.round(numericValue);
-                if (rounded === 0) {
+                if (isNaN(numericValue) || rounded === 0) {
                     return <span className="text-slate-400 font-bold">-</span>;
                 }
                 return (
@@ -522,7 +559,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-base sm:text-lg lg:text-xl font-black uppercase text-sky-700 dark:text-sky-400 leading-tight tracking-tight">{title}</span></div>} actionButton={actionButton} bordered={false} noPadding icon="bar-chart-2">
+
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                             {/* ─── DESKTOP TABLE VIEW ─── */}

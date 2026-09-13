@@ -20,7 +20,7 @@ interface Props {
 const AVAILABLE_METRICS: { value: KpiMetricSource; label: string; format: 'currency' | 'percentage' | 'number' }[] = [
     { value: 'doanhThuQD', label: 'Doanh Thu QĐ', format: 'currency' },
     { value: 'totalRevenue', label: 'Doanh Thu Thực', format: 'currency' },
-    { value: 'traGopPercent', label: 'Tỉ Lệ Trả Góp', format: 'percentage' },
+    { value: 'traGopPercent', label: 'Tỉ Lệ Trả Chậm', format: 'percentage' },
     { value: 'hieuQuaQD', label: 'Hiệu Quả QĐ', format: 'percentage' },
     { value: 'doanhThuThucChoXuat', label: 'Doanh Thu Chờ Xuất', format: 'currency' },
 ];

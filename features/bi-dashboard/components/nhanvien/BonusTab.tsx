@@ -112,7 +112,7 @@ export const BonusView: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding bordered={false} rounded={false} title={cardTitle} subtitle={cardSubtitle} icon="award">
+                <Card noPadding bordered={false} rounded={false} title={cardTitle} subtitle={cardSubtitle}>
                     <div className="px-4 pt-3 pb-1">
                         <TimeProgressBar />
                     </div>

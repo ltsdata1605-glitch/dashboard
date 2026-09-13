@@ -16,14 +16,14 @@ const NhanVien = lazy(() => import('./NhanVien'));
 const DataUpdater = lazy(() => import('./DataUpdater'));
 
 const getTabColorClasses = (color: string, isActive: boolean) => {
-    if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
+    if (!isActive) return 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50';
     switch (color) {
-        case 'emerald': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
-        case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
-        case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
-        case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
-        case 'slate': return 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300';
-        default: return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
+        case 'emerald': return 'bg-emerald-50/80 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400';
+        case 'amber': return 'bg-amber-50/80 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400';
+        case 'rose': return 'bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400';
+        case 'sky': return 'bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400';
+        case 'slate': return 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300';
+        default: return 'bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400';
     }
 };
 
@@ -178,7 +178,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded font-semibold text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded ${isActive ? 'font-extrabold' : 'font-bold'} text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                         isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                     }`}
                                     title={tab.label || tab.id}
@@ -194,29 +194,26 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                         </div>
                     </div>
                 ) : (
-                    // Nhóm thành các "pill" trắng viền riêng biệt (đúng chuẩn components/layout/Header.tsx):
-                    // nhóm điều hướng (Tổng quan/Nhân viên/Cập nhật) trong 1 pill, nhóm tiện ích (Cài đặt/Font) trong pill khác.
-                    <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
-                        <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            {navigationLinks.map((tab, idx) => {
-                                const isActive = activeView === tab.id;
-                                return (
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        key={tab.id}
-                                        onClick={() => handleTabChange(tab.id)}
-                                        className={`flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-semibold transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
-                                        title={tab.label}
-                                    >
-                                        <Icon name={tab.icon} size={4} />
-                                        <span>{tab.label}</span>
-                                    </Button>
-                                );
-                            })}
-                        </div>
+                    // Chuẩn pill bo tròn rounded-full thống nhất với Header.tsx (hình 2)
+                    <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
+                        {navigationLinks.map((tab, idx) => {
+                            const isActive = activeView === tab.id;
+                            return (
+                                <Button
+                                    variant="unstyled" size="none"
+                                    key={tab.id}
+                                    onClick={() => handleTabChange(tab.id)}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-sm ${isActive ? 'font-extrabold' : 'font-bold'} transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                    title={tab.label}
+                                >
+                                    <Icon name={tab.icon} size={4} />
+                                    <span>{tab.label}</span>
+                                </Button>
+                            );
+                        })}
 
-                        <div className="flex items-center rounded overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                                <FontSelector />
+                        <div className="border-l border-slate-100 dark:border-slate-700">
+                            <FontSelector />
                         </div>
                     </div>
                 ),

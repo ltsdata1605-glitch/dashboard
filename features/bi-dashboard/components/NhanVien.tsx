@@ -1,5 +1,5 @@
 import { useWorker } from "../hooks/useWorker";import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ArchiveBoxIcon, BuildingStorefrontIcon, UsersIcon } from './Icons';
+import { ArchiveBoxIcon, BuildingStorefrontIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -27,7 +27,7 @@ import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
-    { tab: 'installment', label: 'Trả góp' },
+    { tab: 'installment', label: 'Trả chậm' },
     { tab: 'competition', label: 'Thi đua' },
     { tab: 'bonus', label: 'Thưởng' },
     { tab: 'detail', label: 'Chi tiết' },
@@ -98,7 +98,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         setBonusPeriodLabel,
         dataVersion,
         hasAnalysisEmployees,
-        analysisEmployeesCount,
         loadAnalysisEmployees
     } = data;
 
@@ -329,20 +328,11 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             {/* Title + Filter Toolbar */}
             <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                        <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                            <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
                                 Nhân Viên
                             </h2>
-                            {hasAnalysisEmployees && (
-                                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    {analysisEmployeesCount} NV từ Phân Tích
-                                </span>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -370,9 +360,9 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         />
                         <MultiSelectDropdown
                             icon={<ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
-                            triggerLabel={activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}
+                            triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
                             count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
-                            allLabel="Tất cả bộ phận"
+                            allLabel="All"
                             allChecked={activeDepartments.includes('all')}
                             onToggleAll={() => toggleDepartment('all')}
                             options={departmentOptions.map(dept => ({
@@ -420,7 +410,6 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 riêng nữa — tránh viền lồng viền. */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
                 <div className="px-4 sm:px-5 pt-3">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
                     <Tabs
                         items={NAV_TABS.map(({ tab, label }) => ({ id: tab, label }))}
                         activeId={activeTab}
@@ -431,12 +420,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
                 {visitedTabs.has('revenue') && (
                     <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
-                        <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
+                        <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeSupermarkets={activeSupermarkets} departmentNames={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
                     </div>
                 )}
                 {visitedTabs.has('installment') && (
                     <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
-                        <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'installment'} />
+                        <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeSupermarkets={activeSupermarkets} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} isActive={isActive && activeTab === 'installment'} />
                     </div>
                 )}
                 {visitedTabs.has('competition') && (

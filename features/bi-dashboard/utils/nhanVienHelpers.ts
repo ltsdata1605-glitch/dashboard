@@ -11,6 +11,74 @@ export interface CompetitionEmployeeRow {
     values: (number | null)[];
 }
 
+export type DataTier = 'top' | 'trung' | 'bot' | 'none';
+
+/**
+ * Phân tầng dữ liệu cột thành 3 nhóm: top (dẫn đầu), trung (trung bình), bot (thấp nhất)
+ * - Chỉ xét các giá trị > 0 (giá trị 0 hoặc rỗng là 'none' - hiển thị '-')
+ * - Tỷ lệ xấp xỉ 1/3 cho mỗi nhóm (Top 33%, Trung 34%, Bot 33%)
+ * - Các giá trị bằng nhau luôn có cùng phân tầng
+ */
+export const computeColumnTiers = (values: (number | undefined | null)[]): DataTier[] => {
+    const positiveWithIndex: { val: number; idx: number }[] = [];
+    values.forEach((v, idx) => {
+        if (v != null && v > 0) {
+            positiveWithIndex.push({ val: v, idx });
+        }
+    });
+
+    const result: DataTier[] = new Array(values.length).fill('none');
+    if (positiveWithIndex.length === 0) return result;
+    if (positiveWithIndex.length === 1) {
+        result[positiveWithIndex[0].idx] = 'top';
+        return result;
+    }
+    if (positiveWithIndex.length === 2) {
+        const [a, b] = positiveWithIndex;
+        if (a.val > b.val) {
+            result[a.idx] = 'top';
+            result[b.idx] = 'bot';
+        } else if (b.val > a.val) {
+            result[b.idx] = 'top';
+            result[a.idx] = 'bot';
+        } else {
+            result[a.idx] = 'top';
+            result[b.idx] = 'top';
+        }
+        return result;
+    }
+
+    // Sắp xếp giảm dần theo giá trị
+    const sorted = [...positiveWithIndex].sort((a, b) => b.val - a.val);
+    const n = sorted.length;
+    
+    // Top ~33%, Bot ~33%, Trung ~34%
+    const topCutoffIndex = Math.max(1, Math.floor(n / 3));
+    const botCutoffIndex = Math.min(n - 1, Math.ceil((n * 2) / 3));
+
+    const topThreshold = sorted[topCutoffIndex - 1].val;
+    const botThreshold = sorted[botCutoffIndex].val;
+
+    if (topThreshold <= botThreshold) {
+        positiveWithIndex.forEach(({ idx }) => {
+            result[idx] = 'trung';
+        });
+        return result;
+    }
+
+    positiveWithIndex.forEach(({ val, idx }) => {
+        if (val >= topThreshold) {
+            result[idx] = 'top';
+        } else if (val <= botThreshold) {
+            result[idx] = 'bot';
+        } else {
+            result[idx] = 'trung';
+        }
+    });
+
+    return result;
+};
+
 export const standardizeEmployeeName = (rawName: string): string => {
     if (!rawName || !rawName.includes(' - ')) return rawName;
     const parts = rawName.split(' - ').map(p => p.trim());
@@ -115,7 +183,7 @@ export const getYesterdayDateString = () => {
 
 export const isIgnoredDept = (name: string) => {
     const lower = name.toLowerCase();
-    return lower.includes('quản lý siêu thị') || lower.includes('trưởng ca');
+    return lower.includes('quản lý siêu thị') || lower.includes('trưởng ca') || lower.includes('chưa xác định') || lower.includes('không phân ca');
 };
 
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {

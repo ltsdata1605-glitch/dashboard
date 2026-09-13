@@ -32,6 +32,10 @@ const LoginView: React.FC = () => {
                 errMsg = 'Cửa sổ đăng nhập Google bị trình duyệt chặn. Vui lòng kiểm tra lại thiết lập chặn cửa sổ bật lên (popup) trên trình duyệt của Anh/Chị.';
             } else if (errCode === 'auth/operation-not-supported-in-this-environment') {
                 errMsg = 'Môi trường này không hỗ trợ cửa sổ đăng nhập. Hệ thống đang tự chuyển hướng sang phương thức đăng nhập khác, Anh/Chị vui lòng click lại nút Đăng nhập.';
+            } else if (errCode === 'auth/internal-error') {
+                errMsg = 'Lỗi kết nối xác thực Google (auth/internal-error).\nThường do trình duyệt chặn cookie bên thứ 3 hoặc tiện ích AdBlock/chặn pop-up can thiệp.\n\n👉 Anh/Chị có thể nhấn nút "Kích hoạt Chế độ Dùng Thử" bên dưới để vào ngay Dashboard và làm việc bình thường!';
+            } else if (errCode === 'auth/invalid-api-key' || errCode === 'auth/api-key-not-valid') {
+                errMsg = 'Mã cấu hình Firebase API Key không hợp lệ. Vui lòng kiểm tra lại services/firebase.ts.';
             }
             
             setError(errMsg);
@@ -77,7 +81,15 @@ const LoginView: React.FC = () => {
                 {error && (
                     <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 rounded-xl text-sm font-medium border border-rose-100 dark:border-rose-800 whitespace-pre-line">
                         {error}
-                        <div className="mt-2 text-xs opacity-80 font-normal">(Anh/Chị cần chắc chắn đã cấu hình mã Firebase đúng trong thư mục services/firebase.ts nhé!)</div>
+                        <div className="mt-3 pt-2 border-t border-rose-200/60 dark:border-rose-800/60 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setDemoMode(true)}
+                                className="text-xs font-bold text-sky-700 dark:text-sky-300 hover:underline inline-flex items-center gap-1"
+                            >
+                                ⚡ Vào ngay bằng Chế độ Dùng Thử &rarr;
+                            </button>
+                        </div>
                     </div>
                 )}
                 

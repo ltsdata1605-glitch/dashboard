@@ -6,7 +6,7 @@ import { Pill } from '../../shared/Pill';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import { onActivateKey } from '../../../../../components/shared/ui';
 
-import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
+import { ColorSettings, CriterionConfig, getDkhtColor as defaultGetDkhtColor, getMetricColorByTarget } from './ColorSettingsModal';
 
 interface RevenueDesktopRowProps {
     row: RevenueRow;
@@ -16,7 +16,10 @@ interface RevenueDesktopRowProps {
     colorSettings: ColorSettings;
     getHtColor: (val: number, hasTarget?: boolean) => string;
     getDynamicColor: (val: number, config: CriterionConfig) => string | undefined;
+    getDkhtColor?: (val: number, hasTarget?: boolean) => string;
     isShowRemaining?: boolean;
+    targetTraGop?: number;
+    targetQuyDoi?: number;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -29,24 +32,23 @@ export const RevenueDesktopRow = React.memo(({
     colorSettings,
     getHtColor,
     getDynamicColor,
-    isShowRemaining = false
+    getDkhtColor = defaultGetDkhtColor,
+    isShowRemaining = false,
+    targetTraGop = 45,
+    targetQuyDoi = 40
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
     const hasTarget = (row.calculatedTarget || 0) > 0;
 
-    // Vạch trạng thái 3px ở mép trái dòng — dấu hiệu đặc trưng của chuẩn "Bảng điều khiển ca
-    // trực", thay cho viên pill: vạch không chiếm chiều ngang, mà chiều ngang là thứ khan hiếm
-    // nhất ở bảng nhiều cột.
-    //
-    // ⚠️ Màu lấy bằng cách GỌI CHÍNH `getHtColor` mà ô %DKHT đang dùng, không viết lại ngưỡng.
-    // Bản đầu tôi chép ngưỡng 100/85 từ SummaryTableView — SAI: `getHtColor` của tab Doanh thu so
-    // với TIẾN ĐỘ THỜI GIAN trong tháng (`< progress` → hồng, `>= progress + 20` → lục), nên vạch
-    // và con số ngay cạnh nó sẽ nói hai điều khác nhau. Gọi lại đúng hàm thì ngưỡng có đổi về sau
-    // vạch cũng tự đi theo.
-    const stripeColor = getHtColor(row.pctDkht || 0, hasTarget);
+    // Vạch trạng thái mép trái dòng — đồng bộ chuẩn xác với màu phân khúc của %DKHT:
+    // <80%: Đỏ đậm (#dc2626) | 80-100%: Cam đậm (#ea580c) | 100-120%: Xanh lá đậm (#059669) | >120%: Xanh dương đậm (#2563eb)
+    const stripeColor = getDkhtColor(row.pctDkht, hasTarget);
 
     return (
-        <tr style={{ borderLeftColor: stripeColor }} className={`border-l-[3px] transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
+        <tr
+            style={{ borderLeft: `4px solid ${stripeColor}` }}
+            className={`border-l-[4px] transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
+        >
             <td className="px-2 py-[3px] whitespace-nowrap min-w-[190px] border-r border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
@@ -56,7 +58,7 @@ export const RevenueDesktopRow = React.memo(({
                     </div>
                 </div>
             </td>
-            <td className="px-2 py-[3px] text-[13px] text-center font-medium text-slate-400 dark:text-slate-500 tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+            <td className="px-2 py-[3px] text-[13px] text-center font-bold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
@@ -64,8 +66,11 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
-            <td className="px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>
-                <div>{f.format(roundUp(row.dtqd))}</div>
+            <td 
+                className="px-2 py-[3px] text-center font-black tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-sky-50/70 dark:bg-sky-950/25" 
+                style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}
+            >
+                <div className="font-black text-[14px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
             <td className="px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 text-slate-800 dark:text-slate-100">
@@ -73,7 +78,7 @@ export const RevenueDesktopRow = React.memo(({
                 <DeltaBadge current={row.duKien} previous={prev?.duKien} isCurrency />
             </td>
             <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getHtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
+                <Pill color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
                 <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
             </td>
             {isShowRemaining && (
@@ -91,11 +96,11 @@ export const RevenueDesktopRow = React.memo(({
                 </>
             )}
             <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion, hasTarget)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
+                <Pill color={getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>
             <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getDynamicColor(row.calculatedInstallment, colorSettings.tragop)}>{roundUp(row.calculatedInstallment)}%</Pill>
+                <Pill color={getMetricColorByTarget(row.calculatedInstallment, targetTraGop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
             <td className={`px-2 py-[3px] text-center tabular-nums ${

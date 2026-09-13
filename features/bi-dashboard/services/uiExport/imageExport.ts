@@ -458,7 +458,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 text.includes('DTQĐ') || text.includes('D.KIẾN') ||
                 text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
                 text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
-                text.includes('HQQĐ') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
+                text.includes('HQQĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
                 text === 'DT' || text === '%'
             ) {
                 snugNumericColIndices.add(colIdx);
@@ -492,7 +492,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 text.includes('DTQĐ') || text.includes('D.KIẾN') ||
                 text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
                 text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
-                text.includes('HQQĐ') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
+                text.includes('HQQĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
                 text === 'DT' || text === '%'
             );
 

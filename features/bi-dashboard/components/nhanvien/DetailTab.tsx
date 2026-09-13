@@ -483,7 +483,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     if (!rawData) {
         return (
-            <Card bordered={false} title="Chi Tiết Doanh Thu" icon="list-todo">
+            <Card bordered={false} title="Chi Tiết Doanh Thu">
                 <EmptyState
                     title="Chưa có dữ liệu"
                     description='Vui lòng dán dữ liệu "BC Doanh thu theo NV" vào ô DOANH THU trong Cấu hình siêu thị.'
@@ -494,7 +494,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     if (tree.length === 0) {
         return (
-            <Card bordered={false} title="Chi Tiết Doanh Thu" icon="list-todo">
+            <Card bordered={false} title="Chi Tiết Doanh Thu">
                 <EmptyState
                     title="Không thể phân tích dữ liệu"
                     description='Header cần có: "Nhân viên  DTLK  DTQĐ  Hiệu quả QĐ  Số lượng  Đơn giá"'
@@ -642,7 +642,6 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     noPadding
                     bordered={false}
                     rounded={false}
-                    icon="list-todo"
                     title="Chi tiết doanh thu theo ngành hàng"
                     subtitle="Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng › Sản phẩm"
                 >
@@ -651,22 +650,22 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             <table className="w-full border-collapse min-w-[700px]">
                                 <thead className="sticky top-0 z-20">
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
-                                        <th className="px-4 py-2.5 text-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-400 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
+                                        <th className="px-4 py-2.5 text-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
                                             Danh mục
                                         </th>
-                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b !border-b-slate-200 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
+                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
                                             SL
                                         </th>
-                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b !border-b-slate-200 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
                                             DTLK
                                         </th>
-                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b !border-b-slate-200 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
+                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
                                             DTQĐ
                                         </th>
-                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b !border-b-slate-200 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
+                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
                                             HQ QĐ
                                         </th>
-                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b !border-b-slate-200 dark:border-b-slate-600 min-w-[80px]">
+                                        <th className="px-2 py-2.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 min-w-[80px]">
                                             Đơn giá
                                         </th>
                                     </tr>

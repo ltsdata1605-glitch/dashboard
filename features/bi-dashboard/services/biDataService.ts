@@ -24,7 +24,7 @@ import {
     doc, getDoc, writeBatch, serverTimestamp
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { parseCompetitionDataBySupermarket, SupermarketCompetitionData, parseNumber } from '../utils/dashboardHelpers';
+import { parseCompetitionDataBySupermarket, SupermarketCompetitionData, parseNumber, parseSummaryData, isEmployeeName } from '../utils/dashboardHelpers';
 
 const SUMMARY_LUYKE_HEADER_MARKER = 'Tên miền\tDT Hôm Qua\tDTLK\tDT Dự Kiến\tDTQĐ';
 
@@ -52,19 +52,49 @@ export function splitSummaryLuyKeByKho(
     rawText: string,
     nameToKho: Record<string, string>
 ): { byKho: Record<string, string>; headerLine: string | null; skippedNames: string[] } {
-    const lines = rawText.split(/\r?\n/);
-    const headerLine = lines.find(l => l.includes(SUMMARY_LUYKE_HEADER_MARKER)) ?? null;
+    const { table } = parseSummaryData(rawText);
     const byKho: Record<string, string> = {};
     const skippedNames: string[] = [];
 
-    if (!headerLine) return { byKho, headerLine, skippedNames };
+    if (!table.headers || table.headers.length === 0 || table.rows.length === 0) {
+        // Fallback to legacy marker search
+        const lines = rawText.split(/\r?\n/);
+        const headerLine = lines.find(l => l.includes(SUMMARY_LUYKE_HEADER_MARKER)) ?? null;
+        if (!headerLine) return { byKho, headerLine: null, skippedNames };
+        for (const line of lines) {
+            const name = (line.split('\t')[0] ?? '').trim();
+            if (!name || !((name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))) continue;
+            const maKho = nameToKho[name];
+            if (!maKho) { skippedNames.push(name); continue; }
+            byKho[maKho] = line;
+        }
+        return { byKho, headerLine, skippedNames };
+    }
 
-    for (const line of lines) {
-        const name = (line.split('\t')[0] ?? '').trim();
-        if (!name || !((name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))) continue;
-        const maKho = nameToKho[name];
-        if (!maKho) { skippedNames.push(name); continue; }
-        byKho[maKho] = line;
+    const headerLine = table.headers.join('\t');
+
+    for (const row of table.rows) {
+        const name = (row[0] || '').trim();
+        if (!name || name === 'Tổng' || isEmployeeName(name)) continue;
+
+        let maKho = nameToKho[name];
+        if (!maKho) {
+            const prefixCode = name.match(/^(\d+)\s*-\s*/)?.[1];
+            if (prefixCode && Object.values(nameToKho).includes(prefixCode)) {
+                maKho = prefixCode;
+            } else {
+                const withoutPrefix = name.replace(/^\d+\s*-\s*/, '');
+                if (nameToKho[withoutPrefix]) {
+                    maKho = nameToKho[withoutPrefix];
+                }
+            }
+        }
+
+        if (!maKho) {
+            skippedNames.push(name);
+            continue;
+        }
+        byKho[maKho] = row.join('\t');
     }
 
     return { byKho, headerLine, skippedNames };

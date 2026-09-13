@@ -675,7 +675,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
     return (
         <div ref={cardRef} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <Card noPadding bordered={false} title={cardTitle} actionButton={headerActions} icon="trophy">
+            <Card noPadding bordered={false} title={cardTitle} actionButton={headerActions}>
                 {selectedTitles.length === 0 ? (
                     <div className="py-20 text-center text-slate-400 italic bg-slate-50 dark:bg-slate-900/30">
                         {readOnly ? (
@@ -695,12 +695,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                             style={{ WebkitOverflowScrolling: 'touch' }}
                         >
                             <table className="min-w-max w-full table-auto border-collapse">
-                                <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900">
-                                    <tr className="text-[11px] font-black uppercase tracking-wider">
+                                <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800">
+                                    <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-100 dark:border-l-slate-800">
                                         <th
                                             rowSpan={2}
                                             onClick={() => handleSort('employee')}
-                                            className="sticky left-0 z-30 bg-slate-50 dark:bg-slate-800 px-2 py-[5px] text-center border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="sticky left-0 z-30 bg-slate-100 dark:bg-slate-800 px-2 py-[5px] text-center border-l-[3px] border-l-slate-100 dark:border-l-slate-800 border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Nhân viên</span>
@@ -894,11 +894,11 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         );
                                     })}
                                     {/* TRUNG BÌNH row */}
-                                    <tr className="bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t-2 border-slate-300 dark:border-slate-600">
+                                    <tr className="border-l-[3px] border-l-amber-200 dark:border-l-amber-800/60 bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t-2 border-slate-300 dark:border-slate-600">
                                         <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
-                                        <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                                        <td className="px-1 py-1 text-center text-[13px] border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-r-slate-100 dark:border-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
                                             {(() => {
                                                 const totalDatSum = employees.reduce((sum, emp) => sum + getEmployeeDat(emp.name), 0);
                                                 const avgDat = employees.length > 0 ? totalDatSum / employees.length : 0;
@@ -945,7 +945,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         })}
                                     </tr>
                                     {/* Grand Total — sky accent */}
-                                    <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
+                                    <tr className="border-l-[3px] border-l-sky-300 dark:border-l-sky-700 bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
                                          <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-sky-200 dark:border-sky-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                              TỔNG
                                          </td>

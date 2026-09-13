@@ -25,28 +25,29 @@ export interface AnalysisEmployeesPayload {
     employees: AnalysisEmployeeItem[];
 }
 
-const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
 
 /**
  * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc tài khoản phụ cần loại bỏ không
  */
 export function isSystemOrIgnoredEmployee(name: string, dept?: string): boolean {
-    if (!name) return true;
-    const lowerName = name.toLowerCase().trim();
-    if (
-        lowerName.startsWith('yêu cầu xuất') ||
-        lowerName.startsWith('mwg') ||
-        lowerName.startsWith('bp ') ||
-        lowerName.startsWith('hỗ trợ bi') ||
-        lowerName.startsWith('nnh ') ||
-        lowerName.startsWith('đml_str_str') ||
-        lowerName.includes('online')
-    ) {
-        return true;
+    if (name) {
+        const lowerName = name.toLowerCase().trim();
+        if (
+            lowerName.startsWith('yêu cầu xuất') ||
+            lowerName.startsWith('mwg') ||
+            lowerName.startsWith('bp ') ||
+            lowerName.startsWith('hỗ trợ bi') ||
+            lowerName.startsWith('nnh ') ||
+            lowerName.startsWith('đml_str_str') ||
+            lowerName.includes('online')
+        ) {
+            return true;
+        }
     }
     if (dept) {
-        const lowerDept = dept.toLowerCase();
-        if (EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw))) {
+        const lowerDept = dept.toLowerCase().trim();
+        if (!lowerDept || EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw))) {
             return true;
         }
     }
@@ -66,9 +67,10 @@ export function normalizeAnalysisEmployees(
     for (const emp of rawEmployees) {
         if (!emp || !emp.name) continue;
         const originalName = emp.name.trim();
-        const dept = (emp.department || '').trim() || 'Kinh Doanh';
+        const dept = (emp.department || '').trim();
 
-        if (isSystemOrIgnoredEmployee(originalName, dept)) {
+        // Bỏ qua nếu nhân viên không có bộ phận, hoặc thuộc bộ phận chưa xác định / bị loại trừ
+        if (!dept || isSystemOrIgnoredEmployee(originalName, dept)) {
             continue;
         }
 

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon, ClockIcon } from '../Icons';
-import { Icon } from '../../../../components/common/Icon';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
@@ -76,11 +75,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
             <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
-                        <Icon name="bar-chart-3" size={4.5} className="sm:hidden" />
-                        <Icon name="bar-chart-3" size={5} className="hidden sm:block" />
-                    </div>
-                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                    <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
                         {title}
                     </h2>
                 </div>
@@ -131,7 +126,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none shadow-sm">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 hide-on-export">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
                     <Tabs
                         items={SUB_TABS.map(({ tab, label }) => ({ id: tab, label }))}
                         activeId={activeSubTab}

@@ -26,14 +26,12 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 
-    // DT THỰC (doanh thu thực tế)
-    'DTLK': { label: 'DT THỰC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến': { label: 'DT THỰC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-
-    // DOANH THU QĐ (quy đổi)
-    'DTQĐ': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    // DOANH THU (nhóm chính gồm THỰC, DTQĐ, D.KIẾN QĐ)
+    'DTLK': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTQĐ': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // HIỆU QUẢ (đổi indigo → emerald cho khớp quy ước %HT/hiệu quả toàn dự án, implementation_plan.md mục 61)
     'Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
@@ -43,6 +41,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '%DKHT': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '%HQQĐ': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // TRAFFIC
@@ -63,6 +62,10 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     
     // KHÁC
     'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% Tỉ trọng': { label: 'TỈ TRỌNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TB 3 Tháng': { label: 'TB 3 THÁNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TB 3 THÁNG': { label: 'TB 3 THÁNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '% TT': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 };
 
 // --- Helpers ---
@@ -89,12 +92,12 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ<br/>QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'D.KIẾN QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
-    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, ['Lượt Khách LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'TLPVTC LK', 'Lượt Bill Thu Hộ', 'Lãi gộp QĐ', '%HT Target Dự kiến (LNTT)', '% HT Target Dự Kiến (QĐ)']);
+    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, ['Lượt Khách LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'TLPVTC LK', 'Lượt Bill Thu Hộ', 'Lãi gộp QĐ', '%HT Target Dự kiến (LNTT)', '% HT Target Dự Kiến (QĐ)', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm']);
 
     // --- Supermarket Filter State ---
     const [isSupermarketFilterOpen, setIsSupermarketFilterOpen] = useState(false);
@@ -399,7 +402,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             ) : (
                                                                 h === 'Tên miền'
                                                                     ? 'TỔNG CỤM'
-                                                                    : h === 'DTQĐ' ? <span className="text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>
+                                                                    : h === 'DTQĐ' || h === 'DT Dự Kiến (QĐ)' ? <span className="text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>
                                                                     : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                             )}
                                                         </td>
@@ -420,14 +423,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const oIdx = processedTable.allHeaders.indexOf(h);
                                                 const cell = row[oIdx];
                                                 const val = parseNumber(cell?.isMerged ? cell.value : cell);
-                                                const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
+                                                const isHtCol = (h.includes('%HT') || h === '%HT V.Trội' || h === '%DKHT') && !isNaN(val);
                                                 const isHqqd = h === '%HQQĐ' && !isNaN(val);
                                                 const smKey = row[nameIdx];
 
                                                 let colorCls = '';
                                                 if (isHtCol) colorCls = val >= 100 ? ' text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-700 dark:text-amber-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
                                                 if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
-                                                if (h === 'DTQĐ') colorCls = ' text-sky-700 dark:text-sky-400 font-semibold';
+                                                if (h === 'DTQĐ' || h === 'DT Dự Kiến (QĐ)') colorCls = ' text-sky-700 dark:text-sky-400 font-semibold';
 
                                                 return (
                                                     <td

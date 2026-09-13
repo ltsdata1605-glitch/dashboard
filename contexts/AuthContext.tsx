@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
     const [isDemoMode, setDemoModeRaw] = useState(() => {
         if (typeof window !== 'undefined') {
-            return sessionStorage.getItem('ycx_demo_mode') === 'true';
+            return sessionStorage.getItem('ycx_demo_mode') === 'true' || localStorage.getItem('ycx_demo_mode') === 'true';
         }
         return false;
     });
@@ -97,8 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (typeof window !== 'undefined') {
             if (val) {
                 sessionStorage.setItem('ycx_demo_mode', 'true');
+                localStorage.setItem('ycx_demo_mode', 'true');
             } else {
                 sessionStorage.removeItem('ycx_demo_mode');
+                localStorage.removeItem('ycx_demo_mode');
             }
         }
     };

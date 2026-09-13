@@ -1,11 +1,11 @@
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { InstallmentRow, InstallmentProvider } from '../../types/nhanVienTypes';
-import { getYesterdayDateString, parseInstallmentData } from '../../utils/nhanVienHelpers';
+import { getYesterdayDateString, parseInstallmentData, computeColumnTiers, DataTier } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, DownloadAllIcon, DocumentReportIcon } from '../Icons';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -15,6 +15,9 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/ui
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
+import { getMetricColorByTarget } from './revenue/ColorSettingsModal';
+import { shortenSupermarketName } from '../../utils/dashboardHelpers';
+import * as db from '../../utils/db';
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
@@ -29,18 +32,28 @@ interface InstallmentDesktopRowProps {
     supermarketName: string;
     hidePercent: boolean;
     f: Intl.NumberFormat;
+    targetTraGop: number;
+    providerTiers?: DataTier[];
+    totalTier?: DataTier;
 }
 
 const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
-    row, isTotal, isHighlighted, onHighlightToggle, supermarketName, hidePercent, f
+    row, isTotal, isHighlighted, onHighlightToggle, supermarketName, hidePercent, f, targetTraGop, providerTiers, totalTier
 }) => {
     const oldRow = row.oldRow;
-    // Vạch trạng thái 3px mép trái — ngưỡng lấy ĐÚNG từ ô %TC tổng của chính dòng này
-    // (>=45 lục, <40 hồng, còn lại hổ phách). Không tự chế ngưỡng mới: vạch và con số
-    // phải nói cùng một điều.
-    const stripeColor = isTotal ? undefined
-        : row.totalPercent >= 45 ? 'var(--color-emerald-700)'
-        : row.totalPercent < 40 ? 'var(--color-rose-500)' : 'var(--color-amber-700)';
+    // Vạch trạng thái 3px mép trái và màu số %T.Chậm — tính theo Target Trả chậm
+    // (Đạt >=100% lục, Tiệm cận >=85% cam, Kém <85% đỏ)
+    const metricColor = isTotal ? undefined : getMetricColorByTarget(row.totalPercent, targetTraGop);
+    const stripeColor = isTotal ? undefined : metricColor;
+
+    const totalDtColorClass = isTotal ? '' : (
+        row.totalDtSieuThi <= 0 ? 'text-slate-400 dark:text-slate-500 font-normal' :
+        totalTier === 'top' ? 'text-emerald-600 dark:text-emerald-400 font-bold' :
+        totalTier === 'trung' ? 'text-amber-600 dark:text-amber-400 font-semibold' :
+        totalTier === 'bot' ? 'text-rose-500 dark:text-rose-400 font-medium' :
+        'text-slate-700 dark:text-slate-300 font-semibold'
+    );
+
     return (
         <tr style={{ borderLeftColor: stripeColor }} className={`border-l-[3px] transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800')}`}>
             <td className={`px-2 py-1 whitespace-nowrap min-w-[200px] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
@@ -60,29 +73,84 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
             </td>
             {row.providers.map((p: InstallmentProvider, pIdx: number) => {
                 const oldP = oldRow?.providers[pIdx];
+                const tier = isTotal ? 'none' : (providerTiers?.[pIdx] || 'none');
+                const dtColorClass = isTotal ? '' : (
+                    p.dt <= 0 ? 'text-slate-400 dark:text-slate-500 font-normal' :
+                    tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 font-bold' :
+                    tier === 'trung' ? 'text-amber-600 dark:text-amber-400 font-semibold' :
+                    tier === 'bot' ? 'text-rose-500 dark:text-rose-400 font-medium' :
+                    'text-slate-700 dark:text-slate-300 font-semibold'
+                );
+
                 return (
                     <React.Fragment key={pIdx}>
-                        <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-semibold tabular-nums text-slate-700 dark:text-slate-300"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                        {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-semibold tabular-nums ${p.percent >= 40 ? 'text-emerald-700' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>}
+                        <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${dtColorClass || 'font-semibold text-slate-700 dark:text-slate-300'}`}>
+                            <div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div>
+                        </td>
+                        {!hidePercent && (
+                            <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-semibold tabular-nums ${p.percent >= 40 ? 'text-emerald-700' : 'text-slate-400'}`}>
+                                <div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div>
+                                <DeltaBadge current={p.percent} previous={oldP?.percent} />
+                            </td>
+                        )}
                     </React.Fragment>
-                )
+                );
             })}
-            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-700' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-700')}`}><div>{Math.round(row.totalPercent)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${isTotal ? 'font-semibold text-slate-700 dark:text-slate-300' : totalDtColorClass}`}>
+                {f.format(Math.ceil(row.totalDtSieuThi))}
+            </td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums" style={{ color: metricColor }}>
+                <div>{Math.round(row.totalPercent)}%</div>
+                <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
+            </td>
         </tr>
     );
 });
 
-const InstallmentTab: React.FC<{
+interface InstallmentTabProps {
     rows: InstallmentRow[];
     supermarketName: string;
+    activeSupermarkets?: string[];
     activeDepartments: string[];
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
     isActive?: boolean;
-}> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive }) => {
+    targetTraGop?: number;
+}
+
+const InstallmentTab: React.FC<InstallmentTabProps> = ({ 
+    rows, supermarketName, activeSupermarkets, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive, targetTraGop 
+}) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const importFileRef = useRef<HTMLInputElement>(null);
+
+    // Target động từ tab Cập nhật (Target Trả chậm)
+    const safeName = shortenSupermarketName(supermarketName);
+    const [storedTraGopTarget] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45);
+    const [multiTraGopTarget, setMultiTraGopTarget] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!activeSupermarkets || activeSupermarkets.length <= 1) {
+            setMultiTraGopTarget(null);
+            return;
+        }
+        let isMounted = true;
+        const loadMultiTargets = async () => {
+            const results = await Promise.all(activeSupermarkets.map(async (sm) => {
+                const sName = shortenSupermarketName(sm);
+                const tg = await db.get<number>(`targethero-${sName}-tragop`);
+                return tg ?? 45;
+            }));
+            if (isMounted && results.length > 0) {
+                const avgTg = results.reduce((sum, r) => sum + r, 0) / results.length;
+                setMultiTraGopTarget(avgTg);
+            }
+        };
+        loadMultiTargets();
+        return () => { isMounted = false; };
+    }, [activeSupermarkets]);
+
+    const effectiveTargetTraCham = targetTraGop ?? multiTraGopTarget ?? storedTraGopTarget ?? 45;
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'totalPercent', direction: 'desc' });
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('installment-view-mode', 'group');
@@ -217,13 +285,39 @@ const InstallmentTab: React.FC<{
         return finalOutput;
     }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows, isActive]);
 
+    const employeeTiersMap = useMemo(() => {
+        const map = new Map<string, { providerTiers: DataTier[]; totalTier: DataTier }>();
+        const employeeRows = displayList.filter(r => r.type === 'employee');
+        if (employeeRows.length === 0) return map;
+
+        const numProviders = employeeRows[0]?.providers?.length || 0;
+        const providerTierCols: DataTier[][] = [];
+
+        for (let pIdx = 0; pIdx < numProviders; pIdx++) {
+            const vals = employeeRows.map(e => e.providers[pIdx]?.dt || 0);
+            providerTierCols.push(computeColumnTiers(vals));
+        }
+
+        const totalVals = employeeRows.map(e => e.totalDtSieuThi || 0);
+        const totalTiers = computeColumnTiers(totalVals);
+
+        employeeRows.forEach((e, idx) => {
+            const pTiers = providerTierCols.map(col => col[idx]);
+            const tTier = totalTiers[idx];
+            const key = e.originalName || e.name;
+            map.set(key, { providerTiers: pTiers, totalTier: tTier });
+        });
+
+        return map;
+    }, [displayList]);
+
     const { showExportOptions } = useExportOptionsContext();
 
     const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
         if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const safeName = customFilename || `Báo Cáo Trả Góp - ${supermarketName}.png`;
+            const safeName = customFilename || `Báo Cáo Trả Chậm - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
             });
@@ -258,7 +352,7 @@ const InstallmentTab: React.FC<{
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
             const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
-            const action = await handleExportPNG(`Trả Góp - ${safeDeptName} - ${supermarketName}.png`, autoAction);
+            const action = await handleExportPNG(`Trả Chậm - ${safeDeptName} - ${supermarketName}.png`, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
         }
@@ -275,7 +369,7 @@ const InstallmentTab: React.FC<{
                 const content = e.target?.result as string;
                 JSON.parse(content); 
                 setPrevMonthRaw(content);
-                toast.success('Đã nạp dữ liệu trả góp cùng kỳ thành công!');
+                toast.success('Đã nạp dữ liệu trả chậm cùng kỳ thành công!');
             } catch (err) { toast.error('File không hợp lệ.'); }
             if (importFileRef.current) importFileRef.current.value = '';
         };
@@ -286,11 +380,11 @@ const InstallmentTab: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card bordered={false} title="Phân tích Trả góp" icon="credit-card"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
+    if (rows.length === 0) return <Card bordered={false} title="Phân tích Trả chậm"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
     
     const providers = rows.find(r => r.providers.length > 0)?.providers || [];
 
-    const cardTitle = <span className="js-report-title">Trả góp nhân viên đến ngày {getYesterdayDateString()}</span>;
+    const cardTitle = <span className="js-report-title">Trả chậm nhân viên đến ngày {getYesterdayDateString()}</span>;
     const cardSubtitle = <span className="js-report-title">Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên.</span>;
 
 
@@ -325,7 +419,7 @@ const InstallmentTab: React.FC<{
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false} icon="credit-card">
+                <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
                     <div className="px-4 pt-3 pb-1">
                         <TimeProgressBar />
                     </div>
@@ -335,14 +429,14 @@ const InstallmentTab: React.FC<{
                                 <thead className="sticky top-0 z-10">
                                     {/* Tier 1: Group Headers */}
                                     <tr>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b-[3px] border-b-slate-400 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
-                                        {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className={`px-1 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 leading-tight align-middle ${hidePercent ? 'border-b !border-b-slate-200' : 'border-b'}`}>{p.shortName}</th>)}
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b !border-b-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b !border-b-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-200 dark:border-l-slate-700 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
+                                        {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className="px-1 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 leading-tight align-middle">{p.shortName}</th>)}
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
                                     </tr>
-                                    {/* Tier 2: Column Headers - only shown when % columns visible — áp dụng phong cách tab Thưởng (nền pastel & viền 3px) */}
+                                    {/* Tier 2: Column Headers - only shown when % columns visible */}
                                     {!hidePercent && <tr>
-                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b !border-b-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">DT</th><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 border-b !border-b-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">%</th></React.Fragment>)}
+                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">DT</th><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">%</th></React.Fragment>)}
                                     </tr>}
                                 </thead>
                                 <tbody className="bg-white dark:bg-slate-900">
@@ -358,12 +452,13 @@ const InstallmentTab: React.FC<{
                                                         </React.Fragment>
                                                     ))}
                                                     <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-700' : 'text-amber-700'}`}>{Math.round(row.totalPercent)}%</td>
+                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold" style={{ color: getMetricColorByTarget(row.totalPercent, effectiveTargetTraCham) }}>{Math.round(row.totalPercent)}%</td>
                                                 </tr>
                                             );
                                         }
                                         const isTotal = row.type === 'total';
                                         const isHighlighted = highlightedEmployees.has(row.originalName || '');
+                                        const tiers = employeeTiersMap.get(row.originalName || row.name);
                                         return (
                                             <InstallmentDesktopRow
                                                 key={row.originalName || idx}
@@ -374,6 +469,9 @@ const InstallmentTab: React.FC<{
                                                 supermarketName={supermarketName}
                                                 hidePercent={hidePercent}
                                                 f={f}
+                                                targetTraGop={effectiveTargetTraCham}
+                                                providerTiers={tiers?.providerTiers}
+                                                totalTier={tiers?.totalTier}
                                             />
                                         );
                                     })}

@@ -16,7 +16,9 @@ export const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong
         case 'dtqd': return val >= 50 ? 'text-emerald-600' : (val <= 20 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
         case 'hqqd': return val > 50 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
         case 'pnong': return val > 60 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-        case 'tong': return val >= 2000000 ? 'text-emerald-600' : (val <= 500000 ? 'text-rose-500' : 'text-slate-900 dark:text-white');
+        case 'erp': return 'text-blue-700 dark:text-blue-400 font-extrabold';
+        case 'tnong': return 'text-orange-600 dark:text-orange-400 font-extrabold';
+        case 'tong': return val >= 2000000 ? 'text-emerald-700 dark:text-emerald-300 font-black' : (val <= 500000 ? 'text-rose-500 font-black' : 'text-emerald-700 dark:text-emerald-300 font-black');
     }
     return 'text-slate-700 dark:text-slate-300';
 };

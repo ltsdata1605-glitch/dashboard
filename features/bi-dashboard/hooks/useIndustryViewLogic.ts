@@ -37,8 +37,10 @@ export const flattenTree = (
     return result;
 };
 
+const DEFAULT_HIDDEN_COLUMNS = ['% Tỉ trọng', 'Target (QĐ)', '% HT Target (QĐ)'];
+
 export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndustryRealtimeData>, luykeData: ReturnType<typeof parseIndustryLuyKeData>, isRealtime: boolean) {
-    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>('global-hidden-cols-industry', []);
+    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>('global-hidden-cols-industry-v2', DEFAULT_HIDDEN_COLUMNS);
     const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>('global-hidden-industries', []);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -65,9 +67,16 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
             row[0] && !hiddenIndustriesSet.has(row[0])
         );
 
-        const htTargetIndex = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
+        const targetHeaderName = (isRealtime && headers.includes('% HT Target Ngày (QĐ)')) ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
+        const htTargetIndex = headers.indexOf(targetHeaderName);
         if (htTargetIndex !== -1) {
-            otherRows.sort((a, b) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
+            const hasValidHt = otherRows.some(r => {
+                const val = parseNumber(r[htTargetIndex]);
+                return !isNaN(val) && val > 0;
+            });
+            if (hasValidHt) {
+                otherRows.sort((a, b) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
+            }
         }
         
         const finalRows = totalRow ? [...otherRows, totalRow] : otherRows;
@@ -109,16 +118,24 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
                 children: node.children.filter((child) => !hiddenSubSet.has(child.name))
             }));
 
-        const htTargetIdx = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
+        const targetHeaderName = (isRealtime && headers.includes('% HT Target Ngày (QĐ)')) ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
+        const htTargetIdx = headers.indexOf(targetHeaderName);
         if (htTargetIdx >= 0) {
-            filteredTree = [...filteredTree].sort(
-                (a, b) => parseNumber(b.values[htTargetIdx]) - parseNumber(a.values[htTargetIdx])
-            );
+            const hasValidHt = filteredTree.some(node => {
+                const val = parseNumber(node.values[htTargetIdx]);
+                return !isNaN(val) && val > 0;
+            });
+            if (hasValidHt) {
+                filteredTree = [...filteredTree].sort(
+                    (a, b) => parseNumber(b.values[htTargetIdx]) - parseNumber(a.values[htTargetIdx])
+                );
+            }
         }
+
 
         const flat = flattenTree(filteredTree, expandedRows);
 
-        const sourceTotalRow = isRealtime ? (realtimeData?.totalRow || realtimeData?.rows?.find((r) => r[0] === 'Tổng')) : luykeData.totalRow;
+        const sourceTotalRow = isRealtime ? (realtimeData?.totalRow || realtimeData?.rows?.find((r) => r[0] === 'Tổng')) : (luykeData?.totalRow || luykeData?.table?.rows?.find((r) => r[0] === 'Tổng'));
 
         if (sourceTotalRow) {
             flat.push({

@@ -7,7 +7,7 @@ import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSelli
 import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
-import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem } from '../services/analysisEmployeeSyncService';
+import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';
 
 export function useNhanVienData(isActive?: boolean) {
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
@@ -258,7 +258,11 @@ export function useNhanVienData(isActive?: boolean) {
     }, [loadAnalysisEmployees]);
 
     const analysisEmployeesList = useMemo(() => {
-        return analysisEmployeesPayload?.employees || [];
+        const rawList = analysisEmployeesPayload?.employees || [];
+        return rawList.filter(emp => {
+            const dept = (emp.department || '').trim();
+            return dept && !isSystemOrIgnoredEmployee(emp.originalName, dept);
+        });
     }, [analysisEmployeesPayload]);
 
     const hasAnalysisEmployees = useMemo(() => {
@@ -305,6 +309,8 @@ export function useNhanVienData(isActive?: boolean) {
                 setParsedRevenueBase(base.filter(r => {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
+                    const dept = (r.department || '').trim();
+                    if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
                     if (hasAnalysisEmployees) {
                         return isEmployeeInAnalysis(r.originalName);
                     }
@@ -322,17 +328,20 @@ export function useNhanVienData(isActive?: boolean) {
         // 1. Nguồn chuẩn ưu tiên số 1: Danh sách nhân viên từ chức năng Phân tích
         if (hasAnalysisEmployees) {
             analysisEmployeesList.forEach(emp => {
-                map[emp.originalName] = emp.department;
-                map[standardizeEmployeeName(emp.originalName)] = emp.department;
-                map[formatEmployeeName(emp.originalName)] = emp.department;
-                if (emp.id) {
-                    map[emp.id] = emp.department;
+                if (emp.department && !isSystemOrIgnoredEmployee(emp.originalName, emp.department)) {
+                    map[emp.originalName] = emp.department;
+                    map[standardizeEmployeeName(emp.originalName)] = emp.department;
+                    map[formatEmployeeName(emp.originalName)] = emp.department;
+                    if (emp.id) {
+                        map[emp.id] = emp.department;
+                    }
                 }
             });
         }
 
         // 2. Dự phòng từ parsedRevenueBase (cho các nhân viên khớp Phân tích hoặc khi chưa có Phân tích)
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
+            if (isSystemOrIgnoredEmployee(r.originalName, r.department)) return;
             const canonical = standardizeEmployeeName(r.originalName!);
             if (!hasAnalysisEmployees || isEmployeeInAnalysis(r.originalName)) {
                 if (!map[canonical]) map[canonical] = r.department!;
@@ -463,7 +472,7 @@ export function useNhanVienData(isActive?: boolean) {
     const allDepartmentNames = useMemo(() => {
         if (isActive === false) return [];
         return Array.from(new Set(Object.values(employeeDepartmentMap as Record<string, string>)))
-            .filter((d): d is string => typeof d === 'string')
+            .filter((d): d is string => typeof d === 'string' && Boolean(d) && !d.toLowerCase().includes('chưa xác định') && !d.toLowerCase().includes('không phân ca'))
             .sort();
     }, [employeeDepartmentMap, isActive]);
 
@@ -473,7 +482,7 @@ export function useNhanVienData(isActive?: boolean) {
     // hiển thị gì (xem allDepartmentNames ở trên).
     const departmentOptions = useMemo(() => {
         if (isActive === false) return [];
-        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
         return allDepartmentNames.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
     }, [allDepartmentNames, isActive]);
 
@@ -503,10 +512,14 @@ export function useNhanVienData(isActive?: boolean) {
             let next = Array.isArray(prev) ? prev.filter(d => d !== 'all') : [];
             if (next.includes(dept)) {
                 next = next.filter(d => d !== dept);
-                return next.length === 0 ? ['all'] : next;
-            } else return [...next, dept];
+            } else {
+                next.push(dept);
+            }
+            if (next.length === 0) return ['all'];
+            if (next.length === departmentOptions.length) return ['all'];
+            return next;
         });
-    }, [setActiveDepartments]);
+    }, [departmentOptions, setActiveDepartments]);
 
     const employeeInstallmentMap = useMemo(() => {
         if (isActive === false) return new Map();
@@ -529,6 +542,7 @@ export function useNhanVienData(isActive?: boolean) {
                 if (!seen.has(dedupKey)) {
                     seen.add(dedupKey);
                     const dept = employeeDepartmentMap[emp.originalName] || employeeDepartmentMap[canonical] || emp.department;
+                    if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept)) continue;
                     list.push({
                         name: emp.name || formatEmployeeName(emp.originalName),
                         originalName: emp.originalName,
@@ -544,6 +558,7 @@ export function useNhanVienData(isActive?: boolean) {
             .sort(([a], [b]) => b.length - a.length);
 
         for (const [originalName, department] of entries) {
+            if (!department || isSystemOrIgnoredEmployee(originalName, department)) continue;
             const canonical = standardizeEmployeeName(originalName);
             let empId = '';
             if (canonical.includes(' - ')) {

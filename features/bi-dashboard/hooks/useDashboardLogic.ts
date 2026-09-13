@@ -17,6 +17,7 @@ import { useWorker } from './useWorker';
 import { useReportBiAuth } from './useReportBiAuth';
 import { fetchAllowedSummaryLuyKeText, fetchAllowedCompetitionLuyKeData } from '../services/biDataService';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
+import { parseBaseTargetQuyDoi } from '../services/employeeParser';
 
 export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
@@ -427,23 +428,33 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 allTargets[supermarketName] = { quyDoi, traGop };
                 if (supermarketName === 'Tổng') continue;
                 
-                const luyKeSupermarketSummary = summaryLuyKeParsed.table.rows.find(r => r[0] === supermarketName);
-                const dtDuKienQd = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[5]) : 0; 
-                const htTargetDuKienPercent = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[6]) : 0; 
-                let baseMonthTarget = 0;
-                if (htTargetDuKienPercent > 0) baseMonthTarget = dtDuKienQd / (htTargetDuKienPercent / 100);
+                // Trích xuất Target gốc từ cột TARGET ở [Doanh thu hợp nhất > Luỹ kế]
+                const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKe, supermarketName);
                 const adjustedMonthTarget = baseMonthTarget * (totalTargetPercent / 100);
                 const dailyTarget = adjustedMonthTarget > 0 ? adjustedMonthTarget / daysInMonth : 0;
                 allDailyTargets[supermarketName] = dailyTarget;
                 allMonthlyTargets[supermarketName] = adjustedMonthTarget;
+            }
+
+            // Tính tổng mục tiêu tháng & ngày cho 'Tổng' (Toàn cụm)
+            const totalMonthly = Object.values(allMonthlyTargets).reduce((sum, v) => sum + (Number(v) || 0), 0);
+            if (totalMonthly > 0) {
+                allMonthlyTargets['Tổng'] = totalMonthly;
+                allDailyTargets['Tổng'] = totalMonthly / daysInMonth;
+            } else {
+                const baseTongTarget = parseBaseTargetQuyDoi(summaryLuyKe, 'Tổng');
+                if (baseTongTarget > 0) {
+                    allMonthlyTargets['Tổng'] = baseTongTarget;
+                    allDailyTargets['Tổng'] = baseTongTarget / daysInMonth;
+                }
             }
             
             setSupermarketDailyTargets(allDailyTargets);
             setSupermarketMonthlyTargets(allMonthlyTargets);
             setSupermarketTargets(allTargets);
         };
-        if (summaryLuyKeParsed.table.rows.length > 0) calculateTargets();
-    }, [supermarkets, summaryLuyKeParsed, dataVersion, isActive]);
+        if (summaryLuyKeParsed.table.rows.length > 0 || summaryLuyKe) calculateTargets();
+    }, [supermarkets, summaryLuyKeParsed, summaryLuyKe, dataVersion, isActive]);
 
     useEffect(() => {
         if (supermarkets.length > 0 && !['Tổng', ...supermarkets].includes(activeSupermarket)) setActiveSupermarket('Tổng');
@@ -462,7 +473,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
         }
 
         const headers = sourceData.table.headers;
-        const row = sourceData.table.rows.find(r => r[0] === activeSupermarket);
+        const row = sourceData.table.rows.find(r => r[0] === activeSupermarket || (activeSupermarket && shortenSupermarketName(r[0]) === shortenSupermarketName(activeSupermarket)));
         if (row) {
             const mapping: Record<string, string> = isRealtime 
             ? {
@@ -471,7 +482,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 lbillTH: 'Lượt Bill Thu Hộ', tlpv: 'TLPVTC LK', tyTrongTraGop: 'Tỷ Trọng Trả Góp',
             }
             : {
-                dtlk: 'DTLK', dtqd: 'DTQĐ', htTargetDuKienQD: '% HT Target Dự Kiến (QĐ)',
+                dtlk: 'DTLK', dtqd: 'DTQĐ', targetQD: 'Target (QĐ)', htTargetQD: '% HT Target (QĐ)',
+                htTargetDuKienQD: '% HT Target Dự Kiến (QĐ)',
                 dtDuKienQD: 'DT Dự Kiến (QĐ)', dtDuKien: 'DT Dự Kiến', lkhach: 'Lượt Khách LK', tlpv: 'TLPVTC LK',
                 tyTrongTraGop: 'Tỷ Trọng Trả Góp', dtckThang: '+/- DTCK Tháng',
                 dtckThangQD: '+/- DTCK Tháng (QĐ)', luotKhachChange: '+/- Lượt Khách',
@@ -479,6 +491,24 @@ export const useDashboardLogic = (isActive?: boolean) => {
             };
             for (const key in mapping) {
                 let idx = headers.indexOf(mapping[key]);
+                if (idx === -1 && key === 'dtDuKienQD') {
+                    idx = headers.findIndex(h => {
+                        const clean = h.trim().toUpperCase();
+                        return clean === 'D.KIẾN QĐ' || clean === 'D.KIẾN' || clean === 'DT DỰ KIẾN (QĐ)' || clean === 'DT DỰ KIẾN';
+                    });
+                }
+                if (idx === -1 && key === 'targetQD') {
+                    idx = headers.findIndex(h => {
+                        const clean = h.trim().toUpperCase();
+                        return clean === 'TARGET' || clean === 'TAR' || clean === 'TARGET (QĐ)';
+                    });
+                }
+                if (idx === -1 && key === 'htTargetQD') {
+                    idx = headers.findIndex(h => {
+                        const clean = h.trim().toUpperCase();
+                        return clean === '%HT' || clean === '% HT TARGET' || clean === '% HT TARGET (QĐ)';
+                    });
+                }
                 if (idx === -1 && key === 'tyTrongTraGop') {
                     idx = headers.findIndex(h => {
                         const clean = h.trim().toLowerCase();
@@ -495,8 +525,20 @@ export const useDashboardLogic = (isActive?: boolean) => {
             }
         }
 
+        if (!kpis.dtDuKienQD && sourceData.kpis.dtDuKienQD) kpis.dtDuKienQD = sourceData.kpis.dtDuKienQD;
+        if (!kpis.dtDuKien && sourceData.kpis.dtDuKien) kpis.dtDuKien = sourceData.kpis.dtDuKien;
+        if (!kpis.targetQD && sourceData.kpis.targetQD) kpis.targetQD = sourceData.kpis.targetQD;
+        if (!kpis.htTargetQD && sourceData.kpis.htTargetQD) kpis.htTargetQD = sourceData.kpis.htTargetQD;
+        if (!kpis.tlpv && sourceData.kpis.tlpv) kpis.tlpv = sourceData.kpis.tlpv;
+        if (!kpis.lkhach && sourceData.kpis.lkhach) kpis.lkhach = sourceData.kpis.lkhach;
+        if (!kpis.lbill && sourceData.kpis.lbill) kpis.lbill = sourceData.kpis.lbill;
+        if ((!kpis.lbillBH || kpis.lbillBH === 'N/A') && (sourceData.kpis.lbillBH || sourceData.kpis.lbill)) {
+            kpis.lbillBH = sourceData.kpis.lbillBH || sourceData.kpis.lbill;
+        }
         if (!kpis.lbillBH) kpis.lbillBH = 'N/A';
         if (!kpis.lbillTH) kpis.lbillTH = sourceData.kpis.lbillTH || 'N/A';
+        if (!kpis.luotKhachChange && sourceData.kpis.luotKhachChange) kpis.luotKhachChange = sourceData.kpis.luotKhachChange;
+        if (!kpis.tlpvChange && sourceData.kpis.tlpvChange) kpis.tlpvChange = sourceData.kpis.tlpvChange;
         return kpis;
     };
 

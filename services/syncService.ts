@@ -10,7 +10,7 @@ import { isHeavySyncKey } from './firestoreService';
 // Mode (chỉ userRole/status bị che), nên sửa setting lúc xem Demo Mode vẫn bị đẩy lên Firestore
 // tài khoản thật.
 const isDemoModeActive = (): boolean =>
-    typeof window !== 'undefined' && sessionStorage.getItem('ycx_demo_mode') === 'true';
+    typeof window !== 'undefined' && (sessionStorage.getItem('ycx_demo_mode') === 'true' || localStorage.getItem('ycx_demo_mode') === 'true');
 
 // Keys that are too large or unnecessary for cloud sync
 const EXCLUDED_SYNC_KEYS = new Set([
@@ -97,7 +97,7 @@ export const initSyncListeners = () => {
     // Khi người dùng thay đổi setting (IndexedDB trigger event) -> debounced sync
     const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string }>) => {
         const key = e.detail?.key;
-        if (key && (EXCLUDED_SYNC_KEYS.has(key) || key.startsWith('cached_'))) return;
+        if (key && (EXCLUDED_SYNC_KEYS.has(key) || key.startsWith('cached_') || key.startsWith('bi_') || isHeavySyncKey(key))) return;
         
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {

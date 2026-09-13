@@ -183,7 +183,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 <td className={`px-1.5 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
                     <span>{employee.name}</span>
                 </td>
-                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? '' : 'text-slate-500 dark:text-slate-400'}`}>{formatter.format(roundUp(target))}</td>
+                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? '' : 'text-slate-800 dark:text-slate-200'}`}>{formatter.format(roundUp(target))}</td>
                 <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
                     {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
                 </td>
@@ -250,19 +250,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     </colgroup>
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider">
-                            <th className="text-center px-2 py-1.5 border-b-[3px] !border-b-slate-400 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            <th className="text-center px-2 py-1.5 border-b border-r border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-slate-300 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-slate-300 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-slate-300 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-[3px] !border-b-slate-300 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>

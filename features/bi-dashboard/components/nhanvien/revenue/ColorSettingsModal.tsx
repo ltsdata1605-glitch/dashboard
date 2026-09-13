@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
 
-// Bảng màu chọn nhanh — giới hạn đúng 6 họ màu semantic đã duyệt (CLAUDE.md mục 2),
-// cấm tự thêm màu ngoài palette (vd cyan/vàng/cam/hồng/tím trước đây).
+// Bảng màu chọn nhanh — dùng các mã màu đậm nét, độ tương phản cao, nổi bật
 export const VIVID_COLORS = [
-    { hex: '#10b981', name: 'Emerald (Tốt)' },
-    { hex: '#0ea5e9', name: 'Sky (Chính)' },
-    { hex: '#f59e0b', name: 'Amber (Cảnh báo)' },
-    { hex: '#f43f5e', name: 'Rose (Xấu)' },
-    { hex: '#6366f1', name: 'Indigo' },
-    { hex: '#64748b', name: 'Slate' },
+    { hex: '#059669', name: 'Emerald đậm (Tốt)' },
+    { hex: '#0284c7', name: 'Sky đậm (Chính)' },
+    { hex: '#ea580c', name: 'Cam đậm (Cảnh báo)' },
+    { hex: '#dc2626', name: 'Đỏ đậm (Xấu)' },
+    { hex: '#2563eb', name: 'Xanh dương đậm' },
+    { hex: '#4f46e5', name: 'Indigo đậm' },
+    { hex: '#475569', name: 'Slate' },
 ];
 
 export interface RangeConfig {
@@ -34,12 +34,64 @@ export interface ColorSettings {
 }
 
 export const DEFAULT_COLOR_SETTINGS: ColorSettings = {
-    ht: { good: { threshold: 100, color: '#10b981' }, average: { threshold: 85, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
-    hqqd: { good: { threshold: 35, color: '#10b981' }, average: { threshold: 30, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
-    tragop: { good: { threshold: 45, color: '#10b981' }, average: { threshold: 40, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
-    dtqd: { good: { threshold: 50, color: '#0ea5e9' }, average: { threshold: 20, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
-    dtthuc: { good: { threshold: 50, color: '#64748b' }, average: { threshold: 20, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
-    bankem: { good: { threshold: 20, color: '#10b981' }, average: { threshold: 10, color: '#f59e0b' }, bad: { color: '#f43f5e' } },
+    ht: { good: { threshold: 100, color: '#059669' }, average: { threshold: 85, color: '#ea580c' }, bad: { color: '#dc2626' } },
+    hqqd: { good: { threshold: 35, color: '#059669' }, average: { threshold: 30, color: '#ea580c' }, bad: { color: '#dc2626' } },
+    tragop: { good: { threshold: 45, color: '#059669' }, average: { threshold: 40, color: '#ea580c' }, bad: { color: '#dc2626' } },
+    dtqd: { good: { threshold: 50, color: '#0284c7' }, average: { threshold: 20, color: '#ea580c' }, bad: { color: '#dc2626' } },
+    dtthuc: { good: { threshold: 50, color: '#475569' }, average: { threshold: 20, color: '#ea580c' }, bad: { color: '#dc2626' } },
+    bankem: { good: { threshold: 20, color: '#059669' }, average: { threshold: 10, color: '#ea580c' }, bad: { color: '#dc2626' } },
+};
+
+/**
+ * Chuyển các mã màu cũ/nhạt sang tone màu đậm và nổi bật hơn để phân biệt rõ ràng
+ */
+export const toBoldVividColor = (hex?: string): string | undefined => {
+    if (!hex) return undefined;
+    const lower = hex.toLowerCase();
+    switch (lower) {
+        case '#10b981': return '#059669'; // Emerald đậm nổi bật
+        case '#f59e0b':
+        case '#eab308':
+        case '#ca8a04':
+        case '#d97706':
+        case '#fbbf24': return '#ea580c'; // Cam đậm nổi bật (thay cho vàng nhạt)
+        case '#f43f5e': return '#dc2626'; // Đỏ đậm nổi bật
+        case '#0ea5e9': return '#0284c7'; // Sky đậm
+        case '#6366f1': return '#4f46e5'; // Indigo đậm
+        default: return hex;
+    }
+};
+
+/**
+ * Phân khúc màu cho cột %DKHT:
+ * - < 80%: Đỏ đậm nổi bật (#dc2626)
+ * - 80% <= dữ liệu < 100%: Cam đậm nổi bật (#ea580c)
+ * - 100% <= dữ liệu < 120%: Xanh lá đậm nổi bật (#059669)
+ * - >= 120%: Xanh dương đậm xuất sắc (#2563eb)
+ * - Không có target: Xám (#94a3b8)
+ */
+export const getDkhtColor = (val?: number | null, hasTarget: boolean = true): string => {
+    if (!hasTarget || val == null || isNaN(val)) return '#94a3b8';
+    if (val < 80) return '#dc2626';
+    if (val < 100) return '#ea580c';
+    if (val < 120) return '#059669';
+    return '#2563eb';
+};
+
+/**
+ * Phân khúc màu cho cột HQQĐ và %T.Chậm dựa theo Target ở tab Cập nhật:
+ * - Đạt / Vượt (val >= target): Xanh lá đậm nổi bật (#059669)
+ * - Tiệm cận Target (85% <= val / target < 100%): Cam đậm nổi bật (#ea580c)
+ * - Kém hơn Target (val / target < 85%): Đỏ đậm nổi bật (#dc2626)
+ * - Không có target hoặc dữ liệu không hợp lệ: Xám (#94a3b8)
+ */
+export const getMetricColorByTarget = (val?: number | null, target?: number | null): string => {
+    if (val == null || isNaN(val)) return '#94a3b8';
+    if (!target || target <= 0) return '#94a3b8';
+    const ratio = (val / target) * 100;
+    if (ratio >= 100) return '#059669'; // Đạt / Vượt
+    if (ratio >= 85) return '#ea580c';  // Tiệm cận (85% - < 100% target)
+    return '#dc2626';                   // Kém (< 85% target)
 };
 
 export const CompactColorPicker: React.FC<{ selected: string; onSelect: (hex: string) => void }> = ({ selected, onSelect }) => (

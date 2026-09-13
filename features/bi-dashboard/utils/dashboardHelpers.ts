@@ -44,7 +44,8 @@ export const parseSummaryData = (text: string) => {
     const lines = text.split('\n');
     const kpis: Record<string, string> = {};
     
-    const kpiRegexes: Record<string, RegExp> = {
+    // 1. KPI Regexes (Legacy)
+    const legacyKpiRegexes: Record<string, RegExp> = {
         dtlk: /DTLK\s+DTLK\s+([\d,.]+)/,
         dtqd: /Doanh thu quy đổi\s+DTQĐ\s+([\d,.]+)/,
         targetQD: /Target \(QĐ\)\s+([\d,.]+)/,
@@ -64,43 +65,213 @@ export const parseSummaryData = (text: string) => {
         dtckThangQD: /\+\/- DTCK Tháng \(QĐ\)\s+(?:\+\/- DTCK Tháng \(QĐ\)\s+)?([-+\d,.]+%)/,
     };
 
-    const textContent = text;
-    for(const key in kpiRegexes) {
-        const match = textContent.match(kpiRegexes[key]);
+    for (const key in legacyKpiRegexes) {
+        const match = text.match(legacyKpiRegexes[key]);
         if (match && match[1]) kpis[key] = match[1];
     }
-    
-    let headerIndex = lines.findIndex(line => line.trim().startsWith('Tên miền\t'));
-    if (headerIndex === -1) return { kpis, table: { headers: [], rows: [] } };
-    
-    const headers = lines[headerIndex].trim().split('\t');
-    const rows: string[][] = [];
-    const secondHeaderIndex = lines.findIndex((line, index) => index > headerIndex && line.trim().startsWith('Tên miền\t'));
-    const endIndex = secondHeaderIndex !== -1 ? secondHeaderIndex : lines.length;
 
-    for (let i = headerIndex + 1; i < endIndex; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        
-        const parts = line.split('\t');
-        const firstCol = parts[0]?.trim() || '';
-
-        // LOẠI BỎ CÁC DÒNG RÁC:
-        // 1. Chứa SĐT hỗ trợ
-        // 2. Tên miền là "0%" (thường do paste sai cột)
-        // 3. Chứa chuỗi "Hỗ trợ BI"
-        if (firstCol.includes('(097.') || firstCol === '0%' || firstCol.includes('Hỗ trợ BI')) {
-            continue;
-        }
-
-        // Nhận diện siêu thị dựa trên tiền tố hoặc có chứa dấu gạch ngang
-        if (firstCol === 'Tổng' || firstCol.startsWith('ĐM') || firstCol.startsWith('TGD') || (firstCol.includes(' - ') && !firstCol.includes(' liên hệ '))) {
-            rows.push(parts);
-        } else if(line.startsWith('Hỗ trợ BI')) {
-            break;
+    // 2. New Portal KPI Regexes (Revenue-consolidated)
+    if (!kpis.dtqd) {
+        const m = text.match(/DT quy đổi\s+([\d,.]+)/i);
+        if (m) kpis.dtqd = m[1];
+    }
+    if (!kpis.htTargetQD) {
+        const m = text.match(/% HT target(?:\s*\([A-Z]+\))?\s*(?:\?\s*)?([\d,.]+%?)/i);
+        if (m) kpis.htTargetQD = m[1].includes('%') ? m[1] : `${m[1]}%`;
+    }
+    if (!kpis.targetQD) {
+        const m = text.match(/Target trọn kỳ\s+([\d,.]+)/i);
+        if (m) kpis.targetQD = m[1];
+    }
+    if (!kpis.dtDuKienQD) {
+        const m = text.match(/DT dự kiến\s*(?:\?\s*)?([\d,.]+)/i);
+        if (m) {
+            kpis.dtDuKienQD = m[1];
+            if (!kpis.dtDuKien) kpis.dtDuKien = m[1];
         }
     }
-    return { kpis, table: { headers, rows } };
+    if (!kpis.tlpv) {
+        const m = text.match(/TLPVTC(?:\s+(?:lũy kế|hôm nay))?\s*[:\n\r\t ]*([\d,.]+%?)/i);
+        if (m) kpis.tlpv = m[1].includes('%') ? m[1] : `${m[1]}%`;
+    }
+    if (!kpis.lbill || !kpis.lkhach || !kpis.lbillBH) {
+        const m = text.match(/([\d,.]+)\s*bill\s*\/\s*([\d,.]+)\s*khách/i);
+        if (m) {
+            kpis.lbill = m[1];
+            kpis.lbillBH = m[1];
+            kpis.lkhach = m[2];
+        }
+    }
+    if (!kpis.lbillBH && kpis.lbill) {
+        kpis.lbillBH = kpis.lbill;
+    }
+    if (!kpis.tyTrongTraGop) {
+        const m = text.match(/Tỉ trọng trả góp\s+([\d,.]+%?)/i);
+        if (m) kpis.tyTrongTraGop = m[1].includes('%') ? m[1] : `${m[1]}%`;
+    }
+    if (!kpis.dtlk) {
+        const m = text.match(/DT trả góp\s+([\d,.]+)\s*\/\s*([\d,.]+)/i);
+        if (m) {
+            kpis.dtTraGop = m[1];
+            kpis.dtlk = m[2];
+        }
+    }
+    if (!kpis.dtckThangQD) {
+        const m = text.match(/TT vs TB 3 tháng\s*(?:\?\s*)?([-+\d,.]+%?)/i);
+        if (m) kpis.dtckThangQD = m[1].includes('%') ? m[1] : `${m[1]}%`;
+    }
+    
+    // 3. Legacy Table Parsing
+    let headerIndex = lines.findIndex(line => line.trim().startsWith('Tên miền\t'));
+    if (headerIndex !== -1) {
+        const headers = lines[headerIndex].trim().split('\t');
+        const rows: string[][] = [];
+        const secondHeaderIndex = lines.findIndex((line, index) => index > headerIndex && line.trim().startsWith('Tên miền\t'));
+        const endIndex = secondHeaderIndex !== -1 ? secondHeaderIndex : lines.length;
+
+        for (let i = headerIndex + 1; i < endIndex; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            
+            const parts = line.split('\t');
+            const firstCol = parts[0]?.trim() || '';
+
+            // LOẠI BỎ CÁC DÒNG RÁC:
+            if (firstCol.includes('(097.') || firstCol === '0%' || firstCol.includes('Hỗ trợ BI')) {
+                continue;
+            }
+
+            if (firstCol === 'Tổng' || firstCol.startsWith('ĐM') || firstCol.startsWith('TGD') || (firstCol.includes(' - ') && !firstCol.includes(' liên hệ '))) {
+                rows.push(parts);
+            } else if(line.startsWith('Hỗ trợ BI')) {
+                break;
+            }
+        }
+        return { kpis, table: { headers, rows } };
+    }
+
+    // 4. New Portal Table Parsing (Revenue-consolidated)
+    const standardHeaders = [
+        'Tên miền',
+        'Số lượng',
+        'DTQĐ',
+        '% Tỉ trọng',
+        'DTLK',
+        'Target (QĐ)',
+        '% HT Target (QĐ)',
+        'TB 3 Tháng',
+        '+/- DTCK Tháng (QĐ)',
+        'DT TRẢ GÓP',
+        'Tỷ Trọng Trả Góp',
+    ];
+
+    // Find table start: line with 'Siêu thị' or 'SIÊU THỊ' followed by 'SỐ LƯỢNG' and 'DOANH THU QĐ'
+    let smHeaderLineIndex = -1;
+    for (let idx = 0; idx < lines.length; idx++) {
+        const line = lines[idx].trim();
+        if (line === 'Siêu thị' || line === 'SIÊU THỊ') {
+            const nextNonEmpty = lines.slice(idx + 1).map(l => l.trim()).filter(Boolean);
+            if (nextNonEmpty[0]?.toUpperCase().includes('SỐ LƯỢNG') && 
+                nextNonEmpty[1]?.toUpperCase().includes('DOANH THU QĐ')) {
+                smHeaderLineIndex = idx;
+                break;
+            }
+        } else if (line.startsWith('Siêu thị\t') || line.startsWith('SIÊU THỊ\t')) {
+            if (line.toUpperCase().includes('DOANH THU QĐ') || line.toUpperCase().includes('DOANH THU')) {
+                smHeaderLineIndex = idx;
+                break;
+            }
+        }
+    }
+
+    if (smHeaderLineIndex === -1) {
+        return { kpis, table: { headers: [], rows: [] } };
+    }
+
+    const rows: string[][] = [];
+    const cleanedLines = lines.slice(smHeaderLineIndex).map(l => l.trim()).filter(Boolean);
+    
+    let dataStartIndex = 1;
+    if (cleanedLines[0].includes('\t')) {
+        dataStartIndex = 1;
+    } else {
+        let idx = 0;
+        while (idx < cleanedLines.length && idx < 15) {
+            const upper = cleanedLines[idx].toUpperCase();
+            if (upper === '% TRẢ GÓP' || upper === '% TRẢ CHẬM' || upper.includes('TRẢ GÓP')) {
+                idx++;
+                break;
+            }
+            idx++;
+        }
+        dataStartIndex = idx;
+    }
+
+    const isStoreEntity = (str: string) => {
+        if (!str) return false;
+        const s = str.trim();
+        if (s.startsWith('Tổng')) return true;
+        if (s.includes(':') || s.includes('http') || s.includes('bill') || s.includes('triệu đồng') || s.includes('nhịp')) return false;
+        return /^\d+\s*-\s*/.test(s) || s.startsWith('ĐM') || s.startsWith('TGD') || (s.includes(' - ') && !s.includes('liên hệ'));
+    };
+
+    let i = dataStartIndex;
+    while (i < cleanedLines.length) {
+        const line = cleanedLines[i];
+        if (line.startsWith('Đơn vị:') || line.startsWith('Tỉ trọng tính') || line.includes('Đã copy xong') || line.includes('Đang chọn')) {
+            break;
+        }
+
+        // Case 1: Tab-separated line with >= 10 parts
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim());
+            if (parts.length >= 10 && isStoreEntity(parts[0])) {
+                let name = parts[0];
+                if (name.startsWith('Tổng')) name = 'Tổng';
+                rows.push([name, ...parts.slice(1)]);
+                i++;
+                continue;
+            }
+        }
+
+        // Case 2: Store name on this line, and next line has tab-separated metrics
+        const nextLine = cleanedLines[i + 1] || '';
+        if (isStoreEntity(line) && nextLine.includes('\t')) {
+            const nextParts = nextLine.split('\t').map(p => p.trim());
+            if (nextParts.length >= 10) {
+                let name = line;
+                if (name.startsWith('Tổng')) name = 'Tổng';
+                rows.push([name, ...nextParts]);
+                i += 2;
+                continue;
+            }
+        }
+
+        // Case 3: Cell-by-cell (store name + next 10 lines of metrics)
+        if (isStoreEntity(line) && i + 10 < cleanedLines.length) {
+            let name = line;
+            if (name.startsWith('Tổng')) name = 'Tổng';
+            const metrics: string[] = [];
+            let valid = true;
+            for (let j = 1; j <= 10; j++) {
+                const val = cleanedLines[i + j];
+                if (isStoreEntity(val) || val.startsWith('Đơn vị:') || val.includes('\t')) {
+                    valid = false;
+                    break;
+                }
+                metrics.push(val);
+            }
+            if (valid) {
+                rows.push([name, ...metrics]);
+                i += 11;
+                continue;
+            }
+        }
+
+        i++;
+    }
+
+    return { kpis, table: { headers: standardHeaders, rows } };
 };
 
 /**
@@ -113,8 +284,12 @@ export const isEmployeeName = (text: string): boolean => {
     // Khớp mẫu: [Mã NV 3-8 số] - [Họ tên]
     if (/^\d{3,8}\s*-\s*/.test(trimmed)) {
         const afterDash = trimmed.replace(/^\d{3,8}\s*-\s*/, '').trim();
-        // Nếu sau dấu '-' là tên siêu thị/kho thì vẫn là siêu thị (VD: "1234 - ĐM Cần Thơ", "5678 - Kho Hùng Vương")
-        if (/^(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)\b/i.test(afterDash)) {
+        // Nếu sau dấu '-' còn có dấu '-' nữa (VD: "910 - ĐML_STR_STR - 99 Hùng Vương") thì chắc chắn là siêu thị
+        if (afterDash.includes(' - ')) {
+            return false;
+        }
+        // Nếu sau dấu '-' là tên siêu thị/kho thì vẫn là siêu thị (VD: "1234 - ĐM Cần Thơ", "5678 - Kho Hùng Vương", "910 - ĐML...")
+        if (/^(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(afterDash)) {
             return false;
         }
         return true;
@@ -639,6 +814,185 @@ export function buildIndustryTree(
     return { tree: finalTree, tableRows, totalRow };
 }
 
+export const DMX_PARENT_INDUSTRIES = new Set([
+    '22 - laptop',
+    '13 - điện thoại',
+    '1756 - máy giặt, sấy',
+    '484 - điện gia dụng',
+    '304 - điện tử',
+    '16 - phụ kiện tiện ích',
+    '1214 - gia dụng lắp đặt',
+    '1755 - tủ lạnh, đông, mát',
+    '24 - software',
+    '244 - tablet',
+    '1994 - dịch vụ bảo hành, bảo dưỡng điện máy xanh',
+    '1274 - đồng hồ thời trang',
+    '1314 - xe đạp, dụng cụ thể thao',
+    '364 - it',
+    '184 - phụ kiện trang trí',
+    '664 - sim online',
+    '23 - wearable',
+    '1034 - dụng cụ nhà bếp',
+    '164 - vas',
+    '764 - loa vi tính',
+    '344 - thẻ cào điện tử',
+    '1116 - máy lọc nước',
+    '1394 - phụ kiện lắp đặt',
+    '944 - dịch vụ',
+    '18 - sim trắng',
+    '464 - giao dịch airtime',
+    '1754 - máy lạnh, nước nóng'
+]);
+
+export function isParentIndustry(name: string): boolean {
+    const clean = name.trim().toLowerCase();
+    if (DMX_PARENT_INDUSTRIES.has(clean)) return true;
+
+    const hasCode = /^\d+\s*-\s*/.test(clean);
+    if (hasCode) {
+        const codeMatch = clean.match(/^(\d+)\s*-\s*(.*)$/);
+        if (codeMatch) {
+            const code = codeMatch[1];
+            const namePart = codeMatch[2].trim();
+            for (const p of DMX_PARENT_INDUSTRIES) {
+                if (p.startsWith(`${code} -`) && p.replace(/^\d+\s*-\s*/, '').trim() === namePart) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    const withoutCode = clean;
+    for (const p of DMX_PARENT_INDUSTRIES) {
+        if (p.replace(/^\d+\s*-\s*/, '').trim() === withoutCode) return true;
+    }
+    return false;
+}
+
+
+export function parseNewPortalIndustryData(text: string) {
+    if (!text) return null;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const headerIdx = lines.findIndex(l => {
+        const u = l.toUpperCase();
+        return u.includes('NGÀNH HÀNG / NHÓM HÀNG') || u.includes('NGÀNH HÀNG/NHÓM HÀNG');
+    });
+    if (headerIdx === -1) return null;
+
+    let dataStart = -1;
+    for (let i = headerIdx + 1; i < lines.length; i++) {
+        if (/^\d+\s*-\s*/.test(lines[i]) || lines[i].startsWith('Tổng')) {
+            dataStart = i;
+            break;
+        }
+    }
+    if (dataStart === -1) return null;
+
+    const standardHeaders = [
+        'Nhóm ngành hàng',
+        'Số lượng',
+        'DTLK',
+        'DTQĐ',
+        '% Tỉ trọng',
+        'Target (QĐ)',
+        '% HT Target (QĐ)',
+        'TB 3 Tháng',
+        '% TT',
+        'DT TRẢ GÓP',
+        'Tỷ Trọng Trả Góp',
+    ];
+
+    const tree: IndustryTreeNode[] = [];
+    let currentParent: IndustryTreeNode | null = null;
+    let totalRow: string[] | null = null;
+
+    let i = dataStart;
+    while (i < lines.length) {
+        const line = lines[i];
+        if (line.startsWith('Đơn vị:') || line.startsWith('Tỉ trọng tính') || line.includes('Click+') || line.includes('Đang chọn')) break;
+
+        let name = '';
+        let parts: string[] = [];
+
+        if (line.includes('\t')) {
+            const split = line.split('\t').map(p => p.trim());
+            name = split[0];
+            parts = split.slice(1);
+            i++;
+        } else if (i + 1 < lines.length && lines[i + 1].includes('\t')) {
+            name = line;
+            parts = lines[i + 1].split('\t').map(p => p.trim());
+            i += 2;
+        } else {
+            i++;
+            continue;
+        }
+
+        // Đổi chỗ: đưa parts[3] (DTLK / THỰC) ra phía trước parts[1] (DTQĐ)
+        const reorderedParts = [
+            parts[0] ?? '0',  // Số lượng
+            parts[3] ?? '0',  // DTLK (THỰC)
+            parts[1] ?? '0',  // DTQĐ
+            parts[2] ?? '0%', // % Tỉ trọng
+            parts[4] ?? '—',  // Target (QĐ)
+            parts[5] ?? '—',  // % HT Target (QĐ)
+            parts[6] ?? '0',  // TB 3 Tháng
+            parts[7] ?? '0%', // % TT
+            parts[8] ?? '0',  // DT TRẢ GÓP
+            parts[9] ?? '0%'  // Tỷ Trọng Trả Góp
+        ];
+
+        if (name.startsWith('Tổng')) {
+            totalRow = ['Tổng', ...reorderedParts];
+            continue;
+        }
+
+        const isParent = isParentIndustry(name);
+        if (isParent) {
+            currentParent = {
+                name: name,
+                values: [name, ...reorderedParts],
+                children: [],
+                level: 0
+            };
+            tree.push(currentParent);
+        } else {
+            const child: IndustryTreeNode = {
+                name: name,
+                values: [name, ...reorderedParts],
+                children: [],
+                level: 1
+            };
+            if (currentParent) {
+                currentParent.children.push(child);
+            } else {
+                tree.push(child);
+            }
+        }
+    }
+
+
+    const tableRows = tree.map(node => [...node.values]);
+    const rows = totalRow ? [...tableRows, totalRow] : tableRows;
+
+    const chiPhiMatch = text.match(/Chi phí\s*(?:\?\s*)?([\d,.]+)/i);
+
+    return {
+        headers: standardHeaders,
+        rows,
+        allRows: rows,
+        tree,
+        totalRow,
+        kpis: {
+            laiGopQDDuKien: 'N/A',
+            chiPhi: chiPhiMatch ? chiPhiMatch[1] : 'N/A',
+            targetLNTT: 'N/A',
+            htTargetDuKienLNTT: 'N/A'
+        }
+    };
+}
+
 export const parseIndustryRealtimeData = (
     text: string,
     industryBiMap?: Record<string, { parent: string; child: string }> | null
@@ -658,6 +1012,12 @@ export const parseIndustryRealtimeData = (
     };
 
     if (!text) return result;
+
+    if (text.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || text.toUpperCase().includes('NGÀNH HÀNG/NHÓM HÀNG')) {
+        const parsed = parseNewPortalIndustryData(text);
+        if (parsed) return parsed;
+    }
+
     const lines = text.split('\n');
     const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng\tSL Realtime'));
     if (headerIndex === -1) return result;
@@ -701,6 +1061,18 @@ export const parseIndustryLuyKeData = (
         totalRow: null
     };
     if (!text) return result;
+
+    if (text.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || text.toUpperCase().includes('NGÀNH HÀNG/NHÓM HÀNG')) {
+        const parsed = parseNewPortalIndustryData(text);
+        if (parsed) {
+            return {
+                kpis: parsed.kpis,
+                table: { headers: parsed.headers, rows: parsed.rows },
+                tree: parsed.tree,
+                totalRow: parsed.totalRow
+            };
+        }
+    }
     const lines = text.split('\n');
     const kpiBlock = lines.join('\n');
     const laiGopMatch = kpiBlock.match(/Lãi gộp QĐ Dự kiến\s+([\d,.]+)/);
@@ -735,12 +1107,26 @@ export const parseIndustryLuyKeData = (
 };
 
 export const extractSupermarketList = (summaryLuyKe: string): string[] => {
-    if (!summaryLuyKe || !summaryLuyKe.includes('Tên miền\tDT Hôm Qua\tDTLK\tDT Dự Kiến\tDTQĐ')) {
-        return [];
+    if (!summaryLuyKe) return [];
+    
+    // 1. Thử bóc tách qua parseSummaryData
+    const parsed = parseSummaryData(summaryLuyKe);
+    let rawExtractedNames: string[] = [];
+    if (parsed.table.rows.length > 0) {
+        rawExtractedNames = parsed.table.rows
+            .map(r => (r[0] || '').trim())
+            .filter(name => name && name !== 'Tổng' && !isEmployeeName(name) && !name.includes(' liên hệ '));
     }
-    const rawExtractedNames = Array.from(new Set(summaryLuyKe.split('\n')
-        .map(line => (line.split('\t')[0] ?? '').trim())
-        .filter(name => (name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))));
+
+    // 2. Dự phòng quét theo dòng nếu bảng chưa có dòng
+    if (rawExtractedNames.length === 0) {
+        rawExtractedNames = Array.from(new Set(summaryLuyKe.split(/\r?\n/)
+            .map(line => (line.split('\t')[0] ?? '').trim())
+            .filter(name => {
+                if (!name || name === 'Tổng' || isEmployeeName(name) || name.includes(' liên hệ ') || name.includes('Đơn vị:')) return false;
+                return /^\d+\s*-\s*/.test(name) || name.startsWith('ĐM') || name.startsWith('TGD') || (name.includes(' - ') && !name.includes(':'));
+            })));
+    }
 
     const uniqueShortNames = new Set<string>();
     const extractedNames: string[] = [];

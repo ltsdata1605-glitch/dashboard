@@ -3,8 +3,9 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
 import { parseRevenueData, standardizeEmployeeName, formatEmployeeName } from '../utils/nhanVienHelpers';
-import { parseCompetitionDataBySupermarket } from '../utils/dashboardHelpers';
-import type { AnalysisEmployeeItem } from './analysisEmployeeSyncService';
+import { parseCompetitionDataBySupermarket, parseSummaryData } from '../utils/dashboardHelpers';
+import { isSystemOrIgnoredEmployee, type AnalysisEmployeeItem } from './analysisEmployeeSyncService';
+import { isIgnoredDept } from '../utils/nhanVienHelpers';
 
 export interface Employee {
     originalName: string;
@@ -24,14 +25,82 @@ export interface Competition {
 
 export const parseBaseTargetQuyDoi = (summaryLuyKeData: string, supermarketName: string): number => {
     if (!summaryLuyKeData) return 0;
+
+    // Sử dụng parseSummaryData chuẩn hoá của hệ thống để phân tích cấu trúc bảng & header
+    const { table, kpis } = parseSummaryData(summaryLuyKeData);
+
+    // 1. Tìm vị trí cột Target trong danh sách headers
+    let targetIdx = table.headers.findIndex(h => {
+        const u = h.trim().toUpperCase();
+        return u === 'TARGET' || u === 'TARGET (QĐ)' || u === 'TARGET(QĐ)' || u === 'TAR' || u === 'TARGET TRỌN KỲ';
+    });
+    if (targetIdx === -1) {
+        targetIdx = table.headers.findIndex(h => h.trim().toUpperCase().includes('TARGET'));
+    }
+    // Trong định dạng portal mới: standardHeaders có 'Target (QĐ)' ở cột index 5
+    if (targetIdx === -1 && table.headers.length > 5) {
+        targetIdx = 5;
+    }
+
+    // 2. Tìm hàng tương ứng với siêu thị
+    let matchedRow: string[] | undefined;
+    if (supermarketName === 'Tổng') {
+        matchedRow = table.rows.find(r => r[0]?.trim().startsWith('Tổng'));
+    } else {
+        const safeTarget = shortenSupermarketName(supermarketName).toLowerCase();
+        matchedRow = table.rows.find(r => {
+            const rName = r[0]?.trim() || '';
+            if (rName.startsWith('Tổng')) return false;
+            const rSafe = shortenSupermarketName(rName).toLowerCase();
+            return rName === supermarketName ||
+                   rSafe === safeTarget ||
+                   rName.toLowerCase().includes(safeTarget) ||
+                   safeTarget.includes(rSafe);
+        });
+
+        // Nếu bảng chỉ có duy nhất 1 siêu thị (không tính dòng Tổng), tự động chọn dòng đó
+        if (!matchedRow) {
+            const storeRows = table.rows.filter(r => !r[0]?.trim().startsWith('Tổng'));
+            if (storeRows.length === 1) {
+                matchedRow = storeRows[0];
+            }
+        }
+    }
+
+    // 3. Trích xuất giá trị Target từ dòng siêu thị
+    if (matchedRow) {
+        if (targetIdx !== -1 && matchedRow[targetIdx] !== undefined) {
+            const val = parseNumber(matchedRow[targetIdx]);
+            if (val > 0) return val;
+        }
+        if (matchedRow[5] !== undefined) {
+            const val = parseNumber(matchedRow[5]);
+            if (val > 0) return val;
+        }
+    }
+
+    // 4. Dự phòng: lấy từ kpis.targetQD (nếu xem Tổng hoặc báo cáo 1 siêu thị)
+    if (kpis.targetQD) {
+        const val = parseNumber(kpis.targetQD);
+        if (val > 0) return val;
+    }
+
+    // 5. Dự phòng quét dòng tab-separated thô
     const lines = String(summaryLuyKeData).split('\n');
-    const supermarketLine = lines.find(line => line.trim().startsWith(supermarketName));
-    if (!supermarketLine) return 0;
-    const columns = supermarketLine.split('\t');
-    const dtDuKienQd = parseNumber(columns[5]);
-    const htTargetPercent = parseNumber(columns[6]);
-    if (isNaN(dtDuKienQd) || isNaN(htTargetPercent) || htTargetPercent === 0) return 0;
-    return dtDuKienQd / (htTargetPercent / 100);
+    const safeTarget = shortenSupermarketName(supermarketName).toLowerCase();
+    for (const line of lines) {
+        const parts = line.split('\t').map(p => p.trim());
+        if (parts.length >= 6) {
+            const first = parts[0];
+            const firstSafe = shortenSupermarketName(first).toLowerCase();
+            if (first === supermarketName || firstSafe === safeTarget || first.toLowerCase().includes(safeTarget) || (supermarketName === 'Tổng' && first.startsWith('Tổng'))) {
+                const val = parseNumber(parts[5]);
+                if (val > 0) return val;
+            }
+        }
+    }
+
+    return 0;
 };
 
 export const parseCompetitions = (competitionLuyKeData: string): Competition[] => {
@@ -119,7 +188,7 @@ export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: strin
         const namePart = parts[0].trim();
         
         if (namePart.startsWith('BP ') && (parts.length > 1 || !line.includes('\t'))) {
-            if (currentDept) {
+            if (currentDept && !isIgnoredDept(currentDept.name)) {
                 departmentList.push({ name: currentDept.name, employeeCount: currentDept.employees.size, isManual: false });
             }
             currentDept = { name: namePart, employees: new Set() };
@@ -133,7 +202,7 @@ export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: strin
         }
     }
     
-    if (currentDept) {
+    if (currentDept && !isIgnoredDept(currentDept.name)) {
         departmentList.push({ name: currentDept.name, employeeCount: currentDept.employees.size, isManual: false });
     }
     
@@ -160,7 +229,12 @@ export const getEmployeesFromAnalysis = (
     if (!analysisEmployees || analysisEmployees.length === 0) return [];
     const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
     return analysisEmployees
-        .filter(e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName)))
+        .filter(e => {
+            if (hiddenSet.has(e.originalName) || hiddenSet.has(standardizeEmployeeName(e.originalName))) return false;
+            const dept = (e.department || '').trim();
+            if (!dept || isSystemOrIgnoredEmployee(e.originalName, dept)) return false;
+            return true;
+        })
         .map(e => ({
             originalName: e.originalName,
             name: e.name || formatEmployeeName(e.originalName)
@@ -179,7 +253,8 @@ export const getDepartmentsFromAnalysis = (
     if (!analysisEmployees || analysisEmployees.length === 0) return [];
     const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
     const activeAnalysisEmployees = analysisEmployees.filter(
-        e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName))
+        e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName)) &&
+             Boolean(e.department && !isSystemOrIgnoredEmployee(e.originalName, e.department))
     );
     if (activeAnalysisEmployees.length === 0) return [];
 

@@ -392,7 +392,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         </Button>
                     </div>
                     <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => { setTotalTarget(v); addUpdate(`targethero-${safeName}-total`, `Điều chỉnh Target DTQĐ - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTotalTarget(100)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
-                    <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => { setTraGop(v); addUpdate(`targethero-${safeName}-tragop`, `Điều chỉnh Target Trả góp - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTraGop(45)} colorTheme="emerald" />
+                    <CompactTargetItem label="Target Trả chậm" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => { setTraGop(v); addUpdate(`targethero-${safeName}-tragop`, `Điều chỉnh Target Trả chậm - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTraGop(45)} colorTheme="emerald" />
                     <CompactTargetItem label="Target Quy đổi" baseValue={40} adjValue={quyDoi} unit="%" ratio={quyDoi} onChange={v => { setQuyDoi(v); addUpdate(`targethero-${safeName}-quydoi`, `Điều chỉnh Target Quy đổi - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setQuyDoi(40)} colorTheme="amber" />
                 </div>
 

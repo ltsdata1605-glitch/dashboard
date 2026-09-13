@@ -54,6 +54,23 @@ describe('employeeParser - Analysis Employees Priority', () => {
         expect(depts).toHaveLength(1);
         expect(depts[0].employeeCount).toBe(3);
     });
+
+    it('loại trừ nhân viên có phòng ban Chưa xác định hoặc không phân ca', () => {
+        const withUnassigned: AnalysisEmployeeItem[] = [
+            ...mockAnalysisEmployees,
+            { id: '17950', name: 'Lâm Thị Thảo Sương', originalName: '17950 - Lâm Thị Thảo Sương', department: 'Chưa xác định' },
+            { id: '21453', name: 'Vương Nhựt Trường', originalName: '21453 - Vương Nhựt Trường', department: 'Không Phân Ca' }
+        ];
+
+        const emps = getEmployeesFromAnalysis(withUnassigned);
+        expect(emps).toHaveLength(3);
+        expect(emps.map(e => e.originalName)).not.toContain('17950 - Lâm Thị Thảo Sương');
+        expect(emps.map(e => e.originalName)).not.toContain('21453 - Vương Nhựt Trường');
+
+        const depts = getDepartmentsFromAnalysis(withUnassigned, '', []);
+        expect(depts).toHaveLength(1);
+        expect(depts[0].employeeCount).toBe(3);
+    });
 });
 
 describe('extractEmployeeId - Mã số nhân viên', () => {

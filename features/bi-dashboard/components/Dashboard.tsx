@@ -290,6 +290,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 isRealtime={isRealtimeView}
                                 realtimeData={industryRealtimeParsed}
                                 luykeData={industryLuyKeParsed}
+                                activeSupermarket={activeSupermarket}
                                 onExport={async () => { await handleExportPNG(industryTableRef, `Ngành Hàng ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
                             />
                         </div>

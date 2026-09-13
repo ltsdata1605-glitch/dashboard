@@ -73,7 +73,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
     const totalVuotTroiMonthly = computeMonthlyTarget(isRealtime, activeSupermarket, supermarketMonthlyTargets);
 
-    const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD);
+    const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD, dtqd);
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
     const secondaryLabel = isRealtime ? 'Mục tiêu ngày' : 'Mục tiêu tháng';
     const secondaryTargetStr = isRealtime
@@ -197,7 +197,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title: 'Mục Tiêu — Tỷ Trọng Trả Chậm',
                     unit: '%',
                     label: 'MỤC TIÊU TRẢ CHẬM (%)',
-                    desc: 'Nhập tỷ trọng phần trăm mục tiêu bán Trả Chậm / Trả Góp.',
+                    desc: 'Nhập tỷ trọng phần trăm mục tiêu bán Trả Chậm.',
                     placeholder: 'Ví dụ: 45'
                 };
             default:
@@ -283,13 +283,21 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
                     <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
                         <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
-                            {Math.ceil(parseNumber(kpiData.tlpv))}%
+                            {(() => {
+                                const val = parseNumber(kpiData.tlpv);
+                                if (!val) return '0%';
+                                return val % 1 === 0 ? `${val}%` : `${val.toFixed(1)}%`;
+                            })()}
                         </div>
                     </KpiCard>
 
                     <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
                         <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
-                            {kpiData.lbillBH ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN') : '0'}
+                            {kpiData.lbillBH && kpiData.lbillBH !== 'N/A'
+                                ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN')
+                                : (kpiData.lbill && kpiData.lbill !== 'N/A'
+                                    ? roundUp(parseNumber(kpiData.lbill)).toLocaleString('vi-VN')
+                                    : '0')}
                         </div>
                     </KpiCard>
 

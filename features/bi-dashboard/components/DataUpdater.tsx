@@ -1,12 +1,20 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
+import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon } from './Icons';
+import { Link2, Pencil } from 'lucide-react';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
+import { TileLinkModal } from './TileLinkModal';
+import {
+    DEFAULT_TILE_LINKS,
+    getTileLink,
+    saveTileLink,
+    resetTileLink,
+    TILE_CUSTOM_LINKS_KEY,
+} from '../services/tileLinkService';
 import { extractSupermarketList } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -22,8 +30,36 @@ const SUMMARY_LUYKE_REPORT_HEADER = 'Tên miền	DT Hôm Qua	DTLK	DT Dự Kiến
 const COMPETITION_REALTIME_REPORT_HEADER = 'Target Ngày	% HT Target Ngày	Xếp hạng trong miền';
 const COMPETITION_LUYKE_REPORT_HEADER = 'Target	% HT Target Tháng	% HT Dự Kiến	Xếp hạng trong miền';
 
-const validateSummaryRealtimeReport = (data: string): boolean => data.includes(SUMMARY_REALTIME_REPORT_HEADER);
-const validateSummaryLuyKeReport = (data: string): boolean => data.includes(SUMMARY_LUYKE_REPORT_HEADER);
+const validateSummaryRealtimeReport = (data: string): boolean => {
+    if (!data) return false;
+    if (data.includes(SUMMARY_REALTIME_REPORT_HEADER)) return true;
+    const lower = data.toLowerCase();
+    const hasConsolidatedOrTable = lower.includes('doanh thu hợp nhất') || 
+                                   lower.includes('revenue-consolidated') || 
+                                   (lower.includes('doanh thu qđ') && lower.includes('siêu thị'));
+    const isRealtime = lower.includes('realtime') || 
+                       lower.includes('hôm nay') || 
+                       lower.includes('% ht target (lk)') ||
+                       lower.includes('thời gian làm việc');
+    const hasTableCols = lower.includes('doanh thu qđ') && (lower.includes('target') || lower.includes('doanh thu'));
+    return (hasConsolidatedOrTable && isRealtime) || (isRealtime && hasTableCols);
+};
+
+const validateSummaryLuyKeReport = (data: string): boolean => {
+    if (!data) return false;
+    if (data.includes(SUMMARY_LUYKE_REPORT_HEADER)) return true;
+    const lower = data.toLowerCase();
+    const hasConsolidatedOrTable = lower.includes('doanh thu hợp nhất') || 
+                                   lower.includes('revenue-consolidated') || 
+                                   (lower.includes('doanh thu qđ') && lower.includes('siêu thị'));
+    const isLuyKe = lower.includes('lũy kế') || 
+                    lower.includes('luy ke') || 
+                    lower.includes('quỹ thời gian') || 
+                    lower.includes('target trọn kỳ') ||
+                    (lower.includes('% ht target') && !lower.includes('% ht target (lk)'));
+    const hasTableCols = lower.includes('doanh thu qđ') && (lower.includes('target') || lower.includes('doanh thu'));
+    return (hasConsolidatedOrTable && isLuyKe) || (isLuyKe && hasTableCols);
+};
 const validateCompetitionRealtimeReport = (data: string): boolean => {
     if (!data) return false;
     const lower = data.toLowerCase();
@@ -67,15 +103,18 @@ const StatusTile: React.FC<{
     title: string;
     lastUpdated: string | null;
     value: string;
+    placeholder?: string;
     onChange: (val: string) => void;
     onClear: (title: string) => void;
     error?: string | null;
     downloadUrl?: string;
+    linkUrl?: string;
+    onOpenLinkModal?: () => void;
     icon?: React.ReactNode;
-    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo' | 'slate';
+    colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber';
     readOnly?: boolean;
     readOnlyHint?: string;
-}> = ({ title, lastUpdated, value, onChange, onClear, error, downloadUrl, icon, colorTheme = 'sky', readOnly = false, readOnlyHint }) => {
+}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, downloadUrl, linkUrl, onOpenLinkModal, icon, colorTheme = 'sky', readOnly = false, readOnlyHint }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
 
@@ -104,28 +143,17 @@ const StatusTile: React.FC<{
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
             ring: 'border-amber-500 ring-2 ring-amber-500/20'
         },
-        indigo: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
-            text: 'text-sky-800 dark:text-sky-200',
-            iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
-            ring: 'border-sky-500 ring-2 ring-sky-500/20'
-        },
-        slate: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-slate-400',
-            text: 'text-slate-800 dark:text-slate-200',
-            iconActive: 'text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
-            ring: 'border-slate-500 ring-2 ring-slate-500/20'
-        }
     };
 
-    const currentTheme = themeColors[colorTheme];
+    const currentTheme = themeColors[colorTheme] || themeColors.sky;
+    const effectiveLink = linkUrl || downloadUrl;
 
     return (
-        <div className="relative group w-full">
+        <div className="relative group group/tile w-full">
             <div
                 onClick={() => !isPasting && !readOnly && setIsPasting(true)}
                 className={`
-                    min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden group/tile border shadow-sm
+                    cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                     ${isPasting
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
@@ -135,11 +163,11 @@ const StatusTile: React.FC<{
                 `}
             >
                 {isPasting ? (
-                    <div className="w-full flex items-center gap-3 animate-in fade-in duration-150 py-1">
+                    <div className="w-full flex items-center gap-2 animate-in fade-in duration-150">
                         <textarea
                             autoFocus
-                            className="flex-1 bg-transparent border-none focus:ring-0 text-[12px] font-mono resize-none p-0 h-10 leading-tight text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400"
-                            placeholder="Nhấn Ctrl+V để dán dữ liệu..."
+                            className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
+                            placeholder={placeholder || 'Nhấn Ctrl + V...'}
                             onPaste={(e) => {
                                 const text = e.clipboardData.getData('text');
                                 onChange(text);
@@ -147,24 +175,24 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3">
+                    <div className="flex items-center justify-between w-full gap-3 pr-20 group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <UploadIcon className="h-4 w-4" />}
                             </div>
-                            <div className="min-w-0 flex flex-col justify-center">
+                            <div className="min-w-0">
                                 <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
+                                        <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
                                             <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate">
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">
                                         {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để cập nhật'}
                                     </span>
                                 )}
@@ -174,35 +202,63 @@ const StatusTile: React.FC<{
                 )}
             </div>
 
-            {hasData && !isPasting && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1 z-10 cursor-default">
-                    {downloadUrl && (
-                         <a
-                            href={downloadUrl}
+            {!isPasting && (
+                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 z-10">
+                    {onOpenLinkModal && (
+                        <Button
+                            type="button"
+                            variant="unstyled"
+                            size="none"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenLinkModal();
+                            }}
+                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title="Chỉnh sửa liên kết"
+                            aria-label="Chỉnh sửa liên kết"
+                        >
+                            <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+
+                    {(effectiveLink || onOpenLinkModal) && (
+                        <a
+                            href={effectiveLink || '#'}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className={`p-1.5 rounded-lg transition-colors border shadow-sm bg-white dark:bg-slate-800 ${currentTheme.text} hover:bg-sky-100 hover:text-sky-600 hover:border-sky-300 dark:hover:bg-sky-900/40 dark:hover:text-sky-300 border-white/50`}
-                            title="Tải báo cáo gốc"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!effectiveLink) {
+                                    e.preventDefault();
+                                    onOpenLinkModal?.();
+                                }
+                            }}
+                            className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
+                            aria-label="Mở liên kết báo cáo"
                         >
-                            <LinkIcon className="h-3.5 w-3.5" />
+                            <Link2 className="h-3.5 w-3.5" />
                         </a>
                     )}
-                    {!readOnly && (
+
+                    {hasData && !readOnly && (
                         <Button
-                            variant="unstyled" size="none"
+                            variant="unstyled"
+                            size="none"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            title="Xoá dữ liệu"
-                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
+                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            title="Xoá"
+                            aria-label="Xoá dữ liệu"
                         >
                             <TrashIcon className="h-3.5 w-3.5" />
                         </Button>
                     )}
                 </div>
             )}
+
             {error && (
                 <div className="mt-1 flex items-center gap-1 px-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
                     <AlertTriangleIcon className="h-3 w-3 shrink-0" />
@@ -226,6 +282,39 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
     const [, setLastUpdates] = useIndexedDBState<Update[]>('last-updates-list', []);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
+
+    const [customLinks, setCustomLinks] = useIndexedDBState<Record<string, string> | null>(TILE_CUSTOM_LINKS_KEY as any, null);
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        tileId: string;
+        tileName?: string;
+        groupName?: string;
+        currentUrl: string;
+        defaultUrl: string;
+    } | null>(null);
+
+    const handleOpenLinkConfig = (tileId: string, tileName: string, groupName: string) => {
+        const currentUrl = getTileLink(tileId, customLinks);
+        const defaultUrl = DEFAULT_TILE_LINKS[tileId] || 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated';
+        setModalConfig({
+            isOpen: true,
+            tileId,
+            tileName,
+            groupName,
+            currentUrl,
+            defaultUrl,
+        });
+    };
+
+    const handleSaveLink = async (tileId: string, newUrl: string) => {
+        const updated = await saveTileLink(tileId, newUrl);
+        setCustomLinks(updated);
+    };
+
+    const handleResetLink = async (tileId: string) => {
+        const updated = await resetTileLink(tileId);
+        setCustomLinks(updated);
+    };
 
     // Đợt 4 (implementation_plan.md) — phân quyền theo siêu thị: chỉ manager/admin được dán
     // Luỹ kế (Báo cáo Tổng hợp + Thi đua Cụm), dữ liệu sẽ ghi thêm lên biData/{maKho} dùng
@@ -302,7 +391,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
             <div className="relative z-20 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                    <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
@@ -338,17 +427,28 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {/* NHÓM BÁO CÁO TỔNG HỢP */}
                         <div>
-                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
-                                Báo cáo Tổng hợp
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center justify-between px-1 pb-2">
+                                <a
+                                    href="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 transition-colors group"
+                                    title="Mở Báo cáo Doanh thu hợp nhất"
+                                >
+                                    <div className="w-2 h-2 bg-sky-500 rounded-sm group-hover:scale-110 transition-transform"></div>
+                                    <span>Doanh thu hợp nhất</span>
+                                    <span className="text-[11px] text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">↗</span>
+                                </a>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={summaryRealtimeTs}
                                     value={summaryRealtime}
+                                    placeholder="Dán dữ liệu Realtime Doanh Thu..."
                                     error={errors.summaryRealtime}
-                                    downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
+                                    linkUrl={getTileLink('summary-realtime', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('summary-realtime', 'Realtime', 'Doanh thu hợp nhất')}
                                     icon={<ClockIcon className="h-4 w-4" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
@@ -364,15 +464,16 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                         setSummaryRealtimeTs(null);
                                         removeUpdate('summary-realtime');
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-
                                     }}
                                 />
                                 <StatusTile
                                     title="Luỹ kế"
                                     lastUpdated={summaryLuyKeTs}
                                     value={summaryLuyKe}
+                                    placeholder="Dán dữ liệu Luỹ kế tháng..."
                                     error={errors.summaryLuyKe}
-                                    downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
+                                    linkUrl={getTileLink('summary-luyke', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('summary-luyke', 'Luỹ kế', 'Doanh thu hợp nhất')}
                                     icon={<ChartPieIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
                                     readOnly={isReadOnlySharedTile}
@@ -395,7 +496,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                         setSummaryLuyKeTs(null);
                                         removeUpdate('summary-luy-ke');
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-
                                     }}
                                 />
                             </div>
@@ -403,17 +503,28 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
                         {/* NHÓM BÁO CÁO THI ĐUA */}
                         <div>
-                            <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
-                                Thi đua Cụm
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center justify-between px-1 pb-2">
+                                <a
+                                    href="https://baocao.dienmayxanh.com/dashboard/thi-dua"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors group"
+                                    title="Mở Báo cáo Thi đua"
+                                >
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-sm group-hover:scale-110 transition-transform"></div>
+                                    <span>Thi đua Cụm</span>
+                                    <span className="text-[11px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">↗</span>
+                                </a>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={competitionRealtimeTs}
                                     value={competitionRealtime}
+                                    placeholder="Dán dữ liệu Thi đua Realtime..."
                                     error={errors.competitionRealtime}
-                                    downloadUrl="https://baocao.dienmayxanh.com/dashboard/thi-dua"
+                                    linkUrl={getTileLink('competition-realtime', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-realtime', 'Realtime', 'Thi đua Cụm')}
                                     icon={<SparklesIcon className="h-4 w-4" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
@@ -430,15 +541,16 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                         setCompetitionRealtimeTs(null);
                                         removeUpdate('competition-realtime');
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-
                                     }}
                                 />
                                 <StatusTile
                                     title="Luỹ kế"
                                     lastUpdated={competitionLuyKeTs}
                                     value={competitionLuyKe}
+                                    placeholder="Dán dữ liệu Thi đua Luỹ kế..."
                                     error={errors.competitionLuyKe}
-                                    downloadUrl="https://baocao.dienmayxanh.com/dashboard/thi-dua"
+                                    linkUrl={getTileLink('competition-luyke', customLinks)}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-luyke', 'Luỹ kế', 'Thi đua Cụm')}
                                     icon={<ChartBarIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
                                     readOnly={isReadOnlySharedTile}
@@ -462,7 +574,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                         setCompetitionLuyKeTs(null);
                                         removeUpdate('competition-luy-ke');
                                         toast.success(`Đã xoá dữ liệu ${title}`);
-
                                     }}
                                 />
                             </div>
@@ -477,14 +588,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <Card
                         title="Cấu hình siêu thị chi tiết"
                         icon="settings-2"
-                        subtitle={
-                            analysisEmployees && analysisEmployees.employees.length > 0 ? (
-                                <span className="normal-case text-[11px] text-sky-700 dark:text-sky-400 font-medium inline-flex items-center gap-1.5 tracking-normal">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
-                                    <span>Ưu tiên sử dụng <b className="font-bold text-sky-800 dark:text-sky-300">{analysisEmployees.employees.length} NV</b> từ Phân Tích để tính toán toàn bộ các tab</span>
-                                </span>
-                            ) : undefined
-                        }
                         actionButton={
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                                 {supermarkets.map((sm) => (
@@ -533,6 +636,20 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 confirmText="Xoá tất cả dữ liệu"
                 variant="danger"
             />
+
+            {modalConfig && (
+                <TileLinkModal
+                    isOpen={modalConfig.isOpen}
+                    onClose={() => setModalConfig(null)}
+                    tileId={modalConfig.tileId}
+                    tileName={modalConfig.tileName}
+                    groupName={modalConfig.groupName}
+                    currentUrl={modalConfig.currentUrl}
+                    defaultUrl={modalConfig.defaultUrl}
+                    onSave={handleSaveLink}
+                    onReset={handleResetLink}
+                />
+            )}
         </div>
     );
 };

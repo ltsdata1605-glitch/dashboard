@@ -41,7 +41,14 @@ interface KhoInputProps {
  * 1 loại component khác, unmount rồi mount lại <input> DOM — mất focus ngay sau khi gõ đúng 1
  * ký tự. Bug này đã xảy ra thật, user báo cáo "vừa gõ 1 số bị văng ra").
  */
-const KhoInput: React.FC<KhoInputProps> = ({ isAdmin, allowedKhos, value, onChange, disabled }) => {
+const KhoInput: React.FC<{
+    isAdmin: boolean;
+    allowedKhos: string[];
+    value: string;
+    onChange: (v: string) => void;
+    disabled?: boolean;
+    className?: string;
+}> = ({ isAdmin, allowedKhos, value, onChange, disabled, className }) => {
     if (isAdmin) {
         return (
             <Input
@@ -50,7 +57,7 @@ const KhoInput: React.FC<KhoInputProps> = ({ isAdmin, allowedKhos, value, onChan
                 placeholder="Mã Kho"
                 inputMode="numeric"
                 fullWidth={false}
-                className="text-xs w-24"
+                className={className || "text-xs w-24"}
                 disabled={disabled}
             />
         );
@@ -64,7 +71,7 @@ const KhoInput: React.FC<KhoInputProps> = ({ isAdmin, allowedKhos, value, onChan
             onChange={(e) => onChange(e.target.value)}
             options={allowedKhos.map(k => ({ value: k, label: k }))}
             fullWidth={false}
-            className="text-xs w-24"
+            className={className || "text-xs w-24"}
             disabled={disabled}
         />
     );
@@ -252,41 +259,68 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
     const hasUnmapped = unmappedNames.length > 0;
 
     return (
-        <Card title="Bảng map Siêu thị → Mã Kho" icon="settings-2" noPadding>
-            <div className="p-2.5">
+        <Card
+            title="Cập nhật mã kho"
+            icon="settings-2"
+            noPadding
+            onHeaderClick={() => setIsExpanded(v => !v)}
+            actionButton={
                 <Button
                     variant="unstyled"
                     size="none"
-                    onClick={() => setIsExpanded(v => !v)}
-                    className="w-full flex items-center justify-between gap-2 py-1"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(v => !v);
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors shadow-xs ${
+                        hasUnmapped
+                            ? 'border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-rose-600 dark:border-rose-800/60 dark:bg-rose-950/30 dark:text-rose-400'
+                            : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+                    title={isExpanded ? 'Thu gọn' : 'Mở rộng cấu hình'}
                 >
-                    <span className={`text-[11px] font-bold ${hasUnmapped ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <span className="text-[11px] font-bold">
                         {isLoading ? 'Đang tải...' : hasUnmapped ? `${unmappedNames.length} siêu thị chưa có Mã Kho` : 'Đã cấu hình đủ Mã Kho'}
                     </span>
-                    {isExpanded ? <ChevronUpIcon className="h-3 w-3 text-slate-400 shrink-0" /> : <ChevronDownIcon className="h-3 w-3 text-slate-400 shrink-0" />}
+                    {isExpanded ? <ChevronUpIcon className="h-3 w-3 shrink-0" /> : <ChevronDownIcon className="h-3 w-3 shrink-0" />}
                 </Button>
-
-                {isExpanded && !isLoading && (
-                    <div className="mt-2 space-y-2">
-                        {hasUnmapped && (
-                            <div className="rounded-md border border-rose-200 dark:border-rose-800/40 bg-rose-50 dark:bg-rose-900/10 p-2 space-y-1.5">
-                                {unmappedNames.map(name => (
-                                    <div key={name} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-1.5">
-                                        <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate" title={name}>{name}</span>
+            }
+        >
+            {isExpanded && !isLoading && (
+                <div className="p-2 space-y-1.5">
+                    {hasUnmapped && (
+                        <div className="rounded-md border border-rose-200/90 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 px-2.5 py-1 space-y-1">
+                            {unmappedNames.map(name => (
+                                <div key={name} className="flex items-center justify-between gap-2 py-0.5">
+                                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                                        <span className="text-[11px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={name}>
+                                            {name}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
                                         <KhoInput
                                             isAdmin={isAdmin}
                                             allowedKhos={allowedKhos}
                                             value={unmappedKho[name] ?? ''}
                                             onChange={(v) => setUnmappedKho(prev => ({ ...prev, [name]: v }))}
                                             disabled={savingKey === name}
+                                            className="text-xs w-20 h-7 py-0.5 px-2"
                                         />
-                                        <Button size="sm" variant="primary" onClick={() => handleSaveUnmapped(name)} disabled={savingKey === name} className="shrink-0 h-8">
-                                            Lưu
+                                        <Button
+                                            size="none"
+                                            variant="primary"
+                                            onClick={() => handleSaveUnmapped(name)}
+                                            disabled={savingKey === name}
+                                            className="shrink-0 h-7 px-3 text-xs font-semibold rounded-md shadow-2xs"
+                                        >
+                                            {savingKey === name ? '...' : 'Lưu'}
                                         </Button>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                         <Button variant="ghost" size="sm" onClick={() => setManualOpen(v => !v)} leftIcon={<PlusIcon className="h-3.5 w-3.5" />}>
                             {manualOpen ? 'Ẩn thêm thủ công' : 'Thêm siêu thị khác'}
@@ -314,7 +348,6 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({ isAdmin, 
                         )}
                     </div>
                 )}
-            </div>
 
             <ConfirmDialog
                 isOpen={!!deletingName}

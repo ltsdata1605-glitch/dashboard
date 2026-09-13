@@ -1,17 +1,33 @@
-# Kế hoạch Thực thi: Tính năng "Tuỳ chỉnh bật/tắt cột %HT trong bộ Target Thi đua"
+# Task Plan: Liên kết Target Trả Góp & Target Quy Đổi với cột %T.Góp & HQQĐ
 
-## 1. Mục tiêu & Yêu cầu của Người dùng
-- Trong cùng 1 bộ (Bộ Cơ bản: `TAR`, `%HT`, `%DKHT` hoặc Bộ Vượt trội: `TAR V.TRỘI`, `%HT V.TRỘI`, `%DKHT V.TRỘI`), người dùng có thể linh hoạt tuỳ chỉnh **tắt bớt cột `%HT`** (hoặc `%DKHT`) mà không bị cưỡng bức chuyển bộ hoặc tắt toàn bộ nhóm.
-- Đảm bảo 2 bộ Target vẫn giữ tính chất loại trừ tương hỗ (Mutually Exclusive) khi chuyển đổi giữa Cơ bản và Vượt trội.
-- Đảm bảo bảng luôn có ít nhất 1 bộ Target để tính toán cột `C.LẠI`.
+## 1. Mục tiêu (Goals)
+- Liên kết giá trị **Target Trả góp** và **Target Quy đổi** (được cấu hình ở tab **Cập nhật** -> **Target Doanh thu**) vào 2 cột **`%T.Góp`** và **`HQQĐ`** trong bảng Doanh thu (`RevenueTab` & `RevenueDesktopRow`).
+- Dùng giá trị target động này làm mốc chuẩn để đánh giá dữ liệu và tô màu trạng thái:
+  - **`%T.Góp`**: Đánh giá dựa trên `Target Trả góp` (ví dụ: `60%`).
+  - **`HQQĐ`**: Đánh giá dựa trên `Target Quy đổi` (ví dụ: `60%`).
+- Xử lý phân cấp trạng thái cho các dữ liệu **kém hơn target** (dưới mốc target) với độ tương phản cao, màu sắc đậm nét, rõ ràng.
 
-## 2. Kết quả triển khai
-- [x] Cập nhật hàm `toggleCompetitionColumn` trong `competitionSortAndCalc.ts`:
-  - Cho phép người dùng bật/tắt riêng lẻ các cột tỷ lệ `%` (`%HT`, `%DKHT`, `%HT V.Trội`, `%DKHT V.Trội`) trong bộ đang kích hoạt.
-  - Khi click vào cột Target chính (`Target` hoặc `Target V.Trội`), hệ thống chuyển đổi qua lại giữa bộ Cơ bản và Vượt trội.
-  - Tự động đánh số thứ tự cột trực quan và an toàn (không bao giờ mất trắng cả 2 bộ).
-- [x] Bổ sung 3 unit tests mới trong `competitionSortAndCalc.test.ts` (Tổng: 20/20 tests PASS).
-- [x] Chạy kiểm tra toàn diện `npm run check` (177 unit tests PASS, TypeScript 0 lỗi, ESLint 0 lỗi, build Vite production hoàn tất).
-- [x] Kiểm thử trực quan qua trình duyệt:
-  - Tắt công tắc `%HT`: Cột `%HT` lập tức ẩn trên bảng, `TAR` và `%DKHT` vẫn hiển thị chuẩn xác.
-  - Bật lại công tắc `%HT`: Cột `%HT` hiển thị lại bình thường.
+---
+
+## 2. Các giai đoạn thực hiện (Phases)
+
+### Phase 1: Phân tích & Đặc tả quy tắc điều kiện (Hoàn thành)
+- [x] Định vị nguồn dữ liệu Target Trả góp (`targethero-${safeName}-tragop`) và Target Quy đổi (`targethero-${safeName}-quydoi`) trong `TargetHero.tsx`.
+- [x] Khảo sát luồng truyền dữ liệu từ `TargetHero` $\rightarrow$ IndexedDB $\rightarrow$ `RevenueTab` / `RevenueDesktopRow`.
+- [x] Xác nhận với người dùng về công thức/mức phân tầng cụ thể khi dữ liệu **kém hơn target** (Phương án 3 mức: $\ge 100\%$ Xanh lá, $85\% - < 100\%$ Cam đậm, $< 85\%$ Đỏ đậm).
+
+### Phase 2: Nạp Target Trả Góp & Target Quy Đổi vào RevenueTab (Hoàn thành)
+- [x] Trong `RevenueTab.tsx`, nạp `targetTraGop` và `targetQuyDoi` từ IndexedDB theo `supermarketName`.
+- [x] Tự động đồng bộ và tính trung bình khi xem ở chế độ nhiều siêu thị / "Tổng hợp".
+- [x] Truyền giá trị `targetTraGop` và `targetQuyDoi` xuống component `RevenueDesktopRow` và các dòng tổng phòng ban.
+
+### Phase 3: Cập nhật logic tính màu động theo Target (Hoàn thành)
+- [x] Viết hàm `getMetricColorByTarget(val: number, target: number)`.
+- [x] Áp dụng cho cột `HQQĐ` (`val = row.hieuQuaQD * 100`, `target = targetQuyDoi`).
+- [x] Áp dụng cho cột `%T.Góp` (`val = row.calculatedInstallment`, `target = targetTraGop`).
+- [x] Nâng cấp `toBoldVividColor` để loại bỏ màu vàng nhạt, thay bằng Cam đậm (`#ea580c`).
+
+### Phase 4: Kiểm thử & Xác minh (Hoàn thành)
+- [x] Chạy `npm run typecheck` (0 errors).
+- [x] Chạy `npm run test:unit` (353 tests passed).
+- [x] Báo cáo đầy đủ và đính kèm timestamp thực tế.

@@ -1,34 +1,21 @@
-# Phát hiện & Ghi chú Kỹ thuật (Findings)
+# Findings: Cơ chế Target Trả Góp & Target Quy Đổi
 
-## 1. Cấu trúc dữ liệu Thi đua
-- Mỗi chương trình thi đua (`ProcessedProgram`) có:
-  - `name`: Tên chương trình
-  - `metric`: Tiêu chí gốc (`SLLK`, `DTLK`, `DTQĐ`)
-  - `data`: Mảng giá trị theo `headers`
-  - `conLai`: Giá trị còn lại (được tính động dựa vào các cột hiển thị)
-- Cột Thực hiện:
-  - Realtime: Cột có tên bắt đầu bằng `Realtime` hoặc `THỰC HIỆN`
-  - Luỹ kế: Cột có tên bắt đầu bằng `L.Kế` hoặc `LUỸ KẾ`
-- Cột Target:
-  - Chế độ Vượt trội: `Target V.Trội`
-  - Chế độ Thường: `Target`
+## 1. Nguồn dữ liệu Target
+- File nguồn: `features/bi-dashboard/components/TargetHero.tsx`
+- Tab: Cập nhật -> Cấu hình siêu thị chi tiết -> Tab "Target Doanh thu".
+- Storage Keys trong IndexedDB:
+  - `targethero-${safeName}-tragop`: Lưu giá trị Target Trả góp sau điều chỉnh (ví dụ trong ảnh: 60%). Giá trị gốc mặc định là 45%.
+  - `targethero-${safeName}-quydoi`: Lưu giá trị Target Quy đổi sau điều chỉnh (ví dụ trong ảnh: 60%). Giá trị gốc mặc định là 40%.
+  - Khi người dùng kéo slider hoặc nhập số %, `TargetHero` ghi trực tiếp vào key IndexedDB này và phát trigger update.
 
-## 2. Nhóm tiêu chí
-- `groupingMode === 'default'`: Gom nhóm theo tiêu chí gốc (`SLLK`, `DTLK`, `DTQĐ`).
-- `groupingMode === 'configured'`: Gom nhóm theo nhóm tuỳ chỉnh (`DỊCH VỤ`, `P.KIỆN - Đ.HỒ`, `CE`, `ICT`, `GIA DỤNG`...).
-- `groupedAndSortedPrograms` trong `CompetitionView.tsx` chứa sẵn cấu trúc Record<groupKey, ProcessedProgram[]>.
+## 2. Dữ liệu cột tương ứng trên bảng Doanh thu (`RevenueTab.tsx` / `RevenueDesktopRow.tsx`)
+- Cột **`HQQĐ`**:
+  - Giá trị thực tế của nhân viên: `row.hieuQuaQD * 100` (dạng phần trăm, ví dụ 55%).
+  - Target tương ứng: `Target Quy đổi` (ở tab Cập nhật).
+- Cột **`%T.Góp`**:
+  - Giá trị thực tế của nhân viên: `row.calculatedInstallment` (dạng phần trăm, ví dụ 58%).
+  - Target tương ứng: `Target Trả góp` (ở tab Cập nhật).
 
-## 3. Sticker & Icon sinh động
-- Nhóm sticker:
-  - Xuất sắc / Về đích: 🏆 🥇 🚀 👏 💎
-  - Sát nút / Tăng tốc: ⚡ 🔥 🏃 🎯 💪
-  - Cần nỗ lực / Cảnh báo: ⚠️ 🚨 ⏳ 📢
-- Nhóm biểu tượng ngành hàng:
-  - Dịch vụ / SIM: 📱 💳
-  - Phụ kiện / Đ.Hồ: 🎧 ⌚
-  - Gia dụng: 🍳 🍲 🫕
-  - Điện tử / Điện lạnh CE: 📺 ❄️
-  - Công nghệ ICT: 💻 📱
-  - SLLK: 📦
-  - DTLK: 💰
-  - DTQĐ: ⭐
+## 3. Vấn đề hiện tại
+- Trước đây, `RevenueDesktopRow` tính màu qua `colorSettings.hqqd` và `colorSettings.tragop` với ngưỡng cố định trong ColorSettings (good=35%/45%, average=30%/40%), hoàn toàn tách rời với Target thực tế mà Quản lý siêu thị thiết lập trong tab Cập nhật (ví dụ 60%).
+- Do đó, khi Target tăng lên 60%, những người đạt 55% hoặc 58% lẽ ra là **kém hơn target** thì lại hiển thị màu vàng trung bình theo ngưỡng cũ, và các mức màu không phản ánh đúng mục tiêu kinh doanh của siêu thị.

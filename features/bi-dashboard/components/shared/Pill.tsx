@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Ô số có mã màu theo ngưỡng (%HT, HQQĐ, %T.Góp, %B.Kèm và các cột trạng thái tương tự).
+ * Ô số có mã màu theo ngưỡng (%HT, HQQĐ, %T.Chậm, %B.Kèm và các cột trạng thái tương tự).
  *
  * 2026-09-11 — chuẩn "Bảng điều khiển ca trực": **tô CHỮ, không tô NỀN**.
  *
@@ -15,9 +15,9 @@ import React from 'react';
  * ⚠️ KHÔNG đổi logic ngưỡng màu ở bất kỳ đâu. Component này chỉ nhận màu hex đã tính sẵn từ
  * `getHtColor` / `getDynamicColor`; đổi ngưỡng là việc của những hàm đó.
  */
-export const Pill: React.FC<{ color?: string; children: React.ReactNode }> = ({ color, children }) => (
+export const Pill: React.FC<{ color?: string; children: React.ReactNode; className?: string }> = ({ color, children, className }) => (
     <span
-        className="inline-flex min-w-[42px] items-center justify-center px-1 text-[12px] font-bold tabular-nums"
+        className={`inline-flex min-w-[44px] items-center justify-center px-1 text-[13px] font-black tracking-tight tabular-nums ${className || ''}`}
         style={color ? { color } : undefined}
     >
         {children}

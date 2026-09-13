@@ -87,10 +87,12 @@ export const percentOf = (value: number, target: number): number =>
 export function computeMonthlyQdPercent(
     dtDuKienQD: number,
     monthlyTarget: number,
-    htTargetDuKienQDRaw: string | undefined
+    htTargetDuKienQDRaw: string | undefined,
+    dtqd: number = 0
 ): number {
+    const revenueToCompare = dtDuKienQD > 0 ? dtDuKienQD : dtqd;
     return monthlyTarget > 0
-        ? (dtDuKienQD / monthlyTarget) * 100
+        ? (revenueToCompare / monthlyTarget) * 100
         : parseNumber(htTargetDuKienQDRaw);
 }
 

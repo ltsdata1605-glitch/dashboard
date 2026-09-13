@@ -285,7 +285,7 @@ const EmployeeProfileCard: React.FC<{
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
+                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Chậm</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
@@ -686,13 +686,13 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-400 border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">M.TIÊU</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">T.HIỆN</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%HT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%DKHT</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] border-b-slate-300 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">C.LẠI</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">M.TIÊU</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">T.HIỆN</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%HT</th>
+                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%D.KIẾN</th>
+                                    <th className="text-center px-3 py-2 border-b border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">C.LẠI</th>
                                 </tr>
                             </thead>
                             <tbody>
