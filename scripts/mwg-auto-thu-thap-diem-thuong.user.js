@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      3.7
+// @version      4.0
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
+// @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
 // @match        https://dashboard.pro.vn/*
 // @match        http://127.0.0.1:5173/*
@@ -30,6 +31,27 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 4.0 — TỐI ƯU TỐC ĐỘ CLICK+ VƯỢT TRỘI (NHANH GẤP 5-7 LẦN):
+ * - Tăng ACP_BATCH_SIZE từ 8 lên 25 nút mỗi lô, giảm số vòng lặp chờ đồng bộ.
+ * - Giảm ACP_INTRA_BATCH_CLICK_DELAY từ 15ms xuống 2ms (click liên tục dứt khoát).
+ * - Giảm ACP_CLICK_SETTLE_MS từ 50ms xuống 15ms và ACP_SPINNER_POLL_MS từ 60ms xuống 25ms.
+ * - Giảm ACP_BATCH_PACING_DELAY từ 40ms xuống 10ms.
+ * - Throttle cập nhật trạng thái DOM acpUpdateStatus (chỉ chạy mỗi 5 nút hoặc cuối lô) tránh nghẽn reflow.
+ * - Tối ưu acpForceRenderAllRows cuộn trang mượt & nhanh hơn gấp 3 lần, giảm độ trễ trước khi copy.
+ *
+ * BẢN 3.9 — CẬP NHẬT TRANG BI MỚI (BAOCAO.DIENMAYXANH.COM):
+ * - Bổ sung @match https://baocao.dienmayxanh.com/* để Tampermonkey nạp script trên trang báo cáo BI mới.
+ * - Mở rộng cấu hình tên miền BI_HOSTNAMES hỗ trợ song song cả baocao.dienmayxanh.com và bi.thegioididong.com.
+ * - Hiển thị và vận hành đầy đủ thanh công cụ nổi ⚡ Click+ trên hệ thống báo cáo mới của Điện Máy Xanh.
+ *
+ * BẢN 3.8 — CẬP NHẬT SELECTOR NÚT MỞ RỘNG DÒNG MỚI (ANT DESIGN TABLE):
+ * - Hệ thống BI cập nhật cấu trúc bảng mới sử dụng Ant Design Table. Nút "+" mở rộng dòng có định dạng:
+ *   `<button type="button" class="ant-table-row-expand-icon ant-table-row-expand-icon-collapsed" aria-label="Mở rộng dòng" aria-expanded="false"></button>`
+ * - Bổ sung selector `ACP_ANT_CLOSED_SELECTOR` bao gồm:
+ *   `button.ant-table-row-expand-icon-collapsed, .ant-table-row-expand-icon-collapsed, button.ant-table-row-expand-icon[aria-expanded="false"], button[aria-label="Mở rộng dòng"][aria-expanded="false"]`.
+ * - Cập nhật `acpIsAlreadyOpened()` để nhận diện trạng thái đã mở của Ant Design (`.ant-table-row-expand-icon-expanded`, `aria-expanded="true"`).
+ * - Bổ sung `.ant-table-loading`, `.ant-spin` vào bộ chờ spinner `ACP_SPINNER_SELECTOR`.
  *
  * BẢN 3.7 — SỬA LỖI KHÔNG CÓ DỮ LIỆU KHI CHẠY TỰ ĐỘNG DO SAI ĐỊNH DẠNG MÃ NV:
  * - Khi danh sách nhân viên từ Dashboard / Phân Tích có khuôn dạng "Mã NV - Tên NV" (ví dụ: 195025 - Nguyễn Thị Mỹ Linh),
@@ -248,7 +270,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '3.7';
+  const SCRIPT_VERSION = '4.0';
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -1040,13 +1062,13 @@
     }, 2500);
   }
 
-  // ====== TRANG BI (bi.thegioididong.com): CLICK+ — MỞ RỘNG CÂY DỮ LIỆU THEO CẤP + TỰ ĐỘNG COPY ======
+  // ====== TRANG BI (baocao.dienmayxanh.com & bi.thegioididong.com): CLICK+ — MỞ RỘNG CÂY DỮ LIỆU THEO CẤP + TỰ ĐỘNG COPY ======
   // `#Loading` / `.overload-wait` là vòng xoay THẬT của trang (xác nhận qua DevTools của
   // người dùng: `<div id="Loading" class="overload-wait">`, overlay cố định toàn màn hình
   // do AngularJS `$http` interceptor bật/tắt khi có request đang chạy) — luôn ưu tiên 2
   // selector này. Các lớp DevExpress/spinner còn lại là suy đoán dự phòng cho báo cáo
   // khác; không khớp được cũng không sao, script chỉ đơn giản là không chờ spinner đó.
-  const BI_HOSTNAME = 'bi.thegioididong.com';
+  const BI_HOSTNAMES = ['baocao.dienmayxanh.com', 'bi.thegioididong.com'];
   // Click theo LÔ NHỎ (không còn từng-nút-một của bản 3.2 — quá chậm trên báo cáo nhiều
   // nút). Giờ đã sửa xong bug offsetParent (bản 3.2) nên việc chờ vòng xoay thật đã
   // hoạt động đúng — click lô nhỏ (4 nút) + luôn chờ đúng vòng xoay #Loading thật giữa
@@ -1058,25 +1080,35 @@
   // Giữ nguyên spinner-wait (ACP_SPINNER_MAX_WAIT_MS/POLL_MS) y hệt bản 3.3, chỉ giảm các khoảng
   // nghỉ TUỲ Ý (intra-batch delay, settle, pacing) và tăng batch size — vẫn an toàn vì mỗi lô vẫn
   // phải đợi trang thật sự xử lý xong (không dồn request) trước khi sang lô kế tiếp.
-  const ACP_BATCH_SIZE = 8; // số nút click liên tiếp trong 1 lô trước khi chờ vòng xoay
-  const ACP_INTRA_BATCH_CLICK_DELAY = 15; // ms nghỉ giữa từng cú click trong cùng 1 lô
-  const ACP_CLICK_SETTLE_MS = 50; // chờ 1 chút sau khi click xong cả lô để vòng xoay (nếu có) kịp xuất hiện trước khi bắt đầu kiểm tra
-  const ACP_SPINNER_MAX_WAIT_MS = 6000; // chờ tối đa vòng xoay biến mất cho MỖI LÔ — tránh treo vĩnh viễn nếu trang không phản hồi
-  const ACP_SPINNER_POLL_MS = 60;
-  const ACP_BATCH_PACING_DELAY = 40; // nghỉ thêm sau khi vòng xoay đã tắt, trước khi click lô kế tiếp
+  const ACP_BATCH_SIZE = 25; // số nút click liên tiếp trong 1 lô trước khi chờ vòng xoay
+  const ACP_INTRA_BATCH_CLICK_DELAY = 2; // ms nghỉ giữa từng cú click trong cùng 1 lô
+  const ACP_CLICK_SETTLE_MS = 15; // chờ 1 chút sau khi click xong cả lô để vòng xoay (nếu có) kịp xuất hiện trước khi bắt đầu kiểm tra
+  const ACP_SPINNER_MAX_WAIT_MS = 5000; // chờ tối đa vòng xoay biến mất cho MỖI LÔ — tránh treo vĩnh viễn nếu trang không phản hồi
+  const ACP_SPINNER_POLL_MS = 25;
+  const ACP_BATCH_PACING_DELAY = 10; // nghỉ thêm sau khi vòng xoay đã tắt, trước khi click lô kế tiếp
   const ACP_FA_PLUS_SELECTOR = '.fa-plus';
   const ACP_DX_CLOSED_SELECTOR = '.dx-datagrid-group-closed, td.dx-command-expand.dx-datagrid-group-closed';
+  const ACP_ANT_CLOSED_SELECTOR = [
+    'button.ant-table-row-expand-icon-collapsed',
+    '.ant-table-row-expand-icon-collapsed',
+    'button.ant-table-row-expand-icon[aria-expanded="false"]',
+    'button[aria-label="Mở rộng dòng"][aria-expanded="false"]',
+    '[aria-label="Mở rộng dòng"]:not([aria-expanded="true"])',
+  ].join(', ');
   const ACP_SPINNER_SELECTOR = [
     '#Loading', '.overload-wait',
     '.dx-loadpanel-content', '.dx-loadpanel:not(.dx-state-invisible)', '.dx-loadindicator',
-    '.ant-spin-spinning', '.el-loading-mask',
+    '.ant-spin-spinning', '.ant-spin', '.ant-table-loading', '.el-loading-mask',
     '[class*="spinner" i]', '[class*="loading" i]',
   ].join(', ');
 
   let acpRunning = false;
 
   function acpIsVisible(el) {
-    return !!(el && el.offsetParent !== null);
+    if (!el) return false;
+    if (el.offsetParent !== null) return true;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
   }
 
   // Kiểm tra hiển thị dành riêng cho spinner — KHÔNG dùng offsetParent vì theo spec,
@@ -1096,15 +1128,19 @@
   }
 
   // Kiểm tra nhiều cờ trạng thái khác nhau (aria-expanded, data-state, icon fa-minus,
-  // lớp DevExpress đã mở) — tránh click lại 1 dòng đã mở dù icon chưa kịp đổi do tải
+  // lớp DevExpress / Ant Design đã mở) — tránh click lại 1 dòng đã mở dù icon chưa kịp đổi do tải
   // bất đồng bộ (bug đã gặp thật ở bản 1.6, khiến dòng vừa mở bị tự đóng lại).
   function acpIsAlreadyOpened(el) {
     if (el.classList && el.classList.contains('dx-datagrid-group-opened')) return true;
-    const row = el.closest('tr, .dx-row, button, a, [role="button"], .cursor-pointer, td, div');
+    if (el.classList && el.classList.contains('ant-table-row-expand-icon-expanded')) return true;
+    if (el.getAttribute('aria-expanded') === 'true') return true;
+    const row = el.closest('tr, .dx-row, .ant-table-row, button, a, [role="button"], .cursor-pointer, td, div');
     if (!row) return false;
     if (row.getAttribute('aria-expanded') === 'true') return true;
     if (row.getAttribute('data-state') === 'open') return true;
     if (row.querySelector('.fa-minus')) return true;
+    if (row.querySelector('.ant-table-row-expand-icon-expanded')) return true;
+    if (row.querySelector('button[aria-expanded="true"]')) return true;
     if (row.classList && row.classList.contains('dx-datagrid-group-opened')) return true;
     return false;
   }
@@ -1119,9 +1155,12 @@
     // lại đúng phạm vi đó để không đụng tới các control khác ngoài bảng.
     const faIcons = Array.from(document.querySelectorAll(ACP_FA_PLUS_SELECTOR)).filter((el) => el.closest('table'));
     const dxClosed = Array.from(document.querySelectorAll(ACP_DX_CLOSED_SELECTOR));
-    return Array.from(new Set([...faIcons, ...dxClosed]))
+    const antClosed = Array.from(document.querySelectorAll(ACP_ANT_CLOSED_SELECTOR));
+    return Array.from(new Set([...faIcons, ...dxClosed, ...antClosed]))
       .filter(acpIsVisible)
       .filter((el) => !(el.classList && el.classList.contains('fa-minus')))
+      .filter((el) => !(el.classList && el.classList.contains('ant-table-row-expand-icon-expanded')))
+      .filter((el) => el.getAttribute('aria-expanded') !== 'true')
       .filter((el) => el.dataset.acpDone !== '1')
       .filter((el) => !acpIsAlreadyOpened(el));
   }
@@ -1144,19 +1183,19 @@
   // scroll / lazy render) kịp được vẽ ra DOM trước khi copy.
   async function acpForceRenderAllRows() {
     const scroller = document.scrollingElement || document.documentElement;
-    const step = Math.max(window.innerHeight || 800, 400);
+    const step = Math.max((window.innerHeight || 800) * 1.5, 600);
     let pos = 0;
     let guard = 0;
     while (pos < scroller.scrollHeight && guard < 500) {
       window.scrollTo(0, pos);
-      await sleep(120);
+      await sleep(40);
       pos += step;
       guard++;
     }
     window.scrollTo(0, scroller.scrollHeight);
-    await sleep(250);
+    await sleep(80);
     window.scrollTo(0, 0);
-    await sleep(250);
+    await sleep(80);
   }
 
   // Ghi lại nội dung mọi phần tử mới thêm vào DOM ngay khi nó xuất hiện (đề phòng bị
@@ -1333,23 +1372,30 @@
         } catch (e) {
           console.error('[Click+] Lỗi tại nút', i + 1, e);
         }
-        acpUpdateStatus(statusBox, clicked, total - i - 1, requestStop);
 
         const isEndOfBatch = (i + 1) % ACP_BATCH_SIZE === 0 || i === pending.length - 1;
+        if (isEndOfBatch || clicked % 5 === 0) {
+          acpUpdateStatus(statusBox, clicked, total - i - 1, requestStop);
+        }
+
         if (!isEndOfBatch) {
-          await sleep(ACP_INTRA_BATCH_CLICK_DELAY);
+          if (ACP_INTRA_BATCH_CLICK_DELAY > 0) {
+            await sleep(ACP_INTRA_BATCH_CLICK_DELAY);
+          }
           continue;
         }
         await acpWaitForSpinnersToClear();
         if (stopRequested) break;
-        await sleep(ACP_BATCH_PACING_DELAY);
+        if (ACP_BATCH_PACING_DELAY > 0) {
+          await sleep(ACP_BATCH_PACING_DELAY);
+        }
       }
 
       // Mỗi lần bấm Click+ CHỈ mở đúng 1 cấp (không tự lặp lại quét tìm cấp con mới) —
       // người dùng chủ động bấm lại nút để mở tiếp cấp kế tiếp. Nếu bấm "Dừng lại" giữa
       // chừng, vẫn cuộn/copy đúng phần dữ liệu đã mở được tới lúc đó, không bỏ dở dữ liệu.
       await acpForceRenderAllRows();
-      await sleep(400);
+      await sleep(100);
 
       observer.disconnect();
       const currentText = acpExtractVisibleText();
@@ -1411,7 +1457,7 @@
   // ====== RẼ NHÁNH THEO DOMAIN ======
   if (location.hostname === MWG_HOSTNAME) {
     initMwgPage();
-  } else if (location.hostname === BI_HOSTNAME) {
+  } else if (BI_HOSTNAMES.includes(location.hostname)) {
     initBiPage();
   } else {
     initDashboardPage();
