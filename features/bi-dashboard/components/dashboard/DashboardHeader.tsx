@@ -75,7 +75,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
             <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
+                    <h2 className="text-base lg:text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
                         {title}
                     </h2>
                 </div>

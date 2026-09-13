@@ -330,7 +330,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
+                            <h2 className="text-base lg:text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
                                 Nhân Viên
                             </h2>
                         </div>

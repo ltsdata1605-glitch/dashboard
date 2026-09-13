@@ -203,10 +203,10 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-sm ${isActive ? 'font-extrabold' : 'font-bold'} transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-black tracking-wide transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
                                     title={tab.label}
                                 >
-                                    <Icon name={tab.icon} size={4} />
+                                    <Icon name={tab.icon} size={4.5} />
                                     <span>{tab.label}</span>
                                 </Button>
                             );
