@@ -610,15 +610,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
     };
 
-    const handleSetUnlimitedInline = (requestId: string) => {
-        setExpiryDates(prev => ({ ...prev, [requestId]: '' }));
-        setExpiryDaysInput(prev => ({ ...prev, [requestId]: '' }));
-        if (listMode === 'active' || listMode === 'expired') {
-            autoSave(requestId, 'expiresAt', '');
-        }
-        toast.success('Đã đặt thời hạn: Vô hạn!', { id: `unlimited-${requestId}`, duration: 1500 });
-    };
-
     return (
         <div className={isEmbedded ? 'w-full' : 'flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}>
             <div className={isEmbedded ? 'w-full space-y-4' : 'max-w-5xl mx-auto space-y-4'}>
@@ -898,21 +889,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                         onChange={e => handleInlineDateChange(req.id, e.target.value)}
                                                         className="h-7 text-xs px-1.5 w-[125px] font-medium shadow-sm"
                                                     />
-
-                                                    {/* Nút bấm nhanh Vô hạn */}
-                                                    <Button
-                                                        variant="unstyled"
-                                                        size="none"
-                                                        onClick={() => handleSetUnlimitedInline(req.id)}
-                                                        className={`h-7 px-2 text-[10px] font-bold rounded-md border transition-all flex items-center justify-center shadow-sm ${
-                                                            !expiryDates[req.id]
-                                                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700 font-extrabold'
-                                                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-purple-600 hover:border-purple-300'
-                                                        }`}
-                                                        title="Đặt quyền truy cập Vô thời hạn (không hết hạn)"
-                                                    >
-                                                        ∞ Vô hạn
-                                                    </Button>
                                                 </div>
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
