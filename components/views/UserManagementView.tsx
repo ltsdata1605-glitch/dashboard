@@ -105,6 +105,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [extendDate, setExtendDate] = useState<string>('');
     const [isUnlimited, setIsUnlimited] = useState<boolean>(false);
     const [isSubmittingExtend, setIsSubmittingExtend] = useState<boolean>(false);
+    // State lưu giá trị nhập số ngày inline cho từng user
+    const [expiryDaysInput, setExpiryDaysInput] = useState<Record<string, string>>({});
 
     // Auto-save a single user's data to Firestore (debounced)
     const autoSave = useCallback(async (requestId: string, field: string, value: string) => {
@@ -576,6 +578,47 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
     };
 
+    // Các hàm xử lý nhập inline số ngày hoặc chọn ngày trực tiếp trên từng hàng user
+    const handleInlineDaysChange = (requestId: string, val: string) => {
+        setExpiryDaysInput(prev => ({ ...prev, [requestId]: val }));
+        if (!val || val.trim() === '') {
+            return;
+        }
+        const num = parseInt(val, 10);
+        if (!isNaN(num) && num > 0) {
+            const target = new Date(Date.now() + num * 86400000);
+            const dateStr = target.toISOString().split('T')[0];
+            setExpiryDates(prev => ({ ...prev, [requestId]: dateStr }));
+            if (listMode === 'active' || listMode === 'expired') {
+                autoSave(requestId, 'expiresAt', dateStr);
+            }
+        }
+    };
+
+    const handleInlineDateChange = (requestId: string, dateStr: string) => {
+        setExpiryDates(prev => ({ ...prev, [requestId]: dateStr }));
+        if (dateStr) {
+            const targetTime = new Date(dateStr).getTime();
+            const nowTime = new Date().setHours(0, 0, 0, 0);
+            const diff = Math.max(0, Math.round((targetTime - nowTime) / 86400000));
+            setExpiryDaysInput(prev => ({ ...prev, [requestId]: String(diff) }));
+        } else {
+            setExpiryDaysInput(prev => ({ ...prev, [requestId]: '' }));
+        }
+        if (listMode === 'active' || listMode === 'expired') {
+            autoSave(requestId, 'expiresAt', dateStr);
+        }
+    };
+
+    const handleSetUnlimitedInline = (requestId: string) => {
+        setExpiryDates(prev => ({ ...prev, [requestId]: '' }));
+        setExpiryDaysInput(prev => ({ ...prev, [requestId]: '' }));
+        if (listMode === 'active' || listMode === 'expired') {
+            autoSave(requestId, 'expiresAt', '');
+        }
+        toast.success('Đã đặt thời hạn: Vô hạn!', { id: `unlimited-${requestId}`, duration: 1500 });
+    };
+
     return (
         <div className={isEmbedded ? 'w-full' : 'flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}>
             <div className={isEmbedded ? 'w-full space-y-4' : 'max-w-5xl mx-auto space-y-4'}>
@@ -806,10 +849,70 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 )}
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                <div className="flex flex-col gap-1 w-[130px]">
-                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">NGÀY HẾT HẠN</span>
-                                                    <Input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs px-2 w-[130px]" />
+                                            <div className="flex flex-col gap-1 shrink-0">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">NGÀY HẾT HẠN</span>
+                                                    {expiryDates[req.id] ? (
+                                                        <span className={`text-[10px] font-bold ${
+                                                            new Date(expiryDates[req.id]).getTime() < Date.now() 
+                                                                ? 'text-rose-500 font-semibold' 
+                                                                : 'text-emerald-600 dark:text-emerald-400'
+                                                        }`}>
+                                                            {(() => {
+                                                                const targetTime = new Date(expiryDates[req.id]).getTime();
+                                                                const nowTime = new Date().setHours(0, 0, 0, 0);
+                                                                const diff = Math.round((targetTime - nowTime) / 86400000);
+                                                                return diff > 0 ? `(còn ${diff} ngày)` : diff === 0 ? '(hết hạn hôm nay)' : '(đã hết hạn)';
+                                                            })()}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                                                            (Vô hạn)
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    {/* Nhập trực tiếp số ngày (vd: 30) */}
+                                                    <div className="relative flex items-center">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            placeholder="+ngày"
+                                                            title="Nhập số ngày hết hạn (vd: 30)"
+                                                            value={expiryDaysInput[req.id] !== undefined ? expiryDaysInput[req.id] : (
+                                                                expiryDates[req.id] ? Math.max(0, Math.round((new Date(expiryDates[req.id]).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)) : ''
+                                                            )}
+                                                            onChange={e => handleInlineDaysChange(req.id, e.target.value)}
+                                                            className="h-7 w-[56px] text-xs font-bold px-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-center shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                                                        />
+                                                        <span className="text-[10px] text-slate-400 ml-1 font-medium select-none">ngày</span>
+                                                    </div>
+
+                                                    <span className="text-[10px] font-semibold text-slate-400 select-none">hoặc</span>
+
+                                                    {/* Chọn ngày kết thúc trên lịch */}
+                                                    <Input
+                                                        type="date"
+                                                        title="Hoặc chọn ngày kết thúc trên lịch"
+                                                        value={expiryDates[req.id] || ''}
+                                                        onChange={e => handleInlineDateChange(req.id, e.target.value)}
+                                                        className="h-7 text-xs px-1.5 w-[125px] font-medium shadow-sm"
+                                                    />
+
+                                                    {/* Nút bấm nhanh Vô hạn */}
+                                                    <Button
+                                                        variant="unstyled"
+                                                        size="none"
+                                                        onClick={() => handleSetUnlimitedInline(req.id)}
+                                                        className={`h-7 px-2 text-[10px] font-bold rounded-md border transition-all flex items-center justify-center shadow-sm ${
+                                                            !expiryDates[req.id]
+                                                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700 font-extrabold'
+                                                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-purple-600 hover:border-purple-300'
+                                                        }`}
+                                                        title="Đặt quyền truy cập Vô thời hạn (không hết hạn)"
+                                                    >
+                                                        ∞ Vô hạn
+                                                    </Button>
                                                 </div>
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
