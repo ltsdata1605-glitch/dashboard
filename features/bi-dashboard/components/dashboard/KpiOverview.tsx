@@ -7,7 +7,6 @@ import {
     computeHqqd,
     computeMonthlyTarget,
     computeMonthlyQdPercent,
-    computeDtThucProgress,
     percentOf,
     DEFAULT_HQQD_TARGET,
     DEFAULT_TRA_CHAM_TARGET,
@@ -30,7 +29,7 @@ interface KpiOverviewProps {
     summaryLuyKeData?: string;
 }
 
-type TargetType = 'dtThuc' | 'dtQd' | 'hqqd' | 'traCham';
+type TargetType = 'dtQd' | 'hqqd' | 'traCham';
 
 const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, summaryLuyKeData }) => {
 
@@ -49,7 +48,6 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const [storedTotalTarget, setStoredTotalTarget] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-total` as db.BIKey) : null, 100);
 
     // Custom Targets lưu IndexedDB (fallback / manual override)
-    const [customDTThucTargets, setCustomDTThucTargets] = useIndexedDBState<Record<string, number>>('custom-dt-thuc-targets', {});
     const [customDTQDTargets, setCustomDTQDTargets] = useIndexedDBState<Record<string, number>>('custom-dtqd-targets', {});
     const [customHQQDTargets, setCustomHQQDTargets] = useIndexedDBState<Record<string, number>>('custom-hqqd-targets', {});
     const [customTraChamTargets, setCustomTraChamTargets] = useIndexedDBState<Record<string, number>>('custom-tracham-targets', {});
@@ -106,26 +104,17 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         ? storedTraGop
         : resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
 
-    // --- 2. Target DT THỰC ---
-    const totalDTThucDailyTarget = resolveDailyTarget(
-        activeSupermarket, customDTThucTargets, supermarketDailyTargets, () => totalVuotTroi
-    );
+    // --- 2. DT THỰC (Không cần target, hiển thị Doanh thu Dự kiến) ---
+    const now = new Date();
+    const passedDays = Math.max(1, now.getDate() - 1);
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const estimatedDtThucDuKien = dtDuKien > 0
+        ? dtDuKien
+        : (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk);
 
-    const dtThucLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
-    const customMonthlyDTThuc = customDTThucTargets?.[activeSupermarket];
-    const baseDTQdMonthly = (supermarketMonthlyTargets && supermarketMonthlyTargets[activeSupermarket]) || 0;
-    // Quy đổi ngược Target Thực = Target Quy đổi / (1 + % Target Quy đổi)
-    const derivedDTThucTarget = baseDTQdMonthly > 0
-        ? baseDTQdMonthly / (1 + (currentQuyDoiTarget / 100))
-        : dtDuKien;
-
-    const dtThucMonthlyTarget = customMonthlyDTThuc || derivedDTThucTarget;
-    const dtThucProgress = computeDtThucProgress(isRealtime, dtlk, totalDTThucDailyTarget, dtThucMonthlyTarget);
-    const dtThucTargetStr = isRealtime
-        ? (totalDTThucDailyTarget > 0 ? `${roundUp(totalDTThucDailyTarget).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
-        : (dtThucMonthlyTarget > 0 ? `${roundUp(dtThucMonthlyTarget).toLocaleString('vi-VN')} Tr` : undefined);
-
-    const dtThucIsGood = dtThucProgress !== undefined && dtThucProgress >= 100;
+    const dtThucDuKienStr = estimatedDtThucDuKien > 0
+        ? `${roundUp(estimatedDtThucDuKien).toLocaleString('vi-VN')} Tr`
+        : '—';
     const dtqdIsGood = secondaryPct >= 100;
     const hqqdIsGood = hqqd >= currentQuyDoiTarget;
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
@@ -136,12 +125,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         const now = new Date();
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         let val = '';
-        if (type === 'dtThuc') {
-            const currentVal = isRealtime
-                ? ((customDTThucTargets && customDTThucTargets[activeSupermarket]) ?? totalDTThucDailyTarget)
-                : ((customDTThucTargets && customDTThucTargets[activeSupermarket]) ?? dtThucMonthlyTarget);
-            val = currentVal > 0 ? Math.round(currentVal).toString() : '';
-        } else if (type === 'dtQd') {
+        if (type === 'dtQd') {
             const currentVal = isRealtime
                 ? (totalVuotTroi > 0 ? totalVuotTroi : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly / daysInMonth : 0))
                 : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly : (totalVuotTroi > 0 ? totalVuotTroi * daysInMonth : 0));
@@ -167,10 +151,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         const now = new Date();
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
-        if (currentType === 'dtThuc') {
-            setCustomDTThucTargets(prev => ({ ...(prev || {}), [activeSupermarket]: parsed }));
-            toast.success(`Đã cập nhật Target DT Thực: ${parsed} Tr`, { icon: '🎯', duration: 2500 });
-        } else if (currentType === 'dtQd') {
+        if (currentType === 'dtQd') {
             const monthlyVal = isRealtime ? parsed * daysInMonth : parsed;
             const dailyVal = isRealtime ? parsed : (parsed > 0 ? parsed / daysInMonth : 0);
 
@@ -287,11 +268,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     icon="dollar-sign"
                     iconColor="emerald"
                     title="DT Thực"
-                    progressPercent={dtThucProgress}
-                    isGood={dtThucIsGood}
-                    trendLabel={editingTargetType === 'dtThuc' ? undefined : dtThucLabel}
-                    trendValue={editingTargetType === 'dtThuc' ? renderInlineInput('dtThuc', 'Tr', 'emerald') : renderTargetDisplay('dtThuc', dtThucTargetStr, 'emerald')}
-                    onClick={() => startInlineEditing('dtThuc')}
+                    trendLabel="Dự kiến"
+                    trendValue={dtThucDuKienStr}
+                    isGood={true}
                 >
                     <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                         {roundUp(dtlk).toLocaleString('vi-VN')} Tr
