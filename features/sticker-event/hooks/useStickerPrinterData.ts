@@ -28,10 +28,10 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     contentBottomRightSub: '<div style="font-size: 3cqw; line-height: 1.4;">(1 suất/ ngày)</div>',
 };
 
-/** Entry lịch sử mặc định — luôn hiển thị ở cuối tab Lịch sử, không thể xoá. */
+/** Entry lịch sử mặc định — luôn hiển thị ở trên cùng tab Lịch sử, không thể xoá. */
 export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     id: DEFAULT_HISTORY_ID,
-    timestamp: 0, // epoch 0 → luôn nằm cuối khi sort theo thời gian
+    timestamp: 0, // epoch 0, được ghim trên cùng danh sách
     label: 'Phiếu Rút Thăm — Mẫu mặc định',
     pageCount: 1000,
     stickerType: 'draw',
@@ -1209,9 +1209,9 @@ export function useStickerPrinterData() {
             setDrawAutoIncrement(true);
             setDrawContentTopLeftSize(4.5);
             setDrawContentTopRightSize(7.6);
-            setDrawContentBottomLeftSize(2.6);
-            setDrawContentBottomRightSize(8);
-            setDrawContentBottomRightSubSize(2.0);
+            setDrawContentBottomLeftSize(2.9);
+            setDrawContentBottomRightSize(7.6);
+            setDrawContentBottomRightSubSize(3.0);
             setDrawTitleSize(4.3);
             setDrawCodeSize(3.8);
             setDrawFooterSize(3.8);

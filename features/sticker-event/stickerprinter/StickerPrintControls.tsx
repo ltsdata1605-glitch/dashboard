@@ -146,10 +146,10 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     }, [localTotalTickets]);  
 
     const filteredHistory = useMemo(() => {
-        const userEntries = printHistory.filter(entry => entry.stickerType === stickerType);
-        // Ở chế độ draw, luôn gắn entry mẫu mặc định ở cuối danh sách
+        const userEntries = printHistory.filter(entry => entry.stickerType === stickerType && entry.id !== DEFAULT_HISTORY_ID);
+        // Ở chế độ draw, luôn ghim entry mẫu mặc định ở trên cùng danh sách
         if (stickerType === 'draw') {
-            return [...userEntries, DEFAULT_DRAW_HISTORY_ENTRY];
+            return [DEFAULT_DRAW_HISTORY_ENTRY, ...userEntries];
         }
         return userEntries;
     }, [printHistory, stickerType]);
