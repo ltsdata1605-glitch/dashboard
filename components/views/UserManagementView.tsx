@@ -51,7 +51,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
     const [editNames, setEditNames] = useState<Record<string, string>>({});
-    const [listMode, setListMode] = useState<'pending' | 'active'>('pending');
+    const [listMode, setListMode] = useState<'pending' | 'active' | 'expired'>('pending');
     const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
     const [sortBy, setSortBy] = useState<'name' | 'role' | 'dept' | 'date' | 'logins'>('date');
@@ -89,6 +89,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         const d = new Date(value);
                         d.setHours(23, 59, 59, 999);
                         updateData.expiresAt = d.toISOString();
+                        if (d.getTime() > Date.now()) {
+                            updateData.status = 'approved';
+                        }
                     } else {
                         updateData.expiresAt = null;
                     }
@@ -141,33 +144,68 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         status: 'approved',
                         createdAt: { toDate: () => new Date(Date.now() - 86400000), toMillis: () => Date.now() - 86400000 },
                         requestDate: { toMillis: () => Date.now() - 86400000 },
+                        expiresAt: { toDate: () => new Date(Date.now() + 30 * 86400000) },
                         loginCount: 12
+                    },
+                    {
+                        id: 'demo-user-3',
+                        displayName: 'Lê Văn C',
+                        email: 'levanc@gmail.com',
+                        photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=C',
+                        requestedRole: 'employee',
+                        role: 'employee',
+                        departmentId: '58614',
+                        employeeName: 'Lê Văn C',
+                        status: 'expired',
+                        createdAt: { toDate: () => new Date(Date.now() - 172800000), toMillis: () => Date.now() - 172800000 },
+                        requestDate: { toMillis: () => Date.now() - 172800000 },
+                        expiresAt: { toDate: () => new Date(Date.now() - 86400000) },
+                        loginCount: 5
                     }
                 ];
                 
                 const newExpiry: Record<string, string> = {
-                    'demo-user-2': new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+                    'demo-user-2': new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+                    'demo-user-3': new Date(Date.now() - 86400000).toISOString().split('T')[0]
                 };
-                const newDept: Record<string, string> = { 'demo-user-1': '58614', 'demo-user-2': '58614' };
-                const newNames: Record<string, string> = { 'demo-user-1': 'Nguyễn Văn A', 'demo-user-2': 'Trần Thị B' };
-                const newRoles: Record<string, string> = { 'demo-user-1': 'pending', 'demo-user-2': 'employee' };
+                const newDept: Record<string, string> = { 'demo-user-1': '58614', 'demo-user-2': '58614', 'demo-user-3': '58614' };
+                const newNames: Record<string, string> = { 'demo-user-1': 'Nguyễn Văn A', 'demo-user-2': 'Trần Thị B', 'demo-user-3': 'Lê Văn C' };
+                const newRoles: Record<string, string> = { 'demo-user-1': 'pending', 'demo-user-2': 'employee', 'demo-user-3': 'employee' };
 
                 setExpiryDates(newExpiry);
                 setEditDepartments(newDept);
                 setEditNames(newNames);
                 setEditRoles(newRoles);
 
-                const filteredData = listMode === 'pending' ? [mockRequests[0]] : [mockRequests[1]];
+                const filteredData = listMode === 'pending' ? [mockRequests[0]] : listMode === 'expired' ? [mockRequests[2]] : [mockRequests[1]];
                 setRequests(filteredData);
                 setIsLoading(false);
                 return;
             }
 
-            // Đọc qua Cloud Function listManagedUsers (functions/src/admin.ts) thay vì query
-            // thẳng collection('users') — trước đây firestore.rules isManager() cho manager
-            // list/get TOÀN BỘ collection (không giới hạn Kho), lọc theo allowedKhos chỉ nằm
-            // ở client nên không phải bảo mật thật. Server giờ tự lọc theo Kho cho manager.
-            const rawUsers = await listManagedUsers(listMode);
+            // Đọc qua Cloud Function listManagedUsers (functions/src/admin.ts)
+            let rawUsers: ManagedUserDoc[] = [];
+            try {
+                rawUsers = await listManagedUsers(listMode);
+                // Fallback nếu server chưa kịp deploy mode 'expired'
+                if (listMode === 'expired') {
+                    const hasExpired = rawUsers.some(u => u.status === 'expired' || (u.expiresAt && new Date(u.expiresAt).getTime() < Date.now()));
+                    if (!hasExpired) {
+                        const activeUsers = await listManagedUsers('active');
+                        const combined = [...rawUsers, ...activeUsers];
+                        const seen = new Set<string>();
+                        rawUsers = combined.filter(u => {
+                            if (seen.has(u.id)) return false;
+                            seen.add(u.id);
+                            return true;
+                        });
+                    }
+                }
+            } catch {
+                if (listMode === 'expired') {
+                    rawUsers = await listManagedUsers('active');
+                }
+            }
             const data: AccessRequest[] = [];
             const newExpiry: Record<string, string> = {};
             const newDept: Record<string, string> = {};
@@ -195,21 +233,33 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             setEditNames(newNames);
             setEditRoles(newRoles);
             
+            // Helper kiểm tra hết hạn
+            const isUserExpired = (status?: string, expiresAtObj?: TimestampLike | { toDate?: () => Date }): boolean => {
+                if (status === 'expired') return true;
+                if (expiresAtObj?.toDate) {
+                    return expiresAtObj.toDate().getTime() < Date.now();
+                }
+                return false;
+            };
+
             // Client side filter 
             let filteredData = data;
             
             if (userRole === 'admin') {
-                if (listMode === 'active') {
-                    // Rule 1: Must be explicitly approved. No longer requiring !!req.departmentId.
-                    filteredData = filteredData.filter(req => req.status === 'approved');
+                if (listMode === 'expired') {
+                    filteredData = filteredData.filter(req => isUserExpired(req.status, req.expiresAt));
+                } else if (listMode === 'active') {
+                    filteredData = filteredData.filter(req => req.status === 'approved' && !isUserExpired(req.status, req.expiresAt));
                 } else {
-                    filteredData = filteredData.filter(req => req.status === 'pending' || req.status === 'new');
+                    filteredData = filteredData.filter(req => (req.status === 'pending' || req.status === 'new'));
                 }
             }
             else if (userRole === 'manager' && departmentId) {
                 const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
-                if (listMode === 'active') {
-                    filteredData = filteredData.filter(req => req.role === 'employee' && req.status !== 'pending' && req.status !== 'new');
+                if (listMode === 'expired') {
+                    filteredData = filteredData.filter(req => req.role === 'employee' && isUserExpired(req.status, req.expiresAt));
+                } else if (listMode === 'active') {
+                    filteredData = filteredData.filter(req => req.role === 'employee' && req.status !== 'pending' && req.status !== 'new' && !isUserExpired(req.status, req.expiresAt));
                 } else {
                     filteredData = filteredData.filter(req => req.requestedRole === 'employee' && req.status === 'pending');
                 }
@@ -217,9 +267,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 filteredData = filteredData.filter(req => allowedKhos.includes(req.departmentId));
             }
             
-            // Sort client side by requestDate descending, but put "chưa cập nhật mã Kho" first if active
+            // Sort client side by requestDate descending, but put "chưa cập nhật mã Kho" first if active/expired
             filteredData.sort((a, b) => {
-                if (listMode === 'active') {
+                if (listMode === 'active' || listMode === 'expired') {
                     const aNoDept = !a.departmentId;
                     const bNoDept = !b.departmentId;
                     if (aNoDept && !bNoDept) return -1;
@@ -259,7 +309,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const handleApproval = async (requestId: string, isApproved: boolean) => {
         if (isDemoMode) {
             toast.success(isApproved 
-                ? (listMode === 'pending' ? `Đã CẤP QUYỀN thành công (Demo Mode)!` : `Đã CẬP NHẬT QUYỀN thành công (Demo Mode)!`)
+                ? (listMode === 'pending' ? `Đã CẤP QUYỀN thành công (Demo Mode)!` : listMode === 'expired' ? `Đã GIA HẠN thành công (Demo Mode)!` : `Đã CẬP NHẬT QUYỀN thành công (Demo Mode)!`)
                 : (listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu (Demo Mode)!' : 'Đã THU HỒI quyền truy cập (Demo Mode)!')
             );
             setRequests(prev => prev.filter(req => req.id !== requestId));
@@ -268,10 +318,16 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
         try {
             if (isApproved) {
-                const targetRole = editRoles[requestId] as AdminRole | undefined;
+                const targetRole = (editRoles[requestId] as AdminRole | undefined) || 'employee';
 
                 // Add expiresAt if specified — set to end of the selected day
-                const dateStr = expiryDates[requestId];
+                let dateStr = expiryDates[requestId];
+                // If in expired tab and date is missing or already in past, set 30 days default
+                if (listMode === 'expired' && (!dateStr || new Date(dateStr).getTime() < Date.now())) {
+                    const nextMonth = new Date(Date.now() + 30 * 86400000);
+                    dateStr = nextMonth.toISOString().split('T')[0];
+                }
+
                 let expiresAtIso: string | null = null;
                 if (dateStr) {
                     const d = new Date(dateStr);
@@ -281,19 +337,21 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 await adminUpdateUser({
                     targetUid: requestId,
-                    role: targetRole || 'pending',
-                    status: targetRole === 'blocked' ? 'blocked' : 'approved',
+                    role: targetRole === 'blocked' ? 'employee' : targetRole,
+                    status: 'approved',
                     departmentId: editDepartments[requestId] || '',
                     employeeName: editNames[requestId] || '',
                     expiresAt: expiresAtIso,
                     notify: {
-                        title: 'Phân quyền thành công',
-                        message: `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
+                        title: listMode === 'expired' ? 'Gia hạn tài khoản thành công' : 'Phân quyền thành công',
+                        message: listMode === 'expired' 
+                            ? `Tài khoản của bạn đã được gia hạn truy cập thành công.`
+                            : `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
                         type: 'success'
                     }
                 });
 
-                toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
+                toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : listMode === 'expired' ? `Đã GIA HẠN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
             } else {
                 await adminUpdateUser({
                     targetUid: requestId,
@@ -315,9 +373,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
     };
 
-
-    // Role guard removed — all users with tab access can view
-
     return (
         <div className={`flex-1 overflow-y-auto ${isEmbedded ? 'p-0 sm:p-2' : 'bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}`}>
             <div className="max-w-5xl mx-auto space-y-4">
@@ -326,7 +381,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Quản Trị Hệ Thống & Phân Quyền</h1>
+                            <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Phân Quyền & Duyệt Yêu Cầu</h1>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
@@ -337,13 +392,17 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {/* Tabs & Search & Sort */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
                             <Icon name="clock" size={3.5} />
-                            Đơn Chờ Duyệt
+                            Chờ duyệt
                         </Button>
-                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'active' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
                             <Icon name="users" size={3.5} />
-                            Người Dùng Hoạt Động
+                            Hoạt động
+                        </Button>
+                        <Button variant="ghost" onClick={() => setListMode('expired')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'expired' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'}`}>
+                            <Icon name="calendar-clock" size={3.5} />
+                            Hết hạn
                         </Button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -381,8 +440,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         ) : requests.length === 0 ? (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
                                 <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><Icon name="check-circle-2" size={8} className="text-sky-400" /></div>
-                                <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Chưa có người dùng hoạt động'}</p>
-                                <p className="text-slate-500 mt-1 text-sm">{listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : 'Danh sách trống hoặc chưa cập nhật.'}</p>
+                                <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                    {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : listMode === 'expired' ? 'Không có người dùng hết hạn' : 'Chưa có người dùng hoạt động'}
+                                </p>
+                                <p className="text-slate-500 mt-1 text-sm">
+                                    {listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : listMode === 'expired' ? 'Tất cả tài khoản đều đang trong thời hạn hợp lệ.' : 'Danh sách trống hoặc chưa cập nhật.'}
+                                </p>
                             </motion.div>
                         ) : (
                             <div className="flex flex-col gap-2">
@@ -405,7 +468,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
                                             <div className="relative shrink-0">
                                                 <img src={req.photoURL} alt="" className="w-8 h-8 rounded-md object-cover" />
-                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
+                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${listMode === 'expired' || req.status === 'expired' ? 'bg-rose-500' : req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate leading-tight">{req.displayName}</h3>
@@ -417,7 +480,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                          value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} 
                                                          onChange={(e) => { 
                                                              setEditRoles(prev => ({...prev, [req.id]: e.target.value})); 
-                                                             if (listMode === 'active') autoSave(req.id, 'role', e.target.value); 
+                                                             if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'role', e.target.value); 
                                                          }} 
                                                          fullWidth={false}
                                                          className="h-8 py-1 pl-2 pr-7 text-xs w-[110px] font-semibold cursor-pointer"
@@ -445,6 +508,20 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             <Icon name="check" size={3.5} /> Duyệt
                                                         </Button>
                                                     </div>
+                                                ) : listMode === 'expired' ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold" title="Gia hạn quyền truy cập">
+                                                            <Icon name="refresh-cw" size={3.5} /> Gia hạn
+                                                        </Button>
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                            <Icon name="user-minus" size={3.5} />
+                                                        </Button>
+                                                        {savingIds.has(req.id) && (
+                                                            <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
+                                                                <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1.5">
                                                         <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
@@ -465,7 +542,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 {userRole === 'admin' ? (
                                                     <div className="flex flex-col gap-1 w-[100px]">
                                                         <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">KHO/BỘ PHẬN</span>
-                                                        <Input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px] font-mono uppercase" />
+                                                        <Input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px] font-mono uppercase" />
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col gap-1">
@@ -479,7 +556,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 {userRole === 'admin' ? (
                                                     <div className="flex flex-col gap-1 w-[100px]">
                                                         <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">MÃ NHÂN VIÊN</span>
-                                                        <Input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px]" />
+                                                        <Input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px]" />
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col gap-1">
@@ -492,7 +569,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 <div className="flex flex-col gap-1 w-[130px]">
                                                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">NGÀY HẾT HẠN</span>
-                                                    <Input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs px-2 w-[130px]" />
+                                                    <Input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs px-2 w-[130px]" />
                                                 </div>
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
