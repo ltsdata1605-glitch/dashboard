@@ -52,7 +52,7 @@ export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     drawContentTopLeftSize: 4.5,
     drawContentTopRightSize: 7.6,
     drawContentBottomLeftSize: 2.6,
-    drawContentBottomRightSize: 8,
+    drawContentBottomRightSize: 7.6,
     drawContentBottomRightSubSize: 2.0,
     drawTitleSize: 4.3,
     drawCodeSize: 3.8,
@@ -80,7 +80,7 @@ export function useStickerPrinterData() {
     const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(4.5);
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(7.6);
     const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.6);
-    const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(8);
+    const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(7.6);
     const [drawContentBottomRightSubSize, setDrawContentBottomRightSubSize] = useState(2.0);
     const [drawTitleSize, setDrawTitleSize] = useState(4.3);
     const [drawCodeSize, setDrawCodeSize] = useState(3.8);
@@ -510,21 +510,25 @@ export function useStickerPrinterData() {
                             setDrawContentTopLeftSize(4.5);
                             setDrawContentTopRightSize(7.6);
                             setDrawContentBottomLeftSize(2.6);
-                            setDrawContentBottomRightSize(8);
+                            setDrawContentBottomRightSize(7.6);
                             setDrawContentBottomRightSubSize(2.0);
                             setDrawTitleSize(4.3);
                         } else {
-                            // Ensure existing tickets have contentBottomRightSub if they don't yet
+                            // Ensure existing tickets have 2 MÁY GIẶT (size 7.6, in hoa) and contentBottomRightSub
                             setDrawTickets(savedState.drawTickets.map(t => ({
                                 ...t,
-                                contentBottomRight: t.contentBottomRight?.includes('2 Máy giặt') || t.contentBottomRight?.includes('2 MÁY GIẶT') ? '2 MÁY GIẶT' : t.contentBottomRight,
-                                contentBottomRightSub: t.contentBottomRightSub !== undefined ? t.contentBottomRightSub : '(1 suất/ ngày)'
+                                contentBottomRight: '2 MÁY GIẶT',
+                                contentBottomRightSub: (t.contentBottomRightSub && t.contentBottomRightSub.trim()) ? t.contentBottomRightSub : '(1 suất/ ngày)'
                             })));
                             if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
                             if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
                             if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
-                            if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
-                    if (savedState.drawContentBottomRightSubSize != null) setDrawContentBottomRightSubSize(savedState.drawContentBottomRightSubSize);
+                            if (savedState.drawContentBottomRightSize != null) {
+                                setDrawContentBottomRightSize(savedState.drawContentBottomRightSize === 8 ? 7.6 : savedState.drawContentBottomRightSize);
+                            } else {
+                                setDrawContentBottomRightSize(7.6);
+                            }
+                            if (savedState.drawContentBottomRightSubSize != null) setDrawContentBottomRightSubSize(savedState.drawContentBottomRightSubSize);
                             if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                         }
                     }

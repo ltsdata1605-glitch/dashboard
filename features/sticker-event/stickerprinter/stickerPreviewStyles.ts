@@ -384,8 +384,9 @@ export function getStickerPreviewStyles({
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 8.0cqw;
-                       line-height: 1.2;
+                      font-size: 7.6cqw;
+                      text-transform: uppercase;
+                      line-height: 1.2;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -595,15 +596,16 @@ export function getStickerPreviewStyles({
                        justify-content: center;
                        align-items: flex-start;
                        text-align: left;
-                      font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 8.0cqw;
+                       font-family: 'UTM Avo', sans-serif;
+                       font-weight: bold;
+                       font-size: 7.6cqw;
+                       text-transform: uppercase;
                        line-height: 1.2;
-                      color: #000;
-                      white-space: nowrap;
-                      word-break: normal;
-                      padding: 0 1cqw;
-                      overflow: hidden;
+                       color: #000;
+                       white-space: nowrap;
+                       word-break: normal;
+                       padding: 0 1cqw;
+                       overflow: hidden;
                   }
 
                   .draw-ticket-block .display-content-bottom-right-sub {
@@ -656,12 +658,19 @@ export function getStickerPreviewStyles({
                      outline-offset: -2px;
                  }
 
-                 .draw-ticket-block [contenteditable="true"]:empty::before {
-                     content: attr(data-placeholder);
-                     color: #94a3b8;
-                     font-style: italic;
-                     font-weight: normal;
-                 }
+                  .draw-ticket-block [contenteditable="true"]:empty::before,
+                  .draw-ticket-block [contenteditable="true"]:has(> br:only-child)::before {
+                      content: attr(data-placeholder);
+                      color: #94a3b8;
+                      font-style: italic;
+                      font-weight: normal;
+                  }
+
+                  .draw-ticket-block .input-content-bottom-right-sub:empty,
+                  .draw-ticket-block .input-content-bottom-right-sub:has(> br:only-child) {
+                      outline: 1px dashed rgba(239, 68, 68, 0.45) !important;
+                      outline-offset: -1px;
+                  }
 
                  @media print {
                      .sticker-container.draw-page {

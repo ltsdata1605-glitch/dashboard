@@ -219,13 +219,13 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     contentEditable
                     suppressContentEditableWarning
                     className={`input-content-bottom-right ${activeField === 'drawContentBottomRight' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawContentBottomRightSize || 8}cqw` }}
-                    data-placeholder="Nhập thông tin 4 (Tự gõ...)"
+                    style={{ fontSize: `${drawContentBottomRightSize || 7.6}cqw` }}
+                    data-placeholder="2 MÁY GIẶT"
                 />
             ) : (
                 <div
                     className="input-content-bottom-right"
-                    style={{ fontSize: `${drawContentBottomRightSize || 8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    style={{ fontSize: `${drawContentBottomRightSize || 7.6}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRight) }}
                 />
             )}
@@ -239,7 +239,7 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     suppressContentEditableWarning
                     className={`input-content-bottom-right-sub ${activeField === 'drawContentBottomRightSub' ? 'active-field' : ''}`}
                     style={{ fontSize: `${drawContentBottomRightSubSize || 2.0}cqw` }}
-                    data-placeholder="Nhập thông tin phụ..."
+                    data-placeholder="(1 suất/ ngày)"
                 />
             ) : (
                 <div

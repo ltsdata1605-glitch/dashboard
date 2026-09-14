@@ -71,7 +71,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             
             if (el.className.includes('bottom-left')) return 2.6;
             if (el.className.includes('bottom-right-sub')) return 2.0;
-            if (el.className.includes('bottom-right')) return 8.0;
+            if (el.className.includes('bottom-right')) return 7.6;
             if (el.className.includes('top-right')) return 7.6;
             if (el.className.includes('top-left')) return 4.5;
             if (el.className.includes('title')) return 4.3;
