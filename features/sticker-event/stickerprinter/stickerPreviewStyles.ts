@@ -374,9 +374,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 48.5%;
+                       top: 46.0%;
                        width: 45.4%;
-                       height: 19.5%;
+                       height: 17.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -399,9 +399,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 68.0%;
+                       top: 68.5%;
                        width: 45.4%;
-                       height: 7.0%;
+                       height: 6.5%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -410,7 +410,7 @@ export function getStickerPreviewStyles({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
                       font-size: 2.0cqw;
-                       line-height: 1.2;
+                      line-height: 1.2;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -588,9 +588,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 48.5%;
+                       top: 46.0%;
                        width: 45.4%;
-                       height: 19.5%;
+                       height: 17.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -611,9 +611,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 68.0%;
+                       top: 68.5%;
                        width: 45.4%;
-                       height: 7.0%;
+                       height: 6.5%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -622,7 +622,7 @@ export function getStickerPreviewStyles({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
                       font-size: 2.0cqw;
-                       line-height: 1.2;
+                      line-height: 1.2;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
