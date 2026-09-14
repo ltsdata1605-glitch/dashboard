@@ -119,11 +119,31 @@ describe('thứ tự cột và dòng', () => {
                 ['ST A', '0', '10', '12', '0', '90%', '0', '0'],
                 ['ST B', '0', '20', '24', '0', '10%', '0', '0'],
             ]),
-            opts({ supermarketMonthlyTargets: { 'ST A': 30000, 'ST B': 300 } })
+            opts({ supermarketMonthlyTargets: { 'ST A': 300, 'ST B': 30000 } })
         );
         expect(r.allHeaders).not.toContain('Target(QĐ) V.Trội');
         expect(r.allHeaders).not.toContain('%HT V.Trội');
         expect(r.allRows[0][0]).toBe('ST A');
+    });
+
+    it('chế độ Realtime: TAR = target tháng / số ngày của tháng, %HT = DTQĐ Realtime / Target Realtime', () => {
+        // HÙNG VƯƠNG: target tháng = 28562, 30 ngày => dailyTarget = roundUp(28562 / 30) = 953
+        // DTQĐ = 175 => %HT = roundUp((175 / 953) * 100) = 19%
+        const r = buildSummaryTable(
+            input([
+                ['HÙNG VƯƠNG', '0', '126', '175', '28.562', '52%', '0', '0'],
+            ]),
+            opts({
+                isCumulative: false,
+                daysInMonth: 30,
+            })
+        );
+        const tarIdx = r.allHeaders.indexOf('Target (QĐ)');
+        const htIdx = r.allHeaders.indexOf('% HT Target (QĐ)');
+        expect(tarIdx).toBeGreaterThan(-1);
+        expect(htIdx).toBeGreaterThan(-1);
+        expect(r.allRows[0][tarIdx]).toBe(953);
+        expect(r.allRows[0][htIdx]).toBe('19%');
     });
 
     it('KHÔNG có cột %HT V.Trội thì mới rơi về "% HT Target Dự Kiến (QĐ)" (chế độ Luỹ kế)', () => {

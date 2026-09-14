@@ -158,6 +158,34 @@ export function buildSummaryTable(
                 return nr;
             });
         }
+
+        // Chế độ Realtime:
+        // - TAR (Target (QĐ)): lấy target tháng / số ngày của tháng
+        // - %HT (% HT Target (QĐ)): DTQĐ Realtime / Target Realtime
+        const targetIndex = tempHeaders.findIndex(h => h === 'Target (QĐ)' || h === 'Target Ngày (QĐ)');
+        const htIndex = tempHeaders.findIndex(h => h === '% HT Target (QĐ)' || h === '% HT Target Ngày (QĐ)');
+        const curQIndex = tempHeaders.indexOf('DTQĐ');
+
+        if (targetIndex !== -1 && nameIndex !== -1) {
+            tempRows = tempRows.map(row => {
+                const nr = [...row];
+                const sm = nr[nameIndex];
+                const rawMonthTarget = getTargetForSm(sm, tempRows) || parseNumber(nr[targetIndex]);
+                const dailyTarget = (daysInMonth > 0 && rawMonthTarget > 0) ? roundUp(rawMonthTarget / daysInMonth) : 0;
+
+                if (dailyTarget > 0) {
+                    nr[targetIndex] = dailyTarget;
+                }
+
+                if (htIndex !== -1 && curQIndex !== -1) {
+                    const qVal = parseNumber(nr[curQIndex]);
+                    const targetRt = dailyTarget > 0 ? dailyTarget : parseNumber(nr[targetIndex]);
+                    const htVal = targetRt > 0 ? roundUp((qVal / targetRt) * 100) : 0;
+                    nr[htIndex] = `${htVal}%`;
+                }
+                return nr;
+            });
+        }
     }
 
     const pairs = [
@@ -357,6 +385,22 @@ export function buildSummaryTable(
                     const sumDtg = tempRows.reduce((sum, r) => sum + parseNumber(r[dtgFinalIdx]), 0);
                     if (sumDtg > 0) {
                         tRow[dtgFinalIdx] = String(sumDtg);
+                    }
+                }
+            }
+            if (!isCumulative) {
+                const tarFinalIdx = finalH.findIndex(h => h === 'Target (QĐ)' || h === 'Target Ngày (QĐ)');
+                const htFinalIdx = finalH.findIndex(h => h === '% HT Target (QĐ)' || h === '% HT Target Ngày (QĐ)');
+                const dtqdFinalIdx = finalH.indexOf('DTQĐ');
+                if (tarFinalIdx !== -1) {
+                    const sumDailyTarget = tempRows.reduce((sum, r) => sum + parseNumber(r[tarFinalIdx]), 0);
+                    if (sumDailyTarget > 0) {
+                        tRow[tarFinalIdx] = sumDailyTarget;
+                        if (htFinalIdx !== -1 && dtqdFinalIdx !== -1) {
+                            const totalDtqd = parseNumber(tRow[dtqdFinalIdx]);
+                            const totalHt = roundUp((totalDtqd / sumDailyTarget) * 100);
+                            tRow[htFinalIdx] = `${totalHt}%`;
+                        }
                     }
                 }
             }

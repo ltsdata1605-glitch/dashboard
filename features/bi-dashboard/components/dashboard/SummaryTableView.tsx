@@ -26,12 +26,12 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 
-    // DOANH THU (nhóm chính gồm THỰC, DTQĐ, D.KIẾN QĐ)
-    'DTLK': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DTQĐ': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    // D.THU (nhóm chính gồm THỰC, DTQĐ, D.KIẾN QĐ)
+    'DTLK': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTQĐ': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến (QĐ)': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // HIỆU QUẢ (đổi indigo → emerald cho khớp quy ước %HT/hiệu quả toàn dự án, implementation_plan.md mục 61)
     'Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
