@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../services/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
-import { adminUpdateUser, listManagedUsers, AdminRole } from '../../services/adminUserService';
+import { adminUpdateUser, listManagedUsers, AdminRole, ManagedUserDoc } from '../../services/adminUserService';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -15,13 +17,34 @@ interface TimestampLike {
     toDate?: () => Date;
 }
 
-// listManagedUsers (Cloud Function) trả ISO string cho các field Timestamp cũ (server không
-// gửi được Timestamp thật qua RPC) — bọc lại thành TimestampLike để không phải sửa các chỗ
-// đang gọi .toDate()/.toMillis() bên dưới (giữ đúng shape với dữ liệu mock isDemoMode).
-const toTimestampLike = (iso?: string | null): TimestampLike | undefined => {
-    if (!iso) return undefined;
-    const ms = new Date(iso).getTime();
-    return { toMillis: () => ms, toDate: () => new Date(ms) };
+// Chuyển đổi timestamp an toàn từ Firestore Timestamp, chuỗi ISO hoặc số millis
+const toTimestampLike = (val: unknown): TimestampLike | undefined => {
+    if (!val) return undefined;
+    const v = val as { toMillis?: () => number; toDate?: () => Date };
+    if (typeof v.toMillis === 'function' || typeof v.toDate === 'function') {
+        return v as TimestampLike;
+    }
+    if (typeof val === 'string' || typeof val === 'number') {
+        const ms = new Date(val).getTime();
+        return { toMillis: () => ms, toDate: () => new Date(ms) };
+    }
+    return undefined;
+};
+
+// Rút trích chuỗi ngày ISO dạng YYYY-MM-DD an toàn
+const getIsoDateString = (val: unknown): string => {
+    if (!val) return '';
+    if (typeof val === 'string') return val.split('T')[0];
+    const v = val as { toDate?: () => Date };
+    if (typeof v.toDate === 'function') {
+        try {
+            return v.toDate().toISOString().split('T')[0];
+        } catch {
+            return '';
+        }
+    }
+    if (val instanceof Date) return val.toISOString().split('T')[0];
+    return '';
 };
 
 interface AccessRequest {
@@ -44,6 +67,15 @@ interface UserManagementViewProps {
     isEmbedded?: boolean;
 }
 
+interface CacheEntry {
+    data: AccessRequest[];
+    expiry: Record<string, string>;
+    dept: Record<string, string>;
+    names: Record<string, string>;
+    roles: Record<string, string>;
+    timestamp: number;
+}
+
 const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) => {
     const { user, userRole, departmentId, isDemoMode } = useAuth();
     const [requests, setRequests] = useState<AccessRequest[]>([]);
@@ -58,6 +90,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [sortAsc, setSortAsc] = useState(false);
     const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
     const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
+    // SWR Cache: Giữ dữ liệu trong bộ nhớ để chuyển tab tức thì 0ms không phải chờ
+    const usersCacheRef = useRef<Record<string, CacheEntry>>({});
 
     // Auto-save a single user's data to Firestore (debounced)
     const autoSave = useCallback(async (requestId: string, field: string, value: string) => {
@@ -98,6 +132,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 }
 
                 await adminUpdateUser(updateData);
+                // Xoá cache để lần lấy dữ liệu sau đồng bộ với thay đổi
+                usersCacheRef.current = {};
                 toast.success('Đã tự động lưu!', { duration: 1500, id: `autosave-${requestId}` });
             } catch (err) {
                 console.warn('Auto-save failed:', err);
@@ -108,12 +144,29 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }, 800);
     }, [isDemoMode]);
 
-    const fetchRequests = async () => {
+    const fetchRequests = async (forceRefresh = false) => {
         if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
             setIsLoading(false);
             return;
         }
-        setIsLoading(true);
+
+        // 1. Kiểm tra cache trong bộ nhớ: nếu đã có dữ liệu tab này và chưa bị ép làm mới, mở ngay lập tức (0ms)!
+        const cached = usersCacheRef.current[listMode];
+        if (!forceRefresh && cached) {
+            setRequests(cached.data);
+            setExpiryDates(cached.expiry);
+            setEditDepartments(cached.dept);
+            setEditNames(cached.names);
+            setEditRoles(cached.roles);
+            setIsLoading(false);
+            // Nếu cache còn mới dưới 60 giây, không cần gọi lại mạng
+            if (Date.now() - cached.timestamp < 60000) {
+                return;
+            }
+        } else {
+            setIsLoading(true);
+        }
+
         try {
             if (isDemoMode) {
                 // Mock data for demo mode to prevent Firestore permission-denied errors
@@ -179,33 +232,69 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 const filteredData = listMode === 'pending' ? [mockRequests[0]] : listMode === 'expired' ? [mockRequests[2]] : [mockRequests[1]];
                 setRequests(filteredData);
+                usersCacheRef.current[listMode] = {
+                    data: filteredData,
+                    expiry: newExpiry,
+                    dept: newDept,
+                    names: newNames,
+                    roles: newRoles,
+                    timestamp: Date.now()
+                };
                 setIsLoading(false);
                 return;
             }
 
-            // Đọc qua Cloud Function listManagedUsers (functions/src/admin.ts)
             let rawUsers: ManagedUserDoc[] = [];
-            try {
-                rawUsers = await listManagedUsers(listMode);
-                // Fallback nếu server chưa kịp deploy mode 'expired'
-                if (listMode === 'expired') {
-                    const hasExpired = rawUsers.some(u => u.status === 'expired' || (u.expiresAt && new Date(u.expiresAt).getTime() < Date.now()));
-                    if (!hasExpired) {
-                        const activeUsers = await listManagedUsers('active');
-                        const combined = [...rawUsers, ...activeUsers];
-                        const seen = new Set<string>();
-                        rawUsers = combined.filter(u => {
-                            if (seen.has(u.id)) return false;
-                            seen.add(u.id);
-                            return true;
-                        });
+
+            // 2. Admin: Query TRỰC TIẾP Firestore Client SDK (cực nhanh ~50-100ms thay vì đợi Cloud Function cold-start 5-8s)
+            if (userRole === 'admin') {
+                try {
+                    const usersRef = collection(db, 'users');
+                    let q;
+                    if (listMode === 'pending') {
+                        q = query(usersRef, where('status', 'in', ['pending', 'new']));
+                    } else if (listMode === 'expired') {
+                        q = query(usersRef, where('status', 'in', ['expired', 'approved']));
+                    } else {
+                        q = query(usersRef, where('status', '==', 'approved'));
+                    }
+                    const querySnapshot = await getDocs(q);
+                    rawUsers = querySnapshot.docs.map(d => {
+                        const dData = d.data();
+                        const out: ManagedUserDoc = { id: d.id, ...dData };
+                        if (dData.createdAt instanceof Timestamp) out.createdAt = dData.createdAt.toDate().toISOString();
+                        if (dData.requestDate instanceof Timestamp) out.requestDate = dData.requestDate.toDate().toISOString();
+                        if (dData.expiresAt instanceof Timestamp) out.expiresAt = dData.expiresAt.toDate().toISOString();
+                        return out;
+                    });
+                } catch (directErr) {
+                    console.warn("Direct firestore query failed, falling back to callable:", directErr);
+                    rawUsers = await listManagedUsers(listMode);
+                }
+            } else {
+                // Manager: Gọi qua Cloud Function listManagedUsers (functions/src/admin.ts) để lọc theo Kho an toàn ở server
+                try {
+                    rawUsers = await listManagedUsers(listMode);
+                    if (listMode === 'expired') {
+                        const hasExpired = rawUsers.some(u => u.status === 'expired' || (u.expiresAt && new Date(u.expiresAt).getTime() < Date.now()));
+                        if (!hasExpired) {
+                            const activeUsers = await listManagedUsers('active');
+                            const combined = [...rawUsers, ...activeUsers];
+                            const seen = new Set<string>();
+                            rawUsers = combined.filter(u => {
+                                if (seen.has(u.id)) return false;
+                                seen.add(u.id);
+                                return true;
+                            });
+                        }
+                    }
+                } catch {
+                    if (listMode === 'expired') {
+                        rawUsers = await listManagedUsers('active');
                     }
                 }
-            } catch {
-                if (listMode === 'expired') {
-                    rawUsers = await listManagedUsers('active');
-                }
             }
+
             const data: AccessRequest[] = [];
             const newExpiry: Record<string, string> = {};
             const newDept: Record<string, string> = {};
@@ -221,7 +310,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     expiresAt: toTimestampLike(docData.expiresAt),
                 } as AccessRequest);
                 if (docData.expiresAt) {
-                    newExpiry[docData.id] = docData.expiresAt.split('T')[0];
+                    newExpiry[docData.id] = getIsoDateString(docData.expiresAt);
                 }
                 newDept[docData.id] = docData.departmentId || '';
                 newNames[docData.id] = docData.employeeName || '';
@@ -237,7 +326,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             const isUserExpired = (status?: string, expiresAtObj?: TimestampLike | { toDate?: () => Date }): boolean => {
                 if (status === 'expired') return true;
                 if (expiresAtObj?.toDate) {
-                    return expiresAtObj.toDate().getTime() < Date.now();
+                    try {
+                        return expiresAtObj.toDate().getTime() < Date.now();
+                    } catch {
+                        return false;
+                    }
                 }
                 return false;
             };
@@ -275,12 +368,22 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     if (aNoDept && !bNoDept) return -1;
                     if (!aNoDept && bNoDept) return 1;
                 }
-                const dateA = a.requestDate?.toMillis() || 0;
-                const dateB = b.requestDate?.toMillis() || 0;
+                const dateA = a.requestDate?.toMillis?.() || 0;
+                const dateB = b.requestDate?.toMillis?.() || 0;
                 return dateB - dateA;
             });
             
             setRequests(filteredData);
+
+            // Lưu vào bộ nhớ đệm
+            usersCacheRef.current[listMode] = {
+                data: filteredData,
+                expiry: newExpiry,
+                dept: newDept,
+                names: newNames,
+                roles: newRoles,
+                timestamp: Date.now()
+            };
         } catch (error: unknown) {
             console.warn("Lỗi lấy danh sách yêu cầu:", error);
             if (getErrorCode(error) === 'permission-denied') {
@@ -294,10 +397,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     };
 
     useEffect(() => {
-        fetchRequests();
+        fetchRequests(false);
 
         // Listen for refresh events (e.g. from banner click)
-        const handleRefresh = () => fetchRequests();
+        const handleRefresh = () => fetchRequests(true);
         window.addEventListener('refresh-user-management', handleRefresh);
         
         return () => {
@@ -366,7 +469,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
 
-            fetchRequests(); // Refresh data
+            usersCacheRef.current = {};
+            fetchRequests(true); // Refresh data
         } catch (error) {
             console.warn('Lỗi khi cập nhật trạng thái:', error);
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
@@ -385,7 +489,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={fetchRequests} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
+                    <Button variant="unstyled" size="none" onClick={() => fetchRequests(true)} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
                         <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
                     </Button>
                 </div>
