@@ -8,25 +8,23 @@ import UserManagementView from './UserManagementView';
 import { SettingsAccountTab } from './settings/SettingsAccountTab';
 import { useAuth } from '../../contexts/AuthContext';
 
-type SettingsTab = 'account' | 'approval_link';
+type SettingsTab = 'account';
 
 const SettingsView: React.FC = () => {
-    const { userRole } = useAuth();
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const { activeTab: globalActiveTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-    useEffect(() => { 
-        setMounted(true); 
+    useEffect(() => {
+        setMounted(true);
         const handleResize = () => setIsMobile(window.innerWidth < 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const tabs = [
-        { id: 'account', label: 'Tài Khoản', icon: 'user' },
-        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : [])
+        { id: 'account', label: 'Tài Khoản', icon: 'user' }
     ];
 
     return (
@@ -59,20 +57,6 @@ const SettingsView: React.FC = () => {
                 <div className="max-w-5xl mx-auto">
                     <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-3 sm:p-8 rounded-xl">
                         <AnimatePresence mode="wait">
-                            {activeTab === 'approval_link' && (
-                                <motion.div
-                                    key="approval_link"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="w-full"
-                                >
-                                    <div className="-m-6 sm:-m-8">
-                                        <UserManagementView isEmbedded={true} />
-                                    </div>
-                                </motion.div>
-                            )}
-
                             {activeTab === 'account' && (
                                 <motion.div 
                                     key="account"
