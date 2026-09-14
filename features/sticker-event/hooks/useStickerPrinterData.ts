@@ -24,7 +24,7 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     contentTop: '<div style="font-size: 4.5cqw; line-height: 1.1;"><b>RÚT THĂM 19H</b></div><div style="font-size: 3.5cqw; line-height: 1.1;"><b>MIỄN PHÍ 370 SUẤT:</b></div>',
     contentTopRight: '<div style="font-size: 7.6cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
     contentBottom: '<div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 150 Bộ 3 hộp</b> <span style="font-weight: normal;">(75 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Tủ sấy quần áo</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Nồi cơm</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div>',
-    contentBottomRight: '<div style="font-size: 8cqw; line-height: 1.5;"><b>2 Máy giặt 8kg</b></div><div style="font-size: 2cqw; line-height: 0.6; font-weight: normal;">(1 suất/ ngày)</div>',
+    contentBottomRight: '<div style="font-size: 8cqw; line-height: 1.5;"><b>2 Máy giặt</b></div><div style="font-size: 2cqw; line-height: 0.6; font-weight: normal;">(1 suất/ ngày)</div>',
 };
 
 /** Entry lịch sử mặc định — luôn hiển thị ở cuối tab Lịch sử, không thể xoá. */
@@ -492,7 +492,8 @@ export function useStickerPrinterData() {
                             savedState.drawTickets[0]?.title?.includes('12/9') ||
                             savedState.drawTickets[0]?.contentTop?.includes('420') ||
                             savedState.drawTickets[0]?.contentTop?.includes('40 SUẤT') ||
-                            !savedState.drawTickets[0]?.contentTop?.includes('4.5cqw')
+                            !savedState.drawTickets[0]?.contentTop?.includes('4.5cqw') ||
+                            savedState.drawTickets[0]?.contentBottomRight?.includes('8kg')
                         ) {
                             setDrawTickets([
                                 { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
