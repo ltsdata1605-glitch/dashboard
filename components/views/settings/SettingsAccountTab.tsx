@@ -67,7 +67,7 @@ export const SettingsAccountTab: React.FC = () => {
 
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
                     {/* Header: Avatar + Name/Email + Action Button */}
-                    <div className="flex items-start justify-between gap-4 sm:gap-6 mb-6 pb-6 border-b border-slate-200 dark:border-slate-700/50">
+                    <div className="flex items-start justify-between gap-4 sm:gap-6 mb-4">
                         <div className="flex items-start gap-4 sm:gap-6 flex-1">
                             {/* Avatar */}
                             <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
@@ -78,10 +78,44 @@ export const SettingsAccountTab: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Name & Email */}
-                            <div>
+                            {/* Name & Email + Info Cards */}
+                            <div className="flex-1">
                                 <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">{user?.email}</p>
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-4">{user?.email}</p>
+
+                                {/* Info Cards in Red Border Box - Below Email */}
+                                {!isEditingProfile && (
+                                    <div className="border-2 border-rose-200 dark:border-rose-800/30 rounded-lg p-3 grid grid-cols-2 gap-3 mb-0">
+                                        <div className="flex items-start gap-2">
+                                            <Icon name="map-pin" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Mã Kho</span>
+                                                <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-xs truncate block">{departmentId || 'Chưa đăng ký'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Icon name="user-check" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Tên NV</span>
+                                                <span className="font-bold text-amber-700 dark:text-amber-400 text-xs truncate italic block">{employeeName || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Icon name="shield" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Chức năng</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 text-xs truncate block">{userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Icon name="calendar" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Hạn</span>
+                                                <span className="font-bold text-emerald-700 dark:text-emerald-400 text-xs truncate block">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -102,9 +136,9 @@ export const SettingsAccountTab: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Role & Info Cards Section */}
-                    <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-3">
+                    {/* Role Badge Below */}
+                    <div className="mb-6 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                        <div className="flex items-center gap-2">
                             <span className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 rounded-md ${
                                 userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                 userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
@@ -114,40 +148,6 @@ export const SettingsAccountTab: React.FC = () => {
                                 {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
                             </span>
                         </div>
-
-                        {/* Info Cards in Grid - Red Border */}
-                        {!isEditingProfile && (
-                            <div className="border-2 border-rose-200 dark:border-rose-800/30 rounded-lg p-4 grid grid-cols-2 gap-3">
-                                <div className="flex items-start gap-2">
-                                    <Icon name="map-pin" size={4} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                    <div className="min-w-0">
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Mã Kho</span>
-                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm truncate block">{departmentId || 'Chưa đăng ký'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <Icon name="user-check" size={4} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                    <div className="min-w-0">
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Tên NV</span>
-                                        <span className="font-bold text-amber-700 dark:text-amber-400 text-sm truncate italic block">{employeeName || 'N/A'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <Icon name="shield" size={4} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                    <div className="min-w-0">
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Chức năng</span>
-                                        <span className="font-bold text-slate-700 dark:text-slate-300 text-sm truncate block">{userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <Icon name="calendar" size={4} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                    <div className="min-w-0">
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Hạn</span>
-                                        <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm truncate block">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Editing Form */}
