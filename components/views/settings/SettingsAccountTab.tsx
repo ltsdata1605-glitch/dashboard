@@ -216,7 +216,7 @@ export const SettingsAccountTab: React.FC = () => {
 
             {/* Phân Quyền Section */}
             {(userRole === 'admin' || userRole === 'manager') && (
-                <div className="-m-3 sm:-m-6">
+                <div className="w-full">
                     <UserManagementView isEmbedded={true} />
                 </div>
             )}

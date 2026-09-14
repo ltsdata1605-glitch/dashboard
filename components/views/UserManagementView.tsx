@@ -481,8 +481,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     };
 
     return (
-        <div className={`flex-1 overflow-y-auto ${isEmbedded ? 'p-0 sm:p-2' : 'bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}`}>
-            <div className="max-w-5xl mx-auto space-y-4">
+        <div className={isEmbedded ? 'w-full' : 'flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}>
+            <div className={isEmbedded ? 'w-full space-y-4' : 'max-w-5xl mx-auto space-y-4'}>
                 {/* Header */}
                 <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3">
