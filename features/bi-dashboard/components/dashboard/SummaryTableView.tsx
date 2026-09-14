@@ -52,8 +52,8 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // TRẢ GÓP & TRẢ CHẬM
-    'DT TRẢ GÓP': { label: 'DT TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Trả Góp': { label: 'DT TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
@@ -63,8 +63,8 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // KHÁC
     'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% Tỉ trọng': { label: 'TỈ TRỌNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'TB 3 Tháng': { label: 'TB 3 THÁNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'TB 3 THÁNG': { label: 'TB 3 THÁNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TB 3 Tháng': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'TB 3 THÁNG': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '% TT': { label: 'TĂNG TRƯỞNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 };
 
