@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
@@ -8,6 +9,11 @@ import { formatCleanDisplayName } from '../../../utils/dataUtils';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
+
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [stagedDept, setStagedDept] = useState(departmentId || '');
@@ -215,17 +221,33 @@ export const SettingsAccountTab: React.FC = () => {
                 </div>
             )}
 
-            {/* Logout */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+            {/* Portaled Logout Button to Top Header Bar */}
+            {mounted && typeof document !== 'undefined' && document.getElementById('global-header-actions') && createPortal(
                 <Button
-                    variant="unstyled" size="none"
+                    variant="unstyled"
+                    size="none"
                     onClick={logout}
-                    className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition-colors shadow-sm flex items-center gap-2 rounded-lg"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 shadow-sm transition-all group"
+                    title="Đăng xuất tài khoản"
                 >
-                    <Icon name="log-out" size={5} />
-                    Đăng Xuất Tài Khoản
-                </Button>
-            </div>
+                    <Icon name="log-out" size={4.5} className="text-rose-500 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Đăng Xuất Tài Khoản</span>
+                </Button>,
+                document.getElementById('global-header-actions')!
+            )}
+            {mounted && typeof document !== 'undefined' && document.getElementById('mobile-topbar-actions') && createPortal(
+                <Button
+                    variant="unstyled"
+                    size="none"
+                    onClick={logout}
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
+                    title="Đăng xuất tài khoản"
+                >
+                    <Icon name="log-out" size={3.5} />
+                    <span>Đăng Xuất</span>
+                </Button>,
+                document.getElementById('mobile-topbar-actions')!
+            )}
         </div>
     );
 };
