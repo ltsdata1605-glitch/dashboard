@@ -125,6 +125,31 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const dtThucDuKienStr = dtThucDuKien > 0
         ? `${roundUp(dtThucDuKien).toLocaleString('vi-VN')} Tr`
         : '—';
+
+    // Dự kiến DTQĐ (nếu chưa có sẵn từ kpiData, ước tính theo số ngày trong tháng tương tự DT Thực)
+    const resolvedDtDuKienQD = dtDuKienQD > 0
+        ? dtDuKienQD
+        : (!isRealtime && passedDays > 0 && dtqd > 0 ? Math.round((dtqd / passedDays) * daysInMonth) : 0);
+
+    const hasDkAndTarget = resolvedDtDuKienQD > 0 && !!secondaryTargetStr;
+    const dtqdTrendLabel = hasDkAndTarget
+        ? 'Dự kiến / Target'
+        : (resolvedDtDuKienQD > 0 ? 'Dự kiến DTQĐ' : secondaryLabel);
+
+    const dtqdTrendValue = hasDkAndTarget ? (
+        <span className="tabular-nums" title={`Dự kiến DTQĐ: ${roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')} Tr | Target: ${secondaryTargetStr}`}>
+            <span className="text-sky-600 dark:text-sky-400 font-bold">
+                {roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')}
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 font-normal mx-0.5">/</span>
+            <span>{secondaryTargetStr}</span>
+        </span>
+    ) : (
+        resolvedDtDuKienQD > 0
+            ? `${roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')} Tr`
+            : (secondaryTargetStr || '-')
+    );
+
     const dtqdIsGood = secondaryPct >= 100;
     const hqqdIsGood = hqqd >= currentQuyDoiTarget;
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
@@ -152,8 +177,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title="DTQĐ"
                     progressPercent={Math.ceil(secondaryPct)}
                     isGood={dtqdIsGood}
-                    trendLabel={secondaryLabel}
-                    trendValue={secondaryTargetStr || '-'}
+                    trendLabel={dtqdTrendLabel}
+                    trendValue={dtqdTrendValue}
                 >
                     <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                         {roundUp(dtqd).toLocaleString('vi-VN')} Tr

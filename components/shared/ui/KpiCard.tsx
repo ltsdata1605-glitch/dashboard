@@ -146,7 +146,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                                     />
                                 </div>
                                 <span className={`text-[11px] font-bold ${style.iconText} shrink-0 tabular-nums`}>
-                                    {Math.round(clampedProgress)}%
+                                    {progressPercent !== undefined && !isNaN(progressPercent)
+                                        ? Math.round(progressPercent)
+                                        : Math.round(clampedProgress)}%
                                 </span>
                             </div>
                         )}
