@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
-import { auth, db, functions, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
+import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
@@ -15,20 +15,13 @@ interface AuthContextType {
     expiresAt?: Date | null;
     status?: 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
     isLoading: boolean;
-    // true khi Ultra-Fast Boot tắt spinner sớm dựa trên cache role/status/departmentId hợp lệ,
-    // nhưng Firebase `onAuthStateChanged` (nguồn của `user`) chưa kịp xác nhận xong — App.tsx
-    // dùng cờ này để KHÔNG hiện màn Login trong khoảng vài chục ms đó (xem giải thích ở effect
-    // Ultra-Fast Boot bên dưới). Tự trở về false ngay khi Firebase xác nhận thật sự đã đăng xuất.
     hasCachedSession: boolean;
     loginWithGoogle: () => Promise<void>;
+    loginWithGoogleRedirect: () => Promise<void>;
     logout: () => Promise<void>;
     isDemoMode: boolean;
     setDemoMode: (val: boolean) => void;
     requestAccess: (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => Promise<void>;
-    // Instance Functions/Firestore gắn với app + auth session THẬT (root) —
-    // features/* (vd: phan-ca) cần dùng đúng instance này khi gọi Cloud Function
-    // callable hoặc đọc/ghi Firestore theo uid, vì app Firebase riêng của feature
-    // (named app khác) không có session đăng nhập nên request.auth sẽ là null.
     functions: Functions;
     db: Firestore;
 }
@@ -46,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         cleanupGarbageKeys().catch(console.error);
+        checkRedirectLoginResult().catch(console.error);
         Promise.all([
             getSetting<'admin' | 'manager' | 'employee' | 'pending'>('cached_user_role'),
             getSetting<string>('cached_dept_id'),
@@ -236,6 +230,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await loginProvider();
     };
 
+    const loginWithGoogleRedirect = async () => {
+        await loginRedirectProvider();
+    };
+
     const logout = async () => {
         await logoutProvider();
         setDemoMode(false); // Xóa trạng thái demo khi dăng xuất
@@ -245,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const activeStatus = isDemoMode ? 'approved' : status;
 
     return (
-        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, hasCachedSession, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess, functions, db }}>
+        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, hasCachedSession, loginWithGoogle, loginWithGoogleRedirect, logout, isDemoMode, setDemoMode, requestAccess, functions, db }}>
             {children}
         </AuthContext.Provider>
     );
@@ -258,6 +256,7 @@ const SAFE_AUTH_FALLBACK: AuthContextType = {
     isLoading: true,
     hasCachedSession: false,
     loginWithGoogle: async () => { console.warn('[Auth] loginWithGoogle called outside AuthProvider'); },
+    loginWithGoogleRedirect: async () => { console.warn('[Auth] loginWithGoogleRedirect called outside AuthProvider'); },
     logout: async () => { console.warn('[Auth] logout called outside AuthProvider'); },
     isDemoMode: false,
     setDemoMode: () => {},

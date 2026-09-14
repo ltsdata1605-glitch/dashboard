@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signOut, signInWithPopup } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
@@ -41,9 +41,35 @@ export const loginWithGoogle = async () => {
             sessionStorage.setItem('googleOAuthToken', credential.accessToken);
         }
         return result.user;
-    } catch (error) {
-        console.error("Lỗi đăng nhập Google:", error);
+    } catch (error: any) {
+        console.error("Lỗi đăng nhập Google popup:", error);
         throw error;
+    }
+};
+
+export const loginWithGoogleRedirect = async () => {
+    try {
+        await signInWithRedirect(auth, googleProvider);
+    } catch (error) {
+        console.error("Lỗi đăng nhập Google redirect:", error);
+        throw error;
+    }
+};
+
+export const checkRedirectLoginResult = async () => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+                sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+            }
+            return result.user;
+        }
+        return null;
+    } catch (error) {
+        console.error("Lỗi getRedirectResult:", error);
+        return null;
     }
 };
 

@@ -5,7 +5,7 @@ import { Button } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 const LoginView: React.FC = () => {
-    const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
+    const { loginWithGoogle, loginWithGoogleRedirect, setDemoMode, isLoading } = useAuth();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -29,17 +29,29 @@ const LoginView: React.FC = () => {
                 const currentDomain = window.location.hostname;
                 errMsg = `Tên miền '${currentDomain}' chưa được cấp phép (unauthorized-domain). \n\nCách khắc phục: Anh/Chị vui lòng truy cập Firebase Console -> Authentication -> Settings -> Authorized Domains và thêm tên miền "${currentDomain}" vào danh sách.`;
             } else if (errCode === 'auth/popup-blocked') {
-                errMsg = 'Cửa sổ đăng nhập Google bị trình duyệt chặn. Vui lòng kiểm tra lại thiết lập chặn cửa sổ bật lên (popup) trên trình duyệt của Anh/Chị.';
+                errMsg = 'Cửa sổ đăng nhập Google bị trình duyệt chặn. Vui lòng kiểm tra lại thiết lập chặn cửa sổ bật lên (popup) trên trình duyệt của Anh/Chị, hoặc dùng nút Đăng nhập chuyển hướng bên dưới.';
             } else if (errCode === 'auth/operation-not-supported-in-this-environment') {
-                errMsg = 'Môi trường này không hỗ trợ cửa sổ đăng nhập. Hệ thống đang tự chuyển hướng sang phương thức đăng nhập khác, Anh/Chị vui lòng click lại nút Đăng nhập.';
+                errMsg = 'Môi trường này không hỗ trợ cửa sổ popup. Vui lòng nhấn nút Đăng nhập chuyển hướng bên dưới.';
             } else if (errCode === 'auth/internal-error') {
-                errMsg = 'Lỗi kết nối xác thực Google (auth/internal-error).\nThường do trình duyệt chặn cookie bên thứ 3 hoặc tiện ích AdBlock/chặn pop-up can thiệp.\n\n👉 Anh/Chị có thể nhấn nút "Kích hoạt Chế độ Dùng Thử" bên dưới để vào ngay Dashboard và làm việc bình thường!';
+                errMsg = 'Lỗi kết nối xác thực Google (auth/internal-error).\nThường do trình duyệt chặn cookie bên thứ 3 hoặc tiện ích AdBlock/chặn pop-up can thiệp.\n\n👉 Anh/Chị có thể chọn "Đăng nhập chuyển hướng" (không cần cookie) hoặc nhấn "Vào ngay bằng Chế độ Dùng Thử" bên dưới!';
             } else if (errCode === 'auth/invalid-api-key' || errCode === 'auth/api-key-not-valid') {
                 errMsg = 'Mã cấu hình Firebase API Key không hợp lệ. Vui lòng kiểm tra lại services/firebase.ts.';
             }
             
             setError(errMsg);
         } finally {
+            setIsLoggingIn(false);
+        }
+    };
+
+    const handleRedirectLogin = async () => {
+        try {
+            setError(null);
+            setIsLoggingIn(true);
+            await loginWithGoogleRedirect();
+        } catch (err: unknown) {
+            console.error(err);
+            setError(getErrorMessage(err) || 'Không thể chuyển hướng đăng nhập');
             setIsLoggingIn(false);
         }
     };
@@ -81,7 +93,15 @@ const LoginView: React.FC = () => {
                 {error && (
                     <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 rounded-xl text-sm font-medium border border-rose-100 dark:border-rose-800 whitespace-pre-line">
                         {error}
-                        <div className="mt-3 pt-2 border-t border-rose-200/60 dark:border-rose-800/60 flex justify-end">
+                        <div className="mt-3 pt-2 border-t border-rose-200/60 dark:border-rose-800/60 flex flex-col sm:flex-row items-center justify-between gap-2">
+                            <button
+                                type="button"
+                                onClick={handleRedirectLogin}
+                                disabled={isLoggingIn}
+                                className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1"
+                            >
+                                🔄 Đăng nhập chuyển hướng (Không cần cookie) &rarr;
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => setDemoMode(true)}
