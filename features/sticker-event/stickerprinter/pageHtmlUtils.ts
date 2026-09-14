@@ -23,9 +23,9 @@ export interface DrawPrintOptions {
 export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
     const {
         drawTickets, bgImage,
-        drawTitleSize = 2.5, drawCodeSize = 3.8, drawFooterSize = 3.8,
-        drawContentTopLeftSize = 3.5, drawContentTopRightSize = 3.5,
-        drawContentBottomLeftSize = 1.7, drawContentBottomRightSize = 2.2,
+        drawTitleSize = 4.3, drawCodeSize = 3.8, drawFooterSize = 3.8,
+        drawContentTopLeftSize = 4.5, drawContentTopRightSize = 7.6,
+        drawContentBottomLeftSize = 2.6, drawContentBottomRightSize = 8,
         isAutoIncrement = true,
     } = opts;
 
@@ -38,7 +38,7 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
     // Container in dùng container-type: inline-size + width: 210mm + aspect-ratio
     // (không ép height cứng) → Chrome print engine giải quyết cqw tự nhiên,
     // giữ tỷ lệ chính xác như preview trên màn hình.
-    const titleCqw = Math.min(drawTitleSize, 3.0);
+    const titleCqw = Math.min(drawTitleSize, 6.0);
 
     for (let pageIdx = 0; pageIdx < Math.ceil(drawTickets.length / 4); pageIdx++) {
         const pageTickets = drawTickets.slice(pageIdx * 4, pageIdx * 4 + 4);

@@ -68,8 +68,11 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             const match = fs?.match(/([\d.]+)/);
             if (match) return parseFloat(match[1]);
             
-            if (el.className.includes('bottom')) return 2.2;
-            if (el.className.includes('title')) return 2.5;
+            if (el.className.includes('bottom-left')) return 2.6;
+            if (el.className.includes('bottom-right')) return 8.0;
+            if (el.className.includes('top-right')) return 7.6;
+            if (el.className.includes('top-left')) return 4.5;
+            if (el.className.includes('title')) return 4.3;
             if (el.className.includes('code')) return 3.8;
             return 3.5;
         }

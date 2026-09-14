@@ -287,7 +287,7 @@ export function getStickerPreviewStyles({
                        justify-content: center;
                        font-family: 'UTM Avo', sans-serif;
                        font-weight: bold;
-                       font-size: 3.6cqw;
+                       font-size: 4.3cqw;
                        color: #000;
                        background: transparent;
                        z-index: 10;
@@ -313,7 +313,7 @@ export function getStickerPreviewStyles({
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 2.2cqw;
+                      font-size: 4.5cqw;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -321,7 +321,7 @@ export function getStickerPreviewStyles({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 0.3cqw;
-                      line-height: 1.15;
+                      line-height: 1.1;
                   }
  
                   .draw-ticket-block .input-content-top-right {
@@ -335,7 +335,9 @@ export function getStickerPreviewStyles({
                       justify-content: center;
                       align-items: flex-start; text-align: left;
                       font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
+                      font-weight: normal;
+                       font-size: 7.6cqw;
+                       line-height: 1.5;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -357,8 +359,8 @@ export function getStickerPreviewStyles({
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 1.7cqw;
+                      font-weight: normal;
+                      font-size: 2.6cqw;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -366,7 +368,7 @@ export function getStickerPreviewStyles({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.3cqw 0.3cqw 0cqw 0.3cqw;
-                      line-height: 1.45;
+                      line-height: 1.4;
                   }
  
                   .draw-ticket-block .input-content-bottom-right {
@@ -381,8 +383,9 @@ export function getStickerPreviewStyles({
                        align-items: flex-start;
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 2.2cqw;
+                      font-weight: normal;
+                      font-size: 8.0cqw;
+                       line-height: 1.5;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -477,7 +480,7 @@ export function getStickerPreviewStyles({
                        justify-content: center;
                        font-family: 'UTM Avo', sans-serif;
                        font-weight: bold;
-                       font-size: 3.6cqw;
+                       font-size: 4.3cqw;
                        color: #000;
                        background: transparent;
                        z-index: 10;
@@ -505,12 +508,12 @@ export function getStickerPreviewStyles({
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 2.2cqw;
+                      font-size: 4.5cqw;
                       color: #000;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 0.3cqw;
-                      line-height: 1.15;
+                      line-height: 1.1;
                       overflow: hidden;
                   }
 
@@ -525,7 +528,9 @@ export function getStickerPreviewStyles({
                       justify-content: center;
                       align-items: flex-start; text-align: left;
                       font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
+                      font-weight: normal;
+                       font-size: 7.6cqw;
+                       line-height: 1.5;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
@@ -545,13 +550,13 @@ export function getStickerPreviewStyles({
                        align-items: flex-start;
                        text-align: left;
                        font-family: 'UTM Avo', sans-serif;
-                       font-weight: bold;
-                       font-size: 2.2cqw;
+                       font-weight: normal;
+                       font-size: 2.6cqw;
                        color: #000;
                        white-space: pre-wrap;
                        word-break: break-word;
                        padding: 0.3cqw 0.3cqw 0cqw 0.3cqw;
-                       line-height: 1.45;
+                       line-height: 1.4;
                        overflow: hidden;
                    }
 
@@ -567,8 +572,9 @@ export function getStickerPreviewStyles({
                        align-items: flex-start;
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 2.2cqw;
+                      font-weight: normal;
+                      font-size: 8.0cqw;
+                       line-height: 1.5;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;

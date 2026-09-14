@@ -21,10 +21,10 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     title: 'PHIẾU RÚT THĂM TRÚNG THƯỞNG 19 & 26/9',
     code: '1',
     footer: 'HÙNG VƯƠNG',
-    contentTop: 'RÚT THĂM 19H<div>MIỄN PHÍ 370 SUẤT:</div>',
-    contentTopRight: 'MIỄN PHÍ',
-    contentBottom: '<div>- 150 Bộ 3 hộp (75 Suất/ngày)</div><div>- 8 Tủ sấy quần áo (4 Suất/ngày)</div><div>- 8 Nồi cơm (4 Suất/ngày)</div>',
-    contentBottomRight: '2 Máy giặt 8kg<div>(1 suất/ ngày)</div>',
+    contentTop: '<div style="font-size: 4.5cqw; line-height: 1.1;"><b>RÚT THĂM 19H</b></div><div style="font-size: 3.5cqw; line-height: 1.1;"><b>MIỄN PHÍ 370 SUẤT:</b></div>',
+    contentTopRight: '<div style="font-size: 7.6cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
+    contentBottom: '<div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 150 Bộ 3 hộp</b> <span style="font-weight: normal;">(75 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Tủ sấy quần áo</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Nồi cơm</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div>',
+    contentBottomRight: '<div style="font-size: 8cqw; line-height: 1.5;"><b>2 Máy giặt 8kg</b></div><div style="font-size: 2cqw; line-height: 0.6; font-weight: normal;">(1 suất/ ngày)</div>',
 };
 
 /** Entry lịch sử mặc định — luôn hiển thị ở cuối tab Lịch sử, không thể xoá. */
@@ -48,11 +48,11 @@ export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     footerTextContent: '',
     showBarcode: false,
     manualPages: [],
-    drawContentTopLeftSize: 3.5,
-    drawContentTopRightSize: 3.5,
-    drawContentBottomLeftSize: 1.7,
-    drawContentBottomRightSize: 2.2,
-    drawTitleSize: 2.5,
+    drawContentTopLeftSize: 4.5,
+    drawContentTopRightSize: 7.6,
+    drawContentBottomLeftSize: 2.6,
+    drawContentBottomRightSize: 8,
+    drawTitleSize: 4.3,
     drawCodeSize: 3.8,
     drawFooterSize: 3.8,
 };
@@ -75,11 +75,11 @@ export function useStickerPrinterData() {
     const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4000);
     const [drawAutoIncrement, setDrawAutoIncrement] = useState<boolean>(true);
 
-    const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(3.5);
-    const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
-    const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(1.7);
-    const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(2.2);
-    const [drawTitleSize, setDrawTitleSize] = useState(2.5);
+    const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(4.5);
+    const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(7.6);
+    const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.6);
+    const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(8);
+    const [drawTitleSize, setDrawTitleSize] = useState(4.3);
     const [drawCodeSize, setDrawCodeSize] = useState(3.8);
     const [drawFooterSize, setDrawFooterSize] = useState(3.8);
     
@@ -487,14 +487,31 @@ export function useStickerPrinterData() {
                     if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
 
                     if (savedState.drawTickets) {
-                        // Tự động nâng cấp nếu dữ liệu cũ còn lưu mẫu cũ (12/9, 420 suất, hoặc 40 suất)
-                        if (savedState.drawTickets[0]?.title?.includes('12/9') || savedState.drawTickets[0]?.contentTop?.includes('420') || savedState.drawTickets[0]?.contentTop?.includes('40 SUẤT')) {
-                            setDrawTickets(prev => [
+                        // Tự động nâng cấp nếu dữ liệu cũ chưa có style font-size hoặc là mẫu cũ
+                        if (
+                            savedState.drawTickets[0]?.title?.includes('12/9') ||
+                            savedState.drawTickets[0]?.contentTop?.includes('420') ||
+                            savedState.drawTickets[0]?.contentTop?.includes('40 SUẤT') ||
+                            !savedState.drawTickets[0]?.contentTop?.includes('4.5cqw')
+                        ) {
+                            setDrawTickets([
                                 { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
-                                ...prev.slice(1)
+                                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+                                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+                                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
                             ]);
+                            setDrawContentTopLeftSize(4.5);
+                            setDrawContentTopRightSize(7.6);
+                            setDrawContentBottomLeftSize(2.6);
+                            setDrawContentBottomRightSize(8);
+                            setDrawTitleSize(4.3);
                         } else {
                             setDrawTickets(savedState.drawTickets);
+                            if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
+                            if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
+                            if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
+                            if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
+                            if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                         }
                     }
                     if (savedState.drawStartNumber != null) setDrawStartNumber(savedState.drawStartNumber);
@@ -504,15 +521,6 @@ export function useStickerPrinterData() {
                         setDrawTotalTickets(4000);
                     }
                     if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
-                    if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
-                    if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
-                    if (savedState.drawContentBottomLeftSize != null) {
-                        setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize === 2.2 ? 1.7 : savedState.drawContentBottomLeftSize);
-                    } else {
-                        setDrawContentBottomLeftSize(1.7);
-                    }
-                    if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
-                    if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                     if (savedState.drawCodeSize != null) setDrawCodeSize(savedState.drawCodeSize);
                     if (savedState.drawFooterSize != null) setDrawFooterSize(savedState.drawFooterSize);
                 }
@@ -1168,13 +1176,13 @@ export function useStickerPrinterData() {
             setDrawStartNumber(1);
             setDrawTotalTickets(4000);
             setDrawAutoIncrement(true);
-            setDrawContentBottomLeftSize(1.7);
-            if (entry.drawContentTopLeftSize != null) setDrawContentTopLeftSize(entry.drawContentTopLeftSize);
-            if (entry.drawContentTopRightSize != null) setDrawContentTopRightSize(entry.drawContentTopRightSize);
-            if (entry.drawContentBottomRightSize != null) setDrawContentBottomRightSize(entry.drawContentBottomRightSize);
-            if (entry.drawTitleSize != null) setDrawTitleSize(entry.drawTitleSize);
-            if (entry.drawCodeSize != null) setDrawCodeSize(entry.drawCodeSize);
-            if (entry.drawFooterSize != null) setDrawFooterSize(entry.drawFooterSize);
+            setDrawContentTopLeftSize(4.5);
+            setDrawContentTopRightSize(7.6);
+            setDrawContentBottomLeftSize(2.6);
+            setDrawContentBottomRightSize(8);
+            setDrawTitleSize(4.3);
+            setDrawCodeSize(3.8);
+            setDrawFooterSize(3.8);
             toast.success('Đã khôi phục phiếu mẫu mặc định!');
         }
     };
@@ -1207,7 +1215,13 @@ export function useStickerPrinterData() {
             setDrawStartNumber(1);
             setDrawTotalTickets(4000);
             setDrawAutoIncrement(true);
-            setDrawContentBottomLeftSize(1.7);
+            setDrawContentTopLeftSize(4.5);
+            setDrawContentTopRightSize(7.6);
+            setDrawContentBottomLeftSize(2.6);
+            setDrawContentBottomRightSize(8);
+            setDrawTitleSize(4.3);
+            setDrawCodeSize(3.8);
+            setDrawFooterSize(3.8);
         }
     };
 
