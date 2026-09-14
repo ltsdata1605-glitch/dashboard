@@ -92,6 +92,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
     // SWR Cache: Giữ dữ liệu trong bộ nhớ để chuyển tab tức thì 0ms không phải chờ
     const usersCacheRef = useRef<Record<string, CacheEntry>>({});
+    // Master cache cho Admin: Đọc 1 lần toàn bộ users collection, phân loại ngay trên client
+    const allAdminUsersRef = useRef<ManagedUserDoc[] | null>(null);
 
     // Auto-save a single user's data to Firestore (debounced)
     const autoSave = useCallback(async (requestId: string, field: string, value: string) => {
@@ -133,6 +135,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 await adminUpdateUser(updateData);
                 // Xoá cache để lần lấy dữ liệu sau đồng bộ với thay đổi
+                allAdminUsersRef.current = null;
                 usersCacheRef.current = {};
                 toast.success('Đã tự động lưu!', { duration: 1500, id: `autosave-${requestId}` });
             } catch (err) {
@@ -150,18 +153,20 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             return;
         }
 
-        // 1. Kiểm tra cache trong bộ nhớ: nếu đã có dữ liệu tab này và chưa bị ép làm mới, mở ngay lập tức (0ms)!
-        const cached = usersCacheRef.current[listMode];
-        if (!forceRefresh && cached) {
-            setRequests(cached.data);
-            setExpiryDates(cached.expiry);
-            setEditDepartments(cached.dept);
-            setEditNames(cached.names);
-            setEditRoles(cached.roles);
-            setIsLoading(false);
-            // Nếu cache còn mới dưới 60 giây, không cần gọi lại mạng
-            if (Date.now() - cached.timestamp < 60000) {
-                return;
+        // Nếu đã có cache cho tab này hoặc master cache Admin, dùng ngay mà KHÔNG bật spinner!
+        const hasCached = (!forceRefresh && usersCacheRef.current[listMode]) || (userRole === 'admin' && allAdminUsersRef.current && !forceRefresh);
+        if (hasCached) {
+            const cached = usersCacheRef.current[listMode];
+            if (cached) {
+                setRequests(cached.data);
+                setExpiryDates(cached.expiry);
+                setEditDepartments(cached.dept);
+                setEditNames(cached.names);
+                setEditRoles(cached.roles);
+                setIsLoading(false);
+                if (Date.now() - cached.timestamp < 60000) {
+                    return;
+                }
             }
         } else {
             setIsLoading(true);
@@ -246,30 +251,27 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
             let rawUsers: ManagedUserDoc[] = [];
 
-            // 2. Admin: Query TRỰC TIẾP Firestore Client SDK (cực nhanh ~50-100ms thay vì đợi Cloud Function cold-start 5-8s)
+            // 2. Admin: Query TRỰC TIẾP Firestore Client SDK 1 lần toàn bộ users collection (~50ms)
             if (userRole === 'admin') {
-                try {
-                    const usersRef = collection(db, 'users');
-                    let q;
-                    if (listMode === 'pending') {
-                        q = query(usersRef, where('status', 'in', ['pending', 'new']));
-                    } else if (listMode === 'expired') {
-                        q = query(usersRef, where('status', 'in', ['expired', 'approved']));
-                    } else {
-                        q = query(usersRef, where('status', '==', 'approved'));
+                if (!allAdminUsersRef.current || forceRefresh) {
+                    try {
+                        const usersRef = collection(db, 'users');
+                        const querySnapshot = await getDocs(usersRef);
+                        allAdminUsersRef.current = querySnapshot.docs.map(d => {
+                            const dData = d.data();
+                            const out: ManagedUserDoc = { id: d.id, ...dData };
+                            if (dData.createdAt instanceof Timestamp) out.createdAt = dData.createdAt.toDate().toISOString();
+                            if (dData.requestDate instanceof Timestamp) out.requestDate = dData.requestDate.toDate().toISOString();
+                            if (dData.expiresAt instanceof Timestamp) out.expiresAt = dData.expiresAt.toDate().toISOString();
+                            return out;
+                        });
+                    } catch (directErr) {
+                        console.warn("Direct firestore query failed, falling back to callable:", directErr);
+                        rawUsers = await listManagedUsers(listMode);
                     }
-                    const querySnapshot = await getDocs(q);
-                    rawUsers = querySnapshot.docs.map(d => {
-                        const dData = d.data();
-                        const out: ManagedUserDoc = { id: d.id, ...dData };
-                        if (dData.createdAt instanceof Timestamp) out.createdAt = dData.createdAt.toDate().toISOString();
-                        if (dData.requestDate instanceof Timestamp) out.requestDate = dData.requestDate.toDate().toISOString();
-                        if (dData.expiresAt instanceof Timestamp) out.expiresAt = dData.expiresAt.toDate().toISOString();
-                        return out;
-                    });
-                } catch (directErr) {
-                    console.warn("Direct firestore query failed, falling back to callable:", directErr);
-                    rawUsers = await listManagedUsers(listMode);
+                }
+                if (allAdminUsersRef.current) {
+                    rawUsers = allAdminUsersRef.current;
                 }
             } else {
                 // Manager: Gọi qua Cloud Function listManagedUsers (functions/src/admin.ts) để lọc theo Kho an toàn ở server
@@ -342,9 +344,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 if (listMode === 'expired') {
                     filteredData = filteredData.filter(req => isUserExpired(req.status, req.expiresAt));
                 } else if (listMode === 'active') {
-                    filteredData = filteredData.filter(req => req.status === 'approved' && !isUserExpired(req.status, req.expiresAt));
+                    filteredData = filteredData.filter(req => !isUserExpired(req.status, req.expiresAt) && (req.status === 'approved' || (req.role && req.role !== 'pending' && req.role !== 'blocked')));
                 } else {
-                    filteredData = filteredData.filter(req => (req.status === 'pending' || req.status === 'new'));
+                    filteredData = filteredData.filter(req => !isUserExpired(req.status, req.expiresAt) && (req.status === 'pending' || req.status === 'new' || req.role === 'pending'));
                 }
             }
             else if (userRole === 'manager' && departmentId) {
@@ -469,6 +471,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
 
+            allAdminUsersRef.current = null;
             usersCacheRef.current = {};
             fetchRequests(true); // Refresh data
         } catch (error) {
