@@ -200,13 +200,13 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     contentEditable
                     suppressContentEditableWarning
                     className={`input-content-bottom-left ${activeField === 'drawContentBottomLeft' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawContentBottomLeftSize || 2.6}cqw` }}
+                    style={{ fontSize: `${drawContentBottomLeftSize || 2.9}cqw` }}
                     data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
                 />
             ) : (
                 <div
                     className="input-content-bottom-left"
-                    style={{ fontSize: `${drawContentBottomLeftSize || 2.6}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    style={{ fontSize: `${drawContentBottomLeftSize || 2.9}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottom) }}
                 />
             )}
@@ -238,13 +238,13 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     contentEditable
                     suppressContentEditableWarning
                     className={`input-content-bottom-right-sub ${activeField === 'drawContentBottomRightSub' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawContentBottomRightSubSize || 2.0}cqw` }}
+                    style={{ fontSize: `${drawContentBottomRightSubSize || 3.0}cqw` }}
                     data-placeholder="(1 suất/ ngày)"
                 />
             ) : (
                 <div
                     className="input-content-bottom-right-sub"
-                    style={{ fontSize: `${drawContentBottomRightSubSize || 2.0}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    style={{ fontSize: `${drawContentBottomRightSubSize || 3.0}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRightSub) }}
                 />
             )}

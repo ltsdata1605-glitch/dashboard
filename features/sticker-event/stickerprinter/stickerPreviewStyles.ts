@@ -360,7 +360,7 @@ export function getStickerPreviewStyles({
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                      font-size: 2.6cqw;
+                      font-size: 2.9cqw;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -409,8 +409,8 @@ export function getStickerPreviewStyles({
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                      font-size: 2.0cqw;
-                      line-height: 1.2;
+                      font-size: 3.0cqw;
+                      line-height: 1.4;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -576,7 +576,7 @@ export function getStickerPreviewStyles({
                        text-align: left;
                        font-family: 'UTM Avo', sans-serif;
                        font-weight: normal;
-                       font-size: 2.6cqw;
+                       font-size: 2.9cqw;
                        color: #000;
                        white-space: pre-wrap;
                        word-break: break-word;
@@ -621,8 +621,8 @@ export function getStickerPreviewStyles({
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                      font-size: 2.0cqw;
-                      line-height: 1.2;
+                      font-size: 3.0cqw;
+                      line-height: 1.4;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
