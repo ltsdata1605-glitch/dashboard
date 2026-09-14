@@ -112,8 +112,19 @@ export const BonusView: React.FC<{
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" size="icon" onClick={() => { setIsDaily(prev => !prev); setIsMonthly(false); }} title="Xem theo ngày" className={isDaily ? 'text-sky-700' : 'text-slate-400'}><CalendarIcon className="h-4 w-4"/></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { setIsMonthly(prev => !prev); setIsDaily(false); }} title="Luỹ kế tháng" className={isMonthly ? 'text-sky-700' : 'text-slate-400'}><CalendarRange className="h-4 w-4"/></Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            if (isDaily) { setIsDaily(false); setIsMonthly(true); }
+                            else if (isMonthly) { setIsMonthly(false); }
+                            else { setIsDaily(true); }
+                        }}
+                        title={isDaily ? 'Luỹ kế tháng (Click để xem chế độ khác)' : isMonthly ? 'Danh sách (Click để xem chế độ khác)' : 'Xem theo ngày (Click để xem chế độ khác)'}
+                        className={isDaily || isMonthly ? 'text-sky-700' : 'text-slate-400'}
+                    >
+                        {isMonthly ? <CalendarRange className="h-4 w-4"/> : <CalendarIcon className="h-4 w-4"/>}
+                    </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
