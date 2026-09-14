@@ -230,10 +230,9 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             ]);
             let totalT = 0;
             if (summaryLuyKeData) {
-                activeSupermarkets.forEach((sm, i) => {
-                    const totalTargetPercent = smTargets[i] ?? 100;
+                activeSupermarkets.forEach((sm) => {
                     const baseTarget = parseBaseTargetQuyDoi(summaryLuyKeData, sm);
-                    totalT += baseTarget * (totalTargetPercent / 100);
+                    totalT += baseTarget;
                 });
             }
             setTotalAggregatedTarget(totalT);

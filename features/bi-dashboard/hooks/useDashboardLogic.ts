@@ -433,11 +433,11 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 if (supermarketName === 'Tổng') continue;
                 
                 // Trích xuất Target gốc từ cột TARGET ở [Doanh thu hợp nhất > Luỹ kế]
+                // Sử dụng target mặc định, không sử dụng target sau điều chỉnh
                 const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKe, supermarketName);
-                const adjustedMonthTarget = baseMonthTarget * (totalTargetPercent / 100);
-                const dailyTarget = adjustedMonthTarget > 0 ? adjustedMonthTarget / daysInMonth : 0;
+                const dailyTarget = baseMonthTarget > 0 ? baseMonthTarget / daysInMonth : 0;
                 allDailyTargets[supermarketName] = dailyTarget;
-                allMonthlyTargets[supermarketName] = adjustedMonthTarget;
+                allMonthlyTargets[supermarketName] = baseMonthTarget;
             }
 
             // Tính tổng mục tiêu tháng & ngày cho 'Tổng' (Toàn cụm)
