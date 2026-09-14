@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
@@ -9,6 +10,7 @@ import { formatCleanDisplayName } from '../../../utils/dataUtils';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
+    const { activeTab } = useActiveTab();
 
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -221,8 +223,8 @@ export const SettingsAccountTab: React.FC = () => {
                 </div>
             )}
 
-            {/* Portaled Logout Button to Top Header Bar */}
-            {mounted && typeof document !== 'undefined' && document.getElementById('global-header-actions') && createPortal(
+            {/* Portaled Logout Button to Top Header Bar - CHỈ xuất hiện khi đang ở tab 'settings' (Phân Quyền & Duyệt Yêu Cầu) */}
+            {mounted && activeTab === 'settings' && typeof document !== 'undefined' && document.getElementById('global-header-actions') && createPortal(
                 <Button
                     variant="unstyled"
                     size="none"
@@ -235,7 +237,7 @@ export const SettingsAccountTab: React.FC = () => {
                 </Button>,
                 document.getElementById('global-header-actions')!
             )}
-            {mounted && typeof document !== 'undefined' && document.getElementById('mobile-topbar-actions') && createPortal(
+            {mounted && activeTab === 'settings' && typeof document !== 'undefined' && document.getElementById('mobile-topbar-actions') && createPortal(
                 <Button
                     variant="unstyled"
                     size="none"
