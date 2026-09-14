@@ -6,6 +6,8 @@ import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
+import { Modal } from '../shared/ui/Modal';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { adminUpdateUser, listManagedUsers, AdminRole, ManagedUserDoc } from '../../services/adminUserService';
@@ -94,6 +96,15 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const usersCacheRef = useRef<Record<string, CacheEntry>>({});
     // Master cache cho Admin: Đọc 1 lần toàn bộ users collection, phân loại ngay trên client
     const allAdminUsersRef = useRef<ManagedUserDoc[] | null>(null);
+
+    // States cho Gia Hạn và Thu Hồi
+    const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+    const [confirmRevokeUser, setConfirmRevokeUser] = useState<ManagedUserDoc | null>(null);
+    const [extendingUser, setExtendingUser] = useState<ManagedUserDoc | null>(null);
+    const [extendDays, setExtendDays] = useState<number>(30);
+    const [extendDate, setExtendDate] = useState<string>('');
+    const [isUnlimited, setIsUnlimited] = useState<boolean>(false);
+    const [isSubmittingExtend, setIsSubmittingExtend] = useState<boolean>(false);
 
     // Auto-save a single user's data to Firestore (debounced)
     const autoSave = useCallback(async (requestId: string, field: string, value: string) => {
@@ -411,7 +422,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         };
     }, [userRole, departmentId, listMode]);
 
-    const handleApproval = async (requestId: string, isApproved: boolean) => {
+    const handleApproval = async (requestId: string, isApproved: boolean, customExpiresAt?: string | null) => {
         if (isDemoMode) {
             toast.success(isApproved 
                 ? (listMode === 'pending' ? `Đã CẤP QUYỀN thành công (Demo Mode)!` : listMode === 'expired' ? `Đã GIA HẠN thành công (Demo Mode)!` : `Đã CẬP NHẬT QUYỀN thành công (Demo Mode)!`)
@@ -422,22 +433,36 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
 
         try {
+            setActionLoadingId(requestId);
             if (isApproved) {
                 const targetRole = (editRoles[requestId] as AdminRole | undefined) || 'employee';
 
-                // Add expiresAt if specified — set to end of the selected day
-                let dateStr = expiryDates[requestId];
-                // If in expired tab and date is missing or already in past, set 30 days default
-                if (listMode === 'expired' && (!dateStr || new Date(dateStr).getTime() < Date.now())) {
-                    const nextMonth = new Date(Date.now() + 30 * 86400000);
-                    dateStr = nextMonth.toISOString().split('T')[0];
+                let expiresAtIso: string | null = null;
+                if (customExpiresAt !== undefined) {
+                    expiresAtIso = customExpiresAt;
+                } else {
+                    let dateStr = expiryDates[requestId];
+                    if (listMode === 'expired' && (!dateStr || new Date(dateStr).getTime() < Date.now())) {
+                        const nextMonth = new Date(Date.now() + 30 * 86400000);
+                        dateStr = nextMonth.toISOString().split('T')[0];
+                    }
+                    if (dateStr) {
+                        const d = new Date(dateStr);
+                        d.setHours(23, 59, 59, 999);
+                        expiresAtIso = d.toISOString();
+                    }
                 }
 
-                let expiresAtIso: string | null = null;
-                if (dateStr) {
-                    const d = new Date(dateStr);
-                    d.setHours(23, 59, 59, 999);
-                    expiresAtIso = d.toISOString();
+                // Cập nhật lạc quan (optimistic) ngay lập tức (0ms)
+                if (listMode === 'expired') {
+                    setRequests(prev => prev.filter(req => req.id !== requestId));
+                } else {
+                    setRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'approved', expiresAt: expiresAtIso } : req));
+                }
+                if (allAdminUsersRef.current) {
+                    allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
+                        u.id === requestId ? { ...u, status: 'approved', expiresAt: expiresAtIso } : u
+                    );
                 }
 
                 await adminUpdateUser({
@@ -458,6 +483,14 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : listMode === 'expired' ? `Đã GIA HẠN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
             } else {
+                // Thu hồi quyền truy cập: xóa lạc quan khỏi danh sách hiện tại
+                setRequests(prev => prev.filter(req => req.id !== requestId));
+                if (allAdminUsersRef.current) {
+                    allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
+                        u.id === requestId ? { ...u, status: listMode === 'pending' ? 'rejected' : 'expired' } : u
+                    );
+                }
+
                 await adminUpdateUser({
                     targetUid: requestId,
                     status: listMode === 'pending' ? 'rejected' : 'expired',
@@ -473,10 +506,73 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
             allAdminUsersRef.current = null;
             usersCacheRef.current = {};
-            fetchRequests(true); // Refresh data
+            fetchRequests(true); // Đồng bộ nền dữ liệu mới nhất
         } catch (error) {
             console.warn('Lỗi khi cập nhật trạng thái:', error);
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
+            fetchRequests(true);
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    // Các hàm xử lý Modal Gia Hạn
+    const handleOpenExtendModal = (req: ManagedUserDoc) => {
+        setExtendingUser(req);
+        setIsUnlimited(false);
+        const defaultDays = 30;
+        setExtendDays(defaultDays);
+        const target = new Date(Date.now() + defaultDays * 86400000);
+        setExtendDate(target.toISOString().split('T')[0]);
+    };
+
+    const handleDaysInputChange = (val: number | string) => {
+        setIsUnlimited(false);
+        const num = typeof val === 'string' ? parseInt(val, 10) : val;
+        const days = isNaN(num) || num <= 0 ? 1 : num;
+        setExtendDays(days);
+        const target = new Date(Date.now() + days * 86400000);
+        setExtendDate(target.toISOString().split('T')[0]);
+    };
+
+    const handleDateInputChange = (dateStr: string) => {
+        setIsUnlimited(false);
+        setExtendDate(dateStr);
+        if (dateStr) {
+            const targetTime = new Date(dateStr).getTime();
+            const nowTime = new Date().setHours(0, 0, 0, 0);
+            const diff = Math.max(1, Math.round((targetTime - nowTime) / 86400000));
+            setExtendDays(diff);
+        }
+    };
+
+    const handleQuickPreset = (days: number) => {
+        setIsUnlimited(false);
+        setExtendDays(days);
+        const target = new Date(Date.now() + days * 86400000);
+        setExtendDate(target.toISOString().split('T')[0]);
+    };
+
+    const handleToggleUnlimited = () => {
+        setIsUnlimited(true);
+        setExtendDate('');
+        setExtendDays(0);
+    };
+
+    const handleConfirmExtend = async () => {
+        if (!extendingUser) return;
+        setIsSubmittingExtend(true);
+        try {
+            let finalIso: string | null = null;
+            if (!isUnlimited && extendDate) {
+                const d = new Date(extendDate);
+                d.setHours(23, 59, 59, 999);
+                finalIso = d.toISOString();
+            }
+            await handleApproval(extendingUser.id, true, finalIso);
+            setExtendingUser(null);
+        } finally {
+            setIsSubmittingExtend(false);
         }
     };
 
@@ -617,10 +713,29 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     </div>
                                                 ) : listMode === 'expired' ? (
                                                     <div className="flex items-center gap-1.5">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold" title="Gia hạn quyền truy cập">
-                                                            <Icon name="refresh-cw" size={3.5} /> Gia hạn
+                                                        <Button
+                                                            variant="unstyled"
+                                                            size="none"
+                                                            onClick={() => handleOpenExtendModal(req)}
+                                                            disabled={actionLoadingId === req.id}
+                                                            className="h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold active:scale-95"
+                                                            title="Gia hạn quyền truy cập"
+                                                        >
+                                                            {actionLoadingId === req.id ? (
+                                                                <Icon name="loader-2" size={3.5} className="animate-spin text-emerald-600" />
+                                                            ) : (
+                                                                <Icon name="refresh-cw" size={3.5} />
+                                                            )}
+                                                            Gia hạn
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                        <Button
+                                                            variant="unstyled"
+                                                            size="none"
+                                                            onClick={() => setConfirmRevokeUser(req)}
+                                                            disabled={actionLoadingId === req.id}
+                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
+                                                            title="Thu hồi"
+                                                        >
                                                             <Icon name="user-minus" size={3.5} />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
@@ -631,7 +746,25 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1.5">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                        <Button
+                                                            variant="unstyled"
+                                                            size="none"
+                                                            onClick={() => handleOpenExtendModal(req)}
+                                                            disabled={actionLoadingId === req.id}
+                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-medium active:scale-95"
+                                                            title="Gia hạn / Đổi thời hạn"
+                                                        >
+                                                            <Icon name="calendar-clock" size={3.5} className="text-emerald-600 dark:text-emerald-400" />
+                                                            Gia hạn
+                                                        </Button>
+                                                        <Button
+                                                            variant="unstyled"
+                                                            size="none"
+                                                            onClick={() => setConfirmRevokeUser(req)}
+                                                            disabled={actionLoadingId === req.id}
+                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
+                                                            title="Thu hồi"
+                                                        >
                                                             <Icon name="user-minus" size={3.5} />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
@@ -697,6 +830,205 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* Modal Gia Hạn Quyền Truy Cập */}
+            <Modal
+                isOpen={!!extendingUser}
+                onClose={() => setExtendingUser(null)}
+                title="Gia Hạn Quyền Truy Cập"
+                subTitle="Cập nhật thời hạn sử dụng hệ thống cho tài khoản"
+                maxWidth="md"
+            >
+                {extendingUser && (
+                    <div className="space-y-4 py-1">
+                        {/* User Summary Card */}
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-sm shrink-0">
+                                {extendingUser.employeeName?.charAt(0) || extendingUser.displayName?.charAt(0) || 'U'}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate">
+                                    {formatCleanDisplayName(extendingUser.employeeName || extendingUser.displayName)}
+                                </h4>
+                                <p className="text-xs text-slate-500 truncate">{extendingUser.email}</p>
+                                <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-600 dark:text-slate-400">
+                                    <span>Kho: <strong className="font-mono text-slate-800 dark:text-slate-200">{extendingUser.departmentId || 'ALL'}</strong></span>
+                                    <span>•</span>
+                                    <span>Vai trò: <strong className="text-sky-600 dark:text-sky-400">{extendingUser.role === 'admin' ? 'Admin' : extendingUser.role === 'manager' ? 'Quản lý kho' : 'Nhân viên'}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Presets */}
+                        <div>
+                            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                                <Icon name="zap" size={3.5} className="text-amber-500" />
+                                Chọn nhanh thời gian:
+                            </label>
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                                {[
+                                    { label: '+7 ngày', days: 7 },
+                                    { label: '+15 ngày', days: 15 },
+                                    { label: '+30 ngày', days: 30 },
+                                    { label: '+60 ngày', days: 60 },
+                                    { label: '+90 ngày', days: 90 },
+                                    { label: '+1 năm', days: 365 },
+                                ].map(p => (
+                                    <Button
+                                        key={p.days}
+                                        variant="unstyled"
+                                        size="none"
+                                        onClick={() => handleQuickPreset(p.days)}
+                                        className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                                            !isUnlimited && extendDays === p.days
+                                                ? 'bg-sky-600 text-white border-sky-600 shadow-sm font-bold'
+                                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300 hover:bg-sky-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        {p.label}
+                                    </Button>
+                                ))}
+                            </div>
+                            <div className="mt-2">
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={handleToggleUnlimited}
+                                    className={`w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
+                                        isUnlimited
+                                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                                            : 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/30'
+                                    }`}
+                                >
+                                    <Icon name="shield" size={3.5} />
+                                    Cấp quyền Vô Thời Hạn (Không bao giờ hết hạn)
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Dual Custom Inputs: Days or End Date */}
+                        {!isUnlimited && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                        <Icon name="clock" size={3.5} className="text-sky-500" />
+                                        Nhập số ngày gia hạn:
+                                    </label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={extendDays || ''}
+                                            onChange={e => handleDaysInputChange(e.target.value)}
+                                            placeholder="VD: 30"
+                                            className="h-10 text-sm font-semibold pr-12"
+                                        />
+                                        <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">
+                                            ngày
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                        <Icon name="calendar" size={3.5} className="text-emerald-500" />
+                                        Hoặc chọn ngày kết thúc:
+                                    </label>
+                                    <Input
+                                        type="date"
+                                        value={extendDate}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        onChange={e => handleDateInputChange(e.target.value)}
+                                        className="h-10 text-sm font-medium"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Result Highlight Box */}
+                        <div className={`p-3 rounded-xl border text-center transition-all ${
+                            isUnlimited
+                                ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'
+                                : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
+                        }`}>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Thời hạn truy cập sau khi gia hạn:</p>
+                            <p className="text-base font-black text-slate-800 dark:text-white mt-0.5 flex items-center justify-center gap-1.5">
+                                {isUnlimited ? (
+                                    <span className="text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                                        <Icon name="shield" size={4} />
+                                        Vô thời hạn
+                                    </span>
+                                ) : (
+                                    <>
+                                        <Icon name="calendar-clock" size={4} className="text-emerald-600" />
+                                        <span className="text-emerald-700 dark:text-emerald-300">
+                                            {extendDate ? new Date(extendDate).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa chọn'}
+                                        </span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-200/60 dark:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 font-bold ml-1">
+                                            +{extendDays} ngày
+                                        </span>
+                                    </>
+                                )}
+                            </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <Button
+                                variant="outline"
+                                onClick={() => setExtendingUser(null)}
+                                disabled={isSubmittingExtend}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={handleConfirmExtend}
+                                isLoading={isSubmittingExtend}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5"
+                            >
+                                <Icon name="check" size={4} />
+                                Xác Nhận Gia Hạn
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Dialog xác nhận thu hồi */}
+            <ConfirmDialog
+                isOpen={!!confirmRevokeUser}
+                onClose={() => setConfirmRevokeUser(null)}
+                onConfirm={async () => {
+                    if (!confirmRevokeUser) return;
+                    const uid = confirmRevokeUser.id;
+                    try {
+                        await handleApproval(uid, false);
+                        setConfirmRevokeUser(null);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }}
+                title="Thu Hồi Quyền Truy Cập"
+                message={
+                    <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                        <p>Bạn có chắc chắn muốn thu hồi quyền truy cập của tài khoản:</p>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <p className="font-bold text-slate-800 dark:text-white">
+                                {formatCleanDisplayName(confirmRevokeUser?.employeeName || confirmRevokeUser?.displayName || 'Chưa đặt tên')}
+                            </p>
+                            <p className="text-xs text-slate-500 font-mono mt-0.5">{confirmRevokeUser?.email}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                                <span>Kho: <strong className="font-mono text-slate-700 dark:text-slate-300">{confirmRevokeUser?.departmentId || 'ALL'}</strong></span>
+                            </div>
+                        </div>
+                        <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">Tài khoản này sẽ bị ngừng cấp phép sử dụng ngay lập tức.</p>
+                    </div>
+                }
+                confirmText="Thu Hồi"
+                variant="danger"
+                isLoading={actionLoadingId === confirmRevokeUser?.id}
+            />
         </div>
     );
 };
