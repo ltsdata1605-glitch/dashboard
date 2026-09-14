@@ -41,14 +41,16 @@ export interface ManagedUserDoc {
     expiresAt?: string | null;
 }
 
-const listManagedUsersFn = httpsCallable<{ mode: 'pending' | 'active' }, { users: ManagedUserDoc[] }>(functions, 'listManagedUsers');
+export type ListManagedUsersMode = 'pending' | 'active' | 'expired';
+
+const listManagedUsersFn = httpsCallable<{ mode: ListManagedUsersMode }, { users: ManagedUserDoc[] }>(functions, 'listManagedUsers');
 
 // Gọi Cloud Function listManagedUsers (functions/src/admin.ts) — thay cho việc
 // UserManagementView.tsx/usePendingApprovalCount.ts/NotificationDropdown.tsx tự
 // query thẳng collection('users') rồi lọc theo Kho ở CLIENT (không phải bảo mật
 // thật — firestore.rules isManager() cho manager list/get toàn bộ collection).
 // Việc lọc theo Kho của manager giờ làm ở SERVER (Admin SDK, không thể bỏ qua).
-export const listManagedUsers = async (mode: 'pending' | 'active'): Promise<ManagedUserDoc[]> => {
+export const listManagedUsers = async (mode: ListManagedUsersMode): Promise<ManagedUserDoc[]> => {
     const result = await listManagedUsersFn({ mode });
     return result.data.users;
 };

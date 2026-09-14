@@ -99,7 +99,7 @@ export const adminUpdateUser = onCall(async (request) => {
 });
 
 interface ListManagedUsersInput {
-  mode: 'pending' | 'active';
+  mode: 'pending' | 'active' | 'expired';
 }
 
 const TIMESTAMP_FIELDS = ['createdAt', 'requestDate', 'expiresAt', 'lastLogin'] as const;
@@ -138,13 +138,23 @@ export const listManagedUsers = onCall(async (request) => {
 
   const { mode } = (request.data ?? {}) as ListManagedUsersInput;
 
-  const snap = callerRole === 'manager'
-    ? await (mode === 'active'
-        ? db.collection('users').where('role', '==', 'employee').get()
-        : db.collection('users').where('status', '==', 'pending').get())
-    : await (mode === 'active'
-        ? db.collection('users').where('status', '==', 'approved').get()
-        : db.collection('users').where('status', 'in', ['pending', 'new']).get());
+  let query;
+  if (callerRole === 'manager') {
+    if (mode === 'active' || mode === 'expired') {
+      query = db.collection('users').where('role', '==', 'employee');
+    } else {
+      query = db.collection('users').where('status', '==', 'pending');
+    }
+  } else {
+    if (mode === 'active') {
+      query = db.collection('users').where('status', '==', 'approved');
+    } else if (mode === 'expired') {
+      query = db.collection('users').where('status', 'in', ['expired', 'approved']);
+    } else {
+      query = db.collection('users').where('status', 'in', ['pending', 'new']);
+    }
+  }
+  const snap = await query.get();
 
   let docs = snap.docs;
   if (callerRole === 'manager') {
