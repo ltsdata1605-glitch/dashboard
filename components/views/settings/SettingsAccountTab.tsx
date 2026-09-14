@@ -210,11 +210,8 @@ export const SettingsAccountTab: React.FC = () => {
 
             {/* Phân Quyền Section */}
             {(userRole === 'admin' || userRole === 'manager') && (
-                <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Phân Quyền & Duyệt Yêu Cầu</h3>
-                    <div className="-m-3 sm:-m-6">
-                        <UserManagementView isEmbedded={true} />
-                    </div>
+                <div className="-m-3 sm:-m-6">
+                    <UserManagementView isEmbedded={true} />
                 </div>
             )}
 
