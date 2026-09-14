@@ -113,19 +113,17 @@ describe('thứ tự cột và dòng', () => {
         expect(names, 'dòng Tổng được tách ra trước khi lọc nên không bị ảnh hưởng').toContain('Tổng');
     });
 
-    it('sắp xếp GIẢM DẦN theo %HT V.Trội — cột này ƯU TIÊN hơn "% HT Target (QĐ)"', () => {
-        // Khoá sắp xếp KHÔNG phải cột "% HT Target (QĐ)" có sẵn trong dữ liệu: hễ bảng có
-        // "%HT V.Trội" (luôn được chèn ở chế độ Realtime) thì cột đó thắng. Đây là hành vi thật,
-        // phát hiện khi test đầu tiên đỏ — giả định ban đầu của người viết test mới là cái sai.
+    it('chế độ Realtime loại bỏ hoàn toàn Target(QĐ) V.Trội và %HT V.Trội', () => {
         const r = buildSummaryTable(
             input([
-                ['ST A', '0', '10', '12', '0', '90%', '0', '0'],   // %HT Target(QĐ) cao...
+                ['ST A', '0', '10', '12', '0', '90%', '0', '0'],
                 ['ST B', '0', '20', '24', '0', '10%', '0', '0'],
             ]),
-            // ...nhưng target tháng làm %HT V.Trội của ST B cao hơn hẳn: 24/(300/30) = 240%
             opts({ supermarketMonthlyTargets: { 'ST A': 30000, 'ST B': 300 } })
         );
-        expect(r.allRows[0][0], 'thắng theo %HT V.Trội chứ không theo % HT Target (QĐ)').toBe('ST B');
+        expect(r.allHeaders).not.toContain('Target(QĐ) V.Trội');
+        expect(r.allHeaders).not.toContain('%HT V.Trội');
+        expect(r.allRows[0][0]).toBe('ST A');
     });
 
     it('KHÔNG có cột %HT V.Trội thì mới rơi về "% HT Target Dự Kiến (QĐ)" (chế độ Luỹ kế)', () => {
@@ -140,36 +138,34 @@ describe('thứ tự cột và dòng', () => {
     });
 });
 
-describe('Target V.Trội theo target tháng', () => {
-    it('chế độ Realtime chia target tháng cho số ngày để ra target NGÀY', () => {
+describe('Target V.Trội theo target tháng ở chế độ Luỹ kế', () => {
+    it('chế độ Luỹ kế chèn Target(QĐ) V.Trội và %HT TARGET(QĐ) V.Trội khi có target tháng', () => {
         const r = buildSummaryTable(
-            input([['ST A', '0', '100', '150', '0', '0%', '0', '0']]),
-            opts({ supermarketMonthlyTargets: { 'ST A': 3000 }, daysInMonth: 30 })
+            {
+                headers: ['Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)', '% HT Target Dự Kiến (QĐ)'],
+                rows: [['ST A', '100', '150', '100', '150%', '150%']],
+            },
+            opts({ isCumulative: true, supermarketMonthlyTargets: { 'ST A': 3000 } })
         );
         const i = r.allHeaders.indexOf('Target(QĐ) V.Trội');
         expect(i).toBeGreaterThan(-1);
-        expect(r.allRows[0][i], '3000 / 30 ngày').toBe(100);
+        expect(r.allRows[0][i]).toBe(3000);
     });
 
-    it('dòng "Tổng" cộng target tháng của MỌI siêu thị', () => {
+    it('dòng "Tổng" cộng target tháng của MỌI siêu thị trong bảng luỹ kế', () => {
         const r = buildSummaryTable(
-            input([['Tổng', '0', '100', '150', '0', '0%', '0', '0']]),
-            opts({ supermarketMonthlyTargets: { A: 3000, B: 6000 }, daysInMonth: 30 })
+            {
+                headers: ['Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)', '% HT Target Dự Kiến (QĐ)'],
+                rows: [
+                    ['ST A', '100', '150', '100', '150%', '150%'],
+                    ['ST B', '100', '150', '100', '150%', '150%'],
+                    ['Tổng', '200', '300', '200', '150%', '150%'],
+                ],
+            },
+            opts({ isCumulative: true, supermarketMonthlyTargets: { 'ST A': 3000, 'ST B': 6000 } })
         );
         const i = r.allHeaders.indexOf('Target(QĐ) V.Trội');
-        expect(r.allRows[0][i], '(3000 + 6000) / 30').toBe(300);
-    });
-
-    it('daysInMonth tiêm vào có tác dụng (test tất định, không phụ thuộc ngày chạy)', () => {
-        const mk = (d: number) => {
-            const r = buildSummaryTable(
-                input([['ST A', '0', '100', '150', '0', '0%', '0', '0']]),
-                opts({ supermarketMonthlyTargets: { 'ST A': 2800 }, daysInMonth: d })
-            );
-            return r.allRows[0][r.allHeaders.indexOf('Target(QĐ) V.Trội')];
-        };
-        expect(mk(28)).toBe(100);
-        expect(mk(31)).toBeCloseTo(2800 / 31);
+        expect(r.allRows[2][i], '(3000 + 6000)').toBe(9000);
     });
 });
 
@@ -285,17 +281,18 @@ describe('bổ sung cột DT Dự Kiến (QĐ) và %DKHT', () => {
         }
     });
 
-    it('không cộng gộp target của dòng Tổng vào chính nó gây nhân đôi Target V.Trội', () => {
+    it('không cộng gộp target của dòng Tổng vào chính nó gây nhân đôi Target V.Trội ở bảng luỹ kế', () => {
         const fullHeaders = [
-            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)'
+            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)', '% HT Target Dự Kiến (QĐ)'
         ];
         const rows = [
-            ['ST A', '100', '120', '100', '120%'],
-            ['Tổng', '100', '120', '100', '120%']
+            ['ST A', '100', '120', '100', '120%', '120%'],
+            ['Tổng', '100', '120', '100', '120%', '120%']
         ];
         const r = buildSummaryTable(
             { headers: fullHeaders, rows },
             opts({
+                isCumulative: true,
                 supermarketMonthlyTargets: { 'ST A': 3000, 'Tổng': 3000, 'ST Không Có Trong Bảng': 5000 },
                 daysInMonth: 30
             })
@@ -303,8 +300,7 @@ describe('bổ sung cột DT Dự Kiến (QĐ) và %DKHT', () => {
         const tarIdx = r.allHeaders.indexOf('Target(QĐ) V.Trội');
         expect(tarIdx).toBeGreaterThan(-1);
         const tongRow = r.allRows[1];
-        // Target của Tổng phải là target của ST A (3000 / 30 = 100), không phải (3000 + 3000 + 5000) / 30
-        expect(tongRow[tarIdx]).toBe(100);
+        expect(tongRow[tarIdx]).toBe(3000);
     });
 });
 

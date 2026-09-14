@@ -150,37 +150,11 @@ export function buildSummaryTable(
         tempRows = tempRows.map(row => { const nr = [...row]; indicesToRemove.forEach(i => nr.splice(i, 1)); return nr; });
         const dIndex = tempHeaders.indexOf('DTLK'), qIndex = tempHeaders.indexOf('DTQĐ');
         if (dIndex !== -1 && qIndex !== -1 && nameIndex !== -1) {
-            // daysInMonth tiêm từ ngoài để test tất định; mặc định = số ngày tháng hiện tại (như bản gốc).
-            // Chụp lại thứ tự cột TRƯỚC khi chèn 3 cột mới, để chèn giá trị vào đúng vị trí theo TÊN cột
-            // (không dùng indexOf theo giá trị — dễ sai khi nhiều ô trùng giá trị, vd nhiều dòng "0%")
-            const preInsertHeaders = [...tempHeaders];
             tempHeaders.splice(qIndex + 1, 0, '%HQQĐ');
-            const tIndex = tempHeaders.indexOf('Target (QĐ)');
-            if (tIndex !== -1) tempHeaders.splice(tIndex + 1, 0, "Target(QĐ) V.Trội");
-            const htIndex = tempHeaders.indexOf('% HT Target (QĐ)');
-            if (htIndex !== -1) tempHeaders.splice(htIndex + 1, 0, "%HT V.Trội");
             tempRows = tempRows.map(row => {
-                const nr = [...row], dV = parseNumber(nr[dIndex]), qV = parseNumber(nr[qIndex]), sm = nr[nameIndex];
-                const mT = getTargetForSm(sm, tempRows);
-                const dT = mT / daysInMonth, ht = dT > 0 ? (qV / dT) * 100 : 0;
-
-                const rowHeaders = [...preInsertHeaders];
-                const qIdxNow = rowHeaders.indexOf('DTQĐ');
-                nr.splice(qIdxNow + 1, 0, (dV > 0 ? roundUp(((qV / dV) - 1) * 100) : 0) + '%');
-                rowHeaders.splice(qIdxNow + 1, 0, '%HQQĐ');
-
-                const tIdxNow = rowHeaders.indexOf('Target (QĐ)');
-                if (tIdxNow !== -1) {
-                    nr.splice(tIdxNow + 1, 0, dT);
-                    rowHeaders.splice(tIdxNow + 1, 0, 'Target(QĐ) V.Trội');
-                }
-
-                const htIdxNow = rowHeaders.indexOf('% HT Target (QĐ)');
-                if (htIdxNow !== -1) {
-                    nr.splice(htIdxNow + 1, 0, `${roundUp(ht)}%`);
-                    rowHeaders.splice(htIdxNow + 1, 0, '%HT V.Trội');
-                }
-
+                const nr = [...row], dV = parseNumber(nr[dIndex]), qV = parseNumber(nr[qIndex]);
+                const hqqdVal = dV > 0 ? roundUp(((qV / dV) - 1) * 100) : 0;
+                nr.splice(qIndex + 1, 0, `${hqqdVal}%`);
                 return nr;
             });
         }
@@ -293,6 +267,7 @@ export function buildSummaryTable(
         'SL Realtime',
         '% Tỉ trọng',
         '+/- DTCK Tháng',
+        ...(!isCumulative ? ['Target(QĐ) V.Trội', '%HT V.Trội'] : []),
     ]);
 
     const desiredOrder = [
@@ -348,7 +323,7 @@ export function buildSummaryTable(
 
     let sK = isCumulative
         ? (finalH.includes('%HT TARGET(QĐ) V.Trội') ? '%HT TARGET(QĐ) V.Trội' : finalH.includes('% HT Target Dự Kiến (QĐ)') ? '% HT Target Dự Kiến (QĐ)' : finalH.includes('%DKHT') ? '%DKHT' : '% HT Target (QĐ)')
-        : (finalH.includes('%HT V.Trội') ? '%HT V.Trội' : '% HT Target (QĐ)');
+        : '% HT Target (QĐ)';
     const sIdx = finalH.indexOf(sK);
     if (sIdx !== -1) tempRows.sort((a,b) => parseNumber(b[sIdx]?.isMerged ? b[sIdx].value : b[sIdx]) - parseNumber(a[sIdx]?.isMerged ? a[sIdx].value : a[sIdx]));
 
