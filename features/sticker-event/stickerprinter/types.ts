@@ -53,6 +53,7 @@ export interface PrintHistoryEntry {
     drawContentTopRightSize?: number;
     drawContentBottomLeftSize?: number;
     drawContentBottomRightSize?: number;
+    drawContentBottomRightSubSize?: number;
     drawTitleSize?: number;
     drawCodeSize?: number;
     drawFooterSize?: number;
@@ -77,6 +78,7 @@ export interface TicketDrawData {
     contentTopRight?: string;
     contentBottom?: string;
     contentBottomRight?: string;
+    contentBottomRightSub?: string;
 }
 
 

@@ -24,7 +24,8 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     contentTop: '<div style="font-size: 4.5cqw; line-height: 1.1;"><b>RÚT THĂM 19H</b></div><div style="font-size: 3.5cqw; line-height: 1.1;"><b>MIỄN PHÍ 370 SUẤT:</b></div>',
     contentTopRight: '<div style="font-size: 7.6cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
     contentBottom: '<div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 150 Bộ 3 hộp</b> <span style="font-weight: normal;">(75 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Tủ sấy quần áo</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div><div style="font-size: 2.6cqw; line-height: 1.4;"><b>- 8 Nồi cơm</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div>',
-    contentBottomRight: '<div style="font-size: 8cqw; line-height: 1.5;"><b>2 Máy giặt</b></div><div style="font-size: 2cqw; line-height: 0.6; font-weight: normal;">(1 suất/ ngày)</div>',
+    contentBottomRight: '2 MÁY GIẶT',
+    contentBottomRightSub: '(1 suất/ ngày)',
 };
 
 /** Entry lịch sử mặc định — luôn hiển thị ở cuối tab Lịch sử, không thể xoá. */
@@ -52,6 +53,7 @@ export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     drawContentTopRightSize: 7.6,
     drawContentBottomLeftSize: 2.6,
     drawContentBottomRightSize: 8,
+    drawContentBottomRightSubSize: 2.0,
     drawTitleSize: 4.3,
     drawCodeSize: 3.8,
     drawFooterSize: 3.8,
@@ -79,6 +81,7 @@ export function useStickerPrinterData() {
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(7.6);
     const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.6);
     const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(8);
+    const [drawContentBottomRightSubSize, setDrawContentBottomRightSubSize] = useState(2.0);
     const [drawTitleSize, setDrawTitleSize] = useState(4.3);
     const [drawCodeSize, setDrawCodeSize] = useState(3.8);
     const [drawFooterSize, setDrawFooterSize] = useState(3.8);
@@ -200,6 +203,7 @@ export function useStickerPrinterData() {
             case 'drawContentTopRight': return drawContentTopRightSize;
             case 'drawContentBottomLeft': return drawContentBottomLeftSize;
             case 'drawContentBottomRight': return drawContentBottomRightSize;
+            case 'drawContentBottomRightSub': return drawContentBottomRightSubSize;
             case 'drawCode': return drawCodeSize;
             case 'drawFooter': return drawFooterSize;
             default: return drawContentTopLeftSize;
@@ -214,6 +218,7 @@ export function useStickerPrinterData() {
             case 'drawContentTopRight': setDrawContentTopRightSize(getVal); break;
             case 'drawContentBottomLeft': setDrawContentBottomLeftSize(getVal); break;
             case 'drawContentBottomRight': setDrawContentBottomRightSize(getVal); break;
+            case 'drawContentBottomRightSub': setDrawContentBottomRightSubSize(getVal); break;
             case 'drawCode': setDrawCodeSize(getVal); break;
             case 'drawFooter': setDrawFooterSize(getVal); break;
             default: setDrawContentTopLeftSize(getVal);
@@ -258,7 +263,7 @@ export function useStickerPrinterData() {
         if (stickerType !== 'draw') return;
 
         setDrawTickets(prev => {
-            const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' };
+            const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '', contentBottomRightSub: '' };
             const newTickets: TicketDrawData[] = [];
             for (let i = 0; i < drawTotalTickets; i++) {
                 const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || '');
@@ -301,6 +306,7 @@ export function useStickerPrinterData() {
                         case 'drawContentTopRight': setDrawContentTopRightSize(size); break;
                         case 'drawContentBottomLeft': setDrawContentBottomLeftSize(size); break;
                         case 'drawContentBottomRight': setDrawContentBottomRightSize(size); break;
+                        case 'drawContentBottomRightSub': setDrawContentBottomRightSubSize(size); break;
                         case 'drawCode': setDrawCodeSize(size); break;
                         case 'drawFooter': setDrawFooterSize(size); break;
                         default: setDrawActiveFontSize(size);
@@ -505,13 +511,20 @@ export function useStickerPrinterData() {
                             setDrawContentTopRightSize(7.6);
                             setDrawContentBottomLeftSize(2.6);
                             setDrawContentBottomRightSize(8);
+                            setDrawContentBottomRightSubSize(2.0);
                             setDrawTitleSize(4.3);
                         } else {
-                            setDrawTickets(savedState.drawTickets);
+                            // Ensure existing tickets have contentBottomRightSub if they don't yet
+                            setDrawTickets(savedState.drawTickets.map(t => ({
+                                ...t,
+                                contentBottomRight: t.contentBottomRight?.includes('2 Máy giặt') || t.contentBottomRight?.includes('2 MÁY GIẶT') ? '2 MÁY GIẶT' : t.contentBottomRight,
+                                contentBottomRightSub: t.contentBottomRightSub !== undefined ? t.contentBottomRightSub : '(1 suất/ ngày)'
+                            })));
                             if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
                             if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
                             if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
                             if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
+                    if (savedState.drawContentBottomRightSubSize != null) setDrawContentBottomRightSubSize(savedState.drawContentBottomRightSubSize);
                             if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                         }
                     }
@@ -607,6 +620,7 @@ export function useStickerPrinterData() {
                 drawContentTopRightSize,
                 drawContentBottomLeftSize,
                 drawContentBottomRightSize,
+                drawContentBottomRightSubSize,
                 drawTitleSize,
                 drawCodeSize,
                 drawFooterSize,
@@ -657,6 +671,7 @@ export function useStickerPrinterData() {
                 drawContentTopRightSize,
                 drawContentBottomLeftSize,
                 drawContentBottomRightSize,
+                drawContentBottomRightSubSize,
                 drawTitleSize,
                 drawCodeSize,
                 drawFooterSize,
@@ -687,7 +702,7 @@ export function useStickerPrinterData() {
         searchTerm, activeQueuePageId, activeSubTab, manualPages, batchItems, priceSource,
         drawTickets, drawStartNumber, drawTotalTickets, drawAutoIncrement, drawContentTopLeftSize,
         drawContentTopRightSize, drawContentBottomLeftSize, drawContentBottomRightSize,
-        drawTitleSize, drawCodeSize, drawFooterSize
+        drawContentBottomRightSubSize, drawTitleSize, drawCodeSize, drawFooterSize
     ]);
 
     // Sync savedLists to IndexedDB — bỏ qua nếu thay đổi này vừa đến từ chính
@@ -1181,6 +1196,7 @@ export function useStickerPrinterData() {
             setDrawContentTopRightSize(7.6);
             setDrawContentBottomLeftSize(2.6);
             setDrawContentBottomRightSize(8);
+            setDrawContentBottomRightSubSize(2.0);
             setDrawTitleSize(4.3);
             setDrawCodeSize(3.8);
             setDrawFooterSize(3.8);
@@ -1220,6 +1236,7 @@ export function useStickerPrinterData() {
             setDrawContentTopRightSize(7.6);
             setDrawContentBottomLeftSize(2.6);
             setDrawContentBottomRightSize(8);
+            setDrawContentBottomRightSubSize(2.0);
             setDrawTitleSize(4.3);
             setDrawCodeSize(3.8);
             setDrawFooterSize(3.8);
@@ -1274,6 +1291,7 @@ export function useStickerPrinterData() {
                 drawContentTopRightSize: drawContentTopRightSize,
                 drawContentBottomLeftSize: drawContentBottomLeftSize,
                 drawContentBottomRightSize: drawContentBottomRightSize,
+                drawContentBottomRightSubSize: drawContentBottomRightSubSize,
                 isAutoIncrement: drawAutoIncrement,
             });
             printHost.insertAdjacentHTML('beforeend', allPagesHtml);
@@ -1478,6 +1496,7 @@ export function useStickerPrinterData() {
         drawContentTopRightSize, setDrawContentTopRightSize,
         drawContentBottomLeftSize, setDrawContentBottomLeftSize,
         drawContentBottomRightSize, setDrawContentBottomRightSize,
+        drawContentBottomRightSubSize, setDrawContentBottomRightSubSize,
         drawTitleSize, setDrawTitleSize,
         drawCodeSize, setDrawCodeSize,
         drawFooterSize, setDrawFooterSize,

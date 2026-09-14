@@ -47,6 +47,7 @@ interface StickerPrintPreviewProps {
     drawContentTopRightSize?: number;
     drawContentBottomLeftSize?: number;
     drawContentBottomRightSize?: number;
+    drawContentBottomRightSubSize?: number;
     drawTitleSize?: number;
     drawCodeSize?: number;
     drawFooterSize?: number;
@@ -89,6 +90,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     drawContentTopRightSize,
     drawContentBottomLeftSize,
     drawContentBottomRightSize,
+    drawContentBottomRightSubSize,
     drawTitleSize,
     drawCodeSize,
     drawFooterSize,
@@ -249,6 +251,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                             drawContentTopRightSize={drawContentTopRightSize}
                                             drawContentBottomLeftSize={drawContentBottomLeftSize}
                                             drawContentBottomRightSize={drawContentBottomRightSize}
+                                            drawContentBottomRightSubSize={drawContentBottomRightSubSize}
                                             drawTitleSize={drawTitleSize}
                                             drawCodeSize={drawCodeSize}
                                             drawFooterSize={drawFooterSize}

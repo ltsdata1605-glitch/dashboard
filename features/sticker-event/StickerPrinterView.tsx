@@ -31,6 +31,7 @@ export default function StickerPrinterView() {
         drawContentTopRightSize,
         drawContentBottomLeftSize,
         drawContentBottomRightSize,
+        drawContentBottomRightSubSize,
         drawTitleSize,
         drawCodeSize,
         drawFooterSize,
@@ -211,6 +212,7 @@ export default function StickerPrinterView() {
                         drawContentTopRightSize={drawContentTopRightSize}
                         drawContentBottomLeftSize={drawContentBottomLeftSize}
                         drawContentBottomRightSize={drawContentBottomRightSize}
+                        drawContentBottomRightSubSize={drawContentBottomRightSubSize}
                         drawTitleSize={drawTitleSize}
                         drawCodeSize={drawCodeSize}
                         drawFooterSize={drawFooterSize}

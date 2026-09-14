@@ -12,6 +12,7 @@ interface DrawTicketBlockProps {
     drawContentTopRightSize?: number;
     drawContentBottomLeftSize?: number;
     drawContentBottomRightSize?: number;
+    drawContentBottomRightSubSize?: number;
     drawTitleSize?: number;
     drawCodeSize?: number;
     drawFooterSize?: number;
@@ -30,6 +31,7 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
     drawContentTopRightSize,
     drawContentBottomLeftSize,
     drawContentBottomRightSize,
+    drawContentBottomRightSubSize,
     drawTitleSize,
     drawCodeSize,
     drawFooterSize,
@@ -66,6 +68,10 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
         onChange({ contentBottomRight: text });
     }, [onChange]);
 
+    const handleContentBottomRightSubChange = useCallback((text: string) => {
+        onChange({ contentBottomRightSub: text });
+    }, [onChange]);
+
     const titleEditable = useContentEditable(ticket.title, handleTitleChange, true);
     const codeEditable = useContentEditable(ticket.code, handleCodeChange, true);
     const footerEditable = useContentEditable(ticket.footer, handleFooterChange, true);
@@ -73,6 +79,7 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
     const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange, true);
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange, true);
     const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange, true);
+    const contentBottomRightSubEditable = useContentEditable(ticket.contentBottomRightSub || '', handleContentBottomRightSubChange, true);
 
     const isFirst = totalIndex !== undefined ? totalIndex === 0 : index === 0;
     const activeFirstTicket = firstTicket || ticket;
@@ -220,6 +227,25 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     className="input-content-bottom-right"
                     style={{ fontSize: `${drawContentBottomRightSize || 8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRight) }}
+                />
+            )}
+            {/* Content Bottom Right Sub */}
+            {isFirst ? (
+                <div
+                    ref={contentBottomRightSubEditable.ref}
+                    onInput={contentBottomRightSubEditable.handleInput}
+                    onClick={() => setActiveField?.('drawContentBottomRightSub')}
+                    contentEditable
+                    suppressContentEditableWarning
+                    className={`input-content-bottom-right-sub ${activeField === 'drawContentBottomRightSub' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawContentBottomRightSubSize || 2.0}cqw` }}
+                    data-placeholder="Nhập thông tin phụ..."
+                />
+            ) : (
+                <div
+                    className="input-content-bottom-right-sub"
+                    style={{ fontSize: `${drawContentBottomRightSubSize || 2.0}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRightSub) }}
                 />
             )}
 

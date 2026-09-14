@@ -17,6 +17,7 @@ export interface DrawPrintOptions {
     drawContentTopRightSize?: number;
     drawContentBottomLeftSize?: number;
     drawContentBottomRightSize?: number;
+    drawContentBottomRightSubSize?: number;
     isAutoIncrement?: boolean;
 }
 
@@ -26,6 +27,7 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
         drawTitleSize = 4.3, drawCodeSize = 3.8, drawFooterSize = 3.8,
         drawContentTopLeftSize = 4.5, drawContentTopRightSize = 7.6,
         drawContentBottomLeftSize = 2.6, drawContentBottomRightSize = 8,
+        drawContentBottomRightSubSize = 2.0,
         isAutoIncrement = true,
     } = opts;
 
@@ -54,6 +56,7 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const topRightCls = 'input-content-top-right';
             const bottomLeftCls = 'input-content-bottom-left';
             const bottomRightCls = 'input-content-bottom-right';
+            const bottomRightSubCls = 'input-content-bottom-right-sub';
             const footerCls = 'input-footer-left';
             const titleHtml = `<div class="${titleCls}" style="font-size:${titleCqw}cqw;${noInteract}">${sanitize(src.title)}</div>`;
             const contentTopLeftHtml = `<div class="${topLeftCls}" style="font-size:${drawContentTopLeftSize}cqw;${noInteract}">${sanitize(src.contentTop)}</div>`;
@@ -62,9 +65,10 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
             const codeRightHtml = `<div class="display-code-right" style="font-size:${drawCodeSize}cqw;${noInteract}">${ticket.code}</div>`;
             const contentBottomLeftHtml = `<div class="${bottomLeftCls}" style="font-size:${drawContentBottomLeftSize}cqw;${noInteract}">${sanitize(src.contentBottom)}</div>`;
             const contentBottomRightHtml = `<div class="${bottomRightCls}" style="font-size:${drawContentBottomRightSize}cqw;${noInteract}">${sanitize(src.contentBottomRight)}</div>`;
+            const contentBottomRightSubHtml = `<div class="${bottomRightSubCls}" style="font-size:${drawContentBottomRightSubSize}cqw;${noInteract}">${sanitize(src.contentBottomRightSub || '')}</div>`;
             const footerHtml = `<div class="${footerCls}" style="font-size:${drawFooterSize}cqw;${noInteract}">${sanitize(src.footer)}</div>`;
 
-            return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${footerHtml}</div>`;
+            return `<div class="draw-ticket-block" data-index="${index}">${titleHtml}${contentTopLeftHtml}${contentTopRightHtml}${codeLeftHtml}${codeRightHtml}${contentBottomLeftHtml}${contentBottomRightHtml}${contentBottomRightSubHtml}${footerHtml}</div>`;
         }).join('');
 
         const isLast = pageIdx === Math.ceil(drawTickets.length / 4) - 1;

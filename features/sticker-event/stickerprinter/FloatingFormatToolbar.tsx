@@ -41,6 +41,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
         if (cl.contains('input-content-top-right')) return 'drawContentTopRight';
         if (cl.contains('input-code-left')) return 'drawCode';
         if (cl.contains('input-content-bottom-left')) return 'drawContentBottomLeft';
+        if (cl.contains('input-content-bottom-right-sub')) return 'drawContentBottomRightSub';
         if (cl.contains('input-content-bottom-right')) return 'drawContentBottomRight';
         if (cl.contains('input-footer-left')) return 'drawFooter';
         return undefined;
@@ -69,6 +70,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             if (match) return parseFloat(match[1]);
             
             if (el.className.includes('bottom-left')) return 2.6;
+            if (el.className.includes('bottom-right-sub')) return 2.0;
             if (el.className.includes('bottom-right')) return 8.0;
             if (el.className.includes('top-right')) return 7.6;
             if (el.className.includes('top-left')) return 4.5;

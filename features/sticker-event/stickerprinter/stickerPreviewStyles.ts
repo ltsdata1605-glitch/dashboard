@@ -374,9 +374,33 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 49.0%;
+                       top: 48.5%;
                        width: 45.4%;
-                       height: 26.5%;
+                       height: 19.5%;
+                       display: flex;
+                       flex-direction: column;
+                       justify-content: center;
+                       align-items: flex-start;
+                       text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 8.0cqw;
+                       line-height: 1.2;
+                      color: #000;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      white-space: nowrap;
+                      word-break: normal;
+                      padding: 0 1cqw;
+                  }
+
+                  .draw-ticket-block .input-content-bottom-right-sub {
+                       position: absolute;
+                       left: 52.4%;
+                       top: 68.0%;
+                       width: 45.4%;
+                       height: 7.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -384,15 +408,15 @@ export function getStickerPreviewStyles({
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                      font-size: 8.0cqw;
-                       line-height: 1.5;
+                      font-size: 2.0cqw;
+                       line-height: 1.2;
                       color: #000;
                       background: transparent;
                       outline: none;
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0.3cqw 1cqw 0cqw 1cqw;
+                      padding: 0 1cqw;
                   }
  
                   .draw-ticket-block .input-code-left {
@@ -563,9 +587,31 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 49.0%;
+                       top: 48.5%;
                        width: 45.4%;
-                       height: 26.5%;
+                       height: 19.5%;
+                       display: flex;
+                       flex-direction: column;
+                       justify-content: center;
+                       align-items: flex-start;
+                       text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 8.0cqw;
+                       line-height: 1.2;
+                      color: #000;
+                      white-space: nowrap;
+                      word-break: normal;
+                      padding: 0 1cqw;
+                      overflow: hidden;
+                  }
+
+                  .draw-ticket-block .display-content-bottom-right-sub {
+                       position: absolute;
+                       left: 52.4%;
+                       top: 68.0%;
+                       width: 45.4%;
+                       height: 7.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -573,12 +619,12 @@ export function getStickerPreviewStyles({
                        text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                      font-size: 8.0cqw;
-                       line-height: 1.5;
+                      font-size: 2.0cqw;
+                       line-height: 1.2;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0.3cqw 1cqw 0cqw 1cqw;
+                      padding: 0 1cqw;
                       overflow: hidden;
                   }
 
@@ -643,6 +689,7 @@ export function getStickerPreviewStyles({
                      .draw-ticket-block .input-content-top-right,
                      .draw-ticket-block .input-content-bottom-left,
                      .draw-ticket-block .input-content-bottom-right,
+                     .draw-ticket-block .input-content-bottom-right-sub,
                      .draw-ticket-block .input-title-single,
                      .draw-ticket-block .input-footer-left {
                          letter-spacing: -0.01em !important;
