@@ -6,16 +6,31 @@ import { Button } from '../../shared/ui/Button';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
-    
+
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [stagedDept, setStagedDept] = useState(departmentId || '');
     const [stagedEmployee, setStagedEmployee] = useState(employeeName || '');
+    const [deptError, setDeptError] = useState<string>('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const validateDept = (value: string): string => {
+        if (!value.trim()) return "Mã Kho không được bỏ trống";
+        const codes = value.split(',').map(c => c.trim()).filter(c => c);
+        if (codes.length === 0) return "Mã Kho không được bỏ trống";
+        for (const code of codes) {
+            if (!/^\d{3,6}$/.test(code)) return `Mã Kho phải là số (ví dụ: 910, 58614). Hiện tại: "${code}" không hợp lệ`;
+        }
+        return '';
+    };
 
     const handleSaveProfile = async () => {
-        if (!stagedDept.trim()) return toast.error("Mã Kho không được bỏ trống");
+        const deptErr = validateDept(stagedDept);
+        setDeptError(deptErr);
+        if (deptErr) return;
         if (userRole === 'employee' && !stagedEmployee.trim()) return toast.error("Tên nhân viên không được bỏ trống");
 
         try {
+            setIsSaving(true);
             if (userRole === 'manager') {
                 const { doc, updateDoc } = await import('firebase/firestore');
                 const { db } = await import('../../../services/firebase');
@@ -33,11 +48,13 @@ export const SettingsAccountTab: React.FC = () => {
                 );
                 toast.success("Đã ghi nhận thay đổi. Yêu cầu xét duyệt lại kích hoạt...");
             }
-            
+
             setIsEditingProfile(false);
             setTimeout(() => window.location.reload(), 2000);
         } catch (error) {
             toast.error("Có lỗi xảy ra khi Cập nhật thông tin!");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -95,13 +112,35 @@ export const SettingsAccountTab: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 shadow-inner rounded-lg">
                             <div className="flex flex-col gap-2">
                                 <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> MÃ KHO ĐĂNG KÝ (Cách nhau bởi dấu phẩy)</label>
-                                <input 
+                                <input
                                     type="text"
                                     value={stagedDept}
-                                    onChange={e => setStagedDept(e.target.value)}
+                                    onChange={e => {
+                                        setStagedDept(e.target.value);
+                                        setDeptError(validateDept(e.target.value));
+                                    }}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && !deptError && !isSaving) {
+                                            handleSaveProfile();
+                                        }
+                                    }}
                                     placeholder="Ví dụ: 58614, 58615, 66708"
-                                    className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase rounded-md"
+                                    className={`text-sm bg-slate-50 dark:bg-slate-900 border p-3 outline-none transition-all uppercase rounded-md text-slate-700 dark:text-slate-300 font-mono ${
+                                        deptError
+                                            ? 'border-rose-300 dark:border-rose-700 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
+                                            : 'border-slate-200 dark:border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20'
+                                    }`}
                                 />
+                                {deptError && (
+                                    <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                                        <Icon name="alert-circle" size={3.5} /> {deptError}
+                                    </p>
+                                )}
+                                {!deptError && stagedDept && (
+                                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                                        <Icon name="check-circle" size={3.5} /> Nhấn Enter để lưu hoặc click "Lưu Dữ Liệu"
+                                    </p>
+                                )}
                             </div>
                             {userRole === 'employee' && (
                                 <div className="flex flex-col gap-2">
