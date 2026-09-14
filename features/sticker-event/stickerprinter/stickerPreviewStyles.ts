@@ -374,7 +374,7 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 42.5%;
+                       top: 40.5%;
                        width: 45.4%;
                        height: 15.0%;
                        display: flex;
@@ -393,13 +393,13 @@ export function getStickerPreviewStyles({
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0 1cqw;
+                      padding: 0 1cqw 0.8cqw 1cqw;
                   }
 
                   .draw-ticket-block .input-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 67.5%;
+                       top: 68.5%;
                        width: 45.4%;
                        height: 6.5%;
                        display: flex;
@@ -417,7 +417,7 @@ export function getStickerPreviewStyles({
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0 1cqw;
+                      padding: 0.8cqw 1cqw 0 1cqw;
                   }
  
                   .draw-ticket-block .input-code-left {
@@ -588,7 +588,7 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 42.5%;
+                       top: 40.5%;
                        width: 45.4%;
                        height: 15.0%;
                        display: flex;
@@ -604,14 +604,14 @@ export function getStickerPreviewStyles({
                        color: #000;
                        white-space: nowrap;
                        word-break: normal;
-                       padding: 0 1cqw;
+                       padding: 0 1cqw 0.8cqw 1cqw;
                        overflow: hidden;
                   }
 
                   .draw-ticket-block .display-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 67.5%;
+                       top: 68.5%;
                        width: 45.4%;
                        height: 6.5%;
                        display: flex;
@@ -626,7 +626,7 @@ export function getStickerPreviewStyles({
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0 1cqw;
+                      padding: 0.8cqw 1cqw 0 1cqw;
                       overflow: hidden;
                   }
 
