@@ -173,8 +173,8 @@ describe('Target V.Trội theo target tháng', () => {
     });
 });
 
-describe('loại bỏ các cột SL, %TT, +/-CK, DT và giữ lại TB 3T', () => {
-    it('loại trừ Số lượng, % Tỉ trọng, +/- DTCK Tháng (QĐ), DT TRẢ GÓP và giữ lại TB 3 Tháng', () => {
+describe('loại bỏ các cột SL, %TT, +/-CK và giữ lại DT TRẢ GÓP, TB 3T', () => {
+    it('loại trừ Số lượng, % Tỉ trọng, +/- DTCK Tháng (QĐ), giữ lại DT TRẢ GÓP ngay trước Tỷ Trọng Trả Góp', () => {
         const fullHeaders = [
             'Tên miền',
             'Số lượng',
@@ -194,7 +194,11 @@ describe('loại bỏ các cột SL, %TT, +/-CK, DT và giữ lại TB 3T', () =
         expect(r.allHeaders).not.toContain('Số lượng');
         expect(r.allHeaders).not.toContain('% Tỉ trọng');
         expect(r.allHeaders).not.toContain('+/- DTCK Tháng (QĐ)');
-        expect(r.allHeaders).not.toContain('DT TRẢ GÓP');
+        expect(r.allHeaders).toContain('DT TRẢ GÓP');
+        const dtgIdx = r.allHeaders.indexOf('DT TRẢ GÓP');
+        const tcIdx = r.allHeaders.indexOf('Tỷ Trọng Trả Góp');
+        expect(dtgIdx).toBe(tcIdx - 1);
+        expect(r.allRows[0][dtgIdx]).toBe('4315');
         expect(r.allHeaders).toContain('TB 3 Tháng');
         expect(r.allHeaders).toContain('% TT');
         const tbIdx = r.allHeaders.indexOf('TB 3 Tháng');

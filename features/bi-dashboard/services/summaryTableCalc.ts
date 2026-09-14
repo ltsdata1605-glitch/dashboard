@@ -262,6 +262,23 @@ export function buildSummaryTable(
         });
     }
 
+    // Bổ sung cột "DT TRẢ GÓP" vào trước cột %TC (Tỷ Trọng Trả Góp) nếu chưa có:
+    const hasDtTraGop = tempHeaders.some(h => h.startsWith('DT TRẢ GÓP') || h === 'DT Trả Góp' || h === 'DT Trả Gộp' || h === 'DTTRẢGÓP' || h === 'DT TRẢ CHẬM' || h === 'DT Trả Chậm');
+    const tcHeaderIdx = tempHeaders.findIndex(h => h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC');
+    const curDtlkIdx = tempHeaders.indexOf('DTLK');
+
+    if (!hasDtTraGop && tcHeaderIdx !== -1 && curDtlkIdx !== -1) {
+        tempHeaders.splice(tcHeaderIdx, 0, 'DT TRẢ GÓP');
+        tempRows = tempRows.map(row => {
+            const newRow = [...row];
+            const dVal = parseNumber(row[curDtlkIdx]);
+            const tcVal = parseNumber(row[tcHeaderIdx]);
+            const calcGop = (dVal > 0 && tcVal > 0) ? roundUp((dVal * tcVal) / 100) : 0;
+            newRow.splice(tcHeaderIdx, 0, calcGop > 0 ? calcGop : '—');
+            return newRow;
+        });
+    }
+
     let cleanedHeaders: string[] = [];
     let cleanedRows: any[][] = tempRows.map(() => []);
     tempHeaders.forEach((h, i) => {
@@ -276,12 +293,6 @@ export function buildSummaryTable(
         'SL Realtime',
         '% Tỉ trọng',
         '+/- DTCK Tháng',
-        'DT TRẢ GÓP',
-        'DT Trả Góp',
-        'DT Trả Gộp',
-        'DTTRẢGÓP',
-        'DT TRẢ CHẬM',
-        'DT Trả Chậm',
     ]);
 
     const desiredOrder = [
@@ -295,6 +306,7 @@ export function buildSummaryTable(
         // TRAFFIC
         'Lượt Khách LK', 'TLPVTC LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'Lượt Bill Thu Hộ',
         // TRẢ CHẬM
+        'DT TRẢ GÓP', 'DT Trả Góp', 'DT Trả Gộp', 'DTTRẢGÓP', 'DT TRẢ CHẬM', 'DT Trả Chậm',
         'Tỷ Trọng Trả Góp', 'Tỷ Trọng Trả Chậm', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm', 'Tỷ lệ duyệt',
         // TRUNG BÌNH 3 THÁNG
         'TB 3 Tháng', 'TB 3 THÁNG',
@@ -360,6 +372,16 @@ export function buildSummaryTable(
                     if (tbVal > 0) {
                         const pct = Math.round(((qVal - tbVal) / tbVal) * 1000) / 10;
                         tRow[ttFinalIdx] = `${pct >= 0 ? '+' : ''}${pct}%`;
+                    }
+                }
+            }
+            const dtgFinalIdx = finalH.findIndex(h => h.startsWith('DT TRẢ GÓP') || h === 'DT Trả Góp');
+            if (dtgFinalIdx !== -1) {
+                const currentVal = parseNumber(tRow[dtgFinalIdx]);
+                if (!currentVal || currentVal === 0) {
+                    const sumDtg = tempRows.reduce((sum, r) => sum + parseNumber(r[dtgFinalIdx]), 0);
+                    if (sumDtg > 0) {
+                        tRow[dtgFinalIdx] = String(sumDtg);
                     }
                 }
             }

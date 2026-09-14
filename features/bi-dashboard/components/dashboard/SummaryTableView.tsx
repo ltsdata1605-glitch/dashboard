@@ -51,14 +51,14 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'TLPVTC LK': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
-    // TRẢ CHẬM
+    // TRẢ GÓP & TRẢ CHẬM
+    'DT TRẢ GÓP': { label: 'DT TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Trả Góp': { label: 'DT TRẢ GÓP', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // KHÁC
     'Số lượng': { label: 'SỐ LƯỢNG', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
@@ -92,7 +92,7 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'D.KIẾN QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'D.KIẾN QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'DT TRẢ GÓP': 'DT<br/>TRẢ GÓP', 'DT Trả Góp': 'DT<br/>TRẢ GÓP', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
