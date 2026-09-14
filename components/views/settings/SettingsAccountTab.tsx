@@ -3,7 +3,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
-import UserManagementView from '../UserManagementView';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
@@ -66,72 +65,70 @@ export const SettingsAccountTab: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh</h3>
 
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
-                    {/* Header: Avatar + Name/Email/Role + Action Button */}
-                    <div className="flex items-start gap-4 sm:gap-6 mb-6 pb-6 border-b border-slate-200 dark:border-slate-700/50">
-                        {/* Avatar */}
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
-                            {user?.photoURL ? (
-                                <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                            ) : (
-                                <Icon name="user" size={10} className="text-sky-400" />
-                            )}
-                        </div>
-
-                        {/* Name, Email, Role */}
-                        <div className="flex-1">
-                            <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
-                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 rounded-md ${
-                                    userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
-                                    userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
-                                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                }`}>
-                                    <Icon name={userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users'} size={4} />
-                                    {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
-                                </span>
+                    {/* Header: Avatar + Name/Email/Role + Info Cards */}
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-6 pb-6 border-b border-slate-200 dark:border-slate-700/50">
+                        <div className="flex items-center gap-4 sm:gap-6">
+                            {/* Avatar */}
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
+                                {user?.photoURL ? (
+                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <Icon name="user" size={10} className="text-sky-400" />
+                                )}
                             </div>
 
-                            {/* Info Cards - Compact Layout Below Role */}
-                            {!isEditingProfile && (
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Icon name="map-pin" size={3.5} className="text-slate-400 flex-shrink-0" />
-                                        <span className="font-bold text-slate-500 dark:text-slate-400">Mã Kho:</span>
-                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{departmentId || 'Chưa đăng ký'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Icon name="user-check" size={3.5} className="text-slate-400 flex-shrink-0" />
-                                        <span className="font-bold text-slate-500 dark:text-slate-400">Tên NV:</span>
-                                        <span className="font-bold text-amber-700 dark:text-amber-400 italic">{employeeName || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Icon name="shield" size={3.5} className="text-slate-400 flex-shrink-0" />
-                                        <span className="font-bold text-slate-500 dark:text-slate-400">Chức năng:</span>
-                                        <span className="font-bold text-slate-700 dark:text-slate-300">{userRole === 'admin' ? 'Toàn bộ tính năng' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Icon name="calendar" size={3.5} className="text-slate-400 flex-shrink-0" />
-                                        <span className="font-bold text-slate-500 dark:text-slate-400">Hạn:</span>
-                                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}</span>
-                                    </div>
+                            {/* Name & Email */}
+                            <div>
+                                <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 rounded-md ${
+                                        userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                                        userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
+                                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                    }`}>
+                                        <Icon name={userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users'} size={4} />
+                                        {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
+                                    </span>
                                 </div>
-                            )}
+                            </div>
                         </div>
+
+                        {/* Info Cards */}
+                        {!isEditingProfile && (
+                            <div className="w-full lg:w-auto grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-2 sm:gap-3">
+                                <div className="bg-white dark:bg-slate-800 p-2.5 sm:p-3 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 rounded-lg min-w-[140px] sm:min-w-[160px]">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400"><Icon name="map-pin" className="inline mr-1" size={3} /> Mã Kho</span>
+                                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-xs truncate">{departmentId || 'Chưa đăng ký'}</span>
+                                </div>
+                                <div className="bg-white dark:bg-slate-800 p-2.5 sm:p-3 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 rounded-lg min-w-[140px] sm:min-w-[160px]">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400"><Icon name="user-check" className="inline mr-1" size={3} /> Tên NV</span>
+                                    <span className="font-bold text-amber-700 dark:text-amber-400 text-xs truncate italic">{employeeName || 'N/A'}</span>
+                                </div>
+                                <div className="bg-white dark:bg-slate-800 p-2.5 sm:p-3 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 rounded-lg min-w-[140px] sm:min-w-[160px]">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400"><Icon name="shield" className="inline mr-1" size={3} /> Chức Năng</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">{userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}</span>
+                                </div>
+                                <div className="bg-white dark:bg-slate-800 p-2.5 sm:p-3 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 rounded-lg min-w-[140px] sm:min-w-[160px]">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400"><Icon name="calendar" className="inline mr-1" size={3} /> Hạn</span>
+                                    <span className="font-bold text-emerald-700 dark:text-emerald-400 text-xs">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}</span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Action Button */}
                         {userRole !== 'admin' && (
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className={`px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-all shadow-sm rounded-lg flex-shrink-0 mt-1 ${
+                                className={`px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-all shadow-sm rounded-lg flex-shrink-0 ${
                                     isEditingProfile
                                         ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                                         : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-sky-500'
                                 }`}
                             >
                                 <Icon name={isEditingProfile ? 'save' : 'edit-3'} size={4} />
-                                {isEditingProfile ? 'Lưu' : 'Đổi Kho'}
+                                {isEditingProfile ? 'Lưu Dữ Liệu' : 'Cập Nhật Mã Kho'}
                             </Button>
                         )}
                     </div>
@@ -189,16 +186,6 @@ export const SettingsAccountTab: React.FC = () => {
                     )}
                 </div>
             </div>
-
-            {/* Phân Quyền Section */}
-            {(userRole === 'admin' || userRole === 'manager') && (
-                <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Phân Quyền & Duyệt Yêu Cầu</h3>
-                    <div className="-m-3 sm:-m-6">
-                        <UserManagementView isEmbedded={true} />
-                    </div>
-                </div>
-            )}
 
             {/* Logout */}
             <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">

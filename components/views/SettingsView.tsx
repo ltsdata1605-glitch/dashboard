@@ -8,9 +8,10 @@ import UserManagementView from './UserManagementView';
 import { SettingsAccountTab } from './settings/SettingsAccountTab';
 import { useAuth } from '../../contexts/AuthContext';
 
-type SettingsTab = 'account';
+type SettingsTab = 'account' | 'permissions';
 
 const SettingsView: React.FC = () => {
+    const { userRole } = useAuth();
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const { activeTab: globalActiveTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
@@ -23,8 +24,17 @@ const SettingsView: React.FC = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const tabs = [
-        { id: 'account', label: 'Tài Khoản', icon: 'user' }
+    useEffect(() => {
+        if (userRole !== 'admin' && userRole !== 'manager' && activeTab === 'permissions') {
+            setActiveTab('account');
+        }
+    }, [userRole, activeTab]);
+
+    const tabs: { id: SettingsTab; label: string; icon: string }[] = [
+        { id: 'account', label: 'Tài Khoản', icon: 'user' },
+        ...(userRole === 'admin' || userRole === 'manager'
+            ? [{ id: 'permissions' as const, label: 'Phân Quyền & Duyệt Yêu Cầu', icon: 'shield-check' }]
+            : [])
     ];
 
     return (
@@ -37,7 +47,7 @@ const SettingsView: React.FC = () => {
                             <Button
                                 variant="unstyled" size="none"
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as SettingsTab)}
+                                onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center ${isMobile ? 'gap-1 px-2 py-1' : 'gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5'} rounded-full font-semibold ${isMobile ? 'text-[11px]' : 'text-xs sm:text-[13px]'} transition-all whitespace-nowrap shrink-0 ${
                                     isActive
                                         ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
@@ -55,21 +65,31 @@ const SettingsView: React.FC = () => {
 
             <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-2 sm:p-6 overflow-y-auto">
                 <div className="max-w-5xl mx-auto">
-                    <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-3 sm:p-8 rounded-xl">
-                        <AnimatePresence mode="wait">
-                            {activeTab === 'account' && (
-                                <motion.div 
-                                    key="account"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
-                                >
-                                    <SettingsAccountTab />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'account' && (
+                            <motion.div 
+                                key="account"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-3 sm:p-8 rounded-xl space-y-8"
+                            >
+                                <SettingsAccountTab />
+                            </motion.div>
+                        )}
+
+                        {activeTab === 'permissions' && (
+                            <motion.div
+                                key="permissions"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="w-full"
+                            >
+                                <UserManagementView isEmbedded={true} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </>
