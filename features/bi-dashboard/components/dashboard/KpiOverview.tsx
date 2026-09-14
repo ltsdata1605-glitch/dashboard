@@ -172,7 +172,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
 
     return (
-        <div className="js-kpi-overview-container space-y-1.5 sm:space-y-2 lg:space-y-2.5">
+        <div className="js-kpi-overview-container bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-2.5 sm:p-3 lg:p-3.5 rounded-none shadow-sm space-y-1.5 sm:space-y-2 lg:space-y-2.5">
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
             <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
                 <KpiCard

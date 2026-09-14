@@ -464,9 +464,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     if (!headers || headers.length === 0 || !rows || rows.length === 0) {
         return (
-            <Card title={title} rounded={false}>
-                <EmptyState title="Chưa có dữ liệu cho siêu thị này" compact />
-            </Card>
+            <div ref={ref} className="js-industry-view-container relative z-10 bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <Card title={title} bordered={false} rounded={false}>
+                    <EmptyState title="Chưa có dữ liệu cho siêu thị này" compact />
+                </Card>
+            </div>
         );
     }
 
@@ -633,9 +635,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     };
 
     return (
-        <div className="js-industry-view-container relative z-10 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div ref={ref} className="js-industry-view-container relative z-10 bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
             <Card 
-                ref={ref} 
                 title={title} 
                 titleClassName="text-lg sm:text-2xl font-normal uppercase text-sky-700 dark:text-sky-400 leading-normal tracking-tight py-0.5"
                 actionButton={actionButton} 
