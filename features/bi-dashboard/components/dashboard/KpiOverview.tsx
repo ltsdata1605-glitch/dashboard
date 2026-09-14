@@ -105,15 +105,25 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         : resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
 
     // --- 2. DT THỰC (Không cần target, hiển thị Doanh thu Dự kiến) ---
+    // Công thức: (DT THỰC / (số ngày đã qua - 1)) * số ngày của tháng
     const now = new Date();
-    const passedDays = Math.max(1, now.getDate() - 1);
+    let passedDays = Math.max(1, now.getDate() - 1);
+    if (summaryLuyKeData) {
+        const matchDay = summaryLuyKeData.match(/đến ngày\s*(\d{1,2})/i);
+        if (matchDay && matchDay[1]) {
+            const parsedDay = parseInt(matchDay[1], 10);
+            if (!isNaN(parsedDay) && parsedDay > 0 && parsedDay <= 31) {
+                passedDays = parsedDay;
+            }
+        }
+    }
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const estimatedDtThucDuKien = dtDuKien > 0
-        ? dtDuKien
-        : (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk);
+    const dtThucDuKien = !isRealtime
+        ? (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk)
+        : (dtDuKien > 0 ? dtDuKien : dtlk);
 
-    const dtThucDuKienStr = estimatedDtThucDuKien > 0
-        ? `${roundUp(estimatedDtThucDuKien).toLocaleString('vi-VN')} Tr`
+    const dtThucDuKienStr = dtThucDuKien > 0
+        ? `${roundUp(dtThucDuKien).toLocaleString('vi-VN')} Tr`
         : '—';
     const dtqdIsGood = secondaryPct >= 100;
     const hqqdIsGood = hqqd >= currentQuyDoiTarget;
