@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
+import UserManagementView from '../UserManagementView';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
@@ -186,6 +187,13 @@ export const SettingsAccountTab: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Phân Quyền & Quản Trị Section (không tiêu đề thừa) */}
+            {(userRole === 'admin' || userRole === 'manager') && (
+                <div className="-m-3 sm:-m-6">
+                    <UserManagementView isEmbedded={true} />
+                </div>
+            )}
 
             {/* Logout */}
             <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
