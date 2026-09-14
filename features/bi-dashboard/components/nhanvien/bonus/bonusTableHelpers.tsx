@@ -10,11 +10,11 @@ export const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     return <span className={`${base} text-slate-400 dark:text-slate-500`}>#{rank}</span>;
 };
 
-export const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong') => {
+export const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong', targetQuyDoi: number = 40) => {
     if (val === 0 || isNaN(val)) return 'text-slate-700 dark:text-slate-300';
     switch (type) {
         case 'dtqd': return val >= 50 ? 'text-emerald-600' : (val <= 20 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-        case 'hqqd': return val > 50 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
+        case 'hqqd': return val >= targetQuyDoi ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-rose-500 dark:text-rose-400 font-bold';
         case 'pnong': return val > 60 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
         case 'erp': return 'text-blue-700 dark:text-blue-400 font-extrabold';
         case 'tnong': return 'text-orange-600 dark:text-orange-400 font-extrabold';

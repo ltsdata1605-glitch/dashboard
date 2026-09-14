@@ -282,6 +282,21 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
 
 
+    const getTargetsForStore = (rawStoreName: string) => {
+        if (!supermarketTargets) return { quyDoi: 40, traGop: 45 };
+        if (supermarketTargets[rawStoreName]) return supermarketTargets[rawStoreName];
+        const safe = shortenSupermarketName(rawStoreName).trim().toLowerCase();
+        for (const [k, v] of Object.entries(supermarketTargets)) {
+            if (shortenSupermarketName(k).trim().toLowerCase() === safe) {
+                return v;
+            }
+        }
+        if (rawStoreName === 'Tổng' || rawStoreName === 'TỔNG CỤM' || safe === 'tổng' || safe === 'tổng cụm') {
+            return supermarketTargets['Tổng'] || { quyDoi: 40, traGop: 45 };
+        }
+        return supermarketTargets['Tổng'] || { quyDoi: 40, traGop: 45 };
+    };
+
     // Find the portal target in the DashboardHeader action bar
     const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
     // Find the inline portal target next to the content title
@@ -366,6 +381,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
                                     if (isTotal) {
                                         /* ── TOTAL ROW — styled like KHO tfoot ── */
+                                        const totalTargets = getTargetsForStore('Tổng');
                                         return (
                                             <tr
                                                 key={rIdx}
@@ -376,10 +392,35 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     const oIdx = processedTable.allHeaders.indexOf(h);
                                                     const cell = row[oIdx];
                                                     const val = parseNumber(cell?.isMerged ? cell.value : cell);
+                                                    const isHtCol = (h.includes('%HT') || h === '%HT V.Trội' || h === '%DKHT') && !isNaN(val);
+                                                    const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi') && !isNaN(val);
+                                                    const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
+                                                    const isTtCol = h === '% TT';
+
+                                                    let colorCls = '';
+                                                    let cellTitle: string | undefined = undefined;
+                                                    if (isHtCol) {
+                                                        colorCls = val >= 100 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                        cellTitle = `Mục tiêu: 100% (${val >= 100 ? 'Đạt' : 'Chưa đạt'})`;
+                                                    } else if (isHqqd) {
+                                                        const targetQd = totalTargets.quyDoi ?? 40;
+                                                        colorCls = val >= targetQd ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                        cellTitle = `Target Quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                    } else if (isTraGop) {
+                                                        const targetTg = totalTargets.traGop ?? 45;
+                                                        colorCls = val >= targetTg ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                        cellTitle = `Target Trả chậm: ${targetTg}% (${val >= targetTg ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                    } else if (isTtCol) {
+                                                        const rawStr = String(cell ?? '').trim();
+                                                        const isDash = rawStr === '—' || rawStr === '' || isNaN(val);
+                                                        colorCls = isDash ? 'text-slate-400 dark:text-slate-500 font-medium' : val > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val < 0 ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400 font-semibold';
+                                                        cellTitle = `Tăng trưởng vs TB 3 tháng: ${isDash ? '—' : `${val > 0 ? '+' : ''}${Number.isInteger(val) ? val : (Math.round(val * 10) / 10)}%`}`;
+                                                    }
 
                                                     return (
                                                         <td
                                                             key={h}
+                                                            title={cellTitle}
                                                             className={`
                                                                 px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                                 text-[11px] sm:text-[13px] font-bold
@@ -402,6 +443,18 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             ) : (
                                                                 h === 'Tên miền'
                                                                     ? 'TỔNG CỤM'
+                                                                    : (isHtCol || isHqqd || isTraGop)
+                                                                        ? (
+                                                                            <span className={`font-bold ${colorCls}`}>
+                                                                                {roundUp(val)}%
+                                                                            </span>
+                                                                        )
+                                                                    : isTtCol
+                                                                        ? (
+                                                                            <span className={colorCls}>
+                                                                                {String(cell ?? '').trim() === '—' || isNaN(val) ? '—' : `${val > 0 ? '+' : ''}${Number.isInteger(val) ? val : (Math.round(val * 10) / 10)}%`}
+                                                                            </span>
+                                                                        )
                                                                     : h === 'DTQĐ' || h === 'DT Dự Kiến (QĐ)' ? <span className="text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>
                                                                     : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                             )}
@@ -413,6 +466,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     }
 
                                     /* ── NORMAL DATA ROW — styled like KHO tbody ── */
+                                    const smKey = row[nameIdx];
+                                    const storeTargets = getTargetsForStore(smKey);
                                     return (
                                         <tr
                                             key={rIdx}
@@ -424,17 +479,36 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const cell = row[oIdx];
                                                 const val = parseNumber(cell?.isMerged ? cell.value : cell);
                                                 const isHtCol = (h.includes('%HT') || h === '%HT V.Trội' || h === '%DKHT') && !isNaN(val);
-                                                const isHqqd = h === '%HQQĐ' && !isNaN(val);
-                                                const smKey = row[nameIdx];
+                                                const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi') && !isNaN(val);
+                                                const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
+                                                const isTtCol = h === '% TT';
 
                                                 let colorCls = '';
-                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-700 dark:text-amber-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
-                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-400 font-bold' : ' text-rose-700 dark:text-rose-400 font-bold';
-                                                if (h === 'DTQĐ' || h === 'DT Dự Kiến (QĐ)') colorCls = ' text-sky-700 dark:text-sky-400 font-semibold';
+                                                let cellTitle: string | undefined = undefined;
+                                                if (isHtCol) {
+                                                    colorCls = val >= 100 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                    cellTitle = `Mục tiêu: 100% (${val >= 100 ? 'Đạt' : 'Chưa đạt'})`;
+                                                } else if (isHqqd) {
+                                                    const targetQd = storeTargets.quyDoi ?? 40;
+                                                    colorCls = val >= targetQd ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                    cellTitle = `Target Quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                } else if (isTraGop) {
+                                                    const targetTg = storeTargets.traGop ?? 45;
+                                                    colorCls = val >= targetTg ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
+                                                    cellTitle = `Target Trả chậm: ${targetTg}% (${val >= targetTg ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                } else if (isTtCol) {
+                                                    const rawStr = String(cell ?? '').trim();
+                                                    const isDash = rawStr === '—' || rawStr === '' || isNaN(val);
+                                                    colorCls = isDash ? 'text-slate-400 dark:text-slate-500 font-medium' : val > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val < 0 ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400 font-semibold';
+                                                    cellTitle = `Tăng trưởng vs TB 3 tháng: ${isDash ? '—' : `${val > 0 ? '+' : ''}${Number.isInteger(val) ? val : (Math.round(val * 10) / 10)}%`}`;
+                                                } else if (h === 'DTQĐ' || h === 'DT Dự Kiến (QĐ)') {
+                                                    colorCls = 'text-sky-700 dark:text-sky-400 font-semibold';
+                                                }
 
                                                 return (
                                                     <td
                                                         key={h}
+                                                        title={cellTitle}
                                                         className={`
                                                             px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                             tabular-nums align-middle whitespace-nowrap
@@ -456,10 +530,16 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         ) : (
                                                             h === 'Tên miền'
                                                                 ? shortenSupermarketName(String(cell)).toUpperCase()
-                                                                : (isHtCol || isHqqd)
+                                                                : (isHtCol || isHqqd || isTraGop)
                                                                     ? (
                                                                         <span className={`font-bold ${colorCls}`}>
                                                                             {roundUp(val)}%
+                                                                        </span>
+                                                                    )
+                                                                : isTtCol
+                                                                    ? (
+                                                                        <span className={colorCls}>
+                                                                            {String(cell ?? '').trim() === '—' || isNaN(val) ? '—' : `${val > 0 ? '+' : ''}${Number.isInteger(val) ? val : (Math.round(val * 10) / 10)}%`}
                                                                         </span>
                                                                     )
                                                                 : h === 'DTQĐ' ? <span className="font-semibold text-sky-700 dark:text-sky-400">{f.format(roundUp(val))}</span>

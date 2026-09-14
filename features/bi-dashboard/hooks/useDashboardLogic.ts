@@ -426,6 +426,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
             for (const res of targetsResults) {
                 const { supermarketName, quyDoi, traGop, totalTargetPercent } = res;
                 allTargets[supermarketName] = { quyDoi, traGop };
+                const safeName = shortenSupermarketName(supermarketName);
+                if (safeName) {
+                    allTargets[safeName] = { quyDoi, traGop };
+                }
                 if (supermarketName === 'Tổng') continue;
                 
                 // Trích xuất Target gốc từ cột TARGET ở [Doanh thu hợp nhất > Luỹ kế]

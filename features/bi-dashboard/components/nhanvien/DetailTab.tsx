@@ -14,6 +14,7 @@ import { DeltaBadge } from '../shared/Badges';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { standardizeEmployeeName } from '../../utils/nhanVienHelpers';
+import { shortenSupermarketName } from '../../utils/dashboardHelpers';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -56,9 +57,10 @@ interface DetailRowProps {
     fInt: Intl.NumberFormat;
     f: Intl.NumberFormat;
     prevData?: { dtlk: number; dtqd: number };
+    targetQuyDoi?: number;
 }
 
-const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggleExpand, fInt, f, prevData }) => {
+const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggleExpand, fInt, f, prevData, targetQuyDoi = 40 }) => {
     const style = LEVEL_STYLES[node.level] || LEVEL_STYLES.hang;
     const hasChildren = node.children.length > 0;
 
@@ -113,11 +115,11 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             </td>
             {/* Hiệu quả QĐ */}
             <td className={`px-2 py-1 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                {/* Chuẩn "Bảng điều khiển ca trực": tô CHỮ theo ngưỡng, không tô NỀN — nền riêng từng ô
-                    làm mặt bảng vỡ thành mảng màu (cùng lý do đã đổi ở shared/Pill.tsx). Ngưỡng giữ nguyên. */}
-                <span className={`inline-block min-w-[42px] text-[12px] font-bold tabular-nums ${node.hieuQuaQD >= 0.3 ? 'text-emerald-700 dark:text-emerald-400'
-                        : node.hieuQuaQD > 0 ? 'text-amber-700 dark:text-amber-400'
-                        : 'text-slate-500 dark:text-slate-400'
+                <span
+                    title={`Target Quy đổi: ${targetQuyDoi}%`}
+                    className={`inline-block min-w-[42px] text-[12px] font-bold tabular-nums ${(node.hieuQuaQD * 100) >= targetQuyDoi
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : 'text-rose-700 dark:text-rose-400 font-bold'
                     }`}>
                     {Math.round(node.hieuQuaQD * 100)}%
                 </span>
@@ -222,6 +224,9 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
     const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-detail-${supermarketName}`, '');
+    const safeName = shortenSupermarketName(supermarketName);
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
+    const targetQuyDoi = storedQuyDoi ?? 40;
 
     useEffect(() => {
         let isMounted = true;
@@ -524,6 +529,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                     fInt={fInt}
                     f={f}
                     prevData={prevData}
+                    targetQuyDoi={targetQuyDoi}
                 />
             );
 

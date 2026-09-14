@@ -196,9 +196,26 @@ describe('loại bỏ các cột SL, %TT, +/-CK, DT và giữ lại TB 3T', () =
         expect(r.allHeaders).not.toContain('+/- DTCK Tháng (QĐ)');
         expect(r.allHeaders).not.toContain('DT TRẢ GÓP');
         expect(r.allHeaders).toContain('TB 3 Tháng');
+        expect(r.allHeaders).toContain('% TT');
+        const tbIdx = r.allHeaders.indexOf('TB 3 Tháng');
+        const ttIdx = r.allHeaders.indexOf('% TT');
+        expect(ttIdx).toBe(tbIdx + 1);
+        expect(r.allRows[0][ttIdx]).toBe('+15%');
         expect(r.allHeaders).toContain('Tỷ Trọng Trả Góp');
         expect(r.allHeaders).toContain('DTLK');
         expect(r.allHeaders).toContain('DTQĐ');
+    });
+
+    it('tự động tính % TT nếu bảng có TB 3 Tháng nhưng chưa có cột % TT', () => {
+        const fullHeaders = ['Tên miền', 'DTQĐ', 'TB 3 Tháng'];
+        // DTQĐ 14804 vs TB3T 12583 -> (14804 - 12583) / 12583 = +17.7%
+        const row = ['HÙNG VƯƠNG', '14804', '12583'];
+        const r = buildSummaryTable({ headers: fullHeaders, rows: [row] }, opts({ isCumulative: true }));
+
+        const tbIdx = r.allHeaders.indexOf('TB 3 Tháng');
+        const ttIdx = r.allHeaders.indexOf('% TT');
+        expect(ttIdx).toBe(tbIdx + 1);
+        expect(r.allRows[0][ttIdx]).toBe('+17.7%');
     });
 });
 

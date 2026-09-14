@@ -5,9 +5,11 @@ import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIc
 import { Link2, Pencil, GripVertical } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 import TargetHero from './TargetHero';
 import * as db from '../utils/db';
 import { TileLinkModal } from './TileLinkModal';
+import { AutoClickGuideModal, AUTO_CLICK_BOOKMARKLET_CODE } from './AutoClickGuideModal';
 import {
     DEFAULT_TILE_LINKS,
     getTileLink,
@@ -357,7 +359,7 @@ const StatusTile: React.FC<{
     lastUpdated: string | null;
     value: string;
     placeholder?: string;
-    onChange: (val: string) => void;
+    onChange: (val: string) => boolean | void | Promise<boolean | void>;
     onClear: (title: string) => void;
     error?: string | null;
     icon?: React.ReactNode;
@@ -368,6 +370,46 @@ const StatusTile: React.FC<{
 }> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl, linkUrl, onOpenLinkModal }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
+
+    const fireSuccessCelebration = () => {
+        confetti({
+            particleCount: 70,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        toast.success(`✨ Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
+    };
+
+    const handleTileClick = async () => {
+        if (isPasting) return;
+
+        if (navigator?.clipboard?.readText) {
+            try {
+                const clipText = await navigator.clipboard.readText();
+                if (clipText && clipText.trim().length > 0) {
+                    const ok = await onChange(clipText);
+                    if (ok !== false) {
+                        fireSuccessCelebration();
+                        return;
+                    } else {
+                        toast.error(`Dữ liệu trong bộ nhớ tạm không đúng định dạng của ô ${title}!`);
+                        setIsPasting(true);
+                        return;
+                    }
+                } else {
+                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng sao chép dữ liệu trước!', { icon: '📋' });
+                    setIsPasting(true);
+                    return;
+                }
+            } catch (err) {
+                console.warn('[StatusTile] Không thể đọc Clipboard tự động:', err);
+                setIsPasting(true);
+                return;
+            }
+        } else {
+            setIsPasting(true);
+        }
+    };
 
     const themeColors = {
         emerald: {
@@ -402,7 +444,8 @@ const StatusTile: React.FC<{
     return (
         <div className="relative group group/tile w-full">
             <div 
-                onClick={() => !isPasting && setIsPasting(true)}
+                onClick={handleTileClick}
+                title="Click để tự động dán dữ liệu từ Clipboard"
                 className={`
                     cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
                     ${isPasting 
@@ -418,10 +461,13 @@ const StatusTile: React.FC<{
                             autoFocus
                             className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
                             placeholder={placeholder || 'Nhấn Ctrl + V...'}
-                            onPaste={(e) => {
+                            onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
-                                onChange(text);
                                 setIsPasting(false);
+                                const ok = await onChange(text);
+                                if (ok !== false) {
+                                    fireSuccessCelebration();
+                                }
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
@@ -441,7 +487,7 @@ const StatusTile: React.FC<{
                                         <ClockIcon className="h-3 w-3" /> {lastUpdated}
                                     </span>
                                 )) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để cập nhật</span>
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để tự dán</span>
                                 )}
                             </div>
                         </div>
@@ -460,7 +506,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onOpenLinkModal();
                             }}
-                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
@@ -480,7 +526,7 @@ const StatusTile: React.FC<{
                                     onOpenLinkModal?.();
                                 }
                             }}
-                            className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95"
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
@@ -496,7 +542,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95"
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
@@ -953,11 +999,12 @@ interface SupermarketConfigProps {
 const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, addUpdate, removeUpdate, competitionLuyKeData, summaryLuyKeData, onThiDuaDataChange }) => {
     const [activeTab, setActiveTab] = useIndexedDBState<ConfigTab>('supermarket-config-active-tab', 'data');
 
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
     const bookmarkletRef = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {
         if (bookmarkletRef.current) {
-            bookmarkletRef.current.href = `javascript:%28async%20function%28%29%7Bfunction%20S%28m%2Ce%2Cd%3D5e3%29%7Bvar%20t%3Ddocument.getElementById%28%22__copy_wait_toast__%22%29%3Bt%7C%7C%28%28t%3Ddocument.createElement%28%22div%22%29%29.id%3D%22__copy_wait_toast__%22%2CObject.assign%28t.style%2C%7Bposition%3A%22fixed%22%2Ctop%3A%2220px%22%2Cright%3A%2220px%22%2CzIndex%3A%222147483647%22%2Cpadding%3A%2214px%2020px%22%2CborderRadius%3A%2210px%22%2CfontFamily%3A%22system-ui%2C%20-apple-system%2C%20sans-serif%22%2CfontSize%3A%2214px%22%2CfontWeight%3A%22600%22%2Ccolor%3A%22%23fff%22%2CboxShadow%3A%220%206px%2020px%20rgba%280%2C0%2C0%2C0.25%29%22%2Ctransition%3A%22all%200.3s%20ease%22%2CmaxWidth%3A%22360px%22%2ClineHeight%3A%221.4%22%7D%29%2Cdocument.body.appendChild%28t%29%29%2Ct.style.background%3De%3F%22linear-gradient%28135deg%2C%20%23dc2626%2C%20%23b91c1c%29%22%3Am.includes%28%22%E2%9C%85%22%29%3F%22linear-gradient%28135deg%2C%20%2316a34a%2C%20%2315803d%29%22%3A%22linear-gradient%28135deg%2C%20%230ea5e9%2C%20%232563eb%29%22%2Ct.innerHTML%3Dm%2Ct.style.opacity%3D%221%22%2CclearTimeout%28t.__timer%29%2Ce%7C%7C%21d%7C%7C%28t.__timer%3DsetTimeout%28function%28%29%7Bt.style.opacity%3D%220%22%7D%2Cd%29%29%7Dconst%20sleep%3Dms%3D%3Enew%20Promise%28r%3D%3EsetTimeout%28r%2Cms%29%29%2CnextFrame%3D%28%29%3D%3Enew%20Promise%28r%3D%3ErequestAnimationFrame%28r%29%29%2CSPINNERS%3D%5B%27%23Loading%27%2C%27.overload-wait%27%2C%27.animate-spin%27%2C%27.dx-loadpanel-content%27%2C%27.dx-loadpanel%3Anot%28.dx-state-invisible%29%27%2C%27.dx-loadindicator%27%2C%27.ant-spin-spinning%27%2C%27.el-loading-mask%27%2C%27%5Bclass%2A%3D%22spinner%22%20i%5D%27%2C%27%5Bclass%2A%3D%22loading%22%20i%5D%27%5D.join%28%27%2C%20%27%29%3Bfunction%20isVis%28el%29%7Breturn%21%21%28el%26%26null%21%3D%3Del.offsetParent%29%7Dfunction%20isSpinVis%28el%29%7Bif%28%21el%29return%211%3Bvar%20s%3Dwindow.getComputedStyle%28el%29%3Bif%28%22none%22%3D%3D%3Ds.display%7C%7C%22hidden%22%3D%3D%3Ds.visibility%7C%7C0%3D%3D%3DparseFloat%28s.opacity%7C%7C%221%22%29%29return%211%3Bif%28%22fixed%22%3D%3D%3Ds.position%29%7Bvar%20r%3Del.getBoundingClientRect%28%29%3Breturn%20r.width%3E0%26%26r.height%3E0%7Dreturn%20null%21%3D%3Del.offsetParent%7Dfunction%20isPlus%28el%29%7Breturn%20el%26%26el.classList%26%26el.classList.contains%28%22fa-plus%22%29%26%26%21el.classList.contains%28%22fa-minus%22%29%7Dfunction%20isOpened%28el%29%7Bvar%20c%3Del.closest%28%27button%2C%20a%2C%20%5Brole%3D%22button%22%5D%2C%20.cursor-pointer%2C%20td%2C%20div%27%29%3Breturn%21%28%21c%7C%7C%22true%22%21%3D%3Dc.getAttribute%28%22aria-expanded%22%29%26%26%22open%22%21%3D%3Dc.getAttribute%28%22data-state%22%29%26%26%21c.querySelector%28%22.fa-minus%22%29%29%7Dfunction%20getButtons%28%29%7Breturn%20Array.from%28new%20Set%28Array.from%28document.querySelectorAll%28%22.fa-solid.fa-plus.text-gray-700%2C%20.fa-plus%22%29%29%29%29.filter%28isVis%29.filter%28isPlus%29.filter%28b%3D%3E%221%22%21%3D%3Db.dataset.clickPlusDone%29.filter%28b%3D%3E%21isOpened%28b%29%29%7Dasync%20function%20waitSpinners%28maxMs%3D6e3%29%7Bawait%20sleep%2860%29%3Bvar%20start%3DDate.now%28%29%3Bwhile%28Date.now%28%29-start%3CmaxMs%29%7Bif%28%21Array.from%28document.querySelectorAll%28SPINNERS%29%29.some%28isSpinVis%29%29return%3Bawait%20sleep%28100%29%7D%7Dasync%20function%20forceRender%28%29%7Bvar%20sc%3Ddocument.scrollingElement%7C%7Cdocument.documentElement%2Cstep%3DMath.max%28window.innerHeight%7C%7C800%2C400%29%2Cpos%3D0%2Cguard%3D0%3Bwhile%28pos%3Csc.scrollHeight%26%26guard%3C500%29%7Bwindow.scrollTo%280%2Cpos%29%2Cawait%20sleep%28100%29%2Cpos%2B%3Dstep%2Cguard%2B%2B%7Dwindow.scrollTo%280%2Csc.scrollHeight%29%2Cawait%20sleep%28200%29%2Cwindow.scrollTo%280%2C0%29%2Cawait%20sleep%28200%29%7Dasync%20function%20copyText%28%29%7Bvar%20txt%3D%22%22%2Cae%3Ddocument.activeElement%3Bif%28ae%26%26%28%22TEXTAREA%22%3D%3D%3Dae.tagName%7C%7C%22INPUT%22%3D%3D%3Dae.tagName%26%26%28%22text%22%3D%3D%3Dae.type%7C%7C%22search%22%3D%3D%3Dae.type%29%29%29ae.select%28%29%2Ctxt%3Dae.value%3Belse%7Bvar%20sel%3Dwindow.getSelection%28%29%2Crg%3Ddocument.createRange%28%29%3Brg.selectNodeContents%28document.body%29%2Csel.removeAllRanges%28%29%2Csel.addRange%28rg%29%2Ctxt%3Dsel.toString%28%29%7C%7Cdocument.body.innerText%7C%7Cdocument.body.textContent%7C%7C%22%22%7Dif%28%21txt%7C%7C0%3D%3D%3Dtxt.length%29return%7Bok%3A%211%2Clen%3A0%7D%3Btry%7Bif%28navigator.clipboard%26%26navigator.clipboard.writeText%29return%20await%20navigator.clipboard.writeText%28txt%29%2C%7Bok%3A%210%2Clen%3Atxt.length%7D%7Dcatch%28e%29%7B%7Dtry%7Breturn%7Bok%3Adocument.execCommand%28%22copy%22%29%2Clen%3Atxt.length%7D%7Dcatch%28e%29%7Breturn%7Bok%3A%211%2Clen%3Atxt.length%7D%7D%7Dtry%7Bvar%20pending%3DgetButtons%28%29%2Ctotal%3D0%2CBATCH%3D4%3Bif%28pending.length%3E0%29%7BS%28%60%E2%9A%A1%20%C4%90ang%20t%E1%BB%B1%20%C4%91%E1%BB%99ng%20m%E1%BB%9F%20%24%7Bpending.length%7D%20m%E1%BB%A5c%20d%E1%BB%AF%20li%E1%BB%87u...%60%2C%211%2C0%29%3Bfor%28var%20i%3D0%3Bi%3Cpending.length%3Bi%2B%2B%29%7Bvar%20btn%3Dpending%5Bi%5D%3Btry%7BisVis%28btn%29%26%26isPlus%28btn%29%26%26%21isOpened%28btn%29%26%26%28btn.dataset.clickPlusDone%3D%221%22%2Cbtn.click%28%29%2Ctotal%2B%2B%29%7Dcatch%28e%29%7B%7DS%28%60%E2%9A%A1%20%C4%90%C3%A3%20m%E1%BB%9F%3A%20%24%7Btotal%7D%20%7C%20C%C3%B2n%3A%20%24%7Bpending.length-i-1%7D%60%2C%211%2C0%29%2C%28i%2B1%29%25BATCH%3D%3D0%7C%7Ci%3D%3D%3Dpending.length-1%3F%28await%20nextFrame%28%29%2Cawait%20waitSpinners%285e3%29%2Cawait%20sleep%2860%29%29%3Aawait%20sleep%2825%29%7DS%28%22%E2%8F%B3%20%C4%90ang%20cu%E1%BB%99n%20hi%E1%BB%83n%20th%E1%BB%8B%20to%C3%A0n%20b%E1%BB%99%20d%C3%B2ng...%22%2C%211%2C0%29%2Cawait%20forceRender%28%29%2Cawait%20waitSpinners%286e3%29%2Cawait%20sleep%28300%29%7Delse%20S%28%22%E2%8F%B3%20%C4%90ang%20ch%E1%BB%8Dn%20v%C3%A0%20sao%20ch%C3%A9p%20d%E1%BB%AF%20li%E1%BB%87u...%22%2C%211%2C0%29%3Bvar%20res%3Dawait%20copyText%28%29%3Bif%28%21res.ok%7C%7C0%3D%3D%3Dres.len%29return%20void%20S%28%22%E2%9A%A0%EF%B8%8F%20Kh%C3%B4ng%20c%C3%B3%20d%E1%BB%AF%20li%E1%BB%87u%20%C4%91%E1%BB%83%20copy%20ho%E1%BA%B7c%20quy%E1%BB%81n%20b%E1%BB%8B%20h%E1%BA%A1n%20ch%E1%BA%BF.%20Nh%E1%BA%A5n%20Ctrl%2BC%20%C4%91%E1%BB%83%20copy%20th%E1%BB%A7%20c%C3%B4ng.%22%2C%210%2C6e3%29%3Bvar%20msg%3Dtotal%3E0%3F%60%C4%90%C3%A3%20m%E1%BB%9F%20%24%7Btotal%7D%20m%E1%BB%A5c%20%26%20%60%3A%22%22%3BS%28%60%E2%9C%85%20%24%7Bmsg%7D%C4%90%C3%A3%20copy%20xong%20%24%7Bres.len.toLocaleString%28%22vi-VN%22%29%7D%20k%C3%BD%20t%E1%BB%B1%21%3Cbr%2F%3E%3Cspan%20style%3D%22font-size%3A12px%3Bopacity%3A0.9%3B%22%3EGi%E1%BB%9D%20b%E1%BA%A1n%20c%C3%B3%20th%E1%BB%83%20d%C3%A1n%20%28Ctrl%2BV%29%20an%20to%C3%A0n.%3C%2Fspan%3E%60%2C%211%2C5e3%29%7Dcatch%28e%29%7BS%28%60%E2%9D%8C%20Th%E1%BA%A5t%20b%E1%BA%A1i%3A%20%24%7Be.message%7D%60%2C%210%2C6e3%29%7D%7D%29%28%29%3B`;
+            bookmarkletRef.current.href = AUTO_CLICK_BOOKMARKLET_CODE;
         }
     }, []);
 
@@ -1058,21 +1105,23 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         return parseCompetitions(competitionLuyKeData);
     }, [competitionLuyKeData]);
 
-    const handleUpdate = (key: string, val: string, validator: (s: string) => boolean, tsSetter: (value: string | null) => void, updateMsg: string, id: string) => {
+    const handleUpdate = (key: string, val: string, validator: (s: string) => boolean, tsSetter: (value: string | null) => void, updateMsg: string, id: string): boolean => {
         if (val === '') {
             setErrors(p => ({...p, [key]: null}));
             tsSetter(null);
             removeUpdate(id);
-            return;
+            return false;
         }
         if (validator(val)) {
             const newTs = getDetailedTimestamp();
             setErrors(p => ({...p, [key]: null}));
             tsSetter(newTs);
             addUpdate(id, updateMsg, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+            return true;
         } else {
             setErrors(p => ({...p, [key]: 'Dữ liệu sai định dạng.'}));
             tsSetter(null);
+            return false;
         }
     };
 
@@ -1093,15 +1142,24 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                     <div className="shrink-0 flex items-center pr-1 pb-1">
                         <a
                             ref={bookmarkletRef}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium text-xs rounded-md border border-emerald-200 dark:border-emerald-800/60 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all cursor-grab active:cursor-grabbing"
-                            title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) để Tự động mở rộng cây dữ liệu và Copy toàn trang trong 1 cú click"
+                            href={AUTO_CLICK_BOOKMARKLET_CODE}
+                            draggable
+                            className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:via-teal-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
+                            title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();
-                                toast.success('Hãy kéo nút "Auto Click+" và thả lên thanh Dấu trang (Bookmarks) của trình duyệt để cài đặt!', { icon: '🖱️', duration: 4000 });
+                                setIsGuideOpen(true);
                             }}
                         >
-                            <SparklesIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>Auto Click+</span>
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-100"></span>
+                            </span>
+                            <SparklesIcon className="w-3.5 h-3.5 text-emerald-100 group-hover:rotate-12 transition-transform duration-200 shrink-0" />
+                            <span className="tracking-wide">Auto Click+</span>
+                            <span className="ml-0.5 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-emerald-700/80 text-emerald-100 border border-emerald-400/30">
+                                1-Click
+                            </span>
                         </a>
                     </div>
                 </div>
@@ -1120,7 +1178,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
                                     linkUrl={getTileLink('industry-realtime', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-realtime', 'Realtime', 'Siêu thị ngành hàng')}
-                                    onChange={(v) => { setIndustryRealtimeData(v); handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng\tSL Realtime') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); }}
+                                    onChange={(v) => { 
+                                        setIndustryRealtimeData(v); 
+                                        return handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng\tSL Realtime') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); 
+                                    }}
                                     onClear={(title) => { 
                                         setIndustryRealtimeData(''); 
                                         setIndustryRealtimeTs(null); 
@@ -1131,7 +1192,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="emerald"
                                     linkUrl={getTileLink('industry-luyke', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-luyke', 'Luỹ kế', 'Siêu thị ngành hàng')}
-                                    onChange={(v) => { setIndustryLuyKeData(v); handleUpdate('industryLuyKe', v, s => s.includes('Ngành hàng\tSL') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryLuyKeTs, `Ngành hàng (LK) - ${supermarketName}`, ids.lk!); }}
+                                    onChange={(v) => { 
+                                        setIndustryLuyKeData(v); 
+                                        return handleUpdate('industryLuyKe', v, s => s.includes('Ngành hàng\tSL') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryLuyKeTs, `Ngành hàng (LK) - ${supermarketName}`, ids.lk!); 
+                                    }}
                                     onClear={(title) => { 
                                         setIndustryLuyKeData(''); 
                                         setIndustryLuyKeTs(null); 
@@ -1155,7 +1219,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'DOANH THU', 'NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         setDanhSachData(v); 
-                                        handleUpdate('danhSach', v, s => {
+                                        return handleUpdate('danhSach', v, s => {
                                             const lower = s.toLowerCase();
                                             return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
                                                    (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('số lượng'));
@@ -1168,16 +1232,19 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} />
                                 
-                                <StatusTile title="THI ĐUA NV" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua NV..." error={errors.thiDua} 
+                                <StatusTile title="THI ĐUA" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua..." error={errors.thiDua} 
                                     icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-thidua', customLinks)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA NV', 'NHÂN VIÊN')}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA', 'NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         setThiDuaData(v); 
                                         if(v && validateThiDuaData(v)) { 
                                             onThiDuaDataChange(supermarketName, v); 
-                                            handleUpdate('thiDua', v, validateThiDuaData, setThiDuaTs, `Nhân viên (TĐ) - ${supermarketName}`, ids.td!); 
-                                        } else setErrors(p => ({...p, thiDua: 'Sai định dạng Thi đua NV.'})); 
+                                            return handleUpdate('thiDua', v, validateThiDuaData, setThiDuaTs, `Nhân viên (TĐ) - ${supermarketName}`, ids.td!); 
+                                        } else {
+                                            setErrors(p => ({...p, thiDua: 'Sai định dạng Thi đua.'})); 
+                                            return false;
+                                        }
                                     }}
                                     onClear={(title) => { 
                                         setThiDuaData(''); 
@@ -1206,13 +1273,13 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} /> */}
 
-                                <StatusTile title="Trả chậm NV" lastUpdated={traGopTs} value={traGopData}
+                                <StatusTile title="TRẢ CHẬM" lastUpdated={traGopTs} value={traGopData} placeholder="Dán dữ liệu Trả chậm..."
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
                                     linkUrl={getTileLink('nhanvien-tragop', customLinks)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'Trả chậm NV', 'Trả chậm nhân viên')}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'TRẢ CHẬM', 'Trả chậm nhân viên')}
                                     onChange={(v) => { 
                                         setTraGopData(v); 
-                                        handleUpdate('traGop', v, s => {
+                                        return handleUpdate('traGop', v, s => {
                                             const lower = s.toLowerCase();
                                             return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
                                                    (lower.includes('trả góp') || lower.includes('tra gop') || lower.includes('trả chậm') || lower.includes('tra cham') || lower.includes('homecredit') || lower.includes('dt siêu thị'));
@@ -1245,6 +1312,11 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                     onReset={handleResetLink}
                 />
             )}
+
+            <AutoClickGuideModal
+                isOpen={isGuideOpen}
+                onClose={() => setIsGuideOpen(false)}
+            />
         </div>
     );
 };

@@ -7,6 +7,7 @@ import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { renderHeaderText } from './SafeHeaderText';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
+import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
@@ -87,6 +88,12 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
     const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport } = props;
 
+
+    const safeName = activeSupermarket ? shortenSupermarketName(activeSupermarket) : '';
+    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 45);
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
+    const targetTraGop = storedTraGop ?? 45;
+    const targetQuyDoi = storedQuyDoi ?? 40;
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
@@ -559,6 +566,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             return cell;
         };
 
+        const isTraGop = (headerName === 'Tỷ Trọng Trả Góp' || headerName === 'Tỷ Trọng Trả Chậm' || headerName === '%TC' || headerName === 'TRẢ CHẬM' || headerName === '%T.CHẬM' || headerName === 'TC' || headerName === 'Target Trả chậm') && !isNaN(numericValue);
+        const isHqqd = (headerName === '%HQQĐ' || headerName === '%QĐ' || headerName === 'HQQĐ' || headerName === 'Target Quy đổi') && !isNaN(numericValue);
+
+        let cellTitle: string | undefined = undefined;
+        if (isTraGop) {
+            cellTitle = `Target Trả chậm: ${targetTraGop}% (${numericValue >= targetTraGop ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+        } else if (isHqqd) {
+            cellTitle = `Target Quy đổi: ${targetQuyDoi}% (${numericValue >= targetQuyDoi ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+        }
+
         let cellClasses = `
             px-2 whitespace-nowrap
             border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
@@ -569,10 +586,22 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         `;
         
         if (isTotalRow) {
-            cellClasses += ' text-[15px] text-emerald-800 dark:text-emerald-400 font-extrabold';
+            if (isTraGop) {
+                cellClasses += numericValue >= targetTraGop ? ' text-[15px] !text-emerald-700 dark:!text-emerald-400 font-extrabold' : ' text-[15px] !text-rose-700 dark:!text-rose-400 font-extrabold';
+            } else if (isHqqd) {
+                cellClasses += numericValue >= targetQuyDoi ? ' text-[15px] !text-emerald-700 dark:!text-emerald-400 font-extrabold' : ' text-[15px] !text-rose-700 dark:!text-rose-400 font-extrabold';
+            } else {
+                cellClasses += ' text-[15px] text-emerald-800 dark:text-emerald-400 font-extrabold';
+            }
         } else if (isHang) {
             cellClasses += originalCellIndex === 0 ? ' text-slate-500 dark:text-slate-400' : ' font-bold text-slate-500 dark:text-slate-400';
-            if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
+            if (isTraGop) {
+                if (numericValue >= targetTraGop) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
+                else cellClasses += ' !text-rose-500 dark:!text-rose-500';
+            } else if (isHqqd) {
+                if (numericValue >= targetQuyDoi) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
+                else cellClasses += ' !text-rose-500 dark:!text-rose-500';
+            } else if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
                 else if (numericValue >= 85) cellClasses += ' !text-amber-500 dark:!text-amber-500';
                 else if (numericValue > 0) cellClasses += ' !text-rose-500 dark:!text-rose-500';
@@ -580,7 +609,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         } else {
             cellClasses += originalCellIndex === 0 ? ' font-bold text-slate-700 dark:text-slate-300' : ' font-bold';
 
-            if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
+            if (isTraGop) {
+                if (numericValue >= targetTraGop) cellClasses += ' text-emerald-700 dark:text-emerald-400 font-bold';
+                else cellClasses += ' text-rose-700 dark:text-rose-400 font-bold';
+            } else if (isHqqd) {
+                if (numericValue >= targetQuyDoi) cellClasses += ' text-emerald-700 dark:text-emerald-400 font-bold';
+                else cellClasses += ' text-rose-700 dark:text-rose-400 font-bold';
+            } else if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' text-emerald-700 dark:text-emerald-400 font-bold';
                 else if (numericValue >= 85) cellClasses += ' text-amber-700 dark:text-amber-400 font-bold';
                 else if (numericValue > 0) cellClasses += ' text-rose-700 dark:text-rose-400 font-bold';
@@ -594,7 +629,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             }
         }
 
-        return <td key={headerName} className={cellClasses}>{cellContent()}</td>;
+        return <td key={headerName} title={cellTitle} className={cellClasses}>{cellContent()}</td>;
     };
 
     return (

@@ -392,7 +392,7 @@ const RevenueView: React.FC<{
                                                          <div style={{ color: getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                          <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                      </td>
-                                                     <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
+                                                     <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
                                                          <div>{roundUp(row.calculatedInstallment)}%</div>
                                                          <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                      </td>

@@ -19,15 +19,16 @@ interface BonusDesktopRowProps {
     pctDkht?: number;
     hasTarget?: boolean;
     onEmployeeClick: (emp: Employee) => void;
-    getCellColor: (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong') => string;
+    getCellColor: (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong', targetQuyDoi?: number) => string;
     f: Intl.NumberFormat;
     supermarketName: string;
+    targetQuyDoi?: number;
 }
 
 export const BonusDesktopRow = React.memo(({
     item, isHighlighted, isStale, dtqdVal, hqqdVal, erpVal, tnongVal, pnongVal, tongVal, dkienVal,
     pctDkht, hasTarget = true,
-    onEmployeeClick, getCellColor, f, supermarketName
+    onEmployeeClick, getCellColor, f, supermarketName, targetQuyDoi = 40
 }: BonusDesktopRowProps) => {
 
     const bonus = Boolean(erpVal || tnongVal || tongVal || dkienVal);
@@ -38,7 +39,7 @@ export const BonusDesktopRow = React.memo(({
     // Tuyệt đối không fallback về xám slate-200 làm mất màu vạch nhận diện nhân viên.
     const stripeColor = (pctDkht != null && pctDkht > 0)
         ? getDkhtColor(pctDkht, hasTarget)
-        : (hqqdVal >= 50 ? '#059669' : (hqqdVal >= 40 ? '#ea580c' : (hqqdVal > 0 ? '#dc2626' : (item.rank != null && item.rank <= 3 ? '#ea580c' : '#0284c7'))));
+        : (hqqdVal >= targetQuyDoi ? '#059669' : (hqqdVal > 0 ? '#dc2626' : (item.rank != null && item.rank <= 3 ? '#ea580c' : '#0284c7')));
 
     return (
         <tr
@@ -58,7 +59,7 @@ export const BonusDesktopRow = React.memo(({
                 </div>
             </td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(hqqdVal, 'hqqd', targetQuyDoi)}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-black ${getCellColor(erpVal, 'erp')}`}>
                 {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
             </td>

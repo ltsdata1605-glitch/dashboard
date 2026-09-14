@@ -7,6 +7,7 @@ import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 import { TileLinkModal } from './TileLinkModal';
 import {
     DEFAULT_TILE_LINKS,
@@ -104,7 +105,7 @@ const StatusTile: React.FC<{
     lastUpdated: string | null;
     value: string;
     placeholder?: string;
-    onChange: (val: string) => void;
+    onChange: (val: string) => boolean | void | Promise<boolean | void>;
     onClear: (title: string) => void;
     error?: string | null;
     downloadUrl?: string;
@@ -117,6 +118,46 @@ const StatusTile: React.FC<{
 }> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, downloadUrl, linkUrl, onOpenLinkModal, icon, colorTheme = 'sky', readOnly = false, readOnlyHint }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
+
+    const fireSuccessCelebration = () => {
+        confetti({
+            particleCount: 70,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        toast.success(`✨ Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
+    };
+
+    const handleTileClick = async () => {
+        if (isPasting || readOnly) return;
+
+        if (navigator?.clipboard?.readText) {
+            try {
+                const clipText = await navigator.clipboard.readText();
+                if (clipText && clipText.trim().length > 0) {
+                    const ok = await onChange(clipText);
+                    if (ok !== false) {
+                        fireSuccessCelebration();
+                        return;
+                    } else {
+                        toast.error(`Dữ liệu trong bộ nhớ tạm không đúng định dạng của ô ${title}!`);
+                        setIsPasting(true);
+                        return;
+                    }
+                } else {
+                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng copy báo cáo từ MWG trước!', { icon: '📋' });
+                    setIsPasting(true);
+                    return;
+                }
+            } catch (err) {
+                console.warn('[StatusTile] Không thể đọc Clipboard tự động:', err);
+                setIsPasting(true);
+                return;
+            }
+        } else {
+            setIsPasting(true);
+        }
+    };
 
     const themeColors = {
         emerald: {
@@ -151,7 +192,8 @@ const StatusTile: React.FC<{
     return (
         <div className="relative group group/tile w-full">
             <div
-                onClick={() => !isPasting && !readOnly && setIsPasting(true)}
+                onClick={handleTileClick}
+                title={readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự động dán dữ liệu từ Clipboard'}
                 className={`
                     cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
@@ -168,10 +210,13 @@ const StatusTile: React.FC<{
                             autoFocus
                             className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
                             placeholder={placeholder || 'Nhấn Ctrl + V...'}
-                            onPaste={(e) => {
+                            onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
-                                onChange(text);
                                 setIsPasting(false);
+                                const ok = await onChange(text);
+                                if (ok !== false) {
+                                    fireSuccessCelebration();
+                                }
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
@@ -193,7 +238,7 @@ const StatusTile: React.FC<{
                                     )
                                 ) : (
                                     <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">
-                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để cập nhật'}
+                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự dán'}
                                     </span>
                                 )}
                             </div>
@@ -213,7 +258,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onOpenLinkModal();
                             }}
-                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
@@ -233,7 +278,7 @@ const StatusTile: React.FC<{
                                     onOpenLinkModal?.();
                                 }
                             }}
-                            className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95"
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
@@ -249,7 +294,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-slate-200/80 dark:border-slate-700 shadow-sm"
+                            className="p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95"
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
@@ -470,7 +515,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setSummaryRealtime(val);
                                             setSummaryRealtimeTs(getDetailedTimestamp());
                                             addUpdate('summary-realtime', 'Realtime Doanh Thu', 'BC Tổng hợp');
-                                        } else setErrors(p => ({...p, summaryRealtime: 'Sai định dạng báo cáo Realtime.'}));
+                                            return true;
+                                        } else {
+                                            setErrors(p => ({...p, summaryRealtime: 'Sai định dạng báo cáo Realtime.'}));
+                                            return false;
+                                        }
                                     }}
                                     onClear={(title) => {
                                         setSummaryRealtime('');
@@ -502,7 +551,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                                     .then(({ skippedNames }) => notifySkippedNames(skippedNames))
                                                     .catch(err => { console.error('[DataUpdater] Lỗi chia sẻ Summary Luỹ kế:', err); toast.error('Dán thành công cục bộ nhưng lỗi khi chia sẻ lên Kho — thử dán lại.'); });
                                             }
-                                        } else setErrors(p => ({...p, summaryLuyKe: 'Sai định dạng báo cáo Luỹ kế.'}));
+                                            return true;
+                                        } else {
+                                            setErrors(p => ({...p, summaryLuyKe: 'Sai định dạng báo cáo Luỹ kế.'}));
+                                            return false;
+                                        }
                                     }}
                                     onClear={(title) => {
                                         setSummaryLuyKe('');
@@ -547,7 +600,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionRealtimeTs(getDetailedTimestamp());
                                             addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
                                             if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
-                                        } else setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
+                                            return true;
+                                        } else {
+                                            setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
+                                            return false;
+                                        }
                                     }}
                                     onClear={(title) => {
                                         setCompetitionRealtime('');
@@ -580,7 +637,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                                     .then(({ skippedNames }) => notifySkippedNames(skippedNames))
                                                     .catch(err => { console.error('[DataUpdater] Lỗi chia sẻ Thi đua Luỹ kế:', err); toast.error('Dán thành công cục bộ nhưng lỗi khi chia sẻ lên Kho — thử dán lại.'); });
                                             }
-                                        } else setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
+                                            return true;
+                                        } else {
+                                            setErrors(p => ({...p, competitionLuyKe: 'Sai định dạng Thi đua Luỹ kế.'}));
+                                            return false;
+                                        }
                                     }}
                                     onClear={(title) => {
                                         setCompetitionLuyKe('');

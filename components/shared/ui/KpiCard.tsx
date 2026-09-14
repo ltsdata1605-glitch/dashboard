@@ -83,6 +83,7 @@ export interface KpiCardProps {
     /** 0-100, hiển thị thanh tiến độ khi có giá trị */
     progressPercent?: number;
     isGood?: boolean;
+    badge?: React.ReactNode;
 }
 
 /**
@@ -91,15 +92,21 @@ export interface KpiCardProps {
  * cả 4 khu vực (Root + features/*). Khác với `StatCard` (đơn giản hơn, không progress/gradient):
  * dùng KpiCard khi cần thể hiện tiến độ so với mục tiêu.
  */
-export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue, progressPercent, isGood = true }) => {
+export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue, progressPercent, isGood = true, badge }) => {
     const isClickable = !!onClick;
-    const style = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
+    const normalStyle = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
+    // Khi không đạt (isGood === false): chuyển style sang cảnh báo rose/đỏ
+    const style = !isGood ? COLOR_STYLES['rose'] : normalStyle;
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
 
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-slate-900 overflow-hidden border border-slate-200 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
+            className={`relative flex flex-col justify-between h-full overflow-hidden border transition-all duration-300 group touch-feedback ${
+                !isGood
+                    ? 'bg-rose-50/20 dark:bg-rose-950/15 border-rose-300/80 dark:border-rose-800/70 shadow-xs shadow-rose-500/5 hover:border-rose-400'
+                    : `bg-white dark:bg-slate-900 border-slate-200 dark:border-white/[0.06] ${style.borderHover}`
+            } ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
             {/* Vạch nhận diện 3px — màu ĐẶC, không gradient, không bo góc. Cùng ngôn ngữ với
                 vạch trạng thái ở mép trái các bảng. */}
@@ -107,12 +114,19 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
 
             {/* Layout cho desktop (lg trở lên) */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">
-                {/* Hàng 1: Icon + Title (chiếm trọn chiều ngang, không bị Value chèn ép) */}
-                <div className="flex items-center gap-2 min-w-0">
-                    <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                        <Icon name={icon} size={3} />
+                {/* Hàng 1: Icon + Title + Badge cảnh báo nếu chưa đạt */}
+                <div className="flex items-center justify-between gap-1 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                            <Icon name={icon} size={3} />
+                        </div>
+                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
                     </div>
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate flex-1 min-w-0" title={title}>{title}</h3>
+                    {badge ? badge : (!isGood && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0 shadow-2xs">
+                            Chưa đạt
+                        </span>
+                    ))}
                 </div>
 
                 {/* Hàng 2: Giá trị chính (Value) */}
@@ -156,7 +170,12 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 </div>
                 
                 {/* Hàng 2: Title */}
-                <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 mb-0.5 w-full truncate">{title}</h3>
+                <div className="flex items-center justify-center gap-1 w-full mb-0.5">
+                    <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate">{title}</h3>
+                    {!isGood && (
+                        <span className="px-1 py-0.2 rounded text-[8px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">Chưa đạt</span>
+                    )}
+                </div>
                 
                 {/* Hàng 3: Value */}
                 <div className="my-0.5 min-w-0 w-full overflow-hidden shrink-0">

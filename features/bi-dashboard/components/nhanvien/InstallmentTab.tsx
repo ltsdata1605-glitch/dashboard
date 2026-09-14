@@ -43,7 +43,7 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
     const oldRow = row.oldRow;
     // Vạch trạng thái 3px mép trái và màu số %T.Chậm — tính theo Target Trả chậm
     // (Đạt >=100% lục, Tiệm cận >=85% cam, Kém <85% đỏ)
-    const metricColor = isTotal ? undefined : getMetricColorByTarget(row.totalPercent, targetTraGop);
+    const metricColor = getMetricColorByTarget(row.totalPercent, targetTraGop);
     const stripeColor = isTotal ? undefined : metricColor;
 
     const totalDtColorClass = isTotal ? '' : (
@@ -455,7 +455,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                                                     {row.providers.map((p, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= 40 ? 'text-emerald-700' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}
+                                                             {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= effectiveTargetTraCham ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}
                                                         </React.Fragment>
                                                     ))}
                                                     <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>

@@ -4,6 +4,8 @@ import { BonusDesktopRow } from './BonusDesktopRow';
 import { BonusDisplayRow } from './BonusDisplayRow';
 import { getCellColor, isUpdatedToday, getRevenueForEmployee } from './bonusTableHelpers';
 import { getBonusForEmployee } from '../../../utils/bonusParser';
+import { shortenSupermarketName } from '../../../utils/dashboardHelpers';
+import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 
 interface BonusGroupListTableProps {
     displayList: BonusDisplayRow[];
@@ -23,6 +25,9 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
     displayList, sortField, sortDir, setSortField, setSortDir,
     highlightedEmployees, bonusData, revenueMap, onEmployeeClick, f, supermarketName,
 }) => {
+    const safeName = shortenSupermarketName(supermarketName);
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
+    const targetQuyDoi = storedQuyDoi ?? 40;
     return (
         <table className="w-full border-collapse compact-export-table">
             <thead className="sticky top-0 z-10">
@@ -55,7 +60,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
                             >
                                 <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600`}>{item.sumDtqd ? f.format(item.sumDtqd) : '-'}</td>
-                                <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{item.sumHqqd ? item.sumHqqd.toFixed(0) + '%' : '-'}</td>
+                                <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700 ${item.sumHqqd ? (item.sumHqqd >= targetQuyDoi ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : ''}`} title={`Target Quy đổi: ${targetQuyDoi}%`}>{item.sumHqqd ? item.sumHqqd.toFixed(0) + '%' : '-'}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-black border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600 text-blue-700 dark:text-blue-400`}>{f.format(Math.ceil((item.sumErp || 0) / 1000))}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-black border-slate-200 dark:border-slate-700 text-orange-600 dark:text-orange-400`}>{f.format(Math.ceil((item.sumTnong || 0) / 1000))}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>-</td>
@@ -91,6 +96,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
                             getCellColor={getCellColor}
                             f={f}
                             supermarketName={supermarketName}
+                            targetQuyDoi={targetQuyDoi}
                         />
                     );
                 })}

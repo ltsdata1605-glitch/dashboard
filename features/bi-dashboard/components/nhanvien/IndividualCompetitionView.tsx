@@ -8,7 +8,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString, isSameEmployee } from '../../utils/nhanVienHelpers';
-import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
+import { getDefaultGroupLabel, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { getBonusForEmployee } from '../../utils/bonusParser';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
@@ -160,8 +160,14 @@ const EmployeeProfileCard: React.FC<{
     banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     groupedPerformanceData: GroupedPerformanceData;
-}> = ({ selectedEmployee, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
+}> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const safeName = shortenSupermarketName(supermarketName || '');
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
+    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 45);
+    const targetQuyDoi = storedQuyDoi ?? 40;
+    const targetTraGop = storedTraGop ?? 45;
+
     const { avatarSrc, uploadAvatar } = useEmployeeAvatar({
         employeeName: selectedEmployee.name,
         originalName: selectedEmployee.originalName,
@@ -281,12 +287,12 @@ const EmployeeProfileCard: React.FC<{
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DTLK: <strong className="text-sky-700">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
-                        <span>HQQĐ: <strong className="text-emerald-700">{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
+                        <span>HQQĐ: <strong className={((empRevenue?.hieuQuaQD || 0) * 100) >= targetQuyDoi ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-700 dark:text-rose-400 font-bold"} title={`Target Quy đổi: ${targetQuyDoi}%`}>{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Chậm</p>
-                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
+                    <span className={`js-kpi-value text-lg font-black block ${(empInstallment?.totalPercent || 0) >= targetTraGop ? "text-slate-800 dark:text-white" : "text-rose-700 dark:text-rose-400"}`} title={`Target Trả chậm: ${targetTraGop}%`}>{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-sky-700">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>

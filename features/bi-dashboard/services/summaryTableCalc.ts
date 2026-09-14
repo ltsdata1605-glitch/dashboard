@@ -202,6 +202,66 @@ export function buildSummaryTable(
         }
     });
 
+    // Chuẩn hoá / Bổ sung cột % TT (Tăng trưởng so với TB 3 tháng) vào sau cột TB 3 Tháng:
+    const dtckIndex = tempHeaders.indexOf('+/- DTCK Tháng (QĐ)');
+    if (dtckIndex !== -1 && !tempHeaders.includes('% TT')) {
+        tempHeaders[dtckIndex] = '% TT';
+    }
+
+    const tbIndex = tempHeaders.findIndex(h => h === 'TB 3 Tháng' || h === 'TB 3 THÁNG');
+    const curDtqdIndex = tempHeaders.indexOf('DTQĐ');
+
+    if (tbIndex !== -1 && !tempHeaders.includes('% TT')) {
+        tempHeaders.splice(tbIndex + 1, 0, '% TT');
+        tempRows = tempRows.map(row => {
+            const newRow = [...row];
+            const qVal = curDtqdIndex !== -1 ? parseNumber(row[curDtqdIndex]) : 0;
+            const tbVal = parseNumber(row[tbIndex]);
+            let ttStr = '—';
+            if (tbVal > 0) {
+                const pct = Math.round(((qVal - tbVal) / tbVal) * 1000) / 10;
+                ttStr = `${pct >= 0 ? '+' : ''}${pct}%`;
+            }
+            newRow.splice(tbIndex + 1, 0, ttStr);
+            return newRow;
+        });
+    } else if (tempHeaders.includes('% TT')) {
+        const ttIndex = tempHeaders.indexOf('% TT');
+        tempRows = tempRows.map(row => {
+            const newRow = [...row];
+            const rawVal = newRow[ttIndex];
+            if (rawVal != null && rawVal !== '' && rawVal !== '—') {
+                const str = String(rawVal).trim();
+                if (str.endsWith('%')) {
+                    const numPart = parseNumber(str);
+                    if (!isNaN(numPart) && numPart > 0 && !str.startsWith('+')) {
+                        newRow[ttIndex] = `+${str}`;
+                        return newRow;
+                    }
+                    newRow[ttIndex] = str;
+                    return newRow;
+                }
+                const n = parseNumber(str);
+                if (!isNaN(n)) {
+                    const rounded = Math.round(n * 10) / 10;
+                    newRow[ttIndex] = `${rounded >= 0 ? '+' : ''}${rounded}%`;
+                    return newRow;
+                }
+            }
+            if (tbIndex !== -1 && curDtqdIndex !== -1) {
+                const qVal = parseNumber(newRow[curDtqdIndex]);
+                const tbVal = parseNumber(newRow[tbIndex]);
+                if (tbVal > 0) {
+                    const pct = Math.round(((qVal - tbVal) / tbVal) * 1000) / 10;
+                    newRow[ttIndex] = `${pct >= 0 ? '+' : ''}${pct}%`;
+                    return newRow;
+                }
+            }
+            newRow[ttIndex] = '—';
+            return newRow;
+        });
+    }
+
     let cleanedHeaders: string[] = [];
     let cleanedRows: any[][] = tempRows.map(() => []);
     tempHeaders.forEach((h, i) => {
@@ -215,8 +275,6 @@ export function buildSummaryTable(
         'Số lượng',
         'SL Realtime',
         '% Tỉ trọng',
-        '% TT',
-        '+/- DTCK Tháng (QĐ)',
         '+/- DTCK Tháng',
         'DT TRẢ GÓP',
         'DT Trả Góp',
@@ -239,7 +297,9 @@ export function buildSummaryTable(
         // TRẢ CHẬM
         'Tỷ Trọng Trả Góp', 'Tỷ Trọng Trả Chậm', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm', 'Tỷ lệ duyệt',
         // TRUNG BÌNH 3 THÁNG
-        'TB 3 Tháng', 'TB 3 THÁNG'
+        'TB 3 Tháng', 'TB 3 THÁNG',
+        // TĂNG TRƯỞNG VS TB 3 THÁNG
+        '% TT'
     ];
     
     const finalH: string[] = [];
@@ -288,6 +348,21 @@ export function buildSummaryTable(
                 if (idx === nameIndexInFinal) return 'Tổng';
                 return singleRow[idx];
             });
+        } else {
+            const ttFinalIdx = finalH.indexOf('% TT');
+            const tbFinalIdx = finalH.findIndex(h => h === 'TB 3 Tháng' || h === 'TB 3 THÁNG');
+            const dtqdFinalIdx = finalH.indexOf('DTQĐ');
+            if (ttFinalIdx !== -1 && tbFinalIdx !== -1 && dtqdFinalIdx !== -1) {
+                const currentVal = tRow[ttFinalIdx];
+                if (!currentVal || currentVal === '—' || currentVal === '0%' || currentVal === '0') {
+                    const qVal = parseNumber(tRow[dtqdFinalIdx]);
+                    const tbVal = parseNumber(tRow[tbFinalIdx]);
+                    if (tbVal > 0) {
+                        const pct = Math.round(((qVal - tbVal) / tbVal) * 1000) / 10;
+                        tRow[ttFinalIdx] = `${pct >= 0 ? '+' : ''}${pct}%`;
+                    }
+                }
+            }
         }
         tempRows.push(tRow);
     }
