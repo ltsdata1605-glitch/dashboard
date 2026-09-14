@@ -329,7 +329,7 @@ export function getStickerPreviewStyles({
                       left: 52.4%;
                       top: 22.5%;
                       width: 35.0%;
-                      height: 23.0%;
+                      height: 19.5%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -355,7 +355,7 @@ export function getStickerPreviewStyles({
                       height: 23.5%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: center;
+                      justify-content: flex-start;
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
@@ -374,9 +374,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 46.0%;
+                       top: 42.5%;
                        width: 45.4%;
-                       height: 17.0%;
+                       height: 15.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -386,7 +386,7 @@ export function getStickerPreviewStyles({
                       font-weight: bold;
                       font-size: 7.6cqw;
                       text-transform: uppercase;
-                      line-height: 1.2;
+                      line-height: 1.15;
                       color: #000;
                       background: transparent;
                       outline: none;
@@ -399,7 +399,7 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 68.5%;
+                       top: 67.5%;
                        width: 45.4%;
                        height: 6.5%;
                        display: flex;
@@ -547,7 +547,7 @@ export function getStickerPreviewStyles({
                       left: 52.4%;
                       top: 22.5%;
                       width: 35.0%;
-                      height: 23.0%;
+                      height: 19.5%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -571,7 +571,7 @@ export function getStickerPreviewStyles({
                        height: 23.5%;
                        display: flex;
                        flex-direction: column;
-                       justify-content: center;
+                       justify-content: flex-start;
                        align-items: flex-start;
                        text-align: left;
                        font-family: 'UTM Avo', sans-serif;
@@ -588,9 +588,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right {
                        position: absolute;
                        left: 52.4%;
-                       top: 46.0%;
+                       top: 42.5%;
                        width: 45.4%;
-                       height: 17.0%;
+                       height: 15.0%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
@@ -600,7 +600,7 @@ export function getStickerPreviewStyles({
                        font-weight: bold;
                        font-size: 7.6cqw;
                        text-transform: uppercase;
-                       line-height: 1.2;
+                       line-height: 1.15;
                        color: #000;
                        white-space: nowrap;
                        word-break: normal;
@@ -611,7 +611,7 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-bottom-right-sub {
                        position: absolute;
                        left: 52.4%;
-                       top: 68.5%;
+                       top: 67.5%;
                        width: 45.4%;
                        height: 6.5%;
                        display: flex;
