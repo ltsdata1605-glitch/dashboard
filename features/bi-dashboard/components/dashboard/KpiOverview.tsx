@@ -7,6 +7,8 @@ import {
     computeHqqd,
     computeMonthlyTarget,
     computeMonthlyQdPercent,
+    computeDayTimeRatio,
+    computeRealtimeProjected,
     percentOf,
     DEFAULT_HQQD_TARGET,
     DEFAULT_TRA_CHAM_TARGET,
@@ -64,13 +66,18 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         }
     }, [editingTargetType]);
 
+    const [currentTime, setCurrentTime] = useState(() => new Date());
+    useEffect(() => {
+        if (!isRealtime) return;
+        const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(interval);
+    }, [isRealtime]);
+
     // --- 1. Target DTQĐ ---
     const totalVuotTroi = resolveDailyTarget(
         activeSupermarket, customDTQDTargets, supermarketDailyTargets,
         () => Object.values(supermarketDailyTargets).reduce<number>((sum, value) => sum + Number(value), 0)
     );
-
-    const htTargetVuotTroi = percentOf(dtqd, totalVuotTroi);
 
     const renderGrowth = (val: string | undefined) => {
         if (!val || val === 'N/A' || val === '0%') return null;
@@ -86,28 +93,13 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         );
     };
 
-    const totalVuotTroiMonthly = computeMonthlyTarget(isRealtime, activeSupermarket, supermarketMonthlyTargets);
+    // Quỹ thời gian trong ngày (từ 8h00 đến 21h30) cho Realtime
+    const dayTimeRatio = computeDayTimeRatio(currentTime);
 
-    const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD, dtqd);
-    const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
-    const secondaryLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
-    const secondaryTargetStr = isRealtime
-        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
-        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
-
-    // --- 3. Target HQQĐ & TRẢ CHẬM (Đồng bộ tuyệt đối với TargetHero) ---
-    const currentQuyDoiTarget = (safeName && storedQuyDoi !== undefined && storedQuyDoi !== null)
-        ? storedQuyDoi
-        : resolveRateTarget(activeSupermarket, customHQQDTargets, targets.quyDoi, DEFAULT_HQQD_TARGET);
-
-    const currentTraGopTarget = (safeName && storedTraGop !== undefined && storedTraGop !== null)
-        ? storedTraGop
-        : resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
-
-    // --- 2. DT THỰC (Không cần target, hiển thị Doanh thu Dự kiến) ---
-    // Công thức: (DT THỰC / (số ngày đã qua - 1)) * số ngày của tháng
-    const now = new Date();
-    let passedDays = Math.max(1, now.getDate() - 1);
+    // --- 2. DT THỰC (Hiển thị Doanh thu Dự kiến) ---
+    // Realtime: Dự kiến dựa trên quỹ thời gian ngày (8h00 - 21h30)
+    // Luỹ kế: (DT THỰC / (số ngày đã qua - 1)) * số ngày của tháng
+    let passedDays = Math.max(1, currentTime.getDate() - 1);
     if (summaryLuyKeData) {
         const matchDay = summaryLuyKeData.match(/đến ngày\s*(\d{1,2})/i);
         if (matchDay && matchDay[1]) {
@@ -117,19 +109,44 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
             }
         }
     }
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const dtThucDuKien = !isRealtime
-        ? (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk)
-        : (dtDuKien > 0 ? dtDuKien : dtlk);
+    const daysInMonth = new Date(currentTime.getFullYear(), currentTime.getMonth() + 1, 0).getDate();
+
+    const dtThucDuKien = isRealtime
+        ? computeRealtimeProjected(dtlk, dayTimeRatio)
+        : (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk);
 
     const dtThucDuKienStr = dtThucDuKien > 0
         ? `${roundUp(dtThucDuKien).toLocaleString('vi-VN')} Tr`
         : '—';
 
-    // Dự kiến DTQĐ (nếu chưa có sẵn từ kpiData, ước tính theo số ngày trong tháng tương tự DT Thực)
-    const resolvedDtDuKienQD = dtDuKienQD > 0
-        ? dtDuKienQD
-        : (!isRealtime && passedDays > 0 && dtqd > 0 ? Math.round((dtqd / passedDays) * daysInMonth) : 0);
+    // --- 3. Dự kiến DTQĐ ---
+    // Realtime: Dự kiến DTQĐ dựa theo quỹ thời gian ngày
+    // Luỹ kế: ưu tiên kpiData.dtDuKienQD hoặc ước tính theo số ngày trong tháng
+    const resolvedDtDuKienQD = isRealtime
+        ? computeRealtimeProjected(dtqd, dayTimeRatio)
+        : (dtDuKienQD > 0 ? dtDuKienQD : (passedDays > 0 && dtqd > 0 ? Math.round((dtqd / passedDays) * daysInMonth) : 0));
+
+    const totalVuotTroiMonthly = computeMonthlyTarget(isRealtime, activeSupermarket, supermarketMonthlyTargets);
+    const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD, dtqd);
+
+    const htTargetVuotTroi = totalVuotTroi > 0
+        ? (resolvedDtDuKienQD / totalVuotTroi) * 100
+        : percentOf(dtqd, totalVuotTroi);
+
+    const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
+    const secondaryLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
+    const secondaryTargetStr = isRealtime
+        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
+        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
+
+    // --- 4. Target HQQĐ & TRẢ CHẬM (Đồng bộ tuyệt đối với TargetHero) ---
+    const currentQuyDoiTarget = (safeName && storedQuyDoi !== undefined && storedQuyDoi !== null)
+        ? storedQuyDoi
+        : resolveRateTarget(activeSupermarket, customHQQDTargets, targets.quyDoi, DEFAULT_HQQD_TARGET);
+
+    const currentTraGopTarget = (safeName && storedTraGop !== undefined && storedTraGop !== null)
+        ? storedTraGop
+        : resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
 
     const hasDkAndTarget = resolvedDtDuKienQD > 0 && !!secondaryTargetStr;
     const dtqdTrendLabel = hasDkAndTarget

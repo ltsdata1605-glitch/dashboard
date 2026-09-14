@@ -8,6 +8,8 @@ import {
     computeMonthlyQdPercent,
     computeDtThucProgress,
     percentOf,
+    computeDayTimeRatio,
+    computeRealtimeProjected,
     ALL_STORES_KEY,
     type TargetOverrides,
 } from './kpiOverviewCalc';
@@ -284,6 +286,43 @@ describe('Đồng bộ KPI Tổng quan sang Cấu hình TargetHero', () => {
         const daysInMonth = 30;
         const monthlyTarget = dailyTarget * daysInMonth;
         expect(monthlyTarget).toBe(30000);
+    });
+});
+
+describe('computeDayTimeRatio & computeRealtimeProjected (Realtime dự kiến theo giờ trong ngày)', () => {
+    it('trước giờ mở cửa (trước 8h00) ⇒ ratio = 0, dự kiến bằng doanh thu hiện tại', () => {
+        const d = new Date(2026, 8, 14, 7, 30); // 7h30
+        const ratio = computeDayTimeRatio(d, '08:00', '21:30');
+        expect(ratio).toBe(0);
+        expect(computeRealtimeProjected(100, ratio)).toBe(100);
+    });
+
+    it('sau giờ đóng cửa (sau 21h30) ⇒ ratio = 1, dự kiến bằng doanh thu hiện tại', () => {
+        const d = new Date(2026, 8, 14, 22, 0); // 22h00
+        const ratio = computeDayTimeRatio(d, '08:00', '21:30');
+        expect(ratio).toBe(1);
+        expect(computeRealtimeProjected(126, ratio)).toBe(126);
+    });
+
+    it('giữa ngày (ví dụ 14h45 = 50% quỹ thời gian 8h00-21h30)', () => {
+        // 8h00 = 480m, 21h30 = 1290m, tổng = 810m.
+        // 480 + 405 = 885m = 14h45.
+        const d = new Date(2026, 8, 14, 14, 45);
+        const ratio = computeDayTimeRatio(d, '08:00', '21:30');
+        expect(ratio).toBe(0.5);
+        // Revenue 100 Tr at 50% day => 200 Tr
+        expect(computeRealtimeProjected(100, ratio)).toBe(200);
+    });
+
+    it('tính dự kiến làm tròn lên Math.ceil', () => {
+        // 126 Tr / 0.59 = 213.559... -> 214
+        expect(computeRealtimeProjected(126, 0.59)).toBe(214);
+        // 175 Tr / 0.59 = 296.61... -> 297
+        expect(computeRealtimeProjected(175, 0.59)).toBe(297);
+    });
+
+    it('doanh thu = 0 ⇒ dự kiến = 0', () => {
+        expect(computeRealtimeProjected(0, 0.5)).toBe(0);
     });
 });
 

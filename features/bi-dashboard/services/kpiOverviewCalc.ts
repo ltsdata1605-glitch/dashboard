@@ -132,3 +132,34 @@ export function resolveRateTarget(
 
 export const DEFAULT_HQQD_TARGET = 40;
 export const DEFAULT_TRA_CHAM_TARGET = 45;
+
+/**
+ * Tỷ lệ thời gian bán hàng trong ngày (từ 8h00 đến 21h30).
+ * Trả về tỷ lệ từ 0 đến 1 (ví dụ: 0.59 = 59%).
+ */
+export function computeDayTimeRatio(
+    now: Date = new Date(),
+    startTime: string = '08:00',
+    endTime: string = '21:30'
+): number {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const startMinutes = (startH || 8) * 60 + (startM || 0);
+    const endMinutes = (endH || 21) * 60 + (endM || 30);
+    const totalMinutes = Math.max(1, endMinutes - startMinutes);
+
+    const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+    if (nowMinutes <= startMinutes) return 0;
+    if (nowMinutes >= endMinutes) return 1;
+    return (nowMinutes - startMinutes) / totalMinutes;
+}
+
+/**
+ * Tính doanh thu dự kiến trong ngày dựa vào tỷ lệ thời gian đã trôi qua.
+ * Ví dụ: dtlk = 126 Tr, timeRatio = 0.59 => Dự kiến = Math.round(126 / 0.59) = 214 Tr.
+ */
+export function computeRealtimeProjected(revenue: number, timeRatio: number): number {
+    if (revenue <= 0) return 0;
+    if (timeRatio <= 0 || timeRatio >= 1) return revenue;
+    return Math.round(revenue / timeRatio);
+}
