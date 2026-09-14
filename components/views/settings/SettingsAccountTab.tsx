@@ -94,38 +94,43 @@ export const SettingsAccountTab: React.FC = () => {
                                         {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
                                     </span>
                                 </div>
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2.5">{user?.email}</p>
 
-                                {/* Info Cards in Red Border Box - 4 thông tin nằm cùng 1 dòng */}
+                                {/* Info Line - Tất cả thông tin nằm trên 1 dòng, ngăn cách bởi | */}
                                 {!isEditingProfile && (
-                                    <div className="border-2 border-rose-200 dark:border-rose-800/30 rounded-lg p-3 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-0">
-                                        <div className="flex items-start gap-2 min-w-0">
-                                            <Icon name="map-pin" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                            <div className="min-w-0">
-                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Mã Kho</span>
-                                                <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-xs truncate block">{departmentId || 'Chưa đăng ký'}</span>
-                                            </div>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-0.5">
+                                        <div className="flex items-center gap-1.5">
+                                            <Icon name="map-pin" size={3.5} className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400">Mã Kho:</span>
+                                            <span className="font-bold text-slate-800 dark:text-white font-mono">{departmentId || 'Chưa đăng ký'}</span>
                                         </div>
-                                        <div className="flex items-start gap-2 min-w-0">
-                                            <Icon name="user-check" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                            <div className="min-w-0">
-                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Tên NV</span>
-                                                <span className="font-bold text-amber-700 dark:text-amber-400 text-xs truncate italic block">{employeeName || 'N/A'}</span>
-                                            </div>
+
+                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+
+                                        <div className="flex items-center gap-1.5">
+                                            <Icon name="user-check" size={3.5} className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400">Tên NV:</span>
+                                            <span className="font-bold text-amber-700 dark:text-amber-400 italic">{employeeName || 'N/A'}</span>
                                         </div>
-                                        <div className="flex items-start gap-2 min-w-0">
-                                            <Icon name="shield" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                            <div className="min-w-0">
-                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Chức năng</span>
-                                                <span className="font-bold text-slate-700 dark:text-slate-300 text-xs truncate block">{userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}</span>
-                                            </div>
+
+                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+
+                                        <div className="flex items-center gap-1.5">
+                                            <Icon name="shield" size={3.5} className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400">Chức năng:</span>
+                                            <span className="font-bold text-slate-800 dark:text-white">
+                                                {userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}
+                                            </span>
                                         </div>
-                                        <div className="flex items-start gap-2 min-w-0">
-                                            <Icon name="calendar" size={3.5} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                                            <div className="min-w-0">
-                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">Hạn</span>
-                                                <span className="font-bold text-emerald-700 dark:text-emerald-400 text-xs truncate block">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}</span>
-                                            </div>
+
+                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+
+                                        <div className="flex items-center gap-1.5">
+                                            <Icon name="calendar" size={3.5} className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400">Hạn:</span>
+                                            <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                                {expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}
+                                            </span>
                                         </div>
                                     </div>
                                 )}
