@@ -14,6 +14,7 @@ import {
     isUncollectedOrder,
     computeRbacFilteredData,
     computeUniqueFilterOptions,
+    formatCleanDisplayName,
 } from './dataUtils';
 
 /**
@@ -439,3 +440,28 @@ describe('isUncollectedOrder — điều kiện "đơn chưa thu tiền cần th
         expect(isUncollectedOrder(lowerCaseRow, config)).toBe(true);
     });
 });
+
+describe('formatCleanDisplayName', () => {
+    it('trả về fallback mặc định khi tên rỗng hoặc null', () => {
+        expect(formatCleanDisplayName(null)).toBe('Thành viên YCX');
+        expect(formatCleanDisplayName('')).toBe('Thành viên YCX');
+        expect(formatCleanDisplayName('   ')).toBe('Thành viên YCX');
+    });
+
+    it('loại bỏ phần ngoặc đơn lặp lại tên người dùng (MT2 - AM - SƠN (MT2 - AM - SƠN 21707))', () => {
+        expect(formatCleanDisplayName('MT2 - AM - SƠN (MT2 - AM - SƠN 21707)')).toBe('MT2 - AM - SƠN');
+    });
+
+    it('loại bỏ phần ngoặc đơn khi nội dung bên trong trùng khớp hoàn toàn', () => {
+        expect(formatCleanDisplayName('Nguyễn Văn A (Nguyễn Văn A)')).toBe('Nguyễn Văn A');
+    });
+
+    it('giữ nguyên mã số khi phần trong ngoặc không lặp lại tên', () => {
+        expect(formatCleanDisplayName('Trần Văn B (12345)')).toBe('Trần Văn B (12345)');
+    });
+
+    it('xử lý chuỗi lặp qua dấu gạch ngang (Sơn Lê - Sơn Lê)', () => {
+        expect(formatCleanDisplayName('Sơn Lê - Sơn Lê')).toBe('Sơn Lê');
+    });
+});
+

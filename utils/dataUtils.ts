@@ -998,3 +998,39 @@ export function getErrorCode(error: unknown): string | undefined {
 export function isAbortError(error: unknown): boolean {
     return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
 }
+
+/**
+ * Làm sạch tên hiển thị người dùng, loại bỏ phần trùng lặp (ví dụ: Google account có dạng "Tên (Tên mã_số)" hoặc "Tên (Tên)")
+ * Ví dụ: "MT2 - AM - SƠN (MT2 - AM - SƠN 21707)" -> "MT2 - AM - SƠN"
+ */
+export function formatCleanDisplayName(name?: string | null, fallback = 'Thành viên YCX'): string {
+    if (!name || typeof name !== 'string') return fallback;
+    let clean = name.replace(/\s+/g, ' ').trim();
+    if (!clean) return fallback;
+
+    // Trường hợp 1: "Outer Name (Inner Name)" trong đó Inner Name trùng hoặc lặp lại Outer Name
+    const parenMatch = clean.match(/^(.*?)\s*\((.*?)\)$/);
+    if (parenMatch) {
+        const outer = parenMatch[1].trim();
+        const inner = parenMatch[2].trim();
+        const outerLower = outer.toLowerCase();
+        const innerLower = inner.toLowerCase();
+
+        if (
+            innerLower === outerLower ||
+            innerLower.startsWith(outerLower) ||
+            outerLower.startsWith(innerLower)
+        ) {
+            clean = outer;
+        }
+    }
+
+    // Trường hợp 2: "Tên - Tên" trùng lặp
+    const dashParts = clean.split(/\s*[-–—]\s*/);
+    if (dashParts.length === 2 && dashParts[0].toLowerCase() === dashParts[1].toLowerCase()) {
+        clean = dashParts[0];
+    }
+
+    return clean || fallback;
+}
+

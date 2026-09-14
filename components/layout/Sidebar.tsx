@@ -29,6 +29,7 @@ import {
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
+import { formatCleanDisplayName } from '../../utils/dataUtils';
 
 interface NavSubItem {
     id: string;
@@ -372,7 +373,7 @@ export default function Sidebar() {
                             }}
                             className="flex flex-col overflow-hidden whitespace-nowrap text-left"
                         >
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{user?.displayName || (isDemoMode ? "Tài khoản Thử nghiệm" : "Guest")}</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{formatCleanDisplayName(user?.displayName, isDemoMode ? "Tài khoản Thử nghiệm" : "Guest")}</span>
                             <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
                         </motion.div>
                     </Button>

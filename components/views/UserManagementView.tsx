@@ -7,7 +7,7 @@ import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { adminUpdateUser, listManagedUsers, AdminRole } from '../../services/adminUserService';
-import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
+import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
 interface TimestampLike {
@@ -471,7 +471,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${listMode === 'expired' || req.status === 'expired' ? 'bg-rose-500' : req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate leading-tight">{req.displayName}</h3>
+                                                <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate leading-tight">{formatCleanDisplayName(req.displayName)}</h3>
                                                 <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{req.email}</p>
                                             </div>
                                             <div className="shrink-0">
