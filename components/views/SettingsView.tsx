@@ -6,10 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '../shared/ui/Button';
 import UserManagementView from './UserManagementView';
 import { SettingsAccountTab } from './settings/SettingsAccountTab';
-import { SettingsDataTab } from './settings/SettingsDataTab';
 import { useAuth } from '../../contexts/AuthContext';
 
-type SettingsTab = 'data' | 'account' | 'approval_link';
+type SettingsTab = 'account' | 'approval_link';
 
 const SettingsView: React.FC = () => {
     const { userRole } = useAuth();
@@ -27,8 +26,7 @@ const SettingsView: React.FC = () => {
 
     const tabs = [
         { id: 'account', label: 'Tài Khoản', icon: 'user' },
-        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : []),
-        { id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' }
+        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : [])
     ];
 
     return (
@@ -62,7 +60,7 @@ const SettingsView: React.FC = () => {
                     <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-3 sm:p-8 rounded-xl">
                         <AnimatePresence mode="wait">
                             {activeTab === 'approval_link' && (
-                                <motion.div 
+                                <motion.div
                                     key="approval_link"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -72,20 +70,6 @@ const SettingsView: React.FC = () => {
                                     <div className="-m-6 sm:-m-8">
                                         <UserManagementView isEmbedded={true} />
                                     </div>
-                                </motion.div>
-                            )}
-
-
-
-                            {activeTab === 'data' && (
-                                <motion.div 
-                                    key="data"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
-                                >
-                                    <SettingsDataTab />
                                 </motion.div>
                             )}
 
