@@ -41,9 +41,12 @@ export function resolveDailyTarget(
         const own = overrides?.[ALL_STORES_KEY];
         if (own !== undefined && own > 0) return own;
 
-        const storeKeys = Object.keys(defaultTargets);
+        const storeKeys = Object.keys(defaultTargets).filter(k => k !== ALL_STORES_KEY);
         if (storeKeys.length > 0) {
             return storeKeys.reduce((acc, k) => acc + (overrides?.[k] ?? defaultTargets[k] ?? 0), 0);
+        }
+        if (defaultTargets[ALL_STORES_KEY] !== undefined && defaultTargets[ALL_STORES_KEY] > 0) {
+            return defaultTargets[ALL_STORES_KEY];
         }
         return fallbackWhenNoStores();
     }
@@ -71,7 +74,12 @@ export function computeMonthlyTarget(
 ): number {
     if (isRealtime || !monthlyTargets) return 0;
     if (activeSupermarket === ALL_STORES_KEY) {
-        return Object.values(monthlyTargets).reduce<number>((sum, v) => sum + Number(v), 0);
+        if (monthlyTargets[ALL_STORES_KEY] !== undefined && monthlyTargets[ALL_STORES_KEY] > 0) {
+            return monthlyTargets[ALL_STORES_KEY];
+        }
+        return Object.entries(monthlyTargets)
+            .filter(([k]) => k !== ALL_STORES_KEY)
+            .reduce<number>((sum, [_, v]) => sum + Number(v), 0);
     }
     return monthlyTargets[activeSupermarket] || 0;
 }

@@ -129,147 +129,6 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const hqqdIsGood = hqqd >= currentQuyDoiTarget;
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
 
-    // --- Bắt đầu chỉnh sửa trực tiếp không popup ---
-    const startInlineEditing = (type: TargetType) => {
-        setEditingTargetType(type);
-        const now = new Date();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        let val = '';
-        if (type === 'dtQd') {
-            const currentVal = isRealtime
-                ? (totalVuotTroi > 0 ? totalVuotTroi : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly / daysInMonth : 0))
-                : (totalVuotTroiMonthly > 0 ? totalVuotTroiMonthly : (totalVuotTroi > 0 ? totalVuotTroi * daysInMonth : 0));
-            val = currentVal > 0 ? Math.round(currentVal).toString() : '';
-        } else if (type === 'hqqd') {
-            val = currentQuyDoiTarget.toString();
-        } else if (type === 'traCham') {
-            val = currentTraGopTarget.toString();
-        }
-        setEditingValue(val);
-    };
-
-    // --- Lưu mục tiêu khi Enter hoặc Blur ---
-    const handleSaveInlineTarget = async () => {
-        if (!editingTargetType) return;
-        const currentType = editingTargetType;
-        const valToSave = editingValue;
-        setEditingTargetType(null);
-
-        const parsed = parseFloat(valToSave.replace(/,/g, ''));
-        if (isNaN(parsed) || parsed < 0) return;
-
-        const now = new Date();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-        if (currentType === 'dtQd') {
-            const monthlyVal = isRealtime ? parsed * daysInMonth : parsed;
-            const dailyVal = isRealtime ? parsed : (parsed > 0 ? parsed / daysInMonth : 0);
-
-            // Đồng bộ vào targethero-${safeName}-total (Cấu hình Target DTQĐ)
-            const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKeData || '', activeSupermarket);
-            if (baseMonthTarget > 0 && safeName) {
-                const ratio = Math.round((monthlyVal / baseMonthTarget) * 100);
-                const clampedRatio = Math.max(0, Math.min(300, ratio));
-                setStoredTotalTarget(clampedRatio);
-                await db.set(`targethero-${safeName}-total`, clampedRatio);
-                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: `targethero-${safeName}-total` } }));
-            } else {
-                setCustomDTQDTargets(prev => ({ ...(prev || {}), [activeSupermarket]: dailyVal }));
-            }
-            // Xoá override riêng để KpiOverview và TargetHero dùng chung 1 nguồn đồng bộ
-            setCustomDTQDTargets(prev => {
-                const copy = { ...(prev || {}) };
-                delete copy[activeSupermarket];
-                return copy;
-            });
-            toast.success(`Đã đồng bộ Target DTQĐ: ${parsed} Tr`, { icon: '🎯', duration: 2500 });
-        } else if (currentType === 'hqqd') {
-            // Target Quy đổi: Đồng bộ vào targethero-${safeName}-quydoi
-            if (safeName) {
-                setStoredQuyDoi(parsed);
-                await db.set(`targethero-${safeName}-quydoi`, parsed);
-                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: `targethero-${safeName}-quydoi` } }));
-            }
-            setCustomHQQDTargets(prev => {
-                const copy = { ...(prev || {}) };
-                delete copy[activeSupermarket];
-                return copy;
-            });
-            toast.success(`Đã đồng bộ Target Quy đổi (HQQĐ): ${parsed}%`, { icon: '🎯', duration: 2500 });
-        } else if (currentType === 'traCham') {
-            // Target Trả chậm: Đồng bộ vào targethero-${safeName}-tragop
-            if (safeName) {
-                setStoredTraGop(parsed);
-                await db.set(`targethero-${safeName}-tragop`, parsed);
-                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: `targethero-${safeName}-tragop` } }));
-            }
-            setCustomTraChamTargets(prev => {
-                const copy = { ...(prev || {}) };
-                delete copy[activeSupermarket];
-                return copy;
-            });
-            toast.success(`Đã đồng bộ Target Trả chậm: ${parsed}%`, { icon: '🎯', duration: 2500 });
-        }
-    };
-
-    // Component hiển thị ô nhập liệu trực tiếp (inline input)
-    const renderInlineInput = (type: TargetType, unit: string, themeColor: 'emerald' | 'sky' | 'indigo' | 'amber') => {
-        const borderCls = themeColor === 'emerald' ? 'border-emerald-500 ring-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-            : themeColor === 'sky' ? 'border-sky-500 ring-sky-500/20 text-sky-700 dark:text-sky-300'
-            : themeColor === 'indigo' ? 'border-indigo-500 ring-indigo-500/20 text-indigo-700 dark:text-indigo-300'
-            : 'border-amber-500 ring-amber-500/20 text-amber-700 dark:text-amber-300';
-        return (
-            <div
-                className={`inline-flex items-center gap-1 bg-white dark:bg-slate-800 px-1 py-0.5 rounded-md border ring-2 shadow-xs ${borderCls}`}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <input
-                    ref={inputRef}
-                    type="number"
-                    step="any"
-                    value={editingValue}
-                    onChange={(e) => setEditingValue(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleSaveInlineTarget();
-                        } else if (e.key === 'Escape') {
-                            e.preventDefault();
-                            setEditingTargetType(null);
-                        }
-                    }}
-                    onBlur={handleSaveInlineTarget}
-                    className="w-14 sm:w-16 px-1 py-0.2 text-right font-black text-xs bg-transparent outline-none tabular-nums"
-                    placeholder="0"
-                />
-                <span className="text-[10px] font-bold opacity-60 pr-0.5">{unit}</span>
-            </div>
-        );
-    };
-
-    // Component hiển thị giá trị có thể bấm chỉnh trực tiếp
-    const renderTargetDisplay = (type: TargetType, displayVal: string | undefined, themeColor: 'emerald' | 'sky' | 'indigo' | 'amber' | 'rose') => {
-        const hoverCls = themeColor === 'emerald' ? 'hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 dark:hover:border-emerald-700/60'
-            : themeColor === 'sky' ? 'hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:border-sky-300 dark:hover:border-sky-700/60'
-            : themeColor === 'indigo' ? 'hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:border-indigo-300 dark:hover:border-indigo-700/60'
-            : themeColor === 'rose' ? 'hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-300 dark:hover:border-rose-700/60'
-            : 'hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 dark:hover:border-amber-700/60';
-        return (
-            <button
-                type="button"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    startInlineEditing(type);
-                }}
-                title="Bấm để chỉnh sửa mục tiêu trực tiếp"
-                className={`group/val inline-flex items-center gap-1 px-1.5 py-0.5 -mr-1 rounded cursor-pointer border border-transparent transition-all ${hoverCls}`}
-            >
-                <span>{displayVal || 'Đặt MT'}</span>
-                <Pencil className="w-2.5 h-2.5 opacity-0 group-hover/val:opacity-100 transition-opacity shrink-0 text-slate-400 group-hover/val:text-current" />
-            </button>
-        );
-    };
-
     return (
         <div className="js-kpi-overview-container space-y-1.5 sm:space-y-2 lg:space-y-2.5">
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
@@ -293,9 +152,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title="DTQĐ"
                     progressPercent={Math.ceil(secondaryPct)}
                     isGood={dtqdIsGood}
-                    trendLabel={editingTargetType === 'dtQd' ? undefined : secondaryLabel}
-                    trendValue={editingTargetType === 'dtQd' ? renderInlineInput('dtQd', 'Tr', 'sky') : renderTargetDisplay('dtQd', secondaryTargetStr || '-', 'sky')}
-                    onClick={() => startInlineEditing('dtQd')}
+                    trendLabel={secondaryLabel}
+                    trendValue={secondaryTargetStr || '-'}
                 >
                     <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                         {roundUp(dtqd).toLocaleString('vi-VN')} Tr
@@ -308,9 +166,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title="HQQĐ"
                     progressPercent={hqqd > 0 ? Math.ceil((hqqd / currentQuyDoiTarget) * 100) : 0}
                     isGood={hqqdIsGood}
-                    trendLabel={editingTargetType === 'hqqd' ? undefined : 'Mục tiêu'}
-                    trendValue={editingTargetType === 'hqqd' ? renderInlineInput('hqqd', '%', 'indigo') : renderTargetDisplay('hqqd', `${currentQuyDoiTarget}%`, hqqdIsGood ? 'indigo' : 'rose')}
-                    onClick={() => startInlineEditing('hqqd')}
+                    trendLabel="Mục tiêu"
+                    trendValue={`${currentQuyDoiTarget}%`}
                 >
                     <div className="flex items-baseline gap-1">
                         <span className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
@@ -330,9 +187,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     title="Trả Chậm"
                     progressPercent={tyTrongTraGop > 0 ? Math.ceil((tyTrongTraGop / currentTraGopTarget) * 100) : 0}
                     isGood={traGopIsGood}
-                    trendLabel={editingTargetType === 'traCham' ? undefined : 'Mục tiêu'}
-                    trendValue={editingTargetType === 'traCham' ? renderInlineInput('traCham', '%', 'amber') : renderTargetDisplay('traCham', `${currentTraGopTarget}%`, traGopIsGood ? 'amber' : 'rose')}
-                    onClick={() => startInlineEditing('traCham')}
+                    trendLabel="Mục tiêu"
+                    trendValue={`${currentTraGopTarget}%`}
                 >
                     <div className="flex items-baseline gap-1">
                         <span className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
