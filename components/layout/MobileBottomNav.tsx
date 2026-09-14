@@ -45,7 +45,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
         { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
         { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
             { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: ArrowUpDown },
-        { id: 'settings', label: 'Cài đặt', icon: Settings },
+        { id: 'settings', label: 'Phân quyền', icon: Settings },
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle },
     ];
 

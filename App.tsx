@@ -127,7 +127,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-price-compare': { main: 'So sánh', highlight: 'Giá' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
 
-    'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },
+    'settings': { main: 'Phân Quyền &', highlight: 'Duyệt Yêu Cầu' },
     'help': { main: 'Giới', highlight: 'Thiệu' },
     'pending-approval': { main: 'Hồ Sơ', highlight: 'Quyền' },
 };

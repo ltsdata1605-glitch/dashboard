@@ -354,7 +354,7 @@ export default function Sidebar() {
                             if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
                         }}
                         className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
-                        title="Thông tin tài khoản"
+                        title="Phân Quyền & Duyệt Yêu Cầu"
                     >
                         <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
                             {user?.photoURL ? (
