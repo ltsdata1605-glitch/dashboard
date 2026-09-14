@@ -303,9 +303,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-top-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 22.5%;
+                      top: 21.5%;
                       width: 35.0%;
-                      height: 27.0%;
+                      height: 22.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -350,9 +350,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .input-content-bottom-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 50.5%;
+                      top: 51.5%;
                       width: 47.0%;
-                      height: 24.5%;
+                      height: 23.5%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -522,9 +522,9 @@ export function getStickerPreviewStyles({
                   .draw-ticket-block .display-content-top-left {
                       position: absolute;
                       left: 2.2%;
-                      top: 22.5%;
+                      top: 21.5%;
                       width: 35.0%;
-                      height: 27.0%;
+                      height: 22.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -565,9 +565,9 @@ export function getStickerPreviewStyles({
                    .draw-ticket-block .display-content-bottom-left {
                        position: absolute;
                        left: 2.2%;
-                       top: 50.5%;
+                       top: 51.5%;
                        width: 47.0%;
-                       height: 24.5%;
+                       height: 23.5%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
