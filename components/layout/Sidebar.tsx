@@ -297,8 +297,8 @@ export default function Sidebar() {
                             transition={{ duration: 0.2 }}
                             className="flex flex-col whitespace-nowrap"
                         >
-                            <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
-                            <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400 uppercase tracking-widest">Vibe Dashboard</span>
+                            <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Dashboard Report</span>
+                            <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400">Công cụ phân tích dữ liệu</span>
                         </motion.div>
                     </div>
                 </div>

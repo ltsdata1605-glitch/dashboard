@@ -73,7 +73,8 @@ const LoginView: React.FC = () => {
                     </div>
                 </div>
                 
-                <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
+                <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Dashboard Report</h1>
+                <p className="text-center text-sky-600 dark:text-sky-400 font-semibold text-xs mb-3">Công cụ phân tích dữ liệu</p>
                 <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để đồng bộ dữ liệu và cài đặt giữa các thiết bị một cách an toàn.</p>
 
                 {isInAppWebView && (
