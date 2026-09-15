@@ -22,16 +22,16 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     code: '1',
     footer: 'HÙNG VƯƠNG',
     contentTop: '<div style="font-size: 4.5cqw; line-height: 1.1;"><b>RÚT THĂM 19H</b></div><div style="font-size: 3.5cqw; line-height: 1.1;"><b>MIỄN PHÍ 370 SUẤT:</b></div>',
-    contentTopRight: '<div style="font-size: 7.6cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
+    contentTopRight: '<div style="font-size: 8cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
     contentBottom: '<div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 150 Bộ 3 hộp</b> <span style="font-weight: normal;">(75 Suất/ngày)</span></div><div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 8 Tủ sấy quần áo</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div><div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 8 Nồi cơm</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div>',
-    contentBottomRight: '2 MÁY GIẶT',
+    contentBottomRight: '<div style="font-size: 7.6cqw; line-height: 1.2;"><b>2 MÁY GIẶT</b></div>',
     contentBottomRightSub: '<div style="font-size: 3cqw; line-height: 1.4;">(1 suất/ ngày)</div>',
 };
 
-/** Entry lịch sử mặc định — luôn hiển thị ở trên cùng tab Lịch sử, không thể xoá. */
+/** Entry lịch sử mặc định — luôn hiển thị cố định ở trên cùng tab Lịch sử, không thể xoá. */
 export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     id: DEFAULT_HISTORY_ID,
-    timestamp: 0, // epoch 0, được ghim trên cùng danh sách
+    timestamp: 0, // epoch 0 → luôn nằm cuối khi sort theo thời gian
     label: 'Phiếu Rút Thăm — Mẫu mặc định',
     pageCount: 1000,
     stickerType: 'draw',
@@ -50,7 +50,7 @@ export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     showBarcode: false,
     manualPages: [],
     drawContentTopLeftSize: 4.5,
-    drawContentTopRightSize: 7.6,
+    drawContentTopRightSize: 8,
     drawContentBottomLeftSize: 2.9,
     drawContentBottomRightSize: 7.6,
     drawContentBottomRightSubSize: 3.0,
@@ -78,7 +78,7 @@ export function useStickerPrinterData() {
     const [drawAutoIncrement, setDrawAutoIncrement] = useState<boolean>(true);
 
     const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(4.5);
-    const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(7.6);
+    const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(8);
     const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.9);
     const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(7.6);
     const [drawContentBottomRightSubSize, setDrawContentBottomRightSubSize] = useState(3.0);
@@ -508,30 +508,43 @@ export function useStickerPrinterData() {
                                 { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
                             ]);
                             setDrawContentTopLeftSize(4.5);
-                            setDrawContentTopRightSize(7.6);
+                            setDrawContentTopRightSize(8);
                             setDrawContentBottomLeftSize(2.9);
                             setDrawContentBottomRightSize(7.6);
                             setDrawContentBottomRightSubSize(3.0);
                             setDrawTitleSize(4.3);
                         } else {
-                            // Ensure existing tickets have updated defaults: 2.9cqw for contentBottom, size 3 for contentBottomRightSub
+                            // Ensure existing tickets have updated defaults: 2.9cqw for contentBottom, size 8 for contentTopRight, size 7.6 for contentBottomRight, size 3 for contentBottomRightSub
                             setDrawTickets(savedState.drawTickets.map(t => ({
                                 ...t,
+                                contentTopRight: (t.contentTopRight && t.contentTopRight.trim())
+                                    ? t.contentTopRight.replace(/7\.6cqw/g, '8cqw')
+                                    : '<div style="font-size: 8cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
                                 contentBottom: t.contentBottom?.replace(/2\.6cqw/g, '2.9cqw') || t.contentBottom,
-                                contentBottomRight: '2 MÁY GIẶT',
+                                contentBottomRight: (t.contentBottomRight && t.contentBottomRight.trim())
+                                    ? t.contentBottomRight.replace(/8(\.0)?cqw/g, '7.6cqw')
+                                    : '<div style="font-size: 7.6cqw; line-height: 1.2;"><b>2 MÁY GIẶT</b></div>',
                                 contentBottomRightSub: (t.contentBottomRightSub && t.contentBottomRightSub.trim())
                                     ? t.contentBottomRightSub.replace(/2(\.0)?cqw/g, '3cqw')
                                     : '<div style="font-size: 3cqw; line-height: 1.4;">(1 suất/ ngày)</div>'
                             })));
                             if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
-                            if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
+                            if (savedState.drawContentTopRightSize != null) {
+                                setDrawContentTopRightSize(savedState.drawContentTopRightSize === 7.6 ? 8 : savedState.drawContentTopRightSize);
+                            } else {
+                                setDrawContentTopRightSize(8);
+                            }
                             if (savedState.drawContentBottomLeftSize != null) {
                                 setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize === 2.6 ? 2.9 : savedState.drawContentBottomLeftSize);
                             } else {
                                 setDrawContentBottomLeftSize(2.9);
                             }
                             if (savedState.drawContentBottomRightSize != null) {
-                                setDrawContentBottomRightSize(savedState.drawContentBottomRightSize === 8 ? 7.6 : savedState.drawContentBottomRightSize);
+                                setDrawContentBottomRightSize(
+                                    (savedState.drawContentBottomRightSize === 8 || savedState.drawContentBottomRightSize === 8.5)
+                                        ? 7.6
+                                        : savedState.drawContentBottomRightSize
+                                );
                             } else {
                                 setDrawContentBottomRightSize(7.6);
                             }
@@ -1208,7 +1221,7 @@ export function useStickerPrinterData() {
             setDrawTotalTickets(4000);
             setDrawAutoIncrement(true);
             setDrawContentTopLeftSize(4.5);
-            setDrawContentTopRightSize(7.6);
+            setDrawContentTopRightSize(8);
             setDrawContentBottomLeftSize(2.9);
             setDrawContentBottomRightSize(7.6);
             setDrawContentBottomRightSubSize(3.0);
@@ -1248,10 +1261,10 @@ export function useStickerPrinterData() {
             setDrawTotalTickets(4000);
             setDrawAutoIncrement(true);
             setDrawContentTopLeftSize(4.5);
-            setDrawContentTopRightSize(7.6);
-            setDrawContentBottomLeftSize(2.6);
-            setDrawContentBottomRightSize(8);
-            setDrawContentBottomRightSubSize(2.0);
+            setDrawContentTopRightSize(8);
+            setDrawContentBottomLeftSize(2.9);
+            setDrawContentBottomRightSize(7.6);
+            setDrawContentBottomRightSubSize(3.0);
             setDrawTitleSize(4.3);
             setDrawCodeSize(3.8);
             setDrawFooterSize(3.8);

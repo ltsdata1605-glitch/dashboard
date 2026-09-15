@@ -557,3 +557,112 @@ describe('isSupermarketMatch & findMatchingSupermarketKey — So khớp linh ho�
         expect(isSupermarketMatch('910 - ĐML_STR_STR - 99 Hùng Vương', 'Tổng')).toBe(false);
     });
 });
+
+describe('extractTlpvFromText & extractBillAndKhachFromText — Bóc tách TLPVTC, Bill bán & Lượt khách linh hoạt', () => {
+    it('bóc tách đúng định dạng 2 thẻ riêng biệt (không có dấu gạch chéo /) từ portal MWG mới', async () => {
+        const { extractTlpvFromText, extractBillAndKhachFromText } = await import('./dashboardHelpers');
+        const rawCard = [
+            'TLPVTC hôm nay',
+            '22.3%',
+            '334 bill   1,497 khách · 1/1 ST có máy đếm'
+        ].join('\n');
+
+        expect(extractTlpvFromText(rawCard)).toBe('22.3%');
+        const { bill, khach } = extractBillAndKhachFromText(rawCard);
+        expect(bill).toBe('334');
+        expect(khach).toBe('1,497');
+    });
+
+    it('bóc tách đúng khi các trường nằm trên nhiều dòng riêng biệt', async () => {
+        const { extractTlpvFromText, extractBillAndKhachFromText } = await import('./dashboardHelpers');
+        const rawCard = [
+            'TLPVTC hôm nay',
+            '22.3%',
+            '334 bill',
+            '1,497 khách',
+            '1/1 ST có máy đếm'
+        ].join('\n');
+
+        expect(extractTlpvFromText(rawCard)).toBe('22.3%');
+        const { bill, khach } = extractBillAndKhachFromText(rawCard);
+        expect(bill).toBe('334');
+        expect(khach).toBe('1,497');
+    });
+
+    it('bóc tách đúng khi có dấu phân cách tab hoặc dấu chấm/dấu gạch đứng', async () => {
+        const { extractTlpvFromText, extractBillAndKhachFromText } = await import('./dashboardHelpers');
+        const tabText = 'TLPVTC hôm nay\t22.3%\t334 bill\t1,497 khách';
+        expect(extractTlpvFromText(tabText)).toBe('22.3%');
+        expect(extractBillAndKhachFromText(tabText)).toEqual({ bill: '334', khach: '1,497' });
+
+        const pipeText = 'TLPVTC hôm nay | 22.3% | 334 bill | 1,497 khách';
+        expect(extractTlpvFromText(pipeText)).toBe('22.3%');
+        expect(extractBillAndKhachFromText(pipeText)).toEqual({ bill: '334', khach: '1,497' });
+    });
+
+    it('bóc tách chuẩn xác trong parseIndustryRealtimeData với định dạng portal MWG mới', async () => {
+        const { parseIndustryRealtimeData } = await import('./dashboardHelpers');
+        const fullReport = [
+            'Dashboards',
+            '09/2026',
+            'Lũy kế\tRealtime\tDT thực\tDT quy đổi',
+            'Siêu thị 910 - ĐML_STR_STR - 99 Hùng Vương',
+            'DT quy đổi',
+            '973',
+            '% HT target (QĐ)',
+            '51.1%',
+            'TT vs TB 3 tháng',
+            '+2.5%',
+            'DT dự kiến',
+            '33,660',
+            'TLPVTC hôm nay',
+            '22.3%',
+            '334 bill   1,497 khách · 1/1 ST có máy đếm',
+            'Tỉ trọng trả góp',
+            '41.2%',
+            'DT trả góp 284 / 689',
+            'NGÀNH HÀNG / NHÓM HÀNG',
+            'SỐ LƯỢNG',
+            'DOANH THU QĐ',
+            '13 - Điện thoại',
+            '19',
+            '325',
+            'Tổng (20 dòng)',
+            '300',
+            '973',
+            '100.0%',
+            '689'
+        ].join('\n');
+
+        const parsed = parseIndustryRealtimeData(fullReport);
+        expect(parsed.kpis?.tlpv).toBe('22.3%');
+        expect(parsed.kpis?.lbill).toBe('334');
+        expect(parsed.kpis?.lbillBH).toBe('334');
+        expect(parsed.kpis?.lkhach).toBe('1,497');
+        expect(parsed.kpis?.tyTrongTraGop).toBe('41.2%');
+        expect(parsed.totalRow?.[2]).toBe('689');
+        expect(parsed.totalRow?.[3]).toBe('973');
+    });
+
+    it('bóc tách chuẩn xác trong parseSummaryData với định dạng portal MWG mới', async () => {
+        const { parseSummaryData } = await import('./dashboardHelpers');
+        const summaryReport = [
+            'Doanh thu hợp nhất',
+            'Realtime',
+            'DT quy đổi\t973',
+            'TLPVTC hôm nay\t22.3%',
+            '334 bill\t1,497 khách',
+            'Tỉ trọng trả góp\t41.2%',
+            'Siêu thị',
+            'SỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tDOANH THU\tTARGET\t% HT TARGET (QĐ)\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '910 - ĐML_STR_STR - 99 Hùng Vương\t19\t973\t100.0%\t689\t953\t103%\t950\t+2.5%\t284\t41%'
+        ].join('\n');
+
+        const parsed = parseSummaryData(summaryReport);
+        expect(parsed.kpis.tlpv).toBe('22.3%');
+        expect(parsed.kpis.lbill).toBe('334');
+        expect(parsed.kpis.lbillBH).toBe('334');
+        expect(parsed.kpis.lkhach).toBe('1,497');
+    });
+});
+

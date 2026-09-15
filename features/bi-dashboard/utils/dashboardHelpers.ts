@@ -37,6 +37,61 @@ export const getDefaultGroupLabel = (metric: string): string =>
 import { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../../utils/dataUtils';
 export { roundUp, parseNumber, shortenName, shortenSupermarketName };
 
+// --- TLPVTC & BILL/KHÁCH EXTRACTORS ---
+
+/**
+ * Trích xuất TLPVTC (tỷ lệ phục vụ thành công) từ văn bản dán
+ * Hỗ trợ đa dạng format: có/không dấu %, có/không 'hôm nay'/'lũy kế'/'lk'/'ngày', có icon ?, khoảng trắng, v.v.
+ */
+export function extractTlpvFromText(text: string): string | null {
+    if (!text) return null;
+    const directMatch = text.match(/(?:TLPVTC|TLPV\s*Thành\s*công)(?:\s*(?:lũy kế|hôm nay|lk|ngày))?\s*(?:\?\s*)?[:\n\r\t ]*([\d,.]+)\s*(%?)/i);
+    if (directMatch) {
+        return directMatch[1].includes('%') ? directMatch[1] : `${directMatch[1]}%`;
+    }
+    const blockMatch = text.match(/(?:TLPVTC|TLPV\s*Thành\s*công)[\s\S]{1,150}?([\d,.]+)\s*%/i);
+    if (blockMatch) {
+        return `${blockMatch[1]}%`;
+    }
+    return null;
+}
+
+/**
+ * Trích xuất Lượt Bill và Lượt Khách từ thẻ TLPVTC hoặc văn bản dán
+ * Hỗ trợ các định dạng:
+ * - '334 bill / 1,497 khách'
+ * - '334 bill   1,497 khách' (hai thẻ riêng biệt như trên portal MWG mới)
+ * - '334 bill\n1,497 khách'
+ * - '334 bill | 1,497 khách'
+ * - '334 bill · 1,497 khách'
+ */
+export function extractBillAndKhachFromText(text: string): { bill: string | null; khach: string | null } {
+    if (!text) return { bill: null, khach: null };
+    let bill: string | null = null;
+    let khach: string | null = null;
+
+    const combined1 = text.match(/([\d,.]+)\s*bill\s*(?:[\/|·\n\r\t, -]+)\s*([\d,.]+)\s*khách/i);
+    const combined2 = text.match(/([\d,.]+)\s*khách\s*(?:[\/|·\n\r\t, -]+)\s*([\d,.]+)\s*bill/i);
+
+    if (combined1) {
+        bill = combined1[1];
+        khach = combined1[2];
+    } else if (combined2) {
+        khach = combined2[1];
+        bill = combined2[2];
+    } else {
+        const tlpvIdx = text.search(/TLPVTC|TLPV\s*Thành\s*công/i);
+        const searchScope = tlpvIdx !== -1 ? text.slice(tlpvIdx, tlpvIdx + 300) : text;
+
+        const bMatch = searchScope.match(/([\d,.]+)\s*(?:bill|lượt bill|hóa đơn)/i);
+        const kMatch = searchScope.match(/([\d,.]+)\s*(?:khách|lượt khách)/i);
+        if (bMatch) bill = bMatch[1];
+        if (kMatch) khach = kMatch[1];
+    }
+
+    return { bill, khach };
+}
+
 // --- DATA PARSERS ---
 
 export const parseSummaryData = (text: string) => {
@@ -91,15 +146,17 @@ export const parseSummaryData = (text: string) => {
         }
     }
     if (!kpis.tlpv) {
-        const m = text.match(/TLPVTC(?:\s+(?:lũy kế|hôm nay))?\s*[:\n\r\t ]*([\d,.]+%?)/i);
-        if (m) kpis.tlpv = m[1].includes('%') ? m[1] : `${m[1]}%`;
+        const tlpvVal = extractTlpvFromText(text);
+        if (tlpvVal) kpis.tlpv = tlpvVal;
     }
     if (!kpis.lbill || !kpis.lkhach || !kpis.lbillBH) {
-        const m = text.match(/([\d,.]+)\s*bill\s*\/\s*([\d,.]+)\s*khách/i);
-        if (m) {
-            kpis.lbill = m[1];
-            kpis.lbillBH = m[1];
-            kpis.lkhach = m[2];
+        const { bill, khach } = extractBillAndKhachFromText(text);
+        if (bill) {
+            kpis.lbill = bill;
+            kpis.lbillBH = bill;
+        }
+        if (khach) {
+            kpis.lkhach = khach;
         }
     }
     if (!kpis.lbillBH && kpis.lbill) {
@@ -1026,17 +1083,19 @@ export function parseNewPortalIndustryData(text: string) {
     }
 
     // 2. TLPVTC
-    const tlpvMatch = text.match(/TLPVTC(?:\s+(?:lũy kế|hôm nay))?\s*[:\n\r\t ]*([\d,.]+%?)/i);
-    if (tlpvMatch) {
-        portalKpis.tlpv = tlpvMatch[1].includes('%') ? tlpvMatch[1] : `${tlpvMatch[1]}%`;
+    const tlpvVal = extractTlpvFromText(text);
+    if (tlpvVal) {
+        portalKpis.tlpv = tlpvVal;
     }
 
     // 3. Bill & Khách
-    const billMatch = text.match(/([\d,.]+)\s*bill\s*\/\s*([\d,.]+)\s*khách/i);
-    if (billMatch) {
-        portalKpis.lbill = billMatch[1];
-        portalKpis.lbillBH = billMatch[1];
-        portalKpis.lkhach = billMatch[2];
+    const { bill, khach } = extractBillAndKhachFromText(text);
+    if (bill) {
+        portalKpis.lbill = bill;
+        portalKpis.lbillBH = bill;
+    }
+    if (khach) {
+        portalKpis.lkhach = khach;
     }
 
     // 4. Các chỉ số khác

@@ -662,7 +662,7 @@ const CompetitionTarget: React.FC<{
             <div className="flex justify-between items-center mb-2 px-1">
                 <div className="flex items-center gap-2">
                     <div className="w-1.5 h-3.5 bg-amber-600 rounded-full"></div>
-                    <h2 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target Thi đua</h2>
+                    <h2 className="text-xs sm:text-[13px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Thi đua</h2>
                     {totalEmployees > 0 && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                             {totalEmployees} NV

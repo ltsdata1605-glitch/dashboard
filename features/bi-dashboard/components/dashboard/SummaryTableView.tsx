@@ -26,12 +26,12 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
 
-    // D.THU (nhóm chính gồm THỰC, DTQĐ, D.KIẾN QĐ)
-    'DTLK': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DTQĐ': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    'DT Dự Kiến (QĐ)': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
-    '+/- DTCK Tháng (QĐ)': { label: 'D.THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    // DOANH THU (nhóm chính gồm THỰC, DTQĐ, DKQĐ)
+    'DTLK': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DTQĐ': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
     
     // HIỆU QUẢ (đổi indigo → emerald cho khớp quy ước %HT/hiệu quả toàn dự án, implementation_plan.md mục 61)
     'Target (QĐ)': { label: 'HIỆU QUẢ', bg: GROUP_TONE_BG, text: GROUP_TONE_TEXT },
@@ -92,7 +92,7 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'D.KIẾN QĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'DT TRẢ GÓP': 'DT<br/>TRẢ GÓP', 'DT Trả Góp': 'DT<br/>TRẢ GÓP', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'DKQĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'DT TRẢ GÓP': 'D.THU', 'DT Trả Góp': 'D.THU', 'DT Trả Gộp': 'D.THU', 'DTTRẢGÓP': 'D.THU', 'DT TRẢ CHẬM': 'D.THU', 'DT Trả Chậm': 'D.THU', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -311,8 +311,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
             <div className="w-full overflow-hidden">
                     {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}
-                    <div className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2">
-                        <table className="w-full min-w-max text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
+                    <div className="overflow-x-auto custom-scrollbar px-4 pb-4 pt-2">
+                        <table className="w-full min-w-full text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
                                 <tr className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider">

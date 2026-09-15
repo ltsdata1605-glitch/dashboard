@@ -130,13 +130,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 </div>
 
                 {/* Hàng 2: Giá trị chính (Value) */}
-                <div className="mt-1 mb-0.5">
+                <div className="my-1.5 min-w-0">
                     {children}
                 </div>
 
                 {/* Hàng 3: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
                 {(clampedProgress !== undefined || trendLabel || trendValue) && (
-                    <div className="mt-0.5 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
+                    <div className="mt-auto pt-1.5 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
                         {clampedProgress !== undefined && (
                             <div className="flex items-center gap-1.5">
                                 <div className={`flex-1 h-[3px] ${style.progressBg} overflow-hidden`}>

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isSameEmployee } from '../../../utils/nhanVienHelpers';
-import { getRevenueForEmployee } from './bonusTableHelpers';
+import { getRevenueForEmployee, computeTierThresholds, getCellColor, TierThresholds } from './bonusTableHelpers';
 import { getBonusForEmployee } from '../../../utils/bonusParser';
 import { RevenueRow } from '../../../types/nhanVienTypes';
 
@@ -134,6 +134,53 @@ describe('Employee Revenue Matching in Bonus Tab', () => {
             const result = getBonusForEmployee(mockBonusData, '111395');
             expect(result).toBeDefined();
             expect(result?.tong).toBe(8218441);
+        });
+    });
+
+    describe('computeTierThresholds & getCellColor (TOP 30%, BOT, Trung tính)', () => {
+        it('calculates average and top 30% cutoff correctly for a team of 10', () => {
+            const vals = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10];
+            const thresholds = computeTierThresholds(vals);
+            // sum = 550, avg = 55
+            expect(thresholds.avg).toBe(55);
+            // top 30% of 10 is 3 items -> index 2 -> value 80
+            expect(thresholds.top30).toBe(80);
+
+            // TOP 30%
+            expect(getCellColor(100, thresholds)).toContain('text-emerald-600');
+            expect(getCellColor(80, thresholds)).toContain('text-emerald-600');
+
+            // Trung tính (>= 55 and < 80)
+            expect(getCellColor(70, thresholds)).toContain('text-slate-700');
+            expect(getCellColor(60, thresholds)).toContain('text-slate-700');
+            expect(getCellColor(55, thresholds)).toContain('text-slate-700');
+
+            // BOT (< 55)
+            expect(getCellColor(50, thresholds)).toContain('text-rose-600');
+            expect(getCellColor(10, thresholds)).toContain('text-rose-600');
+        });
+
+        it('handles missing or empty data gracefully', () => {
+            const thresholds = computeTierThresholds([]);
+            expect(thresholds.avg).toBe(0);
+            expect(thresholds.top30).toBe(0);
+
+            expect(getCellColor(0, thresholds, false)).toContain('text-slate-400');
+            expect(getCellColor(0, thresholds, true)).toContain('text-slate-400');
+        });
+
+        it('excludes 0 values from average and top 30% cutoff calculation', () => {
+            // 4 valid values [100, 80, 60, 40] + two 0s
+            const vals = [100, 0, 80, 60, 0, 40];
+            const thresholds = computeTierThresholds(vals);
+            // 4 valid values: sum = 280, avg = 70
+            expect(thresholds.avg).toBe(70);
+            // top 30% of 4 is Math.ceil(1.2) = 2 items -> sorted[1] = 80
+            expect(thresholds.top30).toBe(80);
+
+            expect(getCellColor(100, thresholds)).toContain('text-emerald-600');
+            expect(getCellColor(80, thresholds)).toContain('text-emerald-600');
+            expect(getCellColor(60, thresholds)).toContain('text-rose-600'); // 60 < 70 (BOT)
         });
     });
 });

@@ -22,7 +22,7 @@ import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
-import { fetchSupermarketMap } from '../services/biSupermarketMapService';
+import { fetchSupermarketMap, clearSupermarketMap } from '../services/biSupermarketMapService';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
 
 // --- Validation ---
@@ -432,14 +432,73 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
     const handleClearAllData = async () => {
-        toast('Đang xoá dữ liệu...', { icon: 'ℹ️' });
-        await db.clearStore();
-        // Ghi log SAU khi xoá — audit-trail-log cũng nằm trong phạm vi clearStore() nên ghi
-        // trước sẽ bị xoá mất ngay, không còn dấu vết hành động vừa xảy ra.
-        toast.success('Đã xoá thành công! Các thiết lập đã được đặt về mặc định.');
+        toast('Đang xoá toàn bộ dữ liệu...', { icon: 'ℹ️' });
+        
+        // 1. Reset ngay lập tức toàn bộ state React của DataUpdater để giao diện sạch 100%
+        setSummaryRealtime('');
+        setSummaryLuyKe('');
+        setCompetitionRealtime('');
+        setCompetitionLuyKe('');
+        setSummaryRealtimeTs(null);
+        setSummaryLuyKeTs(null);
+        setCompetitionRealtimeTs(null);
+        setCompetitionLuyKeTs(null);
+        setLastUpdates([]);
+        setActiveSupermarket(null);
+        setErrors({});
+        setSupermarketNameToKho({});
 
-        // Broadcast that everything is gone so all listeners drop their cache
+        // 2. Xoá sạch bảng map siêu thị cả cục bộ và Firestore
+        try {
+            await clearSupermarketMap(user?.uid);
+            localStorage.setItem('bi_migrated_legacy_map', 'true');
+        } catch (e) {
+            console.warn('[DataUpdater] Lỗi xoá map siêu thị:', e);
+        }
+
+        // 3. Xoá sạch IndexedDB
+        await db.clearStore();
+
+        // 4. Nếu đã đăng nhập, xoá sạch cả doc lưu trên Firestore để Cloud Sync không đồng bộ ngược lại
+        if (user?.uid) {
+            try {
+                const { doc: firestoreDoc, deleteDoc } = await import('firebase/firestore');
+                const { db: firestoreDb } = await import('../../../services/firebase');
+                const biKeysToDelete = [
+                    'bi_summary-realtime',
+                    'bi_summary-luy-ke',
+                    'bi_competition-realtime',
+                    'bi_competition-luy-ke',
+                    'bi_summary-realtime-ts',
+                    'bi_summary-luy-ke-ts',
+                    'bi_competition-realtime-ts',
+                    'bi_competition-luy-ke-ts',
+                    'bi_last-updates-list',
+                    'biSupermarketMap',
+                ];
+                await Promise.all(
+                    biKeysToDelete.map(k => deleteDoc(firestoreDoc(firestoreDb, 'users', user.uid, 'configs', k)).catch(() => {}))
+                );
+
+                // Xoá luôn dữ liệu chia sẻ Firestore của các kho (nếu có quyền)
+                if (allowedKhos && allowedKhos.length > 0) {
+                    await Promise.all(
+                        allowedKhos.flatMap(maKho => [
+                            deleteDoc(firestoreDoc(firestoreDb, 'biData', maKho, 'reports', 'summaryLuyKe')).catch(() => {}),
+                            deleteDoc(firestoreDoc(firestoreDb, 'biData', maKho, 'reports', 'competitionLuyKe')).catch(() => {})
+                        ])
+                    );
+                }
+            } catch (err) {
+                console.warn('[DataUpdater] Lỗi xoá cloud configs:', err);
+            }
+        }
+
+        toast.success('Đã xoá thành công! Toàn bộ dữ liệu đã được làm mới sạch sẽ.');
+
+        // 5. Phát event để mọi subscriber trong ứng dụng reset về defaultValue
         window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
+        window.dispatchEvent(new CustomEvent('bi-supermarket-map-changed', { detail: { userId: user?.uid || 'guest', map: {} } }));
         setIsConfirmingClear(false);
     };
 
@@ -481,7 +540,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             )}
 
             <div className="relative z-10">
-                <Card title="Dữ Liệu Báo Cáo Cụm">
+                <Card title="DOANH THU & THI ĐUA CỤM">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {/* NHÓM BÁO CÁO TỔNG HỢP */}
                         <div>
@@ -578,7 +637,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     title="Mở Báo cáo Thi đua"
                                 >
                                     <div className="w-2 h-2 bg-emerald-500 rounded-sm group-hover:scale-110 transition-transform"></div>
-                                    <span>Thi đua Cụm</span>
+                                    <span>Thi đua</span>
                                     <span className="text-[11px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">↗</span>
                                 </a>
                             </div>
@@ -590,7 +649,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     placeholder="Dán dữ liệu Thi đua Realtime..."
                                     error={errors.competitionRealtime}
                                     linkUrl={getTileLink('competition-realtime', customLinks)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-realtime', 'Realtime', 'Thi đua Cụm')}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-realtime', 'Realtime', 'Thi đua')}
                                     icon={<SparklesIcon className="h-4 w-4" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
@@ -598,7 +657,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setErrors(p => ({...p, competitionRealtime: null}));
                                             setCompetitionRealtime(val);
                                             setCompetitionRealtimeTs(getDetailedTimestamp());
-                                            addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
+                                            addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi đua');
                                             if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                             return true;
                                         } else {
@@ -620,7 +679,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     placeholder="Dán dữ liệu Thi đua Luỹ kế..."
                                     error={errors.competitionLuyKe}
                                     linkUrl={getTileLink('competition-luyke', customLinks)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-luyke', 'Luỹ kế', 'Thi đua Cụm')}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('competition-luyke', 'Luỹ kế', 'Thi đua')}
                                     icon={<ChartBarIcon className="h-4 w-4" />}
                                     colorTheme="emerald"
                                     readOnly={isReadOnlySharedTile}
@@ -630,7 +689,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setErrors(p => ({...p, competitionLuyKe: null}));
                                             setCompetitionLuyKe(val);
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
-                                            addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
+                                            addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi đua');
                                             if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                             if (canManageSharedBiData && user) {
                                                 uploadCompetitionLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)
@@ -660,7 +719,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             <div id="supermarket-config-section" className="pt-2">
                 {activeSupermarket ? (
                     <Card
-                        title="Cấu hình siêu thị chi tiết"
+                        title="CẤU HÌNH SIÊU THỊ & NHÂN VIÊN"
                         actionButton={
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                                 {supermarkets.map((sm) => (

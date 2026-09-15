@@ -29,11 +29,12 @@ interface KpiOverviewProps {
     supermarketMonthlyTargets?: Record<string, number>;
     activeSupermarket: string;
     summaryLuyKeData?: string;
+    className?: string;
 }
 
 type TargetType = 'dtQd' | 'hqqd' | 'traCham';
 
-const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, summaryLuyKeData }) => {
+const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, summaryLuyKeData, className }) => {
 
     const dtlk = parseNumber(kpiData.dtlk);
     const dtqd = parseNumber(kpiData.dtqd);
@@ -172,7 +173,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
 
     return (
-        <div className="js-kpi-overview-container bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-2.5 sm:p-3 lg:p-3.5 rounded-none shadow-sm space-y-1.5 sm:space-y-2 lg:space-y-2.5">
+        <div className={`js-kpi-overview-container px-4 pt-1 pb-2 space-y-1.5 sm:space-y-2 lg:space-y-2.5 ${className || ''}`}>
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
             <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
                 <KpiCard
@@ -183,8 +184,13 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     trendValue={dtThucDuKienStr}
                     isGood={true}
                 >
-                    <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
-                        {roundUp(dtlk).toLocaleString('vi-VN')} Tr
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                            {roundUp(dtlk).toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[13px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
+                            Tr
+                        </span>
                     </div>
                 </KpiCard>
 
@@ -192,13 +198,17 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     icon="trending-up"
                     iconColor="sky"
                     title="DTQĐ"
-                    progressPercent={Math.ceil(secondaryPct)}
                     isGood={dtqdIsGood}
                     trendLabel={dtqdTrendLabel}
                     trendValue={dtqdTrendValue}
                 >
-                    <div className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
-                        {roundUp(dtqd).toLocaleString('vi-VN')} Tr
+                    <div className="flex items-baseline gap-1">
+                        <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                            {roundUp(dtqd).toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[13px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
+                            Tr
+                        </span>
                     </div>
                 </KpiCard>
 
@@ -206,17 +216,16 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     icon="activity"
                     iconColor={hqqdIsGood ? "indigo" : "rose"}
                     title="HQQĐ"
-                    progressPercent={hqqd > 0 ? Math.ceil((hqqd / currentQuyDoiTarget) * 100) : 0}
                     isGood={hqqdIsGood}
                     trendLabel="Mục tiêu"
                     trendValue={`${currentQuyDoiTarget}%`}
                 >
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                             {Math.ceil(hqqd)}%
                         </span>
                         {!hqqdIsGood && currentQuyDoiTarget > 0 && (
-                            <span className="text-[10px] sm:text-[11px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
+                            <span className="text-[11px] sm:text-[12px] lg:text-[13px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
                                 (-{Math.max(0, currentQuyDoiTarget - Math.ceil(hqqd))}%)
                             </span>
                         )}
@@ -227,17 +236,16 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     icon="credit-card"
                     iconColor={traGopIsGood ? "amber" : "rose"}
                     title="Trả Chậm"
-                    progressPercent={tyTrongTraGop > 0 ? Math.ceil((tyTrongTraGop / currentTraGopTarget) * 100) : 0}
                     isGood={traGopIsGood}
                     trendLabel="Mục tiêu"
                     trendValue={`${currentTraGopTarget}%`}
                 >
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                             {Math.round(tyTrongTraGop)}%
                         </span>
                         {!traGopIsGood && currentTraGopTarget > 0 && (
-                            <span className="text-[10px] sm:text-[11px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
+                            <span className="text-[11px] sm:text-[12px] lg:text-[13px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
                                 (-{Math.max(0, currentTraGopTarget - Math.round(tyTrongTraGop))}%)
                             </span>
                         )}
@@ -248,13 +256,13 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
             {/* ROW 2: CHỈ SỐ PHỤ */}
             <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:gap-2.5">
                 <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
-                    <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
+                    <div className="text-[18px] sm:text-[22px] md:text-[24px] lg:text-[28px] xl:text-[30px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
                         {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                     </div>
                 </KpiCard>
 
                 <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
-                    <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
+                    <div className="text-[18px] sm:text-[22px] md:text-[24px] lg:text-[28px] xl:text-[30px] font-black leading-tight tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
                         {(() => {
                             const val = parseNumber(kpiData.tlpv);
                             if (!val) return '0%';
@@ -264,7 +272,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 </KpiCard>
 
                 <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
-                    <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                    <div className="text-[18px] sm:text-[22px] md:text-[24px] lg:text-[28px] xl:text-[30px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                         {kpiData.lbillBH && kpiData.lbillBH !== 'N/A'
                             ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN')
                             : (kpiData.lbill && kpiData.lbill !== 'N/A'
@@ -274,7 +282,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 </KpiCard>
 
                 <KpiCard icon="wallet" iconColor="rose" title="Bill T.Hộ">
-                    <div className="text-[16px] sm:text-[18px] lg:text-[22px] xl:text-[24px] font-black leading-none tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
+                    <div className="text-[18px] sm:text-[22px] md:text-[24px] lg:text-[28px] xl:text-[30px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
                         {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                     </div>
                 </KpiCard>

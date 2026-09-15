@@ -40,8 +40,8 @@ export const DEFAULT_TILE_LINKS: Record<string, string> = {
 export const TILE_LABELS: Record<string, { group: string; name: string }> = {
     'summary-realtime': { group: 'Báo cáo Tổng hợp', name: 'Realtime' },
     'summary-luyke': { group: 'Báo cáo Tổng hợp', name: 'Luỹ kế' },
-    'competition-realtime': { group: 'Thi đua Cụm', name: 'Realtime' },
-    'competition-luyke': { group: 'Thi đua Cụm', name: 'Luỹ kế' },
+    'competition-realtime': { group: 'Thi đua', name: 'Realtime' },
+    'competition-luyke': { group: 'Thi đua', name: 'Luỹ kế' },
     'industry-realtime': { group: 'Siêu thị ngành hàng', name: 'Realtime' },
     'industry-luyke': { group: 'Siêu thị ngành hàng', name: 'Luỹ kế' },
     'nhanvien-doanhthu': { group: 'NHÂN VIÊN', name: 'Doanh thu' },

@@ -233,9 +233,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                         }}
                         isExporting={isHeaderExporting}
                     >
-                        {/* Revenue tab: SummaryTableView merges into header container */}
+                        {/* Revenue tab: KpiOverview + SummaryTableView merges into header container */}
                         {activeSubTab === 'revenue' && (
                             <div>
+                                <KpiOverview
+                                    isRealtime={isRealtimeView}
+                                    kpiData={currentKpiData}
+                                    targets={activeTargets}
+                                    supermarketDailyTargets={supermarketDailyTargets}
+                                    supermarketMonthlyTargets={supermarketMonthlyTargets}
+                                    activeSupermarket={activeSupermarket}
+                                    summaryLuyKeData={summaryLuyKe}
+                                />
                                 <SummaryTableView
                                     key={isRealtimeView ? 'summary-realtime' : 'summary-luyke'}
                                     ref={summaryTableRef}
@@ -268,20 +277,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                             />
                         )}
                     </DashboardHeader>
-
-                    {activeSubTab === 'revenue' && (
-                        <div className="mt-3 sm:mt-4">
-                            <KpiOverview
-                                isRealtime={isRealtimeView}
-                                kpiData={currentKpiData}
-                                targets={activeTargets}
-                                supermarketDailyTargets={supermarketDailyTargets}
-                                supermarketMonthlyTargets={supermarketMonthlyTargets}
-                                activeSupermarket={activeSupermarket}
-                                summaryLuyKeData={summaryLuyKe}
-                            />
-                        </div>
-                    )}
                 </div>
 
                 <div className="mt-3 sm:mt-4">

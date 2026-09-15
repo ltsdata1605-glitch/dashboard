@@ -118,6 +118,10 @@ export function useIndexedDBState<T>(
         const handleDbChange = (event: CustomEvent) => {
             if (event.detail.key === 'ALL') {
                 configStore.clearCache();
+                if (key) {
+                    configStore.setCache(key, defaultValueRef.current);
+                    configStore.setLoaded(key, true);
+                }
                 return;
             }
             if (event.detail.key === key && event.detail.source !== 'hook-write') {

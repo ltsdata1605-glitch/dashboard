@@ -420,7 +420,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 size="icon"
                 onClick={handleOpenTargetThiDua}
                 className="h-7 w-7 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors"
-                title="Cấu hình Target Thi đua"
+                title="Cấu hình Thi đua"
             >
                 <Settings className="h-4 w-4" />
             </Button>
@@ -434,7 +434,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
             {/* 4 Thẻ KPI tổng hợp dưới Quỹ thời gian */}
             {processedSupermarketData && sortedPrograms.length > 0 && (
-                <div className="pt-2 px-1.5 sm:px-2 lg:px-6">
+                <div className="pt-2 px-4">
                     <CompetitionKpiCards
                         programs={sortedPrograms}
                         headers={processedSupermarketData.headers}
@@ -446,7 +446,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
             {/* Scrollable table content */}
             <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <div className="p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2 min-w-fit">
+                <div className="px-4 pb-4 pt-2 min-w-fit">
                     <div className="p-0">
                         {processedSupermarketData && sortedPrograms.length > 0 ? (
                             <CompetitionListView

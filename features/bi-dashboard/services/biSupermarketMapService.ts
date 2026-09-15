@@ -123,10 +123,13 @@ export async function saveSupermarketMap(map: SupermarketToKhoMap, userId?: stri
     if (uid !== 'guest') {
         try {
             const userConfigRef = doc(db, 'users', uid, 'configs', 'biSupermarketMap');
+            // QUAN TRỌNG: KHÔNG dùng { merge: true } vì Firestore merge: true sẽ giữ lại
+            // các key cũ đã bị xoá trong object map lồng nhau. Phải ghi đè toàn bộ doc
+            // để key bị xoá thật sự biến mất khỏi Firestore.
             await setDoc(userConfigRef, {
                 map,
                 updatedAt: serverTimestamp(),
-            }, { merge: true });
+            });
         } catch (err) {
             console.error('[biSupermarketMapService] Lỗi lưu Firestore:', err);
         }
@@ -150,6 +153,13 @@ export async function addSupermarketNameToKho(maKho: string, name: string, userI
 }
 
 /**
+ * Xoá sạch toàn bộ bảng map siêu thị của tài khoản (dùng cho Làm mới tất cả)
+ */
+export async function clearSupermarketMap(userId?: string): Promise<void> {
+    await saveSupermarketMap({}, userId);
+}
+
+/**
  * Xoá 1 siêu thị khỏi bảng map của tài khoản
  * Hỗ trợ các kiểu gọi:
  * - removeSupermarketNameFromKho(maKho, name, userId)
@@ -160,16 +170,30 @@ export async function removeSupermarketNameFromKho(
     nameOrUserId?: string,
     optionalUserId?: string
 ): Promise<void> {
-    let nameToRemove = maKhoOrName;
-    let targetUserId = nameOrUserId;
+    let nameToRemove: string;
+    let targetUserId: string | undefined;
 
     if (optionalUserId !== undefined) {
-        // Gọi kiểu cũ 3 đối số: (maKho, name, userId)
+        // Gọi kiểu 3 đối số: (maKho, name, userId)
         nameToRemove = nameOrUserId || maKhoOrName;
         targetUserId = optionalUserId;
-    } else if (nameOrUserId && (nameOrUserId.includes(' - ') || nameOrUserId.startsWith('ĐM') || nameOrUserId.startsWith('TGD') || nameOrUserId.startsWith('DML') || nameOrUserId.startsWith('DMM'))) {
-        // Gọi kiểu 2 đối số: (maKho, name)
-        nameToRemove = nameOrUserId;
+    } else if (nameOrUserId !== undefined) {
+        // Gọi kiểu 2 đối số: có thể là (maKho, name) hoặc (name, userId)
+        if (
+            nameOrUserId.includes(' - ') || 
+            nameOrUserId.startsWith('ĐM') || 
+            nameOrUserId.startsWith('TGD') || 
+            nameOrUserId.startsWith('DML') || 
+            nameOrUserId.startsWith('DMM')
+        ) {
+            nameToRemove = nameOrUserId;
+            targetUserId = undefined;
+        } else {
+            nameToRemove = maKhoOrName;
+            targetUserId = nameOrUserId;
+        }
+    } else {
+        nameToRemove = maKhoOrName;
         targetUserId = undefined;
     }
 

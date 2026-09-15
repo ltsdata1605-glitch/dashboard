@@ -10,17 +10,61 @@ export const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     return <span className={`${base} text-slate-400 dark:text-slate-500`}>#{rank}</span>;
 };
 
-export const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong', targetQuyDoi: number = 40) => {
-    if (val === 0 || isNaN(val)) return 'text-slate-700 dark:text-slate-300';
-    switch (type) {
-        case 'dtqd': return val >= 50 ? 'text-emerald-600' : (val <= 20 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-        case 'hqqd': return val >= targetQuyDoi ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-rose-500 dark:text-rose-400 font-bold';
-        case 'pnong': return val > 60 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-        case 'erp': return 'text-blue-700 dark:text-blue-400 font-extrabold';
-        case 'tnong': return 'text-orange-600 dark:text-orange-400 font-extrabold';
-        case 'tong': return val >= 2000000 ? 'text-emerald-700 dark:text-emerald-300 font-black' : (val <= 500000 ? 'text-rose-500 font-black' : 'text-emerald-700 dark:text-emerald-300 font-black');
+export interface TierThresholds {
+    avg: number;
+    top30: number;
+}
+
+export type BonusColumnType = 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'pnong' | 'tong' | 'dkien';
+
+/**
+ * Tính toán ngưỡng TOP 30% và trung bình cho một danh sách giá trị.
+ * - Chỉ tính trên các giá trị hợp lệ (khác 0) để phản ánh đúng thực tế
+ * - Ngưỡng TOP 30%: giá trị tại vị trí top 30% khi sắp xếp giảm dần
+ * - Giá trị trung bình: tổng giá trị / số phần tử hợp lệ
+ */
+export function computeTierThresholds(values: number[]): TierThresholds {
+    const valid = values.filter(v => v != null && !isNaN(v) && v !== 0);
+    if (valid.length === 0) return { avg: 0, top30: 0 };
+
+    const sum = valid.reduce((s, v) => s + v, 0);
+    const avg = sum / valid.length;
+
+    const sorted = [...valid].sort((a, b) => b - a);
+    const topCount = Math.max(1, Math.ceil(valid.length * 0.3));
+    const top30 = sorted[topCount - 1] ?? 0;
+
+    return { avg, top30 };
+}
+
+/**
+ * Phân loại và trả về màu sắc theo điều kiện:
+ * - TOP 30% cao nhất: Xanh lá (text-emerald-600 dark:text-emerald-400 font-extrabold)
+ * - BOT (Dưới trung bình): Đỏ (text-rose-600 dark:text-rose-400 font-bold)
+ * - Còn lại: Trung tính (text-slate-700 dark:text-slate-300 font-bold)
+ * - Rỗng / không có dữ liệu: Nhạt (text-slate-400 dark:text-slate-500 font-normal)
+ */
+export const getCellColor = (
+    val: number,
+    thresholds?: TierThresholds,
+    hasData: boolean = true
+): string => {
+    if (!hasData || isNaN(val)) {
+        return 'text-slate-400 dark:text-slate-500 font-normal';
     }
-    return 'text-slate-700 dark:text-slate-300';
+    if (!thresholds || (thresholds.avg === 0 && thresholds.top30 === 0)) {
+        return val === 0 ? 'text-slate-400 dark:text-slate-500 font-normal' : 'text-slate-700 dark:text-slate-300 font-bold';
+    }
+    // TOP 30% cao nhất (và > 0)
+    if (val >= thresholds.top30 && val > 0) {
+        return 'text-emerald-600 dark:text-emerald-400 font-extrabold';
+    }
+    // BOT (Dưới trung bình)
+    if (val < thresholds.avg) {
+        return 'text-rose-600 dark:text-rose-400 font-bold';
+    }
+    // Còn lại: Trung tính
+    return 'text-slate-700 dark:text-slate-300 font-bold';
 };
 
 export function getWeekdayAbbr(dateStr: string): string {

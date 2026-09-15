@@ -42,3 +42,9 @@ Mỗi khi chỉnh sửa hoặc nâng cấp file user script `public/scripts/mwg-
 1. Tăng chỉ số `@version` trong phần header metadata (ví dụ: từ `1.9` $\rightarrow$ `2.0` hoặc `1.9.1`).
 2. Thêm thông tin ghi chú về các thay đổi của bản mới vào phần comment header (Changelog).
 Điều này giúp Tampermonkey trên trình duyệt của người dùng phát hiện bản mới thông qua `@updateURL`/`@downloadURL` và tự động cập nhật mượt mà.
+
+## Auto Click+ Bookmarklet Synchronization Rule
+Bất cứ khi nào có thay đổi, tối ưu hoặc sửa lỗi trong `public/scripts/mwg-auto-thu-thap-diem-thuong.user.js` liên quan đến tính năng Click+ (mở rộng cấp dữ liệu, selector spinner, batching, cơ chế copy trích xuất dữ liệu, loại trừ element thừa), **BẮT BUỘC** phải:
+1. Cập nhật và đồng bộ ngay toàn bộ logic cải tiến đó sang hằng số `AUTO_CLICK_BOOKMARKLET_CODE` trong `features/bi-dashboard/components/AutoClickGuideModal.tsx`.
+2. Đảm bảo nút "Auto Click+ 1-Click" trên giao diện (tại Cập nhật > Cấu hình siêu thị & Nhân viên > Dữ liệu) luôn đồng bộ 100% sức mạnh và thuật toán mới nhất của userscript.
+

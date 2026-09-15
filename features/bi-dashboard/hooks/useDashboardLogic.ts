@@ -476,8 +476,12 @@ export const useDashboardLogic = (isActive?: boolean) => {
             Object.assign(kpis, sourceData.kpis);
         }
 
-        const headers = sourceData.table.headers;
-        const row = sourceData.table.rows.find(r => r[0] === activeSupermarket || (activeSupermarket && shortenSupermarketName(r[0]) === shortenSupermarketName(activeSupermarket)));
+        const headers = sourceData.table.headers || [];
+        const safeActive = activeSupermarket ? shortenSupermarketName(activeSupermarket).trim().toLowerCase() : '';
+        const row = sourceData.table.rows.find(r => 
+            r[0] === activeSupermarket || 
+            (safeActive && shortenSupermarketName(r[0]).trim().toLowerCase() === safeActive)
+        );
         if (row) {
             const mapping: Record<string, string> = isRealtime 
             ? {
@@ -498,7 +502,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 if (idx === -1 && key === 'dtDuKienQD') {
                     idx = headers.findIndex(h => {
                         const clean = h.trim().toUpperCase();
-                        return clean === 'D.KIẾN QĐ' || clean === 'D.KIẾN' || clean === 'DT DỰ KIẾN (QĐ)' || clean === 'DT DỰ KIẾN';
+                        return clean === 'DKQĐ' || clean === 'D.KIẾN QĐ' || clean === 'D.KIẾN' || clean === 'DT DỰ KIẾN (QĐ)' || clean === 'DT DỰ KIẾN';
                     });
                 }
                 if (idx === -1 && key === 'targetQD') {
@@ -616,8 +620,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let deltaDtlk = 0;
         let deltaDtqd = 0;
 
+        const safeActive = activeSupermarket ? shortenSupermarketName(activeSupermarket).trim().toLowerCase() : '';
         const updatedRows = summaryRealtimeParsed.table.rows.map(row => {
-            const isTargetStore = row[0] === activeSupermarket || shortenSupermarketName(row[0]) === shortenSupermarketName(activeSupermarket);
+            const isTargetStore = row[0] === activeSupermarket || (safeActive && shortenSupermarketName(row[0]).trim().toLowerCase() === safeActive);
             if (isTargetStore) {
                 const oldDtlk = parseNumber(row[dtlkIdx]);
                 const oldDtqd = parseNumber(row[dtqdIdx]);

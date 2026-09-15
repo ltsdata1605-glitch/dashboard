@@ -94,8 +94,17 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                 setMap(e.detail.map || {});
             }
         };
+        const handleDbChange = (e: CustomEvent<{ key?: string }>) => {
+            if (e.detail?.key === 'ALL') {
+                setMap({});
+            }
+        };
         window.addEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
-        return () => window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+        window.addEventListener('indexeddb-change', handleDbChange as EventListener);
+        return () => {
+            window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+            window.removeEventListener('indexeddb-change', handleDbChange as EventListener);
+        };
     }, [userId]);
 
     // Tên siêu thị xuất hiện trong dữ liệu Báo cáo vừa dán
@@ -182,10 +191,16 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
 
     const handleDelete = async () => {
         if (!deletingName) return;
-        const maKho = map[deletingName];
-        setSavingKey(deletingName);
+        const nameToDelete = deletingName;
+        const maKho = map[nameToDelete];
+        setSavingKey(nameToDelete);
         try {
-            await removeSupermarketNameFromKho(maKho, deletingName, userId);
+            await removeSupermarketNameFromKho(maKho, nameToDelete, userId);
+            setMap(prev => {
+                const next = { ...prev };
+                delete next[nameToDelete];
+                return next;
+            });
             toast.success('Đã xoá khỏi bảng map.');
         } catch (err) {
             console.error('[BiSupermarketMapAdmin] Lỗi xoá:', err);

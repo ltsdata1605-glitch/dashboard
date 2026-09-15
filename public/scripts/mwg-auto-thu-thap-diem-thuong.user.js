@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.1
+// @version      4.2
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -31,6 +31,14 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 4.2 — ĐỒNG BỘ CƠ CHẾ COPY TOÀN TRANG (COPY ALL) GIỐNG HỆT BOOKMARKLET COPYALL:
+ * - Khắc phục lỗi copy thiếu 37 chương trình thi đua: Bản 4.1 trước đó dùng document.querySelector('.ant-table, table')
+ *   chỉ chọn đúng 1 bảng đầu tiên (Bảo hiểm tổng), khiến 37 chương trình còn lại phía sau bị bỏ sót.
+ *   Nay đổi lại bôi đen toàn bộ document.body qua range.selectNodeContents(document.body) giống hệt
+ *   bookmarklet CopyAll, đảm bảo copy trọn vẹn 100% tất cả 38 chương trình và chi tiết nhân viên.
+ * - Loại trừ triệt để hộp trạng thái (#acp-status-box, #acp-float-btn) trong cả Range Selection và
+ *   MutationObserver recoveryBlocks, ngăn chặn hoàn toàn việc dính chuỗi "⚡ Đang mở cấp hiện tại..." vào clipboard.
  *
  * BẢN 4.1 — KHẮC PHỤC TRIỆT ĐỂ LỖI TREO / ĐƠ Ở KHÚC CUỐI:
  * - Chuẩn hóa ACP_SPINNER_SELECTOR: loại bỏ các selector quá rộng (.ant-spin, .ant-table-loading, [class*="loading"])
@@ -1227,6 +1235,10 @@
           if (node.nodeType !== 1) continue;
           if (capturedNodes.has(node)) continue;
           capturedNodes.add(node);
+          // Bỏ qua các phần tử UI của script để không dính text trạng thái vào bản copy
+          if (node.id === 'acp-status-box' || node.id === 'acp-float-btn' || (node.closest && (node.closest('#acp-status-box') || node.closest('#acp-float-btn')))) {
+            continue;
+          }
           // BUG FIX: Tuyệt đối KHÔNG dùng node.innerText ở đây vì sẽ ép trình duyệt tính reflow
           // layout liên tục (Layout Thrashing), làm đơ UI / treo trình duyệt khi mở nhiều dòng.
           // Dùng textContent để lấy nội dung cực nhanh và mượt.
@@ -1251,13 +1263,9 @@
   // Đọc text hiển thị của trang, loại vùng nhân bản cột cố định DevExpress
   // (.dx-datagrid-content-fixed, .dx-hidden) + hộp trạng thái của chính script, và bỏ
   // dòng rác "undefined".
-  // BUG FIX: document.body.innerText tính theo layout ĐÃ RENDER — DevExpress DataGrid quản lý
-  // scroll RIÊNG cho bảng (khác window scroll), nên các dòng cấp con vừa được Click+ mở rộng
-  // (đặc biệt dòng nằm ngoài vùng khung nhìn của chính bảng lúc copy) có thể bị innerText bỏ sót
-  // dù vẫn còn nguyên trong DOM — user báo cáo thật: "mở rộng xong, copy dữ liệu bị sót", tự kiểm
-  // chứng bằng 1 bookmarklet "Copy All" độc lập dùng Selection/Range API và xác nhận copy đủ.
-  // Đổi sang đúng cách đó: bôi đen toàn bộ document.body qua Range rồi lấy Selection.toString() —
-  // phản ánh đúng nội dung đang có trong DOM, không phụ thuộc bảng đã cuộn tới đâu.
+  // BUG FIX: Bôi đen toàn bộ document.body qua Range rồi lấy Selection.toString() giống hệt
+  // bookmarklet CopyAll — đảm bảo lấy trọn vẹn 100% tất cả các bảng/chương trình thi đua
+  // (tránh lỗi chỉ querySelector trúng 1 bảng đầu tiên).
   function acpExtractVisibleText() {
     const excluded = Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden'));
     const statusBox = document.getElementById('acp-status-box');
@@ -1269,11 +1277,10 @@
 
     let text = '';
     try {
-      // Ưu tiên trích xuất từ bảng dữ liệu thay vì bôi đen toàn bộ body
-      const targetContainer = document.querySelector('.ant-table-body, .ant-table, .dx-datagrid, table') || document.body;
+      // Bôi đen toàn bộ document.body qua Range rồi lấy Selection.toString() giống hệt bookmarklet CopyAll
       const selection = window.getSelection();
       const range = document.createRange();
-      range.selectNodeContents(targetContainer);
+      range.selectNodeContents(document.body);
       selection.removeAllRanges();
       selection.addRange(range);
       text = selection.toString();

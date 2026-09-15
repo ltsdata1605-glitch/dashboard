@@ -224,7 +224,7 @@ export function useNhanVienData(isActive?: boolean) {
                 || key.startsWith('bonus-data-')
                 || key.startsWith('bonus-current-period-label-')
                 || key.startsWith('hidden-employees-')
-                || (key.startsWith('targethero-') && key.endsWith('-departmentweights'))
+                || key.startsWith('targethero-')
                 || key === 'summary-luy-ke'
                 || key === ANALYSIS_EMPLOYEES_KEY
                 || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`;

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Employee, BonusMetrics, RevenueRow } from '../../../types/nhanVienTypes';
 import { BonusDesktopRow } from './BonusDesktopRow';
 import { BonusDisplayRow } from './BonusDisplayRow';
-import { getCellColor, isUpdatedToday, getRevenueForEmployee } from './bonusTableHelpers';
+import { getCellColor, computeTierThresholds, isUpdatedToday, getRevenueForEmployee, BonusColumnType, TierThresholds } from './bonusTableHelpers';
 import { getBonusForEmployee } from '../../../utils/bonusParser';
 import { shortenSupermarketName } from '../../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
@@ -28,6 +28,49 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
     const safeName = shortenSupermarketName(supermarketName);
     const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
     const targetQuyDoi = storedQuyDoi ?? 40;
+
+    const columnThresholds = useMemo<Record<BonusColumnType, TierThresholds>>(() => {
+        const employeeRows = displayList.filter(item => item.type !== 'department' && item.type !== 'total');
+
+        const dtqdVals: number[] = [];
+        const hqqdVals: number[] = [];
+        const erpVals: number[] = [];
+        const tnongVals: number[] = [];
+        const pnongVals: number[] = [];
+        const tongVals: number[] = [];
+        const dkienVals: number[] = [];
+
+        employeeRows.forEach(item => {
+            const bonus = getBonusForEmployee(bonusData, item.originalName, item.name);
+            const rev = getRevenueForEmployee(revenueMap, item.originalName, item.name);
+
+            if (rev && (rev.dtqd > 0 || rev.dtlk > 0)) {
+                dtqdVals.push(rev.dtqd);
+                hqqdVals.push(rev.hieuQuaQD * 100);
+            }
+            if (bonus && (bonus.tong > 0 || bonus.dKien > 0 || bonus.erp > 0 || bonus.tNong > 0)) {
+                if (bonus.erp) erpVals.push(bonus.erp);
+                if (bonus.tNong) tnongVals.push(bonus.tNong);
+                if (bonus.pNong) pnongVals.push(bonus.pNong);
+                if (bonus.tong) tongVals.push(bonus.tong);
+                if (bonus.dKien) dkienVals.push(bonus.dKien);
+            }
+        });
+
+        return {
+            dtqd: computeTierThresholds(dtqdVals),
+            hqqd: computeTierThresholds(hqqdVals),
+            erp: computeTierThresholds(erpVals),
+            tnong: computeTierThresholds(tnongVals),
+            pnong: computeTierThresholds(pnongVals),
+            tong: computeTierThresholds(tongVals),
+            dkien: computeTierThresholds(dkienVals),
+        };
+    }, [displayList, bonusData, revenueMap]);
+
+    const getRowCellColor = useCallback((val: number, type: BonusColumnType, hasData: boolean = true) => {
+        return getCellColor(val, columnThresholds[type], hasData);
+    }, [columnThresholds]);
     return (
         <table className="w-full border-collapse compact-export-table">
             <thead className="sticky top-0 z-10">
@@ -93,7 +136,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
                             pctDkht={rev?.pctDkht}
                             hasTarget={(rev?.calculatedTarget || 0) > 0}
                             onEmployeeClick={onEmployeeClick}
-                            getCellColor={getCellColor}
+                            getCellColor={getRowCellColor}
                             f={f}
                             supermarketName={supermarketName}
                             targetQuyDoi={targetQuyDoi}

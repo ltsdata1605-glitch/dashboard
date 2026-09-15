@@ -54,16 +54,17 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             ? range.commonAncestorContainer.parentElement
             : (range.commonAncestorContainer as HTMLElement);
         
-        // 1. Tìm span gần nhất có inline style font-size
-        const span = parent?.closest('span[style*="font-size"]');
-        if (span) {
-            const fs = (span as HTMLElement).style.fontSize;
+        const el = getEditableContainer(parent);
+
+        // 1. Tìm phần tử bên trong gần nhất có inline style font-size (span, div, b...)
+        const styledEl = parent?.closest('[style*="font-size"]');
+        if (styledEl && styledEl !== el) {
+            const fs = (styledEl as HTMLElement).style.fontSize;
             const match = fs.match(/([\d.]+)/);
             if (match) return parseFloat(match[1]);
         }
 
         // 2. Tìm container contenteditable để đọc font-size của ô
-        const el = getEditableContainer(parent);
         if (el) {
             const fs = el.style.fontSize;
             const match = fs?.match(/([\d.]+)/);
@@ -72,7 +73,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             if (el.className.includes('bottom-left')) return 2.9;
             if (el.className.includes('bottom-right-sub')) return 3.0;
             if (el.className.includes('bottom-right')) return 7.6;
-            if (el.className.includes('top-right')) return 7.6;
+            if (el.className.includes('top-right')) return 8;
             if (el.className.includes('top-left')) return 4.5;
             if (el.className.includes('title')) return 4.3;
             if (el.className.includes('code')) return 3.8;

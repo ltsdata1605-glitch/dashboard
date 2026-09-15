@@ -326,9 +326,9 @@ export function getStickerPreviewStyles({
  
                   .draw-ticket-block .input-content-top-right {
                       position: absolute;
-                      left: 52.4%;
+                      left: 51.5%;
                       top: 22.5%;
-                      width: 35.0%;
+                      width: 35.8%;
                       height: 19.5%;
                       display: flex;
                       flex-direction: column;
@@ -336,17 +336,17 @@ export function getStickerPreviewStyles({
                       align-items: flex-start; text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                       font-size: 7.6cqw;
-                       line-height: 1.5;
+                      font-size: 8cqw;
+                      line-height: 1.2;
                       color: #000;
                       background: transparent;
                       outline: none;
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0.5cqw 1cqw;
+                      padding: 1.8cqw 0.5cqw 0.5cqw 0;
                   }
- 
+
                   .draw-ticket-block .input-content-bottom-left {
                       position: absolute;
                       left: 2.2%;
@@ -355,7 +355,7 @@ export function getStickerPreviewStyles({
                       height: 23.5%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
+                      justify-content: center;
                       align-items: flex-start;
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
@@ -370,12 +370,12 @@ export function getStickerPreviewStyles({
                       padding: 0.3cqw 0.3cqw 0cqw 0.3cqw;
                       line-height: 1.4;
                   }
- 
+
                   .draw-ticket-block .input-content-bottom-right {
                        position: absolute;
-                       left: 52.4%;
-                       top: 40.5%;
-                       width: 45.4%;
+                       left: 51.5%;
+                       top: 52.5%;
+                       width: 46.2%;
                        height: 15.0%;
                        display: flex;
                        flex-direction: column;
@@ -386,21 +386,21 @@ export function getStickerPreviewStyles({
                       font-weight: bold;
                       font-size: 7.6cqw;
                       text-transform: uppercase;
-                      line-height: 1.15;
+                      line-height: 1.2;
                       color: #000;
                       background: transparent;
                       outline: none;
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0 1cqw 0.8cqw 1cqw;
+                      padding: 0 0.5cqw 0 0;
                   }
 
                   .draw-ticket-block .input-content-bottom-right-sub {
                        position: absolute;
-                       left: 52.4%;
-                       top: 68.5%;
-                       width: 45.4%;
+                       left: 51.5%;
+                       top: 70.5%;
+                       width: 46.2%;
                        height: 6.5%;
                        display: flex;
                        flex-direction: column;
@@ -417,7 +417,7 @@ export function getStickerPreviewStyles({
                       cursor: text;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0.8cqw 1cqw 0 1cqw;
+                      padding: 0 0.5cqw 0 0;
                   }
  
                   .draw-ticket-block .input-code-left {
@@ -544,9 +544,9 @@ export function getStickerPreviewStyles({
 
                   .draw-ticket-block .display-content-top-right {
                       position: absolute;
-                      left: 52.4%;
+                      left: 51.5%;
                       top: 22.5%;
-                      width: 35.0%;
+                      width: 35.8%;
                       height: 19.5%;
                       display: flex;
                       flex-direction: column;
@@ -554,12 +554,12 @@ export function getStickerPreviewStyles({
                       align-items: flex-start; text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: normal;
-                       font-size: 7.6cqw;
-                       line-height: 1.5;
+                      font-size: 8cqw;
+                      line-height: 1.2;
                       color: #000;
                       white-space: nowrap;
                       word-break: normal;
-                      padding: 0.5cqw 1cqw;
+                      padding: 1.8cqw 0.5cqw 0.5cqw 0;
                       overflow: hidden;
                   }
 
@@ -571,7 +571,7 @@ export function getStickerPreviewStyles({
                        height: 23.5%;
                        display: flex;
                        flex-direction: column;
-                       justify-content: flex-start;
+                       justify-content: center;
                        align-items: flex-start;
                        text-align: left;
                        font-family: 'UTM Avo', sans-serif;
@@ -587,9 +587,9 @@ export function getStickerPreviewStyles({
 
                   .draw-ticket-block .display-content-bottom-right {
                        position: absolute;
-                       left: 52.4%;
-                       top: 40.5%;
-                       width: 45.4%;
+                       left: 51.5%;
+                       top: 52.5%;
+                       width: 46.2%;
                        height: 15.0%;
                        display: flex;
                        flex-direction: column;
@@ -600,34 +600,34 @@ export function getStickerPreviewStyles({
                        font-weight: bold;
                        font-size: 7.6cqw;
                        text-transform: uppercase;
-                       line-height: 1.15;
+                       line-height: 1.2;
                        color: #000;
                        white-space: nowrap;
                        word-break: normal;
-                       padding: 0 1cqw 0.8cqw 1cqw;
+                       padding: 0 0.5cqw 0 0;
                        overflow: hidden;
                   }
 
                   .draw-ticket-block .display-content-bottom-right-sub {
                        position: absolute;
-                       left: 52.4%;
-                       top: 68.5%;
-                       width: 45.4%;
+                       left: 51.5%;
+                       top: 70.5%;
+                       width: 46.2%;
                        height: 6.5%;
                        display: flex;
                        flex-direction: column;
                        justify-content: center;
                        align-items: flex-start;
                        text-align: left;
-                      font-family: 'UTM Avo', sans-serif;
-                      font-weight: normal;
-                      font-size: 3.0cqw;
-                      line-height: 1.4;
-                      color: #000;
-                      white-space: nowrap;
-                      word-break: normal;
-                      padding: 0.8cqw 1cqw 0 1cqw;
-                      overflow: hidden;
+                       font-family: 'UTM Avo', sans-serif;
+                       font-weight: normal;
+                       font-size: 3.0cqw;
+                       line-height: 1.4;
+                       color: #000;
+                       white-space: nowrap;
+                       word-break: normal;
+                       padding: 0 0.5cqw 0 0;
+                       overflow: hidden;
                   }
 
                   .draw-ticket-block .display-footer-left {

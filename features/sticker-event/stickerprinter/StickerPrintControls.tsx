@@ -147,7 +147,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
     const filteredHistory = useMemo(() => {
         const userEntries = printHistory.filter(entry => entry.stickerType === stickerType && entry.id !== DEFAULT_HISTORY_ID);
-        // Ở chế độ draw, luôn ghim entry mẫu mặc định ở trên cùng danh sách
+        // Ở chế độ draw, luôn gắn entry mẫu mặc định ở trên cùng danh sách (cố định ở trên)
         if (stickerType === 'draw') {
             return [DEFAULT_DRAW_HISTORY_ENTRY, ...userEntries];
         }
@@ -199,10 +199,25 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         {stickerType === 'draw' ? (
                             /* Cấu hình phiếu rút thăm chuyên nghiệp */
                             <div className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-800/30 space-y-4">
-                                <p className="text-[11px] lg:text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5 border-b border-rose-200/40 pb-2">
-                                    <Settings size={14} className="stroke-[2.5]" />
-                                    Cấu hình in Phiếu Rút Thăm
-                                </p>
+                                <div className="flex items-center justify-between border-b border-rose-200/40 dark:border-rose-800/40 pb-2">
+                                    <p className="text-[11px] lg:text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
+                                        <Settings size={14} className="stroke-[2.5]" />
+                                        Cấu hình in Phiếu Rút Thăm
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setLocalStartNumber(1);
+                                            setLocalTotalTickets(4000);
+                                            restoreHistory(DEFAULT_DRAW_HISTORY_ENTRY);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-lg hover:bg-rose-100/70 dark:hover:bg-rose-900/50 hover:text-rose-800 dark:hover:text-rose-200 transition-all shadow-xs active:scale-95 cursor-pointer"
+                                        title="Khôi phục toàn bộ phiếu và cấu hình về mẫu mặc định"
+                                    >
+                                        <RotateCcw size={12} className="stroke-[2.2]" />
+                                        Mặc định
+                                    </button>
+                                </div>
                                 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
@@ -469,7 +484,14 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             filteredHistory.map(entry => {
                                 const isDefault = entry.id === DEFAULT_HISTORY_ID;
                                 return (
-                                <div key={entry.id} className={`flex items-center justify-between p-3 rounded-lg border group text-left ${isDefault ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/50' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'}`}>
+                                <div 
+                                    key={entry.id} 
+                                    className={`flex items-center justify-between p-3 rounded-lg border group text-left ${
+                                        isDefault 
+                                            ? 'sticky top-0 z-10 bg-amber-50/95 dark:bg-amber-950/90 backdrop-blur-xs border-amber-300 dark:border-amber-700/60 shadow-xs' 
+                                            : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'
+                                    }`}
+                                >
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate flex items-center gap-1.5">
                                             {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded">📌 Mặc định</span>}

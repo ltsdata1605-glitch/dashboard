@@ -134,13 +134,13 @@ export const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     contentEditable
                     suppressContentEditableWarning
                     className={`input-content-top-right ${activeField === 'drawContentTopRight' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawContentTopRightSize || 7.6}cqw` }}
+                    style={{ fontSize: `${drawContentTopRightSize || 8}cqw` }}
                     data-placeholder="Nhập thông tin 3 (Tự gõ...)"
                 />
             ) : (
                 <div
                     className="input-content-top-right"
-                    style={{ fontSize: `${drawContentTopRightSize || 7.6}cqw`, pointerEvents: 'none', userSelect: 'none' }}
+                    style={{ fontSize: `${drawContentTopRightSize || 8}cqw`, pointerEvents: 'none', userSelect: 'none' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTopRight) }}
                 />
             )}

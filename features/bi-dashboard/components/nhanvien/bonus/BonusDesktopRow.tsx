@@ -4,6 +4,7 @@ import { MedalBadge } from '../../shared/Badges';
 import AvatarDisplay from '../shared/AvatarDisplay';
 import type { BonusDisplayRow } from '../BonusTab';
 import { getDkhtColor } from '../revenue/ColorSettingsModal';
+import { BonusColumnType } from './bonusTableHelpers';
 
 interface BonusDesktopRowProps {
     item: BonusDisplayRow;
@@ -19,7 +20,7 @@ interface BonusDesktopRowProps {
     pctDkht?: number;
     hasTarget?: boolean;
     onEmployeeClick: (emp: Employee) => void;
-    getCellColor: (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong', targetQuyDoi?: number) => string;
+    getCellColor: (val: number, type: BonusColumnType, hasData?: boolean) => string;
     f: Intl.NumberFormat;
     supermarketName: string;
     targetQuyDoi?: number;
@@ -58,19 +59,19 @@ export const BonusDesktopRow = React.memo(({
                     </div>
                 </div>
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(hqqdVal, 'hqqd', targetQuyDoi)}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-black ${getCellColor(erpVal, 'erp')}`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(dtqdVal, 'dtqd', rev)}`}>{rev ? f.format(dtqdVal) : '-'}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(hqqdVal, 'hqqd', rev)}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(erpVal, 'erp', bonus)}`}>
                 {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-black ${getCellColor(tnongVal, 'tnong')}`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(tnongVal, 'tnong', bonus)}`}>
                 {bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13.5px] text-center border-r border-slate-200 dark:border-slate-700/60 tabular-nums font-black shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)] ${isHighlighted ? 'bg-emerald-100/70 dark:bg-emerald-900/50' : 'bg-emerald-50/85 dark:bg-emerald-950/40'} ${getCellColor(tongVal, 'tong')}`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(pnongVal, 'pnong', bonus)}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
+            <td className={`px-1.5 py-1 text-[13.5px] text-center border-r border-slate-200 dark:border-slate-700/60 tabular-nums ${getCellColor(tongVal, 'tong', bonus)}`}>
                 {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
             </td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 ${isHighlighted ? 'bg-amber-100/50 dark:bg-amber-900/30' : 'bg-amber-50/40 dark:bg-amber-900/10'} tabular-nums font-black text-amber-700 dark:text-amber-400`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 tabular-nums ${getCellColor(dkienVal, 'dkien', bonus)}`}>
                 {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
             </td>
         </tr>
