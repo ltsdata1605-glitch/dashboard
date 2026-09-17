@@ -19,8 +19,17 @@ const adminUpdateUserFn = httpsCallable<AdminUpdateUserInput, { success: boolean
 // Gọi Cloud Function adminUpdateUser (functions/src/admin.ts) — thay cho việc
 // admin/manager tự updateDoc() thẳng vào doc users/{uid} của NGƯỜI KHÁC.
 // firestore.rules chỉ cho phép isSelf(uid) ghi, nên phải đi qua đây.
+export const MANAGED_USERS_CHANGED_EVENT = 'ycx-managed-users-changed';
+
 export const adminUpdateUser = async (input: AdminUpdateUserInput): Promise<void> => {
     await adminUpdateUserFn(input);
+    // Báo cho nguồn dùng chung `services/pendingApprovalsStore.ts` làm mới NGAY, thay vì chờ hết
+    // chu kỳ poll (đã nâng 45s → 120s ở bản sửa hạn mức 2026-09-17): admin vừa duyệt 1 yêu cầu thì
+    // badge/banner/thông báo phải đổi liền. Dùng event thay vì import trực tiếp để tránh vòng
+    // import (store đã import `listManagedUsers` từ file này).
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(MANAGED_USERS_CHANGED_EVENT));
+    }
 };
 
 // Field Timestamp Firestore đã được server serialize sẵn về chuỗi ISO (xem

@@ -1,77 +1,52 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { listManagedUsers } from '../services/adminUserService';
+import { ManagedUserDoc } from '../services/adminUserService';
+import { subscribeToPendingApprovals, getPendingApprovalsSnapshot } from '../services/pendingApprovalsStore';
 
-// Khoảng polling khi tab đang mở — không còn realtime (onSnapshot) vì dữ liệu giờ
-// đọc qua Cloud Function listManagedUsers (functions/src/admin.ts), không phải
-// Firestore SDK trực tiếp nữa. Đánh đổi chấp nhận được cho 1 con số badge (không
-// cần cập nhật tức thời), đổi lại chặn được manager đọc thẳng collection('users')
-// của Kho khác (xem implementation_plan.md mục 29).
-const POLL_INTERVAL_MS = 45000;
+export interface PendingApprovalsState {
+    users: ManagedUserDoc[];
+    /** `false` = chưa có lượt tải nào thành công. Phân biệt với "đã tải, không có yêu cầu nào" —
+     *  cả hai đều là mảng rỗng. */
+    loaded: boolean;
+}
 
 /**
- * FIX: Pause polling khi tab hidden để tiết kiệm pin/mạng, fetch lại ngay khi resume.
+ * Danh sách yêu cầu cấp quyền đang chờ.
+ *
+ * QUOTA FIX (2026-09-17): hook này TỪNG tự chạy vòng `setInterval` 45s gọi
+ * `listManagedUsers('pending')` riêng. Nó được mount ở 2 nơi cùng lúc
+ * (`components/layout/PendingApprovalBanner.tsx` và `components/views/DashboardView.tsx`), và
+ * `components/layout/NotificationDropdown.tsx` còn có vòng poll thứ 3 cho ĐÚNG dữ liệu đó — tổng
+ * 240 lượt gọi/giờ cho mỗi admin/manager. Toàn bộ logic poll/cache/tạm dừng theo tab đã chuyển
+ * vào nguồn dùng chung `services/pendingApprovalsStore.ts`; hook giờ chỉ là lớp đăng ký mỏng.
  */
-export function usePendingApprovalCount() {
-    const { userRole, departmentId, isDemoMode } = useAuth();
-    const [count, setCount] = useState(0);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+export function usePendingApprovals(): PendingApprovalsState {
+    const { user, userRole, departmentId, isDemoMode } = useAuth();
+    const isReviewer = userRole === 'admin' || userRole === 'manager';
+    const enabled = !isDemoMode && isReviewer;
+
+    const [state, setState] = useState<PendingApprovalsState>(() =>
+        enabled
+            ? { users: getPendingApprovalsSnapshot(), loaded: false }
+            // Người không có quyền duyệt sẽ KHÔNG BAO GIỜ có yêu cầu nào để xem → coi như đã tải
+            // xong, nếu không nơi gọi sẽ chờ `loaded` vĩnh viễn.
+            : { users: [], loaded: true }
+    );
 
     useEffect(() => {
-        if (isDemoMode) {
-            setCount(0);
+        if (!enabled) {
+            setState({ users: [], loaded: true });
             return;
         }
+        // Khoá phạm vi: đổi người dùng/vai trò/Kho thì store tự xoá cache cũ.
+        const scopeKey = `${user?.uid ?? ''}|${userRole ?? ''}|${departmentId ?? ''}`;
+        return subscribeToPendingApprovals(scopeKey, (users, loaded) => setState({ users, loaded }));
+    }, [enabled, user?.uid, userRole, departmentId]);
 
-        if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
-            setCount(0);
-            return;
-        }
+    return state;
+}
 
-        let cancelled = false;
-
-        const fetchCount = async () => {
-            try {
-                const users = await listManagedUsers('pending');
-                if (!cancelled) setCount(users.length);
-            } catch (error) {
-                console.error("Pending approval count error:", error);
-            }
-        };
-
-        const startPolling = () => {
-            if (intervalRef.current) return;
-            fetchCount();
-            intervalRef.current = setInterval(fetchCount, POLL_INTERVAL_MS);
-        };
-
-        const stopPolling = () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                startPolling();
-            } else {
-                stopPolling();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        if (document.visibilityState === 'visible') {
-            startPolling();
-        }
-
-        return () => {
-            cancelled = true;
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            stopPolling();
-        };
-    }, [userRole, departmentId, isDemoMode]);
-
-    return count;
+/** Giữ nguyên chữ ký cũ cho 2 nơi đang dùng (PendingApprovalBanner, DashboardView). */
+export function usePendingApprovalCount(): number {
+    return usePendingApprovals().users.length;
 }

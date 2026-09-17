@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
-import { listManagedUsers } from '../../services/adminUserService';
+import { usePendingApprovals } from '../../hooks/usePendingApprovalCount';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import toast from 'react-hot-toast';
 import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
@@ -18,12 +18,14 @@ const toTimestampLike = (iso?: string | null) => {
     return { toMillis: () => ms, toDate: () => new Date(ms) };
 };
 
-// Khoảng polling khi tab đang mở — thay cho onSnapshot trực tiếp trên collection('users')
-// (trước đây dựa vào firestore.rules isManager() cho manager list toàn bộ collection,
-// không giới hạn Kho — lọc allowedKhos chỉ ở client không phải bảo mật thật). Đánh đổi
-// chấp nhận được: mất tính tức thời, đổi lại chặn được manager đọc thẳng Kho khác. Xem
-// implementation_plan.md mục 29.
-const ACCESS_POLL_INTERVAL_MS = 45000;
+// QUOTA FIX (2026-09-17): đã BỎ vòng polling riêng (ACCESS_POLL_INTERVAL_MS = 45s) ở đây.
+// Component này và `hooks/usePendingApprovalCount.ts` (mount ở 2 nơi khác) cùng gọi đúng 1 Cloud
+// Function `listManagedUsers('pending')` bằng 3 vòng poll độc lập — 240 lượt gọi/giờ cho mỗi
+// admin/manager. Giờ tất cả dùng chung `services/pendingApprovalsStore.ts` (1 vòng poll 120s,
+// 1 cache, 1 request đang bay, tự tạm dừng khi tab ẩn). Lý do đọc qua Cloud Function thay vì query
+// thẳng collection('users') vẫn như cũ: firestore.rules isManager() cho manager list toàn bộ
+// collection không giới hạn Kho, lọc ở client không phải bảo mật thật (implementation_plan.md
+// mục 29) — server tự lọc theo Kho.
 
 interface NotificationDropdownProps {
     buttonClassName?: string;
@@ -32,6 +34,8 @@ interface NotificationDropdownProps {
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClassName }) => {
     const { user, userRole, departmentId } = useAuth();
     const { setActiveTab } = useActiveTab();
+    // Nguồn dùng chung — hook tự lo phân quyền (chỉ admin/manager) và vòng poll.
+    const { users: pendingUsers, loaded: pendingLoaded } = usePendingApprovals();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
@@ -40,25 +44,29 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
     const knownNotifIdsRef = useRef<Set<string>>(new Set());
     const isInitialLoadRef = useRef(true);
 
+    // QUOTA FIX (2026-09-17): 2 nguồn notification phải sống NGOÀI effect.
+    //
+    // Trước đây cả hai là biến `let` cục bộ trong MỘT effect vì cả hai đều do effect đó tự lấy về.
+    // Nay phần "yêu cầu cấp quyền" đến từ `usePendingApprovals()` (nguồn dùng chung), nên nếu vẫn
+    // để chung 1 effect thì effect buộc phải có `pendingUsers` trong dependency array — và mỗi lần
+    // dữ liệu duyệt thay đổi sẽ HỦY RỒI DỰNG LẠI listener onSnapshot của thông báo cá nhân, vừa
+    // tốn lượt đọc Firestore (đúng thứ đang đi giảm) vừa dễ sinh toast trùng. Tách làm 2 effect
+    // độc lập, dùng ref làm nơi gặp nhau.
+    const personalNotifsRef = useRef<AppNotification[]>([]);
+    const accessNotifsRef = useRef<AppNotification[]>([]);
+    const personalLoadedRef = useRef(false);
+    const pendingLoadedRef = useRef(false);
+
     useEffect(() => {
         knownNotifIdsRef.current = new Set();
         isInitialLoadRef.current = true;
+        personalNotifsRef.current = [];
+        accessNotifsRef.current = [];
+        personalLoadedRef.current = false;
     }, [user?.uid]);
 
-    useEffect(() => {
-        if (!user) {
-            setNotifications([]);
-            return;
-        }
-
-        const unsubPersonalRef = { current: null as (() => void) | null };
-        const accessPollRef = { current: null as ReturnType<typeof setInterval> | null };
-
-        let personalNotifs: AppNotification[] = [];
-        let accessNotifs: AppNotification[] = [];
-
-        const updateCombinedNotifications = () => {
-            const combined = [...personalNotifs, ...accessNotifs];
+    const updateCombinedNotifications = useCallback((bothSourcesReady: boolean) => {
+            const combined = [...personalNotifsRef.current, ...accessNotifsRef.current];
             // Sort by createdAt descending
             combined.sort((a, b) => {
                 const timeA = a.createdAt?.toMillis?.() || (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0) || 0;
@@ -88,11 +96,23 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                 combined.forEach(notif => {
                     knownNotifIdsRef.current.add(notif.id);
                 });
-                isInitialLoadRef.current = false;
+                // CHỈ hạ cờ khi cả 2 nguồn đã báo cáo xong. Nếu hạ sớm (vd effect "yêu cầu cấp
+                // quyền" chạy trước lúc chưa có dữ liệu), mọi thông báo cá nhân chưa đọc về sau sẽ
+                // bị coi là MỚI và bắn toast hàng loạt mỗi lần mở app.
+                if (bothSourcesReady) isInitialLoadRef.current = false;
             }
 
             setNotifications(combined);
-        };
+    }, []);
+
+    // EFFECT 1 — thông báo cá nhân (listener Firestore realtime).
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
+        const unsubPersonalRef = { current: null as (() => void) | null };
 
         // 1. Personal notifications
         const personalQuery = query(
@@ -102,46 +122,21 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
         );
 
         const processPersonalSnapshot = (snapshot: QuerySnapshot<DocumentData>) => {
-            personalNotifs = [];
+            const next: AppNotification[] = [];
             snapshot.forEach((docSnap) => {
-                personalNotifs.push({ id: docSnap.id, ...docSnap.data() } as AppNotification);
+                next.push({ id: docSnap.id, ...docSnap.data() } as AppNotification);
             });
-            updateCombinedNotifications();
+            personalNotifsRef.current = next;
+            personalLoadedRef.current = true;
+            updateCombinedNotifications(pendingLoadedRef.current);
         };
 
-        // 2. Access requests (if admin or manager) — đọc qua Cloud Function listManagedUsers
-        // (functions/src/admin.ts) thay vì query thẳng collection('users'): trước đây
-        // firestore.rules isManager() cho manager list toàn bộ collection (không giới hạn
-        // Kho), lọc allowedKhos chỉ ở client không phải bảo mật thật. Server giờ tự lọc
-        // theo Kho cho manager — không còn realtime, thay bằng polling (xem hằng số phía trên).
-        const isReviewer = userRole === 'admin' || userRole === 'manager';
-
-        const fetchAccessNotifs = async () => {
-            if (!isReviewer) { accessNotifs = []; updateCombinedNotifications(); return; }
-            try {
-                const users = await listManagedUsers('pending');
-                accessNotifs = users
-                    .filter((u) => u.id !== user.uid)
-                    .map((u) => ({
-                        id: `pending-${u.id}`,
-                        title: 'Yêu cầu cấp quyền mới',
-                        message: `${u.displayName || u.email} đăng ký vai trò ${u.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${u.departmentId}`,
-                        type: 'info',
-                        read: false,
-                        createdAt: toTimestampLike(u.requestDate || u.createdAt)
-                    } as AppNotification));
-                updateCombinedNotifications();
-            } catch (error) {
-                console.error("Access requests fetch error:", error);
-            }
-        };
-
-        // FIX: Tắt Firestore WebSocket listener + polling khi tab ẩn, mở lại (kèm fetch bù
-        // 1 lần) khi tab visible trở lại — tránh giữ kết nối/polling chạy nền vô thời hạn
-        // (khớp pattern đã áp dụng ở usePendingApprovalCount.ts / useSystemTraffic.ts).
+        // FIX: Tắt Firestore WebSocket listener khi tab ẩn, mở lại (kèm fetch bù 1 lần) khi tab
+        // visible trở lại — tránh giữ kết nối chạy nền vô thời hạn. Phần yêu cầu cấp quyền không
+        // còn ở đây nữa: store dùng chung (services/pendingApprovalsStore.ts) đã tự tạm dừng và
+        // chạy lại theo trạng thái tab.
         const stopListeners = () => {
             if (unsubPersonalRef.current) { unsubPersonalRef.current(); unsubPersonalRef.current = null; }
-            if (accessPollRef.current) { clearInterval(accessPollRef.current); accessPollRef.current = null; }
         };
 
         const startListeners = () => {
@@ -149,10 +144,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                 unsubPersonalRef.current = onSnapshot(personalQuery, processPersonalSnapshot, (error) => {
                     console.error("Personal notifications realtime error: ", error);
                 });
-            }
-            if (isReviewer && !accessPollRef.current) {
-                fetchAccessNotifs();
-                accessPollRef.current = setInterval(fetchAccessNotifs, ACCESS_POLL_INTERVAL_MS);
             }
         };
 
@@ -172,7 +163,28 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             stopListeners();
         };
-    }, [user, userRole, departmentId]);
+        // `updateCombinedNotifications` ổn định (useCallback deps rỗng) nên KHÔNG đưa vào đây —
+        // để nó vào cũng không sao, nhưng giữ đúng danh sách cũ cho rõ ý: effect này chỉ dựng lại
+        // khi đổi người dùng.
+    }, [user, updateCombinedNotifications]);
+
+    // EFFECT 2 — yêu cầu cấp quyền, lấy từ nguồn dùng chung. Tách riêng để dữ liệu này thay đổi
+    // KHÔNG làm dựng lại listener onSnapshot ở EFFECT 1.
+    useEffect(() => {
+        if (!user) return;
+        pendingLoadedRef.current = pendingLoaded;
+        accessNotifsRef.current = pendingUsers
+            .filter((u) => u.id !== user.uid)
+            .map((u) => ({
+                id: `pending-${u.id}`,
+                title: 'Yêu cầu cấp quyền mới',
+                message: `${u.displayName || u.email} đăng ký vai trò ${u.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${u.departmentId}`,
+                type: 'info',
+                read: false,
+                createdAt: toTimestampLike(u.requestDate || u.createdAt)
+            } as AppNotification));
+        updateCombinedNotifications(pendingLoaded && personalLoadedRef.current);
+    }, [user, pendingUsers, pendingLoaded, updateCombinedNotifications]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {

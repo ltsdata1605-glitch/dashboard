@@ -3394,3 +3394,74 @@ file của đợt này (tổng vẫn đúng 18 lỗi baseline có sẵn); `lint:
 không file nào của đợt này; Playwright: module mount được, 0 lỗi JS runtime. Nhánh đã-đăng-nhập vẫn
 CHƯA kiểm được (Firestore còn hết hạn mức — `stickerResolveSession` trả INTERNAL).
 
+### ĐÃ LÀM: mục 4 (2026-09-17)
+
+**Baseline hoá ra tệ hơn con số ghi ở kế hoạch ban đầu (2 vòng poll).** Đếm lại đúng số component
+mount cùng lúc cho 1 admin/manager đang ở tab Dashboard trên desktop:
+
+| # | Nơi mount | Ghi chú |
+|---|---|---|
+| 1 | `components/layout/NotificationDropdown.tsx` render ở `App.tsx:275` | nằm trong mobile topbar `lg:hidden` — ẩn bằng **CSS**, nên React VẪN mount và VẪN chạy effect trên desktop |
+| 2 | `NotificationDropdown` render ở `components/layout/Header.tsx:212` | `Header` do `DashboardView.tsx:336` render |
+| 3 | `hooks/usePendingApprovalCount.ts` ở `components/layout/PendingApprovalBanner.tsx:10` | |
+| 4 | cùng hook đó, mount LẦN 2 ở `components/views/DashboardView.tsx:106` | |
+
+→ **4 vòng `setInterval` độc lập, mỗi vòng 45s = 320 lượt gọi `listManagedUsers('pending')`/giờ**
+cho mỗi admin/manager đang mở tab. Mỗi lượt server đọc toàn bộ user `status == 'pending'`; với
+manager, `functions/src/admin.ts:146` đọc TOÀN CỤC rồi mới lọc Kho ở bước sau.
+
+**Files sửa:**
+- `services/pendingApprovalsStore.ts` (MỚI) — nguồn duy nhất: 1 vòng poll 120s, 1 cache, 1 request
+  đang bay (`inFlight` coalescing), `STALE_MS` 60s cho component mount thêm, tự dừng khi tab ẩn +
+  fetch bù khi tab hiện lại, dừng hẳn khi không còn subscriber, xoá cache khi đổi `scopeKey`
+  (uid|vai trò|Kho). Cố ý KHÔNG biết gì về auth — nơi gọi tự quyết có đăng ký hay không.
+- `hooks/usePendingApprovalCount.ts` — bỏ toàn bộ vòng poll riêng, còn là lớp đăng ký mỏng. Thêm
+  `usePendingApprovals()` trả `{ users, loaded }`; giữ `usePendingApprovalCount()` nguyên chữ ký cho
+  2 nơi đang dùng.
+- `components/layout/NotificationDropdown.tsx` — bỏ `ACCESS_POLL_INTERVAL_MS`; **tách 1 effect
+  thành 2** (thông báo cá nhân / yêu cầu cấp quyền), đưa 2 nguồn notification ra `useRef`.
+- `services/adminUserService.ts` — `adminUpdateUser()` phát event `ycx-managed-users-changed`.
+- `tests/unit/pending-approvals-store.test.ts` (MỚI, 10 test).
+- `tests/e2e/pending-approvals-poll-rate.spec.ts` (MỚI).
+
+**Số đo (test đơn vị chạy chính code của store, dùng fake timer):**
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| 3-4 component mount cùng lúc | 3-4 lượt gọi | **1 lượt gọi** (`inFlight` coalescing) |
+| Mount thêm 1 component trong 60s | +1 lượt gọi | **+0** (dùng cache) |
+| 1 giờ, 3 subscriber, tab luôn mở | **240-320 lượt gọi** | **29-31 lượt gọi** |
+| Tab ẩn 8 phút | vẫn poll | **0 lượt gọi**, fetch bù đúng 1 lần khi hiện lại |
+| Hủy hết subscriber | interval còn chạy | **dừng hẳn** |
+
+**2 vấn đề THẬT phát hiện trong lúc sửa (nếu bỏ qua sẽ thành bug):**
+1. Effect của `NotificationDropdown` đọc `pendingUsers` nhưng dependency array cũ là
+   `[user, userRole, departmentId]`. Để nguyên thì **thông báo cấp quyền không bao giờ cập nhật**;
+   thêm `pendingUsers` vào deps thì mỗi lần dữ liệu đổi lại **hủy + dựng lại listener `onSnapshot`**
+   của thông báo cá nhân — tốn đúng thứ lượt đọc đang đi giảm. Phải tách 2 effect.
+2. Cờ `isInitialLoadRef` (chặn bắn toast hàng loạt lúc mở app) trước đây được hạ bởi nguồn nào về
+   trước, mà lúc đó nguồn nào cũng đã có dữ liệu thật. Sau khi tách, effect "yêu cầu cấp quyền"
+   chạy ngay lúc mount với mảng rỗng và sẽ hạ cờ SỚM → mọi thông báo cá nhân chưa đọc bị coi là mới
+   và bắn toast mỗi lần mở app. Đã thêm cờ `loaded` vào store + chỉ hạ `isInitialLoadRef` khi CẢ
+   HAI nguồn đã báo cáo xong.
+
+Ngoài ra `subscribeToPendingApprovals` gộp 2 lần `addEventListener` (`document` và `window`) vào
+chung 1 guard `typeof document` — đã tách guard riêng cho từng đối tượng (test đơn vị chạy
+`environment: 'node'` làm lộ ra chỗ này).
+
+**Chống hồi quy độ tươi:** chu kỳ tăng 45s → 120s nên badge/banner sẽ chậm hơn. Bù lại bằng event
+`ycx-managed-users-changed` phát từ `adminUpdateUser()`: admin vừa duyệt 1 yêu cầu là làm mới NGAY
+(bỏ qua `STALE_MS`), **tươi hơn cả bản cũ** (trước phải chờ tới 45s). Dùng event thay vì import
+trực tiếp để tránh vòng import (store đã import `listManagedUsers` từ `adminUserService`).
+
+**Kiểm chứng đã chạy:** `npm run test:unit` **463 passed | 1 skipped** (+10 test mới);
+`npm run build` ✓ 8.11s; `npx eslint` trên 5 file: sạch; `npx tsc --noEmit`: 0 lỗi trong file của
+đợt này (tổng vẫn đúng 18 lỗi baseline); `lint:ratchet` vẫn đúng 13 vi phạm baseline, không cái nào
+của đợt này; Playwright: 0 lỗi JS runtime sau khi tách effect, chế độ Dùng Thử gọi 0 lượt.
+
+⚠️ **Nói rõ giới hạn test Playwright này:** nó KHÔNG so sánh được trước/sau. Tôi đã đo cả 2 phía
+bằng `git stash` — bản cũ cũng cho 0 lượt gọi ở chế độ Dùng Thử, vì chế độ đó có `user = null` nên
+effect của `NotificationDropdown` return sớm ngay từ bản cũ (dù `userRole` là `'manager'`, xem
+`contexts/AuthContext.tsx:242`). Muốn đo trước/sau trên đường đi admin thật phải đăng nhập bằng tài
+khoản Google có quyền admin — không tự động hoá được. Phần giảm tải thật đã đo bằng test đơn vị.
+
