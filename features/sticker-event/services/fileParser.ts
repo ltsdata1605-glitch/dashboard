@@ -308,25 +308,45 @@ const getStore = async (mode: IDBTransactionMode) => {
 
 export const saveData = async (products: Product[], fileInfo: FileInfo): Promise<void> => {
   const store = await getStore('readwrite');
-  store.put(products, 'products');
-  store.put(fileInfo, 'fileInfo');
+  return new Promise((resolve, reject) => {
+    const transaction = store.transaction;
+    store.put(products, 'products');
+    store.put(fileInfo, 'fileInfo');
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
 };
 
 export const saveInventoryData = async (inventory: InventoryItem[], timestamp: Date): Promise<void> => {
     const store = await getStore('readwrite');
-    store.put(inventory, 'inventory');
-    store.put(timestamp, 'inventoryUploadTimestamp');
+    return new Promise((resolve, reject) => {
+        const transaction = store.transaction;
+        store.put(inventory, 'inventory');
+        store.put(timestamp, 'inventoryUploadTimestamp');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
 };
 
 export const saveDisplayedProducts = async (products: Product[], timestamp?: number): Promise<void> => {
     const store = await getStore('readwrite');
-    store.put(products, 'displayedProducts');
-    store.put(timestamp || Date.now(), 'displayedProductsLastModified');
+    return new Promise((resolve, reject) => {
+        const transaction = store.transaction;
+        store.put(products, 'displayedProducts');
+        store.put(timestamp || Date.now(), 'displayedProductsLastModified');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
 };
 
 export const saveEmployeeName = async (name: string): Promise<void> => {
     const store = await getStore('readwrite');
-    store.put(name, 'employeeName');
+    return new Promise((resolve, reject) => {
+        const transaction = store.transaction;
+        const putReq = store.put(name, 'employeeName');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
 };
 
 interface LoadDataResult {
