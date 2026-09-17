@@ -3339,3 +3339,58 @@ bằng `git stash`: trước khi sửa cũng đúng 19 lỗi ở đúng 3 file �
 `tests/e2e/inventory-upload-fix.spec.ts` do chính tôi tạo ở đợt trước, đã sửa). Nguồn gốc là 2
 commit gần nhất về tính năng "TOP siêu thị" (`31edd04b`, `224b5450`) — cần 1 đợt riêng.
 
+### ĐÃ LÀM: mục 3 (2026-09-17)
+
+**Files sửa:**
+- `features/sticker-event/services/firebaseService.ts` — thêm cache phiên
+  (`SAVED_LISTS_CACHE_TTL_MS` 10 phút + `invalidateSavedListsCache()` gọi ngay trong
+  `saveListToFirestore`/`deleteSavedListFromFirestore`); `fetchSavedListsFromFirestore` KHÔNG còn
+  đọc subcollection `itemChunks` lúc liệt kê, thêm tham số `{ forceRefresh }`; thêm hàm mới
+  `fetchSavedListItems(storeId, listId)` tải items của đúng 1 danh sách khi người dùng mở nó.
+- `features/sticker-event/types.ts` — `SavedList` thêm cờ `itemsChunked?`.
+- `features/sticker-event/SavedListsModal.tsx` — nút "Mở" đổi sang `handleOpenList()`: danh sách
+  đã chunk thì tải items theo yêu cầu, có trạng thái "Đang tải..." và thông báo nếu tải lỗi.
+- `features/sticker-event/hooks/useStickerPrinterData.ts` — dựng `pages` ưu tiên
+  `stickerMeta.pages` (field trên doc cha, miễn phí); chỉ danh sách vừa lớn vừa KHÔNG có
+  stickerMeta (di sản) mới đọc chunk, và chỉ đọc đúng danh sách đó.
+- `tests/unit/sticker-firestore-quota.test.ts` — thêm 8 test cho mục 3 (tổng 14 test).
+
+**Số đo THẬT** (cùng phương pháp: chạy bộ mock đếm lên bản `git HEAD` cũ rồi lên bản mới; dữ liệu
+mẫu 3 danh sách trong đó 1 danh sách lớn chia 5 chunk):
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| Mở "DS đã lưu" 1 lần | 9 lượt đọc | **4 lượt đọc** |
+| Mở lại panel lần 2 | 9 lượt đọc | **0 lượt đọc** |
+| Mở panel 10 lần trong 10 phút | **90 lượt đọc** | **4 lượt đọc** |
+| Mở 1 danh sách lớn (5 chunk) | *(đã đọc sẵn lúc liệt kê)* | 6 lượt đọc, chỉ danh sách đó |
+
+Tỷ lệ tiết kiệm tăng theo số danh sách và số chunk thật của kho: phần `itemChunks` bị loại bỏ tỷ
+lệ thuận với tổng số chunk của MỌI danh sách lớn trong kho, còn cache loại bỏ toàn bộ các lần mở
+lại trong 10 phút.
+
+**CỐ Ý KHÔNG làm 2 việc trong kế hoạch mục 3 ban đầu — lý do cụ thể:**
+
+1. **KHÔNG hạ `limit(500)` → `limit(50)`.** Query này không có `orderBy`, nên Firestore trả về
+   theo document ID (ID tự sinh ngẫu nhiên của `doc()`, không liên quan thời gian tạo). Hạ limit
+   khi không có `orderBy` sẽ **âm thầm ẩn danh sách** — đúng lỗi mà comment sẵn trong code đã ghi
+   là lý do họ NÂNG limit lên. Cách đúng là `orderBy('createdAt','desc') + limit` nhỏ, nhưng
+   comment đó cũng ghi đã thử `orderBy` và modal chậm hẳn (nghi do Firestore backfill index lần
+   đầu). Thêm nữa, `limit` nhỏ + lọc quyền ở CLIENT (nhân viên chỉ thấy danh sách của mình) có thể
+   khiến nhân viên thấy 0 danh sách nếu 50 bản mới nhất đều của admin. Muốn làm đúng phải lọc
+   `where('userId','==',…)` ở server, nhưng bộ lọc client hiện tại so khớp mờ (`userId` HOẶC
+   `authUid`, không phân biệt hoa thường) nên không chuyển thẳng sang `where` được. → cần 1 đợt
+   riêng, có đo trước.
+2. **KHÔNG bỏ query store `'SUPERADMIN'`.** `firestore.stickerevent.rules:33-34` cho phép
+   `read: if isSignedIn()` trên `stores/{storeId}/savedLists` — tức mọi user đăng nhập ĐỀU đọc
+   được store này, nên nó thật sự tốn `1 + số danh sách SUPERADMIN` lượt đọc mỗi lần liệt kê (không
+   phải bị rules chặn miễn phí như có thể tưởng). Nhưng bỏ đi sẽ **ẩn danh sách** mà user hiện đang
+   thấy — đây là quyết định nghiệp vụ, phải hỏi user chứ không tự quyết. Cache đã làm nó miễn phí
+   ở các lần mở lại.
+
+**Kiểm chứng đã chạy:** `npm run test:unit` **453 passed | 1 skipped** (+8 test mới);
+`npm run build` ✓ 8.56s; `npx eslint` trên 5 file đã sửa: sạch; `npx tsc --noEmit`: 0 lỗi trong
+file của đợt này (tổng vẫn đúng 18 lỗi baseline có sẵn); `lint:ratchet` vẫn đúng 13 vi phạm baseline,
+không file nào của đợt này; Playwright: module mount được, 0 lỗi JS runtime. Nhánh đã-đăng-nhập vẫn
+CHƯA kiểm được (Firestore còn hết hạn mức — `stickerResolveSession` trả INTERNAL).
+

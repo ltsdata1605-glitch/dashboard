@@ -25,6 +25,11 @@ export interface SavedList {
   createdAt: string;
   items: SavedListItem[];
   totalItems: number;
+  /** `true` khi danh sách được lưu dạng chunk ở subcollection `itemChunks` (danh sách lớn, xem
+   * saveListToFirestore). Lúc LIỆT KÊ, `items` của các danh sách này để rỗng có chủ ý — đọc
+   * itemChunks của mọi danh sách mỗi lần mở modal là nguồn tốn lượt đọc Firestore lớn nhất của
+   * In Sticker (audit hạn mức 2026-09-17). Cần items thật thì gọi fetchSavedListItems(). */
+  itemsChunked?: boolean;
 }
 
 // Dữ liệu doc Firestore users/{uid} (xem setDoc trong Login.tsx) — để optional vì

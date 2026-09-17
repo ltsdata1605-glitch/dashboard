@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { saveSetting, getSetting } from '../services/dbService';
-import { saveListToFirestore, fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from '../services/firebaseService';
+import { saveListToFirestore, fetchSavedListsFromFirestore, deleteSavedListFromFirestore, fetchSavedListItems } from '../services/firebaseService';
 import { auth } from '../firebase';
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from '../stickerprinter/types';
 import { resolvePagePrices, generatePageHtml, isHistoryDuplicate, generateDrawPagesHtml } from '../stickerprinter/pageHtmlUtils';
@@ -1112,12 +1112,22 @@ export function useStickerPrinterData() {
                 // Nếu là Admin/Quản lý: LẤY TOÀN BỘ DANH SÁCH DO CẢ NHÂN VIÊN VÀ ADMIN TẠO (truyền undefined cho userId)
                 const cloudLists = await fetchSavedListsFromFirestore(targetStoreId, isAdmin ? undefined : username);
                 if (cloudLists.length > 0) {
-                    const formattedLists: SavedStickerList[] = cloudLists.map((c: any) => {
+                    const formattedLists: SavedStickerList[] = await Promise.all(cloudLists.map(async (c: any) => {
                         let pages: StickerPage[] = [];
+                        // QUOTA FIX (2026-09-17): danh sách lớn đã chunk giờ về đây với `items`
+                        // rỗng + `itemsChunked = true` (xem fetchSavedListsFromFirestore). Ưu tiên
+                        // dựng pages từ `stickerMeta.pages` — field nằm ngay trên document cha nên
+                        // MIỄN PHÍ, và đó là đường đi của gần như mọi danh sách sticker thật. Chỉ
+                        // danh sách vừa lớn vừa KHÔNG có stickerMeta (di sản) mới phải đọc chunk,
+                        // và khi đó chỉ đọc đúng danh sách đó thay vì toàn bộ như trước.
+                        let sourceItems: any[] = Array.isArray(c.items) ? c.items : [];
+                        if (!c.stickerMeta?.pages && c.itemsChunked && sourceItems.length === 0) {
+                            sourceItems = await fetchSavedListItems(c.storeId || targetStoreId, c.id);
+                        }
                         if (c.stickerMeta?.pages) {
                             pages = c.stickerMeta.pages;
-                        } else if (Array.isArray(c.items)) {
-                            pages = c.items.map((item: any, idx: number) => ({
+                        } else if (sourceItems.length > 0) {
+                            pages = sourceItems.map((item: any, idx: number) => ({
                                 id: item.msp || `page_${idx}`,
                                 label: item.sanPham || item.name || 'Sản phẩm',
                                 oldPrice: item.giaGoc || '',
@@ -1141,7 +1151,7 @@ export function useStickerPrinterData() {
                             headerTextContent: c.stickerMeta?.headerTextContent || '',
                             storeId: c.storeId || targetStoreId,
                         };
-                    });
+                    }));
                     
                     // Merge Cloud lists với Local lists hiện tại để không làm mất danh sách vừa tạo
                     setSavedLists(prev => {

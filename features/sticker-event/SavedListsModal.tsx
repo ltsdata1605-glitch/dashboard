@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SavedList, SavedListItem } from './types';
-import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from './services/firebaseService';
+import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore, fetchSavedListItems } from './services/firebaseService';
 import { TrashIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
@@ -27,6 +27,8 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
         isOpen: false,
         message: ''
     });
+    // id của danh sách đang tải `items` theo yêu cầu (chỉ xảy ra với danh sách lớn đã chunk).
+    const [loadingItemsId, setLoadingItemsId] = useState<string | null>(null);
 
     useEffect(() => {
         loadLists();
@@ -50,6 +52,31 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
             console.error(err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    /**
+     * Mở 1 danh sách. Danh sách lớn được lưu dạng chunk nên lúc liệt kê `items` để rỗng có chủ ý
+     * (QUOTA FIX 2026-09-17 — xem `itemsChunked` trong types.ts): đọc chunk của mọi danh sách ngay
+     * lúc liệt kê là nguồn tốn lượt đọc Firestore lớn nhất của In Sticker. Tải đúng lúc cần ở đây.
+     */
+    const handleOpenList = async (list: SavedList) => {
+        if (!list.itemsChunked || list.items.length > 0) {
+            onLoadList(list.items);
+            onClose();
+            return;
+        }
+        setLoadingItemsId(list.id);
+        try {
+            const items = await fetchSavedListItems(list.storeId || storeId, list.id);
+            if (items.length === 0) {
+                setAlertConfig({ isOpen: true, message: 'Không tải được nội dung danh sách này. Vui lòng thử lại.' });
+                return;
+            }
+            onLoadList(items);
+            onClose();
+        } finally {
+            setLoadingItemsId(null);
         }
     };
 
@@ -124,13 +151,11 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                     <div className="flex items-center gap-2 ml-4">
                                         <Button
                                             variant="ghost"
-                                            onClick={() => {
-                                                onLoadList(list.items);
-                                                onClose();
-                                            }}
+                                            disabled={loadingItemsId === list.id}
+                                            onClick={() => { void handleOpenList(list); }}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-lg text-sm font-medium transition-colors"
                                         >
-                                            Mở
+                                            {loadingItemsId === list.id ? 'Đang tải...' : 'Mở'}
                                         </Button>
                                         <Button
                                             variant="ghost"

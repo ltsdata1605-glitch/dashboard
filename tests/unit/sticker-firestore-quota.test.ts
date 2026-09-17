@@ -72,8 +72,14 @@ vi.mock('firebase/firestore', () => ({
     limit: () => ({}),
 }));
 
-const { uploadInventoryToFirestore, clearStoreDataOnFirestore } =
-    await import('../../features/sticker-event/services/firebaseService');
+const {
+    uploadInventoryToFirestore,
+    clearStoreDataOnFirestore,
+    fetchSavedListsFromFirestore,
+    fetchSavedListItems,
+    saveListToFirestore,
+    invalidateSavedListsCache,
+} = await import('../../features/sticker-event/services/firebaseService');
 
 const STORE_ID = 'TESTQUOTA';
 const INV_CHUNKS = `stores/${STORE_ID}/inventoryChunks`;
@@ -164,5 +170,105 @@ describe('Hạn mức Firestore — clearStoreDataOnFirestore', () => {
 
         expect(ops.deletes).toBe(0);
         expect(ops.batchCommits).toBe(0);                // không gửi request nào lên mạng
+    });
+});
+
+
+describe('Hạn mức Firestore — liệt kê "DS đã lưu" (nguồn tốn lượt ĐỌC lớn nhất)', () => {
+    const LISTS = `stores/${STORE_ID}/savedLists`;
+
+    /** 2 danh sách nhỏ (items nằm ngay trên doc cha) + 1 danh sách lớn đã chunk thành 5 chunk. */
+    const seedLists = () => {
+        for (const id of ['small_1', 'small_2']) {
+            store.set(`${LISTS}/${id}`, {
+                id, name: `DS ${id}`, userId: 'nv1', authUid: 'uid_test', storeId: STORE_ID,
+                createdAt: '2026-09-01T00:00:00.000Z', totalItems: 2,
+                items: JSON.stringify([{ msp: 'A' }, { msp: 'B' }]),
+            });
+        }
+        store.set(`${LISTS}/big_1`, {
+            id: 'big_1', name: 'DS lớn', userId: 'nv1', authUid: 'uid_test', storeId: STORE_ID,
+            createdAt: '2026-09-02T00:00:00.000Z', totalItems: 15000, itemsChunked: true,
+        });
+        for (let i = 0; i < 5; i++) {
+            store.set(`${LISTS}/big_1/itemChunks/chunk_${i}`, { items: JSON.stringify([{ msp: `C${i}` }]), count: 1 });
+        }
+    };
+
+    beforeEach(() => { store.clear(); resetOps(); autoId = 0; invalidateSavedListsCache(); seedLists(); });
+
+    it('liệt kê KHÔNG đọc subcollection itemChunks nữa', async () => {
+        resetOps();
+        const lists = await fetchSavedListsFromFirestore(STORE_ID);
+
+        // 3 doc ở store của user + 1 lượt tối thiểu cho query store 'SUPERADMIN' (rỗng) = 4.
+        // Trước bản sửa còn cộng thêm 5 lượt đọc chunk của danh sách lớn.
+        expect(ops.reads).toBe(4);
+        expect(lists).toHaveLength(3);
+
+        // Danh sách nhỏ vẫn có items ngay (field nằm trên doc cha — miễn phí).
+        expect(lists.find(l => l.id === 'small_1')!.items).toHaveLength(2);
+        // Danh sách lớn: items rỗng + cờ itemsChunked để nơi gọi tự tải khi cần.
+        const big = lists.find(l => l.id === 'big_1')!;
+        expect(big.items).toEqual([]);
+        expect(big.itemsChunked).toBe(true);
+        expect(big.totalItems).toBe(15000);   // vẫn hiện đúng số lượng trên màn hình liệt kê
+    });
+
+    it('mở lại panel trong 10 phút: 0 lượt đọc (cache phiên)', async () => {
+        await fetchSavedListsFromFirestore(STORE_ID);
+        resetOps();
+
+        const again = await fetchSavedListsFromFirestore(STORE_ID);
+
+        expect(ops.reads).toBe(0);
+        expect(again).toHaveLength(3);
+    });
+
+    it('cache không bị nơi gọi làm bẩn (trả về bản copy)', async () => {
+        const first = await fetchSavedListsFromFirestore(STORE_ID);
+        first.length = 0;                                  // nơi gọi sort/filter tại chỗ
+        const second = await fetchSavedListsFromFirestore(STORE_ID);
+        expect(second).toHaveLength(3);
+    });
+
+    it('lưu danh sách mới làm mới cache ngay, không phải chờ TTL', async () => {
+        await fetchSavedListsFromFirestore(STORE_ID);
+        await saveListToFirestore(STORE_ID, 'nv1', 'DS vừa lưu', [{ msp: 'Z' }]);
+        resetOps();
+
+        const after = await fetchSavedListsFromFirestore(STORE_ID);
+
+        expect(ops.reads).toBeGreaterThan(0);              // đã đọc lại thật
+        expect(after).toHaveLength(4);
+        expect(after.some(l => l.name === 'DS vừa lưu')).toBe(true);
+    });
+
+    it('mở panel 10 lần liên tiếp: 4 lượt đọc (đo baseline bản cũ trên CÙNG dữ liệu: 90)', async () => {
+        resetOps();
+        for (let i = 0; i < 10; i++) await fetchSavedListsFromFirestore(STORE_ID);
+        expect(ops.reads).toBe(4);
+    });
+
+    it('forceRefresh bỏ qua cache', async () => {
+        await fetchSavedListsFromFirestore(STORE_ID);
+        resetOps();
+        await fetchSavedListsFromFirestore(STORE_ID, undefined, { forceRefresh: true });
+        expect(ops.reads).toBe(4);
+    });
+
+    it('fetchSavedListItems chỉ đọc chunk của ĐÚNG danh sách được mở', async () => {
+        resetOps();
+        const items = await fetchSavedListItems(STORE_ID, 'big_1');
+
+        expect(items).toHaveLength(5);                     // 5 chunk × 1 item
+        expect(ops.reads).toBe(1 + 5);                     // 1 doc cha + 5 chunk, không đọc DS khác
+    });
+
+    it('fetchSavedListItems trên danh sách KHÔNG chunk: chỉ 1 lượt đọc', async () => {
+        resetOps();
+        const items = await fetchSavedListItems(STORE_ID, 'small_1');
+        expect(items).toHaveLength(2);
+        expect(ops.reads).toBe(1);
     });
 });

@@ -308,6 +308,25 @@ export const clearAllUsers = async (storeId: string) => {
 // Product đầy đủ) nên chunk lớn hơn nhiều (3000) vẫn an toàn dưới ngưỡng 1MiB.
 const SAVED_LIST_CHUNK_SIZE = 3000;
 
+// QUOTA FIX (2026-09-17): cache phiên cho danh sách đã lưu.
+//
+// fetchSavedListsFromFirestore() là nguồn tốn lượt ĐỌC Firestore lớn nhất của In Sticker: mỗi lần
+// mở "DS đã lưu" là 1 query limit(500) cho TỪNG store (store của user + 'SUPERADMIN'), và trước
+// bản sửa này còn đọc thêm cả subcollection itemChunks của mọi danh sách lớn. Hai nơi gọi nó đều
+// gọi lại VÔ ĐIỀU KIỆN mỗi lần mở (SavedListsModal useEffect[storeId], toggleShowSavedLists),
+// nên mở panel vài chục lần trong ngày là cạn hạn mức 50.000 lượt đọc.
+//
+// TTL 10 phút là mức đánh đổi: danh sách chỉ đổi khi CHÍNH người dùng này lưu/xoá (đã xử lý bằng
+// invalidateSavedListsCache() ngay tại 2 hàm ghi, nên thấy ngay lập tức, không phải chờ TTL), hoặc
+// khi NGƯỜI KHÁC cùng kho lưu danh sách mới (admin xem danh sách của nhân viên) — trường hợp này
+// chậm nhất 10 phút mới thấy, chấp nhận được cho 1 danh sách đã lưu.
+const SAVED_LISTS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+const savedListsCache = new Map<string, { at: number; lists: SavedList[] }>();
+
+/** Xoá cache để lượt đọc kế tiếp lấy dữ liệu mới. Gọi ngay sau mọi thao tác lưu/xoá danh sách. */
+export const invalidateSavedListsCache = () => savedListsCache.clear();
+
 export const saveListToFirestore = async (storeId: string, userId: string, listName: string, items: any[], stickerMeta?: { stickerType?: string; headerTextContent?: string; pages?: any[] }) => {
   if (!userId) throw new Error("User ID là bắt buộc.");
   const targetStoreId = storeId || 'SUPERADMIN';
@@ -342,6 +361,7 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
     } else {
       await setDoc(newListRef, { ...baseDoc, items: JSON.stringify(items) });
     }
+    invalidateSavedListsCache();
     return newListRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `stores/${targetStoreId}/savedLists`);
@@ -349,10 +369,24 @@ export const saveListToFirestore = async (storeId: string, userId: string, listN
   }
 };
 
-export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifier?: string): Promise<SavedList[]> => {
+export const fetchSavedListsFromFirestore = async (
+  storeId: string,
+  userIdentifier?: string,
+  options?: { forceRefresh?: boolean }
+): Promise<SavedList[]> => {
   const storeIdsToFetch = Array.from(new Set([storeId, 'SUPERADMIN'].filter(Boolean)));
   let combinedLists: SavedList[] = [];
   const currentUid = auth.currentUser?.uid || '';
+
+  // Cache phiên — xem giải thích ở SAVED_LISTS_CACHE_TTL_MS. Trả bản COPY để nơi gọi có sort/
+  // filter tại chỗ cũng không làm bẩn cache.
+  const cacheKey = `${storeIdsToFetch.join(',')}|${userIdentifier ?? '*'}|${currentUid}`;
+  if (!options?.forceRefresh) {
+    const hit = savedListsCache.get(cacheKey);
+    if (hit && Date.now() - hit.at < SAVED_LISTS_CACHE_TTL_MS) {
+      return hit.lists.slice();
+    }
+  }
 
   for (const sId of storeIdsToFetch) {
     const listsRef = collection(db, 'stores', sId, 'savedLists');
@@ -404,24 +438,18 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
           }
         }
 
+        // QUOTA FIX (2026-09-17): KHÔNG còn đọc subcollection itemChunks ở đây.
+        //
+        // Danh sách lớn được chunk vào `itemChunks` (xem saveListToFirestore). Trước bản sửa này,
+        // mỗi lần LIỆT KÊ đều getDocs(itemChunks) cho TỪNG danh sách đã chunk — tốn thêm nhiều
+        // lượt đọc cho dữ liệu mà màn hình liệt kê không dùng (chỉ hiện tên/ngày/`totalItems`).
+        // Giờ chỉ đánh dấu `itemsChunked` để nơi gọi tự tải bằng fetchSavedListItems() khi người
+        // dùng thực sự mở danh sách đó.
+        //
+        // Danh sách KHÔNG chunk vẫn parse `items` như cũ: field đó nằm ngay trên document cha vừa
+        // đọc rồi, nên miễn phí hoàn toàn — giữ lại để không đổi hành vi nơi gọi.
         let parsedItems: SavedListItem[] = [];
-        if (data.itemsChunked) {
-          try {
-            const chunksSnap = await getDocs(collection(docSnap.ref, 'itemChunks'));
-            chunksSnap.docs.forEach(chunkDoc => {
-              const chunkData = chunkDoc.data();
-              if (chunkData.items) {
-                try {
-                  parsedItems = parsedItems.concat(JSON.parse(chunkData.items));
-                } catch (e) {
-                  console.error('Error parsing saved list chunk:', e);
-                }
-              }
-            });
-          } catch (e) {
-            console.error('Error fetching saved list chunks:', e);
-          }
-        } else {
+        if (!data.itemsChunked) {
           try {
             parsedItems = JSON.parse(data.items || '[]');
           } catch (e) {
@@ -432,6 +460,7 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
         return {
           ...data,
           items: parsedItems,
+          itemsChunked: data.itemsChunked === true,
           stickerMeta: parsedStickerMeta
         } as SavedList & { stickerMeta?: any };
       }));
@@ -445,7 +474,9 @@ export const fetchSavedListsFromFirestore = async (storeId: string, userIdentifi
   // Remove duplicates by ID and sort by createdAt descending
   const map = new Map<string, SavedList>();
   combinedLists.forEach(item => map.set(item.id, item));
-  return Array.from(map.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const result = Array.from(map.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  savedListsCache.set(cacheKey, { at: Date.now(), lists: result });
+  return result.slice();
 };
 
 export const deleteSavedListFromFirestore = async (storeId: string, listId: string) => {
@@ -465,8 +496,48 @@ export const deleteSavedListFromFirestore = async (storeId: string, listId: stri
     }
     batch.delete(listRef);
     await batch.commit();
+    invalidateSavedListsCache();
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `stores/${storeId}/savedLists/${listId}`);
+  }
+};
+
+/**
+ * Tải `items` của ĐÚNG 1 danh sách, dùng khi người dùng thực sự mở danh sách đó.
+ *
+ * Tách ra khỏi lượt liệt kê (xem `itemsChunked` trong types.ts): trước bản sửa 2026-09-17,
+ * fetchSavedListsFromFirestore() đọc itemChunks của MỌI danh sách ngay lúc liệt kê, dù màn hình
+ * chỉ hiện tên/ngày/số lượng. Giờ chỉ đọc chunk của danh sách người dùng bấm vào.
+ */
+export const fetchSavedListItems = async (storeId: string, listId: string): Promise<SavedListItem[]> => {
+  if (!storeId || !listId) return [];
+  const listRef = doc(db, 'stores', storeId, 'savedLists', listId);
+  try {
+    const snap = await getDoc(listRef);
+    if (!snap.exists()) return [];
+    const data = snap.data();
+    if (!data.itemsChunked) {
+      try {
+        return JSON.parse(data.items || '[]') as SavedListItem[];
+      } catch {
+        return [];
+      }
+    }
+    const chunksSnap = await getDocs(collection(listRef, 'itemChunks'));
+    let parsed: SavedListItem[] = [];
+    chunksSnap.docs.forEach(chunkDoc => {
+      const chunkData = chunkDoc.data();
+      if (!chunkData.items) return;
+      try {
+        parsed = parsed.concat(JSON.parse(chunkData.items));
+      } catch (e) {
+        console.error('Error parsing saved list chunk:', e);
+      }
+    });
+    return parsed;
+  } catch (error) {
+    console.error('Error fetching saved list items:', error);
+    return [];
   }
 };
 
