@@ -3575,3 +3575,40 @@ tình huống ghi document thành công nhưng cập nhật `metadata/sync` th�
 `npm run build` ✓ 8.45s; `npx eslint` trên 6 file: sạch; `npx tsc --noEmit`: 0 lỗi trong file của
 đợt này (tổng vẫn đúng 18 lỗi baseline); `lint:ratchet` vẫn đúng 13 vi phạm baseline.
 
+### PHÁT HIỆN QUAN TRỌNG: thông báo lỗi ĐẦY ĐỦ từ server (2026-09-17, cuối đợt)
+
+Lúc chạy Playwright kiểm chứng mục 5, tài khoản test đăng nhập được (Cloud Function
+`stickerResolveSession` đã chạy lại bình thường) và màn hình In Sticker hiện **nguyên văn** lỗi từ
+Firestore — khác hẳn thông báo rút gọn "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày" mà
+`useStickerEventDb.ts:218` dịch lại:
+
+> Quota limit exceeded. Retry after quota limits are reset or enable billing for this project to
+> avoid quota checks. Cause - Quota exceeded for quota metric **'Free daily read units per project
+> (free tier database)'** and limit 'Free daily read units per project (free tier database) per day'
+> of service 'firestore.googleapis.com' for consumer 'project_number:388853115750'.
+> **This database cannot exceed free quota limits even when a billing instrument is enabled.**
+
+Ba điều được xác nhận, không còn phải suy đoán:
+
+1. **Hết hạn mức ĐỌC, không phải ghi** ("Free daily **read** units"). Nghĩa là mục 3 và mục 5
+   (giảm lượt đọc) là 2 mục đúng trọng tâm nhất của cả đợt; mục 1/2/6 (giảm ghi) vẫn cần nhưng
+   không phải nguyên nhân người dùng bị chặn.
+2. **Hạn mức tính THEO PROJECT** ("per project") → khẳng định phát hiện ở đầu đợt: 4 khu vực dùng
+   chung project `dashboa-7e20b` nên tải của Phân Tích / Report BI / Phân Ca cộng dồn vào cùng bể
+   với In Sticker.
+3. 🔴 **Database của In Sticker là "free tier database" và KHÔNG THỂ vượt hạn mức miễn phí DÙ CÓ
+   BẬT THANH TOÁN.** Đây là điều tôi đã cảnh báo cần xác nhận ở đầu đợt (Firebase ghi gói miễn phí
+   chỉ áp cho database `(default)`, mà In Sticker dùng database phụ `ai-studio-16672ec9-…`). Giờ
+   server nói thẳng. **Hệ quả: nâng lên gói Blaze cũng KHÔNG nới được hạn mức cho database này.**
+
+**Việc nên làm tiếp (cần user quyết, không phải việc agent tự làm):** muốn thoát trần cứng này thì
+phải chuyển dữ liệu In Sticker sang database `(default)` của project (database này nhận gói miễn phí
+tiêu chuẩn và CÓ THỂ nâng bằng Blaze), hoặc tạo một database tiêu chuẩn mới. Đây là việc di trú dữ
+liệu + đổi cấu hình `firebase-applet-config.json` + cập nhật `firestore.stickerevent.rules`, phải
+có kế hoạch riêng và người dùng đồng ý. Trong lúc chưa làm, các mục giảm lượt đọc (3, 5 đã xong;
+mục 3b còn treo) là cách duy nhất để không chạm trần.
+
+⚠️ **Lưu ý cho lần sau:** chính các lần chạy Playwright hôm nay cũng tiêu lượt đọc của project. Khi
+đang điều tra hạn mức, đừng chạy test E2E đọc nhiều lần liên tiếp — dùng test đơn vị với mock đếm
+(`tests/unit/sticker-firestore-quota.test.ts`) để đo, chỉ dùng E2E khi thật cần quan sát runtime.
+
