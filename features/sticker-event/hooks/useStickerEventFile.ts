@@ -11,8 +11,7 @@ import {
 } from '../services/fileParser';
 import { 
   uploadProductsToFirestore, 
-  uploadInventoryToFirestore,
-  clearStoreDataOnFirestore
+  uploadInventoryToFirestore
 } from '../services/firebaseService';
 
 interface UseStickerEventFileProps {
@@ -87,9 +86,10 @@ export function useStickerEventFile({
         const productMap = new Map<string, Product>();
         let partialError = null;
 
-        if (userData && userData.storeId) {
-            await clearStoreDataOnFirestore(userData.storeId, 'products');
-        }
+        // QUOTA FIX (2026-09-17): đã bỏ lượt clearStoreDataOnFirestore(storeId, 'products') ở đây.
+        // Nó gọi SAI tên collection (tên thật là 'productChunks') nên 50 lệnh xoá mỗi lần upload
+        // đều bay vào collection không tồn tại — không dọn được gì mà vẫn trừ hạn mức. Việc dọn
+        // chunk dư giờ do uploadProductsToFirestore() tự làm, chỉ xoá đúng phần thừa.
 
         for (const file of files) {
           fileNames.push(file.name);
@@ -213,9 +213,9 @@ export function useStickerEventFile({
       setIsLoading(true);
       setError(null);
       try {
-        if (userData && userData.storeId) {
-            await clearStoreDataOnFirestore(userData.storeId, 'inventory');
-        }
+        // QUOTA FIX (2026-09-17): cùng lý do như ở handleFileChange phía trên — lượt dọn này gọi
+        // sai tên collection ('inventory' thay vì 'inventoryChunks') nên vô tác dụng; việc dọn
+        // chunk dư đã chuyển vào uploadInventoryToFirestore().
 
         const items = await parseInventoryFile(file);
         const newTimestamp = new Date();

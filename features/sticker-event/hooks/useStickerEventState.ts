@@ -5,6 +5,9 @@ import { ManualProductWithId } from '../ManualInputModal';
 import { saveEmployeeName, parseCurrency, saveDisplayedProducts } from '../services/fileParser';
 import { saveUserState } from '../services/firebaseService';
 import { SortField, SortDirection } from '../InventoryToolbar';
+// Nhịp lưu trạng thái phiên + 2 hàm quyết định, tách ra module thuần để test được bằng vitest
+// (xem services/sessionSyncPolicy.ts và tests/unit/sticker-session-sync-policy.test.ts).
+import { LOCAL_SAVE_DEBOUNCE_MS, cloudSaveDelayMs, shouldSyncToCloud } from '../services/sessionSyncPolicy';
 
 interface UseStickerEventStateProps {
   user: User | null;
@@ -55,11 +58,22 @@ export function useStickerEventState({
   const debounceTimeout = useRef<number | null>(null);
   const highlightTimeoutRef = useRef<number | null>(null);
   const saveDisplayedProductsTimeoutRef = useRef<number | null>(null);
+  // Đồng hồ riêng cho lượt ghi LÊN CLOUD — xem giải thích ở hằng số CLOUD_SAVE_* bên dưới.
+  const saveUserStateTimeoutRef = useRef<number | null>(null);
+  // Đếm "bản sửa": tăng 1 mỗi lần displayedProducts/inventoryFilters đổi. So với
+  // cloudSavedRevisionRef để biết CÓ GÌ MỚI cần ghi lên Firestore hay không.
+  const stateRevisionRef = useRef(0);
+  const cloudSavedRevisionRef = useRef(-1);
+  // Mốc thời gian của thay đổi ĐẦU TIÊN chưa được ghi lên cloud — dùng để chặn trần chờ
+  // (CLOUD_SAVE_MAX_WAIT_MS), tránh trường hợp người dùng thao tác liên tục khiến debounce
+  // bị đẩy lùi mãi và KHÔNG BAO GIỜ đồng bộ được.
+  const cloudPendingSinceRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
       if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
       if (saveDisplayedProductsTimeoutRef.current) clearTimeout(saveDisplayedProductsTimeoutRef.current);
+      if (saveUserStateTimeoutRef.current) clearTimeout(saveUserStateTimeoutRef.current);
     };
   }, []);
 
@@ -264,31 +278,65 @@ export function useStickerEventState({
   }, []);
 
   // Sync displayedProducts with local DB & Cloud
+  //
+  // PERF/QUOTA FIX (2026-09-17, audit hạn mức Firestore gói Spark — xem implementation_plan.md
+  // mục "Audit hạn mức đọc/ghi Firestore"): trước đây MỘT đồng hồ debounce 1s làm CẢ HAI việc
+  // (ghi IndexedDB cục bộ + ghi document Firestore users/{uid}/state/current), nên MỖI thao tác
+  // của người dùng — tick chọn 1 sản phẩm, bấm +/- số lượng, GÕ TỪNG KÝ TỰ vào ô số lượng, đổi
+  // bộ lọc — đều tốn 1 lượt ghi Firestore. Thêm nữa, 2 handler flush (beforeunload +
+  // visibilitychange) ghi cloud KHÔNG qua debounce nào, nên chỉ cần chuyển qua lại giữa các tab
+  // là ghi lặp đúng payload cũ. Một phiên chọn sticker 1 giờ dễ dàng tiêu 200-500 lượt ghi/người,
+  // trong khi hạn mức miễn phí CHUNG cho cả project chỉ 20.000 lượt/ngày.
+  //
+  // Nay tách làm 2 nhịp khác nhau theo đúng giá của chúng:
+  //  - IndexedDB cục bộ: MIỄN PHÍ + cần phản hồi nhanh → giữ debounce 1s như cũ.
+  //  - Firestore: TỐN HẠN MỨC + chỉ dùng để khôi phục phiên giữa các thiết bị (không cần realtime
+  //    từng thao tác) → debounce 20s, có trần chờ 60s, và BỎ QUA hẳn nếu không có gì mới so với
+  //    lượt ghi cloud trước (so sánh stateRevisionRef vs cloudSavedRevisionRef).
+  //
+  // CỐ Ý GIỮ handler visibilitychange (khác với kế hoạch ban đầu định bỏ): trên iOS/Android,
+  // `beforeunload` thường KHÔNG bắn khi người dùng chuyển app hoặc đóng tab, `visibilitychange`
+  // mới là cách đáng tin cậy để kịp lưu. Nguồn lãng phí thật không phải bản thân handler này mà
+  // là việc nó ghi LẠI payload y hệt — đã chặn bằng bộ đếm bản sửa, nên giữ được độ an toàn dữ
+  // liệu trên mobile mà không tốn thêm lượt ghi nào.
   useEffect(() => {
     if (!isInitializing) {
+      // Đánh dấu có thay đổi mới cần đồng bộ lên cloud. Chốt `revision` vào biến cục bộ để
+      // closure flushCloudState() của LƯỢT NÀY luôn so sánh đúng bản sửa của lượt này.
+      stateRevisionRef.current += 1;
+      const revision = stateRevisionRef.current;
+      if (cloudPendingSinceRef.current === null) cloudPendingSinceRef.current = Date.now();
+
       if (saveDisplayedProductsTimeoutRef.current) clearTimeout(saveDisplayedProductsTimeoutRef.current);
-      saveDisplayedProductsTimeoutRef.current = window.setTimeout(async () => {
-        await saveDisplayedProducts(displayedProducts);
-        if (user) {
-          try {
-            await saveUserState(user.uid, {
-              displayedProducts,
-              inventoryFilters
-            });
-          } catch (e) {
-            console.error("[Cloud Sync Sticker] Error auto-saving to cloud:", e);
-          }
-        }
-      }, 1000);
+      saveDisplayedProductsTimeoutRef.current = window.setTimeout(() => {
+        saveDisplayedProducts(displayedProducts).catch(console.error);
+      }, LOCAL_SAVE_DEBOUNCE_MS);
+
+      const flushCloudState = () => {
+        if (!user) return;
+        // Không có gì mới kể từ lượt ghi cloud trước → không ghi. Đây là lớp chặn chính cho
+        // các lượt flush bị gọi lặp (chuyển tab qua lại, đóng tab ngay sau khi debounce vừa ghi).
+        if (!shouldSyncToCloud(revision, cloudSavedRevisionRef.current)) return;
+        cloudSavedRevisionRef.current = revision;
+        cloudPendingSinceRef.current = null;
+        saveUserState(user.uid, {
+          displayedProducts,
+          inventoryFilters
+        }).catch((e) => {
+          // Ghi thất bại → trả bộ đếm về để lượt flush sau được thử lại, không "mất im lặng".
+          cloudSavedRevisionRef.current = -1;
+          console.error("[Cloud Sync Sticker] Error auto-saving to cloud:", e);
+        });
+      };
+
+      // Debounce 20s NHƯNG không bao giờ để thay đổi cũ nhất chờ quá 60s (xem cloudSaveDelayMs).
+      const cloudDelay = cloudSaveDelayMs(cloudPendingSinceRef.current, Date.now());
+      if (saveUserStateTimeoutRef.current) clearTimeout(saveUserStateTimeoutRef.current);
+      saveUserStateTimeoutRef.current = window.setTimeout(flushCloudState, cloudDelay);
 
       const handleFlushSave = () => {
         saveDisplayedProducts(displayedProducts).catch(console.error);
-        if (user) {
-          saveUserState(user.uid, {
-            displayedProducts,
-            inventoryFilters
-          }).catch(console.error);
-        }
+        flushCloudState();
       };
 
       const handleVisibilityChange = () => {

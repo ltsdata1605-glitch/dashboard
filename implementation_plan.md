@@ -3283,3 +3283,59 @@ phút cho admin — đọc mọi user hoạt động trong 15 phút.
 **Việc KHÔNG làm trong đợt này** (ghi lại để không mất): chuyển products/inventory sang Firebase
 Storage (1 file JSON = 0 doc read) — đúng về mặt hạn mức nhưng đổi kiến trúc lưu trữ, cần đợt riêng.
 
+### ĐÃ LÀM: mục 1 + 2 (2026-09-17)
+
+**Files sửa:**
+- `features/sticker-event/services/firebaseService.ts` — thêm `CHUNK_META_KEY`,
+  `readPreviousChunkCount()`, `deleteChunkRange()`; `uploadProductsToFirestore`/
+  `uploadInventoryToFirestore` đổi sang "ghi đè trước, dọn phần dư sau" + lưu `chunkCount` vào
+  metadata; `clearStoreDataOnFirestore` xoá đúng số chunk đã ghi thay vì mù 50.
+- `features/sticker-event/hooks/useStickerEventFile.ts` — bỏ 2 lượt `clearStoreDataOnFirestore`
+  gọi sai tên collection (`'products'`, `'inventory'`); bỏ import không còn dùng.
+- `features/sticker-event/hooks/useStickerEventDb.ts` — `executeClearAll` đổi sang
+  `'productChunks'`/`'inventoryChunks'` (sửa cả bug "Xóa toàn bộ" không xoá được cloud).
+- `features/sticker-event/hooks/useStickerEventState.ts` — tách nhịp lưu local (1s) khỏi nhịp lưu
+  cloud (debounce 20s, trần chờ 60s, chặn ghi lặp bằng bộ đếm bản sửa).
+- `features/sticker-event/services/sessionSyncPolicy.ts` (MỚI) — 3 hằng số + `cloudSaveDelayMs()`
+  + `shouldSyncToCloud()`, tách ra module thuần để test được (vitest chạy `environment: 'node'`,
+  không render React).
+- `tests/unit/sticker-firestore-quota.test.ts` (MỚI, 6 test) — mock `firebase/firestore` bằng
+  "Firestore giả" có lưu trạng thái, đếm chính xác số lượt đọc/ghi/xoá của hàm THẬT.
+- `tests/unit/sticker-session-sync-policy.test.ts` (MỚI, 12 test).
+- `tests/e2e/sticker-firestore-write-rate.spec.ts` (MỚI) — kiểm mount runtime + đếm request ghi
+  Firestore trên mạng.
+
+**Số đo THẬT (không phải ước lượng).** Đo bằng cách chạy chính bộ mock đếm ở trên lên bản
+`firebaseService.ts` lấy từ `git HEAD` (bản trước khi sửa), rồi lên bản mới:
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| Upload tồn kho 3000 dòng (lần đầu, dữ liệu cũ) | 12 ghi + **100 xoá** | 12 ghi + 40 xoá + 1 đọc *(dọn legacy, chỉ 1 lần)* |
+| Upload LẠI cùng cỡ dữ liệu | 12 ghi + **50 xoá** | 12 ghi + **0 xoá** + 1 đọc |
+| Upload dữ liệu nhỏ hơn (3000 → 600 dòng) | 12 ghi + 50 xoá | 12 ghi + 8 xoá + 1 đọc |
+| "Xóa toàn bộ dữ liệu" | **100 xoá, chunk trên cloud CÒN NGUYÊN 10** | 10 xoá, **chunk = 0** |
+| "Xóa toàn bộ" lần 2 (đã sạch) | 100 xoá | **0 xoá, 0 request** |
+| Phiên 12 thao tác + chuyển tab 3 lần + đóng tab | 16 lượt ghi | **2 lượt ghi** |
+
+**Kiểm chứng đã chạy:**
+- `npm run test:unit`: **445 passed | 1 skipped** (trong đó 18 test mới của đợt này).
+- `npm run build`: ✓ built in 8.05s.
+- `npx eslint` trên 7 file đã sửa/thêm: sạch.
+- `npx tsc --noEmit`: 0 lỗi trong mọi file của đợt này.
+- Playwright `sticker-firestore-write-rate.spec.ts`: module sticker mount được, **0 lỗi JS
+  runtime**. `useStickerEventState` được gọi ở `StickerEventApp.tsx:113` — TRƯỚC cổng đăng nhập ở
+  dòng 457 — nên effect vừa sửa đã chạy thật (nhánh `user = null`).
+
+**CHƯA kiểm chứng được (nói rõ, không nói chung chung):** nhánh ĐÃ-ĐĂNG-NHẬP của In Sticker.
+Playwright điền đúng tài khoản `admin_test_claude_qa2` nhưng màn hình trả
+`Lỗi kết nối (functions/internal): INTERNAL` — Cloud Function `stickerResolveSession` đọc Firestore
+và gặp đúng tình trạng hết hạn mức đang cần sửa. Phải chạy lại sau khi hạn mức reset (0h giờ Thái
+Bình Dương), và kho TESTCLAUDEQA cần có dữ liệu tồn kho thì nhánh đếm lượt ghi mới có ý nghĩa.
+
+**`npm run check` hiện ĐỎ nhưng KHÔNG do đợt này:** 18 lỗi typecheck + 13 vi phạm lint-ratchet,
+toàn bộ nằm ở `components/views/UserManagementView.tsx`, `tests/unit/check-thuong-top-logic.test.ts`,
+`features/bi-dashboard/*`, `features/check-thuong/*` — các file đợt này không chạm. Đã đo baseline
+bằng `git stash`: trước khi sửa cũng đúng 19 lỗi ở đúng 3 file đó (1 lỗi trong số đó là ở
+`tests/e2e/inventory-upload-fix.spec.ts` do chính tôi tạo ở đợt trước, đã sửa). Nguồn gốc là 2
+commit gần nhất về tính năng "TOP siêu thị" (`31edd04b`, `224b5450`) — cần 1 đợt riêng.
+

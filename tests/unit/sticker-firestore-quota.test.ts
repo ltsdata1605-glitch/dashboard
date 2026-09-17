@@ -1,0 +1,168 @@
+/**
+ * Đếm CHÍNH XÁC số lượt đọc/ghi/xoá Firestore mà features/sticker-event/services/firebaseService.ts
+ * phát ra — "lưới an toàn" cho bản sửa hạn mức 2026-09-17 (implementation_plan.md mục "Audit hạn
+ * mức đọc/ghi Firestore"). Gói Spark chỉ cho 50.000 đọc / 20.000 ghi / 20.000 xoá mỗi ngày, dùng
+ * CHUNG cho cả project dashboa-7e20b, nên số lượt thao tác ở đây là hành vi cần khoá lại bằng test
+ * chứ không phải chi tiết nội bộ.
+ *
+ * Mock toàn bộ firebase/firestore bằng một "Firestore giả" có lưu trạng thái, để hàm thật chạy
+ * nguyên vẹn (kể cả readPreviousChunkCount đọc lại metadata do chính lượt ghi trước tạo ra).
+ */
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+interface Ref { path: string }
+
+const store = new Map<string, Record<string, unknown>>();
+const ops = { reads: 0, writes: 0, deletes: 0, batchCommits: 0 };
+
+const DB = { __isDb: true } as const;
+const isDb = (x: unknown): boolean => !!x && (x as { __isDb?: boolean }).__isDb === true;
+let autoId = 0;
+
+const joinPath = (first: unknown, rest: string[]): string =>
+    isDb(first) ? rest.join('/') : `${(first as Ref).path}/${rest.join('/')}`;
+
+vi.mock('../../features/sticker-event/firebase', () => ({
+    db: { __isDb: true },
+    auth: { currentUser: { uid: 'uid_test' } },
+    functions: {},
+}));
+
+// firebaseService.ts import adminUserService.ts, file này gọi httpsCallable() ngay lúc nạp module.
+vi.mock('firebase/functions', () => ({
+    httpsCallable: () => async () => ({ data: { success: true } }),
+    getFunctions: () => ({}),
+}));
+
+vi.mock('firebase/firestore', () => ({
+    collection: (first: unknown, ...rest: string[]): Ref => ({ path: joinPath(first, rest) }),
+    doc: (first: unknown, ...rest: string[]): Ref =>
+        rest.length > 0
+            ? { path: joinPath(first, rest) }
+            : { path: `${(first as Ref).path}/auto_${++autoId}` },
+    getDoc: async (ref: Ref) => {
+        ops.reads += 1;
+        const data = store.get(ref.path);
+        return { exists: () => data !== undefined, data: () => data, ref };
+    },
+    getDocs: async (ref: Ref) => {
+        const docs = [...store.entries()]
+            .filter(([path]) => path.startsWith(`${ref.path}/`) && path.slice(ref.path.length + 1).indexOf('/') === -1)
+            .map(([path, data]) => ({ id: path.split('/').pop()!, data: () => data, ref: { path } }));
+        ops.reads += Math.max(1, docs.length); // query rỗng vẫn tính tối thiểu 1 lượt đọc
+        return { docs, empty: docs.length === 0, size: docs.length };
+    },
+    setDoc: async (ref: Ref, data: Record<string, unknown>, options?: { merge?: boolean }) => {
+        ops.writes += 1;
+        store.set(ref.path, options?.merge ? { ...(store.get(ref.path) ?? {}), ...data } : data);
+    },
+    deleteDoc: async (ref: Ref) => { ops.deletes += 1; store.delete(ref.path); },
+    writeBatch: () => {
+        const queued: Array<() => void> = [];
+        return {
+            delete: (ref: Ref) => { ops.deletes += 1; queued.push(() => store.delete(ref.path)); },
+            set: (ref: Ref, data: Record<string, unknown>) => { ops.writes += 1; queued.push(() => store.set(ref.path, data)); },
+            commit: async () => { ops.batchCommits += 1; queued.forEach(fn => fn()); },
+        };
+    },
+    Timestamp: { now: () => ({ toMillis: () => 1_700_000_000_000 }) },
+    serverTimestamp: () => ({ __server: true }),
+    query: (ref: Ref) => ref,
+    where: () => ({}),
+    limit: () => ({}),
+}));
+
+const { uploadInventoryToFirestore, clearStoreDataOnFirestore } =
+    await import('../../features/sticker-event/services/firebaseService');
+
+const STORE_ID = 'TESTQUOTA';
+const INV_CHUNKS = `stores/${STORE_ID}/inventoryChunks`;
+
+const makeInventory = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+        maSanPham: `PRD${i}`,
+        tenSanPham: `Sản phẩm ${i}`,
+        tongSoLuong: i,
+    })) as never[];
+
+const resetOps = () => { ops.reads = 0; ops.writes = 0; ops.deletes = 0; ops.batchCommits = 0; };
+
+const countStoredChunks = () =>
+    [...store.keys()].filter(p => p.startsWith(`${INV_CHUNKS}/chunk_`)).length;
+
+describe('Hạn mức Firestore — upload tồn kho (3000 dòng, CHUNK_SIZE 300 → 10 chunk)', () => {
+    beforeEach(() => { store.clear(); resetOps(); autoId = 0; });
+
+    it('lần upload ĐẦU TIÊN trên dữ liệu cũ (metadata chưa có chunkCount): dọn rộng ĐÚNG 1 LẦN', async () => {
+        // Giả lập dữ liệu legacy: 10 chunk đã có sẵn, metadata KHÔNG có field chunkCount.
+        for (let i = 0; i < 10; i++) store.set(`${INV_CHUNKS}/chunk_${i}`, { items: '[]', count: 300 });
+        store.set(`stores/${STORE_ID}/metadata/inventory`, { lastUpdated: 1, totalItems: 3000 });
+        resetOps();
+
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000));
+
+        expect(ops.reads).toBe(1);                       // 1 getDoc metadata
+        expect(ops.writes).toBe(10 + 2);                 // 10 chunk + metadata/inventory + metadata/sync
+        expect(ops.deletes).toBe(40);                    // dọn legacy chunk_10..chunk_49, chỉ 1 lần duy nhất
+        expect(store.get(`stores/${STORE_ID}/metadata/inventory`)).toMatchObject({ chunkCount: 10 });
+    });
+
+    it('upload LẠI cùng cỡ dữ liệu: 0 lệnh xoá (trước bản sửa là 100)', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000)); // lần 1 — tạo chunkCount
+        resetOps();
+
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000)); // lần 2 — trạng thái ổn định
+
+        expect(ops.deletes).toBe(0);
+        expect(ops.reads).toBe(1);
+        expect(ops.writes).toBe(12);
+        expect(countStoredChunks()).toBe(10);
+    });
+
+    it('upload dữ liệu NHỎ HƠN: chỉ xoá đúng phần chunk dư, không xoá mù 50', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000)); // 10 chunk
+        resetOps();
+
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(600));  // 2 chunk
+
+        expect(ops.deletes).toBe(8);                     // chunk_2..chunk_9
+        expect(countStoredChunks()).toBe(2);             // không còn chunk mồ côi
+        expect(store.get(`stores/${STORE_ID}/metadata/inventory`)).toMatchObject({ chunkCount: 2 });
+    });
+
+    it('upload dữ liệu RỖNG: xoá hết chunk, không ghi chunk nào', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(600));  // 2 chunk
+        resetOps();
+
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(0));
+
+        expect(ops.deletes).toBe(2);
+        expect(countStoredChunks()).toBe(0);
+    });
+});
+
+describe('Hạn mức Firestore — clearStoreDataOnFirestore', () => {
+    beforeEach(() => { store.clear(); resetOps(); autoId = 0; });
+
+    it('xoá đúng tên collection THẬT và đúng số chunk đã ghi', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000)); // 10 chunk
+        resetOps();
+
+        await clearStoreDataOnFirestore(STORE_ID, 'inventoryChunks');
+
+        expect(ops.deletes).toBe(10);                    // không phải 50
+        expect(countStoredChunks()).toBe(0);             // ĐÃ xoá thật — bug cũ để nguyên chunk trên cloud
+        expect(store.get(`stores/${STORE_ID}/metadata/inventory`)).toMatchObject({ chunkCount: 0, totalItems: 0 });
+    });
+
+    it('gọi lần thứ 2 khi đã sạch: 0 lệnh xoá', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(3000));
+        await clearStoreDataOnFirestore(STORE_ID, 'inventoryChunks');
+        resetOps();
+
+        await clearStoreDataOnFirestore(STORE_ID, 'inventoryChunks');
+
+        expect(ops.deletes).toBe(0);
+        expect(ops.batchCommits).toBe(0);                // không gửi request nào lên mạng
+    });
+});

@@ -319,9 +319,14 @@ export function useStickerEventDb({
     setIsLoading(true);
     try {
         if (userData && userData.storeId) {
+            // QUOTA FIX + BUG FIX (2026-09-17): trước đây truyền 'products'/'inventory' — 2
+            // collection KHÔNG TỒN TẠI trên Firestore (tên thật có hậu tố `Chunks`), nên nút
+            // "Xóa toàn bộ dữ liệu" báo thành công mà chunk trên cloud còn nguyên: mở app lần
+            // sau local rỗng → smart-sync tải lại đúng bộ dữ liệu vừa "xoá". 100 lệnh xoá mỗi
+            // lượt cũng trừ hạn mức miễn phí mà không dọn được gì.
             await Promise.all([
-                clearStoreDataOnFirestore(userData.storeId, 'products'),
-                clearStoreDataOnFirestore(userData.storeId, 'inventory')
+                clearStoreDataOnFirestore(userData.storeId, 'productChunks'),
+                clearStoreDataOnFirestore(userData.storeId, 'inventoryChunks')
             ]);
         }
         setAllProducts([]);

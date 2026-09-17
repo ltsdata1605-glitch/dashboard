@@ -54,16 +54,59 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   throw new Error(JSON.stringify(errInfo));
 }
 
+// QUOTA FIX (2026-09-17, audit hạn mức Firestore gói Spark — xem implementation_plan.md mục
+// "Audit hạn mức đọc/ghi Firestore"): trước đây mọi lượt dọn chunk đều phát MÙ 50 lệnh xoá
+// chunk_0..chunk_49 bất kể thực tế chỉ có ~10 chunk, dựa trên giả định ghi trong comment cũ là
+// "xoá doc không tồn tại là no-op (no cost)" — KHÔNG có gì bảo đảm điều đó, Firestore tính phí
+// theo lệnh xoá gửi lên. Nay ghi luôn số chunk thật vào metadata (`chunkCount`) và chỉ xoá đúng
+// những chunk từng được ghi.
+const CHUNK_META_KEY: Record<string, string> = {
+    productChunks: 'products',
+    inventoryChunks: 'inventory',
+};
+
+// Chỉ dùng cho dữ liệu ghi TRƯỚC bản sửa này (metadata chưa có field `chunkCount`): phải quét
+// rộng đúng 1 lần để dọn hết chunk cũ, sau đó `chunkCount` luôn có nên không bao giờ dùng lại.
+const LEGACY_MAX_CHUNKS = 50;
+
+/** Số chunk đã ghi ở lần trước, hoặc `null` nếu metadata chưa từng lưu `chunkCount`. */
+const readPreviousChunkCount = async (storeId: string, collectionName: string): Promise<number | null> => {
+    const metaKey = CHUNK_META_KEY[collectionName];
+    if (!metaKey) return null;
+    try {
+        const snap = await getDoc(doc(db, 'stores', storeId, 'metadata', metaKey));
+        const count = snap.exists() ? (snap.data() as { chunkCount?: unknown }).chunkCount : undefined;
+        return typeof count === 'number' && count >= 0 ? count : null;
+    } catch {
+        // Đọc metadata thất bại → trả null để bên gọi dùng LEGACY_MAX_CHUNKS (quét rộng, an toàn
+        // về mặt dọn sạch dữ liệu), thay vì bỏ qua việc dọn và để lại chunk mồ côi vĩnh viễn.
+        return null;
+    }
+};
+
+/** Xoá chunk trong khoảng [from, to) bằng 1 batch. Khoảng rỗng → không gửi request nào. */
+const deleteChunkRange = async (storeId: string, collectionName: string, from: number, to: number) => {
+    if (to <= from) return;
+    const batch = writeBatch(db);
+    for (let i = from; i < to; i++) {
+        batch.delete(doc(db, 'stores', storeId, collectionName, `chunk_${i}`));
+    }
+    await batch.commit();
+};
+
 export const uploadProductsToFirestore = async (storeId: string, products: Product[]) => {
   if (!storeId) throw new Error("Mã kho không hợp lệ.");
   
   const chunksRef = collection(db, 'stores', storeId, 'productChunks');
   
   try {
-    // Clear old chunks first
-    await clearStoreDataOnFirestore(storeId, 'productChunks');
+    // Ghi ĐÈ chunk mới TRƯỚC, dọn chunk dư SAU (đảo ngược thứ tự cũ "xoá hết rồi ghi lại"):
+    // mọi chunk có chỉ số < newChunkCount đều được setDoc ghi đè nên không sót dữ liệu cũ, mà
+    // nếu lượt ghi lỗi giữa đường thì dữ liệu cũ vẫn còn dùng được thay vì bị xoá trắng trước.
+    const previousChunkCount = await readPreviousChunkCount(storeId, 'productChunks');
 
     const CHUNK_SIZE = 400; // Group 400 products into 1 document
+    const newChunkCount = Math.ceil(products.length / CHUNK_SIZE);
     for (let i = 0; i < products.length; i += CHUNK_SIZE) {
       const chunk = products.slice(i, i + CHUNK_SIZE);
       const chunkId = `chunk_${Math.floor(i / CHUNK_SIZE)}`;
@@ -73,12 +116,16 @@ export const uploadProductsToFirestore = async (storeId: string, products: Produ
         updatedAt: Timestamp.now()
       });
     }
-    
+
+    // Chỉ xoá phần DƯ ra so với lần ghi trước — lần ghi lại cùng cỡ dữ liệu tốn 0 lệnh xoá.
+    await deleteChunkRange(storeId, 'productChunks', newChunkCount, previousChunkCount ?? LEGACY_MAX_CHUNKS);
+
     // Also update a master timestamp doc for smart sync
     const now = Timestamp.now();
     await setDoc(doc(db, 'stores', storeId, 'metadata', 'products'), {
         lastUpdated: now,
-        totalItems: products.length
+        totalItems: products.length,
+        chunkCount: newChunkCount
     });
     // Write merged sync doc (saves 1 read per session for all users)
     await setDoc(doc(db, 'stores', storeId, 'metadata', 'sync'), {
@@ -96,10 +143,11 @@ export const uploadInventoryToFirestore = async (storeId: string, inventory: Inv
   const chunksRef = collection(db, 'stores', storeId, 'inventoryChunks');
   
   try {
-    // Clear old chunks first
-    await clearStoreDataOnFirestore(storeId, 'inventoryChunks');
+    // Cùng cách với uploadProductsToFirestore ở trên: ghi đè trước, dọn phần dư sau.
+    const previousChunkCount = await readPreviousChunkCount(storeId, 'inventoryChunks');
 
     const CHUNK_SIZE = 300; // Inventory items are larger, use smaller chunks
+    const newChunkCount = Math.ceil(inventory.length / CHUNK_SIZE);
     for (let i = 0; i < inventory.length; i += CHUNK_SIZE) {
       const chunk = inventory.slice(i, i + CHUNK_SIZE);
       const chunkId = `chunk_${Math.floor(i / CHUNK_SIZE)}`;
@@ -110,11 +158,14 @@ export const uploadInventoryToFirestore = async (storeId: string, inventory: Inv
       });
     }
 
+    await deleteChunkRange(storeId, 'inventoryChunks', newChunkCount, previousChunkCount ?? LEGACY_MAX_CHUNKS);
+
     // Update master timestamp
     const now = Timestamp.now();
     await setDoc(doc(db, 'stores', storeId, 'metadata', 'inventory'), {
         lastUpdated: now,
-        totalItems: inventory.length
+        totalItems: inventory.length,
+        chunkCount: newChunkCount
     });
     // Write merged sync doc (saves 1 read per session for all users)
     await setDoc(doc(db, 'stores', storeId, 'metadata', 'sync'), {
@@ -172,17 +223,29 @@ export const fetchInventoryFromFirestore = async (storeId: string): Promise<Inve
   }
 };
 
+/**
+ * Xoá sạch dữ liệu chunk của 1 collection trên Firestore.
+ *
+ * ⚠️ `collectionName` phải là tên collection THẬT (`productChunks` / `inventoryChunks`).
+ * Trước bản sửa 2026-09-17 có 3 chỗ gọi hàm này với `'products'` / `'inventory'` — 2 collection
+ * KHÔNG TỒN TẠI — nên 50 lệnh xoá mỗi lượt đều bay vào hư không: vừa tốn hạn mức, vừa là BUG
+ * THẬT ở nút "Xóa toàn bộ dữ liệu" (báo xoá thành công nhưng chunk trên Firestore còn nguyên,
+ * mở app lần sau local rỗng nên smart-sync tải lại tất cả).
+ */
 export const clearStoreDataOnFirestore = async (storeId: string, collectionName: string) => {
     if (!storeId) return;
-    // Delete chunks by predictable name pattern to avoid wasting reads
-    // Firestore delete on non-existent docs is a no-op (no cost)
-    const MAX_CHUNKS = 50; // More than enough for typical data sizes
-    const batch = writeBatch(db);
-    for (let i = 0; i < MAX_CHUNKS; i++) {
-        batch.delete(doc(db, 'stores', storeId, collectionName, `chunk_${i}`));
-    }
+    const previousChunkCount = await readPreviousChunkCount(storeId, collectionName);
     try {
-        await batch.commit();
+        await deleteChunkRange(storeId, collectionName, 0, previousChunkCount ?? LEGACY_MAX_CHUNKS);
+        // Hạ `chunkCount` về 0 để lượt dọn kế tiếp không phải xoá gì nữa. Giữ `lastUpdated` cũ
+        // (không bump) — bump lên sẽ khiến mọi máy khác tưởng có dữ liệu mới và tải lại vô ích.
+        const metaKey = CHUNK_META_KEY[collectionName];
+        if (metaKey) {
+            await setDoc(doc(db, 'stores', storeId, 'metadata', metaKey), {
+                totalItems: 0,
+                chunkCount: 0
+            }, { merge: true });
+        }
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, `stores/${storeId}/${collectionName}`);
     }

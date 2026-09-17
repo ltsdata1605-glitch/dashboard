@@ -21,7 +21,7 @@ test.describe('Inventory File Upload - Large File Handling', () => {
         `PRD${String(i).padStart(6, '0')}`,
         `Product ${i} - Test Item with Long Description`,
         '', '', '', '', '', '', '', '', '',
-        Math.floor(Math.random() * 1000),
+        String(Math.floor(Math.random() * 1000)),
       ]);
     }
 
