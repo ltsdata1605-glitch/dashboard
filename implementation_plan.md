@@ -3465,3 +3465,70 @@ effect của `NotificationDropdown` return sớm ngay từ bản cũ (dù `userR
 `contexts/AuthContext.tsx:242`). Muốn đo trước/sau trên đường đi admin thật phải đăng nhập bằng tài
 khoản Google có quyền admin — không tự động hoá được. Phần giảm tải thật đã đo bằng test đơn vị.
 
+### ĐÃ LÀM: mục 6 (2026-09-17)
+
+**Files sửa:**
+- `services/presencePolicy.ts` (MỚI) — `PRESENCE_PING_INTERVAL_MS` (5 → **15 phút**),
+  `ONLINE_WINDOW_MS` (15 → **20 phút**), `ONLINE_COUNT_INTERVAL_MS` (giữ 10 phút), và
+  `shouldRunAgain(lastAt, interval, now)`. Tách module thuần để test được bằng vitest
+  (`environment: 'node'`, không cần mock Firebase/React).
+- `hooks/useSystemTraffic.ts` —
+  1. `getDocs` → **`getCountFromServer`** cho `fetchOnlineUsers`: trước đây tải TOÀN BỘ document
+     của mọi người đang hoạt động về client chỉ để lấy `snapshot.size` (N lượt đọc cho 1 con số);
+     aggregation query đếm ở server, Firestore tính 1 lượt đọc cho mỗi 1.000 mục index khớp.
+  2. Chu kỳ ping 5 → 15 phút, cửa sổ online 15 → 20 phút.
+  3. Thêm chặn chạy lặp (`lastPingAtRef`/`lastOnlineFetchAtRef` + `shouldRunAgain`).
+  4. Gộp `incrementVisit()` + `loadTotalVisits()` thành `initTrafficStats()`.
+  5. Dọn 2 import chết: `getDocs`, `onSnapshot`.
+- `tests/unit/presence-policy.test.ts` (MỚI, 11 test).
+- `tests/e2e/system-traffic-stats.spec.ts` (MỚI).
+
+**2 nguồn lãng phí KHÔNG có trong kế hoạch ban đầu, phát hiện khi đọc code:**
+1. **`startIntervals()` gọi NGAY `pingPresence()` + `fetchOnlineUsers()` rồi mới đặt interval, và
+   nó chạy lại mỗi lần tab visible trở lại.** Chuyển tab qua lại 30 lần trong 2 phút = 30 lượt ghi
+   Firestore, dù chưa hết chu kỳ nào. Đúng cùng lớp lỗi với handler flush ở `features/sticker-event`
+   đã sửa ở mục 2 cùng đợt. Đã chặn bằng `shouldRunAgain` → **1 lượt ghi**.
+2. **`incrementVisit()` và `loadTotalVisits()` cùng `getDoc` ĐÚNG 1 document `_system/stats`** → 2
+   lượt đọc mỗi lần mở app cho cùng một dữ liệu. Gộp làm một cũng bỏ được chỗ đua: trước đây
+   `loadTotalVisits()` chạy song song với lượt tăng nên con số hiển thị lúc có lúc không tính lượt
+   truy cập của chính phiên này. Giờ tính tường minh `current + (shouldCount ? 1 : 0)`.
+
+**Số đo (test đơn vị chạy chính `shouldRunAgain` + hằng số thật):**
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| 1 người mở tab 8 giờ (presence ping) | **96 lượt ghi** | **32 lượt ghi** |
+| 20 người mở tab 8 giờ | **~1.900 lượt ghi** | **< 700 lượt ghi** |
+| Chuyển tab qua lại 30 lần trong 2 phút | **30 lượt ghi** | **1 lượt ghi** |
+| Đếm người online (N người đang hoạt động) | **N lượt đọc** | **1 lượt đọc** |
+| Mở app 1 lần (`_system/stats`) | 2 lượt đọc | **1 lượt đọc** |
+
+**Bất biến mới được khoá bằng test:** `ONLINE_WINDOW_MS > PRESENCE_PING_INTERVAL_MS`, biên an toàn
+≥ 3 phút. Nếu ai đó nâng chu kỳ ping mà quên nới cửa sổ thì con số "đang online" tụt xuống **âm
+thầm, không có lỗi nào báo** — đúng lớp lỗi mà test đơn vị nên chặn.
+
+**Đánh đổi đã biết:** "đang online" giờ nghĩa là "hoạt động trong 20 phút gần nhất" (trước là 15
+phút). Chấp nhận được cho 1 con số thống kê ước lượng trên Dashboard.
+
+**Kiểm chứng đã chạy:** `npm run test:unit` **474 passed | 1 skipped** (+11 test mới);
+`npm run build` ✓ 8.55s; `npx eslint` trên 4 file: sạch; `npx tsc --noEmit`: 0 lỗi trong file của
+đợt này (tổng vẫn đúng 18 lỗi baseline); `lint:ratchet` vẫn đúng 13 vi phạm baseline, không cái nào
+của đợt này.
+
+Playwright `system-traffic-stats.spec.ts`: nạp dữ liệu Excel giả thật (dùng lại
+`tests/e2e/helpers/salesFixture.ts` như `pivot-table.spec.ts`) để `{showDashboard && …}` render —
+nếu không trang dừng ở màn hình landing và test sẽ "xanh vô nghĩa". Kết quả: dòng thống kê hiển thị,
+**0 lỗi JS runtime**, và console log đúng `Load total visits error: FirebaseError: Missing or
+insufficient permissions` — đây là bằng chứng `initTrafficStats()` ĐÃ CHẠY tới lượt đọc
+(`firestore.rules:122` yêu cầu `isSignedIn()`, chế độ Dùng Thử không đăng nhập nên bị từ chối, đúng
+thiết kế), chứ không phải âm thầm không chạy. Lỗi xuất hiện 2 lần vì `React.StrictMode`
+(`index.tsx:18`) gọi effect 2 lần ở dev — bản production không nhân đôi, nên số lượt đọc thật là
+dev 4 → 2, production 2 → 1.
+
+⚠️ **CHƯA kiểm chứng được ở runtime:** `pingPresence()` (cần `user` thật) và `fetchOnlineUsers()`
+(cần `userRole === 'admin'`). Chế độ Dùng Thử có `user = null` và vai trò `'manager'`
+(`contexts/AuthContext.tsx:242`) nên không đi qua 2 nhánh đó. Cần đăng nhập bằng tài khoản Google có
+quyền admin — không tự động hoá được. Riêng `getCountFromServer` còn cần xác nhận 1 lần trên môi
+trường thật: query `where('lastActive','>=',…)` chỉ dùng index đơn trường (tự động có sẵn) nên KHÔNG
+cần tạo composite index, nhưng đây là suy luận từ tài liệu, chưa phải quan sát.
+
