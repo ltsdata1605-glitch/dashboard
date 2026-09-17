@@ -3532,3 +3532,46 @@ quyền admin — không tự động hoá được. Riêng `getCountFromServer`
 trường thật: query `where('lastActive','>=',…)` chỉ dùng index đơn trường (tự động có sẵn) nên KHÔNG
 cần tạo composite index, nhưng đây là suy luận từ tài liệu, chưa phải quan sát.
 
+### ĐÃ LÀM: mục 5 (2026-09-17)
+
+**Files sửa:**
+- `features/sticker-event/types.ts` — `ManualProductDoc` chuyển về đây (trước ở
+  `services/firebaseService.ts`) để `services/fileParser.ts` dùng được kiểu này mà không phải
+  import firebaseService, tránh kéo cả Firebase SDK vào module chỉ làm parse/IndexedDB.
+  firebaseService vẫn `export type { ManualProductDoc }` nên mọi nơi đang import từ đó không sửa gì.
+- `features/sticker-event/services/firebaseService.ts` — thêm `touchManualProductsTimestamp()`, gọi
+  sau `saveManualProduct()` và `deleteManualProduct()`. Ghi vào **chính document `metadata/sync`**
+  mà mọi phiên đã đọc sẵn để đồng bộ products/inventory → **không tốn thêm lượt đọc nào**.
+- `features/sticker-event/services/fileParser.ts` — thêm `saveManualProductsCache()`,
+  `loadManualProductsCache()`, `clearManualProductsCache()`, và hàm THUẦN
+  `shouldFetchManualProductsFromCloud()`.
+- `features/sticker-event/hooks/useStickerEventDb.ts` — áp smart-sync; 3 handler sửa đổi
+  (save/update/delete) vô hiệu cache ngay.
+- `features/sticker-event/services/fileParser.test.ts` — +7 test cho hàm quyết định.
+- `tests/unit/sticker-firestore-quota.test.ts` — +4 test (tổng 18).
+
+**Quyết định thiết kế quan trọng: KHÔNG dùng `Date.now()` của máy khách.**
+Cache lưu `syncedCloudMillis` = giá trị `manualProductsLastUpdated` mà lượt tải TRƯỚC đã thấy trên
+Firestore. Hai mốc đem so sánh **đều do server sinh**, nên đồng hồ máy khách chạy nhanh không thể
+làm bỏ sót thay đổi từ thiết bị khác. Nếu lưu mốc client thì máy có đồng hồ nhanh sẽ vĩnh viễn cho
+rằng cache mới hơn cloud → không bao giờ thấy sản phẩm người khác thêm, **và không có lỗi nào báo**.
+
+**Vì sao vô hiệu cache khi sửa, thay vì lưu danh sách lạc quan:** lúc vừa thêm, bản ghi còn mang
+`firebaseId` tạm (`temp_...`); cache lại sẽ khiến phiên sau dùng id tạm để xoá/sửa và thất bại im
+lặng. Đặt mốc về 0 buộc phiên sau tải lại đúng 1 lần và nhận id thật. Đây cũng là lớp phòng vệ cho
+tình huống ghi document thành công nhưng cập nhật `metadata/sync` thất bại.
+
+**Số đo:**
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| Mở app, dữ liệu nhập tay không đổi | **200 lượt đọc** | **0** |
+| Mở app 10 lần, dữ liệu không đổi | **2.000 lượt đọc** | **200** (chỉ lượt đầu) |
+| Thiết bị khác vừa thêm 1 sản phẩm | 200 lượt đọc | 200 lượt đọc, **đúng 1 lần** rồi lại 0 |
+| Cache bị mất (xoá dữ liệu trình duyệt) | 200 lượt đọc | 200 lượt đọc (đúng, không kẹt ở rỗng) |
+| Chi phí đọc thêm cho cơ chế smart-sync | — | **0** (dùng chung document `metadata/sync`) |
+
+**Kiểm chứng đã chạy:** `npm run test:unit` **485 passed | 1 skipped** (+11 test mới);
+`npm run build` ✓ 8.45s; `npx eslint` trên 6 file: sạch; `npx tsc --noEmit`: 0 lỗi trong file của
+đợt này (tổng vẫn đúng 18 lỗi baseline); `lint:ratchet` vẫn đúng 13 vi phạm baseline.
+

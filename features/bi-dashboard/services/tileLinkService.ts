@@ -26,11 +26,12 @@ export const DEFAULT_TILE_LINKS: Record<string, string> = {
     'industry-realtime': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910&timetype=1',
     'industry-luyke': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910',
 
-    // NHÂN VIÊN
+    // DOANH THU NHÂN VIÊN
+    'nhanvien-realtime': 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?timetype=1',
     'nhanvien-doanhthu': 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated',
-    'nhanvien-thidua': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910&st=9567',
 
-    // Trả góp nhân viên
+    // THI ĐUA & TRẢ CHẬM
+    'nhanvien-thidua': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910&st=9567',
     'nhanvien-tragop': 'https://baocao.dienmayxanh.com/dashboard/tra-cham',
 };
 
@@ -44,9 +45,10 @@ export const TILE_LABELS: Record<string, { group: string; name: string }> = {
     'competition-luyke': { group: 'Thi đua', name: 'Luỹ kế' },
     'industry-realtime': { group: 'Siêu thị ngành hàng', name: 'Realtime' },
     'industry-luyke': { group: 'Siêu thị ngành hàng', name: 'Luỹ kế' },
-    'nhanvien-doanhthu': { group: 'NHÂN VIÊN', name: 'Doanh thu' },
-    'nhanvien-thidua': { group: 'NHÂN VIÊN', name: 'Thi đua' },
-    'nhanvien-tragop': { group: 'Trả góp nhân viên', name: 'Trả chậm' },
+    'nhanvien-realtime': { group: 'DOANH THU NHÂN VIÊN', name: 'Realtime' },
+    'nhanvien-doanhthu': { group: 'DOANH THU NHÂN VIÊN', name: 'Doanh thu' },
+    'nhanvien-thidua': { group: 'THI ĐUA & TRẢ CHẬM', name: 'Thi đua' },
+    'nhanvien-tragop': { group: 'THI ĐUA & TRẢ CHẬM', name: 'Trả chậm' },
 };
 
 /**

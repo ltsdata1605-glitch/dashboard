@@ -9,7 +9,11 @@ import {
   saveData, 
   clearData, 
   saveDisplayedProducts, 
-  saveInventoryData 
+  saveInventoryData,
+  saveManualProductsCache,
+  clearManualProductsCache,
+  loadManualProductsCache,
+  shouldFetchManualProductsFromCloud
 } from '../services/fileParser';
 import { 
   fetchProductsFromFirestore, 
@@ -125,10 +129,15 @@ export function useStickerEventDb({
         let firestoreLatestProducts = 0;
         let firestoreLatestInv = 0;
         
+        // QUOTA FIX (2026-09-17, mục 5): lấy luôn mốc của sản phẩm nhập tay từ CHÍNH document
+        // metadata/sync đang đọc — không tốn thêm lượt đọc nào.
+        let firestoreLatestManual = 0;
+
         if (syncMetaSnap!.exists()) {
           const syncData = syncMetaSnap!.data();
           firestoreLatestProducts = syncData.productsLastUpdated?.toMillis() || 0;
           firestoreLatestInv = syncData.inventoryLastUpdated?.toMillis() || 0;
+          firestoreLatestManual = syncData.manualProductsLastUpdated?.toMillis() || 0;
         } else {
           const [prodMetaSnap, invMetaSnap] = await Promise.all([
               getDoc(doc(db, 'stores', storeId, 'metadata', 'products')),
@@ -174,9 +183,30 @@ export function useStickerEventDb({
             if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
         }
 
-        // Load manual products
+        // Load manual products — QUOTA FIX (2026-09-17, mục 5): áp ĐÚNG cơ chế smart-sync mà
+        // products/inventory đã dùng ở trên. Trước đây hàm này luôn gọi fetchManualProducts()
+        // (`limit(200)`) mỗi lần mở app, cho mỗi người, dù dữ liệu không đổi.
+        //
+        // So sánh 2 mốc ĐỀU DO SERVER SINH: `firestoreLatestManual` (đọc từ metadata/sync lượt này)
+        // với `syncedCloudMillis` (giá trị của chính field đó mà lượt tải TRƯỚC đã thấy). Không
+        // dùng Date.now() của máy khách nên đồng hồ lệch cũng không thể làm bỏ sót thay đổi từ
+        // thiết bị khác.
         try {
-          const manualDocs = await fetchManualProducts(storeId);
+          const manualCache = await loadManualProductsCache();
+          const shouldFetchManual = shouldFetchManualProductsFromCloud(
+            firestoreLatestManual,
+            manualCache.syncedCloudMillis,
+            manualCache.products.length
+          );
+
+          let manualDocs: ManualProductDoc[];
+          if (shouldFetchManual) {
+            manualDocs = await fetchManualProducts(storeId);
+            await saveManualProductsCache(manualDocs, firestoreLatestManual);
+          } else {
+            manualDocs = manualCache.products;
+          }
+
           const manualProds: ManualProductWithId[] = manualDocs.map(d => ({
             sanPham: d.sanPham,
             msp: d.msp,
@@ -258,6 +288,10 @@ export function useStickerEventDb({
         updatedAt: new Date().toISOString(),
       };
 
+      // QUOTA FIX (2026-09-17, mục 5): vô hiệu cache NGAY, không chờ ghi xong — phiên sau sẽ tải
+      // lại đúng 1 lần để lấy `firebaseId` thật thay cho id tạm (xem clearManualProductsCache).
+      clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
+
       saveManualProduct(userData.storeId, docData).then(docId => {
         if (docId) {
           setManualProducts(prev => prev.map(p => p.firebaseId === tempId ? { ...p, firebaseId: docId } : p));
@@ -281,6 +315,7 @@ export function useStickerEventDb({
     });
 
     if (userData?.storeId && !docId.startsWith('temp_')) {
+      clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
       deleteManualProduct(userData.storeId, docId).catch(err => {
         console.error('Background Firebase delete failed:', err);
       });
@@ -309,6 +344,7 @@ export function useStickerEventDb({
         updatedAt: new Date().toISOString(),
       };
 
+      clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
       saveManualProduct(userData.storeId, docData, product.firebaseId).catch(err => {
         console.error('Background Firebase update failed:', err);
       });

@@ -11,7 +11,7 @@ const DB_CHANGE_EVENT = 'indexeddb-change';
 const isConfigKeyMatch = (keyA: string, keyB: string): boolean => {
     if (keyA === keyB) return true;
     if (keyA.toLowerCase() === keyB.toLowerCase()) return true;
-    const configTypes = ['-industry-realtime', '-industry-luyke', '-danhsach', '-thidua', '-tragop', '-bankem'];
+    const configTypes = ['-industry-realtime', '-industry-luyke', '-employee-realtime', '-danhsach', '-thidua', '-tragop', '-bankem'];
     for (const t of configTypes) {
         if (keyA.endsWith(t) && keyB.endsWith(t)) {
             const smA = keyA.slice('config-'.length, keyA.length - t.length);

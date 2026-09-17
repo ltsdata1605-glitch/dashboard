@@ -1,4 +1,4 @@
-import { Product, InventoryItem } from '../types';
+import { Product, InventoryItem, ManualProductDoc } from '../types';
 
 function parseBonus(bonusCode: string | undefined | null): { thuongERP: number; thuongNong: number } {
   if (!bonusCode || typeof bonusCode !== 'string') {
@@ -347,6 +347,99 @@ export const saveEmployeeName = async (name: string): Promise<void> => {
         transaction.oncomplete = () => resolve();
         transaction.onerror = () => reject(transaction.error);
     });
+};
+
+/**
+ * Cache cục bộ cho sản phẩm nhập tay (`stores/{storeId}/manualProducts`).
+ *
+ * QUOTA FIX (2026-09-17, mục 5 — xem implementation_plan.md mục "Audit hạn mức đọc/ghi Firestore"):
+ * trước bản sửa này KHÔNG có cache nào, `fetchManualProducts()` đọc tới 200 document MỖI LẦN mở app
+ * cho mỗi người.
+ *
+ * `syncedCloudMillis` là mốc `manualProductsLastUpdated` mà LẦN TẢI TRƯỚC đã thấy trên Firestore —
+ * cố ý KHÔNG dùng `Date.now()` của máy khách. Hai mốc đem so sánh với nhau đều do server sinh ra,
+ * nên đồng hồ máy khách chạy nhanh/chậm cũng không thể làm bỏ sót thay đổi của thiết bị khác
+ * (đúng lớp lỗi khó thấy nhất của mọi cơ chế "chỉ tải khi mới hơn").
+ */
+export const saveManualProductsCache = async (
+    products: ManualProductDoc[],
+    syncedCloudMillis: number
+): Promise<void> => {
+    const store = await getStore('readwrite');
+    return new Promise((resolve, reject) => {
+        const transaction = store.transaction;
+        store.put(products, 'manualProducts');
+        store.put(syncedCloudMillis, 'manualProductsSyncedCloudMillis');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
+};
+
+/**
+ * Vô hiệu cache sau khi người dùng vừa thêm/sửa/xoá sản phẩm nhập tay.
+ *
+ * CỐ Ý không lưu danh sách lạc quan (optimistic) của chính lượt sửa đó: lúc ấy bản ghi mới còn mang
+ * `firebaseId` tạm (`temp_...`), cache lại sẽ khiến phiên sau dùng id tạm để xoá/sửa và thất bại
+ * im lặng. Đặt mốc về 0 để phiên sau tải lại đúng 1 lần từ Firestore và nhận id thật. Việc này cũng
+ * là lớp phòng vệ cho tình huống ghi document thành công nhưng cập nhật `metadata/sync` thất bại.
+ */
+export const clearManualProductsCache = async (): Promise<void> => {
+    const store = await getStore('readwrite');
+    return new Promise((resolve, reject) => {
+        const transaction = store.transaction;
+        store.put(0, 'manualProductsSyncedCloudMillis');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
+};
+
+/**
+ * Có cần tải lại sản phẩm nhập tay từ Firestore không.
+ *
+ * Tách ra thành hàm THUẦN (không chạm IndexedDB/Firestore) để test được — quyết định này rẻ về mặt
+ * code nhưng đắt về mặt hậu quả: sai theo một chiều thì tốn 200 lượt đọc mỗi lần mở app, sai theo
+ * chiều kia thì người dùng KHÔNG THẤY sản phẩm mà thiết bị khác vừa thêm, và không có lỗi nào báo.
+ *
+ * @param cloudMillis        `manualProductsLastUpdated` đọc từ `metadata/sync` LƯỢT NÀY (server sinh).
+ * @param syncedCloudMillis  giá trị của chính field đó mà lượt tải TRƯỚC đã thấy (server sinh).
+ * @param cachedCount        số bản ghi đang có trong cache cục bộ.
+ *
+ * Cả 2 mốc đều do server sinh nên so sánh được trực tiếp; đồng hồ máy khách không tham gia. Dùng
+ * `>` (không phải `>=`) là đúng: bằng nhau nghĩa là cache đã khớp đúng trạng thái cloud đó.
+ * `cachedCount === 0` buộc tải lại để không kẹt vĩnh viễn ở trạng thái rỗng khi cache bị mất
+ * (người dùng xoá dữ liệu trình duyệt, đổi máy) mà cloud thì không có thay đổi nào mới.
+ */
+export const shouldFetchManualProductsFromCloud = (
+    cloudMillis: number,
+    syncedCloudMillis: number,
+    cachedCount: number
+): boolean => cloudMillis > syncedCloudMillis || cachedCount === 0;
+
+/** Đọc cache — chỉ lấy 2 khoá, KHÔNG dùng loadData() (hàm đó đọc cả products/inventory, tốn CPU vô ích). */
+export const loadManualProductsCache = async (): Promise<{ products: ManualProductDoc[]; syncedCloudMillis: number }> => {
+    try {
+        const store = await getStore('readonly');
+        const productsReq = store.get('manualProducts');
+        const millisReq = store.get('manualProductsSyncedCloudMillis');
+        return new Promise((resolve) => {
+            const result = { products: [] as ManualProductDoc[], syncedCloudMillis: 0 };
+            let completed = 0;
+            const done = () => { if (++completed === 2) resolve(result); };
+            productsReq.onsuccess = () => {
+                result.products = Array.isArray(productsReq.result) ? productsReq.result : [];
+                done();
+            };
+            millisReq.onsuccess = () => {
+                result.syncedCloudMillis = typeof millisReq.result === 'number' ? millisReq.result : 0;
+                done();
+            };
+            productsReq.onerror = done;
+            millisReq.onerror = done;
+        });
+    } catch (e) {
+        console.error('Failed to load manual products cache', e);
+        return { products: [], syncedCloudMillis: 0 };
+    }
 };
 
 interface LoadDataResult {

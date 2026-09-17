@@ -1,6 +1,6 @@
 import { db, auth } from '../firebase';
 import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
-import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord } from '../types';
+import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord, ManualProductDoc } from '../types';
 import { stickerAdminUpdateUser } from './adminUserService';
 
 enum OperationType {
@@ -601,21 +601,24 @@ export const fetchUserState = async (userId: string): Promise<{ displayedProduct
 
 // ========== MANUAL PRODUCTS (Shared per store, persistent) ==========
 
-export interface ManualProductDoc {
-  id: string;
-  sanPham: string;
-  msp: string;
-  giaGoc: string;
-  giaGiam: string;
-  thuongERP: number;
-  thuongNong: number;
-  tongThuong: number;
-  khuyenMai: string;
-  ngayIn: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Định nghĩa đã chuyển sang ../types (xem lý do ở đó). Re-export để mọi nơi đang
+// `import { ManualProductDoc } from './services/firebaseService'` không phải sửa.
+export type { ManualProductDoc };
+
+/**
+ * Cập nhật mốc thời gian đổi dữ liệu sản phẩm nhập tay vào `metadata/sync`.
+ *
+ * QUOTA FIX (2026-09-17, mục 5 — xem implementation_plan.md mục "Audit hạn mức đọc/ghi Firestore"):
+ * trước bản sửa này `fetchManualProducts()` chạy MỖI LẦN mở app với `limit(200)`, không có mốc nào
+ * để biết dữ liệu có đổi hay không — trong khi products/inventory đã có sẵn cơ chế smart-sync đúng
+ * như vậy. Ghi thêm 1 field vào document `metadata/sync` (document mà mọi phiên đều đã đọc sẵn để
+ * đồng bộ products/inventory) nên KHÔNG tốn thêm lượt đọc nào.
+ */
+const touchManualProductsTimestamp = async (storeId: string) => {
+    await setDoc(doc(db, 'stores', storeId, 'metadata', 'sync'), {
+        manualProductsLastUpdated: Timestamp.now()
+    }, { merge: true });
+};
 
 export const saveManualProduct = async (storeId: string, product: Omit<ManualProductDoc, 'id'>, docId?: string): Promise<string> => {
   if (!storeId) throw new Error("Mã kho không hợp lệ.");
@@ -629,6 +632,7 @@ export const saveManualProduct = async (storeId: string, product: Omit<ManualPro
       id: targetDoc.id,
       updatedAt: new Date().toISOString(),
     });
+    await touchManualProductsTimestamp(storeId);
     return targetDoc.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `stores/${storeId}/manualProducts`);
@@ -655,6 +659,7 @@ export const deleteManualProduct = async (storeId: string, docId: string): Promi
   
   try {
     await deleteDoc(doc(db, 'stores', storeId, 'manualProducts', docId));
+    await touchManualProductsTimestamp(storeId);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `stores/${storeId}/manualProducts/${docId}`);
   }

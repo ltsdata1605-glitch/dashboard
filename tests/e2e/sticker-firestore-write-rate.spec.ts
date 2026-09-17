@@ -28,15 +28,24 @@ test.setTimeout(180000);
 test('In Sticker mount được và không ghi Firestore dồn dập khi thao tác', async ({ page }) => {
     const pageErrors: string[] = [];
     const firestoreWrites: string[] = [];
+    /** Lượt ghi document users/{uid}/state/current — thứ mục 2 thực sự đi giảm. */
+    const sessionStateWrites: string[] = [];
 
     page.on('pageerror', (e) => pageErrors.push(e.message));
 
-    // Firestore SDK gửi mọi lượt ghi qua kênh .../Firestore/Write/channel (WebChannel).
+    // Firestore SDK gửi mọi lượt ghi qua kênh .../Firestore/Write/channel (WebChannel). ĐẾM SỐ
+    // REQUEST Ở ĐÂY LÀ SAI THỨ CẦN ĐO: WebChannel còn có handshake/keepalive riêng, nên 1 lượt ghi
+    // document không tương ứng 1 request. Phải soi payload để đếm ĐÚNG lượt ghi
+    // `users/{uid}/state/current` — document mà `saveUserState()` ghi (mục 2 của bản sửa hạn mức).
     page.on('request', (req) => {
         const url = req.url();
-        if (url.includes('firestore.googleapis.com') && url.includes('/Write/channel')) {
-            firestoreWrites.push(`${req.method()} ${url.slice(0, 120)}`);
-        }
+        if (!url.includes('firestore.googleapis.com') || !url.includes('/Write/channel')) return;
+        const body = req.postData() || '';
+        firestoreWrites.push(`${req.method()} ${url.slice(0, 80)}`);
+        // Đường dẫn trong payload WebChannel có thể bị URL-encode.
+        const decoded = (() => { try { return decodeURIComponent(body); } catch { return body; } })();
+        const hits = decoded.match(/state\/current/g);
+        if (hits) sessionStateWrites.push(...hits);
     });
 
     await page.goto(STICKER_URL, { waitUntil: 'domcontentloaded' });
@@ -75,18 +84,22 @@ test('In Sticker mount được và không ghi Firestore dồn dập khi thao t�
 
     // ---- Thao tác liên tục 15 lần rồi ngồi im 25s (dài hơn debounce cloud 20s) ----
     const writesBeforeActions = firestoreWrites.length;
+    const stateWritesBefore = sessionStateWrites.length;
     for (let i = 0; i < 15; i++) {
         await page.mouse.click(5, 5).catch(() => {});
         await page.keyboard.press('Tab').catch(() => {});
         await page.waitForTimeout(150);
     }
+    // Chờ 25s: dài hơn debounce cloud 20s để lượt ghi (nếu có) kịp bay đi.
     await page.waitForTimeout(25000);
     const writesDuringActions = firestoreWrites.length - writesBeforeActions;
+    const stateWritesDuring = sessionStateWrites.length - stateWritesBefore;
 
     console.log(`[KẾT QUẢ] đăng nhập thành công = ${loggedIn}`);
     console.log(`[KẾT QUẢ] lỗi JS runtime = ${pageErrors.length} ${JSON.stringify(pageErrors.slice(0, 5))}`);
-    console.log(`[KẾT QUẢ] request ghi Firestore trong 15 thao tác + 25s chờ = ${writesDuringActions}`);
-    console.log(`[KẾT QUẢ] tổng request ghi Firestore cả phiên = ${firestoreWrites.length}`);
+    console.log(`[KẾT QUẢ] request WebChannel Write trong 15 thao tác + 25s chờ = ${writesDuringActions} (gồm handshake/keepalive, KHÔNG phải số lượt ghi document)`);
+    console.log(`[KẾT QUẢ] lượt ghi state/current trong 15 thao tác + 25s chờ = ${stateWritesDuring}`);
+    console.log(`[KẾT QUẢ] tổng lượt ghi state/current cả phiên = ${sessionStateWrites.length}`);
 
     await page.screenshot({ path: 'test-results/sticker-write-rate.png', fullPage: true });
 
@@ -103,7 +116,8 @@ test('In Sticker mount được và không ghi Firestore dồn dập khi thao t�
         return;
     }
 
-    // Đã đăng nhập: 15 thao tác trong ~2,5s rồi ngồi im 25s. Với debounce cloud 20s + chặn ghi lặp,
-    // số lượt ghi phải rất nhỏ. Trước bản sửa, mỗi thao tác là 1 lượt ghi riêng.
-    expect(writesDuringActions).toBeLessThanOrEqual(3);
+    // Đã đăng nhập: 15 thao tác trong ~2,5s rồi ngồi im 25s. Trước bản sửa, mỗi thao tác đổi
+    // displayedProducts/inventoryFilters là 1 lượt ghi state/current riêng (debounce 1s). Nay
+    // debounce 20s + chặn ghi lặp → nhiều nhất 1 lượt cho cả loạt.
+    expect(stateWritesDuring).toBeLessThanOrEqual(1);
 });

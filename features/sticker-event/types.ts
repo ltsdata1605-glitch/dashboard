@@ -17,6 +17,26 @@ export interface Product {
 // mặt với danh sách cũ (định dạng trước đây lưu full Product) nên để optional.
 export type SavedListItem = Partial<Product> & { msp: string };
 
+/** Sản phẩm nhập tay, lưu ở `stores/{storeId}/manualProducts`. Đặt ở đây (không phải trong
+ *  services/firebaseService.ts như trước) để `services/fileParser.ts` dùng được kiểu này mà không
+ *  phải import firebaseService — tránh kéo cả Firebase SDK vào module chỉ làm việc parse/IndexedDB.
+ *  firebaseService.ts vẫn re-export để mọi nơi đang import từ đó không phải sửa. */
+export interface ManualProductDoc {
+  id: string;
+  sanPham: string;
+  msp: string;
+  giaGoc: string;
+  giaGiam: string;
+  thuongERP: number;
+  thuongNong: number;
+  tongThuong: number;
+  khuyenMai: string;
+  ngayIn: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SavedList {
   id: string;
   name: string;

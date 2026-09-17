@@ -79,6 +79,9 @@ const {
     fetchSavedListItems,
     saveListToFirestore,
     invalidateSavedListsCache,
+    fetchManualProducts,
+    saveManualProduct,
+    deleteManualProduct,
 } = await import('../../features/sticker-event/services/firebaseService');
 
 const STORE_ID = 'TESTQUOTA';
@@ -270,5 +273,63 @@ describe('Hạn mức Firestore — liệt kê "DS đã lưu" (nguồn tốn lư
         const items = await fetchSavedListItems(STORE_ID, 'small_1');
         expect(items).toHaveLength(2);
         expect(ops.reads).toBe(1);
+    });
+});
+
+
+describe('Hạn mức Firestore — sản phẩm nhập tay (smart-sync, mục 5)', () => {
+    const MANUAL = `stores/${STORE_ID}/manualProducts`;
+    const SYNC_META = `stores/${STORE_ID}/metadata/sync`;
+
+    const makeManualDoc = (i: number) => ({
+        id: `m${i}`, sanPham: `SP ${i}`, msp: `MSP${i}`, giaGoc: '10000', giaGiam: '9000',
+        thuongERP: 0, thuongNong: 0, tongThuong: 0, khuyenMai: '', ngayIn: '',
+        createdBy: 'nv1', createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z',
+    });
+
+    beforeEach(() => {
+        store.clear(); resetOps(); autoId = 0;
+        for (let i = 0; i < 200; i++) store.set(`${MANUAL}/m${i}`, makeManualDoc(i));
+    });
+
+    it('fetchManualProducts đọc 200 document — chi phí MỖI LẦN mở app trước khi có smart-sync', async () => {
+        resetOps();
+        const docs = await fetchManualProducts(STORE_ID);
+        expect(docs).toHaveLength(200);
+        expect(ops.reads).toBe(200);
+    });
+
+    it('thêm sản phẩm nhập tay có cập nhật mốc trong metadata/sync', async () => {
+        resetOps();
+        await saveManualProduct(STORE_ID, makeManualDoc(999));
+
+        const sync = store.get(SYNC_META);
+        expect(sync).toBeDefined();
+        expect(sync!.manualProductsLastUpdated).toBeDefined();
+        expect(ops.writes).toBe(2); // 1 document sản phẩm + 1 lần merge vào metadata/sync
+    });
+
+    it('xoá sản phẩm nhập tay cũng cập nhật mốc', async () => {
+        await saveManualProduct(STORE_ID, makeManualDoc(999));
+        const before = (store.get(SYNC_META) as { manualProductsLastUpdated?: unknown }).manualProductsLastUpdated;
+        store.set(SYNC_META, { manualProductsLastUpdated: null }); // xoá dấu để chắc chắn ghi lại
+        resetOps();
+
+        await deleteManualProduct(STORE_ID, 'm0');
+
+        expect((store.get(SYNC_META) as { manualProductsLastUpdated?: unknown }).manualProductsLastUpdated).not.toBeNull();
+        expect(before).toBeDefined();
+        expect(ops.deletes).toBe(1);
+    });
+
+    it('mốc được ghi vào CHÍNH document metadata/sync mà mọi phiên đã đọc sẵn → 0 lượt đọc thêm', async () => {
+        // Cùng document với productsLastUpdated/inventoryLastUpdated, nên smart-sync của
+        // manualProducts không phát sinh lượt đọc nào ngoài lượt đọc metadata/sync vốn đã có.
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(300));
+        await saveManualProduct(STORE_ID, makeManualDoc(999));
+
+        const sync = store.get(SYNC_META) as Record<string, unknown>;
+        expect(Object.keys(sync)).toContain('inventoryLastUpdated');
+        expect(Object.keys(sync)).toContain('manualProductsLastUpdated');
     });
 });

@@ -79,6 +79,8 @@ export type BIKey =
   | `config-${string}-industry-realtime-ts`
   | `config-${string}-industry-luyke`
   | `config-${string}-industry-luyke-ts`
+  | `config-${string}-employee-realtime`
+  | `config-${string}-employee-realtime-ts`
   | `comptarget-${string}-targets`
   | `bonus-data-${string}`
   | `bonus-history-${string}`
@@ -176,7 +178,7 @@ export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
       }
       // Fallback cho key cấu hình siêu thị (VD: config-HÙNG VƯƠNG-industry-luyke vs bi_config-Hùng Vương-industry-luyke)
       if (typeof key === 'string' && key.startsWith('config-')) {
-        const configTypes = ['-industry-realtime', '-industry-luyke', '-danhsach', '-thidua', '-tragop', '-bankem'];
+        const configTypes = ['-industry-realtime', '-industry-luyke', '-employee-realtime', '-danhsach', '-thidua', '-tragop', '-bankem'];
         const matchedType = configTypes.find(t => key.endsWith(t));
         if (matchedType) {
           const rawSm = key.slice('config-'.length, key.length - matchedType.length);
