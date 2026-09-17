@@ -5,7 +5,11 @@ interface KpiColorStyle {
     iconText: string;
     progressBg: string;
     progressFill: string;
+    border: string;
+    borderTop: string;
     borderHover: string;
+    borderHex: string;
+    topHex: string;
 }
 
 /* Chuẩn "Bảng điều khiển ca trực" (2026-09-11) đã gỡ 3 khoá khỏi kiểu này:
@@ -24,43 +28,61 @@ const COLOR_STYLES: Record<string, KpiColorStyle> = {
         iconText: 'text-sky-700 dark:text-sky-400',
         progressBg: 'bg-sky-100 dark:bg-sky-500/10',
         progressFill: 'bg-sky-600',
-        borderHover: 'hover:border-sky-300 dark:hover:border-sky-600',
+        border: 'border-sky-300 dark:border-sky-800/80',
+        borderTop: 'border-t-sky-600 dark:border-t-sky-500',
+        borderHover: 'hover:border-sky-400 hover:border-t-sky-600 dark:hover:border-sky-600 dark:hover:border-t-sky-500',
+        borderHex: '#7dd3fc',
+        topHex: '#0284c7',
     },
     slate: {
         iconText: 'text-slate-600 dark:text-slate-400',
         progressBg: 'bg-slate-100 dark:bg-slate-500/10',
         progressFill: 'bg-slate-600',
-        borderHover: 'hover:border-slate-300 dark:hover:border-slate-600',
+        border: 'border-slate-300 dark:border-slate-700',
+        borderTop: 'border-t-slate-600 dark:border-t-slate-400',
+        borderHover: 'hover:border-slate-400 hover:border-t-slate-600 dark:hover:border-slate-500 dark:hover:border-t-slate-400',
+        borderHex: '#cbd5e1',
+        topHex: '#475569',
     },
     emerald: {
         iconText: 'text-emerald-700 dark:text-emerald-400',
         progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
         progressFill: 'bg-emerald-600',
-        borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-600',
+        border: 'border-emerald-300 dark:border-emerald-800/80',
+        borderTop: 'border-t-emerald-600 dark:border-t-emerald-500',
+        borderHover: 'hover:border-emerald-400 hover:border-t-emerald-600 dark:hover:border-emerald-600 dark:hover:border-t-emerald-500',
+        borderHex: '#86efac',
+        topHex: '#059669',
     },
     amber: {
         iconText: 'text-amber-700 dark:text-amber-400',
         progressBg: 'bg-amber-100 dark:bg-amber-500/10',
         progressFill: 'bg-amber-600',
-        borderHover: 'hover:border-amber-300 dark:hover:border-amber-600',
+        border: 'border-amber-300 dark:border-amber-800/80',
+        borderTop: 'border-t-amber-600 dark:border-t-amber-500',
+        borderHover: 'hover:border-amber-400 hover:border-t-amber-600 dark:hover:border-amber-600 dark:hover:border-t-amber-500',
+        borderHex: '#fcd34d',
+        topHex: '#d97706',
     },
     rose: {
         iconText: 'text-rose-700 dark:text-rose-400',
         progressBg: 'bg-rose-100 dark:bg-rose-500/10',
         progressFill: 'bg-rose-600',
-        borderHover: 'hover:border-rose-300 dark:hover:border-rose-600',
+        border: 'border-rose-300 dark:border-rose-800/80',
+        borderTop: 'border-t-rose-600 dark:border-t-rose-500',
+        borderHover: 'hover:border-rose-400 hover:border-t-rose-600 dark:hover:border-rose-600 dark:hover:border-t-rose-500',
+        borderHex: '#fda4af',
+        topHex: '#e11d48',
     },
-    // Màu thứ 6 được CLAUDE.md xác nhận hợp lệ ngoài 5 màu semantic chính (dùng cho
-    // ramp/phân biệt) — dùng cho thẻ HQQĐ vì cả 5 màu chính đã bị 4 thẻ KPI khác dùng hết,
-    // cần 1 màu tươi/nổi bật hơn "slate" (trước đây HQQĐ dùng alias purple→slate, nhìn xám xịt).
-    // Cố ý đậm hơn 1 bậc so với 5 màu chuẩn (700/600/500 thay vì 500/400/300) — bản đầu
-    // dùng cùng tông với các thẻ khác (500/400/300) khiến indigo đọc gần giống sky (đều
-    // là "màu xanh" khi nhìn nhanh). Tông đậm này ngả tím rõ, tách biệt hẳn khỏi sky.
     indigo: {
-        iconText: 'text-sky-700 dark:text-sky-400',
-        progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-        progressFill: 'bg-sky-600',
-        borderHover: 'hover:border-sky-400 dark:hover:border-sky-600',
+        iconText: 'text-indigo-700 dark:text-indigo-400',
+        progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
+        progressFill: 'bg-indigo-600',
+        border: 'border-indigo-300 dark:border-indigo-800/80',
+        borderTop: 'border-t-indigo-600 dark:border-t-indigo-500',
+        borderHover: 'hover:border-indigo-400 hover:border-t-indigo-600 dark:hover:border-indigo-600 dark:hover:border-t-indigo-500',
+        borderHex: '#a5b4fc',
+        topHex: '#4f46e5',
     },
 };
 
@@ -102,15 +124,18 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full overflow-hidden border transition-all duration-300 group touch-feedback ${
+            title={isClickable ? 'Bấm để chuyển tới Cập nhật > Target Doanh thu' : undefined}
+            data-kpi-border={style.borderHex}
+            data-kpi-top-border={style.topHex}
+            data-kpi-top-color={!isGood ? 'rose' : iconColor}
+            className={`relative flex flex-col justify-between h-full border border-t-0 transition-all duration-300 group touch-feedback ${
                 !isGood
-                    ? 'bg-rose-50/20 dark:bg-rose-950/15 border-rose-300/80 dark:border-rose-800/70 shadow-xs shadow-rose-500/5 hover:border-rose-400'
-                    : `bg-white dark:bg-slate-900 border-slate-200 dark:border-white/[0.06] ${style.borderHover}`
+                    ? 'bg-rose-50/20 dark:bg-rose-950/15 border-rose-300 dark:border-rose-800/80 shadow-xs shadow-rose-500/5 hover:border-rose-400'
+                    : `bg-white dark:bg-slate-900 ${style.border} border-t-0 ${style.borderHover}`
             } ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
-            {/* Vạch nhận diện 3px — màu ĐẶC, không gradient, không bo góc. Cùng ngôn ngữ với
-                vạch trạng thái ở mép trái các bảng. */}
-            <div className={`h-[3px] w-full ${style.progressFill}`} />
+            {/* Vạch nhận diện đỉnh thẻ — màu ĐẶC, tràn mép 100% qua cả viền trái & phải, không bị khuyết góc */}
+            <div className={`kpi-top-accent h-[3.5px] -mx-[1px] w-[calc(100%+2px)] shrink-0 ${style.progressFill}`} />
 
             {/* Layout cho desktop (lg trở lên) */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">

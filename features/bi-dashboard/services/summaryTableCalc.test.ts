@@ -324,4 +324,77 @@ describe('bổ sung cột DT Dự Kiến (QĐ) và %DKHT', () => {
     });
 });
 
+describe('useAdjustedTarget — Dùng Target DTQĐ sau chỉnh', () => {
+    it('khi useAdjustedTarget = true, cập nhật cột Target (QĐ), %HT, %DKHT theo Target sau chỉnh', () => {
+        const fullHeaders = [
+            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)'
+        ];
+        // Target gốc là 1000, nhưng sau chỉnh là 500
+        const rows = [
+            ['HÙNG VƯƠNG', '200', '250', '1000', '25%'],
+            ['Tổng', '200', '250', '1000', '25%']
+        ];
+        const r = buildSummaryTable(
+            { headers: fullHeaders, rows },
+            opts({
+                isCumulative: true,
+                useAdjustedTarget: true,
+                supermarketMonthlyTargets: { 'HÙNG VƯƠNG': 500, 'Tổng': 500 },
+                daysInMonth: 30,
+                passedDays: 15
+            })
+        );
+
+        const tarIdx = r.allHeaders.indexOf('Target (QĐ)');
+        const htIdx = r.allHeaders.indexOf('% HT Target (QĐ)');
+        const dkhtIdx = r.allHeaders.indexOf('%DKHT');
+
+        expect(tarIdx).toBeGreaterThan(-1);
+        expect(htIdx).toBeGreaterThan(-1);
+        expect(dkhtIdx).toBeGreaterThan(-1);
+
+        const hungVuongRow = r.allRows.find(row => row[0] === 'HÙNG VƯƠNG')!;
+        // Target được cập nhật thành 500
+        expect(hungVuongRow[tarIdx]).toBe(500);
+        // %HT = 250 / 500 = 50% (thay vì 25% lúc trước)
+        expect(hungVuongRow[htIdx]).toBe('50%');
+        // %DKHT = (250 / 15 * 30) / 500 = 500 / 500 = 100%
+        expect(hungVuongRow[dkhtIdx]).toBe('100%');
+
+        const tongRow = r.allRows.find(row => row[0] === 'Tổng')!;
+        expect(tongRow[tarIdx]).toBe(500);
+        expect(tongRow[htIdx]).toBe('50%');
+        expect(tongRow[dkhtIdx]).toBe('100%');
+    });
+
+    it('khi useAdjustedTarget = false, giữ nguyên Target gốc từ dữ liệu bảng', () => {
+        const fullHeaders = [
+            'Tên miền', 'DTLK', 'DTQĐ', 'Target (QĐ)', '% HT Target (QĐ)'
+        ];
+        const rows = [
+            ['HÙNG VƯƠNG', '200', '250', '1000', '25%'],
+            ['Tổng', '200', '250', '1000', '25%']
+        ];
+        const r = buildSummaryTable(
+            { headers: fullHeaders, rows },
+            opts({
+                isCumulative: true,
+                useAdjustedTarget: false,
+                supermarketMonthlyTargets: { 'HÙNG VƯƠNG': 500, 'Tổng': 500 },
+                daysInMonth: 30,
+                passedDays: 15
+            })
+        );
+
+        const tarIdx = r.allHeaders.indexOf('Target (QĐ)');
+        const htIdx = r.allHeaders.indexOf('% HT Target (QĐ)');
+
+        const hungVuongRow = r.allRows.find(row => row[0] === 'HÙNG VƯƠNG')!;
+        // Target vẫn là 1000 từ dữ liệu gốc
+        expect(hungVuongRow[tarIdx]).toBe('1000');
+        expect(hungVuongRow[htIdx]).toBe('25%');
+    });
+});
+
+
 

@@ -87,10 +87,20 @@ interface SummaryTableViewProps {
     onExport: () => Promise<void>;
     updateTimestamp?: string | null;
     supermarketTargets: Record<string, { quyDoi: number; traGop: number }>;
+    useAdjustedTarget?: boolean;
+    setUseAdjustedTarget?: (val: boolean) => void;
 }
 
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
-    const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, supermarketTargets } = props;
+    const {
+        data,
+        isCumulative = false,
+        supermarketMonthlyTargets,
+        activeSupermarket,
+        supermarketTargets,
+        useAdjustedTarget,
+        setUseAdjustedTarget
+    } = props;
     const headerMapping: Record<string, string> = {
         'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'DT Dự Kiến (QĐ)': 'DKQĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.TRỘI', '%DKHT': '%DKHT', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'DT TRẢ GÓP': 'D.THU', 'DT Trả Góp': 'D.THU', 'DT Trả Gộp': 'D.THU', 'DTTRẢGÓP': 'D.THU', 'DT TRẢ CHẬM': 'D.THU', 'DT Trả Chậm': 'D.THU', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ', '% Tỉ trọng': '%TT', 'TB 3 Tháng': 'TB 3T', 'TB 3 THÁNG': 'TB 3T', '% TT': '%TT',
     };
@@ -119,8 +129,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     }, []);
 
     const processedTable = useMemo(
-        () => buildSummaryTable(data, { isCumulative, activeSupermarket, supermarketMonthlyTargets, hiddenSupermarkets }),
-        [data, isCumulative, supermarketMonthlyTargets, activeSupermarket, hiddenSupermarkets]
+        () => buildSummaryTable(data, { isCumulative, activeSupermarket, supermarketMonthlyTargets, hiddenSupermarkets, useAdjustedTarget }),
+        [data, isCumulative, supermarketMonthlyTargets, activeSupermarket, hiddenSupermarkets, useAdjustedTarget]
     );
 
     const orderedHeaders = useMemo(() => {
@@ -302,12 +312,37 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     // Find the inline portal target next to the content title
     const inlinePortalTarget = typeof document !== 'undefined' ? document.getElementById('summary-table-inline-actions') : null;
 
+    const inlineActionsContent = (
+        <div className="flex items-center gap-1 sm:gap-1.5">
+            {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
+            {setUseAdjustedTarget && (
+                <label
+                    className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border ${
+                        useAdjustedTarget
+                            ? 'bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/50 dark:border-sky-700 dark:text-sky-300 font-bold shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
+                    }`}
+                    title="Khi check: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
+                >
+                    <input
+                        type="checkbox"
+                        checked={!!useAdjustedTarget}
+                        onChange={(e) => setUseAdjustedTarget(e.target.checked)}
+                        className="h-3.5 w-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer accent-sky-600"
+                    />
+                    <span className="whitespace-nowrap">Target sau chỉnh</span>
+                </label>
+            )}
+            {supermarketFilterDropdown}
+        </div>
+    );
+
     return (
         <div className="js-summary-table-container relative z-10" ref={ref}>
             {/* Portal column settings into the DashboardHeader action bar */}
             {portalTarget && ReactDOM.createPortal(columnSettingsDropdown, portalTarget)}
             {/* Portal filter inline next to the title */}
-            {inlinePortalTarget && ReactDOM.createPortal(supermarketFilterDropdown, inlinePortalTarget)}
+            {inlinePortalTarget && ReactDOM.createPortal(inlineActionsContent, inlinePortalTarget)}
 
             <div className="w-full overflow-hidden">
                     {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}

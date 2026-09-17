@@ -666,3 +666,345 @@ describe('extractTlpvFromText & extractBillAndKhachFromText — Bóc tách TLPVT
     });
 });
 
+describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng NGÀNH HÀNG BI', () => {
+    const userLuyKeData = [
+        'Dashboards',
+        '[Doanh thu hợp nhất](https://baocao.dienmayxanh.com/dashboard/revenue-consolidated)',
+        'Doanh thu hợp nhất',
+        '21707 - Sơn Lê Trường',
+        'Quỹ thời gian: 16/30 ngày',
+        '53%',
+        'DT quy đổi',
+        '17,000',
+        'triệu đồng · lũy kế tới hết ngày 16/09',
+        '% HT target',
+        '59.5%',
+        'Target trọn kỳ 28,562 · tiến độ 53.3%',
+        'TT vs TB 3 tháng',
+        '+12.1%',
+        'TB3T cùng cửa sổ: 15,166',
+        'DT dự kiến?',
+        '31,876',
+        'nhịp 16 ngày → 30 ngày',
+        'TLPVTC lũy kế',
+        '18.4%',
+        '4,192 bill / 22,774 khách · 1/1 ST có máy đếm',
+        'Tỉ trọng trả góp',
+        '49.3%',
+        'DT trả góp 5,457 / 11,075',
+        'NGÀNH HÀNG BI / NHÓM HÀNG BI',
+        'SỐ LƯỢNG',
+        'DOANH THU QĐ',
+        '% TỈ TRỌNG',
+        'DOANH THU',
+        'TB 3 THÁNG',
+        '% TT',
+        'DT TRẢ GÓP',
+        '% TRẢ GÓP',
+        '1 - Viễn thông di động',
+        '339',
+        '2,754',
+        '16.2%',
+        '2,326',
+        '2,311',
+        '+19.2%',
+        '1,488',
+        '64.0%',
+        '1 - Smartphone',
+        '298',
+        '2,640',
+        '95.9%',
+        '2,235',
+        '2,201',
+        '+20.0%',
+        '1,459',
+        '65.3%',
+        '3 - Máy tính bảng',
+        '11',
+        '95',
+        '3.4%',
+        '72',
+        '99',
+        '-4.7%',
+        '29',
+        '40.6%',
+        '2 - Điện Thoại Di Động',
+        '30',
+        '19',
+        '0.7%',
+        '19',
+        '11',
+        '+82.5%',
+        '0',
+        '0.0%',
+        '9 - Gia dụng',
+        '1,589',
+        '3,267',
+        '19.2%',
+        '1,698',
+        '3,058',
+        '+6.8%',
+        '561',
+        '33.0%',
+        '35 - Điện gia dụng',
+        '1,040',
+        '1,598',
+        '48.9%',
+        '853',
+        '1,699',
+        '-5.9%',
+        '81',
+        '9.5%',
+        '38 - Máy lọc nước',
+        '97',
+        '1,327',
+        '40.6%',
+        '660',
+        '1,092',
+        '+21.6%',
+        '448',
+        '67.8%',
+        '2 - Laptop',
+        '85',
+        '2,212',
+        '13.0%',
+        '1,615',
+        '1,131',
+        '+95.6%',
+        '891',
+        '55.2%',
+        '5 - Laptop',
+        '71',
+        '2,158',
+        '97.6%',
+        '1,588',
+        '1,085',
+        '+98.9%',
+        '890',
+        '56.0%',
+        '6 - IT',
+        '14',
+        '54',
+        '2.4%',
+        '27',
+        '46',
+        '+16.2%',
+        '2',
+        '5.9%',
+        '6 - Tủ lạnh, đông, mát',
+        '102',
+        '1,148',
+        '6.8%',
+        '1,006',
+        '1,148',
+        '-0.1%',
+        '485',
+        '48.2%',
+        '5 - Điện tử',
+        '84',
+        '1,053',
+        '6.2%',
+        '890',
+        '1,006',
+        '+4.7%',
+        '526',
+        '59.1%',
+        '3 - Apple',
+        '48',
+        '1,128',
+        '6.6%',
+        '880',
+        '1,530',
+        '-26.3%',
+        '613',
+        '69.6%',
+        '7 - Máy giặt, sấy',
+        '110',
+        '991',
+        '5.8%',
+        '848',
+        '796',
+        '+24.5%',
+        '478',
+        '56.4%',
+        '8 - Máy lạnh & Máy nước nóng',
+        '113',
+        '938',
+        '5.5%',
+        '828',
+        '1,124',
+        '-16.6%',
+        '380',
+        '46.0%',
+        '4 - Phụ kiện - Đồng hồ',
+        '1,932',
+        '2,184',
+        '12.8%',
+        '664',
+        '1,942',
+        '+12.5%',
+        '29',
+        '4.3%',
+        '-1 - CHƯA PHÂN LOẠI',
+        '336',
+        '883',
+        '5.2%',
+        '204',
+        '612',
+        '+44.3%',
+        '6',
+        '3.0%',
+        '10 - Avapos',
+        '705',
+        '380',
+        '2.2%',
+        '96',
+        '209',
+        '+81.6%',
+        '0',
+        '0.0%',
+        '11 - NH Tận Tâm',
+        '111',
+        '62',
+        '0.4%',
+        '20',
+        '65',
+        '-3.6%',
+        '0',
+        '0.0%',
+        'Tổng (12 dòng)',
+        '5,554',
+        '17,000',
+        '100.0%',
+        '11,075',
+        '15,166',
+        '+12.1%',
+        '5,457',
+        '49.3%',
+        'Đơn vị: triệu đồng'
+    ].join('\n');
+
+    const userRealtimeData = [
+        'Dashboards',
+        'Doanh thu hợp nhất',
+        '21707 - Sơn Lê Trường',
+        'THỜI GIAN LÀM VIỆC: 08:00 - 22:00',
+        '71%',
+        'DT quy đổi',
+        '425',
+        'triệu đồng · ngày 17/09 · cập nhật 17:32 · lũy kế tới hết ngày 16/09',
+        '% HT target (LK)',
+        '?',
+        '59.5%',
+        'Target trọn kỳ 28,562 · tiến độ 53.3%',
+        'TT vs TB 3 tháng',
+        '?',
+        '-55.2%',
+        'TB3T cùng cửa sổ: 948',
+        'DT dự kiến',
+        '?',
+        '31,876',
+        'nhịp 16 ngày → 30 ngày',
+        'TLPVTC hôm nay',
+        '22.3%',
+        '334 bill / 1,497 khách · 1/1 ST có máy đếm',
+        'Tỉ trọng trả góp',
+        '25.3%',
+        'DT trả góp 72 / 285',
+        'NGÀNH HÀNG BI / NHÓM HÀNG BI',
+        'SỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tDOANH THU\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+        '1 - Viễn thông di động\t11\t81\t19.0%\t70\t144\t-44.2%\t30\t42.7%',
+        '1 - Smartphone\t9\t73\t91.0%\t64\t138\t-46.7%\t30\t46.7%',
+        '9 - Gia dụng\t33\t72\t17.0%\t40\t191\t-62.3%\t2\t5.8%',
+        '2 - Laptop\t2\t24\t5.7%\t19\t71\t-65.8%\t0\t0.0%',
+        'Tổng (12 dòng)\t123\t425\t100.0%\t285\t948\t-55.2%\t72\t25.3%'
+    ].join('\n');
+
+    it('parseSummaryData trích xuất đầy đủ KPIs và tạo bảng chuẩn từ Luỹ kế mới', async () => {
+        const { parseSummaryData } = await import('./dashboardHelpers');
+        const parsed = parseSummaryData(userLuyKeData);
+
+        expect(parsed.kpis.dtqd).toBe('17,000');
+        expect(parsed.kpis.dtlk).toBe('11,075');
+        expect(parsed.kpis.targetQD).toBe('28,562');
+        expect(parsed.kpis.htTargetQD).toBe('59.5%');
+        expect(parsed.kpis.dtDuKienQD).toBe('31,876');
+        expect(parsed.kpis.tlpv).toBe('18.4%');
+        expect(parsed.kpis.lbill).toBe('4,192');
+        expect(parsed.kpis.lkhach).toBe('22,774');
+        expect(parsed.kpis.tyTrongTraGop).toBe('49.3%');
+        expect(parsed.kpis.dtTraGop).toBe('5,457');
+        expect(parsed.kpis.dtckThangQD).toBe('+12.1%');
+        expect(parsed.kpis.tb3t).toBe('15,166');
+
+        expect(parsed.table.rows).toHaveLength(2);
+        expect(parsed.table.rows[0][0]).toBe('HÙNG VƯƠNG');
+        expect(parsed.table.rows[0][1]).toBe('5,554'); // Số lượng
+        expect(parsed.table.rows[0][2]).toBe('17,000'); // DTQĐ
+        expect(parsed.table.rows[0][4]).toBe('11,075'); // DTLK
+        expect(parsed.table.rows[0][5]).toBe('28,562'); // Target
+        expect(parsed.table.rows[0][6]).toBe('59.5%'); // %HT Target
+        expect(parsed.table.rows[1][0]).toBe('Tổng');
+    });
+
+    it('parseSummaryData trích xuất đầy đủ KPIs và tạo bảng chuẩn từ Realtime mới', async () => {
+        const { parseSummaryData } = await import('./dashboardHelpers');
+        const parsed = parseSummaryData(userRealtimeData);
+
+        expect(parsed.kpis.dtqd).toBe('425');
+        expect(parsed.kpis.dtlk).toBe('285');
+        expect(parsed.kpis.targetQD).toBe('28,562');
+        expect(parsed.kpis.htTargetQD).toBe('59.5%');
+        expect(parsed.kpis.dtDuKienQD).toBe('31,876');
+        expect(parsed.kpis.tlpv).toBe('22.3%');
+        expect(parsed.kpis.lbill).toBe('334');
+        expect(parsed.kpis.lkhach).toBe('1,497');
+        expect(parsed.kpis.tyTrongTraGop).toBe('25.3%');
+        expect(parsed.kpis.dtTraGop).toBe('72');
+        expect(parsed.kpis.dtckThangQD).toBe('-55.2%');
+        expect(parsed.kpis.tb3t).toBe('948');
+
+        expect(parsed.table.rows).toHaveLength(2);
+        expect(parsed.table.rows[0][0]).toBe('HÙNG VƯƠNG');
+        expect(parsed.table.rows[0][1]).toBe('123');
+        expect(parsed.table.rows[0][2]).toBe('425');
+        expect(parsed.table.rows[0][4]).toBe('285');
+        expect(parsed.table.rows[1][0]).toBe('Tổng');
+    });
+
+    it('extractSupermarketList không nhận nhầm ngành hàng BI làm siêu thị', async () => {
+        const { extractSupermarketList } = await import('./dashboardHelpers');
+        const smList = extractSupermarketList(userLuyKeData);
+        expect(smList).not.toContain('1 - Viễn thông di động');
+        expect(smList).not.toContain('9 - Gia dụng');
+        expect(smList).not.toContain('35 - Điện gia dụng');
+        expect(smList).toContain('HÙNG VƯƠNG');
+    });
+
+    it('parseIndustryLuyKeData bóc tách đủ 12 nhóm ngành cha', async () => {
+        const { parseIndustryLuyKeData } = await import('./dashboardHelpers');
+        const parsed = parseIndustryLuyKeData(userLuyKeData);
+        expect(parsed.tree.length).toBe(12);
+        const parentNames = parsed.tree.map(t => t.name);
+        expect(parentNames).toContain('1 - Viễn thông di động');
+        expect(parentNames).toContain('9 - Gia dụng');
+        expect(parentNames).toContain('2 - Laptop');
+        expect(parentNames).toContain('6 - Tủ lạnh, đông, mát');
+        expect(parentNames).toContain('5 - Điện tử');
+        expect(parentNames).toContain('3 - Apple');
+        expect(parentNames).toContain('7 - Máy giặt, sấy');
+        expect(parentNames).toContain('8 - Máy lạnh & Máy nước nóng');
+        expect(parentNames).toContain('4 - Phụ kiện - Đồng hồ');
+        expect(parentNames).toContain('-1 - CHƯA PHÂN LOẠI');
+        expect(parentNames).toContain('10 - Avapos');
+        expect(parentNames).toContain('11 - NH Tận Tâm');
+
+        // Kiểm tra nhóm con
+        const vienThong = parsed.tree.find(t => t.name === '1 - Viễn thông di động');
+        expect(vienThong?.children.length).toBe(3);
+        const laptop = parsed.tree.find(t => t.name === '2 - Laptop');
+        expect(laptop?.children.length).toBe(2);
+    });
+});
+
+

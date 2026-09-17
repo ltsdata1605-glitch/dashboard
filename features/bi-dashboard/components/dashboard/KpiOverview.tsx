@@ -9,6 +9,7 @@ import {
     computeMonthlyQdPercent,
     computeDayTimeRatio,
     computeRealtimeProjected,
+    formatRevenueTy,
     percentOf,
     DEFAULT_HQQD_TARGET,
     DEFAULT_TRA_CHAM_TARGET,
@@ -30,11 +31,22 @@ interface KpiOverviewProps {
     activeSupermarket: string;
     summaryLuyKeData?: string;
     className?: string;
+    onNavigateToUpdater?: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget'; supermarketName?: string; scrollToConfig?: boolean }) => void;
 }
 
 type TargetType = 'dtQd' | 'hqqd' | 'traCham';
 
-const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, summaryLuyKeData, className }) => {
+const KpiOverview: React.FC<KpiOverviewProps> = ({ 
+    isRealtime, 
+    kpiData, 
+    targets, 
+    supermarketDailyTargets, 
+    supermarketMonthlyTargets, 
+    activeSupermarket, 
+    summaryLuyKeData, 
+    className,
+    onNavigateToUpdater
+}) => {
 
     const dtlk = parseNumber(kpiData.dtlk);
     const dtqd = parseNumber(kpiData.dtqd);
@@ -102,7 +114,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     // Luỹ kế: (DT THỰC / (số ngày đã qua - 1)) * số ngày của tháng
     let passedDays = Math.max(1, currentTime.getDate() - 1);
     if (summaryLuyKeData) {
-        const matchDay = summaryLuyKeData.match(/đến ngày\s*(\d{1,2})/i);
+        const matchDay = summaryLuyKeData.match(/(?:đến ngày|hết ngày|quỹ thời gian:\s*|nhịp\s*)(\d{1,2})/i);
         if (matchDay && matchDay[1]) {
             const parsedDay = parseInt(matchDay[1], 10);
             if (!isNaN(parsedDay) && parsedDay > 0 && parsedDay <= 31) {
@@ -116,8 +128,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         ? computeRealtimeProjected(dtlk, dayTimeRatio)
         : (passedDays > 0 ? Math.round((dtlk / passedDays) * daysInMonth) : dtlk);
 
+    const dtThucDuKienFormatted = formatRevenueTy(dtThucDuKien, isRealtime);
     const dtThucDuKienStr = dtThucDuKien > 0
-        ? `${roundUp(dtThucDuKien).toLocaleString('vi-VN')} Tr`
+        ? dtThucDuKienFormatted.full
         : '—';
 
     // --- 3. Dự kiến DTQĐ ---
@@ -126,6 +139,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const resolvedDtDuKienQD = isRealtime
         ? computeRealtimeProjected(dtqd, dayTimeRatio)
         : (dtDuKienQD > 0 ? dtDuKienQD : (passedDays > 0 && dtqd > 0 ? Math.round((dtqd / passedDays) * daysInMonth) : 0));
+    const resolvedDtDuKienQDFormatted = formatRevenueTy(resolvedDtDuKienQD, isRealtime);
 
     const totalVuotTroiMonthly = computeMonthlyTarget(isRealtime, activeSupermarket, supermarketMonthlyTargets);
     const htTargetVuotTroiMonthly = computeMonthlyQdPercent(dtDuKienQD, totalVuotTroiMonthly, kpiData.htTargetDuKienQD, dtqd);
@@ -137,17 +151,18 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
     const secondaryLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
     const secondaryTargetStr = isRealtime
-        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : 'Nhấp đặt MT')
-        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined);
+        ? (totalVuotTroi > 0 ? formatRevenueTy(totalVuotTroi, true).full : 'Nhấp đặt MT')
+        : (totalVuotTroiMonthly > 0 ? formatRevenueTy(totalVuotTroiMonthly, false).full : undefined);
 
-    // --- 4. Target HQQĐ & TRẢ CHẬM (Đồng bộ tuyệt đối với TargetHero) ---
-    const currentQuyDoiTarget = (safeName && storedQuyDoi !== undefined && storedQuyDoi !== null)
-        ? storedQuyDoi
-        : resolveRateTarget(activeSupermarket, customHQQDTargets, targets.quyDoi, DEFAULT_HQQD_TARGET);
+    const isTotalView = !activeSupermarket || activeSupermarket === 'Tổng' || activeSupermarket === 'TỔNG CỤM' || activeSupermarket === 'CỤM' || activeSupermarket.startsWith('CỤM');
 
-    const currentTraGopTarget = (safeName && storedTraGop !== undefined && storedTraGop !== null)
-        ? storedTraGop
-        : resolveRateTarget(activeSupermarket, customTraChamTargets, targets.traGop, DEFAULT_TRA_CHAM_TARGET);
+    const currentQuyDoiTarget = isTotalView
+        ? (targets?.quyDoi ?? DEFAULT_HQQD_TARGET)
+        : (targets?.quyDoi ?? (storedQuyDoi !== undefined && storedQuyDoi !== null ? storedQuyDoi : DEFAULT_HQQD_TARGET));
+
+    const currentTraGopTarget = isTotalView
+        ? (targets?.traGop ?? DEFAULT_TRA_CHAM_TARGET)
+        : (targets?.traGop ?? (storedTraGop !== undefined && storedTraGop !== null ? storedTraGop : DEFAULT_TRA_CHAM_TARGET));
 
     const hasDkAndTarget = resolvedDtDuKienQD > 0 && !!secondaryTargetStr;
     const dtqdTrendLabel = hasDkAndTarget
@@ -155,22 +170,38 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         : (resolvedDtDuKienQD > 0 ? 'Dự kiến DTQĐ' : secondaryLabel);
 
     const dtqdTrendValue = hasDkAndTarget ? (
-        <span className="tabular-nums" title={`Dự kiến DTQĐ: ${roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')} Tr | Target: ${secondaryTargetStr}`}>
+        <span className="tabular-nums" title={`Dự kiến DTQĐ: ${resolvedDtDuKienQDFormatted.full} | Target: ${secondaryTargetStr}`}>
             <span className="text-sky-600 dark:text-sky-400 font-bold">
-                {roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')}
+                {resolvedDtDuKienQDFormatted.value}
             </span>
             <span className="text-slate-400 dark:text-slate-500 font-normal mx-0.5">/</span>
             <span>{secondaryTargetStr}</span>
         </span>
     ) : (
         resolvedDtDuKienQD > 0
-            ? `${roundUp(resolvedDtDuKienQD).toLocaleString('vi-VN')} Tr`
+            ? resolvedDtDuKienQDFormatted.full
             : (secondaryTargetStr || '-')
     );
 
     const dtqdIsGood = secondaryPct >= 100;
     const hqqdIsGood = hqqd >= currentQuyDoiTarget;
     const traGopIsGood = tyTrongTraGop >= currentTraGopTarget;
+
+    const currentDtqdTarget = isRealtime ? totalVuotTroi : totalVuotTroiMonthly;
+    const dtqdRemaining = currentDtqdTarget > 0 ? dtqd - currentDtqdTarget : 0;
+    const dtqdRemainingFormatted = formatRevenueTy(Math.abs(dtqdRemaining), isRealtime);
+    const dtlkFormatted = formatRevenueTy(dtlk, isRealtime);
+    const dtqdFormatted = formatRevenueTy(dtqd, isRealtime);
+
+    const handleGoToRevenueTarget = () => {
+        if (onNavigateToUpdater) {
+            onNavigateToUpdater({
+                configTab: 'revenueTarget',
+                supermarketName: activeSupermarket,
+                scrollToConfig: true
+            });
+        }
+    };
 
     return (
         <div className={`js-kpi-overview-container px-4 pt-1 pb-2 space-y-1.5 sm:space-y-2 lg:space-y-2.5 ${className || ''}`}>
@@ -183,13 +214,14 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     trendLabel="Dự kiến"
                     trendValue={dtThucDuKienStr}
                     isGood={true}
+                    onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline gap-1">
                         <span className="text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
-                            {roundUp(dtlk).toLocaleString('vi-VN')}
+                            {dtlkFormatted.value}
                         </span>
                         <span className="text-[13px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
-                            Tr
+                            {dtlkFormatted.unit}
                         </span>
                     </div>
                 </KpiCard>
@@ -201,14 +233,25 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     isGood={dtqdIsGood}
                     trendLabel={dtqdTrendLabel}
                     trendValue={dtqdTrendValue}
+                    onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
-                            {roundUp(dtqd).toLocaleString('vi-VN')}
+                    <div className="flex items-baseline gap-1 sm:gap-1.5 flex-nowrap overflow-hidden">
+                        <span className={`text-[20px] sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[36px] font-black leading-tight tracking-tight tabular-nums shrink-0 ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                            {dtqdFormatted.value}
                         </span>
-                        <span className="text-[13px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
-                            Tr
+                        <span className="text-[12px] sm:text-[13px] lg:text-[15px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                            {dtqdFormatted.unit}
                         </span>
+                        {currentDtqdTarget > 0 && (
+                            <span
+                                title={`Doanh thu còn lại (Thực hiện - Target): ${dtqdRemaining >= 0 ? '+' : '-'}${dtqdRemainingFormatted.full}`}
+                                className={`text-[10px] sm:text-[11px] lg:text-[12px] font-bold tabular-nums shrink-0 ${
+                                    dtqdRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
+                                }`}
+                            >
+                                ({dtqdRemaining >= 0 ? '+' : '-'}{dtqdRemainingFormatted.full})
+                            </span>
+                        )}
                     </div>
                 </KpiCard>
 
@@ -219,6 +262,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     isGood={hqqdIsGood}
                     trendLabel="Mục tiêu"
                     trendValue={`${currentQuyDoiTarget}%`}
+                    onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline gap-1.5">
                         <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
@@ -239,6 +283,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     isGood={traGopIsGood}
                     trendLabel="Mục tiêu"
                     trendValue={`${currentTraGopTarget}%`}
+                    onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline gap-1.5">
                         <span className={`text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>

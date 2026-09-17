@@ -177,6 +177,10 @@ export const parseSummaryData = (text: string) => {
         const m = text.match(/TT vs TB 3 tháng\s*(?:\?\s*)?([-+\d,.]+%?)/i);
         if (m) kpis.dtckThangQD = m[1].includes('%') ? m[1] : `${m[1]}%`;
     }
+    if (!kpis.tb3t) {
+        const m = text.match(/TB3T cùng cửa sổ:\s*([\d,.]+)/i);
+        if (m) kpis.tb3t = m[1];
+    }
     
     // 3. Legacy Table Parsing
     let headerIndex = lines.findIndex(line => line.trim().startsWith('Tên miền\t'));
@@ -242,6 +246,78 @@ export const parseSummaryData = (text: string) => {
     }
 
     if (smHeaderLineIndex === -1) {
+        // Fallback: Nếu không có bảng "Siêu thị" nhưng có bảng "NGÀNH HÀNG BI / NHÓM HÀNG BI"
+        const hasIndustryTable = lines.some(l => {
+            const u = l.toUpperCase();
+            return (u.includes('NGÀNH HÀNG') && u.includes('NHÓM HÀNG')) || u.includes('NGÀNH HÀNG BI');
+        });
+
+        if (hasIndustryTable) {
+            let totSL = '0', totDTQD = kpis.dtqd || '0', totTiTrong = '100.0%';
+            let totDTLK = kpis.dtlk || '0', totTarget = kpis.targetQD || '—', totHTTarget = kpis.htTargetQD || '—';
+            let totTB3T = kpis.tb3t || '0', totDTCK = kpis.dtckThangQD || '0%', totDTTG = kpis.dtTraGop || '0', totTLTG = kpis.tyTrongTraGop || '0%';
+
+            for (let idx = 0; idx < lines.length; idx++) {
+                const line = lines[idx].trim();
+                if (line.startsWith('Tổng')) {
+                    if (line.includes('\t')) {
+                        const parts = line.split('\t').map(p => p.trim());
+                        if (parts.length >= 8) {
+                            totSL = parts[1] || totSL;
+                            totDTQD = parts[2] || totDTQD;
+                            totTiTrong = parts[3] || totTiTrong;
+                            totDTLK = parts[4] || totDTLK;
+                            totTB3T = parts[5] || totTB3T;
+                            totDTCK = parts[6] || totDTCK;
+                            totDTTG = parts[7] || totDTTG;
+                            totTLTG = parts[8] || totTLTG;
+                        }
+                    } else {
+                        const nextLines = lines.slice(idx + 1, idx + 10).map(l => l.trim()).filter(Boolean);
+                        if (nextLines.length >= 8) {
+                            totSL = nextLines[0] || totSL;
+                            totDTQD = nextLines[1] || totDTQD;
+                            totTiTrong = nextLines[2] || totTiTrong;
+                            totDTLK = nextLines[3] || totDTLK;
+                            totTB3T = nextLines[4] || totTB3T;
+                            totDTCK = nextLines[5] || totDTCK;
+                            totDTTG = nextLines[6] || totDTTG;
+                            totTLTG = nextLines[7] || totTLTG;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            const storeRow = [
+                'HÙNG VƯƠNG',
+                totSL,
+                totDTQD,
+                totTiTrong,
+                totDTLK,
+                totTarget,
+                totHTTarget,
+                totTB3T,
+                totDTCK,
+                totDTTG,
+                totTLTG,
+            ];
+            const summaryRow = [
+                'Tổng',
+                totSL,
+                totDTQD,
+                totTiTrong,
+                totDTLK,
+                totTarget,
+                totHTTarget,
+                totTB3T,
+                totDTCK,
+                totDTTG,
+                totTLTG,
+            ];
+            return { kpis, table: { headers: standardHeaders, rows: [storeRow, summaryRow] } };
+        }
+
         return { kpis, table: { headers: [], rows: [] } };
     }
 
@@ -901,28 +977,44 @@ export const DMX_PARENT_INDUSTRIES = new Set([
     '1754 - máy lạnh, nước nóng'
 ]);
 
+export const NEW_BI_PARENT_INDUSTRIES = new Set([
+    '1 - viễn thông di động',
+    '9 - gia dụng',
+    '2 - laptop',
+    '6 - tủ lạnh, đông, mát',
+    '5 - điện tử',
+    '3 - apple',
+    '7 - máy giặt, sấy',
+    '8 - máy lạnh & máy nước nóng',
+    '8 - máy lạnh, nước nóng',
+    '4 - phụ kiện - đồng hồ',
+    '-1 - chưa phân loại',
+    '10 - avapos',
+    '11 - nh tận tâm'
+]);
+
 export function isParentIndustry(name: string): boolean {
     const clean = name.trim().toLowerCase();
+    if (NEW_BI_PARENT_INDUSTRIES.has(clean)) return true;
     if (DMX_PARENT_INDUSTRIES.has(clean)) return true;
 
-    const hasCode = /^\d+\s*-\s*/.test(clean);
-    if (hasCode) {
-        const codeMatch = clean.match(/^(\d+)\s*-\s*(.*)$/);
-        if (codeMatch) {
-            const code = codeMatch[1];
-            const namePart = codeMatch[2].trim();
-            for (const p of DMX_PARENT_INDUSTRIES) {
-                if (p.startsWith(`${code} -`) && p.replace(/^\d+\s*-\s*/, '').trim() === namePart) {
-                    return true;
-                }
-            }
-        }
+    // Nếu có mã số ở đầu mà không thuộc NEW_BI_PARENT_INDUSTRIES hay DMX_PARENT_INDUSTRIES thì chắc chắn là nhóm con
+    if (/^-?\d+\s*-\s*/.test(clean)) {
         return false;
     }
 
-    const withoutCode = clean;
-    for (const p of DMX_PARENT_INDUSTRIES) {
-        if (p.replace(/^\d+\s*-\s*/, '').trim() === withoutCode) return true;
+    // Không có mã: kiểm tra theo tên chuẩn
+    const portalParents = [
+        'viễn thông di động', 'gia dụng', 'laptop', 'điện tử', 'điện lạnh',
+        'phụ kiện - đồng hồ', 'phụ kiện', 'đồng hồ', 'dịch vụ', 'xe đạp',
+        'chưa phân loại', 'máy lạnh & máy nước nóng', 'máy lạnh, nước nóng',
+        'máy giặt, sấy', 'tủ lạnh, đông, mát', 'điện gia dụng', 'máy lọc nước',
+        'apple', 'avapos', 'nh tận tâm'
+    ];
+    for (const p of portalParents) {
+        if (clean === p || clean.endsWith(p)) {
+            return true;
+        }
     }
     return false;
 }
@@ -933,13 +1025,17 @@ export function parseNewPortalIndustryData(text: string) {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     const headerIdx = lines.findIndex(l => {
         const u = l.toUpperCase();
-        return u.includes('NGÀNH HÀNG / NHÓM HÀNG') || u.includes('NGÀNH HÀNG/NHÓM HÀNG');
+        return (
+            u.includes('NGÀNH HÀNG / NHÓM HÀNG') || 
+            u.includes('NGÀNH HÀNG/NHÓM HÀNG') ||
+            (u.includes('NGÀNH HÀNG') && u.includes('NHÓM HÀNG'))
+        );
     });
     if (headerIdx === -1) return null;
 
     let dataStart = -1;
     for (let i = headerIdx + 1; i < lines.length; i++) {
-        if (/^\d+\s*-\s*/.test(lines[i]) || lines[i].startsWith('Tổng')) {
+        if (/^-?\d+\s*-\s*/.test(lines[i]) || lines[i].startsWith('Tổng')) {
             dataStart = i;
             break;
         }
@@ -981,7 +1077,7 @@ export function parseNewPortalIndustryData(text: string) {
             name = line;
             parts = lines[i + 1].split('\t').map(p => p.trim());
             i += 2;
-        } else if (/^\d+\s*-\s*/.test(line) || line.startsWith('Tổng') || isParentIndustry(line)) {
+        } else if (/^-?\d+\s*-\s*/.test(line) || line.startsWith('Tổng') || isParentIndustry(line)) {
             name = line;
             i++;
             parts = [];
@@ -989,7 +1085,7 @@ export function parseNewPortalIndustryData(text: string) {
                 const nextLine = lines[i];
                 if (nextLine.startsWith('Đơn vị:') || nextLine.startsWith('Tỉ trọng tính') || nextLine.includes('Click+') || nextLine.includes('Đang chọn')) break;
                 // Dừng nếu gặp dòng tiêu đề của nhóm/ngành tiếp theo hoặc Tổng
-                if (/^\d+\s*-\s*/.test(nextLine) || nextLine.startsWith('Tổng') || isParentIndustry(nextLine)) {
+                if (/^-?\d+\s*-\s*/.test(nextLine) || nextLine.startsWith('Tổng') || isParentIndustry(nextLine)) {
                     break;
                 }
                 parts.push(nextLine);
@@ -1000,19 +1096,50 @@ export function parseNewPortalIndustryData(text: string) {
             continue;
         }
 
-        // Đổi chỗ: đưa parts[3] (DTLK / THỰC) ra phía trước parts[1] (DTQĐ)
-        const reorderedParts = [
-            parts[0] ?? '0',  // Số lượng
-            parts[3] ?? '0',  // DTLK (THỰC)
-            parts[1] ?? '0',  // DTQĐ
-            parts[2] ?? '0%', // % Tỉ trọng
-            parts[4] ?? '—',  // Target (QĐ)
-            parts[5] ?? '—',  // % HT Target (QĐ)
-            parts[6] ?? '0',  // TB 3 Tháng
-            parts[7] ?? '0%', // % TT
-            parts[8] ?? '0',  // DT TRẢ GÓP
-            parts[9] ?? '0%'  // Tỷ Trọng Trả Góp
-        ];
+        // Đổi chỗ và căn chỉnh cột linh hoạt theo số cột dữ liệu nguồn
+        let reorderedParts: string[] = [];
+        if (parts.length >= 10) {
+            // Định dạng 10 cột có sẵn Target: Số lượng, DTQĐ, % Tỉ trọng, DTLK, Target, %HT, TB3T, %TT, Trả góp, % Trả góp
+            reorderedParts = [
+                parts[0] ?? '0',  // Số lượng
+                parts[3] ?? '0',  // DTLK (THỰC)
+                parts[1] ?? '0',  // DTQĐ
+                parts[2] ?? '0%', // % Tỉ trọng
+                parts[4] ?? '—',  // Target (QĐ)
+                parts[5] ?? '—',  // % HT Target (QĐ)
+                parts[6] ?? '0',  // TB 3 Tháng
+                parts[7] ?? '0%', // % TT
+                parts[8] ?? '0',  // DT TRẢ GÓP
+                parts[9] ?? '0%'  // Tỷ Trọng Trả Góp
+            ];
+        } else if (parts.length >= 8) {
+            // Định dạng 8 cột chuẩn Portal BI: Số lượng, DTQĐ, % Tỉ trọng, DTLK (THỰC), TB 3 Tháng, % TT, DT Trả Góp, % Trả Góp
+            reorderedParts = [
+                parts[0] ?? '0',  // Số lượng
+                parts[3] ?? '0',  // DTLK (THỰC)
+                parts[1] ?? '0',  // DTQĐ
+                parts[2] ?? '0%', // % Tỉ trọng
+                '—',              // Target (QĐ)
+                '—',              // % HT Target (QĐ)
+                parts[4] ?? '0',  // TB 3 Tháng
+                parts[5] ?? '0%', // % TT
+                parts[6] ?? '0',  // DT TRẢ GÓP
+                parts[7] ?? '0%'  // Tỷ Trọng Trả Góp
+            ];
+        } else {
+            reorderedParts = [
+                parts[0] ?? '0',  // Số lượng
+                parts[3] ?? '0',  // DTLK (THỰC)
+                parts[1] ?? '0',  // DTQĐ
+                parts[2] ?? '0%', // % Tỉ trọng
+                parts[4] ?? '—',  // Target (QĐ)
+                parts[5] ?? '—',  // % HT Target (QĐ)
+                parts[6] ?? '0',  // TB 3 Tháng
+                parts[7] ?? '0%', // % TT
+                parts[8] ?? '0',  // DT TRẢ GÓP
+                parts[9] ?? '0%'  // Tỷ Trọng Trả Góp
+            ];
+        }
 
         if (name.startsWith('Tổng')) {
             totalRow = ['Tổng', ...reorderedParts];
@@ -1043,6 +1170,29 @@ export function parseNewPortalIndustryData(text: string) {
         }
     }
 
+    // Tự động tính tổng cộng nếu báo cáo nguồn chưa kèm dòng Tổng
+    if (!totalRow && tree.length > 0) {
+        const sumSL = tree.reduce((acc, n) => acc + parseNumber(n.values[1]), 0);
+        const sumThuc = tree.reduce((acc, n) => acc + parseNumber(n.values[2]), 0);
+        const sumQd = tree.reduce((acc, n) => acc + parseNumber(n.values[3]), 0);
+        const sumTb3t = tree.reduce((acc, n) => acc + parseNumber(n.values[7]), 0);
+        const sumTg = tree.reduce((acc, n) => acc + parseNumber(n.values[9]), 0);
+        const ttPct = sumTb3t > 0 ? `${((sumQd - sumTb3t) / sumTb3t * 100).toFixed(1)}%` : '0%';
+        const tgPct = sumThuc > 0 ? `${((sumTg / sumThuc) * 100).toFixed(1)}%` : '0%';
+        totalRow = [
+            'Tổng',
+            roundUp(sumSL).toLocaleString('vi-VN'),
+            roundUp(sumThuc).toLocaleString('vi-VN'),
+            roundUp(sumQd).toLocaleString('vi-VN'),
+            '100%',
+            '—',
+            '—',
+            roundUp(sumTb3t).toLocaleString('vi-VN'),
+            ttPct.startsWith('-') ? ttPct : `+${ttPct}`,
+            roundUp(sumTg).toLocaleString('vi-VN'),
+            tgPct
+        ];
+    }
 
     const tableRows = tree.map(node => [...node.values]);
     const rows = totalRow ? [...tableRows, totalRow] : tableRows;
@@ -1146,7 +1296,14 @@ export const parseIndustryRealtimeData = (
 
     if (!text) return result;
 
-    if (text.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || text.toUpperCase().includes('NGÀNH HÀNG/NHÓM HÀNG')) {
+    const upper = text.toUpperCase();
+    if (
+        upper.includes('NGÀNH HÀNG / NHÓM HÀNG') || 
+        upper.includes('NGÀNH HÀNG/NHÓM HÀNG') ||
+        (upper.includes('NGÀNH HÀNG') && upper.includes('NHÓM HÀNG')) ||
+        upper.includes('DOANH THU NGÀNH HÀNG BI') ||
+        upper.includes('DOANH THU NGÀNH HÀNG')
+    ) {
         const parsed = parseNewPortalIndustryData(text);
         if (parsed) return parsed;
     }
@@ -1195,11 +1352,18 @@ export const parseIndustryLuyKeData = (
     };
     if (!text) return result;
 
-    if (text.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || text.toUpperCase().includes('NGÀNH HÀNG/NHÓM HÀNG')) {
+    const upper = text.toUpperCase();
+    if (
+        upper.includes('NGÀNH HÀNG / NHÓM HÀNG') || 
+        upper.includes('NGÀNH HÀNG/NHÓM HÀNG') ||
+        (upper.includes('NGÀNH HÀNG') && upper.includes('NHÓM HÀNG')) ||
+        upper.includes('DOANH THU NGÀNH HÀNG BI') ||
+        upper.includes('DOANH THU NGÀNH HÀNG')
+    ) {
         const parsed = parseNewPortalIndustryData(text);
         if (parsed) {
             return {
-                kpis: parsed.kpis,
+                kpis: parsed.kpis as any,
                 table: { headers: parsed.headers, rows: parsed.rows },
                 tree: parsed.tree,
                 totalRow: parsed.totalRow
@@ -1242,21 +1406,25 @@ export const parseIndustryLuyKeData = (
 export const extractSupermarketList = (summaryLuyKe: string): string[] => {
     if (!summaryLuyKe) return [];
     
+    // Nếu đây là báo cáo theo ngành hàng (NGÀNH HÀNG BI / NHÓM HÀNG BI), không lấy các nhóm ngành làm siêu thị
+    const isIndustryTableReport = summaryLuyKe.toUpperCase().includes('NGÀNH HÀNG') && summaryLuyKe.toUpperCase().includes('NHÓM HÀNG');
+
     // 1. Thử bóc tách qua parseSummaryData
     const parsed = parseSummaryData(summaryLuyKe);
     let rawExtractedNames: string[] = [];
     if (parsed.table.rows.length > 0) {
         rawExtractedNames = parsed.table.rows
             .map(r => (r[0] || '').trim())
-            .filter(name => name && name !== 'Tổng' && !isEmployeeName(name) && !name.includes(' liên hệ '));
+            .filter(name => name && name !== 'Tổng' && !isEmployeeName(name) && !name.includes(' liên hệ ') && !isParentIndustry(name));
     }
 
-    // 2. Dự phòng quét theo dòng nếu bảng chưa có dòng
-    if (rawExtractedNames.length === 0) {
+    // 2. Dự phòng quét theo dòng nếu bảng chưa có dòng (chỉ khi không phải bảng ngành hàng)
+    if (rawExtractedNames.length === 0 && !isIndustryTableReport) {
         rawExtractedNames = Array.from(new Set(summaryLuyKe.split(/\r?\n/)
             .map(line => (line.split('\t')[0] ?? '').trim())
             .filter(name => {
                 if (!name || name === 'Tổng' || isEmployeeName(name) || name.includes(' liên hệ ') || name.includes('Đơn vị:')) return false;
+                if (isParentIndustry(name)) return false;
                 return /^\d+\s*-\s*/.test(name) || name.startsWith('ĐM') || name.startsWith('TGD') || (name.includes(' - ') && !name.includes(':'));
             })));
     }

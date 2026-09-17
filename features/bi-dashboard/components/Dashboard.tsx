@@ -8,6 +8,7 @@ import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
 import KpiOverview from './dashboard/KpiOverview';
+import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -15,7 +16,7 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiSer
 import { Button } from '../../../components/shared/ui/Button';
 
 interface DashboardProps {
-    onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget' }) => void;
+    onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget'; supermarketName?: string; scrollToConfig?: boolean }) => void;
     isActive?: boolean;
 }
 
@@ -96,7 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
         getKpiData,
         summaryLuyKe,
         hasRealtimeData,
-        hasCumulativeData
+        hasCumulativeData,
+        useAdjustedTarget,
+        setUseAdjustedTarget
     } = useDashboardLogic(isActive);
 
     const printableRef = useRef<HTMLDivElement>(null);
@@ -186,7 +189,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const isRealtimeView = activeMainTab === 'realtime';
     const hasData = isRealtimeView ? hasRealtimeData : hasCumulativeData;
     const currentKpiData = getKpiData(isRealtimeView);
-    const activeTargets = supermarketTargets[activeSupermarket] || { quyDoi: 40, traGop: 45 };
+    const activeTargets = supermarketTargets[activeSupermarket]
+        || supermarketTargets[shortenSupermarketName(activeSupermarket)]
+        || supermarketTargets[activeSupermarket.toUpperCase()]
+        || supermarketTargets['Tổng']
+        || { quyDoi: 40, traGop: 45 };
 
     if (!hasData) {
         return (
@@ -244,6 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                     supermarketMonthlyTargets={supermarketMonthlyTargets}
                                     activeSupermarket={activeSupermarket}
                                     summaryLuyKeData={summaryLuyKe}
+                                    onNavigateToUpdater={onNavigateToUpdater}
                                 />
                                 <SummaryTableView
                                     key={isRealtimeView ? 'summary-realtime' : 'summary-luyke'}
@@ -256,6 +264,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                     onExport={async () => { await handleExportPNG(summaryTableRef, `Bảng Doanh Thu${!isRealtimeView ? ' Lũy Kế' : ''} - ${activeSupermarket}`); }}
                                     updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
                                     supermarketTargets={supermarketTargets}
+                                    useAdjustedTarget={useAdjustedTarget}
+                                    setUseAdjustedTarget={setUseAdjustedTarget}
                                 />
                             </div>
                         )}

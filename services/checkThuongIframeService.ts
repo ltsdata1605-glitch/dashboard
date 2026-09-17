@@ -29,3 +29,34 @@ export function saveCheckThuongDataToIframeDb(value: unknown): Promise<void> {
         }
     });
 }
+
+export function getCheckThuongDataFromIframeDb(): Promise<any> {
+    return new Promise((resolve) => {
+        try {
+            const request = indexedDB.open('keyval-store', 1);
+            request.onsuccess = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains('keyval')) {
+                    db.close();
+                    resolve(null);
+                    return;
+                }
+                const tx = db.transaction('keyval', 'readonly');
+                const store = tx.objectStore('keyval');
+                const getReq = store.get('checkthuong_data');
+                getReq.onsuccess = () => {
+                    db.close();
+                    resolve(getReq.result || null);
+                };
+                getReq.onerror = () => {
+                    db.close();
+                    resolve(null);
+                };
+            };
+            request.onerror = () => resolve(null);
+        } catch {
+            resolve(null);
+        }
+    });
+}
+

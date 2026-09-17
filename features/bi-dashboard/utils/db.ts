@@ -7,6 +7,7 @@
 // Bây giờ:   BI_HUB_DATABASE_V2 / settings (đồng bộ lên Firebase qua event ycx-setting-changed)
 
 import { getDb } from '../services/dbService';
+import { isSupermarketMatch } from './dashboardHelpers';
 
 const SETTINGS_STORE = 'settings';
 
@@ -169,6 +170,36 @@ export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
     const request = store.get(prefixed);
 
     request.onsuccess = () => {
+      if (request.result !== undefined && request.result !== null && request.result !== '') {
+        resolve(request.result);
+        return;
+      }
+      // Fallback cho key cấu hình siêu thị (VD: config-HÙNG VƯƠNG-industry-luyke vs bi_config-Hùng Vương-industry-luyke)
+      if (typeof key === 'string' && key.startsWith('config-')) {
+        const configTypes = ['-industry-realtime', '-industry-luyke', '-danhsach', '-thidua', '-tragop', '-bankem'];
+        const matchedType = configTypes.find(t => key.endsWith(t));
+        if (matchedType) {
+          const rawSm = key.slice('config-'.length, key.length - matchedType.length);
+          const allKeysReq = store.getAllKeys();
+          allKeysReq.onsuccess = () => {
+            const allKeys = allKeysReq.result as string[];
+            const foundPrefixedKey = allKeys.find(k => {
+              if (typeof k !== 'string' || !k.startsWith('bi_config-') || !k.endsWith(matchedType)) return false;
+              const storeSm = k.slice('bi_config-'.length, k.length - matchedType.length);
+              return isSupermarketMatch(rawSm, storeSm);
+            });
+            if (foundPrefixedKey) {
+              const fallbackReq = store.get(foundPrefixedKey);
+              fallbackReq.onsuccess = () => resolve(fallbackReq.result);
+              fallbackReq.onerror = () => resolve(undefined);
+              return;
+            }
+            resolve(request.result === undefined ? undefined : request.result);
+          };
+          allKeysReq.onerror = () => resolve(undefined);
+          return;
+        }
+      }
       resolve(request.result === undefined ? undefined : request.result);
     };
 

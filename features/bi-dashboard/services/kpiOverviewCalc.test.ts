@@ -10,6 +10,7 @@ import {
     percentOf,
     computeDayTimeRatio,
     computeRealtimeProjected,
+    formatRevenueTy,
     ALL_STORES_KEY,
     type TargetOverrides,
 } from './kpiOverviewCalc';
@@ -325,4 +326,53 @@ describe('computeDayTimeRatio & computeRealtimeProjected (Realtime dự kiến t
         expect(computeRealtimeProjected(0, 0.5)).toBe(0);
     });
 });
+
+describe('formatRevenueTy — Rút gọn số lại thành tỷ', () => {
+    it('17.000 Tr => 17 tỷ (số nguyên tròn tỷ)', () => {
+        const res = formatRevenueTy(17000);
+        expect(res.value).toBe('17');
+        expect(res.unit).toBe('tỷ');
+        expect(res.full).toBe('17 tỷ');
+    });
+
+    it('20.766 Tr => 20.8 tỷ (làm tròn 1 chữ số thập phân)', () => {
+        const res = formatRevenueTy(20766);
+        expect(res.value).toBe('20.8');
+        expect(res.unit).toBe('tỷ');
+        expect(res.full).toBe('20.8 tỷ');
+    });
+
+    it('11.075 Tr => 11.1 tỷ (làm tròn 1 chữ số thập phân)', () => {
+        const res = formatRevenueTy(11075);
+        expect(res.value).toBe('11.1');
+        expect(res.unit).toBe('tỷ');
+        expect(res.full).toBe('11.1 tỷ');
+    });
+
+    it('31.876 Tr => 31.9 tỷ', () => {
+        const res = formatRevenueTy(31876);
+        expect(res.value).toBe('31.9');
+        expect(res.full).toBe('31.9 tỷ');
+    });
+
+    it('41.415 Tr => 41.4 tỷ', () => {
+        const res = formatRevenueTy(41415);
+        expect(res.value).toBe('41.4');
+        expect(res.full).toBe('41.4 tỷ');
+    });
+
+    it('24.415 Tr => 24.4 tỷ (cho độ lệch còn lại)', () => {
+        const res = formatRevenueTy(24415);
+        expect(res.value).toBe('24.4');
+        expect(res.full).toBe('24.4 tỷ');
+    });
+
+    it('ở Realtime nếu số < 1000 Tr thì giữ nguyên đơn vị Tr', () => {
+        const res = formatRevenueTy(500, true);
+        expect(res.value).toBe('500');
+        expect(res.unit).toBe('Tr');
+        expect(res.full).toBe('500 Tr');
+    });
+});
+
 

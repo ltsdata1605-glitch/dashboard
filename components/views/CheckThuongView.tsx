@@ -5,6 +5,8 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
 import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
+import { getCheckThuongDataFromIframeDb } from '../../services/checkThuongIframeService';
+import { CheckThuongLeaderboardView } from '../../features/check-thuong';
 
 
 export const CheckThuongView: React.FC = () => {
@@ -13,6 +15,10 @@ export const CheckThuongView: React.FC = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [hasData, setHasData] = useState(false);
     const [codes, setCodes] = useState({ code1: '910', code2: '' });
+    const [activeSubTab, setActiveSubTab] = useState<'search' | 'leaderboard'>('search');
+    const [competitionData, setCompetitionData] = useState<any[][]>([]);
+    const [fileName, setFileName] = useState<string>('');
+    const [uploadTime, setUploadTime] = useState<string>('');
     // Đọc được activeTab MỚI NHẤT bên trong listener của effect deps [] bên dưới (không re-subscribe
     // message/cloud-sync listener mỗi lần đổi tab) — dùng để chỉ hiện cảnh báo cập nhật Cloud khi
     // người dùng ĐANG xem đúng tab Check Thưởng, tránh toast lạc ngữ cảnh ở tab khác.
@@ -21,29 +27,48 @@ export const CheckThuongView: React.FC = () => {
 
     useEffect(() => {
         setMounted(true);
+
+        // Nạp trước dữ liệu đã lưu từ IndexedDB nếu có
+        getCheckThuongDataFromIframeDb().then((saved) => {
+            if (saved && saved.competitionData && saved.competitionData.length > 0) {
+                setHasData(true);
+                setCompetitionData(saved.competitionData);
+                if (saved.fileName) setFileName(saved.fileName);
+                if (saved.uploadTime) setUploadTime(saved.uploadTime);
+                if (saved.code1) setCodes(prev => ({ ...prev, code1: saved.code1 }));
+                if (saved.code2) setCodes(prev => ({ ...prev, code2: saved.code2 }));
+            }
+        });
+
         const handleMessage = (e: MessageEvent) => {
             if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
                 setHasData(true);
                 if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
                 if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
-            } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED') {
-                if (e.data.payload) {
-                    // BUG FIX: saveSetting() mặc định nuốt lỗi sau khi retry (giữ nguyên hành vi cho
-                    // ~80 call site khác trong app — xem comment ở services/dbService/core.ts) nên
-                    // .catch(console.error) trước đây KHÔNG BAO GIỜ thực sự chạy khi ghi IndexedDB
-                    // thất bại (hết quota, Private Browsing chặn, DB hỏng...) — người dùng thao tác
-                    // trong Check Thưởng nhưng dữ liệu âm thầm không được lưu, không hề biết. Dùng
-                    // saveSettingOrThrow() để lỗi thật sự tới được đây và báo cho người dùng.
-                    saveSettingOrThrow('checkthuong_data', e.data.payload).catch((err) => {
-                        console.error('[CheckThuong] Lưu dữ liệu thất bại:', err);
-                        toast.error('Không lưu được thay đổi Check Thưởng vào máy. Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-save-failed', duration: 6000 });
-                    });
+                if (e.data.competitionData && Array.isArray(e.data.competitionData)) {
+                    setCompetitionData(e.data.competitionData);
+                }
+                if (e.data.fileName) setFileName(e.data.fileName);
+                if (e.data.uploadTime) setUploadTime(e.data.uploadTime);
+            } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' || e.data?.type === 'CHECK_THUONG_DATA_RESPONSE') {
+                const payload = e.data.payload;
+                if (payload) {
+                    if (payload.competitionData && Array.isArray(payload.competitionData)) {
+                        setCompetitionData(payload.competitionData);
+                        setHasData(true);
+                    }
+                    if (payload.fileName) setFileName(payload.fileName);
+                    if (payload.uploadTime) setUploadTime(payload.uploadTime);
+                    if (payload.code1) setCodes(prev => ({ ...prev, code1: payload.code1 }));
+                    if (payload.code2) setCodes(prev => ({ ...prev, code2: payload.code2 }));
+                    if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED') {
+                        saveSettingOrThrow('checkthuong_data', payload).catch((err) => {
+                            console.error('[CheckThuong] Lưu dữ liệu thất bại:', err);
+                            toast.error('Không lưu được thay đổi Check Thưởng vào máy. Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-save-failed', duration: 6000 });
+                        });
+                    }
                 }
             } else if (e.data?.type === 'CHECK_THUONG_SAVE_ERROR') {
-                // BUG FIX: bên trong iframe (public/check-thuong.html) còn 1 lượt ghi IndexedDB RIÊNG
-                // (idb-keyval, dùng để tự khôi phục khi mở lại) trước đây chỉ console.warn khi thất
-                // bại — cùng loại lỗi "âm thầm mất dữ liệu" đã sửa ở nhánh CHECK_THUONG_STATE_CHANGED
-                // trên, nhưng là 1 điểm ghi khác nên cần báo riêng.
                 console.error('[CheckThuong] Lưu dữ liệu trong iframe thất bại:', e.data.message);
                 toast.error('Không lưu được thay đổi Check Thưởng (bộ nhớ tạm bảng tra cứu). Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-iframe-save-failed', duration: 6000 });
             } else if (e.data?.type === 'CHECK_THUONG_LOAD_ERROR') {
@@ -165,47 +190,113 @@ export const CheckThuongView: React.FC = () => {
         }, '*');
     };
 
+    const handleSelectStoreFromLeaderboard = (storeCode: string) => {
+        setCodes({ code1: storeCode, code2: '' });
+        iframeRef.current?.contentWindow?.postMessage({
+            type: 'CHECK_THUONG_SEARCH',
+            code1: storeCode,
+            code2: ''
+        }, '*');
+        setActiveSubTab('search');
+    };
+
     const renderSearchBar = (isMobile: boolean) => (
-        <div className={`flex items-center ${isMobile ? 'gap-1' : 'hidden lg:flex gap-3 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
-            {/* Nhóm ô nhập mã kho — 1 pill trắng viền chung, phân cách bằng đường kẻ dọc (đúng chuẩn components/layout/Header.tsx) */}
-            <div className={isMobile ? 'flex items-center gap-1' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
-                <input
-                    type="text"
-                    placeholder="Kho 1"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-36 px-4 py-2 text-sm'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
-                    value={codes.code1}
-                    onChange={(e) => handleCodeChange('code1', e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Kho 2"
-                    className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-32 px-4 py-2 text-sm border-l border-slate-100 dark:border-slate-700'} font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
-                    value={codes.code2}
-                    onChange={(e) => handleCodeChange('code2', e.target.value)}
-                />
-            </div>
-            {/* Nhóm nút hành động (Xoá/Tải file) — pill trắng viền chung thứ 2 */}
-            <div className={isMobile ? 'flex items-center gap-0.5' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+        <div className={`flex items-center ${isMobile ? 'gap-1' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+            {/* CỤM NÚT CHUYỂN TAB: TRA CỨU / TOP THƯỞNG */}
+            <div className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
                 <Button
-                    variant="unstyled" size="none"
+                    variant="unstyled"
+                    size="none"
+                    onClick={() => setActiveSubTab('search')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                        activeSubTab === 'search'
+                            ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    }`}
+                    title="Tra cứu & So sánh siêu thị"
+                >
+                    <Icon name="search" size={3} />
+                    <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Tra cứu</span>
+                </Button>
+
+                <Button
+                    variant="unstyled"
+                    size="none"
                     onClick={() => {
-                        setCodes(prev => ({ ...prev, code2: '' }));
-                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
+                        setActiveSubTab('leaderboard');
+                        if (competitionData.length === 0) {
+                            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA' }, '*');
+                        }
                     }}
-                    className={`${isMobile ? 'w-6 h-6 rounded-full' : 'p-2.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
-                    title="Xoá mã kho đang so sánh"
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                        activeSubTab === 'leaderboard'
+                            ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-xs font-black'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    }`}
+                    title="Xem Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao"
                 >
-                    <Icon name="rotate-ccw" size={isMobile ? 3 : 3.5} />
-                </Button>
-                <Button
-                    variant="unstyled" size="none"
-                    onClick={handleChangeFile}
-                    className={`${isMobile ? 'w-6 h-6 rounded-full ml-0.5' : 'p-2.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
-                    title="Tải file khác"
-                >
-                    <Icon name="upload" size={isMobile ? 3 : 3.5} />
+                    <Icon name="trophy" size={3} />
+                    <span>Top thưởng</span>
                 </Button>
             </div>
+
+            {/* CỤM Ô NHẬP MÃ KHO (KHI Ở TAB TRA CỨU) */}
+            {activeSubTab === 'search' && (
+                <>
+                    <div className={isMobile ? 'flex items-center gap-1' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                        <input
+                            type="text"
+                            placeholder="Kho 1"
+                            className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-20 px-2.5 py-1 text-xs text-center'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            value={codes.code1}
+                            onChange={(e) => handleCodeChange('code1', e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Kho 2"
+                            className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-20 px-2.5 py-1 text-xs text-center border-l border-slate-100 dark:border-slate-700'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            value={codes.code2}
+                            onChange={(e) => handleCodeChange('code2', e.target.value)}
+                        />
+                    </div>
+                    <div className={isMobile ? 'flex items-center gap-0.5' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => {
+                                setCodes(prev => ({ ...prev, code2: '' }));
+                                iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
+                            }}
+                            className={`${isMobile ? 'w-6 h-6 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
+                            title="Xoá mã kho đang so sánh"
+                        >
+                            <Icon name="rotate-ccw" size={3} />
+                        </Button>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleChangeFile}
+                            className={`${isMobile ? 'w-6 h-6 rounded-full ml-0.5' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                            title="Tải file khác"
+                        >
+                            <Icon name="upload" size={3} />
+                        </Button>
+                    </div>
+                </>
+            )}
+
+            {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE */}
+            {activeSubTab === 'leaderboard' && (
+                <div className={isMobile ? 'flex items-center' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleChangeFile}
+                        className={`${isMobile ? 'px-2 py-1 rounded-full' : 'px-2.5 py-1'} flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-xs font-bold`}
+                        title="Tải file khác"
+                    >
+                        <Icon name="upload" size={3} />
+                        <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Đổi file</span>
+                    </Button>
+                </div>
+            )}
         </div>
     );
 
@@ -219,14 +310,29 @@ export const CheckThuongView: React.FC = () => {
                 renderSearchBar(true),
                 document.getElementById('mobile-topbar-actions')!
             )}
+
+            {/* TAB 1: GIAO DIỆN TRA CỨU & SO SÁNH (IFRAME) */}
             <iframe
                 ref={iframeRef}
                 src={`${import.meta.env?.BASE_URL || '/'}check-thuong.html`}
                 title="Bảng Tra Cứu Thưởng Thi Đua"
-                className="w-full h-full border-none flex-grow"
+                className={`w-full h-full border-none flex-grow ${activeSubTab === 'search' ? 'block' : 'hidden'}`}
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
             />
+
+            {/* TAB 2: GIAO DIỆN BẢNG XẾP HẠNG TOP SIÊU THỊ THƯỞNG CAO */}
+            {activeSubTab === 'leaderboard' && (
+                <div className="w-full h-full flex-grow overflow-hidden">
+                    <CheckThuongLeaderboardView
+                        competitionData={competitionData}
+                        uploadTime={uploadTime}
+                        fileName={fileName}
+                        onSelectStore={handleSelectStoreFromLeaderboard}
+                        onSwitchToSearch={() => setActiveSubTab('search')}
+                    />
+                </div>
+            )}
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import { parseNumber, roundUp, shortenSupermarketName } from '../utils/dashboardHelpers';
+import { parseNumber, roundUp, shortenSupermarketName, isSupermarketMatch } from '../utils/dashboardHelpers';
 import { getYesterdayDateString } from '../utils/nhanVienHelpers';
 
 /**
@@ -30,6 +30,8 @@ export interface BuildSummaryTableOptions {
     activeSupermarket: string;
     supermarketMonthlyTargets: Record<string, number>;
     hiddenSupermarkets: string[];
+    /** Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị) làm Target hiển thị và tính toán */
+    useAdjustedTarget?: boolean;
     /** Tiêm để test tất định. Bỏ trống thì lấy số ngày của tháng hiện tại. */
     daysInMonth?: number;
     /** Số ngày luỹ kế đã qua trong tháng (mặc định = ngày hiện tại - 1). */
@@ -70,22 +72,40 @@ export function buildSummaryTable(
     const passedDays = opts.passedDays ?? Math.max(1, now.getDate() - 1);
 
     const getTargetForSm = (smName: string, currentRows: any[][]): number => {
-        if (smName !== 'Tổng') {
-            return supermarketMonthlyTargets[smName] ?? 0;
+        if (!smName) return 0;
+        if (smName !== 'Tổng' && smName !== 'TỔNG CỤM') {
+            if (supermarketMonthlyTargets[smName] !== undefined && supermarketMonthlyTargets[smName] > 0) {
+                return supermarketMonthlyTargets[smName];
+            }
+            const short = shortenSupermarketName(smName);
+            if (short && supermarketMonthlyTargets[short] !== undefined && supermarketMonthlyTargets[short] > 0) {
+                return supermarketMonthlyTargets[short];
+            }
+            const upper = smName.toUpperCase();
+            if (supermarketMonthlyTargets[upper] !== undefined && supermarketMonthlyTargets[upper] > 0) {
+                return supermarketMonthlyTargets[upper];
+            }
+            for (const [k, v] of Object.entries(supermarketMonthlyTargets)) {
+                if (isSupermarketMatch(smName, k) || (short && isSupermarketMatch(short, k))) {
+                    if (typeof v === 'number' && v > 0) return v;
+                }
+            }
+            return 0;
         }
         // Cho dòng 'Tổng': Nếu trong bảng có các siêu thị (khác 'Tổng'), cộng target của đúng các siêu thị đó
-        const storeRowsInTable = currentRows.filter(r => r[nameIndex] && r[nameIndex] !== 'Tổng');
+        const storeRowsInTable = currentRows.filter(r => r[nameIndex] && r[nameIndex] !== 'Tổng' && r[nameIndex] !== 'TỔNG CỤM');
         if (storeRowsInTable.length > 0) {
             const sumFromTableStores = storeRowsInTable.reduce<number>(
-                (sum, r) => sum + (supermarketMonthlyTargets[r[nameIndex]] ?? 0),
+                (sum, r) => sum + (getTargetForSm(r[nameIndex], currentRows) || 0),
                 0
             );
             if (sumFromTableStores > 0) return sumFromTableStores;
         }
         // Fallback nếu không có dòng siêu thị con hoặc không tìm thấy target từng siêu thị
         if (supermarketMonthlyTargets['Tổng']) return supermarketMonthlyTargets['Tổng'];
+        if (supermarketMonthlyTargets['TỔNG CỤM']) return supermarketMonthlyTargets['TỔNG CỤM'];
         return Object.entries(supermarketMonthlyTargets)
-            .filter(([k]) => k !== 'Tổng')
+            .filter(([k]) => k !== 'Tổng' && k !== 'TỔNG CỤM' && k !== 'CỤM' && k !== 'CỤM 1')
             .reduce<number>((s, [_, v]) => s + Number(v), 0);
     };
 
@@ -114,10 +134,27 @@ export function buildSummaryTable(
             });
         }
 
-        // 2. Bổ sung cột "%DKHT" vào sau cột % HT Target (QĐ):
-        // Công thức: (DT Dự Kiến / Target) * 100
+        // Cập nhật Target DTQĐ sau chỉnh (nếu tuỳ chọn useAdjustedTarget bật)
         const curHtIndex = tempHeaders.indexOf('% HT Target (QĐ)');
         const curTargetIndex = tempHeaders.indexOf('Target (QĐ)');
+        if (opts.useAdjustedTarget && curTargetIndex !== -1 && nameIndex !== -1) {
+            tempRows = tempRows.map(row => {
+                const newRow = [...row];
+                const sm = newRow[nameIndex];
+                const adjustedTarget = getTargetForSm(sm, tempRows);
+                if (adjustedTarget > 0) {
+                    newRow[curTargetIndex] = adjustedTarget;
+                    if (curHtIndex !== -1 && curDtqdIdx !== -1) {
+                        const qVal = parseNumber(newRow[curDtqdIdx]);
+                        newRow[curHtIndex] = `${roundUp((qVal / adjustedTarget) * 100)}%`;
+                    }
+                }
+                return newRow;
+            });
+        }
+
+        // 2. Bổ sung cột "%DKHT" vào sau cột % HT Target (QĐ):
+        // Công thức: (DT Dự Kiến / Target) * 100
         const afterDtqdIndex = tempHeaders.indexOf('DTQĐ');
         if (curHtIndex !== -1 && !tempHeaders.includes('%DKHT')) {
             tempHeaders.splice(curHtIndex + 1, 0, '%DKHT');
@@ -125,7 +162,7 @@ export function buildSummaryTable(
                 const newRow = [...row];
                 const qVal = afterDtqdIndex !== -1 ? parseNumber(row[afterDtqdIndex]) : 0;
                 const targetVal = curTargetIndex !== -1 ? parseNumber(row[curTargetIndex]) : 0;
-                const projected = passedDays > 0 ? (qVal / passedDays) * daysInMonth : 0;
+                const projected = passedDays > 0 ? Math.round((qVal / passedDays) * daysInMonth) : 0;
                 const dkht = targetVal > 0 ? roundUp((projected / targetVal) * 100) : 0;
                 newRow.splice(curHtIndex + 1, 0, `${dkht}%`);
                 return newRow;
@@ -388,7 +425,27 @@ export function buildSummaryTable(
                     }
                 }
             }
-            if (!isCumulative) {
+            if (isCumulative && opts.useAdjustedTarget) {
+                const tarFinalIdx = finalH.findIndex(h => h === 'Target (QĐ)' || h === 'TAR');
+                const htFinalIdx = finalH.findIndex(h => h === '% HT Target (QĐ)' || h === '%HT');
+                const dkhtFinalIdx = finalH.indexOf('%DKHT');
+                const dtqdFinalIdx = finalH.indexOf('DTQĐ');
+                if (tarFinalIdx !== -1) {
+                    const sumTarget = tempRows.reduce((sum, r) => sum + parseNumber(r[tarFinalIdx]), 0);
+                    if (sumTarget > 0) {
+                        tRow[tarFinalIdx] = sumTarget;
+                        if (htFinalIdx !== -1 && dtqdFinalIdx !== -1) {
+                            const totalDtqd = parseNumber(tRow[dtqdFinalIdx]);
+                            tRow[htFinalIdx] = `${roundUp((totalDtqd / sumTarget) * 100)}%`;
+                        }
+                        if (dkhtFinalIdx !== -1 && dtqdFinalIdx !== -1) {
+                            const totalDtqd = parseNumber(tRow[dtqdFinalIdx]);
+                            const tProjected = passedDays > 0 ? Math.round((totalDtqd / passedDays) * daysInMonth) : 0;
+                            tRow[dkhtFinalIdx] = `${roundUp((tProjected / sumTarget) * 100)}%`;
+                        }
+                    }
+                }
+            } else if (!isCumulative) {
                 const tarFinalIdx = finalH.findIndex(h => h === 'Target (QĐ)' || h === 'Target Ngày (QĐ)');
                 const htFinalIdx = finalH.findIndex(h => h === '% HT Target (QĐ)' || h === '% HT Target Ngày (QĐ)');
                 const dtqdFinalIdx = finalH.indexOf('DTQĐ');

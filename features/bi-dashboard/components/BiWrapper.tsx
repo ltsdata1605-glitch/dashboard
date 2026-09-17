@@ -76,13 +76,28 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         configStore.setLoaded('supermarket-config-active-tab', true);
     }, []);
 
-    const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab }) => {
+    const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
         setActiveView(id as 'dashboard' | 'employee' | 'updater');
         if (id === 'updater') {
             const targetTab = options?.configTab ?? 'data';
             db.set('supermarket-config-active-tab', targetTab);
             configStore.setCache('supermarket-config-active-tab', targetTab);
             configStore.setLoaded('supermarket-config-active-tab', true);
+
+            if (options?.supermarketName) {
+                db.set('updater-active-supermarket', options.supermarketName);
+                configStore.setCache('updater-active-supermarket', options.supermarketName);
+                configStore.setLoaded('updater-active-supermarket', true);
+            }
+
+            if (options?.scrollToConfig) {
+                setTimeout(() => {
+                    const el = document.getElementById('supermarket-config-section');
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
         }
         setMountedViews(prev => {
             if (prev.has(id)) return prev;
@@ -92,7 +107,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         });
     }, []);
 
-    const handleNavigateToUpdater = useCallback((options?: { configTab?: ConfigTab }) => {
+    const handleNavigateToUpdater = useCallback((options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
         handleTabChange('updater', options);
     }, [handleTabChange]);
     const handleNavigateToDashboard = useCallback(() => handleTabChange('dashboard'), [handleTabChange]);

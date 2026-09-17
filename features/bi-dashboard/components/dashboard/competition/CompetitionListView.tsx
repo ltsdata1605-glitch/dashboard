@@ -18,7 +18,7 @@ interface CompetitionListViewProps {
     groupingMode?: 'default' | 'configured';
 }
 
-interface GroupTheme {
+export interface GroupTheme {
     square: string;
     bgRow: string;
     label: string;
@@ -27,7 +27,7 @@ interface GroupTheme {
     border: string;
 }
 
-const CRITERIA_GROUP_THEMES: GroupTheme[] = [
+export const CRITERIA_GROUP_THEMES: GroupTheme[] = [
     {
         // 0: Sky (Dịch vụ)
         square: 'bg-sky-500 shadow-xs',
@@ -93,7 +93,7 @@ const CRITERIA_GROUP_THEMES: GroupTheme[] = [
     },
 ];
 
-const getGroupTheme = (criteria: string, index: number): GroupTheme => {
+export const getGroupTheme = (criteria: string, index: number): GroupTheme => {
     const c = (criteria || '').toLowerCase();
     if (c.includes('dịch vụ') || c.includes('dich vu')) return CRITERIA_GROUP_THEMES[0]; // Sky
     if (c.includes('doanh thu') || c.includes('dt') || c.includes('bán hàng')) return CRITERIA_GROUP_THEMES[1]; // Emerald

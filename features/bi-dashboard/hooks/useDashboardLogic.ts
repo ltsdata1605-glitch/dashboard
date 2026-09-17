@@ -11,7 +11,8 @@ import {
     parseIndustryLuyKeData,
     parseNumber,
     shortenSupermarketName,
-    extractSupermarketList
+    extractSupermarketList,
+    isSupermarketMatch
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
 import { useReportBiAuth } from './useReportBiAuth';
@@ -145,29 +146,32 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, []);
 
+    const effectiveIndustryRealtimeData = industryRealtimeData || (summaryRealtime && (summaryRealtime.toUpperCase().includes('NGÀNH HÀNG') && summaryRealtime.toUpperCase().includes('NHÓM HÀNG')) ? summaryRealtime : '');
+    const effectiveIndustryLuyKeData = industryLuyKeData || (summaryLuyKe && (summaryLuyKe.toUpperCase().includes('NGÀNH HÀNG') && summaryLuyKe.toUpperCase().includes('NHÓM HÀNG')) ? summaryLuyKe : '');
+
     useEffect(() => {
-        if (isActive === false || !industryRealtimeData) {
+        if (isActive === false || !effectiveIndustryRealtimeData) {
             setIndustryRealtimeParsed({ headers: [], rows: [], allRows: [], tree: [], totalRow: [] });
             return;
         }
         let isMounted = true;
-        runWorkerTask('PARSE_INDUSTRY_REALTIME', { text: industryRealtimeData, industryBiMap }).then(res => {
+        runWorkerTask('PARSE_INDUSTRY_REALTIME', { text: effectiveIndustryRealtimeData, industryBiMap }).then(res => {
             if (isMounted && res) setIndustryRealtimeParsed(res);
         }).catch(err => console.error('[useDashboardLogic] Lỗi parse ngành hàng realtime:', err));
         return () => { isMounted = false; };
-    }, [industryRealtimeData, isActive, industryBiMap]);
+    }, [effectiveIndustryRealtimeData, isActive, industryBiMap]);
 
     useEffect(() => {
-        if (isActive === false || !industryLuyKeData) {
+        if (isActive === false || !effectiveIndustryLuyKeData) {
             setIndustryLuyKeParsed({ kpis: { laiGopQDDuKien: '', chiPhi: '', targetLNTT: '', htTargetDuKienLNTT: '' }, table: { headers: [], rows: [] }, tree: [], totalRow: [] });
             return;
         }
         let isMounted = true;
-        runWorkerTask('PARSE_INDUSTRY_LUYKE', { text: industryLuyKeData, industryBiMap }).then(res => {
+        runWorkerTask('PARSE_INDUSTRY_LUYKE', { text: effectiveIndustryLuyKeData, industryBiMap }).then(res => {
             if (isMounted && res) setIndustryLuyKeParsed(res);
         }).catch(err => console.error('[useDashboardLogic] Lỗi parse ngành hàng luỹ kế:', err));
         return () => { isMounted = false; };
-    }, [industryLuyKeData, isActive, industryBiMap]);
+    }, [effectiveIndustryLuyKeData, isActive, industryBiMap, activeSupermarket]);
 
     // --- Targets State ---
     const [supermarketDailyTargets, setSupermarketDailyTargets] = useState<Record<string, number>>({});
@@ -398,6 +402,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
         augmentData();
     }, [competitionLuyKeBySupermarket, dataVersion, isActive]);
 
+    // Tuỳ chọn sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target doanh thu) làm mục tiêu chung
+    const [useAdjustedTarget, setUseAdjustedTarget] = useIndexedDBState<boolean>('use-adjusted-revenue-target', false);
+
     useEffect(() => {
         if (isActive === false) return;
         const calculateTargets = async () => {
@@ -406,59 +413,141 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const allTargets: Record<string, { quyDoi: number; traGop: number; }> = {};
             const now = new Date();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const allSupermarketsForTargets = ['Tổng', ...supermarkets];
 
-            const targetsResults = await Promise.all(allSupermarketsForTargets.map(async (supermarketName) => {
-                const safeName = shortenSupermarketName(supermarketName);
-                const [quyDoi, traGop, totalTargetPercent] = await Promise.all([
-                    db.get<number>(`targethero-${safeName}-quydoi`),
-                    db.get<number>(`targethero-${safeName}-tragop`),
-                    supermarketName === 'Tổng' ? Promise.resolve(100) : db.get<number>(`targethero-${safeName}-total`)
-                ]);
-                return {
-                    supermarketName,
-                    quyDoi: quyDoi ?? 40,
-                    traGop: traGop ?? 45,
-                    totalTargetPercent: totalTargetPercent ?? 100
-                };
-            }));
-            
-            for (const res of targetsResults) {
-                const { supermarketName, quyDoi, traGop, totalTargetPercent } = res;
-                allTargets[supermarketName] = { quyDoi, traGop };
-                const safeName = shortenSupermarketName(supermarketName);
-                if (safeName) {
-                    allTargets[safeName] = { quyDoi, traGop };
+            // Đọc toàn bộ DB để lấy tất cả cấu hình targethero-* (không phụ thuộc vào viết hoa/thường hay tiền tố)
+            const allDbItems = await db.getAll();
+            const targetHeroMap: Record<string, { quyDoi?: number; traGop?: number; total?: number }> = {};
+            for (const item of allDbItems) {
+                const m = item.key.match(/^targethero-(.+)-(quydoi|tragop|total)$/);
+                if (m) {
+                    const sm = m[1];
+                    const field = m[2] as 'quydoi' | 'tragop' | 'total';
+                    if (!targetHeroMap[sm]) targetHeroMap[sm] = {};
+                    if (typeof item.value === 'number') {
+                        if (field === 'quydoi') targetHeroMap[sm].quyDoi = item.value;
+                        else if (field === 'tragop') targetHeroMap[sm].traGop = item.value;
+                        else if (field === 'total') targetHeroMap[sm].total = item.value;
+                    }
                 }
-                if (supermarketName === 'Tổng') continue;
-                
-                // Trích xuất Target gốc từ cột TARGET ở [Doanh thu hợp nhất > Luỹ kế]
-                // Sử dụng target mặc định, không sử dụng target sau điều chỉnh
-                const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKe, supermarketName);
-                const dailyTarget = baseMonthTarget > 0 ? baseMonthTarget / daysInMonth : 0;
-                allDailyTargets[supermarketName] = dailyTarget;
-                allMonthlyTargets[supermarketName] = baseMonthTarget;
             }
 
+            const findTargetHero = (name: string): { quyDoi?: number; traGop?: number; total?: number } | null => {
+                if (!name) return null;
+                // 1. Khớp chính xác
+                if (targetHeroMap[name]) {
+                    return targetHeroMap[name];
+                }
+                // 2. Khớp theo shortenSupermarketName
+                const short = shortenSupermarketName(name);
+                if (targetHeroMap[short]) {
+                    return targetHeroMap[short];
+                }
+                // 3. Khớp mờ / không phân biệt hoa thường qua isSupermarketMatch
+                for (const [storedSm, val] of Object.entries(targetHeroMap)) {
+                    if (isSupermarketMatch(name, storedSm) || (short && isSupermarketMatch(short, storedSm))) {
+                        return val;
+                    }
+                }
+                return null;
+            };
+
+            const storeTargetsList: { quyDoi: number; traGop: number; total: number }[] = [];
+
+            for (const supermarketName of supermarkets) {
+                const found = findTargetHero(supermarketName);
+                const quyDoi = found?.quyDoi ?? 40;
+                const traGop = found?.traGop ?? 45;
+                const totalTargetPercent = found?.total ?? 100;
+
+                const targetObj = { quyDoi, traGop };
+                allTargets[supermarketName] = targetObj;
+                const safeName = shortenSupermarketName(supermarketName);
+                if (safeName) {
+                    allTargets[safeName] = targetObj;
+                }
+                allTargets[supermarketName.toUpperCase()] = targetObj;
+                allTargets[supermarketName.toLowerCase()] = targetObj;
+
+                storeTargetsList.push({ quyDoi, traGop, total: totalTargetPercent });
+
+                // Trích xuất Target gốc từ cột TARGET ở [Doanh thu hợp nhất > Luỹ kế]
+                const baseMonthTarget = parseBaseTargetQuyDoi(summaryLuyKe, supermarketName);
+                // Nếu người dùng chọn dùng Target DTQĐ sau chỉnh: nhân với tỷ lệ totalTargetPercent %
+                const targetToUse = (useAdjustedTarget && baseMonthTarget > 0)
+                    ? Math.round(baseMonthTarget * (totalTargetPercent / 100))
+                    : baseMonthTarget;
+                const dailyTarget = targetToUse > 0 ? targetToUse / daysInMonth : 0;
+                allDailyTargets[supermarketName] = dailyTarget;
+                allMonthlyTargets[supermarketName] = targetToUse;
+                if (safeName) {
+                    allMonthlyTargets[safeName] = targetToUse;
+                    allDailyTargets[safeName] = dailyTarget;
+                }
+                allMonthlyTargets[supermarketName.toUpperCase()] = targetToUse;
+                allMonthlyTargets[supermarketName.toLowerCase()] = targetToUse;
+            }
+
+            // Tính target cho 'Tổng' (Toàn Cụm):
+            const tongExplicit = findTargetHero('Tổng');
+            let tongQuyDoi = tongExplicit?.quyDoi;
+            let tongTraGop = tongExplicit?.traGop;
+
+            // Nếu không có cấu hình riêng cho Tổng, tổng hợp từ các siêu thị trong cụm:
+            if (tongQuyDoi === undefined || tongTraGop === undefined) {
+                if (storeTargetsList.length > 0) {
+                    if (storeTargetsList.length === 1) {
+                        tongQuyDoi = storeTargetsList[0].quyDoi;
+                        tongTraGop = storeTargetsList[0].traGop;
+                    } else {
+                        const sumQd = storeTargetsList.reduce((acc, cur) => acc + cur.quyDoi, 0);
+                        const sumTg = storeTargetsList.reduce((acc, cur) => acc + cur.traGop, 0);
+                        tongQuyDoi = Math.round(sumQd / storeTargetsList.length);
+                        tongTraGop = Math.round(sumTg / storeTargetsList.length);
+                    }
+                } else {
+                    const allStoredTargets = Object.values(targetHeroMap).filter(t => t.quyDoi !== undefined || t.traGop !== undefined);
+                    if (allStoredTargets.length > 0) {
+                        tongQuyDoi = allStoredTargets[0].quyDoi ?? 40;
+                        tongTraGop = allStoredTargets[0].traGop ?? 45;
+                    } else {
+                        tongQuyDoi = 40;
+                        tongTraGop = 45;
+                    }
+                }
+            }
+
+            const tongTargetObj = { quyDoi: tongQuyDoi, traGop: tongTraGop };
+            allTargets['Tổng'] = tongTargetObj;
+            allTargets['TỔNG CỤM'] = tongTargetObj;
+            allTargets['CỤM'] = tongTargetObj;
+            allTargets['CỤM 1'] = tongTargetObj;
+
             // Tính tổng mục tiêu tháng & ngày cho 'Tổng' (Toàn cụm)
-            const totalMonthly = Object.values(allMonthlyTargets).reduce((sum, v) => sum + (Number(v) || 0), 0);
+            const totalMonthly = supermarkets.reduce((sum, sm) => sum + (Number(allMonthlyTargets[sm]) || 0), 0);
             if (totalMonthly > 0) {
                 allMonthlyTargets['Tổng'] = totalMonthly;
                 allDailyTargets['Tổng'] = totalMonthly / daysInMonth;
             } else {
                 const baseTongTarget = parseBaseTargetQuyDoi(summaryLuyKe, 'Tổng');
-                if (baseTongTarget > 0) {
-                    allMonthlyTargets['Tổng'] = baseTongTarget;
-                    allDailyTargets['Tổng'] = baseTongTarget / daysInMonth;
+                const tongTargetToUse = (useAdjustedTarget && baseTongTarget > 0)
+                    ? Math.round(baseTongTarget * (tongExplicit?.total ?? 100) / 100)
+                    : baseTongTarget;
+                if (tongTargetToUse > 0) {
+                    allMonthlyTargets['Tổng'] = tongTargetToUse;
+                    allDailyTargets['Tổng'] = tongTargetToUse / daysInMonth;
                 }
             }
+            allMonthlyTargets['TỔNG CỤM'] = allMonthlyTargets['Tổng'];
+            allDailyTargets['TỔNG CỤM'] = allDailyTargets['Tổng'];
+            allMonthlyTargets['CỤM'] = allMonthlyTargets['Tổng'];
+            allDailyTargets['CỤM'] = allDailyTargets['Tổng'];
             
             setSupermarketDailyTargets(allDailyTargets);
             setSupermarketMonthlyTargets(allMonthlyTargets);
             setSupermarketTargets(allTargets);
         };
         if (summaryLuyKeParsed.table.rows.length > 0 || summaryLuyKe) calculateTargets();
-    }, [supermarkets, summaryLuyKeParsed, summaryLuyKe, dataVersion, isActive]);
+    }, [supermarkets, summaryLuyKeParsed, summaryLuyKe, dataVersion, isActive, useAdjustedTarget]);
 
     useEffect(() => {
         if (supermarkets.length > 0 && !['Tổng', ...supermarkets].includes(activeSupermarket)) setActiveSupermarket('Tổng');
@@ -690,6 +779,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
         getKpiData,
         summaryLuyKe,
         hasRealtimeData: summaryRealtimeParsed.table.rows.length > 0,
-        hasCumulativeData: summaryLuyKeParsed.table.rows.length > 0
+        hasCumulativeData: summaryLuyKeParsed.table.rows.length > 0,
+        useAdjustedTarget,
+        setUseAdjustedTarget
     };
 };

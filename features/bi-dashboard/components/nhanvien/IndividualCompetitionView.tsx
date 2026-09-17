@@ -23,21 +23,7 @@ import {
     computePerformanceRow,
 } from '../../services/individualCompetitionCalc';
 import { PieChart, Pie, Cell } from 'recharts';
-import { Pill } from '../shared/Pill';
-
-const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; badge: string }> = {
-    'DTLK': { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    'DTQĐ': { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    'SLLK': { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-};
-
-const GROUP_PALETTES = [
-    { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-    { main: 'bg-slate-100 dark:bg-slate-800', light: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-600 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600', badge: 'bg-slate-200 dark:bg-slate-700' },
-];
+import { getGroupTheme } from '../dashboard/competition/CompetitionListView';
 
 // 1 chương trình thi đua đã tính target/actual/completion cho nhân viên đang xem
 interface CompetitionPerformanceItem {
@@ -46,24 +32,10 @@ interface CompetitionPerformanceItem {
     target: number;
     actual: number;
     completion: number;
+    dkht: number;
     remaining: number;
 }
 type GroupedPerformanceData = Record<string, CompetitionPerformanceItem[]>;
-
-const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
-    const percentage = Math.min(Math.max(value, 0), 200);
-    const displayPercentage = Math.min(percentage, 100);
-    let colorClass = 'bg-sky-500';
-    if (value >= 100) colorClass = 'bg-emerald-500';
-    else if (value < 100) colorClass = 'bg-amber-500';
-    if (value < 50) colorClass = 'bg-rose-500';
-    return (
-        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 my-1 relative overflow-hidden">
-            <div className={`${colorClass} h-full rounded-full transition-all duration-500 ease-out`} style={{ width: `${displayPercentage}%` }}></div>
-             {percentage > 100 && <div className="absolute top-0 left-0 h-full bg-emerald-300 rounded-full" style={{ width: `${Math.min(percentage - 100, 100)}%` }}></div>}
-        </div>
-    );
-};
 
 
 
@@ -252,7 +224,11 @@ const EmployeeProfileCard: React.FC<{
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-black text-white uppercase truncate leading-tight drop-shadow-sm">{selectedEmployee.name}</h3>
-                        <p className="text-[11px] text-white/70 font-medium mt-0.5">{selectedEmployee.department}</p>
+                        <p className="text-[11px] text-white/80 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
+                            <span>{selectedEmployee.department}</span>
+                            <span className="text-white/40">·</span>
+                            <span className="font-semibold">Thi đua đến {getYesterdayDateString()}</span>
+                        </p>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                             <StatPill count={compStats.dkhtDat} label="≥100%" color="bg-emerald-400 text-white border border-white/50" />
                             <StatPill count={compStats.dkhtGanDat} label="Gần đạt" color="bg-amber-400 text-white border border-white/50" />
@@ -345,7 +321,20 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     bonusData
 }, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
-    const sortConfig = { key: 'completion', direction: 'desc' };
+    const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' } | null>(null);
+
+    const handleSort = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
+        setSortConfig(current => {
+            if (current && current.key === key) {
+                if (current.direction === 'desc') {
+                    return { key, direction: 'asc' };
+                }
+                return null;
+            }
+            return { key, direction: 'desc' };
+        });
+    };
+
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     const [exportProgress, setExportProgress] = useState<{current: number; total: number} | null>(null);
     const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
@@ -377,6 +366,31 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
     const groupedPerformanceData = useMemo((): GroupedPerformanceData => {
         if (!selectedEmployee) return {};
+        const { daysPassed, daysInMonth } = getIndividualMonthProgress();
+
+        const sortRows = (rows: CompetitionPerformanceItem[], groupKey: string) => {
+            return [...rows].sort((a, b) => {
+                if (sortConfig) {
+                    let cmp = 0;
+                    if (sortConfig.key === 'name') cmp = a.name.localeCompare(b.name, 'vi');
+                    else if (sortConfig.key === 'actual') cmp = a.actual - b.actual;
+                    else if (sortConfig.key === 'target') cmp = a.target - b.target;
+                    else if (sortConfig.key === 'dkht') cmp = a.dkht - b.dkht;
+                    else if (sortConfig.key === 'remaining') cmp = a.remaining - b.remaining;
+                    return sortConfig.direction === 'desc' ? -cmp : cmp;
+                }
+                const groupOrder = customOrder[groupKey];
+                if (groupOrder && groupOrder.length > 0) {
+                    const idxA = groupOrder.indexOf(a.originalTitle);
+                    const idxB = groupOrder.indexOf(b.originalTitle);
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                }
+                // Mặc định như Hình 2: sắp xếp giảm dần theo %DKHT
+                return b.dkht - a.dkht;
+            });
+        };
 
         if (groupingMode === 'default') {
             const result: GroupedPerformanceData = {};
@@ -385,28 +399,17 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.originalTitle));
                 if (filteredHeaders.length === 0) return;
 
-                let rows = filteredHeaders.map(comp => {
+                const rows = filteredHeaders.map(comp => {
                     const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
                     const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
                     const { completion, remaining } = computePerformanceRow(target, actual);
-                    return { name: shortenName(comp.originalTitle, nameOverrides), originalTitle: comp.originalTitle, target, actual, completion, remaining };
+                    const dkht = target > 0 ? (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100 : (actual > 0 ? 100 : 0);
+                    return { name: shortenName(comp.originalTitle, nameOverrides), originalTitle: comp.originalTitle, target, actual, completion, dkht, remaining };
                 }).filter(d => d.target > 0 || d.actual > 0);
                 
-                const criterionOrder = customOrder[criterion];
-                if (criterionOrder && criterionOrder.length > 0) {
-                    rows.sort((a, b) => {
-                        const idxA = criterionOrder.indexOf(a.originalTitle);
-                        const idxB = criterionOrder.indexOf(b.originalTitle);
-                        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                        if (idxA !== -1) return -1;
-                        if (idxB !== -1) return 1;
-                        return b.completion - a.completion;
-                    });
-                } else if (sortConfig.key === 'completion') {
-                    rows.sort((a, b) => b.completion - a.completion);
+                if (rows.length > 0) {
+                    result[criterion] = sortRows(rows, criterion);
                 }
-
-                if (rows.length > 0) result[criterion] = rows;
             });
             return result;
         } else {
@@ -421,8 +424,8 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 filteredHeaders.forEach(comp => {
                     const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
                     const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
-                    const completion = target > 0 ? (actual / target) * 100 : 0;
-                    const remaining = actual - target;
+                    const { completion, remaining } = computePerformanceRow(target, actual);
+                    const dkht = target > 0 ? (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100 : (actual > 0 ? 100 : 0);
                     if (target <= 0 && actual <= 0) return;
 
                     const defaultGroup = getDefaultGroupLabel(criterion) || criterion;
@@ -439,6 +442,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         target,
                         actual,
                         completion,
+                        dkht,
                         remaining
                     });
                 });
@@ -446,25 +450,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
             const sortedGroups: GroupedPerformanceData = {};
             Object.keys(rawGroups).forEach(groupKey => {
-                const rows = [...rawGroups[groupKey]];
-                const groupOrder = customOrder[groupKey];
-                if (groupOrder && groupOrder.length > 0) {
-                    rows.sort((a, b) => {
-                        const idxA = groupOrder.indexOf(a.originalTitle);
-                        const idxB = groupOrder.indexOf(b.originalTitle);
-                        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                        if (idxA !== -1) return -1;
-                        if (idxB !== -1) return 1;
-                        return b.completion - a.completion;
-                    });
-                } else if (sortConfig.key === 'completion') {
-                    rows.sort((a, b) => b.completion - a.completion);
-                }
-                sortedGroups[groupKey] = rows;
+                sortedGroups[groupKey] = sortRows(rawGroups[groupKey], groupKey);
             });
             return sortedGroups;
         }
-    }, [selectedEmployee, groupingMode, allCompetitionsByCriterion, selectedCompetitions, employeeCompetitionTargets, employeeDataMap, nameOverrides, customOrder, sortConfig.key, groupOverrides]);
+    }, [selectedEmployee, groupingMode, allCompetitionsByCriterion, selectedCompetitions, employeeCompetitionTargets, employeeDataMap, nameOverrides, customOrder, sortConfig, groupOverrides]);
     
     const { showExportOptions } = useExportOptionsContext();
 
@@ -682,78 +672,140 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         bonusData={bonusData}
                         groupedPerformanceData={groupedPerformanceData}
                     />
-                    <div className="overflow-x-auto scrollbar-hide rounded-none border border-slate-200 dark:border-slate-700 shadow-sm transition-shadow" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className="text-center py-3 px-4 bg-slate-800">
-                            <h3 className="text-xl font-black uppercase text-white leading-normal drop-shadow-sm">
-                                {selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}
-                            </h3>
-                        </div>
-                        
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#</th>
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">M.TIÊU</th>
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">T.HIỆN</th>
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%HT</th>
-                                    <th className="text-center px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">%D.KIẾN</th>
-                                    <th className="text-center px-3 py-2 border-b border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">C.LẠI</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                               {(() => {
-                                   const now = new Date();
-                                   const daysPassed = now.getDate() - 1;
-                                   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                                   const groupKeys = groupingMode === 'configured'
-                                       ? Object.keys(groupedPerformanceData)
-                                       : (['SLLK', 'DTLK', 'DTQĐ'] as string[]).filter(c => groupedPerformanceData[c]?.length);
+                    <div className="overflow-hidden">
+                        <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                            <table className="w-full border-collapse compact-export-table">
+                                <thead>
+                                    <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
+                                        <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
+                                        <th
+                                            className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            NHÓM THI ĐUA
+                                        </th>
+                                        <th
+                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            onClick={() => handleSort('actual')}
+                                        >
+                                            LUỸ<br/>KẾ
+                                        </th>
+                                        <th
+                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            onClick={() => handleSort('target')}
+                                        >
+                                            TAR
+                                        </th>
+                                        <th
+                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            onClick={() => handleSort('dkht')}
+                                        >
+                                            %DKHT
+                                        </th>
+                                        <th
+                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            onClick={() => handleSort('remaining')}
+                                        >
+                                            C.LẠI
+                                        </th>
+                                    </tr>
+                                </thead>
+                                {(() => {
+                                    const { daysPassed } = getIndividualMonthProgress();
+                                    const groupKeys = groupingMode === 'configured'
+                                        ? Object.keys(groupedPerformanceData)
+                                        : (['SLLK', 'DTLK', 'DTQĐ'] as string[]).filter(c => groupedPerformanceData[c]?.length);
 
-                                   return groupKeys.map((groupKey, groupIdx) => {
-                                       const items = groupedPerformanceData[groupKey];
-                                       if (!items || items.length === 0) return null;
-                                       const theme = CRITERIA_THEMES[groupKey] || GROUP_PALETTES[groupIdx % GROUP_PALETTES.length];
-                                       return (
-                                           <React.Fragment key={groupKey}>
-                                               <tr className={`${theme.main} ${theme.text} font-extrabold border-t-2 ${theme.border}`}>
-                                                   <td colSpan={7} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
-                                                       <span className={`px-2 py-0.5 rounded-none mr-2 ${theme.badge}`}>
-                                                           {groupingMode === 'configured' ? 'Nhóm tiêu chí' : 'Tiêu chí'}
-                                                       </span>
-                                                       {groupKey} ({items.length})
-                                                   </td>
-                                               </tr>
-                                               {items.map((item, index) => {
-                                                   const remainingColor = item.remaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
-                                                   const hasTarget = item.target > 0;
-                                                   const dkht = hasTarget ? (calculateRunRate(item.actual, daysPassed, daysInMonth) / item.target) * 100 : 0;
-                                                   // Chưa cấu hình target thì trung tính (xám pill mặc định), không phải "đang tệ" (đỏ) như khi target=0 vì actual thấp thật.
-                                                   const dkhtPillColor = !hasTarget ? undefined : dkht >= 100 ? '#059669' : dkht >= 80 ? '#d97706' : '#e11d48';
-                                                   return (
-                                                       <tr key={`${groupKey}-${item.originalTitle}`}
-                                                           /* Vạch trạng thái 3px — dùng lại ĐÚNG màu của ô %DKHT ngay bên cạnh. */
-                                                           style={{ borderLeftColor: dkhtPillColor || 'var(--color-slate-200)' }}
-                                                           className="border-l-[3px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-b-0">
-                                                           <td className="px-2 py-[3px] text-center text-[13px] text-slate-400 tabular-nums border-r border-slate-100 dark:border-slate-800/60">#{index + 1}</td>
-                                                           <td className="px-2 py-[3px] text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60 uppercase">
-                                                               {item.name}
-                                                           </td>
-                                                           <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">{f.format(roundUp(item.target))}</td>
-                                                           <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">{f.format(roundUp(item.actual))}</td>
-                                                           <td className="px-2 py-[3px] text-center text-[13px] font-bold tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60"><div className="flex items-center gap-1 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-10"><ProgressBar value={item.completion} /></div></div></td>
-                                                           <td className="px-2 py-[3px] text-center tabular-nums whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60"><Pill color={dkhtPillColor}>{daysPassed > 0 ? `${Math.round(dkht)}%` : '-'}</Pill></td>
-                                                           <td className={`px-2 py-[3px] text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
-                                                       </tr>
-                                                   );
-                                               })}
-                                           </React.Fragment>
-                                       );
-                                   });
-                               })()}
-                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={7} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
-                            </tbody>
-                        </table>
+                                    return groupKeys.map((groupKey, groupIdx) => {
+                                        const items = groupedPerformanceData[groupKey];
+                                        if (!items || items.length === 0) return null;
+                                        const palette = getGroupTheme(groupKey, groupIdx);
+                                        const over100 = items.filter(it => it.dkht >= 100).length;
+                                        const under100 = items.length - over100;
+
+                                        return (
+                                            <tbody key={groupKey}>
+                                                <tr className={`${palette.bgRow} ${palette.border}`}>
+                                                    <td colSpan={100} className="px-2.5 py-[3px]">
+                                                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={`w-2.5 h-2.5 rounded-xs ${palette.square} shrink-0`}></div>
+                                                                <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${palette.label}`}>
+                                                                    {groupKey}
+                                                                </span>
+                                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border shadow-2xs ${palette.badge}`}>
+                                                                    {items.length}
+                                                                </span>
+                                                            </div>
+
+                                                            <div
+                                                                className="font-sans normal-case tracking-normal text-xs sm:text-[12.5px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
+                                                            >
+                                                                <span className="text-slate-400 dark:text-slate-500">·</span>
+                                                                <span>đạt</span>
+                                                                <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{over100}</span>
+                                                                <span className="text-slate-400 dark:text-slate-500">·</span>
+                                                                <span>chưa đạt</span>
+                                                                <span className="font-bold text-rose-700 dark:text-rose-400 tabular-nums">{under100}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {items.map((item, index: number) => {
+                                                    const dkhtVal = item.dkht;
+                                                    const hasTarget = item.target > 0;
+                                                    const stripeClass = dkhtVal >= 100
+                                                        ? 'border-l-emerald-600'
+                                                        : dkhtVal >= 80 ? 'border-l-amber-600' : 'border-l-rose-600';
+
+                                                    const dkhtColor = !hasTarget
+                                                        ? 'text-slate-400 dark:text-slate-500'
+                                                        : dkhtVal >= 100
+                                                            ? 'text-emerald-700 dark:text-emerald-400'
+                                                            : dkhtVal >= 80
+                                                                ? 'text-amber-700 dark:text-amber-400'
+                                                                : 'text-rose-700 dark:text-rose-400';
+
+                                                    const remainingColor = item.remaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
+
+                                                    return (
+                                                        <tr key={`${groupKey}-${item.originalTitle}`} className={`border-l-[3px] ${stripeClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
+                                                            <td className="px-2 py-[3px] text-center text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                                {(index + 1).toString().padStart(2, '0')}
+                                                            </td>
+                                                            <td className="px-2 py-[3px] text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight text-left">
+                                                                {item.name}
+                                                            </td>
+                                                            <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                                {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(item.actual))}
+                                                            </td>
+                                                            <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                                {hasTarget ? new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(item.target)) : '-'}
+                                                            </td>
+                                                            <td className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${dkhtColor}`}>
+                                                                {hasTarget && daysPassed > 0 ? `${roundUp(dkhtVal)}%` : (item.actual > 0 ? '100%' : '0%')}
+                                                            </td>
+                                                            <td className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${remainingColor}`}>
+                                                                {new Intl.NumberFormat('vi-VN').format(Math.ceil(item.remaining))}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        );
+                                    });
+                                })()}
+                                {Object.keys(groupedPerformanceData).length === 0 && (
+                                    <tbody>
+                                        <tr>
+                                            <td colSpan={6} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">
+                                                Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                )}
+                            </table>
+                        </div>
                     </div>
                 </div>
         </div>

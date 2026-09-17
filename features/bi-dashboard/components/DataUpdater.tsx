@@ -657,7 +657,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setErrors(p => ({...p, competitionRealtime: null}));
                                             setCompetitionRealtime(val);
                                             setCompetitionRealtimeTs(getDetailedTimestamp());
-                                            addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi đua');
+                                            addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
                                             if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                             return true;
                                         } else {
@@ -689,7 +689,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setErrors(p => ({...p, competitionLuyKe: null}));
                                             setCompetitionLuyKe(val);
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
-                                            addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi đua');
+                                            addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
                                             if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
                                             if (canManageSharedBiData && user) {
                                                 uploadCompetitionLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)

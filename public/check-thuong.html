@@ -399,14 +399,6 @@
                          </div>
                          <div id="groupSummaryContainer" style="display:flex;gap:12px;flex-wrap:nowrap;justify-content:center;overflow-x:auto;padding-bottom:4px;scrollbar-width:none"></div>
                     </div>
-                    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px">
-                        <button id="switchToSearchViewBtn" title="Xem chi tiết siêu thị" class="mod-btn mod-btn-primary" style="border-radius:10px;height:44px;width:44px;background:linear-gradient(135deg,#0ea5e9,#38bdf8)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"/></svg>
-                        </button>
-                        <button id="switchToTopViewBtn" title="Xem TOP siêu thị" class="mod-btn mod-btn-ghost" style="border-radius:10px;height:44px;width:44px;background:#f1f5f9">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"></polyline><polyline points="12 12.5 20 9 20 16.5"></polyline><polyline points="12 12.5 4 9 4 16.5"></polyline><polyline points="12 12.5 12 21"></polyline></svg>
-                        </button>
-                    </div>
                     <div id="analysisSection" class="mod-card" style="padding:16px 18px;margin-bottom:14px"></div>
                 </div>
 
@@ -421,25 +413,6 @@
         
         <!-- Comparison Content Area -->
         <div id="comparisonContent" class="hidden"></div>
-
-        <!-- TOP Siêu Thị Content Area -->
-        <div id="topContent" class="hidden" style="padding:0 16px">
-            <div style="display:flex;flex-direction:column;gap:14px">
-                <div id="topSupermarketHeader" class="mod-card" style="padding:20px 24px;margin-bottom:16px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-                        <div>
-                            <h2 style="font-size:22px;font-weight:900;margin:0 0 4px 0;color:#0f172a">TOP Siêu Thị Thưởng Cao</h2>
-                            <p style="font-size:12px;color:#64748b;margin:0;font-weight:500">Sắp xếp theo tổng tiền thưởng, phân loại theo kênh</p>
-                        </div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap">
-                            <button id="topFilter20Btn" class="filter-pill active" style="background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff" data-limit="20">Top 20</button>
-                            <button id="topFilterAllBtn" class="filter-pill" style="background:#f1f5f9;color:#475569" data-limit="all">Xem Tất Cả</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="topSupermarketGrid" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))"></div>
-            </div>
-        </div>
     </div>
 
     <!-- BUG FIX: nút "Lịch Sử Phiên Bản" gốc (#versionInfo) chỉ nằm trong landingPage, biến mất
@@ -554,12 +527,12 @@
             let competitionData = [], currentStoreData = [], noFundGroups = new Set();
             // PERF FIX: index tra cứu O(1) cho getPotentialBonus() — xem preProcessData().
             let bestAwardedByGroup = {};
+            let bestAwardedByGroupName = {};
             let rankingDataForModal = [];
             let sortState = { key: null, direction: 'desc' };
             let comparisonSortState = { key: 'bonusDiff', direction: 'desc' };
             let singleViewMode = 'list';
             let fileUploadTime = null;
-            let currentTopLimit = 20;
 
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
@@ -620,7 +593,10 @@
                                 window.parent.postMessage({
                                     type: 'CHECK_THUONG_FILE_LOADED',
                                     code1: storeCodeInput1.value,
-                                    code2: storeCodeInput2.value
+                                    code2: storeCodeInput2.value,
+                                    competitionData: competitionData,
+                                    fileName: savedData.fileName || 'file_cu.xlsx',
+                                    uploadTime: fileUploadTime
                                 }, '*');
                             }
                         } else {
@@ -976,162 +952,35 @@
             function preProcessData(data) {
                 const fundStatusByGroup = {};
                 const bestAwardedByGroupNew = {};
+                const bestAwardedByNameNew = {};
                 data.forEach(row => {
-                    const nganhHang = row[COLS.NGANH_HANG];
-                    const kenh = row[COLS.KENH] || 'N/A';
+                    const nganhHang = String(row[COLS.NGANH_HANG] || '').trim().toUpperCase();
+                    const kenh = String(row[COLS.KENH] || 'N/A').trim().toUpperCase();
                     if (!nganhHang) return;
                     const key = `${kenh}|${nganhHang}`;
-                    if (parseNumber(row[COLS.TONG_THUONG]) > 0) {
+                    const bonus = parseNumber(row[COLS.TONG_THUONG]);
+
+                    if (bonus > 0) {
                         fundStatusByGroup[key] = true;
 
-                        // PERF FIX: gộp luôn bước tính "đối thủ đã đạt thưởng có Hạng %Target cao
-                        // nhất mỗi nhóm" vào đúng vòng lặp này — getPotentialBonus() trước đây tự
-                        // quét lại TOÀN BỘ competitionData cho MỖI dòng cần hiển thị (O(m×n) mỗi
-                        // lần render). Dùng khoá `${KENH}|${NGANH_HANG}` NGUYÊN BẢN (không chuẩn
-                        // hoá 'N/A' như `key` ở trên) để khớp 100% cách so sánh === gốc của
-                        // getPotentialBonus. Tie-break: chỉ thay khi rank mới LỚN HƠN rank cũ
-                        // (không phải >=) — giữ đúng hành vi reduce() gốc (dòng xuất hiện trước
-                        // thắng khi bằng hạng).
-                        const bonusKey = `${row[COLS.KENH]}|${nganhHang}`;
                         const rank = parseInt(row[COLS.HANG_PERCENT_TARGET], 10) || 0;
-                        if (!bestAwardedByGroupNew[bonusKey] || rank > bestAwardedByGroupNew[bonusKey].rank) {
-                            bestAwardedByGroupNew[bonusKey] = { rank, row };
+                        if (!bestAwardedByGroupNew[key] || rank > bestAwardedByGroupNew[key].rank) {
+                            bestAwardedByGroupNew[key] = { rank, row };
+                        }
+                        if (!bestAwardedByNameNew[nganhHang] || rank > bestAwardedByNameNew[nganhHang].rank) {
+                            bestAwardedByNameNew[nganhHang] = { rank, row };
                         }
                     }
                 });
                 const allGroups = new Set(data.map(row => {
                     if (!row[COLS.NGANH_HANG]) return null;
-                    return `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`;
+                    return `${String(row[COLS.KENH] || 'N/A').trim().toUpperCase()}|${String(row[COLS.NGANH_HANG] || '').trim().toUpperCase()}`;
                 }).filter(Boolean));
                 noFundGroups = new Set([...allGroups].filter(group => !fundStatusByGroup[group]));
                 bestAwardedByGroup = bestAwardedByGroupNew;
+                bestAwardedByGroupName = bestAwardedByNameNew;
             }
-
-            function calculateTopSupermarkets(data) {
-                const supermarketMap = {};
-                data.forEach(row => {
-                    const kenh = row[COLS.KENH] || 'N/A';
-                    const sieuThi = row[COLS.SIÊU_THỊ];
-                    const thuong = parseNumber(row[COLS.TONG_THUONG]);
-                    const percentDuKien = parseNumber(row[COLS.PERCENT_DU_KIEN]);
-
-                    if (!sieuThi) return;
-
-                    if (!supermarketMap[sieuThi]) {
-                        supermarketMap[sieuThi] = {
-                            sieuThi: sieuThi,
-                            kenh: kenh,
-                            tongThuong: 0,
-                            soNhom: 0,
-                            soNhomDat: 0,
-                            tongPercentTarget: 0
-                        };
-                    }
-
-                    supermarketMap[sieuThi].tongThuong += thuong;
-                    supermarketMap[sieuThi].soNhom += 1;
-                    supermarketMap[sieuThi].tongPercentTarget += percentDuKien;
-
-                    if (percentDuKien >= 1) {
-                        supermarketMap[sieuThi].soNhomDat += 1;
-                    }
-                });
-
-                const topList = Object.values(supermarketMap)
-                    .sort((a, b) => b.tongThuong - a.tongThuong);
-
-                return {
-                    all: topList,
-                    top20: topList.slice(0, 20)
-                };
-            }
-
-            function renderTopSupermarkets(limit) {
-                if (competitionData.length === 0) {
-                    messageEl.textContent = 'Vui lòng tải file dữ liệu trước.';
-                    messageEl.classList.remove('hidden');
-                    topContent.classList.add('hidden');
-                    return;
-                }
-
-                const topData = calculateTopSupermarkets(competitionData);
-                const displayData = limit === 'all' ? topData.all : topData.top20;
-                const groupByKenh = {};
-
-                displayData.forEach(item => {
-                    const kenh = item.kenh;
-                    if (!groupByKenh[kenh]) {
-                        groupByKenh[kenh] = [];
-                    }
-                    groupByKenh[kenh].push(item);
-                });
-
-                const grid = document.getElementById('topSupermarketGrid');
-                grid.innerHTML = '';
-
-                Object.entries(groupByKenh).sort().forEach(([kenh, items]) => {
-                    const kenhTitle = document.createElement('div');
-                    kenhTitle.style.cssText = 'grid-column:1/-1;margin-top:8px;padding:12px 16px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px;border-left:4px solid #0284c7';
-                    kenhTitle.innerHTML = `<h3 style="margin:0;font-size:14px;font-weight:700;color:#075985">Kênh: ${kenh}</h3>`;
-                    grid.appendChild(kenhTitle);
-
-                    items.forEach((item, idx) => {
-                        const card = document.createElement('div');
-                        card.className = 's-card';
-                        card.style.cssText = 'display:flex;flex-direction:column;padding:14px;border:1px solid rgba(0,0,0,0.06);border-radius:12px;background:#fff';
-
-                        const maSieuThi = item.sieuThi.split('-')[0]?.trim() || 'N/A';
-                        const tenSieuThi = item.sieuThi.split('-').slice(1).join('-').trim() || item.sieuThi;
-                        const pctDat = item.soNhom > 0 ? ((item.soNhomDat / item.soNhom) * 100).toFixed(1) : '0';
-
-                        card.innerHTML = `
-                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px">
-                                <div style="flex:1;min-width:0">
-                                    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:2px">${tenSieuThi}</div>
-                                    <div style="font-size:11px;color:#64748b;font-weight:500">Mã: ${maSieuThi}</div>
-                                </div>
-                                <div style="display:inline-flex;align-items:center;padding:3px 8px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);color:#3730a3;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap">#${idx + 1}</div>
-                            </div>
-                            <div style="border-top:1px solid #e2e8f0;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                                <div style="background:#f8fafc;padding:8px;border-radius:8px;border-left:3px solid #10b981">
-                                    <div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:3px">Tổng Thưởng</div>
-                                    <div style="font-size:13px;font-weight:900;color:#10b981">${formatCurrency(item.tongThuong)}</div>
-                                </div>
-                                <div style="background:#f8fafc;padding:8px;border-radius:8px;border-left:3px solid #f59e0b">
-                                    <div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:3px">% Đạt Target</div>
-                                    <div style="font-size:13px;font-weight:900;color:#f59e0b">${pctDat}%</div>
-                                </div>
-                                <div style="background:#f8fafc;padding:8px;border-radius:8px;border-left:3px solid #06b6d4">
-                                    <div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:3px">Số Nhóm</div>
-                                    <div style="font-size:13px;font-weight:900;color:#06b6d4">${item.soNhom}</div>
-                                </div>
-                                <div style="background:#f8fafc;padding:8px;border-radius:8px;border-left:3px solid #8b5cf6">
-                                    <div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:3px">Nhóm Đạt</div>
-                                    <div style="font-size:13px;font-weight:900;color:#8b5cf6">${item.soNhomDat}</div>
-                                </div>
-                            </div>
-                        `;
-                        grid.appendChild(card);
-                    });
-                });
-
-                mainContent.classList.add('hidden');
-                comparisonContent.classList.add('hidden');
-                topContent.classList.remove('hidden');
-                messageEl.classList.add('hidden');
-                currentTopLimit = limit === 'all' ? 'all' : 20;
-
-                // Update filter button states
-                document.getElementById('topFilter20Btn').classList.toggle('active', limit === 20);
-                document.getElementById('topFilterAllBtn').classList.toggle('active', limit === 'all');
-                document.getElementById('topFilter20Btn').style.background = limit === 20 ? 'linear-gradient(135deg,#6366f1,#818cf8)' : '#f1f5f9';
-                document.getElementById('topFilter20Btn').style.color = limit === 20 ? '#fff' : '#475569';
-                document.getElementById('topFilterAllBtn').style.background = limit === 'all' ? 'linear-gradient(135deg,#6366f1,#818cf8)' : '#f1f5f9';
-                document.getElementById('topFilterAllBtn').style.color = limit === 'all' ? '#fff' : '#475569';
-
-                saveState();
-            }
-
+            
             // BUG FIX: khu vực chọn file hiển thị chữ "hoặc thả các file Excel vào đây" nhưng trước
             // đây KHÔNG có listener dragover/drop nào — kéo-thả file thật sự sẽ bị trình duyệt tự xử
             // lý (mở file trong tab mới/điều hướng rời khỏi app), không phải lỗi hiển thị mà là tính
@@ -1191,7 +1040,14 @@
                         searchSection.classList.remove('hidden');
                         landingPage.classList.add('hidden');
                         changeFileButton.classList.remove('hidden');
-                        window.parent.postMessage({ type: 'CHECK_THUONG_FILE_LOADED', code1: storeCodeInput1.value, code2: storeCodeInput2.value }, '*');
+                        window.parent.postMessage({
+                            type: 'CHECK_THUONG_FILE_LOADED',
+                            code1: storeCodeInput1.value,
+                            code2: storeCodeInput2.value,
+                            competitionData: competitionData,
+                            fileName: file.name,
+                            uploadTime: fileUploadTime
+                        }, '*');
                         storeCodeInput1.focus();
                         if(storeCodeInput1.value) handleSearchOrCompare();
                         saveState();
@@ -1329,16 +1185,16 @@
                             <p style="font-size:10.5px;opacity:0.75;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
                             <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:4px 0 0 0;letter-spacing:-0.02em;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,0.2)">${formatCurrencyFull(totalBonus)}</p>
                         </div>
-                        <div style="background:linear-gradient(135deg,rgba(16,185,129,0.25) 0%,rgba(5,150,105,0.18) 100%);padding:10px 16px;border-radius:14px;border:1px solid rgba(52,211,153,0.45);box-shadow:0 4px 20px rgba(16,185,129,0.2),inset 0 1px 0 rgba(255,255,255,0.18);text-align:right">
+                        <div style="background:linear-gradient(135deg,#047857 0%,#059669 40%,#10b981 100%);padding:10px 18px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.45);box-shadow:0 8px 24px rgba(5,150,105,0.45),0 2px 8px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
                             <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:4px">
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:rgba(52,211,153,0.3);color:#34d399">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);color:#ffffff">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                 </span>
-                                <p style="font-size:11px;color:#a7f3d0;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">% Nhóm Đạt ≥ 100%</p>
+                                <p style="font-size:11px;color:#ffffff;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-shadow:0 1px 3px rgba(0,0,0,0.25)">% Nhóm Đạt ≥ 100%</p>
                             </div>
                             <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:10px">
-                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#34d399;text-shadow:0 2px 14px rgba(52,211,153,0.4)">${pctAchieved100Formatted}</p>
-                                <span style="font-size:12px;font-weight:700;background:rgba(16,185,129,0.32);color:#ecfdf5;padding:4px 10px;border-radius:9999px;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(52,211,153,0.5);box-shadow:0 2px 6px rgba(0,0,0,0.12)">${countAchieved100}/${totalCategories} nhóm</span>
+                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.35)">${pctAchieved100Formatted}</p>
+                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.22);color:#ffffff;padding:4px 10px;border-radius:9999px;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.45);box-shadow:0 2px 6px rgba(0,0,0,0.15)">${countAchieved100}/${totalCategories}</span>
                             </div>
                         </div>
                     </div>
@@ -1849,25 +1705,33 @@
 
             function getPotentialBonus(row) {
                 try {
-                    const groupName = row[COLS.NGANH_HANG];
-                    const groupChannel = row[COLS.KENH];
+                    const groupName = String(row[COLS.NGANH_HANG] || '').trim().toUpperCase();
+                    const groupChannel = String(row[COLS.KENH] || '').trim().toUpperCase();
 
-                    // PERF FIX: tra O(1) từ index đã tính sẵn 1 lần trong preProcessData() thay vì
-                    // quét lại toàn bộ competitionData cho mỗi dòng cần hiển thị.
                     const bonusKey = `${groupChannel}|${groupName}`;
-                    const best = bestAwardedByGroup[bonusKey];
+                    let best = bestAwardedByGroup[bonusKey];
 
-                    if (!best) {
-                        return { vuot: 0, top: 0 };
+                    if (!best && bestAwardedByGroupName[groupName]) {
+                        best = bestAwardedByGroupName[groupName];
                     }
 
+                    if (!best) {
+                        return { vuot: 0, top: 0, total: 0 };
+                    }
+
+                    const targetRow = best.row || best;
+                    const vuot = parseNumber(targetRow[COLS.THUONG_VUOT_Uu]);
+                    const top = parseNumber(targetRow[COLS.THUONG_TOP_PERCENT]);
+                    const tong = parseNumber(targetRow[COLS.TONG_THUONG]);
+
                     return {
-                        vuot: parseNumber(best[COLS.THUONG_VUOT_Uu]),
-                        top: parseNumber(best[COLS.THUONG_TOP_PERCENT]),
+                        vuot: vuot,
+                        top: top,
+                        total: tong > 0 ? tong : (vuot + top)
                     };
                 } catch (e) {
                     console.error("Error calculating potential bonus:", e);
-                    return { vuot: 0, top: 0 };
+                    return { vuot: 0, top: 0, total: 0 };
                 }
             }
 
@@ -1908,45 +1772,61 @@
                     const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20;
                     const isNearly = groupHasFund && !isAchieved && !isNaN(cutoffRank) && (isNearlyVuot || isNearlyTarget);
 
-                    let totalBonus = 0;
-                    const showDuKien = !isAchieved && groupHasFund;
+                    const actualBonus = parseNumber(row[COLS.TONG_THUONG]);
+                    const potential = getPotentialBonus(row);
+                    const potentialBonus = potential.total || (potential.vuot + potential.top);
 
-                    if (showDuKien || isNearly) {
-                        const potential = getPotentialBonus(row);
-                        totalBonus = potential.vuot + potential.top;
+                    let bonusDisplayHtml = '';
+                    if (actualBonus > 0) {
+                        bonusDisplayHtml = `<span class="text-emerald-600 font-black">${formatCurrency(actualBonus)}</span>`;
+                    } else if (potentialBonus > 0 && groupHasFund) {
+                        bonusDisplayHtml = `<span class="text-amber-600 font-black cursor-help" title="Thưởng dự kiến nếu môn này đạt giải: ${formatCurrency(potentialBonus)}">~${formatCurrency(potentialBonus)}</span>`;
                     } else {
-                        totalBonus = parseNumber(row[COLS.TONG_THUONG]);
+                        bonusDisplayHtml = `<span class="text-slate-300 font-bold">0</span>`;
                     }
-
+                    
                     const percent = parseNumber(row[COLS.PERCENT_DU_KIEN]);
-                    const percentColor = percent < 1 ? 'text-rose-500 font-bold' : 'text-emerald-600 font-bold';
+                    const percentVal = Math.round(percent * 100);
+                    const pctTextColor = percent >= 1 ? 'text-emerald-600' : percent >= 0.7 ? 'text-sky-600' : 'text-amber-600';
+                    const pctBarColor = percent >= 1 ? 'bg-emerald-500' : percent >= 0.7 ? 'bg-sky-500' : 'bg-amber-500';
                     
                     const hangVuot = row[COLS.HANG_VUOT_Uu] || '-';
                     const hangPercent = row[COLS.HANG_PERCENT_TARGET] || '-';
-                    
-                    const isDuKien = showDuKien || isNearly;
-                    const bonusColor = isDuKien ? 'text-amber-600' : 'text-indigo-600';
-                    
+
                     const nearlyBadgeHtml = isNearly ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>` : '';
 
                     const safeGroupName = String(groupNameVal || '').replace(/"/g, '&quot;');
                     const safeGroupChannel = String(groupChannelVal || '').replace(/"/g, '&quot;');
 
+                    const rank = index;
+                    const rankColor = 
+                        rank === 1 ? 'text-amber-600 font-black' :
+                        rank === 2 ? 'text-slate-700 font-extrabold' :
+                        rank === 3 ? 'text-amber-700 font-extrabold' :
+                        'text-slate-400 font-bold';
+
                     return `
-                        <tr class="hover:bg-sky-50/70 cursor-pointer transition-colors text-[13px] border-b border-slate-100 last:border-0 group view-ranking-row" onclick="void(0)" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
-                            <td class="px-2.5 py-2 font-medium text-slate-800 border-r border-slate-200 overflow-hidden cursor-pointer" style="max-width: 0;">
-                                <div class="flex items-center gap-1.5 min-w-0 w-full overflow-hidden">
-                                    <span class="text-slate-400 font-bold text-[11px] shrink-0">#${index}</span>
-                                    <span class="truncate min-w-0 flex-1 group-hover:text-indigo-600 group-hover:underline" title="${safeGroupName}">${groupNameVal}</span>${nearlyBadgeHtml}
-                                    <button class="view-ranking-btn no-print ml-1 text-slate-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="Xem xếp hạng" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
+                        <tr class="hover:bg-sky-50/60 cursor-pointer transition-colors text-xs border-b border-slate-100 last:border-0 group view-ranking-row" onclick="void(0)" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                            <td class="px-2.5 py-1 text-slate-800 overflow-hidden cursor-pointer" style="max-width: 0;">
+                                <div class="flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                                    <span class="${rankColor} text-[11px] shrink-0">#${rank}</span>
+                                    <span class="truncate min-w-0 flex-1 font-medium text-slate-700 group-hover:text-sky-600 group-hover:underline" title="${safeGroupName}">${groupNameVal}</span>${nearlyBadgeHtml}
+                                    <button class="view-ranking-btn no-print ml-1 text-slate-300 hover:text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer" title="Xem xếp hạng" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-1.5 py-2 text-center border-r border-slate-200 ${percentColor} cursor-pointer whitespace-nowrap">${formatPercent(percent)}</td>
-                            <td class="px-1.5 py-2 text-center text-slate-700 border-r border-slate-200 cursor-pointer whitespace-nowrap">${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
-                            <td class="px-1.5 py-2 text-center text-slate-600 border-r border-slate-200 cursor-pointer whitespace-nowrap">${hangVuot} <span class="text-slate-300">/</span> ${hangPercent}</td>
-                            <td class="px-2 py-2 text-right font-bold ${bonusColor} cursor-pointer whitespace-nowrap">${formatCurrency(totalBonus)}</td>
+                            <td class="px-1.5 py-1 text-center cursor-pointer whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <span class="font-extrabold text-[11px] ${pctTextColor}">${formatPercent(percent)}</span>
+                                    <div class="w-6 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0 hidden sm:inline-block">
+                                        <div class="h-full rounded-full ${pctBarColor}" style="width: ${Math.min(100, percentVal)}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-1.5 py-1 text-center font-medium text-slate-700 cursor-pointer whitespace-nowrap text-[11.5px]">${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
+                            <td class="px-1.5 py-1 text-center text-slate-600 cursor-pointer whitespace-nowrap text-[11.5px]">${hangVuot} <span class="text-slate-300">/</span> ${hangPercent}</td>
+                            <td class="px-2 py-1 text-right cursor-pointer whitespace-nowrap text-xs">${bonusDisplayHtml}</td>
                         </tr>
                     `;
                 };
@@ -2050,14 +1930,6 @@
 
                 let html = '';
                 let viewGroups = groupDefinitions;
-                if (singleViewMode === 'list') {
-                    const allAchieved100 = data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1);
-                    const allNotAchieved100 = data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1);
-                    viewGroups = [
-                        { key: 'achieved100', title: 'Đạt 100%', data: allAchieved100 },
-                        { key: 'notAchieved100', title: '<100%', data: allNotAchieved100 }
-                    ];
-                }
 
                 viewGroups.forEach(group => {
                     if (singleViewMode === 'list') {
@@ -2069,41 +1941,45 @@
                     let contentHtml = '';
                     
                     if (singleViewMode === 'list') {
-                        const groupRowsHtml = group.data.map((row, index) => renderSingleRow(row, group.key, index + 1)).join('');
+                        const groupRowsHtml = group.data.length > 0
+                            ? group.data.map((row, index) => renderSingleRow(row, group.key, index + 1)).join('')
+                            : `<tr><td colspan="5" class="py-4 text-center text-slate-400 text-xs font-medium">Không có ngành hàng nào trong nhóm này</td></tr>`;
                         contentHtml = `<div class="overflow-x-auto">
                                 <table class="w-full table-fixed text-left border-collapse tabular-nums check-thuong-table" style="width: 100%;">
                                     <colgroup>
                                         <col class="col-nganh-hang" style="width: auto;">
-                                        <col class="col-du-kien" style="width: 62px;">
+                                        <col class="col-du-kien" style="width: 80px;">
                                         <col class="col-vuot" style="width: 72px;">
                                         <col class="col-hang" style="width: 78px;">
-                                        <col class="col-thuong" style="width: 84px;">
+                                        <col class="col-thuong" style="width: 86px;">
                                     </colgroup>
                                     <thead>
-                                        <tr class="bg-slate-50/70 text-[11px] uppercase text-slate-500 border-b border-slate-200">
-                                            <th class="px-2.5 py-2 font-bold border-r border-slate-200 col-nganh-hang">Ngành Hàng</th>
-                                            <th class="px-1.5 py-2 font-bold text-center border-r border-slate-200 col-du-kien" style="width: 62px;">% D.Kiến</th>
-                                            <th class="px-1.5 py-2 font-bold text-center border-r border-slate-200 col-vuot" style="width: 72px;">D.Kiến Vượt</th>
-                                            <th class="px-1.5 py-2 font-bold text-center border-r border-slate-200 col-hang" style="width: 78px;">Hạng (VT/%)</th>
-                                            <th class="px-2 py-2 font-bold text-right col-thuong" style="width: 84px;">Tổng Thưởng</th>
+                                        <tr class="bg-slate-50/90 text-[10.5px] uppercase tracking-wider text-slate-500 font-extrabold border-b border-slate-200 select-none">
+                                            <th class="px-2.5 py-1.5 text-center col-nganh-hang">Ngành Hàng</th>
+                                            <th class="px-1.5 py-1.5 text-center col-du-kien" style="width: 80px;">% D.Kiến</th>
+                                            <th class="px-1.5 py-1.5 text-center col-vuot" style="width: 72px;">D.Kiến Vượt</th>
+                                            <th class="px-1.5 py-1.5 text-center col-hang" style="width: 78px;">Hạng (VT/%)</th>
+                                            <th class="px-2 py-1.5 text-center col-thuong" style="width: 86px;">Tổng Thưởng</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="divide-y divide-slate-100">
                                         ${groupRowsHtml}
                                     </tbody>
                                 </table>
                             </div>`;
                     } else {
-                        const groupCardsHtml = group.data.map(row => renderSingleCard(row, group.key)).join('');
+                        const groupCardsHtml = group.data.length > 0
+                            ? group.data.map(row => renderSingleCard(row, group.key)).join('')
+                            : `<div style="grid-column:1/-1;padding:24px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600">Không có ngành hàng nào trong nhóm này</div>`;
                         contentHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:10px">${groupCardsHtml}</div>`;
                     }
                     
-                    const groupHtml = `<div id="group-section-${group.key}" class="group-container border border-slate-200 bg-white" data-group-key="${group.key}" style="margin-bottom:16px">
-                        <div class="capture-target ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
-                            <div class="capture-fix ${pastelClass} border-b border-slate-200 flex justify-between items-center" style="padding:10px 14px">
-                                <h2 style="font-size:14px;font-weight:800;margin:0;letter-spacing:0.02em">${group.title.toUpperCase()} (${group.data.length})</h2>
-                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.4);color:rgba(0,0,0,0.6);border:none;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,0.8)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.4)';this.style.color='rgba(0,0,0,0.6)'">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    const groupHtml = `<div id="group-section-${group.key}" class="group-container" data-group-key="${group.key}" style="margin-bottom:16px">
+                        <div class="capture-target border border-slate-300 bg-white rounded-xl overflow-hidden shadow-xs ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
+                            <div class="capture-fix ${pastelClass} border-b border-slate-200/80 flex justify-between items-center" style="padding:8px 14px">
+                                <h2 style="font-size:13px;font-weight:800;margin:0;letter-spacing:0.02em">${group.title.toUpperCase()} (${group.data.length})</h2>
+                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition cursor-pointer" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.6);color:rgba(0,0,0,0.7);border:1px solid rgba(0,0,0,0.06)" onmouseover="this.style.background='rgba(255,255,255,0.9)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='rgba(0,0,0,0.7)'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
                             </div>
                             ${contentHtml}
@@ -2112,6 +1988,8 @@
                     html += groupHtml;
                 });
                 detailsGrid.innerHTML = html;
+                const activeFilterBtn = document.querySelector('#filterContainer .filter-btn.active');
+                applyFilter(activeFilterBtn ? activeFilterBtn.dataset.filter : 'all');
             }
 
             function getRankingTableHtml(data, titleText) {
@@ -2249,8 +2127,17 @@
                 }
 
                 // Đảm bảo phần tử xuất ảnh và các container con không bị cắt ngang bởi overflow: hidden/auto
-                saved.push({ el: element, attr: 'style-overflow', val: element.style.overflow });
-                element.style.overflow = 'visible';
+                // Nếu phần tử xuất ảnh là capture-target, giữ overflow: hidden và đảm bảo viền bao quanh rõ nét
+                if (element.classList && element.classList.contains('capture-target')) {
+                    saved.push({ el: element, attr: 'style', val: element.style.cssText });
+                    element.style.border = '1.5px solid #cbd5e1';
+                    element.style.borderRadius = '12px';
+                    element.style.overflow = 'hidden';
+                    element.style.backgroundColor = '#ffffff';
+                } else {
+                    saved.push({ el: element, attr: 'style-overflow', val: element.style.overflow });
+                    element.style.overflow = 'visible';
+                }
 
                 const overflowContainers = element.querySelectorAll('.overflow-x-auto, [style*="overflow-x"]');
                 overflowContainers.forEach(container => {
@@ -2265,15 +2152,17 @@
                     saved.push({ el: table, attr: 'style', val: table.style.cssText });
 
                     if (table.classList.contains('check-thuong-table')) {
-                        // Ép container cha (capture-target) về chiều rộng chuẩn mobile
-                        const captureParent = table.closest('.capture-target');
+                        // Ép container cha (capture-target) về chiều rộng chuẩn mobile và viền bao quanh hoàn chỉnh
+                        const captureParent = table.closest('.capture-target') || (element.classList && element.classList.contains('capture-target') ? element : null);
                         if (captureParent) {
-                            saved.push({ el: captureParent, attr: 'style-width', val: captureParent.style.width });
-                            saved.push({ el: captureParent, attr: 'style-maxWidth', val: captureParent.style.maxWidth });
-                            saved.push({ el: captureParent, attr: 'style-overflow', val: captureParent.style.overflow });
+                            saved.push({ el: captureParent, attr: 'style', val: captureParent.style.cssText });
                             captureParent.style.width = EXPORT_WIDTH;
                             captureParent.style.maxWidth = EXPORT_WIDTH;
                             captureParent.style.overflow = 'hidden';
+                            captureParent.style.border = '1.5px solid #cbd5e1';
+                            captureParent.style.borderRadius = '12px';
+                            captureParent.style.boxShadow = 'none';
+                            captureParent.style.backgroundColor = '#ffffff';
                             captureParent.dataset.exportWidth = EXPORT_WIDTH_PX;
                         }
 
@@ -2594,29 +2483,7 @@
                 storeCodeInput2.value = '';
                 handleSearchOrCompare();
             });
-
-            // TOP Supermarkets view toggle
-            document.getElementById('switchToTopViewBtn')?.addEventListener('click', () => {
-                renderTopSupermarkets(currentTopLimit);
-            });
-
-            document.getElementById('switchToSearchViewBtn')?.addEventListener('click', () => {
-                topContent.classList.add('hidden');
-                const code1 = storeCodeInput1.value.trim();
-                if (code1) {
-                    handleSearch(code1);
-                }
-            });
-
-            // TOP filter buttons
-            document.getElementById('topFilter20Btn')?.addEventListener('click', () => {
-                renderTopSupermarkets(20);
-            });
-
-            document.getElementById('topFilterAllBtn')?.addEventListener('click', () => {
-                renderTopSupermarkets('all');
-            });
-
+            
             document.body.addEventListener('click', (event) => {
                 const exportSummaryBtn = event.target.closest('#exportSummaryImageButton');
                 if (exportSummaryBtn) {
@@ -2889,6 +2756,22 @@
                 }
             });
             
+            function applyFilter(filter) {
+                const activeKey = filter || 'all';
+                document.querySelectorAll('.group-container').forEach(container => {
+                    const key = container.dataset.groupKey;
+                    if (activeKey === 'all') {
+                        if (singleViewMode === 'list') {
+                            container.style.display = (key === 'achieved100' || key === 'notAchieved100') ? 'block' : 'none';
+                        } else {
+                            container.style.display = (key === 'achieved' || key === 'nearly' || key === 'noFund' || key === 'noSale') ? 'block' : 'none';
+                        }
+                    } else {
+                        container.style.display = (key === activeKey) ? 'block' : 'none';
+                    }
+                });
+            }
+
             top10InfoCard.addEventListener('click', (e) => {
                 const filterBtn = e.target.closest('#filterContainer .filter-btn');
                 if (filterBtn) {
@@ -2899,13 +2782,7 @@
                         btn.classList.remove('active');
                     });
                     filterBtn.classList.add('active');
-                    document.querySelectorAll('.group-container').forEach(container => {
-                        if (filter === 'all' || container.dataset.groupKey === filter) {
-                            container.style.display = 'block';
-                        } else {
-                            container.style.display = 'none';
-                        }
-                    });
+                    applyFilter(filter);
                     return;
                 }
                 const toggleViewBtn = e.target.closest('#toggleViewModeBtn');
@@ -2924,16 +2801,7 @@
                     const filterContainer = document.getElementById('filterContainer');
                     if (filterContainer) {
                         const activeFilter = filterContainer.querySelector('.filter-btn.active');
-                        if (activeFilter) {
-                            const filter = activeFilter.dataset.filter;
-                            document.querySelectorAll('.group-container').forEach(container => {
-                                if (filter === 'all' || container.dataset.groupKey === filter) {
-                                    container.style.display = 'block';
-                                } else {
-                                    container.style.display = 'none';
-                                }
-                            });
-                        }
+                        applyFilter(activeFilter ? activeFilter.dataset.filter : 'all');
                     }
                     return;
                 }
@@ -3051,6 +2919,19 @@
                     }
                 } else if (e.data && e.data.type === 'CHECK_THUONG_RELOAD_DATA') {
                     reloadFromIDB();
+                } else if (e.data && e.data.type === 'CHECK_THUONG_REQUEST_DATA') {
+                    if (window.parent && competitionData && competitionData.length > 0) {
+                        window.parent.postMessage({
+                            type: 'CHECK_THUONG_DATA_RESPONSE',
+                            payload: {
+                                competitionData: competitionData,
+                                fileName: fileStatus ? fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', '') : '',
+                                uploadTime: fileUploadTime,
+                                code1: storeCodeInput1 ? storeCodeInput1.value : '',
+                                code2: storeCodeInput2 ? storeCodeInput2.value : ''
+                            }
+                        }, '*');
+                    }
                 } else if (e.data && e.data.type === 'CHECK_THUONG_SYNC_FROM_CLOUD') {
                     if (e.data.payload) {
                         idbKeyval.set('checkthuong_data', e.data.payload).then(() => {

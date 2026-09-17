@@ -1,11 +1,26 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
+import { isSupermarketMatch } from '../utils/dashboardHelpers';
 
 type SetStateAction<S> = S | ((prevState: S) => S);
 type Dispatch<A> = (value: A) => void;
 
 const DB_CHANGE_EVENT = 'indexeddb-change';
+
+const isConfigKeyMatch = (keyA: string, keyB: string): boolean => {
+    if (keyA === keyB) return true;
+    if (keyA.toLowerCase() === keyB.toLowerCase()) return true;
+    const configTypes = ['-industry-realtime', '-industry-luyke', '-danhsach', '-thidua', '-tragop', '-bankem'];
+    for (const t of configTypes) {
+        if (keyA.endsWith(t) && keyB.endsWith(t)) {
+            const smA = keyA.slice('config-'.length, keyA.length - t.length);
+            const smB = keyB.slice('config-'.length, keyB.length - t.length);
+            return isSupermarketMatch(smA, smB);
+        }
+    }
+    return false;
+};
 
 export function useIndexedDBState<T>(
     key: db.BIKey | null,
@@ -124,7 +139,14 @@ export function useIndexedDBState<T>(
                 }
                 return;
             }
-            if (event.detail.key === key && event.detail.source !== 'hook-write') {
+            const isMatch = event.detail.key === key || (
+                typeof event.detail.key === 'string' &&
+                typeof key === 'string' &&
+                event.detail.key.startsWith('config-') &&
+                key.startsWith('config-') &&
+                isConfigKeyMatch(key, event.detail.key)
+            );
+            if (isMatch && event.detail.source !== 'hook-write') {
                 loadValue();
             }
         };

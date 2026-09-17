@@ -432,7 +432,23 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const sttColIndices = new Set<number>();
         const nameColIndices = new Set<number>();
         const progressBarColIndices = new Set<number>();
+        const progressBarThSet = new Set<HTMLTableCellElement>();
         const snugNumericColIndices = new Set<number>();
+
+        // Kiểm tra xem cột có chứa thanh tiến độ ProgressBar thực tế (w-10, h-1.5, progress) hay chỉ là text số phần trăm
+        const colHasProgressBar = (cIdx: number): boolean => {
+            const rows = table.querySelectorAll('tbody tr');
+            for (let r = 0; r < Math.min(rows.length, 15); r++) {
+                const cells = rows[r].querySelectorAll('td');
+                if (cells[cIdx]) {
+                    const cell = cells[cIdx];
+                    if (cell.querySelector('[role="progressbar"], .w-10, [class*="progress"], div.rounded-full.overflow-hidden, div.h-1, div.h-1\\.5, div.h-2')) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
 
         bottomRow.forEach((th, colIdx) => {
             if (!th) return;
@@ -448,7 +464,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
 
             if (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK')) {
-                progressBarColIndices.add(colIdx);
+                // CHỈ coi là cột ProgressBar nếu bên dưới có thanh tiến độ thật. Nếu chỉ là text % như bảng Tổng hợp thì co vừa khít số
+                if (colHasProgressBar(colIdx)) {
+                    progressBarColIndices.add(colIdx);
+                    progressBarThSet.add(th);
+                } else {
+                    snugNumericColIndices.add(colIdx);
+                }
             }
 
             if (
@@ -458,8 +480,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 text.includes('DTQĐ') || text.includes('D.KIẾN') ||
                 text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
                 text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
-                text.includes('HQQĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
-                text === 'DT' || text === '%'
+                text.includes('HQQĐ') || text.includes('%QĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('%TC') || text.includes('THƯỞNG') ||
+                text === 'DT' || text === '%' || text === '%TT' || text === 'TB 3T'
             ) {
                 snugNumericColIndices.add(colIdx);
             }
@@ -484,16 +506,19 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 text.toUpperCase().includes('SIÊU THỊ') ||
                 text.toUpperCase().includes('DANH MỤC')
             );
-            const isProgressBarHeader = !isMultiColGroup && (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK'));
+            const isProgressBarHeader = !isMultiColGroup && progressBarThSet.has(th);
             const isSnugNumericHeader = !isMultiColGroup && (
-                text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
-                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
-                text.includes('TAR') || text.includes('M.TIÊU') ||
-                text.includes('DTQĐ') || text.includes('D.KIẾN') ||
-                text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
-                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
-                text.includes('HQQĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('THƯỞNG') ||
-                text === 'DT' || text === '%'
+                !isProgressBarHeader && (
+                    text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK') ||
+                    text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
+                    text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
+                    text.includes('TAR') || text.includes('M.TIÊU') ||
+                    text.includes('DTQĐ') || text.includes('D.KIẾN') ||
+                    text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
+                    text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
+                    text.includes('HQQĐ') || text.includes('%QĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('%TC') || text.includes('THƯỞNG') ||
+                    text === 'DT' || text === '%' || text === '%TT' || text === 'TB 3T'
+                )
             );
 
             // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
@@ -929,9 +954,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     clone.style.border = 'none';
     clone.style.borderRadius = '0';
 
-    // Remove redundant inner borders on table overflow wrappers inside cards
+    // Remove redundant inner borders ONLY on table overflow wrappers inside cards (keep card borders intact)
     clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
-        if (el instanceof HTMLElement) {
+        if (el instanceof HTMLElement && el.querySelector('table')) {
             el.style.setProperty('border', 'none', 'important');
             el.style.setProperty('box-shadow', 'none', 'important');
         }
@@ -1048,6 +1073,98 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 }
             });
         });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // KPI CARDS: ĐẢM BẢO VIỀN TẤT CẢ CÁC THẺ KPI CÓ MÀU CÙNG TÔNG VỚI VẠCH TOP NHƯNG NHẠT HƠN
+    // ═══════════════════════════════════════════════════════════════════════
+    const isDarkTheme = document.documentElement.classList.contains('dark');
+    const colorBorderMap: Record<string, string> = {
+        emerald: isDarkTheme ? '#065f46' : '#86efac',
+        sky: isDarkTheme ? '#075985' : '#7dd3fc',
+        blue: isDarkTheme ? '#075985' : '#7dd3fc',
+        amber: isDarkTheme ? '#92400e' : '#fcd34d',
+        orange: isDarkTheme ? '#92400e' : '#fcd34d',
+        rose: isDarkTheme ? '#9f1239' : '#fda4af',
+        red: isDarkTheme ? '#9f1239' : '#fda4af',
+        indigo: isDarkTheme ? '#3730a3' : '#a5b4fc',
+        slate: isDarkTheme ? '#334155' : '#cbd5e1',
+    };
+    const defaultKpiBorder = isDarkTheme ? '#334155' : '#cbd5e1';
+    const warnKpiBorder = isDarkTheme ? '#9f1239' : '#fda4af'; // rose-300 cho thẻ chưa đạt
+    const warnKpiBg = isDarkTheme ? 'rgba(76, 5, 25, 0.25)' : 'rgba(255, 241, 242, 0.5)';
+
+    clone.querySelectorAll<HTMLElement>('div').forEach((el) => {
+        const cls = el.getAttribute('class') || '';
+        // Nhận diện KpiCard qua class premium-card-shadow hoặc cấu trúc thẻ card flex-col có vạch màu
+        const isKpiCard = cls.includes('premium-card-shadow') ||
+            (cls.includes('touch-feedback') && cls.includes('border') && cls.includes('flex-col')) ||
+            (el.firstElementChild instanceof HTMLElement && el.firstElementChild.className && (String(el.firstElementChild.className).includes('h-[3') || String(el.firstElementChild.className).includes('kpi-top-accent')));
+
+        if (isKpiCard) {
+            const text = el.textContent || '';
+            const isNotGood = text.includes('Chưa đạt') || text.includes('CHƯA ĐẠT') || cls.includes('border-rose') || cls.includes('bg-rose');
+
+            // Xác định màu vạch top bar
+            let topColorKey = el.dataset.kpiTopColor || '';
+            if (!topColorKey) {
+                const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+                    (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[3') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
+                const topCls = topBar?.getAttribute('class') || '';
+                if (topCls.includes('bg-emerald') || topCls.includes('bg-teal')) topColorKey = 'emerald';
+                else if (topCls.includes('bg-sky') || topCls.includes('bg-blue')) topColorKey = 'sky';
+                else if (topCls.includes('bg-amber') || topCls.includes('bg-orange')) topColorKey = 'amber';
+                else if (topCls.includes('bg-rose') || topCls.includes('bg-red')) topColorKey = 'rose';
+                else if (topCls.includes('bg-indigo')) topColorKey = 'indigo';
+                else if (topCls.includes('bg-slate')) topColorKey = 'slate';
+            }
+
+            const topColorMap: Record<string, string> = {
+                emerald: '#059669',
+                sky: '#0284c7',
+                blue: '#0284c7',
+                amber: '#d97706',
+                orange: '#d97706',
+                rose: '#e11d48',
+                red: '#e11d48',
+                indigo: '#4f46e5',
+                slate: '#475569',
+            };
+
+            const targetBorder = isNotGood
+                ? warnKpiBorder
+                : (colorBorderMap[topColorKey] || (!isDarkTheme && el.dataset.kpiBorder ? el.dataset.kpiBorder : defaultKpiBorder));
+
+            const topBorderColor = isNotGood
+                ? (topColorMap.rose || warnKpiBorder)
+                : (el.dataset.kpiTopBorder || topColorMap[topColorKey] || targetBorder);
+
+            el.style.setProperty('position', 'relative', 'important');
+            el.style.setProperty('border-radius', '0px', 'important');
+            el.style.setProperty('box-sizing', 'border-box', 'important');
+            el.style.setProperty('border', `1.5px solid ${targetBorder}`, 'important');
+            el.style.setProperty('border-top', 'none', 'important');
+            el.style.setProperty('overflow', 'visible', 'important');
+
+            const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+                (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[3') || String(el.firstElementChild.className || '').includes('progressFill') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
+            if (topBar) {
+                topBar.style.setProperty('display', 'block', 'important');
+                topBar.style.setProperty('height', '3.5px', 'important');
+                topBar.style.setProperty('margin-top', '0px', 'important');
+                topBar.style.setProperty('margin-left', '-1.5px', 'important');
+                topBar.style.setProperty('margin-right', '-1.5px', 'important');
+                topBar.style.setProperty('width', 'calc(100% + 3px)', 'important');
+                topBar.style.setProperty('background-color', topBorderColor, 'important');
+                topBar.style.setProperty('border-radius', '0px', 'important');
+            }
+
+            if (isNotGood) {
+                el.style.setProperty('background-color', warnKpiBg, 'important');
+            } else {
+                el.style.setProperty('background-color', isDarkTheme ? '#0f172a' : '#ffffff', 'important');
+            }
+        }
     });
 
     // Strip border-radius from the clone root itself

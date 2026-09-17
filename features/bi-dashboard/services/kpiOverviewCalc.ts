@@ -163,3 +163,41 @@ export function computeRealtimeProjected(revenue: number, timeRatio: number): nu
     if (timeRatio <= 0 || timeRatio >= 1) return revenue;
     return Math.round(revenue / timeRatio);
 }
+
+/**
+ * Rút gọn số doanh thu (đơn vị Triệu) thành Tỷ với 1 chữ số thập phân nếu có phần thập phân:
+ * Ví dụ:
+ * - 17000 => { value: "17", unit: "tỷ", full: "17 tỷ" }
+ * - 20766 => { value: "20.8", unit: "tỷ", full: "20.8 tỷ" }
+ * - 11075 => { value: "11.1", unit: "tỷ", full: "11.1 tỷ" }
+ * - 31876 => { value: "31.9", unit: "tỷ", full: "31.9 tỷ" }
+ * - 41415 => { value: "41.4", unit: "tỷ", full: "41.4 tỷ" }
+ *
+ * Nếu isRealtime = true và Math.abs(valInMil) < 1000:
+ * Giữ nguyên định dạng triệu: { value: "500", unit: "Tr", full: "500 Tr" }
+ */
+export function formatRevenueTy(
+    valInMil: number,
+    isRealtime: boolean = false
+): { value: string; unit: string; full: string } {
+    if (isNaN(valInMil) || valInMil === 0) {
+        const unit = isRealtime ? 'Tr' : 'tỷ';
+        return { value: '0', unit, full: `0 ${unit}` };
+    }
+
+    // Nếu ở chế độ Realtime mà doanh thu dưới 1 tỷ (1.000 Tr), hiển thị theo Triệu
+    if (isRealtime && Math.abs(valInMil) < 1000) {
+        const valStr = Math.round(valInMil).toLocaleString('vi-VN');
+        return { value: valStr, unit: 'Tr', full: `${valStr} Tr` };
+    }
+
+    const ty = valInMil / 1000;
+    const rounded = Math.round(ty * 10) / 10;
+    const valueStr = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+    return {
+        value: valueStr,
+        unit: 'tỷ',
+        full: `${valueStr} tỷ`
+    };
+}
+
