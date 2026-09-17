@@ -22,6 +22,7 @@ export function useNhanVienData(isActive?: boolean) {
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
+        employeeRealtime: '',
         thiDua: '',
         traGop: '',
         banKem: '',
@@ -56,6 +57,7 @@ export function useNhanVienData(isActive?: boolean) {
             if (activeSupermarkets.length === 0) {
                 setAggregatedData({
                     danhSach: '',
+                    employeeRealtime: '',
                     thiDua: '',
                     traGop: '',
                     banKem: '',
@@ -79,21 +81,23 @@ export function useNhanVienData(isActive?: boolean) {
                     db.get(`bonus-data-${safeName}`),
                     db.get(`targethero-${safeName}-departmentweights`),
                     db.get(`hidden-employees-${safeName}`),
-                    db.get(`bonus-current-period-label-${safeName}`)
+                    db.get(`bonus-current-period-label-${safeName}`),
+                    db.get(`config-${safeName}-employee-realtime`)
                 ]);
             }));
 
             if (!isMounted) return;
 
-            let combinedDS = '', combinedTD = '', combinedTG = '', combinedBK = '';
+            let combinedDS = '', combinedRealtime = '', combinedTD = '', combinedTG = '', combinedBK = '';
             let combinedMM: ManualDeptMapping = {};
             let combinedBonus: Record<string, BonusMetrics | null> = {};
             let combinedPeriodLabel: string | null = null;
             const allWeights: Record<string, number[]> = {};
 
             const combinedHidden: string[] = [];
-            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden, periodLabel]) => {
+            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden, periodLabel, empRt]) => {
                 if (ds) combinedDS += (combinedDS ? '\n' : '') + ds;
+                if (empRt) combinedRealtime += (combinedRealtime ? '\n' : '') + empRt;
                 if (td) combinedTD += (combinedTD ? '\n' : '') + td;
                 if (tg) combinedTG += (combinedTG ? '\n' : '') + tg;
                 if (bk) combinedBK += (combinedBK ? '\n' : '') + bk;
@@ -118,18 +122,14 @@ export function useNhanVienData(isActive?: boolean) {
                 const empId = extractEmployeeId(key);
                 if (!empId) return;
                 const existing = empIdToLatestBonus.get(empId);
-                if (!existing) {
+                const currentUpdatedAt = metrics.updatedAt ? new Date(metrics.updatedAt).getTime() : 0;
+                const existingUpdatedAt = existing?.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+                if (!existing || currentUpdatedAt >= existingUpdatedAt) {
                     empIdToLatestBonus.set(empId, metrics);
-                } else {
-                    const tNew = parseBonusUpdatedAt(metrics.updatedAt);
-                    const tOld = parseBonusUpdatedAt(existing.updatedAt);
-                    if (tNew > tOld || (tNew === tOld && (metrics.tong || 0) > (existing.tong || 0))) {
-                        empIdToLatestBonus.set(empId, metrics);
-                    }
                 }
             });
 
-            // Gán bản ghi mới nhất cho tất cả các key tương ứng
+            // Gán metrics mới nhất đồng bộ cho mọi biến thể key
             Object.keys(combinedBonus).forEach(key => {
                 const empId = extractEmployeeId(key);
                 if (empId && empIdToLatestBonus.has(empId)) {
@@ -137,19 +137,33 @@ export function useNhanVienData(isActive?: boolean) {
                 }
             });
 
-            // Đồng thời đồng bộ sang cả dạng canonical và swapped
-            empIdToLatestBonus.forEach((metrics, empId) => {
-                Object.keys(combinedBonus).forEach(key => {
-                    if (extractEmployeeId(key) === empId) {
-                        const canonical = standardizeEmployeeName(key);
-                        combinedBonus[canonical] = metrics;
-                        if (key.includes(' - ')) {
-                            const parts = key.split(' - ').map(p => p.trim());
-                            combinedBonus[`${parts[1]} - ${parts[0]}`] = metrics;
-                        }
+            // Đảm bảo các cặp key chuẩn đảo ngược (Mã - Tên và Tên - Mã) luôn có đủ dữ liệu
+            Object.entries({ ...combinedBonus }).forEach(([key, metrics]) => {
+                if (!metrics) return;
+                const empId = extractEmployeeId(key);
+                const canonical = standardizeEmployeeName(key);
+                if (!combinedBonus[canonical]) combinedBonus[canonical] = metrics;
+                if (key.includes(' - ')) {
+                    const parts = key.split(' - ').map(p => p.trim());
+                    const reversedKey = `${parts[1]} - ${parts[0]}`;
+                    if (!combinedBonus[reversedKey]) combinedBonus[reversedKey] = metrics;
+                }
+                if (empId && !combinedBonus[empId]) {
+                    combinedBonus[empId] = metrics;
+                }
+            });
+
+            // Đồng bộ sang analysisEmployees: nếu có nhân viên nào trong phân tích trùng empId, gắn luôn
+            if (analysisEmployeesList.length > 0) {
+                analysisEmployeesList.forEach(emp => {
+                    const empId = emp.id || extractEmployeeId(emp.originalName);
+                    if (empId && empIdToLatestBonus.has(empId)) {
+                        const latest = empIdToLatestBonus.get(empId)!;
+                        combinedBonus[emp.originalName] = latest;
+                        combinedBonus[standardizeEmployeeName(emp.originalName)] = latest;
                     }
                 });
-            });
+            }
 
             const finalWeights: Record<string, number> = {};
             Object.entries(allWeights).forEach(([dept, wList]) => {
@@ -160,6 +174,7 @@ export function useNhanVienData(isActive?: boolean) {
             setHiddenEmployees(combinedHidden);
             setAggregatedData({
                 danhSach: combinedDS,
+                employeeRealtime: combinedRealtime,
                 thiDua: combinedTD,
                 traGop: combinedTG,
                 banKem: combinedBK,
@@ -321,6 +336,30 @@ export function useNhanVienData(isActive?: boolean) {
         return () => { isMounted = false; };
     }, [aggregatedData.danhSach, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
 
+    const [parsedRevenueRealtimeBase, setParsedRevenueRealtimeBase] = useState<RevenueRow[]>([]);
+    useEffect(() => {
+        if (!aggregatedData.employeeRealtime || isActive === false) {
+            setParsedRevenueRealtimeBase([]);
+            return;
+        }
+        let isMounted = true;
+        runWorkerTask('PARSE_REVENUE', aggregatedData.employeeRealtime).then((base: RevenueRow[]) => {
+            if (isMounted) {
+                setParsedRevenueRealtimeBase(base.filter(r => {
+                    if (r.type !== 'employee') return true;
+                    if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
+                    const dept = (r.department || '').trim();
+                    if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
+                    if (hasAnalysisEmployees) {
+                        return isEmployeeInAnalysis(r.originalName);
+                    }
+                    return true;
+                }));
+            }
+        }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu realtime:', err));
+        return () => { isMounted = false; };
+    }, [aggregatedData.employeeRealtime, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
+
     const employeeDepartmentMap = useMemo(() => {
         if (isActive === false) return {} as Record<string, string>;
         const map: Record<string, string> = {};
@@ -459,6 +498,57 @@ export function useNhanVienData(isActive?: boolean) {
         });
         return finalRows;
     }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
+
+    const realtimeRevenueRows = useMemo(() => {
+        if (isActive === false || parsedRevenueRealtimeBase.length === 0) return [];
+        const rows = parsedRevenueRealtimeBase;
+
+        const getDeptForEmployee = (origName?: string, currentDept?: string): string => {
+            if (origName) {
+                if (employeeDepartmentMap[origName]) return employeeDepartmentMap[origName];
+                const canonical = standardizeEmployeeName(origName);
+                if (employeeDepartmentMap[canonical]) return employeeDepartmentMap[canonical];
+                if (origName.includes(' - ')) {
+                    const parts = origName.split(' - ').map(p => p.trim());
+                    if (employeeDepartmentMap[`${parts[1]} - ${parts[0]}`]) return employeeDepartmentMap[`${parts[1]} - ${parts[0]}`];
+                    if (employeeDepartmentMap[parts[0]]) return employeeDepartmentMap[parts[0]];
+                    if (employeeDepartmentMap[parts[1]]) return employeeDepartmentMap[parts[1]];
+                }
+            }
+            return currentDept || 'BP Khác';
+        };
+
+        const mappedRows = rows.map(row => {
+            if (row.type === 'employee' && row.originalName) {
+                const pctBillBk = banKemMap.get(row.originalName) || 0;
+                return { 
+                    ...row, 
+                    department: getDeptForEmployee(row.originalName, row.department),
+                    pctBillBk: pctBillBk
+                };
+            }
+            return row;
+        });
+
+        const finalRows: RevenueRow[] = [];
+        const currentDeptsInMap = Array.from(new Set(Object.values(employeeDepartmentMap))).sort();
+        currentDeptsInMap.forEach((deptName: string) => {
+            const deptEmps = mappedRows.filter(r => r.type === 'employee' && r.department === deptName);
+            if (deptEmps.length > 0) {
+                const deptBkRow = banKemRows.find(r => r.type === 'department' && r.originalName === deptName);
+                const origDeptRow = mappedRows.find(r => r.type === 'department' && r.name === deptName);
+                finalRows.push({ 
+                    type: 'department', name: deptName, 
+                    dtlk: deptEmps.reduce((s, e) => s + (e.dtlk || 0), 0), 
+                    dtqd: deptEmps.reduce((s, e) => s + (e.dtqd || 0), 0), 
+                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0,
+                    pctBillBk: deptBkRow ? deptBkRow.pctBillBk : 0
+                });
+                finalRows.push(...deptEmps);
+            }
+        });
+        return finalRows;
+    }, [parsedRevenueRealtimeBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
 
     // Toàn bộ tên phòng ban thật sự có nhân viên (không lọc bớt) — dùng để "Tất cả" luôn đúng
     // nghĩa là TẤT CẢ. Trước đây effectiveActiveDepartments khi chọn "Tất cả" lại resolve về
@@ -765,6 +855,7 @@ export function useNhanVienData(isActive?: boolean) {
         banKemRows,
         banKemMap,
         revenueRows,
+        realtimeRevenueRows,
         employeeInstallmentMap,
         allEmployees,
         hiddenEmployees,

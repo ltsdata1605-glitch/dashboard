@@ -1235,10 +1235,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} />
 
-                                <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData}
-                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="sky"
+                                <StatusTile title="LUỸ KẾ" lastUpdated={danhSachTs} value={danhSachData}
+                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="emerald"
                                     linkUrl={getTileLink('nhanvien-doanhthu', customLinks)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'DOANH THU', 'DOANH THU NHÂN VIÊN')}
+                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         setDanhSachData(v); 
                                         return handleUpdate('danhSach', v, s => {

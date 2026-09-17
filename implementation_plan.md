@@ -3612,3 +3612,121 @@ mục 3b còn treo) là cách duy nhất để không chạm trần.
 đang điều tra hạn mức, đừng chạy test E2E đọc nhiều lần liên tiếp — dùng test đơn vị với mock đếm
 (`tests/unit/sticker-firestore-quota.test.ts`) để đo, chỉ dùng E2E khi thật cần quan sát runtime.
 
+
+---
+
+## KHẢO SÁT: di trú In Sticker sang database `(default)` — 2026-09-17
+
+**Trạng thái: CHƯA THỰC HIỆN GÌ.** Đây là khảo sát + kế hoạch để user quyết. Không chạm dữ liệu thật.
+
+### 0. SỬA LẠI một điều tôi đã báo sai trong đợt này
+
+Đầu đợt tôi kết luận "4 khu vực dùng chung project nên tải của Phân Tích / Report BI / Phân Ca
+**cộng dồn** vào cùng bể với In Sticker". Đọc kỹ lại thông báo lỗi thì **kết luận đó có thể sai ở
+đúng điểm quan trọng nhất**: hạn mức bị chạm có tên
+`'Free daily read units per project (free tier database)'` — nó đếm lượt đọc **trên các database
+thuộc diện "free tier"**, chứ không phải mọi lượt đọc của project. Database `(default)` (mà root /
+bi-dashboard / phan-ca dùng) gần như chắc chắn KHÔNG thuộc diện đó.
+
+→ Nếu vậy thì **chỉ riêng In Sticker làm cạn hạn mức này**, 3 khu vực còn lại không góp vào. Điều
+này KHÔNG làm mất giá trị của mục 1-6 (đều là lãng phí thật, đã đo), nhưng nó đổi thứ tự ưu tiên:
+mục 3/5 (giảm đọc của In Sticker) là thứ trực tiếp cứu tình huống, còn mục 4/6 (giảm tải của app
+gốc) là vệ sinh chung.
+
+🔴 **Phải xác nhận trước khi làm bất cứ việc gì ở mục 1-4 dưới đây** (2 phút, chỉ user làm được):
+Firebase Console → Firestore → danh sách **Databases**. Cần biết đúng 2 điều:
+  (a) database `ai-studio-16672ec9-…` được đánh dấu diện gì (free tier / standard edition);
+  (b) database `(default)` được đánh dấu diện gì.
+Nếu `(default)` cũng là "free tier database" thì di trú KHÔNG giải quyết được gì — lúc đó phương án
+đúng là tạo database tiêu chuẩn MỚI, không phải chuyển sang `(default)`. Tên database
+`ai-studio-…` cho thấy nó do Google AI Studio tự sinh; các database sinh theo đường đó thường bị
+gắn trần cứng miễn phí, còn `(default)` do Firebase tạo thì không — nhưng đây là suy luận từ tên
+và từ thông báo lỗi, **chưa phải quan sát**, nên đừng làm gì trước khi xem Console.
+
+### 1. Bề mặt di trú (đã đo trên code, không phải phỏng đoán)
+
+**Nhỏ hơn dự kiến.** Chỉ 3 chỗ quyết định database:
+
+| Nơi | Vai trò |
+|---|---|
+| `features/sticker-event/firebase.ts` (`dbId`) | client đọc từ `firebase-applet-config.json` (gitignored) hoặc `VITE_FIREBASE_DATABASE_ID` |
+| `functions/src/firebaseAdmin.ts:12` — `STICKER_DB_ID` | 1 hằng số duy nhất, `stickerDb = getFirestore(app, STICKER_DB_ID)` |
+| `firebase.json` → mảng `firestore[]` | map database → file rules |
+
+**Cloud Functions chạm `stickerDb` ở đúng 5 chỗ**, tất cả trong `functions/src/stickerEvent.ts`
+(dòng 55, 106, 126, 159, 237) và **chỉ collection `users`** — không hàm nào chạm `stores/*`.
+
+### 2. Phân tích XUNG ĐỘT collection (điểm mấu chốt)
+
+| Collection | In Sticker | `(default)` hiện có | Kết luận |
+|---|---|---|---|
+| `stores/{storeId}/**` | savedLists (+itemChunks), productChunks, inventoryChunks, manualProducts, metadata | **không dùng** | ✅ sạch, chuyển thẳng |
+| `users/{uid}` | `{username, email, role:'admin'\|'staff', storeId, storeHasAdmin}` | `{role:'admin'\|'manager'\|'employee', status, departmentId, expiresAt, requestedRole, lastActive, loginCount…}` | 🔴 **TRÙNG TÊN, 2 schema không tương thích** |
+| `users/{uid}/state/{doc}` | có (session In Sticker) | không (root dùng `setting`/`configs`/`notifications`/`salesData`/`schedules`) | ✅ không trùng subcollection |
+
+Custom claims KHÔNG trùng: In Sticker dùng `stickerRole`/`stickerStoreId`, root dùng
+`role`/`departmentId`. (Ghi chú: rule `stores/{storeId}/{document=**}` của In Sticker hiện đã chấp
+nhận cả `request.auth.token.departmentId == storeId` — 2 bên vốn đã biết đến nhau.)
+
+### 3. Một điều CLAUDE.md đang ghi SAI (phát hiện khi khảo sát)
+
+CLAUDE.md mục 1.1 viết: *"`features/sticker-event` … **chưa** áp dụng pattern Cloud Functions này,
+vẫn ghi `role` trực tiếp từ client"*. **Không còn đúng.** `firestore.stickerevent.rules` hiện đã:
+- khoá `protectedKeys() = ['role','storeId','username']` khỏi mọi lượt update từ client;
+- **bỏ hẳn `allow create`** — hồ sơ user chỉ tạo được qua Cloud Function `stickerRegister`;
+- đổi role/storeId chỉ qua `stickerAdminUpdateUser`.
+Thậm chí `username` bị khoá vì `stickerResolveSession()` tin field đó để xét Super Admin — không
+khoá thì tự `updateDoc(username:'admin')` là leo thang đặc quyền.
+
+→ Đây là tin TỐT cho việc di trú: lo ngại lớn nhất của tôi (sticker ghi `role` thẳng sẽ đụng rules
+chặt của root) **không tồn tại**. Hai bên đã cùng một triết lý phân quyền.
+
+### 4. Hai phương án cho xung đột `users`
+
+**Phương án A — đổi tên thành `stickerUsers` (KHUYẾN NGHỊ).**
+- Rules: copy nguyên block `match /users/{uid}` của In Sticker sang `firestore.rules` dưới tên
+  `match /stickerUsers/{uid}`. **Không sửa một dòng nào** trong block `users/{uid}` của root →
+  không có rủi ro nới lỏng bảo mật.
+- Code phải sửa: 5 chỗ trong `functions/src/stickerEvent.ts`, `fetchAllUsers()` +
+  `saveUserState()`/`fetchUserState()` trong `features/sticker-event/services/firebaseService.ts`.
+- Đổi tên collection là việc cơ học, đã có sẵn chỗ kiểm chứng (test đơn vị với mock đếm).
+
+**Phương án B — gộp vào chung `users`.**
+- Phải hợp nhất 2 block rules: `protectedKeys()` thành hợp của 2 bộ
+  (`role, status, departmentId, expiresAt, requestedRole, storeId, username`), thêm
+  `match /state/{doc}`, và hợp nhất điều kiện `get`/`list`.
+- 🔴 Hệ quả nới lỏng thật: admin của root sẽ `list` được cả hồ sơ In Sticker; admin-kho của In
+  Sticker sẽ `list` được document nào có `storeId == myStoreId`. Root còn có `allow create` cho
+  chính mình mà In Sticker đã CỐ Ý bỏ → gộp lại là mở lại cửa đó.
+- Không tiết kiệm được gì so với phương án A. **Không nên chọn.**
+
+### 5. Kiểm tra bắt buộc TRƯỚC khi di trú
+
+1. **Trùng uid giữa 2 database.** In Sticker và root dùng CHUNG một Auth pool (cùng project), chỉ
+   khác cách đăng nhập (In Sticker: email/mật khẩu; root: Google). Nếu tồn tại uid nào có hồ sơ ở
+   CẢ hai `users` collection thì phải có chiến lược hợp nhất trước. Đếm bằng script Admin SDK
+   read-only, không ghi gì.
+2. **Khối lượng dữ liệu** cần chuyển (số document của `stores/**` + `users`) — quyết định thời gian
+   chạy và lượng ghi cần dùng. Chưa đo được vì cần quyền truy cập project.
+3. Xác nhận diện của 2 database ở Console (mục 0).
+
+### 6. Trình tự đề xuất (khi user đã quyết)
+
+1. Script Admin SDK **chỉ đọc**: đếm document từng collection + dò uid trùng. Báo số liệu.
+2. Sửa rules + `firebase.json`, deploy rules trước (rules mới cho `stickerUsers`/`stores` trên
+   `(default)` không ảnh hưởng gì khi chưa có dữ liệu ở đó).
+3. Script copy dữ liệu (ai-studio → default), **không xoá nguồn**. Chạy 2 lần: lần 1 thử với 1 kho
+   test (TESTCLAUDEQA), lần 2 toàn bộ.
+4. Đổi tên collection trong code + `STICKER_DB_ID` → `(default)`. `npm run check` + test đơn vị.
+5. Đổi `firebase-applet-config.json` (user tự sửa, file gitignored) + deploy functions.
+6. Theo dõi 1-2 ngày. **Quay lui**: trả `firebase-applet-config.json` và `STICKER_DB_ID` về giá trị
+   cũ — dữ liệu nguồn vẫn còn nguyên nên quay lui là đổi 2 giá trị, không phải phục hồi backup.
+7. Chỉ xoá dữ liệu ở database cũ sau khi đã chạy ổn nhiều ngày.
+
+**Downtime:** thực tế bằng 0 nếu làm theo thứ tự trên (dữ liệu được copy trước khi chuyển hướng
+đọc/ghi), nhưng mọi thay đổi trong **khoảng giữa bước 3 và bước 5** sẽ chỉ nằm ở database cũ và bị
+mất. Nên chọn làm ngoài giờ bán hàng, hoặc chạy lại bước 3 ngay trước bước 5.
+
+**Việc KHÔNG phải của agent:** `firebase login`, deploy rules/functions, sửa
+`firebase-applet-config.json` (CLAUDE.md mục 1.1 đã ghi rõ).
+

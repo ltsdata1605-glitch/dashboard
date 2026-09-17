@@ -16,6 +16,7 @@ interface UseRevenueDataProps {
     exportDeptFilter: string | null;
     isActive?: boolean;
     bonusData?: Record<string, BonusMetrics | null>;
+    isRealtime?: boolean;
 }
 
 export const useRevenueData = ({
@@ -30,7 +31,8 @@ export const useRevenueData = ({
     viewMode,
     exportDeptFilter,
     isActive,
-    bonusData
+    bonusData,
+    isRealtime = false
 }: UseRevenueDataProps) => {
 
     const displayList = useMemo(() => {
@@ -76,6 +78,17 @@ export const useRevenueData = ({
         const remainingDays = Math.max(1, totalDays - currentDay + 1);
         const daysPassed = Math.max(1, currentDay - 1);
 
+        // Tỷ lệ thời gian ngày cho chế độ Realtime (8h00 - 21h30 = 13.5 tiếng = 810 phút)
+        const timeRatioRealtime = (() => {
+            const startMinutes = 8 * 60; // 480
+            const endMinutes = 21 * 60 + 30; // 1290
+            const totalWorkMinutes = endMinutes - startMinutes; // 810
+            const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+            if (nowMinutes <= startMinutes) return 0.05;
+            if (nowMinutes >= endMinutes) return 1;
+            return Math.max(0.05, (nowMinutes - startMinutes) / totalWorkMinutes);
+        })();
+
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
 
         // Map tra cứu O(1) thay vì .find() O(n) lồng trong .map() ở calculateWithComparison bên dưới
@@ -84,13 +97,24 @@ export const useRevenueData = ({
         const calculateWithComparison = (emp: RevenueRow): RevenueRow => {
             const weight = (departmentWeights[emp.department!] || 0) / 100;
             const empCount = deptEmployeeCounts[emp.department!] || 1;
-            const empTarget = supermarketTarget > 0 ? (supermarketTarget * weight) / empCount : 0;
+            let empTarget = supermarketTarget > 0 ? (supermarketTarget * weight) / empCount : 0;
+            
+            // 2. Chế độ Realtime: M.Tiêu = Mục tiêu luỹ kế / số ngày của tháng
+            if (isRealtime && totalDays > 0) {
+                empTarget = empTarget / totalDays;
+            }
+
             const currentInstallment = employeeInstallmentMap.get(emp.originalName || '') || 0;
             const currentCompletion = empTarget > 0 ? (emp.dtqd / empTarget) * 100 : 0;
 
             const prevData = prevMonthRows.length > 0 ? (prevMonthRowsMap.get(emp.originalName) ?? null) : null;
 
-            const empDuKien = daysPassed > 0 ? (emp.dtqd / daysPassed) * totalDays : 0;
+            // 3. Chế độ Realtime: D.Kiến theo khung giờ 8h - 21h30
+            const empDuKien = isRealtime 
+                ? (emp.dtqd / timeRatioRealtime) 
+                : (daysPassed > 0 ? (emp.dtqd / daysPassed) * totalDays : 0);
+            
+            // 4. %D.KIẾN = D.Kiến / M.Tiêu
             const empPctDkht = empTarget > 0 ? (empDuKien / empTarget) * 100 : 0;
 
             let prevCompData = null;
@@ -224,7 +248,9 @@ export const useRevenueData = ({
             const sumDtlk = deptEmployees.reduce((s, e) => s + e.dtlk, 0);
             const sumDtqd = deptEmployees.reduce((s, e) => s + e.dtqd, 0);
             const sumTarget = deptEmployees.reduce((s, e) => s + (e.calculatedTarget || 0), 0);
-            const sumDuKien = daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0;
+            const sumDuKien = isRealtime 
+                ? (sumDtqd / timeRatioRealtime) 
+                : (daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0);
             const deptPctDkht = sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0;
             const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + e.calculatedInstallment, 0) / deptEmployees.length : 0;
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
@@ -312,7 +338,9 @@ export const useRevenueData = ({
 
         if (finalOutput.length > 0 && !exportDeptFilter) {
             const grandSumBonusTong = finalOutput.filter(r => r.type === 'department').reduce((s, d) => s + (d.bonus_tong || 0), 0);
-            const grandSumDuKien = daysPassed > 0 ? (grandSumDtqd / daysPassed) * totalDays : 0;
+            const grandSumDuKien = isRealtime 
+                ? (grandSumDtqd / timeRatioRealtime) 
+                : (daysPassed > 0 ? (grandSumDtqd / daysPassed) * totalDays : 0);
             const grandPctDkht = grandSumTarget > 0 ? (grandSumDuKien / grandSumTarget) * 100 : 0;
             const grandPrevDk = daysPassed > 0 ? (grandPrevDtqd / daysPassed) * totalDays : 0;
 

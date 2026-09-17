@@ -46,7 +46,7 @@ export const TILE_LABELS: Record<string, { group: string; name: string }> = {
     'industry-realtime': { group: 'Siêu thị ngành hàng', name: 'Realtime' },
     'industry-luyke': { group: 'Siêu thị ngành hàng', name: 'Luỹ kế' },
     'nhanvien-realtime': { group: 'DOANH THU NHÂN VIÊN', name: 'Realtime' },
-    'nhanvien-doanhthu': { group: 'DOANH THU NHÂN VIÊN', name: 'Doanh thu' },
+    'nhanvien-doanhthu': { group: 'DOANH THU NHÂN VIÊN', name: 'Luỹ kế' },
     'nhanvien-thidua': { group: 'THI ĐUA & TRẢ CHẬM', name: 'Thi đua' },
     'nhanvien-tragop': { group: 'THI ĐUA & TRẢ CHẬM', name: 'Trả chậm' },
 };

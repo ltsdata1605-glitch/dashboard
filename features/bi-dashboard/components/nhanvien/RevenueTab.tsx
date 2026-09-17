@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon } from '../Icons';
+import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon, AlertTriangleIcon } from '../Icons';
 import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -27,11 +26,12 @@ const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
 const RevenueView: React.FC<{
     rows: RevenueRow[];
+    realtimeRows?: RevenueRow[];
     supermarketName: string;
-    activeSupermarkets?: string[];
+    activeSupermarkets: string[];
     departmentNames: string[];
     highlightedEmployees: Set<string>;
-    setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
+    setHighlightedEmployees: (updater: React.SetStateAction<Set<string>>) => void;
     supermarketTarget: number;
     departmentWeights: Record<string, number>;
     deptEmployeeCounts: Record<string, number>;
@@ -39,13 +39,16 @@ const RevenueView: React.FC<{
     isActive?: boolean;
     bonusData?: Record<string, BonusMetrics | null>;
 }> = ({
-    rows, supermarketName, activeSupermarkets, departmentNames,
+    rows, realtimeRows = [], supermarketName, activeSupermarkets, departmentNames,
     highlightedEmployees, setHighlightedEmployees,
     supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap,
     isActive,
     bonusData
 }) => {
-    const [isLoading, setIsLoading] = useState(supermarketName && rows.length === 0);
+    const [isRealtimeMode, setIsRealtimeMode] = useIndexedDBState<boolean>('nhanvien-revenue-realtime-mode', false);
+    const activeRows = isRealtimeMode ? realtimeRows : rows;
+
+    const [isLoading, setIsLoading] = useState(supermarketName && !isRealtimeMode && rows.length === 0);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dtqd', direction: 'desc' });
     const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
     
@@ -148,10 +151,10 @@ const RevenueView: React.FC<{
     }, []);
 
     const { displayList } = useRevenueData({
-        rows,
+        rows: activeRows,
         departmentNames,
         sortConfig,
-        prevMonthRows,
+        prevMonthRows: isRealtimeMode ? [] : prevMonthRows,
         departmentWeights,
         deptEmployeeCounts,
         supermarketTarget,
@@ -159,7 +162,8 @@ const RevenueView: React.FC<{
         viewMode,
         exportDeptFilter,
         isActive,
-        bonusData
+        bonusData,
+        isRealtime: isRealtimeMode
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
@@ -230,7 +234,14 @@ const RevenueView: React.FC<{
     // dựng span text-2xl font-black riêng — tránh tiêu đề bị to/nặng bất thường so với chuẩn thiết kế.
     // Vẫn giữ class js-report-title (ép font UTM Avo cho tiêu đề báo cáo, xem styles.css) trên cả
     // 2 span vì subtitle không còn là sibling liền kề của title trong SectionHeader.
-    const cardTitle = <span className="js-report-title">Doanh thu đến ngày {getYesterdayDateString()}</span>;
+    const cardTitle = isRealtimeMode ? (
+        <span className="js-report-title flex items-center gap-2">
+            <span>DOANH THU REALTIME</span>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 font-bold uppercase tracking-wider">Hôm nay</span>
+        </span>
+    ) : (
+        <span className="js-report-title">Doanh thu đến ngày {getYesterdayDateString()}</span>
+    );
     const cardSubtitle = <span className="js-report-title">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>;
 
     if (isActive === false) {
@@ -244,38 +255,56 @@ const RevenueView: React.FC<{
         <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white no-print border-b border-slate-200 gap-3">
                 <div className="flex gap-2 items-center">
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setIsPrevMonthModalOpen(true)}
-                        className={`gap-1.5 ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
-                    >
-                        <ClockIcon className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Cùng kỳ</span>
-                        {prevMonthRaw && (
-                            <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200">
-                                <XIcon className="h-3 w-3" />
-                            </Button>
-                        )}
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setIsShowRemaining(p => !p)}
-                        className={`gap-1.5 ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
-                    >
-                        {/* Trạng thái bật/tắt do Button cha xử lý onClick — dùng span trang trí thay <input type="checkbox">
-                            thật để tránh 1 phần tử form không tương tác trực tiếp được (RULES.md §2.5). */}
-                        <span
-                            aria-hidden="true"
-                            className={`h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors ${isShowRemaining ? 'bg-amber-600 border-amber-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}
+                    {!isRealtimeMode && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setIsPrevMonthModalOpen(true)}
+                            className={`gap-1.5 ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
                         >
-                            {isShowRemaining && <CheckCircleIcon className="h-3 w-3 text-white" />}
-                        </span>
-                        <span>Còn lại</span>
-                    </Button>
+                            <ClockIcon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Cùng kỳ</span>
+                            {prevMonthRaw && (
+                                <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200">
+                                    <XIcon className="h-3 w-3" />
+                                </Button>
+                            )}
+                        </Button>
+                    )}
+                    {!isRealtimeMode && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setIsShowRemaining(p => !p)}
+                            className={`gap-1.5 ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
+                        >
+                            <span
+                                aria-hidden="true"
+                                className={`h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors ${isShowRemaining ? 'bg-amber-600 border-amber-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}
+                            >
+                                {isShowRemaining && <CheckCircleIcon className="h-3 w-3 text-white" />}
+                            </span>
+                            <span>Còn lại</span>
+                        </Button>
+                    )}
                 </div>
                 <div className="flex gap-1.5 items-center">
+                    {/* Nút chuyển chế độ REALTIME tại vị trí khoanh đỏ */}
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsRealtimeMode(p => !p)}
+                        className={`gap-1.5 font-bold transition-all ${
+                            isRealtimeMode
+                                ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/40'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                        title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
+                    >
+                        <span className={`w-2 h-2 rounded-full ${isRealtimeMode ? 'bg-white animate-pulse' : 'bg-amber-500'}`} />
+                        <span>Realtime</span>
+                    </Button>
+                    <div className="h-4 w-px bg-slate-200 mx-0.5" />
                     <Button
                         variant="ghost"
                         size="icon"
@@ -302,8 +331,14 @@ const RevenueView: React.FC<{
             <div ref={cardRef}>
                 <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
                     <div className="px-4 pt-3 pb-1">
-                        <TimeProgressBar />
+                        <TimeProgressBar isRealtime={isRealtimeMode} />
                     </div>
+                    {isRealtimeMode && activeRows.length === 0 && (
+                        <div className="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2">
+                            <AlertTriangleIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>Chưa có dữ liệu Doanh thu Realtime. Vui lòng vào mục <strong>Cập nhật &gt; Cấu hình siêu thị &amp; Nhân viên &gt; Dữ liệu</strong> (ô <strong>REALTIME</strong> của DOANH THU NHÂN VIÊN) để dán dữ liệu.</span>
+                        </div>
+                    )}
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <div className="border border-slate-200 dark:border-slate-700">
