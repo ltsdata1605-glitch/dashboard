@@ -1,5 +1,5 @@
 import { db, auth } from '../firebase';
-import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit } from 'firebase/firestore';
+import { collection, doc, writeBatch, getDocs, query, where, Timestamp, deleteDoc, setDoc, getDoc, limit, orderBy, startAfter, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { Product, InventoryItem, SavedList, InventoryFilters, SavedListItem, StickerEventUserRecord, ManualProductDoc } from '../types';
 import { stickerAdminUpdateUser } from './adminUserService';
 
@@ -322,6 +322,29 @@ const SAVED_LIST_CHUNK_SIZE = 3000;
 // chậm nhất 10 phút mới thấy, chấp nhận được cho 1 danh sách đã lưu.
 const SAVED_LISTS_CACHE_TTL_MS = 10 * 60 * 1000;
 
+// QUOTA FIX mục 3b (2026-09-17): phân trang thay cho 1 query limit(500) cục.
+//
+// Vì sao KHÔNG chỉ đơn giản hạ limit xuống 50: query hiện tại KHÔNG có `orderBy`, nên Firestore
+// trả về theo document ID — mà ID ở đây là ID tự sinh NGẪU NHIÊN của `doc()`, không liên quan gì
+// tới thời gian tạo. Hạ limit khi không có orderBy sẽ ÂM THẦM ẨN danh sách của người dùng; đúng
+// lỗi mà comment cũ trong hàm này ghi là lý do họ đã NÂNG limit lên.
+//
+// Cách làm: sắp theo `createdAt` giảm dần rồi lấy từng trang 50. `createdAt` là chuỗi ISO-8601 nên
+// thứ tự chữ cái TRÙNG với thứ tự thời gian. Chỉ cần index ĐƠN TRƯỜNG (Firestore tự tạo sẵn cho
+// mọi field) — KHÔNG cần composite index, nên không phải tạo/deploy `firestore.indexes.json`
+// (repo hiện không có file đó).
+const SAVED_LISTS_PAGE_SIZE = 50;
+
+/** Trần cứng: GIỮ ĐÚNG bằng limit(500) cũ, để không lần nào trả về ít danh sách hơn trước. */
+const SAVED_LISTS_MAX_DOCS = 500;
+
+/**
+ * Với người chỉ được xem danh sách của CHÍNH MÌNH, một trang có thể bị bộ lọc quyền loại sạch.
+ * Nên tiếp tục lấy trang sau cho tới khi đủ số này, hoặc hết dữ liệu, hoặc chạm trần.
+ * Admin (`userIdentifier` undefined) không bị lọc gì nên luôn dừng ngay sau trang đầu.
+ */
+const SAVED_LISTS_MIN_WANTED = 20;
+
 const savedListsCache = new Map<string, { at: number; lists: SavedList[] }>();
 
 /** Xoá cache để lượt đọc kế tiếp lấy dữ liệu mới. Gọi ngay sau mọi thao tác lưu/xoá danh sách. */
@@ -391,22 +414,17 @@ export const fetchSavedListsFromFirestore = async (
   for (const sId of storeIdsToFetch) {
     const listsRef = collection(db, 'stores', sId, 'savedLists');
     try {
-      // BUG FIX: limit(100) KHÔNG có orderBy khiến Firestore trả về theo thứ tự không đảm bảo mới
-      // nhất (mặc định theo document ID — ở đây là ID tự sinh ngẫu nhiên của doc(), không liên quan
-      // gì tới thời gian tạo) — kho đã tích luỹ trên 100 danh sách thì bản vừa lưu có thể bị rớt khỏi
-      // kết quả dù ghi thành công. Đã thử thêm orderBy('createdAt','desc') nhưng khiến modal load rất
-      // chậm trên thực tế (nghi ngờ do lần đầu Firestore phải build index cho field này trên collection
-      // đã có sẵn nhiều dữ liệu) — bỏ orderBy, thay bằng nâng limit lên rộng rãi + dựa vào sort phía
-      // client đã có sẵn cuối hàm (Array.from(map.values()).sort(...)) để không phụ thuộc index nào.
-      const q = query(listsRef, limit(500));
-      const snapshot = await getDocs(q);
-
       // Lọc theo quyền xem TRƯỚC khi giải mã items — tránh tốn thêm lượt đọc subcollection
       // itemChunks (danh sách lớn đã chunk, xem saveListToFirestore) cho các danh sách sẽ bị lọc
       // bỏ ngay sau đó (vd nhân viên chỉ xem danh sách của chính mình).
-      const filteredDocs = snapshot.docs.filter(doc => {
+      //
+      // CỐ Ý lọc ở CLIENT chứ không dùng `where(...)` ở server: bộ so khớp này mờ (khớp `userId`
+      // HOẶC `authUid`, không phân biệt hoa thường) để không bỏ sót danh sách cũ lưu từ thời chưa
+      // có field `authUid`. Chuyển thành `where` sẽ làm những danh sách di sản đó biến mất, và
+      // `where` + `orderBy` còn cần composite index phải deploy riêng.
+      const canView = (docSnap: QueryDocumentSnapshot<DocumentData>): boolean => {
         if (!userIdentifier) return true; // Admin / SuperAdmin xem toàn bộ danh sách
-        const data = doc.data();
+        const data = docSnap.data();
         const itemUserId = String(data.userId || '').toLowerCase();
         const itemAuthUid = String(data.authUid || '').toLowerCase();
         const targetId = String(userIdentifier || '').toLowerCase();
@@ -418,7 +436,56 @@ export const fetchSavedListsFromFirestore = async (
           (targetUid && itemAuthUid === targetUid) ||
           (targetUid && itemUserId === targetUid)
         );
-      });
+      };
+
+      // QUOTA FIX mục 3b: lấy từng trang 50 theo `createdAt` giảm dần, dừng ngay khi đã đủ dùng.
+      // Admin dừng sau 1 trang (không bị lọc gì) → 50 lượt đọc thay cho 500.
+      //
+      // Có fallback về ĐÚNG hành vi cũ (1 query `limit(500)` không sắp xếp) nếu query có `orderBy`
+      // thất bại: comment cũ trong hàm này ghi lại rằng `orderBy('createdAt','desc')` từng làm
+      // modal rất chậm, nghi do Firestore phải build index lần đầu trên collection đã nhiều dữ
+      // liệu. Có fallback thì kể cả khi index chưa sẵn, tính năng vẫn chạy y như trước.
+      const filteredDocs: QueryDocumentSnapshot<DocumentData>[] = [];
+      let cursor: QueryDocumentSnapshot<DocumentData> | null = null;
+      let scanned = 0;
+      let usedFallback = false;
+
+      while (scanned < SAVED_LISTS_MAX_DOCS) {
+        const pageSize = Math.min(SAVED_LISTS_PAGE_SIZE, SAVED_LISTS_MAX_DOCS - scanned);
+        let pageDocs: QueryDocumentSnapshot<DocumentData>[];
+        try {
+          const q = cursor
+            ? query(listsRef, orderBy('createdAt', 'desc'), startAfter(cursor), limit(pageSize))
+            : query(listsRef, orderBy('createdAt', 'desc'), limit(pageSize));
+          pageDocs = (await getDocs(q)).docs;
+        } catch (pageError) {
+          console.warn(`[SavedLists] Phân trang theo createdAt thất bại, quay về 1 query limit(${SAVED_LISTS_MAX_DOCS}):`, pageError);
+          usedFallback = true;
+          break;
+        }
+
+        scanned += pageDocs.length;
+        filteredDocs.push(...pageDocs.filter(canView));
+
+        // Hết dữ liệu, hoặc đã đủ cho màn hình liệt kê.
+        if (pageDocs.length < pageSize) break;
+        if (filteredDocs.length >= SAVED_LISTS_MIN_WANTED) break;
+
+        // Chặn con trỏ KHÔNG TIẾN: nếu trang sau vẫn bắt đầu từ đúng document cũ thì mọi trang
+        // tiếp theo sẽ lặp lại cùng dữ liệu cho tới khi chạm trần 500 — tốn 500 lượt đọc để lấy
+        // đúng 50 document. Trần cứng vẫn giữ an toàn về chi phí, nhưng dừng ở đây thì rẻ hơn
+        // nhiều. (Bug này lộ ra thật khi viết test: bộ mock đọc sai `startAfter` và tạo đúng vòng
+        // lặp đó — đáng chặn ở code thật thay vì tin API luôn hành xử như mong đợi.)
+        const nextCursor = pageDocs[pageDocs.length - 1];
+        if (cursor && nextCursor.ref.path === cursor.ref.path) break;
+        cursor = nextCursor;
+      }
+
+      if (usedFallback) {
+        filteredDocs.length = 0;
+        const snapshot = await getDocs(query(listsRef, limit(SAVED_LISTS_MAX_DOCS)));
+        filteredDocs.push(...snapshot.docs.filter(canView));
+      }
 
       // BUG FIX: danh sách lớn (vd admin lưu toàn bộ tồn kho chưa lọc) được chunk vào subcollection
       // riêng thay vì nhét thẳng vào field `items` (xem saveListToFirestore — tránh vượt giới hạn

@@ -3730,3 +3730,74 @@ mất. Nên chọn làm ngoài giờ bán hàng, hoặc chạy lại bước 3 n
 **Việc KHÔNG phải của agent:** `firebase login`, deploy rules/functions, sửa
 `firebase-applet-config.json` (CLAUDE.md mục 1.1 đã ghi rõ).
 
+
+---
+
+## ĐÃ LÀM: mục 3b — phân trang "DS đã lưu" (2026-09-17)
+
+**Files sửa:**
+- `features/sticker-event/services/firebaseService.ts` — `fetchSavedListsFromFirestore()` đổi từ
+  1 query `limit(500)` sang **phân trang 50/trang theo `orderBy('createdAt','desc')`**, trần cứng
+  giữ ĐÚNG 500 (`SAVED_LISTS_MAX_DOCS`), dừng sớm khi đã đủ `SAVED_LISTS_MIN_WANTED` (20) hoặc hết
+  dữ liệu. Có **fallback** về đúng hành vi cũ nếu query `orderBy` thất bại, và **chặn con trỏ không
+  tiến**.
+- `tests/unit/sticker-firestore-quota.test.ts` — nâng bộ mock để **tôn trọng thật**
+  `orderBy`/`startAfter`/`limit`/`where` (trước đây bỏ qua hết, nên test phân trang sẽ vô nghĩa);
+  thêm 6 test (tổng 24).
+
+**Vì sao KHÔNG chỉ hạ `limit(500)` → `limit(50)`** (đã nêu ở mục 3, nay xử lý được): query cũ không
+có `orderBy` nên Firestore trả theo document ID — mà ID ở đây là ID tự sinh NGẪU NHIÊN của `doc()`.
+Hạ limit sẽ **âm thầm ẩn danh sách**. Sắp theo `createdAt` (chuỗi ISO-8601 nên thứ tự chữ cái trùng
+thứ tự thời gian) chỉ cần **index đơn trường** — Firestore tự có sẵn, KHÔNG cần
+`firestore.indexes.json` (repo không có file này) và không cần deploy gì.
+
+**Số đo thật (mock đếm, 300 danh sách trong 1 kho, document ID cố ý ngược thứ tự thời gian):**
+
+| Vai trò / tình huống | Trước | Sau |
+|---|---|---|
+| **Admin** (xem mọi danh sách) | **301 lượt đọc** | **51 lượt đọc** (1 trang + 1 query SUPERADMIN) |
+| Admin — đúng thứ tự mới nhất? | ❌ theo document ID ngẫu nhiên | ✅ `createdAt` giảm dần |
+| Nhân viên có danh sách cũ nhất | 301 | **302** |
+| Nhân viên chỉ có 1 danh sách | 301 | **302** |
+| Kho 700 danh sách | 501 (trần) | 501 (trần giữ nguyên) |
+| `orderBy` lỗi (index chưa sẵn) | — | tự quay về hành vi cũ, **không mất tính năng** |
+
+🔴 **GIỚI HẠN PHẢI NÓI RÕ: với NHÂN VIÊN, phân trang KHÔNG tiết kiệm được gì** (thậm chí +1 lượt đọc
+do trang rỗng cuối khi tổng số chia hết cho 50). Nguyên nhân: bộ lọc quyền chạy ở CLIENT nên vẫn
+phải quét cho tới khi tìm thấy danh sách của chính họ. Phần tiết kiệm thật chỉ dành cho Admin —
+nhưng Admin cũng chính là người mở "DS đã lưu" nhiều nhất (họ xem danh sách của cả kho). Con số 302
+đã được ghi **chính xác** vào test (`expect(ops.reads).toBe(302)`), không làm tròn cho đẹp, để lần
+sau không ai tưởng mục này đã giải quyết xong cho mọi vai trò.
+
+**Cách sửa đúng cho nhân viên — CỐ Ý CHƯA LÀM:** lọc ở SERVER bằng
+`where('authUid','==',auth.currentUser.uid)` (chỉ cần index đơn trường, không cần composite nếu
+không kèm `orderBy`). Rủi ro phải kiểm dữ liệu trước mới dám làm: bộ lọc client hiện tại so khớp
+**mờ** — khớp `userId` HOẶC `authUid`, **không phân biệt hoa thường** — để không bỏ sót danh sách
+lưu từ thời chưa có field `authUid`. Đổi sang `where` (so khớp chính xác, phân biệt hoa thường) sẽ
+làm những danh sách di sản đó **biến mất khỏi mắt nhân viên**, đúng lớp lỗi mà cả mục 3 và 3b đang
+tránh. Muốn làm thì trước tiên cần script Admin SDK chỉ-đọc đếm: bao nhiêu document trong
+`stores/*/savedLists` thiếu `authUid`, và có document nào lệch hoa thường giữa `userId` và định danh
+người dùng không.
+
+**`'SUPERADMIN'` vẫn được query cho mọi vai trò — CỐ Ý CHƯA BỎ.** Ở mục 3 tôi ghi đây là quyết định
+nghiệp vụ. Khảo sát thêm: `saveListToFirestore()` ghi vào `storeId || 'SUPERADMIN'`, nên nếu
+`storeId` bị rỗng lúc lưu (cache sessionStorage hỏng/thiếu — chính lớp lỗi mà các comment BUG FIX
+trong file này ghi lại là đã xảy ra thật), danh sách của một nhân viên bình thường VẪN có thể nằm ở
+store `SUPERADMIN` kèm `userId` của họ. Bỏ query đó đi là có thể ẩn danh sách của chính họ. Chi phí
+hiện tại chỉ là 1 lượt đọc tối thiểu khi store rỗng, và cache 10 phút của mục 3 đã xoá chi phí này ở
+các lần mở lại.
+
+**Một bug lộ ra khi viết test (đáng ghi lại):** bộ mock ban đầu đọc `startAfter` sai chỗ
+(`cursor.path` thay vì `cursor.ref.path` — API thật nhận `QueryDocumentSnapshot`), khiến MỌI trang
+trả về cùng trang đầu. Vòng lặp khi đó chạy tới khi chạm trần 500 để lấy đúng 50 document. Trần cứng
+vẫn giữ an toàn về chi phí, nhưng tôi đã thêm **chặn con trỏ không tiến** vào code thật thay vì chỉ
+sửa mock — không nên tin API luôn hành xử như mong đợi khi hậu quả là quét thừa 450 document.
+
+**Kiểm chứng đã chạy:** `npm run test:unit` **491 passed | 1 skipped** (+6 test mới);
+`npm run build` ✓ 10.01s; `npx eslint` trên 2 file: sạch; `npx tsc --noEmit`: 0 lỗi trong file của
+đợt này (tổng vẫn đúng 18 lỗi baseline); `lint:ratchet` vẫn đúng 13 vi phạm baseline.
+
+⚠️ **CHƯA kiểm chứng runtime** (cố ý): database In Sticker đang hết hạn mức ĐỌC, và chính các lần
+chạy Playwright cũng tiêu lượt đọc của nó. Đây là thay đổi thuần về đường đi đọc dữ liệu, đã có
+fallback về hành vi cũ, nên chờ hạn mức hồi rồi mở "DS đã lưu" một lần để xác nhận trực quan là đủ.
+

@@ -11,9 +11,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 interface Ref { path: string }
+interface Constraint {
+    type: 'where' | 'limit' | 'orderBy' | 'startAfter';
+    field?: string;
+    op?: string;
+    value?: unknown;
+    n?: number;
+    dir?: 'asc' | 'desc';
+    cursor?: unknown;
+}
+interface FakeQuery { ref: Ref; constraints: Constraint[] }
 
 const store = new Map<string, Record<string, unknown>>();
-const ops = { reads: 0, writes: 0, deletes: 0, batchCommits: 0 };
+/** Bật để mô phỏng query có `orderBy` thất bại (vd Firestore chưa build xong index). */
+let failOrderByQueries = false;
+/** `queries` = số lần gọi getDocs (số round-trip), khác `reads` = số document bị tính phí. */
+const ops = { reads: 0, writes: 0, deletes: 0, batchCommits: 0, queries: 0 };
 
 const DB = { __isDb: true } as const;
 const isDb = (x: unknown): boolean => !!x && (x as { __isDb?: boolean }).__isDb === true;
@@ -45,11 +58,56 @@ vi.mock('firebase/firestore', () => ({
         const data = store.get(ref.path);
         return { exists: () => data !== undefined, data: () => data, ref };
     },
-    getDocs: async (ref: Ref) => {
-        const docs = [...store.entries()]
+    getDocs: async (target: Ref | FakeQuery) => {
+        // Hỗ trợ cả `getDocs(collectionRef)` và `getDocs(query(ref, ...constraints))`.
+        const isQuery = (t: Ref | FakeQuery): t is FakeQuery => 'constraints' in t;
+        const ref = isQuery(target) ? target.ref : target;
+        const constraints = isQuery(target) ? target.constraints : [];
+
+        let docs = [...store.entries()]
             .filter(([path]) => path.startsWith(`${ref.path}/`) && path.slice(ref.path.length + 1).indexOf('/') === -1)
             .map(([path, data]) => ({ id: path.split('/').pop()!, data: () => data, ref: { path } }));
+
+        for (const c of constraints) {
+            if (c.type === 'where') {
+                docs = docs.filter(d => {
+                    const v = (d.data() as Record<string, unknown>)[c.field!];
+                    return c.op === '==' ? v === c.value : true;
+                });
+            }
+        }
+
+        const orderByC = constraints.find(c => c.type === 'orderBy');
+        if (orderByC && failOrderByQueries) {
+            throw new Error('FAILED_PRECONDITION: The query requires an index.');
+        }
+        if (orderByC) {
+            const f = orderByC.field!;
+            docs.sort((a, b) => {
+                const av = String((a.data() as Record<string, unknown>)[f] ?? '');
+                const bv = String((b.data() as Record<string, unknown>)[f] ?? '');
+                return orderByC.dir === 'desc' ? bv.localeCompare(av) : av.localeCompare(bv);
+            });
+        } else {
+            // Không có orderBy → Firestore trả theo document ID (ID ngẫu nhiên trong thực tế).
+            docs.sort((a, b) => a.id.localeCompare(b.id));
+        }
+
+        const startAfterC = constraints.find(c => c.type === 'startAfter');
+        if (startAfterC) {
+            // `startAfter()` thật nhận một QueryDocumentSnapshot (có `.ref`), KHÔNG phải Ref.
+            // Đọc sai chỗ này khiến mọi trang trả về CÙNG trang đầu — mock tự tạo ra vòng lặp giả.
+            const c = startAfterC.cursor as { ref?: Ref; path?: string };
+            const cursorPath = c.ref?.path ?? c.path;
+            const idx = docs.findIndex(d => d.ref.path === cursorPath);
+            docs = idx >= 0 ? docs.slice(idx + 1) : docs;
+        }
+
+        const limitC = constraints.find(c => c.type === 'limit');
+        if (limitC) docs = docs.slice(0, limitC.n!);
+
         ops.reads += Math.max(1, docs.length); // query rỗng vẫn tính tối thiểu 1 lượt đọc
+        ops.queries += 1;
         return { docs, empty: docs.length === 0, size: docs.length };
     },
     setDoc: async (ref: Ref, data: Record<string, unknown>, options?: { merge?: boolean }) => {
@@ -67,9 +125,11 @@ vi.mock('firebase/firestore', () => ({
     },
     Timestamp: { now: () => ({ toMillis: () => 1_700_000_000_000 }) },
     serverTimestamp: () => ({ __server: true }),
-    query: (ref: Ref) => ref,
-    where: () => ({}),
-    limit: () => ({}),
+    query: (ref: Ref, ...constraints: Constraint[]): FakeQuery => ({ ref, constraints }),
+    where: (field: string, op: string, value: unknown): Constraint => ({ type: 'where', field, op, value }),
+    limit: (n: number): Constraint => ({ type: 'limit', n }),
+    orderBy: (field: string, dir: 'asc' | 'desc' = 'asc'): Constraint => ({ type: 'orderBy', field, dir }),
+    startAfter: (cursor: unknown): Constraint => ({ type: 'startAfter', cursor }),
 }));
 
 const {
@@ -94,7 +154,7 @@ const makeInventory = (count: number) =>
         tongSoLuong: i,
     })) as never[];
 
-const resetOps = () => { ops.reads = 0; ops.writes = 0; ops.deletes = 0; ops.batchCommits = 0; };
+const resetOps = () => { ops.reads = 0; ops.writes = 0; ops.deletes = 0; ops.batchCommits = 0; ops.queries = 0; };
 
 const countStoredChunks = () =>
     [...store.keys()].filter(p => p.startsWith(`${INV_CHUNKS}/chunk_`)).length;
@@ -331,5 +391,125 @@ describe('Hạn mức Firestore — sản phẩm nhập tay (smart-sync, mục 5
         const sync = store.get(SYNC_META) as Record<string, unknown>;
         expect(Object.keys(sync)).toContain('inventoryLastUpdated');
         expect(Object.keys(sync)).toContain('manualProductsLastUpdated');
+    });
+});
+
+
+describe('Hạn mức Firestore — phân trang "DS đã lưu" (mục 3b)', () => {
+    const LISTS = `stores/${STORE_ID}/savedLists`;
+    const TOTAL = 300;
+
+    /**
+     * 300 danh sách: `old_*` (tháng 1, cũ nhất) do nhân viên nv_old tạo, `new_*` (tháng 9, mới nhất)
+     * do admin tạo. Document ID cố ý KHÔNG theo thứ tự thời gian — giống ID ngẫu nhiên của `doc()`
+     * trong thực tế, để thấy rõ vì sao hạ limit mà không có orderBy là sai.
+     */
+    const seedManyLists = () => {
+        for (let i = 0; i < TOTAL; i++) {
+            const isOld = i < 10;                       // 10 danh sách cũ nhất thuộc nv_old
+            const month = isOld ? '01' : '09';
+            const day = String((i % 28) + 1).padStart(2, '0');
+            const id = `zz${String(TOTAL - i).padStart(4, '0')}`; // ID ngược so với thời gian
+            store.set(`${LISTS}/${id}`, {
+                id,
+                name: `DS ${i}`,
+                userId: isOld ? 'nv_old' : 'admin1',
+                authUid: isOld ? 'uid_nv_old' : 'uid_admin1',
+                storeId: STORE_ID,
+                createdAt: `2026-${month}-${day}T0${i % 10}:00:00.000Z`,
+                totalItems: 3,
+                items: JSON.stringify([{ msp: 'A' }]),
+            });
+        }
+    };
+
+    beforeEach(() => {
+        store.clear(); resetOps(); autoId = 0; failOrderByQueries = false;
+        invalidateSavedListsCache();
+        seedManyLists();
+    });
+
+    it('Admin: 1 trang 50 là đủ (trước bản sửa phải đọc cả 300)', async () => {
+        resetOps();
+        const lists = await fetchSavedListsFromFirestore(STORE_ID);
+
+        // 50 doc ở store của user + 1 lượt tối thiểu cho query store 'SUPERADMIN' (rỗng).
+        expect(ops.reads).toBe(51);
+        expect(lists).toHaveLength(50);
+        expect(ops.queries).toBe(2); // 1 trang + 1 query SUPERADMIN, không quét thêm
+    });
+
+    it('trả về đúng những danh sách MỚI NHẤT, không phải 50 bản ngẫu nhiên', async () => {
+        const lists = await fetchSavedListsFromFirestore(STORE_ID);
+
+        // Toàn bộ phải là danh sách tháng 9; không lẫn bản tháng 1 (cũ nhất).
+        expect(lists.every(l => l.createdAt.startsWith('2026-09'))).toBe(true);
+        // Và đã sắp giảm dần theo thời gian.
+        const times = lists.map(l => new Date(l.createdAt).getTime());
+        expect([...times].sort((a, b) => b - a)).toEqual(times);
+    });
+
+    it('Nhân viên có danh sách CŨ NHẤT: vẫn tìm thấy, không bị ẩn (trần 500 giữ nguyên)', async () => {
+        // Đây là lý do KHÔNG thể chỉ hạ limit xuống 50: 10 danh sách của nv_old là cũ nhất trong
+        // 300 bản, nằm ở tận trang cuối. Phải quét tiếp cho tới khi tìm được.
+        resetOps();
+        const lists = await fetchSavedListsFromFirestore(STORE_ID, 'nv_old');
+
+        expect(lists).toHaveLength(10);
+        expect(lists.every(l => l.userId === 'nv_old')).toBe(true);
+
+        // GHI LẠI ĐÚNG SỰ THẬT, không làm tròn cho đẹp: 302 lượt đọc = 300 document (6 trang × 50)
+        // + 1 lượt tối thiểu cho trang rỗng thứ 7 + 1 cho query store 'SUPERADMIN'. Bản cũ tốn 301.
+        // Tức với NHÂN VIÊN, phân trang KHÔNG tiết kiệm được gì — vì bộ lọc quyền chạy ở client nên
+        // vẫn phải quét tới khi tìm thấy. Phần tiết kiệm thật chỉ dành cho Admin (xem test đầu
+        // describe này: 300 → 51). Muốn tiết kiệm cho cả nhân viên thì phải lọc ở SERVER
+        // (`where('authUid','==',uid)`) — xem implementation_plan.md mục 3b để biết vì sao chưa làm.
+        expect(ops.reads).toBe(302);
+    });
+
+    it('Nhân viên có danh sách MỚI: dừng sớm, không quét hết kho', async () => {
+        store.set(`${LISTS}/zz9999`, {
+            id: 'zz9999', name: 'DS mới của nv_new', userId: 'nv_new', authUid: 'uid_nv_new',
+            storeId: STORE_ID, createdAt: '2026-12-31T23:00:00.000Z', totalItems: 1,
+            items: JSON.stringify([{ msp: 'Z' }]),
+        });
+        resetOps();
+
+        const lists = await fetchSavedListsFromFirestore(STORE_ID, 'nv_new');
+
+        expect(lists).toHaveLength(1);
+        expect(lists[0].name).toBe('DS mới của nv_new');
+        // Nhân viên chỉ có 1 danh sách → chưa đủ SAVED_LISTS_MIN_WANTED (20) nên vẫn quét hết kho.
+        // Đây là cùng giới hạn nêu ở test trên, ghi lại để không ai tưởng phân trang đã giải quyết
+        // xong cho mọi vai trò.
+        expect(ops.reads).toBe(302);
+    });
+
+    it('KHÔNG BAO GIỜ đọc quá trần 500 document mỗi store', async () => {
+        for (let i = 0; i < 400; i++) {
+            const id = `yy${String(i).padStart(4, '0')}`;
+            store.set(`${LISTS}/${id}`, {
+                id, name: `DS phụ ${i}`, userId: 'ai_khac', authUid: 'uid_ai_khac',
+                storeId: STORE_ID, createdAt: `2026-05-01T00:00:00.000Z`, totalItems: 1,
+                items: '[]',
+            });
+        }
+        resetOps();
+
+        await fetchSavedListsFromFirestore(STORE_ID, 'khong_ton_tai');
+
+        // 700 document trong kho, nhưng chỉ được quét tối đa 500 + 1 lượt cho store SUPERADMIN.
+        expect(ops.reads).toBeLessThanOrEqual(501);
+    });
+
+    it('orderBy thất bại (index chưa sẵn) → quay về ĐÚNG hành vi cũ, không mất tính năng', async () => {
+        failOrderByQueries = true;
+        resetOps();
+
+        const lists = await fetchSavedListsFromFirestore(STORE_ID, 'nv_old');
+
+        // Vẫn tìm được đủ danh sách của nhân viên đó qua nhánh fallback limit(500).
+        expect(lists).toHaveLength(10);
+        expect(lists.every(l => l.userId === 'nv_old')).toBe(true);
     });
 });
