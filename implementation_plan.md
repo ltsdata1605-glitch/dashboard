@@ -3175,3 +3175,111 @@ cột. Phải xác minh từng chỗ, cấm thay mù bằng sed.
 - `npm run check`
 - `tests/e2e/table-rules.spec.ts` — đường kẻ dọc 4 bảng dày
 - `SNAPSHOT_LABEL=after SNAPSHOT_COMPARE=1` trên `ui-baseline.spec.ts` — 10 màn, số liệu KHÔNG được đổi
+
+---
+
+## Audit hạn mức đọc/ghi Firestore (gói Spark miễn phí) — 2026-09-17
+
+**Bối cảnh**: In Sticker báo "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày"
+(`features/sticker-event/hooks/useStickerEventDb.ts:218`, bắt lỗi `Quota exceeded`).
+Hạn mức Spark: **50.000 đọc / 20.000 ghi / 20.000 xoá / ngày**, reset 0h giờ Thái Bình Dương.
+
+### Phát hiện hạ tầng (quan trọng nhất, phải xác nhận trước khi tối ưu)
+
+Cả 4 khu vực dùng **CÙNG 1 project Firebase `dashboa-7e20b`**:
+
+| Khu vực | projectId | database |
+|---|---|---|
+| Root (`services/firebase.ts:10,19`) | `dashboa-7e20b` | `(default)` |
+| phan-ca (`features/phan-ca/services/firebase.ts:12`) | `dashboa-7e20b` | `(default)` |
+| bi-dashboard (dùng `services/firebase.ts` gốc) | `dashboa-7e20b` | `(default)` |
+| sticker-event (`firebase-applet-config.json`) | `dashboa-7e20b` | `ai-studio-16672ec9-…` |
+
+⚠️ CLAUDE.md mục 1.1 ghi "sticker-event dùng Firebase project riêng" — **SAI**: chỉ *database* riêng,
+project thì dùng chung. Hạn mức miễn phí tính theo project, nên tải của Phân Tích / Report BI /
+Phân Ca **cộng dồn** vào cùng bể với In Sticker. Ngoài ra Firebase ghi rõ gói miễn phí chỉ áp cho
+database `(default)` — cần mở Console → Firestore → Usage để xác nhận database/loại thao tác nào
+thực sự hết hạn mức TRƯỚC khi tối ưu, tránh tối ưu sai chỗ.
+
+### A. Nguồn tiêu thụ GHI (writes/deletes)
+
+**A1. `saveUserState` ghi Firestore theo MỌI thao tác người dùng — thủ phạm số 1**
+`features/sticker-event/hooks/useStickerEventState.ts:265-309`
+- `useEffect` phụ thuộc `[displayedProducts, inventoryFilters]`, debounce 1s → **mỗi** lần tick chọn
+  (`handleToggleSelect`), **mỗi** lần bấm +/- (`handleQuantityChange`), **mỗi** ký tự gõ vào ô số
+  lượng (`handleSetQuantity`), **mỗi** lần đổi bộ lọc = 1 document write.
+- Thêm `beforeunload` + `visibilitychange` flush **KHÔNG debounce** → mỗi lần chuyển tab = 1 write nữa.
+- Ước lượng: 1 phiên chọn sticker 1 giờ ≈ 200-500 writes/người. 5 nhân viên ≈ 1.000-2.500 writes/ngày.
+- Đây chỉ là tiện ích khôi phục phiên giữa các thiết bị — không cần realtime từng thao tác.
+
+**A2. `clearStoreDataOnFirestore` phát 50 delete mỗi lần + 3 chỗ gọi SAI tên collection**
+`features/sticker-event/services/firebaseService.ts:175-189`
+- Luôn phát 50 lệnh delete `chunk_0..chunk_49` bất kể thực tế chỉ có ~10 chunk.
+- Gọi sai tên collection (tên thật là `productChunks`/`inventoryChunks`):
+  - `features/sticker-event/hooks/useStickerEventFile.ts:91` → `'products'`
+  - `features/sticker-event/hooks/useStickerEventFile.ts:217` → `'inventory'`
+  - `features/sticker-event/hooks/useStickerEventDb.ts:323-324` → cả `'products'` và `'inventory'`
+- → Mỗi lần upload Tồn kho: 50 delete vào collection KHÔNG TỒN TẠI + 50 delete thật = 100 lệnh xoá
+  cho ~10 document cần xoá.
+- → **Kèm bug thật**: `executeClearAll` báo "Đã xóa toàn bộ dữ liệu tồn kho và giá" nhưng KHÔNG xoá
+  được chunk nào trên Firestore. Lần mở app sau, local rỗng → smart-sync tải lại toàn bộ → tốn
+  thêm reads. Người dùng tưởng đã dọn sạch.
+- Comment trong code khẳng định "delete trên doc không tồn tại là no-op (no cost)" — **không có gì
+  bảo đảm** điều đó; Firestore tính phí theo lệnh xoá. Cách chắc chắn: lưu `chunkCount` vào
+  `metadata` rồi chỉ xoá đúng số chunk đã ghi.
+
+**A3. Presence ping 5 phút/người (app gốc)** — `hooks/useSystemTraffic.ts:88`
+- 12 writes/giờ/người → ~96 writes/ngày làm việc/người. 20 người ≈ **1.900 writes/ngày** chỉ để hiện
+  "đang online". Đã có tạm dừng khi tab ẩn (tốt) nhưng chu kỳ vẫn dày.
+
+**A4. Mỗi lần ghi khoá nặng kèm 1 lượt đọc ăn theo** — `services/firestoreService.ts:381, 394`
+- `getDocs(chunksRef)` dọn chunk cũ chạy sau **mọi** lần ghi, kể cả khi dữ liệu không chunk và
+  subcollection rỗng (query rỗng vẫn tính tối thiểu 1 read).
+
+**A5. `deleteSavedListFromFirestore`** — `firebaseService.ts:398-404`: 50 delete + 1 mỗi lần xoá 1
+danh sách.
+
+### B. Nguồn tiêu thụ ĐỌC (reads)
+
+**B1. `fetchSavedListsFromFirestore` — thủ phạm số 1 về đọc**
+`features/sticker-event/services/firebaseService.ts:289-386`
+- `limit(500)` (không `orderBy`) chạy cho **2 store**: `storeId` + `'SUPERADMIN'` → tối đa
+  **1.000 document reads MỖI LẦN** mở "DS đã lưu".
+- Không cache, gọi lại mỗi lần: `SavedListsModal.tsx:31-33` (`useEffect [storeId]` — mỗi lần mount)
+  và `useStickerPrinterData.ts:1085-1113` (`toggleShowSavedLists` — mỗi lần bật panel).
+- Còn tải luôn `items` đầy đủ của MỌI danh sách + `getDocs(itemChunks)` cho từng danh sách đã chunk,
+  dù màn hình chỉ cần tên/ngày/số lượng.
+- Mở panel ~50 lần/ngày là hết 100% hạn mức đọc.
+
+**B2. `fetchManualProducts` `limit(200)` mỗi lần mở app, KHÔNG có smart-sync timestamp**
+`features/sticker-event/hooks/useStickerEventDb.ts:179` → tối đa 200 reads × số lần mở app × số người.
+
+**B3. `listManagedUsers('pending')` bị poll 45s bởi 2 hook song song**
+`components/layout/NotificationDropdown.tsx:26,155` + `hooks/usePendingApprovalCount.ts:10,45`
+- 2 × 80 = **160 lượt/giờ** cho mỗi admin/manager đang mở tab, mỗi lượt đọc toàn bộ user `pending`.
+- Với manager, `functions/src/admin.ts:146,157-163` đọc **TOÀN CỤC** rồi mới lọc Kho ở bước sau →
+  đọc cả user của Kho khác.
+
+**B4. Lỗ smart-sync** — `useStickerEventDb.ts:145-147`:
+`shouldFetchInventory = firestoreLatestInv > localLatestInv || localInventory.length === 0`
+→ kho chưa có dữ liệu thì MỌI phiên đều `getDocs` cả collection chunk (kết hợp với bug A2 càng nặng).
+
+**B5. `fetchOnlineUsers`** (`useSystemTraffic.ts:69-73`): query `users where lastActive >=` mỗi 10
+phút cho admin — đọc mọi user hoạt động trong 15 phút.
+
+### Kế hoạch giảm tải (xếp theo lợi ích/rủi ro)
+
+| # | Việc | Giảm được | Rủi ro |
+|---|---|---|---|
+| 1 | Sửa 3 chỗ gọi sai tên collection ở A2 + lưu/đọc `chunkCount` thay vì xoá mù 50 doc | ~90 lệnh xoá mỗi lần upload; sửa luôn bug "Xóa toàn bộ" không xoá được cloud | Rất thấp |
+| 2 | `saveUserState`: nâng debounce 1s → 15-30s, bỏ flush ở `visibilitychange`, chỉ flush `beforeunload`, và **chỉ ghi khi nội dung thực sự khác** lần ghi trước (so sánh hash/JSON) | 90-95% writes của In Sticker | Thấp (mất đồng bộ phiên tức thời giữa thiết bị) |
+| 3 | `fetchSavedListsFromFirestore`: bỏ `items` khỏi lượt liệt kê (chỉ tải khi mở 1 danh sách), hạ `limit(500)`→`limit(50)`, bỏ query store `'SUPERADMIN'` khi user không phải superadmin, cache kết quả trong phiên (TTL ~5 phút) | 90%+ reads của In Sticker | Trung bình (phải sửa cả `SavedListsModal` + `useStickerPrinterData` vì đang dùng ngay `c.items`) |
+| 4 | Gộp 2 hook poll `listManagedUsers('pending')` thành 1 nguồn dùng chung + nâng chu kỳ 45s → 120s | 50-80% reads polling của app gốc | Thấp |
+| 5 | `fetchManualProducts`: thêm timestamp vào `metadata/sync` để smart-sync như products/inventory | 200 reads mỗi lần mở app | Thấp |
+| 6 | Presence ping 5 phút → 15 phút; `fetchOnlineUsers` dùng `getCountFromServer` (1 read thay vì N) | ~1.300 writes/ngày + reads của admin | Thấp |
+| 7 | Bỏ `getDocs(chunksRef)` dọn chunk sau mỗi lần ghi không-chunk; dựa vào `chunkCount` đã lưu | 1 read/lần ghi khoá nặng | Thấp |
+| 8 | Sửa CLAUDE.md mục 1.1: sticker-event dùng **database riêng, project CHUNG** | Không giảm tải, nhưng chặn sai lầm audit về sau | Không |
+
+**Việc KHÔNG làm trong đợt này** (ghi lại để không mất): chuyển products/inventory sang Firebase
+Storage (1 file JSON = 0 doc read) — đúng về mặt hạn mức nhưng đổi kiến trúc lưu trữ, cần đợt riêng.
+
