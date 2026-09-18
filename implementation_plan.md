@@ -4442,3 +4442,41 @@ theo CLAUDE.md, cần ghi nhận vào baseline — thao tác này vẫn đang b�
 **Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped** (+12 test mới);
 `build` ✓ 8.23s; `eslint` 0 error.
 
+
+### Dọn nốt màu sai chuẩn ở Check Thưởng — `nonSemanticColor` về 0 TOÀN DỰ ÁN (2026-09-18)
+
+Chủ dự án đã commit xong việc của họ nên khu vực này chạm được (3 file đã "nguội" 2,5 giờ).
+
+**Phát hiện quan trọng khi đọc code: có MÃ HEX CỨNG trong `style`** — `#f3e8ff`, `#ccfbf1`,
+`#99f6e4`… **47 mã hex** trong các component Check Thưởng. Ratchet chỉ quét class Tailwind nên
+**không thấy chúng**. Hệ quả bắt buộc: khi đổi class purple/teal thì **phải đổi hex cùng lúc**, vì
+`style` đè lên `className` — đổi mỗi class thì màu hiển thị KHÔNG khớp class, và ratchet vẫn báo
+sạch một cách sai.
+
+**Cấu trúc màu của `CheckThuongChannelTopGrid.tsx`:** 4 kênh có tên cố định (TGDD, DML, DMM,
+DMS/DMX) + mảng `pastelThemes` 4 phần tử làm màu dự phòng xoay vòng cho kênh lạ.
+
+**Ánh xạ đã chọn (đo trước — file này đã dùng 7 họ, thiếu đúng indigo):**
+
+| Từ | Sang | Lý do |
+|---|---|---|
+| `purple` (kênh DMM) | `indigo` | họ thứ 6 của bảng semantic và là họ DUY NHẤT chưa dùng trong file → không đụng kênh nào. Đổi cùng ở `CheckThuongTopTable.tsx` vì cùng kênh DMM thì phải cùng màu ở mọi bảng |
+| `teal` (mảng dự phòng) | `emerald` **tầng đậm** | file dùng 7 kênh mà bảng semantic chỉ có 6 họ → kênh thứ 7 dùng tầng sắc độ thứ 2, đúng CLAUDE.md mục 2. Sắc độ 200/300/400 để tách khỏi kênh emerald (100/300/700) |
+| `via-yellow-400` | `via-amber-400` | gradient amber liền mạch 500 → 400 → 300 |
+
+**ĐÃ XEM THẬT** (dựng HTML tĩnh từ chính các chuỗi class trong source + CSS đã build, rồi chụp):
+- `indigo` khác hẳn `sky` → kênh DMM vẫn phân biệt được.
+- `emerald-200` (kênh dự phòng) khác rõ `emerald-100` (kênh DMS/DMX) → tầng đậm hoạt động.
+
+**Ghi nhận một vấn đề CÓ SẴN, không phải do đợt này:** mảng `pastelThemes` dùng lại `amber` và
+`sky` trùng với 2 kênh có tên cố định, nên 2 kênh lạ khác nhau có thể hiện cùng màu với TGDD/DML.
+Chỉ ảnh hưởng kênh không nằm trong 4 mã đã biết. Để lại, ghi ra đây để không quên.
+
+### 🎯 CỘT MỐC: `nonSemanticColor = 0` trên TOÀN DỰ ÁN
+
+Ratchet còn **13 nhóm, TẤT CẢ là nợ indigo** (hợp lệ theo CLAUDE.md mục 2). Không còn một chỗ nào
+dùng màu ngoài bảng đã duyệt.
+
+**Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped**; `build` ✓ 8.06s;
+`eslint` 0 error (5 warning có sẵn về `<button>` thô); `lint:ratchet` nonSemanticColor **0**.
+

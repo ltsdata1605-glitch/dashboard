@@ -197,7 +197,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                 {/* TIÊU ĐỀ TRANG */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 mb-3.5">
                     <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 text-slate-950 shadow-xs shadow-amber-500/20 shrink-0">
+                        <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 shadow-xs shadow-amber-500/20 shrink-0">
                             <Trophy className="w-5 h-5" />
                         </div>
                         <div>

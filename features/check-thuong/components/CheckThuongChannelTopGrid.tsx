@@ -57,15 +57,19 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
         }
         if (ch.includes('DMM')) {
             return {
-                headerBg: 'bg-purple-100/90 dark:bg-purple-950/60',
-                headerStyle: { backgroundColor: '#f3e8ff' },
-                headerBorder: 'border-purple-200/90 dark:border-purple-900/60',
-                cardBorder: 'border-purple-200/90 dark:border-purple-900/50',
-                badge: 'bg-purple-200 text-purple-900 border-purple-300 dark:bg-purple-900/70 dark:text-purple-200 dark:border-purple-700',
-                badgeStyle: { backgroundColor: '#e9d8fd', color: '#7e22ce', borderColor: '#d8b4fe' },
-                title: 'text-purple-950 dark:text-purple-200',
-                button: 'text-purple-800 dark:text-purple-300 bg-white/80 hover:bg-white border-purple-300/80',
-                icon: 'text-purple-700 dark:text-purple-400'
+                // indigo — trước là `purple` (ngoài bảng đã duyệt). indigo là họ thứ 6 của bảng
+                // semantic và là họ DUY NHẤT chưa dùng trong file này, nên không đụng kênh nào.
+                // Mã hex phải đổi cùng lúc: `style` đè lên class, để nguyên là màu hiển thị
+                // KHÔNG khớp class (và ratchet không thấy hex nên sẽ báo sạch một cách sai).
+                headerBg: 'bg-indigo-100/90 dark:bg-indigo-950/60',
+                headerStyle: { backgroundColor: '#e0e7ff' },
+                headerBorder: 'border-indigo-200/90 dark:border-indigo-900/60',
+                cardBorder: 'border-indigo-200/90 dark:border-indigo-900/50',
+                badge: 'bg-indigo-200 text-indigo-900 border-indigo-300 dark:bg-indigo-900/70 dark:text-indigo-200 dark:border-indigo-700',
+                badgeStyle: { backgroundColor: '#c7d2fe', color: '#4338ca', borderColor: '#a5b4fc' },
+                title: 'text-indigo-950 dark:text-indigo-200',
+                button: 'text-indigo-800 dark:text-indigo-300 bg-white/80 hover:bg-white border-indigo-300/80',
+                icon: 'text-indigo-700 dark:text-indigo-400'
             };
         }
         if (ch.includes('DMS') || ch.includes('DMX')) {
@@ -118,15 +122,19 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                 icon: 'text-rose-700 dark:text-rose-400'
             },
             {
-                headerBg: 'bg-teal-100/90 dark:bg-teal-950/60',
-                headerStyle: { backgroundColor: '#ccfbf1' },
-                headerBorder: 'border-teal-200/80 dark:border-teal-900/60',
-                cardBorder: 'border-teal-200/80 dark:border-teal-900/60',
-                badge: 'bg-teal-200 text-teal-900 border-teal-300 dark:bg-teal-900/70 dark:text-teal-200 dark:border-teal-700',
-                badgeStyle: { backgroundColor: '#99f6e4', color: '#115e59', borderColor: '#5eead4' },
-                title: 'text-teal-950 dark:text-teal-200',
-                button: 'text-teal-800 dark:text-teal-300 bg-white/80 hover:bg-white border-teal-300/80',
-                icon: 'text-teal-700 dark:text-teal-400'
+                // emerald TẦNG ĐẬM — trước là `teal` (ngoài bảng đã duyệt). File này dùng 7 kênh
+                // mà bảng semantic chỉ có 6 họ, nên kênh thứ 7 dùng tầng sắc độ thứ 2, đúng
+                // pattern CLAUDE.md mục 2. Cố ý đậm hơn kênh emerald (sắc độ 100/300/700) để 2
+                // kênh vẫn phân biệt được khi liếc nhanh.
+                headerBg: 'bg-emerald-200/90 dark:bg-emerald-900/60',
+                headerStyle: { backgroundColor: '#a7f3d0' },
+                headerBorder: 'border-emerald-300/80 dark:border-emerald-800/60',
+                cardBorder: 'border-emerald-300/80 dark:border-emerald-800/60',
+                badge: 'bg-emerald-300 text-emerald-950 border-emerald-400 dark:bg-emerald-800/70 dark:text-emerald-100 dark:border-emerald-600',
+                badgeStyle: { backgroundColor: '#34d399', color: '#022c22', borderColor: '#10b981' },
+                title: 'text-emerald-950 dark:text-emerald-100',
+                button: 'text-emerald-900 dark:text-emerald-200 bg-white/80 hover:bg-white border-emerald-400/80',
+                icon: 'text-emerald-800 dark:text-emerald-300'
             }
         ];
         return pastelThemes[index % pastelThemes.length];

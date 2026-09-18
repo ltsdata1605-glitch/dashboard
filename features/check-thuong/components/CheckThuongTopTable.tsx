@@ -100,8 +100,10 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
         }
         if (ch.includes('DMM')) {
             return {
-                className: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/80 dark:text-purple-200 dark:border-purple-700',
-                style: { backgroundColor: '#f3e8ff', color: '#7e22ce', borderColor: '#d8b4fe' }
+                // indigo — khớp với kênh DMM ở CheckThuongChannelTopGrid.tsx (cùng một kênh thì
+                // phải cùng màu ở mọi bảng). Đổi cả mã hex vì `style` đè lên class.
+                className: 'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/80 dark:text-indigo-200 dark:border-indigo-700',
+                style: { backgroundColor: '#e0e7ff', color: '#4338ca', borderColor: '#a5b4fc' }
             };
         }
         if (ch.includes('DMS') || ch.includes('DMX')) {
