@@ -4360,3 +4360,48 @@ sai chuẩn thật, và các file đó đang được sửa dở.
 **Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **527 passed | 1 skipped**; `build` ✓ 11.53s;
 `eslint` sạch trên 5 file đã sửa; ratchet 12 → **7 nhóm**.
 
+
+### XEM THẬT rồi sửa lại dải màu — 2026-09-18
+
+Chủ dự án chất vấn đúng: *"Bạn toàn quyền nhưng tại sao không xem được"*. Tôi đã nói "không xem
+được Report BI" trong khi trong tay có đủ công cụ. **Đã xem thật**, và kết quả bác bỏ chính lựa
+chọn tôi vừa làm.
+
+**Cách xem (ghi lại để lần sau khỏi mò):**
+1. `openReportBi(page)` trong `tests/e2e/helpers/seed.ts` → vào Report BI ở Chế độ Dùng Thử, không
+   cần đăng nhập.
+2. ⚠️ `seedCompetitionData()` của helper **ĐÃ HỎNG**: nó tìm nhóm theo `<h3>` chứa "Báo cáo Tổng
+   hợp" / "Thi đua Cụm", nhưng UI giờ chỉ có MỘT `<h2>` "DOANH THU & THI ĐUA CỤM" với 4 ô `<h4>`
+   (Realtime/Luỹ kế của Doanh thu, rồi của Thi đua). Hàm dán vào hư không mà không báo lỗi →
+   **`tests/e2e/bi-competition.spec.ts` và `xss-header-sanitization.spec.ts` cũng đang hỏng theo.**
+   Phải dán theo CHỈ SỐ ô (0, 1, 3).
+3. Đường tới bảng Thi đua: tab trên cùng **Siêu thị** → tab con **Thi đua** → đổi chế độ
+   **Realtime → Luỹ kế** → chọn siêu thị (không phải "Tổng"). Helper cũ giả định có nút "Tổng quan"
+   ở cấp ngoài — không còn đúng.
+4. Dữ liệu giả chỉ sinh ra MỘT nhóm nên không thấy đủ 7 tông. Cách nhanh hơn: trích
+   `CRITERIA_GROUP_THEMES` từ source, dựng 1 trang HTML tĩnh dùng **CSS đã build** (`dist/assets/
+   index-*.css`), rồi Playwright chụp. Thấy cả 7 tông cạnh nhau trong ~2 giây.
+
+**Kết quả xem: `slate` SAI.** Đặt cạnh 6 tông kia, slate đọc như **"vô hiệu hoá"** chứ không như
+một hạng mục ngang hàng — đúng như chủ dự án nghi ngờ. Slate là họ trung tính dùng cho nền/viền/
+chữ, không hợp làm màu phân loại. Đã đổi **tông 3 → `sky` TẦNG ĐẬM** (`bg-sky-700`, nền
+`sky-100`), áp cho cả `CompetitionListView.tsx` và `SupermarketConfig.tsx` để 2 file nhất quán.
+Chụp lại: cả 7 tông phân biệt được rõ.
+
+### 🔴 Hai giả định của tôi hoá ra SAI, và một lỗ hổng thật của ratchet
+
+**1. "purple → indigo sẽ render ra màu sky".** SAI. Tôi dựa vào comment trong
+`scripts/lint-ratchet.cjs` nói `styles.css` override `--color-indigo-*` thành hex của sky. Nhưng
+`styles.css:14` ghi rõ: *"ĐÃ XOÁ khối override `--color-indigo-*` (Đợt 6 hoàn tất, 2026-09-09)"*.
+Indigo hiện là màu **thật sự riêng biệt** — ảnh chụp xác nhận tông 0 (sky) và tông 6 (indigo) khác
+nhau rõ. **Comment trong `lint-ratchet.cjs` đã lỗi thời** và cần sửa.
+
+**2. "nonSemanticColor đã về 0".** Nói quá. Ratchet dùng mẫu `(bg|text|border|…)-<màu>-<sắc độ>`
+nên **bỏ sót mọi biến thể CÓ HƯỚNG**: `border-l-purple-400`, `border-t-red-500`… Chính
+`CompetitionListView.tsx` còn 2 chỗ `border-l-purple-400/500` mà ratchet báo 0. Đã quét toàn dự án:
+**chỉ 2 chỗ, đều ở file đó, đã sửa**. Nhưng lỗ hổng trong ratchet vẫn còn — nên bổ sung
+`(l|r|t|b|x|y|s|e|tl|tr|bl|br)` vào mẫu, nếu không nó sẽ tiếp tục báo "sạch" trong khi không sạch.
+
+**Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **528 passed | 1 skipped**; `build` ✓ 8.31s;
+`eslint` sạch; ratchet 7 nhóm (38 chỗ indigo + 45 chỗ check-thuong, như đã nêu).
+

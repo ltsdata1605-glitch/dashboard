@@ -56,13 +56,17 @@ export const CRITERIA_GROUP_THEMES: GroupTheme[] = [
         border: 'border-t border-b border-amber-200/80 dark:border-amber-800/60 border-l-[3px] border-l-amber-400 dark:border-l-amber-500',
     },
     {
-        // 3: Purple (Gia dụng / CE & GD / CE)
-        square: 'bg-slate-500 shadow-xs',
-        bgRow: 'bg-slate-50/85 dark:bg-slate-950/35',
-        label: 'text-slate-700/90 dark:text-slate-400',
-        value: 'text-slate-950 dark:text-slate-100',
-        badge: 'bg-white/90 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 border-slate-300/80 dark:border-slate-700',
-        border: 'border-t border-b border-slate-200/80 dark:border-slate-800/60 border-l-[3px] border-l-purple-400 dark:border-l-purple-500',
+        // 3: Sky TẦNG ĐẬM (Gia dụng / CE & GD / CE)
+        // Trước là `purple` (ngoài bảng đã duyệt). Đã thử `slate`, nhưng CHỤP MÀN HÌNH ĐỐI CHIẾU 7
+        // tông cạnh nhau cho thấy slate đọc như "vô hiệu hoá" chứ không như một hạng mục ngang
+        // hàng — slate là họ trung tính dùng cho nền/viền/chữ nên không hợp làm màu phân loại.
+        // Dùng tầng sắc độ thứ 2 của sky, đúng pattern CLAUDE.md mục 2.
+        square: 'bg-sky-700 shadow-xs',
+        bgRow: 'bg-sky-100/85 dark:bg-sky-900/35',
+        label: 'text-sky-900/90 dark:text-sky-300',
+        value: 'text-sky-950 dark:text-sky-50',
+        badge: 'bg-white/90 dark:bg-sky-800/60 text-sky-900 dark:text-sky-100 border-sky-400/80 dark:border-sky-600',
+        border: 'border-t border-b border-sky-300/80 dark:border-sky-700/60 border-l-[3px] border-l-sky-600 dark:border-l-sky-400',
     },
     {
         // 4: Rose (Điện tử / Điện lạnh / SLLK)
@@ -75,7 +79,7 @@ export const CRITERIA_GROUP_THEMES: GroupTheme[] = [
     },
     {
         // 5: Emerald TẦNG ĐẬM (Viễn thông / Phụ kiện / IT / ICT)
-        // Trước đây là `teal` — màu NGOÀI bảng đã duyệt. Sau khi vị trí 3 đổi purple→slate thì cả
+        // Trước đây là `teal` — màu NGOÀI bảng đã duyệt. Sau khi vị trí 3 chuyển sang sky tầng đậm thì cả
         // 6 họ semantic đã dùng hết, nên vị trí thứ 7 dùng tầng sắc độ thứ 2 của emerald, đúng
         // pattern CLAUDE.md mục 2 ("6 họ semantic x 2 tầng sắc độ"). Cố ý đậm hơn tông emerald
         // chuẩn ở vị trí 1 để vẫn phân biệt được khi liếc nhanh.

@@ -67,10 +67,14 @@ const CRITERIA_GROUP_PALETTES = [
         badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
     },
     {
-        square: 'bg-slate-500 shadow-xs',
-        label: 'text-slate-700 dark:text-slate-400',
-        value: 'text-slate-950 dark:text-slate-100',
-        badge: 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950/60 dark:text-slate-300 dark:border-slate-800',
+        // Sky TẦNG ĐẬM — trước là `purple` (ngoài bảng đã duyệt). Đã thử `slate`, nhưng chụp màn
+        // hình đối chiếu 7 tông cạnh nhau cho thấy slate đọc như "vô hiệu hoá" chứ không như một
+        // hạng mục ngang hàng (slate là họ trung tính của nền/viền/chữ). Dùng tầng sắc độ thứ 2
+        // của sky — cùng cách đã áp cho dải màu ở CompetitionListView.tsx, giữ 2 file nhất quán.
+        square: 'bg-sky-700 shadow-xs',
+        label: 'text-sky-900 dark:text-sky-300',
+        value: 'text-sky-950 dark:text-sky-50',
+        badge: 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-100 dark:border-sky-600',
     },
     {
         square: 'bg-rose-500 shadow-xs',
