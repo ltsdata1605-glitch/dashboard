@@ -33,13 +33,16 @@
         .sort-asc::after { content: ' ▲'; font-size: 0.7em; color: #6366f1; }
         .sort-desc::after { content: ' ▼'; font-size: 0.7em; color: #6366f1; }
         .capture-fix { display: flex; align-items: center; }
+        .hidden { display: none !important; }
+        @keyframes initial-spin { to { transform: rotate(360deg); } }
         .app-shell { max-width: 960px; margin: 0 auto; padding: 0; }
         /* Landing hero */
         .landing-hero { background: linear-gradient(180deg, #eef2ff 0%, #f0f9ff 40%, #f8fafc 100%); padding: 0 0 30px 0; text-align: center; }
         .nav-bar { max-width: 960px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
         .hero-content { max-width: 640px; margin: 0 auto; padding: 20px 24px 0; }
         /* Modern card */
-        .mod-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .mod-card { background: #fff; border-radius: 0; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .group-container .capture-target, .capture-target { border-radius: 0 !important; }
         /* Pastel group header colors — chuẩn hoá về palette dự án (sky/slate/emerald/amber/rose/indigo).
            achieved=emerald, nearly=amber, notAchieved100(orange cũ)=rose, achieved100(teal cũ)=sky,
            noFund(violet cũ)=indigo, noSale=slate. .pastel-rose (dead code, không class nào gọi) đã xoá. */
@@ -146,7 +149,7 @@
             #landingPage h1 { font-size: 1.5rem !important; }
             #landingPage .hero-content { padding: 12px 12px 0; }
             /* Search section - keep horizontal but compact */
-            #searchSection .mod-card { padding: 8px 10px !important; border-radius: 8px !important; }
+            #searchSection .mod-card { padding: 8px 10px !important; border-radius: 0 !important; }
             #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
             #searchSection .mod-card > div > div { padding: 0 !important; }
             #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
@@ -164,14 +167,14 @@
             .stat-mini .text-lg, .stat-mini .text-xl { font-size: 14px !important; }
             /* Group summary - allow scroll */
             #groupSummaryContainer { gap: 6px !important; flex-wrap: wrap !important; }
-            #summaryFiltersSection { padding: 10px 10px !important; border-radius: 10px !important; }
+            #summaryFiltersSection { padding: 10px 10px !important; border-radius: 0 !important; }
             #summaryFiltersSection span[style*="font-size:13px"] { font-size: 10px !important; }
             /* Filter pills */
             .filter-pill { font-size: 9px !important; padding: 3px 7px !important; }
             /* Main content area */
             #mainContent { padding: 0 6px !important; }
             /* Cards */
-            .mod-card { border-radius: 8px !important; }
+            .mod-card { border-radius: 0 !important; }
             .s-card { border-radius: 8px !important; }
             /* Analysis section */
             #analysisSection { padding: 10px 10px !important; }
@@ -237,8 +240,14 @@
     </style>
 </head>
 <body>
-    <!-- Landing Page -->
-    <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#f8fafc] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
+    <!-- Initial Loading State (Ngăn chặn chớp nháy màn hình thô FOUC trước khi nạp xong dữ liệu) -->
+    <div id="initialLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; color: #64748b; font-family: 'UTM Avo', sans-serif;">
+        <div style="width: 34px; height: 34px; border: 3px solid #e2e8f0; border-top-color: #0ea5e9; border-radius: 50%; animation: initial-spin 0.8s linear infinite;"></div>
+        <span style="margin-top: 14px; font-size: 13px; font-weight: 600; color: #64748b;">Đang tải dữ liệu thưởng...</span>
+    </div>
+
+    <!-- Landing Page (Chỉ hiển thị khi đã xác nhận người dùng chưa có file dữ liệu) -->
+    <div id="landingPage" class="hidden relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#f8fafc] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8" style="display: none;">
         
         <!-- Ambient Background Grid -->
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#64748b0a_1px,transparent_1px),linear-gradient(to_bottom,#64748b0a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
@@ -348,7 +357,7 @@
              Gỡ style inline này có thể làm lộ ra 2 thanh tìm kiếm trùng lặp (1 ở header cha, 1 ở
              đây) — cần quyết định thiết kế trước khi động vào, không tự sửa. -->
         <div id="searchSection" class="hidden" style="display: none !important;">
-            <div class="mod-card" style="padding:16px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
+            <div class="mod-card" style="padding:16px 20px;border-radius:0;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
                 <div style="display:flex;gap:16px;align-items:flex-end">
                     <div style="flex:1">
                         <label for="storeCodeInput1" style="display:block;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Mã Kho 1 <span style="color:#94a3b8;font-weight:500;text-transform:none;letter-spacing:0">(Tra cứu chính)</span></label>
@@ -391,7 +400,7 @@
                     <div id="summaryCard" class="summary-banner" style="margin-bottom:14px">
                         <!-- Content will be injected by JS -->
                     </div>
-                    <div id="summaryFiltersSection" class="mod-card" style="padding:20px 24px;margin-bottom:16px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
+                    <div id="summaryFiltersSection" class="mod-card" style="padding:20px 24px;margin-bottom:16px;border-radius:0;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
                          <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px">
                              <div style="width:40px;height:2px;background:linear-gradient(to right,transparent,#818cf8);border-radius:2px"></div>
                              <span style="font-size:13px;font-weight:800;color:#1e293b;text-transform:uppercase;letter-spacing:0.08em">Tổng Hợp Nhóm Thi Đua</span>
@@ -566,8 +575,17 @@
                 }
             };
 
+            const initialLoadingEl = document.getElementById('initialLoading');
+            const hideInitialLoader = () => {
+                if (initialLoadingEl) {
+                    initialLoadingEl.style.display = 'none';
+                    initialLoadingEl.classList.add('hidden');
+                }
+            };
+
             const reloadFromIDB = () => {
                 idbKeyval.get('checkthuong_data').then(savedData => {
+                    hideInitialLoader();
                     if (savedData) {
                         if (savedData.code1) storeCodeInput1.value = savedData.code1;
                         if (savedData.code2) storeCodeInput2.value = savedData.code2;
@@ -582,6 +600,7 @@
                             // Show the dashboard UI
                             searchSection.classList.remove('hidden');
                             landingPage.classList.add('hidden');
+                            landingPage.style.display = 'none';
                             changeFileButton.classList.remove('hidden');
                             
                             if (storeCodeInput1.value) {
@@ -601,17 +620,22 @@
                             }
                         } else {
                             landingPage.classList.remove('hidden');
+                            landingPage.style.display = '';
                             searchSection.classList.add('hidden');
                             changeFileButton.classList.add('hidden');
                             mainContent.classList.add('hidden');
                         }
                     } else {
                         landingPage.classList.remove('hidden');
+                        landingPage.style.display = '';
                         searchSection.classList.add('hidden');
                         changeFileButton.classList.add('hidden');
                         mainContent.classList.add('hidden');
                     }
                 }).catch(e => {
+                    hideInitialLoader();
+                    landingPage.classList.remove('hidden');
+                    landingPage.style.display = '';
                     console.warn('IDB Load Error:', e);
                     if (window.parent) {
                         window.parent.postMessage({ type: 'CHECK_THUONG_LOAD_ERROR', message: String((e && e.message) || e) }, '*');
@@ -1039,6 +1063,8 @@
                         fileStatus.className = 'mt-4 text-center text-sm font-medium text-emerald-600';
                         searchSection.classList.remove('hidden');
                         landingPage.classList.add('hidden');
+                        landingPage.style.display = 'none';
+                        hideInitialLoader();
                         changeFileButton.classList.remove('hidden');
                         window.parent.postMessage({
                             type: 'CHECK_THUONG_FILE_LOADED',
@@ -1185,16 +1211,16 @@
                             <p style="font-size:10.5px;opacity:0.75;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
                             <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:4px 0 0 0;letter-spacing:-0.02em;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,0.2)">${formatCurrencyFull(totalBonus)}</p>
                         </div>
-                        <div style="background:linear-gradient(135deg,#047857 0%,#059669 40%,#10b981 100%);padding:10px 18px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.45);box-shadow:0 8px 24px rgba(5,150,105,0.45),0 2px 8px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
+                        <div style="background:linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);padding:10px 18px;border-radius:0;border:1.5px solid rgba(255,255,255,0.4);box-shadow:0 8px 24px rgba(2,132,199,0.35),0 2px 8px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
                             <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:4px">
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);color:#ffffff">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:0;background:rgba(255,255,255,0.25);color:#ffffff">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                 </span>
                                 <p style="font-size:11px;color:#ffffff;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-shadow:0 1px 3px rgba(0,0,0,0.25)">% Nhóm Đạt ≥ 100%</p>
                             </div>
                             <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:10px">
-                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.35)">${pctAchieved100Formatted}</p>
-                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.22);color:#ffffff;padding:4px 10px;border-radius:9999px;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.45);box-shadow:0 2px 6px rgba(0,0,0,0.15)">${countAchieved100}/${totalCategories}</span>
+                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.3)">${pctAchieved100Formatted}</p>
+                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.25);color:#ffffff;padding:3px 8px;border-radius:0;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.12)">${countAchieved100}/${totalCategories}</span>
                             </div>
                         </div>
                     </div>
@@ -1269,7 +1295,7 @@
                         : { bg: 'bg-gradient-to-br from-indigo-50 to-white', border: 'border-indigo-100', text: 'text-indigo-800', badgeBg: 'bg-indigo-100', badgeText: 'text-indigo-700', icon: 'text-indigo-500' };
 
                      return `
-                        <div class="${colorScheme.bg} p-3 border ${colorScheme.border} rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                        <div class="${colorScheme.bg} p-3 border ${colorScheme.border} rounded-none shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                              <div class="absolute top-0 right-0 p-2 opacity-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 ${colorScheme.icon}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
                              </div>
@@ -1390,7 +1416,7 @@
                 comparisonContent.innerHTML = `
                     <div class="space-y-4">
                         <div id="captureComparisonMain">
-                            <div class="bg-white/80 backdrop-blur-sm border border-slate-200/80 p-3 shadow-sm mb-3 rounded-xl flex justify-between items-center">
+                            <div class="bg-white/80 backdrop-blur-sm border border-slate-200/80 p-3 shadow-sm mb-3 rounded-none flex justify-between items-center">
                                 <h2 class="text-base sm:text-2xl font-bold text-slate-800">So Sánh Trực Diện</h2>
                                 <button id="exportComparisonImageButton" title="Xuất ảnh so sánh" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 transition shadow-sm rounded-md border border-slate-200/50 no-print flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lucide lucide-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -1399,7 +1425,7 @@
 
                             <div class="grid grid-cols-2 gap-2">${renderStatCard(store1NameShort, storeCodeInput1.value.trim(), stats1, stats2, true)}${renderStatCard(store2NameShort, storeCodeInput2.value.trim(), stats2, stats1, false)}</div>
                             
-                            <div id="strengthsAnalysisSection" class="bg-white/90 backdrop-blur-md border border-slate-200/60 shadow-sm rounded-xl p-3 mt-4">
+                            <div id="strengthsAnalysisSection" class="bg-white/90 backdrop-blur-md border border-slate-200/60 shadow-sm rounded-none p-3 mt-4">
                                 <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100/80">
                                     <h3 class="text-sm font-bold text-slate-800">Phân Tích Nhanh: Top 3 Nhóm Thưởng Cao Nhất</h3>
                                     <div class="flex items-center gap-2 no-print">
@@ -1407,7 +1433,7 @@
                                     </div>
                                 </div>
                                  <div class="grid grid-cols-2 gap-2 text-xs" id="topStrengthsContainer">
-                                    <div class="border border-sky-200 bg-white rounded-lg overflow-hidden">
+                                    <div class="border border-sky-200 bg-white rounded-none overflow-hidden">
                                         <div class="bg-sky-50/70 p-1.5 border-b border-sky-100">
                                             <h4 class="font-bold text-sky-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> ${store1NameShort}</h4>
                                         </div>
@@ -1415,7 +1441,7 @@
                                             ${renderTop3Strengths(store1Data, true)}
                                         </div>
                                     </div>
-                                    <div class="border border-indigo-200 bg-white rounded-lg overflow-hidden">
+                                    <div class="border border-indigo-200 bg-white rounded-none overflow-hidden">
                                         <div class="bg-indigo-50/70 p-1.5 border-b border-indigo-100">
                                             <h4 class="font-bold text-indigo-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> ${store2NameShort}</h4>
                                         </div>
@@ -1427,11 +1453,11 @@
                                  <div class="hidden mt-4 pt-4 border-t border-slate-100" id="allStrengthsContainer">
                                     <h3 class="text-md font-bold text-center mb-4 text-slate-800">Danh sách tất cả các môn có giải</h3>
                                     <div class="grid grid-cols-2 gap-3 text-xs">
-                                        <div class="border border-sky-100 p-3 rounded-lg">
+                                        <div class="border border-sky-100 p-3 rounded-none">
                                             <h4 class="font-bold text-sky-800 mb-2 flex items-center gap-2 border-b border-sky-100/50 pb-1.5">Kho ${store1NameShort}</h4>
                                             <ul class="space-y-0 text-slate-700">${store1AwardedHtml}</ul>
                                         </div>
-                                        <div class="border border-indigo-100 p-3 rounded-lg">
+                                        <div class="border border-indigo-100 p-3 rounded-none">
                                             <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2 border-b border-indigo-100/50 pb-1.5">Kho ${store2NameShort}</h4>
                                             <ul class="space-y-0 text-slate-700">${store2AwardedHtml}</ul>
                                         </div>
@@ -1440,7 +1466,7 @@
                             </div>
                         </div>
 
-                        <div id="captureDetailTable" class="bg-white border border-slate-200/80 shadow-sm rounded-xl mt-3 overflow-hidden">
+                        <div id="captureDetailTable" class="bg-white border border-slate-200/80 shadow-sm rounded-none mt-3 overflow-hidden">
                              <div class="flex justify-between items-center p-2 bg-slate-50 border-b border-slate-200/80">
                                 <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                                     <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -1520,12 +1546,12 @@
 
             function getGroupDefinitions(data) {
                 return [
-                    { key: 'achieved', title: 'Đạt thưởng', color: 'bg-emerald-500', data: data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0) },
-                    { key: 'nearly', title: 'Sắp có', color: 'bg-amber-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
-                    { key: 'achieved100', title: 'Đạt 100%', color: 'bg-sky-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1) },
-                    { key: 'notAchieved100', title: '<100%', color: 'bg-rose-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1) },
-                    { key: 'noFund', title: 'Không Quỹ', color: 'bg-indigo-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; return noFundGroups.has(groupKey); }) },
-                    { key: 'noSale', title: 'No Sale', color: 'bg-slate-600', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
+                    { key: 'achieved', title: 'Đạt thưởng', shortTitle: 'Đạt thưởng', color: 'bg-emerald-500', data: data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0) },
+                    { key: 'nearly', title: 'Sắp có', shortTitle: 'Sắp có', color: 'bg-amber-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
+                    { key: 'achieved100', title: 'Nhóm Đạt ≥ 100%', shortTitle: 'Đạt ≥ 100%', color: 'bg-sky-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1) },
+                    { key: 'notAchieved100', title: 'Nhóm Chưa Đạt < 100%', shortTitle: '< 100%', color: 'bg-rose-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1) },
+                    { key: 'noFund', title: 'Không Quỹ', shortTitle: 'Không Quỹ', color: 'bg-indigo-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; return noFundGroups.has(groupKey); }) },
+                    { key: 'noSale', title: 'No Sale', shortTitle: 'No Sale', color: 'bg-slate-600', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
                 ];
             }
 
@@ -1538,7 +1564,7 @@
                     <div class="stat-mini" onclick="const el=document.getElementById('group-section-${g.key}');if(el){const y=el.getBoundingClientRect().top+window.scrollY-20;window.scrollTo({top:y,behavior:'smooth'});}" style="--stat-color: ${statColors[g.key]||'#6366f1'}">
                         <div style="position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; background: ${statColors[g.key]||'#6366f1'}; filter: blur(25px); opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
                         <div class="stat-mini-title" style="display:flex; align-items:flex-start; height: 28px; width: 100%; position: relative; z-index: 1">
-                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="${g.title}">${g.title}</p>
+                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="${g.title}">${g.shortTitle || g.title}</p>
                         </div>
                         <p style="font-size:26px;font-weight:800;color:#0f172a;margin:0;margin-top:auto;line-height:1; position: relative; z-index: 1; font-feature-settings: 'tnum'; letter-spacing: -0.02em">${g.data.length}</p>
                     </div>
@@ -1638,12 +1664,14 @@
             }
 
             let lastRankingModalOpenTime = 0;
+            let modalOpenedAt = 0;
             function triggerRankingModal(groupName, groupChannel) {
                 const now = Date.now();
-                if (now - lastRankingModalOpenTime < 300) return;
+                if (now - lastRankingModalOpenTime < 350) return;
                 lastRankingModalOpenTime = now;
                 showRankingModal(groupName, groupChannel);
             }
+            window.triggerRankingModal = triggerRankingModal;
 
             function showRankingModal(groupName, groupChannel) {
                 if (!groupName) return;
@@ -1698,7 +1726,9 @@
                 renderRankingTable(rankingDataForModal, titleText);
                 
                 modalTitle.textContent = titleText;
+                modalOpenedAt = Date.now();
                 rankingModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
                 const modalScrollArea = document.getElementById('modalBody');
                 if (modalScrollArea) modalScrollArea.scrollTop = 0;
             }
@@ -1797,6 +1827,8 @@
 
                     const safeGroupName = String(groupNameVal || '').replace(/"/g, '&quot;');
                     const safeGroupChannel = String(groupChannelVal || '').replace(/"/g, '&quot;');
+                    const safeGroupNameAttr = String(groupNameVal || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeGroupChannelAttr = String(groupChannelVal || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     const rank = index;
                     const rankColor = 
@@ -1806,11 +1838,11 @@
                         'text-slate-400 font-bold';
 
                     return `
-                        <tr class="hover:bg-sky-50/60 cursor-pointer transition-colors text-xs border-b border-slate-100 last:border-0 group view-ranking-row" onclick="void(0)" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
-                            <td class="px-2.5 py-1 text-slate-800 overflow-hidden cursor-pointer" style="max-width: 0;">
-                                <div class="flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                        <tr class="hover:bg-sky-50/60 cursor-pointer transition-colors text-xs border-b border-slate-100 last:border-0 group view-ranking-row" onclick="window.triggerRankingModal && window.triggerRankingModal('${safeGroupNameAttr}', '${safeGroupChannelAttr}')" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                            <td class="px-2.5 py-1 text-slate-800 overflow-hidden cursor-pointer" style="max-width: 0;" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                                <div class="flex items-center gap-2 min-w-0 w-full overflow-hidden" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
                                     <span class="${rankColor} text-[11px] shrink-0">#${rank}</span>
-                                    <span class="truncate min-w-0 flex-1 font-medium text-slate-700 group-hover:text-sky-600 group-hover:underline" title="${safeGroupName}">${groupNameVal}</span>${nearlyBadgeHtml}
+                                    <span class="truncate min-w-0 flex-1 font-medium text-slate-700 group-hover:text-sky-600 group-hover:underline" title="${safeGroupName}" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">${groupNameVal}</span>${nearlyBadgeHtml}
                                     <button class="view-ranking-btn no-print ml-1 text-slate-300 hover:text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer" title="Xem xếp hạng" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                     </button>
@@ -1909,9 +1941,11 @@
 
                     const safeCardGroupName = String(row[COLS.NGANH_HANG] || '').replace(/"/g, '&quot;');
                     const safeCardGroupChannel = String(row[COLS.KENH] || '').replace(/"/g, '&quot;');
+                    const safeCardGroupNameAttr = String(row[COLS.NGANH_HANG] || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeCardGroupChannelAttr = String(row[COLS.KENH] || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     return `
-                        <div class="s-card border border-slate-200 cursor-pointer view-ranking-card hover:shadow-md transition-all group/card" onclick="void(0)" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}">
+                        <div class="s-card border border-slate-200 cursor-pointer view-ranking-card hover:shadow-md transition-all group/card" onclick="window.triggerRankingModal && window.triggerRankingModal('${safeCardGroupNameAttr}', '${safeCardGroupChannelAttr}')" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}">
                             <div class="${bg}" style="padding:7px 10px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e2e8f0">
                                 <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate group-hover/card:underline">${groupName.toUpperCase()}</h3>
                                 <button class="view-ranking-btn no-print" title="Xem xếp hạng" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:4px;border-radius:6px;background:rgba(255,255,255,0.3);border:none;cursor:pointer;color:inherit;display:flex;align-items:center;justify-content:center">
@@ -1974,11 +2008,17 @@
                         contentHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:10px">${groupCardsHtml}</div>`;
                     }
                     
+                    const groupIconHtml = group.key === 'achieved100'
+                        ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:0;background:rgba(2,132,199,0.18);color:#0284c7;font-size:11px;font-weight:900;margin-right:6px">✓</span>`
+                        : group.key === 'notAchieved100'
+                        ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:0;background:rgba(225,29,72,0.18);color:#e11d48;font-size:11px;font-weight:900;margin-right:6px">!</span>`
+                        : '';
+                    
                     const groupHtml = `<div id="group-section-${group.key}" class="group-container" data-group-key="${group.key}" style="margin-bottom:16px">
-                        <div class="capture-target border border-slate-300 bg-white rounded-xl overflow-hidden shadow-xs ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
+                        <div class="capture-target border border-slate-300 bg-white rounded-none overflow-hidden shadow-xs ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden;border-radius:0">
                             <div class="capture-fix ${pastelClass} border-b border-slate-200/80 flex justify-between items-center" style="padding:8px 14px">
-                                <h2 style="font-size:13px;font-weight:800;margin:0;letter-spacing:0.02em">${group.title.toUpperCase()} (${group.data.length})</h2>
-                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition cursor-pointer" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.6);color:rgba(0,0,0,0.7);border:1px solid rgba(0,0,0,0.06)" onmouseover="this.style.background='rgba(255,255,255,0.9)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='rgba(0,0,0,0.7)'">
+                                <h2 style="font-size:13px;font-weight:800;margin:0;letter-spacing:0.02em;display:flex;align-items:center">${groupIconHtml}${group.title.toUpperCase()} (${group.data.length})</h2>
+                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition cursor-pointer" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:26px;height:26px;border-radius:0;background:rgba(255,255,255,0.6);color:rgba(0,0,0,0.7);border:1px solid rgba(0,0,0,0.06)" onmouseover="this.style.background='rgba(255,255,255,0.9)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='rgba(0,0,0,0.7)'">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
                             </div>
@@ -2698,7 +2738,7 @@
             // Đảm bảo trên mọi thiết bị cảm ứng / iOS Mobile Safari, click vào dòng/thẻ thi đua luôn kích hoạt mở modal
             document.addEventListener('click', (event) => {
                 if (event.target.closest('.exportGroupImageBtn') || event.target.closest('#rankingModal')) return;
-                const rankingTarget = event.target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item');
+                const rankingTarget = event.target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item, [data-group-name]');
                 if (rankingTarget) {
                     const groupName = rankingTarget.dataset.groupName;
                     const groupChannel = rankingTarget.dataset.groupChannel;
@@ -2708,11 +2748,57 @@
                 }
             }, { passive: true });
 
-            closeModalButton.addEventListener('click', () => { rankingModal.classList.add('hidden'); });
+            // Hỗ trợ thiết bị cảm ứng điện thoại (iOS Safari & Android): phát hiện cử chỉ TAP nhanh trên dòng/thẻ
+            let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartTime = Date.now();
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (e.changedTouches && e.changedTouches.length === 1) {
+                    const deltaX = Math.abs(e.changedTouches[0].clientX - touchStartX);
+                    const deltaY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+                    const deltaTime = Date.now() - touchStartTime;
+
+                    // Nếu ngón tay di chuyển < 12px và buông ra trong vòng 500ms -> người dùng TAP vào dòng (không phải cuộn màn hình)
+                    if (deltaX < 12 && deltaY < 12 && deltaTime < 500) {
+                        const target = e.target;
+                        if (target.closest('.exportGroupImageBtn') || target.closest('#rankingModal')) return;
+                        const rankingTarget = target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item, [data-group-name]');
+                        if (rankingTarget) {
+                            const groupName = rankingTarget.dataset.groupName;
+                            const groupChannel = rankingTarget.dataset.groupChannel;
+                            if (groupName) {
+                                triggerRankingModal(groupName, groupChannel);
+                            }
+                        }
+                    }
+                }
+            }, { passive: true });
+
+            const closeRankingModal = () => {
+                rankingModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+
+            closeModalButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeRankingModal();
+            });
+            closeModalButton.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+                closeRankingModal();
+            });
             
             rankingModal.addEventListener('click', (event) => { 
+                // Chặn click ma (ghost click) đóng modal ngay lập tức do touch synthesize trên mobile
+                if (Date.now() - modalOpenedAt < 400) return;
                 if (event.target === rankingModal) { 
-                    rankingModal.classList.add('hidden'); 
+                    closeRankingModal();
                 }
                 const exportBtn = event.target.closest('#exportRankingImageButton');
                 if (exportBtn) {
