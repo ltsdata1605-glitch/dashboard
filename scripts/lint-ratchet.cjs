@@ -23,13 +23,34 @@ const ROOT = path.resolve(__dirname, '..');
 const BASELINE_PATH = path.join(ROOT, 'violations-baseline.json');
 
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx']);
+
+/**
+ * BỎ QUA file test (thêm 2026-09-18). Quy chuẩn thiết kế áp cho code ứng dụng, không áp cho dữ
+ * liệu mẫu trong test — mà test của chính ratchet thì BẮT BUỘC phải chứa các chuỗi màu sai chuẩn
+ * để kiểm tra bộ mẫu. Không loại ra thì công cụ tự báo động vì chính bài kiểm tra của nó.
+ */
+const IS_TEST_FILE = /\.(test|spec)\.tsx?$/;
 const IGNORE_DIRS = new Set([
   'node_modules', 'dist', 'archive', 'scratch', '.git',
   'design-system', 'worktrees',
 ]);
 
+/**
+ * Tiền tố tiện ích màu của Tailwind.
+ *
+ * SỬA 2026-09-18 — LỖ HỔNG THẬT: bản cũ chỉ liệt kê `border` và `divide` trần, nên **bỏ sót mọi
+ * biến thể CÓ HƯỚNG**: `border-l-purple-400`, `border-t-red-500`, `divide-y-gray-200`,
+ * `ring-offset-teal-200`… Hậu quả không phải lý thuyết: `CompetitionListView.tsx` còn 2 chỗ
+ * `border-l-purple-400/500` trong khi ratchet báo file đó SẠCH — công cụ nói dối một cách im lặng,
+ * và một báo cáo "nonSemanticColor đã về 0" đã được đưa ra dựa trên con số sai đó.
+ *
+ * Thứ tự nhánh quan trọng: `border(?:-(?:t|r|b|l|x|y|s|e))?` để phần tuỳ chọn khớp TRƯỚC (regex
+ * tham lam), nếu đảo lại thì `border-l-purple-400` vẫn trượt.
+ */
 const COLOR_UTILITY_PREFIX =
-  '(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|accent|caret|decoration|shadow)';
+  '(?:bg|text|ring(?:-offset)?|fill|stroke|from|via|to|outline|accent|caret|decoration|shadow' +
+  '|border(?:-(?:t|r|b|l|x|y|s|e))?' +
+  '|divide(?:-(?:x|y))?)';
 const COLOR_SHADE = '(?:50|100|200|300|400|500|600|700|800|900|950)';
 
 /**
@@ -91,7 +112,7 @@ function walk(dir, files) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walk(full, files);
-    } else if (SCAN_EXTENSIONS.has(path.extname(entry.name))) {
+    } else if (SCAN_EXTENSIONS.has(path.extname(entry.name)) && !IS_TEST_FILE.test(entry.name)) {
       files.push(full);
     }
   }
@@ -199,4 +220,10 @@ function main() {
   }
 }
 
-main();
+// Chỉ chạy khi gọi trực tiếp từ dòng lệnh. Có điều kiện này thì file mới `require` được trong test
+// mà không kích hoạt cả lượt quét (và `process.exit(1)` khi có vi phạm).
+if (require.main === module) {
+  main();
+}
+
+module.exports = { countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar };

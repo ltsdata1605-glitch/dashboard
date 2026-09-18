@@ -4405,3 +4405,40 @@ nên **bỏ sót mọi biến thể CÓ HƯỚNG**: `border-l-purple-400`, `bord
 **Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **528 passed | 1 skipped**; `build` ✓ 8.31s;
 `eslint` sạch; ratchet 7 nhóm (38 chỗ indigo + 45 chỗ check-thuong, như đã nêu).
 
+
+### Vá lỗ hổng ratchet + cho chính ratchet một lưới an toàn — 2026-09-18
+
+**Lỗ hổng 1 — bỏ sót biến thể CÓ HƯỚNG.** `COLOR_UTILITY_PREFIX` chỉ liệt kê `border`/`divide`
+trần, nên `border-l-purple-400`, `border-t-red-500`, `divide-y-gray-200`, `ring-offset-teal-200`…
+đều lọt lưới. Hậu quả không phải lý thuyết: `CompetitionListView.tsx` còn 2 chỗ
+`border-l-purple-400/500` **trong khi ratchet báo file đó SẠCH** — và tôi đã dựa vào con số sai đó
+để báo cáo "nonSemanticColor đã về 0". Công cụ nói dối một cách im lặng.
+
+Đã sửa mẫu thành `border(?:-(?:t|r|b|l|x|y|s|e))?`, `divide(?:-(?:x|y))?`, `ring(?:-offset)?`.
+Thứ tự nhánh quan trọng: phần tuỳ chọn phải khớp TRƯỚC (regex tham lam), đảo lại là vẫn trượt.
+
+**Đo trước khi sửa** (không sửa mù): mẫu mới bắt thêm **0** vi phạm màu sai chuẩn trên toàn dự án
+— xác nhận 2 chỗ đã sửa là tất cả — nhưng lộ ra **9 file đang giấu vi phạm indigo** ở biến thể có
+hướng. Số nhóm vi phạm 7 → 14: công cụ giờ nói thật thay vì giấu.
+
+**Lỗ hổng 2 — ratchet tự báo động vì chính bài kiểm tra của nó.** Sau khi thêm test, ratchet quét
+luôn `tests/unit/lint-ratchet-patterns.test.ts` và tính 23 "vi phạm" từ các chuỗi mẫu cố ý. Đã loại
+file `*.test.ts(x)` / `*.spec.ts(x)` khỏi phạm vi quét — quy chuẩn thiết kế áp cho code ứng dụng,
+không áp cho dữ liệu mẫu trong test.
+
+**Cho ratchet khả năng test được:** `main()` trước đây chạy vô điều kiện lúc `require`, và file
+không export gì. Đã bọc `if (require.main === module)` và export 3 hàm đếm.
+
+**`tests/unit/lint-ratchet-patterns.test.ts` (MỚI, 12 test)** — công cụ gác cổng nay có lưới an
+toàn của chính nó. Test đáng chú ý: một case **tái hiện nguyên văn dòng đã lọt lưới** trong
+`CompetitionListView.tsx` và khẳng định nó phải đếm ra 2; các case khẳng định màu hợp lệ
+(`border-l-amber-400`, `divide-y-rose-300`, `ring-offset-sky-100`) KHÔNG bị báo nhầm; và indigo
+được đếm riêng, không lẫn vào màu sai chuẩn.
+
+**Tình trạng ratchet sau khi vá:** 14 nhóm = **3 nhóm màu sai chuẩn** (45 chỗ, TẤT CẢ trong
+`features/check-thuong/components/*` — khu vực chủ dự án đang làm) + **11 nhóm nợ indigo** (hợp lệ
+theo CLAUDE.md, cần ghi nhận vào baseline — thao tác này vẫn đang bị chặn, xem mục trước).
+
+**Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped** (+12 test mới);
+`build` ✓ 8.23s; `eslint` 0 error.
+
