@@ -11,12 +11,46 @@ import { expect, test } from '@playwright/test';
  *
  * Dấu hiệu nhận biết dùng ở đây: iframe bị chặn có URL `chrome-error://...` thay vì URL thật.
  */
+
+/**
+ * Bật Chế độ Dùng Thử. Bản cũ dùng `if (await demo.isVisible())` — hàm đó KHÔNG chờ, nó hỏi ngay
+ * lập tức; React chưa vẽ xong nút thì trả `false`, test lặng lẽ bỏ qua cú bấm rồi hỏng ở bước sau
+ * với thông điệp chẳng liên quan. Ở đây chờ nút hiện ra rồi mới quyết định.
+ */
+async function activateDemoMode(page: import('@playwright/test').Page) {
+    const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });
+    await demo.waitFor({ state: 'visible', timeout: 20_000 }).catch(() => { /* đã ở chế độ dùng thử */ });
+    if (await demo.isVisible().catch(() => false)) await demo.click();
+}
+
+
+/**
+ * Chờ frame con điều hướng XONG, dù thành công hay bị chặn.
+ *
+ * Thẻ `<iframe>` gắn vào DOM và frame con tồn tại KHÔNG có nghĩa là nó đã đi tới đâu: ngay sau khi
+ * gắn, `frame.url()` còn là chuỗi rỗng. Bản vá đầu của tôi chỉ chờ tới mức đó rồi đọc URL luôn nên
+ * test đỏ ngay ở máy dev với `URLs: [..., ""]` — sửa hụt một nhịp.
+ *
+ * Chờ tới khi URL frame con mang dấu hiệu đã ngã ngũ: hoặc đúng đích, hoặc `chrome-error://` (dấu
+ * hiệu bị CSP chặn — chính thứ 2 test này sinh ra để bắt). Cả hai đều cho phần `expect` bên dưới
+ * chạy và báo lỗi đúng nghĩa.
+ */
+async function waitForFrameToSettle(page: import('@playwright/test').Page, expectedUrlPart: string) {
+    await expect
+        .poll(() => page.frames().some(f => f.url().includes(expectedUrlPart) || f.url().startsWith('chrome-error')),
+            { message: `iframe ${expectedUrlPart} chưa điều hướng xong sau 30s`, timeout: 30_000 })
+        .toBe(true);
+}
+
 test.describe('Tab dùng iframe không bị CSP chặn', () => {
     test('Check Thưởng nạp được iframe nội bộ /check-thuong.html', async ({ page }) => {
         await page.goto('/?tab=check-thuong');
-        const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });
-        if (await demo.isVisible().catch(() => false)) await demo.click();
-        await page.waitForTimeout(3500);
+        await activateDemoMode(page);
+
+        // `CheckThuongView` là React.lazy — chờ THẺ iframe gắn vào DOM, đừng ngủ một khoảng cố định.
+        await expect(page.locator('iframe[src*="check-thuong.html"]'),
+            'không render thẻ iframe check-thuong.html').toBeAttached({ timeout: 30_000 });
+        await waitForFrameToSettle(page, 'check-thuong.html');
 
         const urls = page.frames().map(f => f.url());
         expect(urls.some(u => u.startsWith('chrome-error')), `iframe bị chặn — kiểm tra frame-src trong index.html. URLs: ${JSON.stringify(urls)}`).toBe(false);
@@ -28,9 +62,16 @@ test.describe('Tab dùng iframe không bị CSP chặn', () => {
 
     test('Hoàn thuế nạp được iframe ra Cloud Run (*.run.app)', async ({ page }) => {
         await page.goto('/?tab=tools-tax');
-        const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });
-        if (await demo.isVisible().catch(() => false)) await demo.click();
-        await page.waitForTimeout(4000);
+        await activateDemoMode(page);
+
+        // ĐÂY LÀ CHỖ ĐỎ TRÊN CI (2026-09-18). Bản cũ ngủ đúng 4000ms rồi chụp `page.frames()` ngay,
+        // trong khi `ExternalToolView` là React.lazy (App.tsx) — iframe chỉ có sau khi chunk tải
+        // xong. Máy dev kịp trong 4s, runner GitHub thì không: annotation của lượt chạy đỏ cho thấy
+        // chỉ có ĐÚNG MỘT frame (trang chính), KHÔNG phải `chrome-error` — tức không hề bị CSP chặn,
+        // cũng không phải mất mạng (test xlsx tải CDN ngay bên dưới vẫn XANH trên cùng lượt đó).
+        await expect(page.locator('iframe[src*="run.app"]'),
+            'không render thẻ iframe Cloud Run').toBeAttached({ timeout: 30_000 });
+        await waitForFrameToSettle(page, 'run.app');
 
         const urls = page.frames().map(f => f.url());
         expect(urls.some(u => u.startsWith('chrome-error')), `iframe bị chặn — kiểm tra frame-src trong index.html. URLs: ${JSON.stringify(urls)}`).toBe(false);
@@ -46,7 +87,12 @@ test.describe('Tab dùng iframe không bị CSP chặn', () => {
      */
     test('check-thuong.html dùng xlsx đã vá lỗ hổng (>= 0.20.3), không phải bản 0.18.5', async ({ page }) => {
         await page.goto('/check-thuong.html');
-        await page.waitForTimeout(3000);
+        // Chờ thư viện nạp xong thay vì ngủ cố định — script tải từ CDN, thời gian phụ thuộc mạng.
+        await page.waitForFunction(
+            () => Boolean((window as unknown as { XLSX?: { version?: string } }).XLSX?.version),
+            undefined,
+            { timeout: 30_000 },
+        ).catch(() => { /* để phần expect bên dưới báo lỗi cho rõ nghĩa */ });
         const version = await page.evaluate(
             () => (window as unknown as { XLSX?: { version?: string } }).XLSX?.version
         );

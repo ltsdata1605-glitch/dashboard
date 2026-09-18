@@ -4716,3 +4716,62 @@ chờn giữa chừng" thay vì "môi trường hỏng".
 
 **Bài học:** một endpoint trả 403 không có nghĩa là cả họ endpoint đó đóng. Tôi đã báo "không đọc
 được log CI" và định nhờ chủ dự án dán tay — trong khi thứ mình cần vẫn lấy được bằng lệnh.
+
+### Nguyên nhân THẬT của job `e2e` đỏ — đã tìm ra và sửa (2026-09-18)
+
+Reporter `github` cho kết quả ngay lượt đầu. Annotation công khai của lượt chạy `36d03278`:
+
+```
+Chỉ đỏ 1 test: iframe-tabs-csp.spec.ts:29 › Hoàn thuế nạp được iframe ra Cloud Run (*.run.app)
+Error: không thấy iframe Cloud Run. URLs: ["http://127.0.0.1:5173/?tab=tools-tax"]
+```
+
+**Chỉ có ĐÚNG MỘT frame** — trang chính. Không có iframe nào, và **không** phải `chrome-error`.
+
+**Hai giả thuyết của tôi đều SAI, dữ liệu bác cả hai:**
+1. *"Khác biệt Linux vs macOS"* — không. Là chuyện thời gian chờ.
+2. *"Runner không ra được mạng ngoài"* — không. Test xlsx tải từ `cdn.sheetjs.com` **XANH** trên
+   cùng lượt đó ⇒ mạng bình thường. Mẫu dò chặn mạng tôi chạy tại chỗ tái hiện được *một* hình dạng
+   đỏ, nhưng **không phải** hình dạng đang thực sự xảy ra. Bài học: tái hiện được một lỗi giống
+   giống không có nghĩa là đã tìm đúng lỗi.
+
+**Nguyên nhân thật:** `ExternalToolView` là `React.lazy` (`App.tsx:27`) — iframe chỉ xuất hiện sau
+khi chunk tải xong. Test lại `waitForTimeout(4000)` rồi chụp `page.frames()` **ngay lập tức**. Máy
+dev kịp trong 4 giây, runner GitHub thì không.
+
+**Cùng một lớp lỗi với flake đã sửa ở commit trước** (ngủ cố định + nội dung React lazy-load) —
+**lần thứ ba** trong đợt này. Không phải trùng hợp: đây là hệ quả của việc Đợt 3 chuyển nhiều view
+sang `React.lazy` trong khi các test cũ viết theo thời "mọi thứ render đồng bộ".
+
+**Đã sửa `tests/e2e/iframe-tabs-csp.spec.ts`:**
+- `activateDemoMode()` — bản cũ dùng `if (await demo.isVisible())`, hàm này **không chờ**: React
+  chưa vẽ xong nút thì trả `false`, test lặng lẽ bỏ qua cú bấm rồi hỏng ở bước sau với thông điệp
+  chẳng liên quan.
+- `waitForFrameToSettle()` — chờ frame con **điều hướng xong**, không chỉ chờ thẻ gắn vào DOM.
+  ⚠️ Bản vá đầu của tôi chỉ chờ tới mức `toBeAttached` + đếm frame, và **đỏ ngay ở máy dev** với
+  `URLs: [..., ""]`: thẻ iframe đã có, frame con đã tồn tại, nhưng `url()` còn là chuỗi rỗng. Sửa
+  hụt một nhịp. Bản đúng chờ tới khi URL ngã ngũ — hoặc tới đích, hoặc `chrome-error://`.
+- Test xlsx: `waitForFunction` chờ thư viện thay vì ngủ 3 giây.
+
+Đo lại: `iframe-tabs-csp --repeat-each=3` → **9/9 xanh**; cả 7 spec của CI → **22/22 xanh**.
+
+**KHÔNG làm** việc tôi đã định làm (tách spec cần mạng ra khỏi danh sách CI): giả thuyết mạng đã bị
+bác, nên việc đó là thừa. Giữ nguyên `iframe-tabs-csp` trong CI.
+
+### Thêm `tests/unit/csp-frame-src-va-cdn-pin.test.ts`
+
+Kiểm TĨNH trên mã nguồn, bổ sung (không thay thế) spec e2e: thêm tab nhúng iframe mà quên nới
+`frame-src`, hoặc hạ ngược phiên bản xlsx trong `public/check-thuong.html`, là đỏ ngay ở job `check`
+— không cần trình duyệt, không phụ thuộc CDN của SheetJS có sống hay không.
+
+**Hai lỗi của chính test này, bắt được nhờ chạy thử chứ không nhờ đọc lại:**
+1. Bản nháp đòi mọi `externalUrl` trong `Sidebar`/`MobileBottomNav` phải nằm trong `frame-src` →
+   **báo động giả**: những mục đó đi qua `window.open(url, '_blank')`, mở tab MỚI chứ không phải
+   iframe. Nguồn chân lý đúng là `<ExternalToolView url="…">` trong `App.tsx`.
+2. Bản nháp grep `/frame-src([^;]*);/` trên **toàn bộ** `index.html` và khớp trúng **đoạn chú thích**
+   ở đầu file — đoạn kể lại sự cố CSP cũ, trong đó có nhắc nguyên văn `'self'` và `https://*.run.app`.
+   Hậu quả: 2 test "cho phép …" **XANH GIẢ** (chúng đang đọc lời kể về sự cố, không phải policy
+   thật). Đã đổi sang lấy đúng thẻ `<meta http-equiv="Content-Security-Policy">`.
+
+**Đã kiểm chứng bằng đột biến** (không chỉ "chạy thấy xanh"): bỏ `https://*.run.app` khỏi `frame-src`
+và hạ xlsx về `0.18.5` trên cdnjs → **4 test đỏ**; khôi phục → **8 xanh**, `git diff` sạch.
