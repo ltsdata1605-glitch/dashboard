@@ -4691,3 +4691,28 @@ bước dựng dev server rồi đặt `E2E_BASE_URL` ở cấp job — `playwri
 
 `--output` riêng cho từng spec: Playwright **dọn sạch** thư mục output ở đầu mỗi lượt, để chung thì
 ảnh chụp/trace của spec đỏ bị lượt sau xoá mất — đúng thứ cần nhất lại là thứ mất trước.
+
+### Đính chính: API GitHub Actions đọc được nhiều hơn tôi tưởng (2026-09-18)
+
+Tôi đã ghi ở trên là "KHÔNG đọc được log CI" sau khi thử **đúng một** endpoint (`…/jobs/{id}/logs`
+→ 403) rồi suy rộng thành không lấy được gì. Sai. Thử lại đầy đủ:
+
+| Endpoint | Không xác thực |
+|---|---|
+| `…/actions/runs` (danh sách lượt chạy, SHA, kết luận) | **200** |
+| `…/actions/runs/{id}/jobs` (job + **TỪNG BƯỚC**, kết luận, mốc thời gian) | **200** |
+| `…/actions/runs/{id}/artifacts` (tên, kích thước artifact) | **200** |
+| `…/actions/jobs/{id}/logs` (nội dung log) | 403 |
+| `…/actions/artifacts/{id}/zip` (nội dung artifact) | **401** |
+
+Tức **metadata công khai, nội dung thì không**. Nghĩa là cách tách-mỗi-spec-một-bước không chỉ giúp
+chủ dự án đọc bằng mắt — nó khiến API công khai tự trả lời được spec nào đỏ, tôi tự tra được, không
+cần ai dán log.
+
+**Số liệu lấy được từ lượt đỏ `39b7ae95`:** bước `Test E2E` chạy **2 phút 50** (12:27:53 → 12:30:43).
+Cả bộ 22 test ở máy dev mất 2 phút 42. Gần bằng nhau ⇒ test **có chạy thật**, không phải chết sớm vì
+dev server không lên (trường hợp đó sẽ dừng ở mốc timeout 120s). Củng cố giả thuyết "một test chập
+chờn giữa chừng" thay vì "môi trường hỏng".
+
+**Bài học:** một endpoint trả 403 không có nghĩa là cả họ endpoint đó đóng. Tôi đã báo "không đọc
+được log CI" và định nhờ chủ dự án dán tay — trong khi thứ mình cần vẫn lấy được bằng lệnh.

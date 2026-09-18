@@ -21,7 +21,13 @@ export default defineConfig({
     expect: { timeout: 10_000 },
     fullyParallel: false,
     workers: 1,
-    reporter: [['list']],
+    // Trên CI thêm reporter 'github': nó phát ra lệnh `::error file=…,line=…::<thông điệp>`, và
+    // GitHub biến thứ đó thành ANNOTATION — mà annotation ĐỌC ĐƯỢC qua API công khai
+    // (`/check-runs/{id}/annotations`), trong khi nội dung log và artifact thì đòi xác thực.
+    // Nhờ vậy lượt chạy đỏ tự nói ra test nào hỏng, ở file/dòng nào, không cần ai dán log.
+    // Đo ngày 2026-09-18: thiếu reporter này, annotation duy nhất của một job đỏ là
+    // "Process completed with exit code 1" — vô dụng để lần lỗi.
+    reporter: process.env.CI ? [['github'], ['list']] : [['list']],
     use: {
         baseURL: BASE_URL,
         trace: 'retain-on-failure',
