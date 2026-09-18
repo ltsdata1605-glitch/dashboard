@@ -66,3 +66,65 @@ jobs:
       # - name: Ratchet quy chuẩn thiết kế
       #   run: npm run lint:ratchet
       # ─────────────────────────────────────────────────────────────────────────────────────────
+
+  # ───────────────────────────────────────────────────────────────────────────────────────────
+  # Test E2E (Playwright). Tách JOB RIÊNG, chạy song song với `check`, để khi đỏ thì biết ngay
+  # hỏng ở tầng nào mà không phải đọc log chung.
+  #
+  # VÌ SAO CẦN: ngày 2026-09-18 phát hiện `tests/e2e/helpers/seed.ts` dùng selector đã lỗi thời nên
+  # dán dữ liệu vào hư không MÀ KHÔNG BÁO LỖI — `bi-competition.spec.ts` (4 test) và
+  # `xss-header-sanitization.spec.ts` cùng hỏng, mỗi test treo 60 giây. Test chống XSS không hề
+  # kiểm gì suốt thời gian đó. Không có CI chạy E2E thì lớp lỗi này nằm im vô thời hạn.
+  # ───────────────────────────────────────────────────────────────────────────────────────────
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Cài dependency
+        run: npm ci
+
+      - name: Cài trình duyệt Chromium
+        run: npx playwright install --with-deps chromium
+
+      # CỐ Ý liệt kê tường minh, KHÔNG chạy cả thư mục. Tiêu chí: chỉ những spec chạy được bằng
+      # Chế độ Dùng Thử + dữ liệu giả, không cần đăng nhập thật hay hồ sơ dữ liệu thật.
+      # Đã đo ngày 2026-09-18: 20 test, 2,4 phút, xanh toàn bộ.
+      #
+      # KHÔNG đưa vào (và lý do):
+      #   real-data*.spec.ts, table-rules, ui-baseline  → cần hồ sơ dữ liệu THẬT (tự `test.skip`
+      #                                                   trên CI nhưng chạy vô ích ở máy dev)
+      #   csp-sweep, system-traffic-stats,              → cần mạng/Firebase thật
+      #   pending-approvals-poll-rate,                  → chạy 2,5 phút chỉ để đếm nhịp
+      #   sticker-firestore-write-rate                  → cần đăng nhập In Sticker thật
+      #   perf-audit                                    → đo hiệu năng, số liệu phụ thuộc máy
+      #
+      # Thêm spec mới vào danh sách này khi nó chạy được mà không cần dữ liệu/đăng nhập thật.
+      - name: Test E2E (tập chạy được không cần dữ liệu thật)
+        run: |
+          npx playwright test \
+            tests/e2e/smoke.spec.ts \
+            tests/e2e/pivot-table.spec.ts \
+            tests/e2e/phan-tich-performance-modal.spec.ts \
+            tests/e2e/iframe-tabs-csp.spec.ts \
+            tests/e2e/check-thuong-top-feature.spec.ts \
+            tests/e2e/bi-competition.spec.ts \
+            tests/e2e/xss-header-sanitization.spec.ts
+
+      # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
+      - name: Lưu báo cáo khi đỏ
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

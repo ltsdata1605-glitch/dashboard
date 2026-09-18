@@ -4512,3 +4512,46 @@ nhận ra.
 **Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped**; `build` ✓ 9.05s;
 `eslint` sạch; Playwright **5 passed (54.8s)**.
 
+
+### Thêm Playwright vào CI + dọn test giả — 2026-09-18
+
+**Đo trước (chạy TOÀN BỘ 48 test): 25 xanh, 22 đỏ, 1 bỏ qua, 16,3 phút.** 18/22 lỗi thuộc nhóm cần
+hồ sơ **dữ liệu thật** (`real-data*`, `table-rules`, `ui-baseline`) — máy dev có sẵn profile nên
+chúng chạy rồi đỏ; trên CI chúng tự `test.skip`. Còn 4 lỗi thật sự liên quan:
+
+**1. `check-thuong-top-feature.spec.ts` — chép CỨNG cổng 5174** trong khi dev server của Playwright
+ở **5173** (`DEV_URL`). Cả 3 test `net::ERR_CONNECTION_REFUSED`. Đã đổi sang đường dẫn TƯƠNG ĐỐI để
+luôn theo `baseURL`, kể cả khi chạy với `E2E_BASE_URL` trỏ môi trường khác.
+
+**2. Sau khi sửa cổng, lộ ra 2 test NHẮM SAI TRANG — đã xoá:**
+- `'should show TOP filter buttons…'` là **khẳng định RỖNG**:
+  `expect(page.locator('#topFilter20Btn')).toBeDefined()` **luôn đúng**, vì `locator()` luôn trả về
+  một object KỂ CẢ khi phần tử không tồn tại. Đã kiểm: `#topFilter20Btn`, `#topFilterAllBtn`,
+  `#topContent` **đều không hề có** trong `public/check-thuong.html`. Test "xanh" suốt mà không kiểm
+  gì — nguy hiểm hơn test đỏ.
+- `'should have TOP content container'` — `#topContent` không tồn tại nên `.evaluate()` treo hết 60
+  giây rồi timeout.
+
+  Lý do gốc: tính năng TOP Siêu Thị nằm ở **component React**
+  (`CheckThuongTopTable.tsx`, `CheckThuongChannelTopGrid.tsx`), không nằm trong trang vanilla mà
+  spec đang mở. Viết lại cho đúng phải test qua ứng dụng React — việc riêng, không đoán bừa.
+  Giữ lại test 1 (kiểm `#landingPage`) vì nó khẳng định thật.
+
+**3. `tests/e2e/inventory-upload-fix.spec.ts` — ĐÃ XOÁ.** Spec do chính tôi tạo ở đợt trước, chưa
+bao giờ chạy được: nó `XLSX.writeFile` vào `/tmp` và lỗi `cannot save file`, còn phần kiểm thì toàn
+`if (visible)` nên khi không lỗi thì cũng chỉ "xanh" mà không kiểm gì. Bug treo upload nay đã được
+phủ bằng `tests/unit/sticker-upload-timeout.test.ts` (7 test, có case promise không bao giờ resolve).
+
+**Job `e2e` mới trong `.github/workflows/check.yml`** — tách RIÊNG, chạy song song với job `check`
+để biết ngay hỏng ở tầng nào. Node 22, `npx playwright install --with-deps chromium`, timeout 25
+phút, và **lưu `playwright-report/` + `test-results/` khi đỏ** (không có ảnh chụp/trace thì rất khó
+lần).
+
+**CỐ Ý liệt kê tường minh 7 spec, không chạy cả thư mục** — tiêu chí: chỉ spec chạy được bằng Chế độ
+Dùng Thử + dữ liệu giả. Đã đo: **20 test, 2,4 phút, xanh toàn bộ**. Danh sách không đưa vào và lý do
+đã ghi ngay trong workflow (cần dữ liệu thật / cần mạng Firebase / cần đăng nhập / đo hiệu năng phụ
+thuộc máy).
+
+**Kiểm chứng:** YAML parse thành công bằng thư viện `yaml` (2 job, 7 và 6 bước); `tsc` **0 lỗi**;
+`test:unit` **540 passed | 1 skipped**; tập 7 spec: **20 passed (2,4 phút)**.
+
