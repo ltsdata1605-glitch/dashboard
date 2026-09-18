@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.2
+// @version      4.3
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -31,6 +31,12 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 4.3 — THANH LỌC 100% VĂN BẢN CLIPBOARD, LOẠI BỎ RÁC STATUS BOX & NÚT NỔI:
+ * - Khắc phục triệt để lỗi dính chuỗi '⚡ Đang mở cấp hiện tại... Đã mở: 0 · Còn lại: 27 ⏹ Dừng lại' vào clipboard.
+ * - Nguyên nhân: MutationObserver vô tình bắt các node con của hộp trạng thái lúc cập nhật innerHTML và đưa vào recoveryBlocks.
+ * - Thêm hàm acpSanitizeText làm sạch tuyệt đối, loại bỏ mọi chuỗi text trạng thái của script khỏi bản copy.
+ * - Đồng bộ với Bookmarklet Auto Click+ và CopyAll trên Dashboard YCX.
  *
  * BẢN 4.2 — ĐỒNG BỘ CƠ CHẾ COPY TOÀN TRANG (COPY ALL) GIỐNG HỆT BOOKMARKLET COPYALL:
  * - Khắc phục lỗi copy thiếu 37 chương trình thi đua: Bản 4.1 trước đó dùng document.querySelector('.ant-table, table')
@@ -1223,6 +1229,31 @@
     await sleep(40);
   }
 
+  // Thanh lọc triệt để văn bản trước khi đưa vào Clipboard — loại bỏ sạch sẽ mọi text trạng thái / nút bấm của script
+  function acpSanitizeText(rawText) {
+    if (!rawText) return '';
+    const junkPatterns = [
+      /^⚡\s*Click\+/i,
+      /^⚡\s*Đang/i,
+      /^Đã mở:/i,
+      /^Còn lại:/i,
+      /^⏹\s*Dừng lại/i,
+      /^⏳\s*Đang/i,
+      /^📋\s*Copy/i,
+      /^✅\s*Đã mở/i,
+      /^⚠️\s*Không có dữ liệu/i,
+      /^❌\s*(Thất bại|Lỗi)/i,
+    ];
+    return rawText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((line) => {
+        if (!line || line === 'undefined') return false;
+        return !junkPatterns.some((pattern) => pattern.test(line));
+      })
+      .join('\n');
+  }
+
   // Ghi lại nội dung mọi phần tử mới thêm vào DOM ngay khi nó xuất hiện (đề phòng bị
   // tự thu gọn/gỡ khỏi DOM trước lúc copy).
   function acpStartObserver() {
@@ -1236,14 +1267,21 @@
           if (capturedNodes.has(node)) continue;
           capturedNodes.add(node);
           // Bỏ qua các phần tử UI của script để không dính text trạng thái vào bản copy
-          if (node.id === 'acp-status-box' || node.id === 'acp-float-btn' || (node.closest && (node.closest('#acp-status-box') || node.closest('#acp-float-btn')))) {
-            continue;
-          }
+          const isOurUi = node.id === 'acp-status-box' ||
+            node.id === 'acp-float-btn' ||
+            node.id === '__copy_wait_toast__' ||
+            (node.closest && (node.closest('#acp-status-box') || node.closest('#acp-float-btn') || node.closest('#__copy_wait_toast__')));
+          if (isOurUi) continue;
+
           // BUG FIX: Tuyệt đối KHÔNG dùng node.innerText ở đây vì sẽ ép trình duyệt tính reflow
           // layout liên tục (Layout Thrashing), làm đơ UI / treo trình duyệt khi mở nhiều dòng.
           // Dùng textContent để lấy nội dung cực nhanh và mượt.
           const text = (node.textContent || '').trim();
-          if (text && text.length > 5) recoveryBlocks.push({ node, text });
+          if (text && text.length > 5) {
+            // Không bao giờ bắt các câu chữ trạng thái của chính script
+            if (/^(⚡|⏳|⏹|✅|📋|Đã mở:|Còn lại:)/.test(text)) continue;
+            recoveryBlocks.push({ node, text });
+          }
         }
       }
     });
@@ -1255,6 +1293,7 @@
         return recoveryBlocks
           .filter((b) => !document.body.contains(b.node))
           .map((b) => b.text)
+          .filter((t) => !/^(⚡|⏳|⏹|✅|📋|Đã mở:|Còn lại:)/.test(t))
           .join('\n');
       },
     };
@@ -1267,11 +1306,7 @@
   // bookmarklet CopyAll — đảm bảo lấy trọn vẹn 100% tất cả các bảng/chương trình thi đua
   // (tránh lỗi chỉ querySelector trúng 1 bảng đầu tiên).
   function acpExtractVisibleText() {
-    const excluded = Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden'));
-    const statusBox = document.getElementById('acp-status-box');
-    const floatBtn = document.getElementById('acp-float-btn');
-    if (statusBox) excluded.push(statusBox);
-    if (floatBtn) excluded.push(floatBtn);
+    const excluded = Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden, #acp-status-box, #acp-float-btn, #__copy_wait_toast__'));
     const prevDisplay = excluded.map((el) => el.style.display);
     excluded.forEach((el) => { el.style.display = 'none'; });
 
@@ -1292,10 +1327,7 @@
 
     excluded.forEach((el, i) => { el.style.display = prevDisplay[i]; });
 
-    return text
-      .split('\n')
-      .filter((line) => line.trim() && line.trim() !== 'undefined')
-      .join('\n');
+    return acpSanitizeText(text);
   }
 
   function acpEnsureStatusBox() {
@@ -1442,7 +1474,8 @@
       observer.disconnect();
       const currentText = acpExtractVisibleText();
       const recoveryText = observer.buildRecoveryText();
-      const finalText = recoveryText ? `${currentText}\n${recoveryText}` : currentText;
+      const rawText = recoveryText ? `${currentText}\n${recoveryText}` : currentText;
+      const finalText = acpSanitizeText(rawText);
       copyToClipboard(finalText);
 
       const stillPending = acpGetPlusCandidates().length;
