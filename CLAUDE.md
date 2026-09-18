@@ -10,6 +10,34 @@
 
 ---
 
+## 0.0. Quyền hạn của Agent trên project (chủ dự án cấp 2026-09-18)
+
+> Nguyên văn yêu cầu của chủ dự án: *"Tôi cho phép claude toàn quyền trên project và agent có thể
+> làm bất cứ điều gì để nâng cấp và cải thiện dự án."*
+
+**Agent ĐƯỢC tự làm, không cần hỏi trước:**
+- Chạy Firebase CLI cho mọi lệnh đọc (`firestore:databases:list`, `firestore:indexes`,
+  `projects:list`, `login:list`…). CLI đã đăng nhập sẵn bằng `lts.truongson@gmail.com` nhưng
+  **KHÔNG có trong PATH** — phải gọi `./node_modules/.bin/firebase`.
+- Chạy script khảo sát chỉ-đọc trên dữ liệu thật (vd `functions/scripts/audit-firestore-readonly.cjs`).
+- `npm run deploy:rules`, `npm run deploy:functions`, tạo/sửa Firestore index.
+- Tạo database/collection mới, chạy script di trú dữ liệu, sửa `firebase.json`.
+- Mọi thao tác Git thông thường: commit, tạo nhánh, push.
+
+**Vẫn BÁO TRƯỚC MỘT CÂU rồi mới làm** (không phải xin phép — chỉ để chủ dự án kịp dừng nếu đang giờ
+bán hàng), **chỉ với việc PHÁ HUỶ KHÔNG HOÀN TÁC ĐƯỢC trên dữ liệu production:**
+- Xoá collection/database/document thật (khác với ghi đè mà bản sao nguồn vẫn còn nguyên).
+- `git push --force`, xoá nhánh từ xa, viết lại lịch sử đã đẩy.
+- Xoá/thay `firebase-applet-config.json`, `.env`, service account key.
+
+*Ba nhóm trên do agent tự thêm 2026-09-18, chủ dự án có thể bỏ nếu không muốn. Lý do: quyền đã cấp
+đủ rồi, nhưng ba nhóm này không có đường lùi — sai là mất dữ liệu thật của siêu thị đang chạy, mà
+một câu báo trước rẻ hơn nhiều so với khôi phục. Mọi việc khác agent cứ làm thẳng.*
+
+**Mục này thay thế các câu "không phải việc agent tự chạy" ở bản CLAUDE.md cũ** (mục 1.1, dòng Deploy).
+
+---
+
 ## 0. Quy trình bắt buộc trước khi sửa code
 
 1. **Yêu cầu bắt buộc trước khi sửa lớn**: Agent phải chủ động thực hiện commit trạng thái Git hiện tại trước khi bắt đầu sửa đổi mã nguồn (ví dụ chạy lệnh commit với tin nhắn mô tả rõ trạng thái "trước khi sửa X").
@@ -20,7 +48,7 @@
    Lệnh này tự động nén zip lưu trong `archive` và đồng bộ lên Github.
 3. **Lập kế hoạch trước khi sửa**: Luôn tạo hoặc cập nhật tệp `implementation_plan.md` mô tả các tệp thay đổi và thiết kế giải pháp trước khi thực hiện.
 4. **Phạm vi tác động**: Chỉ thực hiện đúng phạm vi yêu cầu của task. Không tự ý mở rộng, không tự ý refactor lớn khi task yêu cầu sửa nhỏ, không đổi tên biến/file/route/function nếu không cần thiết.
-5. **Bảo mật**: Không được xóa hay thay đổi file cấu hình, `.env`, token, firebase key. Không tự ý hard-code API key mới vào mã nguồn.
+5. **Bảo mật**: Không tự ý hard-code API key mới vào mã nguồn, không in nội dung token/key ra log hay báo cáo, không commit file bí mật (`.env`, `firebase-applet-config.json`, service account key) vào Git. *(Sửa 2026-09-18 theo mục 0.0: agent ĐƯỢC đọc/dùng các file này để làm việc; chỉ XOÁ hoặc THAY chúng mới cần báo trước một câu.)*
 6. **Báo cáo hoàn tất**: Sau khi sửa xong, báo cáo rõ ràng: các file đã sửa, lý do sửa, rủi ro, cách kiểm tra.
 7. **Xác minh trước khi báo cáo**: Bắt buộc chạy lệnh kiểm tra tự động trước khi báo cáo hoàn thành:
    ```bash
@@ -86,10 +114,21 @@ deploy CẢ HAI file cùng lúc.
 - ⚠️ Khi thêm **collection/subcollection Firestore mới**, **bắt buộc cập nhật file rules ĐÚNG với database của khu vực đó**: root / `features/phan-ca` / `features/bi-dashboard` dùng database `(default)` → sửa `firestore.rules`; `features/sticker-event` dùng database riêng → sửa `firestore.stickerevent.rules`. *(Sửa 2026-09-17: bản cũ ghi "3 khu vực dùng chung project Firebase `dashboa-7e20b`" — thực tế **cả 4 khu vực** dùng chung project đó, sticker-event chỉ khác database. Nói "3 khu vực" dễ khiến người đọc tưởng sticker-event ở project khác nên không liên quan.)* Quên bước này gây lỗi "Missing or insufficient permissions" im lặng (đã xảy ra thật với `users/{uid}/salesData` và `_system/stats` — audit ban đầu bỏ sót vì dùng grep quá hẹp, chỉ bắt `collection(db, 'x')` 1 tham số, không bắt được `collection(db, 'users', uid, 'salesData')` nhiều tham số).
 - 🔵 **Phân quyền theo siêu thị ở Report BI** (bổ sung 2026-08-31): dữ liệu Thi đua/Summary Luỹ kế dùng chung theo siêu thị lưu ở `biData/{maKho}/…` — dùng LẠI đúng field `departmentId`/hàm `myKhos()` đã có (1 Kho = 1 Siêu thị trong thực tế công ty, xác nhận với user), KHÔNG có custom claim `allowedSupermarkets` riêng. Chỉ manager/admin được ghi (`isManager()`), mọi user cùng Kho đọc được. Xem `implementation_plan.md` mục "Đợt 4" để biết đầy đủ thiết kế + bảng map "tên siêu thị trong báo cáo" → "Mã Kho".
 - `functions/` là project TypeScript độc lập (tsconfig/package.json riêng), bị loại trừ khỏi `tsconfig.json` và `eslint.config.js` ở gốc — không chạy qua `npm run check`, phải tự `cd functions && npm run typecheck && npm run build` để kiểm tra riêng.
-- Deploy: `npm run deploy:rules` / `npm run deploy:functions` (cần `firebase login` thủ công bằng tài khoản Google có quyền trên project — không tự động hoá, không phải việc agent tự chạy).
+- Deploy: `npm run deploy:rules` (deploy CẢ HAI file rules) / `npm run deploy:functions`. *(Sửa 2026-09-18: bản cũ ghi "không phải việc agent tự chạy" — xem mục 0.0, chủ dự án đã cấp quyền.)*
 - 🔴 **`features/sticker-event` dùng CHUNG project Firebase `dashboa-7e20b` với 3 khu vực còn lại, chỉ khác *database*** — database `ai-studio-16672ec9-22fb-43a6-b6ee-e59aa8a8c699`, cấu hình động qua `firebase-applet-config.json` (gitignored). Phía Cloud Functions, `functions/src/firebaseAdmin.ts` có sẵn 2 instance: `db` (database `(default)`) và `stickerDb` (database In Sticker).
   *(Sửa 2026-09-17: bản cũ ghi "dùng Firebase project **riêng**" và "**chưa** áp dụng pattern Cloud Functions này, vẫn ghi `role` trực tiếp từ client" — **CẢ HAI ĐỀU SAI**. Đã đo trên code: `firebase-applet-config.json` có `projectId: dashboa-7e20b`; còn `firestore.stickerevent.rules` hiện đã khoá `protectedKeys() = ['role','storeId','username']` khỏi mọi lượt update từ client và **bỏ hẳn `allow create`** — hồ sơ user chỉ tạo được qua Cloud Function `stickerRegister`, đổi role/storeId chỉ qua `stickerAdminUpdateUser`. Câu sai này nguy hiểm thật: nó từng làm agent kết luận sai về nguồn gốc hết hạn mức Firestore, xem `implementation_plan.md` mục "Audit hạn mức đọc/ghi Firestore".)*
-- 🔴 **Hạn mức Firestore — trần CỨNG của database In Sticker.** Database `ai-studio-…` thuộc diện **"free tier database"**: server trả nguyên văn *"This database cannot exceed free quota limits even when a billing instrument is enabled"*. Nghĩa là **nâng lên gói Blaze cũng KHÔNG nới được** hạn mức cho database này. (Thông báo lỗi không nêu con số; hạn mức đọc miễn phí tiêu chuẩn của Firestore là 50.000/ngày — con số này là suy ra từ tài liệu, chưa phải quan sát.) Hạn mức bị chạm thật ngày 2026-09-17 là hạn mức **ĐỌC**. Khi sửa bất cứ gì trong `features/sticker-event` chạm Firestore, **phải cân nhắc số lượt đọc**: đừng thêm query chạy mỗi lần mở app/mở modal mà không có cơ chế cache hoặc smart-sync theo mốc thời gian (`metadata/sync`). Xem `implementation_plan.md` mục "Audit hạn mức đọc/ghi Firestore" để biết các mẫu đã áp dụng và cách ĐO (`tests/unit/sticker-firestore-quota.test.ts` — bộ mock Firestore đếm chính xác số lượt đọc/ghi/xoá của hàm thật).
+- 🔴 **Hạn mức Firestore — trần CỨNG của database In Sticker.** Đo thật bằng
+  `./node_modules/.bin/firebase firestore:databases:list --project dashboa-7e20b` (2026-09-18):
+
+  | Database | Edition | Dùng bởi |
+  |---|---|---|
+  | `(default)` | **STANDARD** | root, bi-dashboard, phan-ca |
+  | `ai-studio-16672ec9-…` | **ENTERPRISE** | sticker-event |
+
+  Database In Sticker là **Enterprise edition do Google AI Studio tự tạo** — đây mới là nguyên nhân
+  thật của trần cứng (không phải chuyện Spark/Blaze). `(default)` là STANDARD nên có gói miễn phí
+  tiêu chuẩn và nâng Blaze được → **di trú sang `(default)` thực sự gỡ được trần**. Database In
+  Sticker thuộc diện **"free tier database"**: server trả nguyên văn *"This database cannot exceed free quota limits even when a billing instrument is enabled"*. Nghĩa là **nâng lên gói Blaze cũng KHÔNG nới được** hạn mức cho database này. (Thông báo lỗi không nêu con số; hạn mức đọc miễn phí tiêu chuẩn của Firestore là 50.000/ngày — con số này là suy ra từ tài liệu, chưa phải quan sát.) Hạn mức bị chạm thật ngày 2026-09-17 là hạn mức **ĐỌC**. Khi sửa bất cứ gì trong `features/sticker-event` chạm Firestore, **phải cân nhắc số lượt đọc**: đừng thêm query chạy mỗi lần mở app/mở modal mà không có cơ chế cache hoặc smart-sync theo mốc thời gian (`metadata/sync`). Xem `implementation_plan.md` mục "Audit hạn mức đọc/ghi Firestore" để biết các mẫu đã áp dụng và cách ĐO (`tests/unit/sticker-firestore-quota.test.ts` — bộ mock Firestore đếm chính xác số lượt đọc/ghi/xoá của hàm thật).
 - ⚠️ Riêng In Sticker, `role` được dùng qua **custom claim `stickerRole`/`stickerStoreId`** (không phải `role`/`departmentId` của app gốc) — 2 hệ phân quyền tách biệt dù ở cùng project.
 
 ---
