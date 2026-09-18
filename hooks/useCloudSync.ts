@@ -6,6 +6,9 @@ import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import toast from 'react-hot-toast';
 import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
+// Các lớp chặn của đường "lấy khoá nặng từ Cloud về" đã tách ra module thuần để test được.
+// ĐỌC comment đầu services/heavySyncPolicy.ts trước khi sửa: đây là chỗ đã sinh 3 bug user báo.
+import { considerCloudDoc, isCloudNewer } from '../services/heavySyncPolicy';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -216,36 +219,31 @@ export const useCloudSync = () => {
                         // nên cache của tab khác không lẫn vào đây). Kiểm tra cờ này TRƯỚC, đáng tin
                         // cậy hơn nên đặt làm lớp chặn đầu tiên; 2 lớp cũ bên dưới giữ nguyên làm dự
                         // phòng cho trường hợp hiếm `includeMetadataChanges` hành xử khác dự kiến.
-                        if (docSnap.metadata.hasPendingWrites) {
+                        // Toàn bộ 3 lớp chặn dưới đây giờ nằm trong `considerCloudDoc()`
+                        // (services/heavySyncPolicy.ts) — nguyên văn giải thích từng lớp đã chuyển
+                        // sang đó cùng với test cho từng nhánh. Giữ ĐÚNG thứ tự cũ: chỉ đọc
+                        // IndexedDB sau khi đã qua hết các lớp chặn rẻ này.
+                        const verdict = considerCloudDoc({
+                            isHeavyKey: true, // đã lọc bằng isHeavySyncKey(key) ở trên
+                            hasPendingWrites: docSnap.metadata.hasPendingWrites,
+                            localWritePendingOrInFlight:
+                                Boolean(heavyTimeoutsRef.current[key]) || isHeavyKeyInFlight(key),
+                            data: docSnap.data(),
+                        });
+                        if (verdict.consider === false) { // `=== false` để TypeScript thu hẹp đúng union
+                            if (verdict.reason === 'local-write-pending-or-in-flight') {
+                                console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending or in flight.`);
+                            }
                             continue;
                         }
 
-                        // Skip updating if a local write for this heavy key is debounced/pending —
-                        // hoặc ĐANG BAY lên Firestore (isHeavyKeyInFlight). `heavyTimeoutsRef` chỉ phủ
-                        // được lúc CHỜ debounce (2s); sau khi debounce bắn, updatedAt thật sự ghi vào
-                        // Firestore là serverTimestamp() chốt lúc SERVER nhận ghi — luôn TRỄ hơn
-                        // lastModified_ (Date.now() chốt lúc sửa, trước debounce) ít nhất bằng độ trễ
-                        // debounce + round-trip mạng. Nếu không loại trừ isHeavyKeyInFlight, chính lượt
-                        // ghi của TAB NÀY sẽ tự "vọng" (echo) về qua onSnapshot và bị hiểu nhầm là
-                        // "cloud mới hơn" — gây toast "cập nhật ở nơi khác" giả cho checkthuong_data dù
-                        // không hề có tab/thiết bị nào khác đang sửa (bug user báo cáo).
-                        if (heavyTimeoutsRef.current[key] || isHeavyKeyInFlight(key)) {
-                            console.warn(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending or in flight.`);
-                            continue;
-                        }
-
-                        const data = docSnap.data();
-                        if (!data) continue;
-                        if (!data.chunked && data.value === undefined) continue;
-
-                        const cloudTime = data.updatedAt?.toMillis
-                            ? data.updatedAt.toMillis()
-                            : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
+                        const data = docSnap.data()!;
+                        const cloudTime = verdict.cloudTimeMs;
 
                         const localValue = await getSetting<unknown>(key);
                         const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
 
-                        if (localValue === null || cloudTime > localTime) {
+                        if (isCloudNewer(cloudTime, localValue !== null, localTime)) {
                             console.warn(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
 
                             let val: typeof data.value;

@@ -4206,3 +4206,37 @@ khác không lẫn vào đây" — bật lên là mở lại đúng lớp bug đ
 **Kiểm chứng:** `npm run test:unit` **510 passed | 1 skipped** (+6 test mới); `npm run build` ✓
 10.64s; `eslint` sạch; `tsc` 0 lỗi trong file đợt này (tổng vẫn 18 baseline); `lint:ratchet` 13 baseline.
 
+
+### Bước 1 của đợt "đổi listener configs": DỰNG LƯỚI AN TOÀN (2026-09-18)
+
+Chưa đổi cơ chế listener. Bước này chỉ **tách logic quyết định ra module thuần + viết test** —
+đúng trình tự đã cam kết, vì `hooks/useCloudSync.ts` là chỗ đã sinh ít nhất 3 bug user báo.
+
+**Files:**
+- `services/heavySyncPolicy.ts` (MỚI) — `considerCloudDoc()` (3 lớp chặn), `extractCloudTimeMs()`
+  (chịu 3 dạng dữ liệu: Firestore Timestamp / số ms / `savedAt` của bản ghi cũ), `isCloudNewer()`.
+  Toàn bộ giải thích "vì sao có lớp này" chuyển sang đây cùng với test.
+- `hooks/useCloudSync.ts` — thay ĐÚNG phần guard bằng 2 lệnh gọi trên. `git diff` xác nhận
+  **phần áp dụng giá trị (chunk, productConfig Set, saveSettingFromCloud, iframe Check Thưởng)
+  không bị chạm một dòng nào**.
+- `tests/unit/heavy-sync-policy.test.ts` (MỚI, **17 test**).
+
+**Test đáng chú ý nhất** — khoá lại đúng những chỗ đã từng hỏng:
+- `hasPendingWrites` phải **thắng mọi yếu tố khác**: dựng tình huống cloud "rất mới" + mọi cờ khác
+  cũng bật, và khẳng định vẫn bỏ qua. Nếu ai đổi thứ tự kiểm tra thì bug self-echo lần 4 quay lại.
+- Document **đã chunk vốn không có `value`** phải được xét, không bị coi là hỏng. Nhầm nhánh này
+  thì mọi cấu hình lớn (vd `checkthuong_data` ~4MB) **không bao giờ** đồng bộ được, mà không báo lỗi.
+- Mốc thời gian không xác định → 0, và 0 là an toàn: local đã có dữ liệu thì không bị ghi đè.
+- Máy chưa có dữ liệu → luôn lấy về, bất kể mốc thời gian (nếu không, máy mới kẹt ở trạng thái rỗng).
+
+**Một lần làm sai đáng ghi lại:** lần đầu tôi thử thay bằng 1 lệnh replace lớn, kết quả là gọi một
+hàm chưa tồn tại và để nguyên khối cũ thành code chết. Đã `git checkout` hoàn nguyên rồi làm lại
+theo cách chỉ thay đúng phần guard. Trên file này, edit lớn một nhát là sai — phải đổi từng phần
+nhỏ và đối chiếu `git diff` sau mỗi bước.
+
+**Kiểm chứng:** `npm run test:unit` **527 passed | 1 skipped** (+17 test mới); `npm run build` ✓
+9.80s; `eslint` sạch; `tsc` 0 lỗi trong file đợt này (tổng vẫn 18 baseline); `lint:ratchet` 13 baseline.
+
+**Bước 2 (đổi listener collection → listener 1 document "chỉ mục mốc thời gian") CHƯA làm.** Xem
+đánh giá lợi ích/rủi ro ở cuối mục này trước khi quyết định làm tiếp.
+

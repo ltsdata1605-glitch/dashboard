@@ -1639,12 +1639,14 @@
             }
 
             let lastRankingModalOpenTime = 0;
+            let modalOpenedAt = 0;
             function triggerRankingModal(groupName, groupChannel) {
                 const now = Date.now();
-                if (now - lastRankingModalOpenTime < 300) return;
+                if (now - lastRankingModalOpenTime < 350) return;
                 lastRankingModalOpenTime = now;
                 showRankingModal(groupName, groupChannel);
             }
+            window.triggerRankingModal = triggerRankingModal;
 
             function showRankingModal(groupName, groupChannel) {
                 if (!groupName) return;
@@ -1699,7 +1701,9 @@
                 renderRankingTable(rankingDataForModal, titleText);
                 
                 modalTitle.textContent = titleText;
+                modalOpenedAt = Date.now();
                 rankingModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
                 const modalScrollArea = document.getElementById('modalBody');
                 if (modalScrollArea) modalScrollArea.scrollTop = 0;
             }
@@ -1798,6 +1802,8 @@
 
                     const safeGroupName = String(groupNameVal || '').replace(/"/g, '&quot;');
                     const safeGroupChannel = String(groupChannelVal || '').replace(/"/g, '&quot;');
+                    const safeGroupNameAttr = String(groupNameVal || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeGroupChannelAttr = String(groupChannelVal || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     const rank = index;
                     const rankColor = 
@@ -1807,11 +1813,11 @@
                         'text-slate-400 font-bold';
 
                     return `
-                        <tr class="hover:bg-sky-50/60 cursor-pointer transition-colors text-xs border-b border-slate-100 last:border-0 group view-ranking-row" onclick="void(0)" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
-                            <td class="px-2.5 py-1 text-slate-800 overflow-hidden cursor-pointer" style="max-width: 0;">
-                                <div class="flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                        <tr class="hover:bg-sky-50/60 cursor-pointer transition-colors text-xs border-b border-slate-100 last:border-0 group view-ranking-row" onclick="window.triggerRankingModal && window.triggerRankingModal('${safeGroupNameAttr}', '${safeGroupChannelAttr}')" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                            <td class="px-2.5 py-1 text-slate-800 overflow-hidden cursor-pointer" style="max-width: 0;" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
+                                <div class="flex items-center gap-2 min-w-0 w-full overflow-hidden" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
                                     <span class="${rankColor} text-[11px] shrink-0">#${rank}</span>
-                                    <span class="truncate min-w-0 flex-1 font-medium text-slate-700 group-hover:text-sky-600 group-hover:underline" title="${safeGroupName}">${groupNameVal}</span>${nearlyBadgeHtml}
+                                    <span class="truncate min-w-0 flex-1 font-medium text-slate-700 group-hover:text-sky-600 group-hover:underline" title="${safeGroupName}" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">${groupNameVal}</span>${nearlyBadgeHtml}
                                     <button class="view-ranking-btn no-print ml-1 text-slate-300 hover:text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer" title="Xem xếp hạng" data-group-name="${safeGroupName}" data-group-channel="${safeGroupChannel}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                     </button>
@@ -1910,9 +1916,11 @@
 
                     const safeCardGroupName = String(row[COLS.NGANH_HANG] || '').replace(/"/g, '&quot;');
                     const safeCardGroupChannel = String(row[COLS.KENH] || '').replace(/"/g, '&quot;');
+                    const safeCardGroupNameAttr = String(row[COLS.NGANH_HANG] || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeCardGroupChannelAttr = String(row[COLS.KENH] || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     return `
-                        <div class="s-card border border-slate-200 cursor-pointer view-ranking-card hover:shadow-md transition-all group/card" onclick="void(0)" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}">
+                        <div class="s-card border border-slate-200 cursor-pointer view-ranking-card hover:shadow-md transition-all group/card" onclick="window.triggerRankingModal && window.triggerRankingModal('${safeCardGroupNameAttr}', '${safeCardGroupChannelAttr}')" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}">
                             <div class="${bg}" style="padding:7px 10px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e2e8f0">
                                 <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate group-hover/card:underline">${groupName.toUpperCase()}</h3>
                                 <button class="view-ranking-btn no-print" title="Xem xếp hạng" data-group-name="${safeCardGroupName}" data-group-channel="${safeCardGroupChannel}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:4px;border-radius:6px;background:rgba(255,255,255,0.3);border:none;cursor:pointer;color:inherit;display:flex;align-items:center;justify-content:center">
@@ -2699,7 +2707,7 @@
             // Đảm bảo trên mọi thiết bị cảm ứng / iOS Mobile Safari, click vào dòng/thẻ thi đua luôn kích hoạt mở modal
             document.addEventListener('click', (event) => {
                 if (event.target.closest('.exportGroupImageBtn') || event.target.closest('#rankingModal')) return;
-                const rankingTarget = event.target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item');
+                const rankingTarget = event.target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item, [data-group-name]');
                 if (rankingTarget) {
                     const groupName = rankingTarget.dataset.groupName;
                     const groupChannel = rankingTarget.dataset.groupChannel;
@@ -2709,11 +2717,57 @@
                 }
             }, { passive: true });
 
-            closeModalButton.addEventListener('click', () => { rankingModal.classList.add('hidden'); });
+            // Hỗ trợ thiết bị cảm ứng điện thoại (iOS Safari & Android): phát hiện cử chỉ TAP nhanh trên dòng/thẻ
+            let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartTime = Date.now();
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (e.changedTouches && e.changedTouches.length === 1) {
+                    const deltaX = Math.abs(e.changedTouches[0].clientX - touchStartX);
+                    const deltaY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+                    const deltaTime = Date.now() - touchStartTime;
+
+                    // Nếu ngón tay di chuyển < 12px và buông ra trong vòng 500ms -> người dùng TAP vào dòng (không phải cuộn màn hình)
+                    if (deltaX < 12 && deltaY < 12 && deltaTime < 500) {
+                        const target = e.target;
+                        if (target.closest('.exportGroupImageBtn') || target.closest('#rankingModal')) return;
+                        const rankingTarget = target.closest('.view-ranking-btn, .view-ranking-row, .view-ranking-card, .opportunity-item, [data-group-name]');
+                        if (rankingTarget) {
+                            const groupName = rankingTarget.dataset.groupName;
+                            const groupChannel = rankingTarget.dataset.groupChannel;
+                            if (groupName) {
+                                triggerRankingModal(groupName, groupChannel);
+                            }
+                        }
+                    }
+                }
+            }, { passive: true });
+
+            const closeRankingModal = () => {
+                rankingModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+
+            closeModalButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeRankingModal();
+            });
+            closeModalButton.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+                closeRankingModal();
+            });
             
             rankingModal.addEventListener('click', (event) => { 
+                // Chặn click ma (ghost click) đóng modal ngay lập tức do touch synthesize trên mobile
+                if (Date.now() - modalOpenedAt < 400) return;
                 if (event.target === rankingModal) { 
-                    rankingModal.classList.add('hidden'); 
+                    closeRankingModal();
                 }
                 const exportBtn = event.target.closest('#exportRankingImageButton');
                 if (exportBtn) {
