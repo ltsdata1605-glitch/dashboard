@@ -4555,3 +4555,44 @@ thuộc máy).
 **Kiểm chứng:** YAML parse thành công bằng thư viện `yaml` (2 job, 7 và 6 bước); `tsc` **0 lỗi**;
 `test:unit` **540 passed | 1 skipped**; tập 7 spec: **20 passed (2,4 phút)**.
 
+
+### Viết lại test TOP Siêu Thị cho ĐÚNG chỗ + xoá test-bản-sao — 2026-09-18
+
+**Phát hiện thứ tư cùng một lớp vấn đề trong ngày.** `tests/unit/check-thuong-top-logic.test.ts`
+**không import gì từ mã nguồn** — nó tự chép lại hàm `calculateTopSupermarkets` ngay trong file test
+rồi kiểm bản sao đó. Tức nếu logic thật đổi, test vẫn xanh. Tệ hơn: nó kiểm khái niệm **"top 20"
+vốn KHÔNG hề tồn tại** trong `features/check-thuong/services/checkThuongCalc.ts`.
+
+(Đáng nói: sáng nay tôi đã "sửa" 10 lỗi typecheck của chính file này mà không nhận ra nó chẳng kiểm
+gì thật.)
+
+**Đã xoá** file đó. Tầng tính toán vốn đã có `features/check-thuong/services/checkThuongCalc.test.ts`
+(9 test, **import hàm thật**, chủ dự án viết hôm nay) phủ rộng hơn hẳn. Ca hữu ích duy nhất còn
+thiếu — **dữ liệu rỗng** — đã chuyển sang file test thật (giờ 10 test).
+
+**`tests/e2e/check-thuong-top-feature.spec.ts` viết lại hoàn toàn.** Bản cũ mở trang vanilla
+`public/check-thuong.html` và tìm `#topFilter20Btn`/`#topContent` — những id không tồn tại. Tính
+năng thật nằm ở component React (`CheckThuongLeaderboardView` → `CheckThuongChannelTopGrid` +
+`CheckThuongTopTable`), nhận `competitionData` qua `postMessage`.
+
+Spec mới **bơm thẳng dữ liệu qua đúng kênh đó** — không cần iframe, không cần file Excel, không cần
+đăng nhập. Dùng `CHECK_THUONG_COLS` import từ chính mã nguồn để dựng dòng dữ liệu, nên nếu vị trí
+cột đổi thì test hỏng theo (đúng ý muốn). 3 test: hiển thị đủ 3 siêu thị / siêu thị thưởng cao nhất
+đứng trước / gộp đúng 2 ngành hàng cùng siêu thị thành 1 dòng.
+
+**2 cái bẫy đã ghi vào comment:**
+- Sidebar **bung ra khi chuột đi ngang qua** và nuốt cú click vào tab con → phải `mouse.move()` ra
+  góc phải trước. Không làm thì timeout đủ 60 giây, nhìn như lỗi khác hẳn.
+- Tab con là `<button>` chứa `<span>`, nên dùng `getByRole('button')` thay vì `getByText`.
+
+**CHỨNG MINH TEST THẬT SỰ SỐNG** (không lặp lại sai lầm hôm nay): tạm thêm một khẳng định chắc chắn
+sai (`toContain('SIÊU THỊ KHÔNG TỒN TẠI')`) → kết quả **1 failed / 2 passed**, đúng như mong đợi,
+rồi gỡ ra. Test có khả năng báo đỏ, không phải xanh vô điều kiện.
+
+**Ảnh chụp màn hình thật cũng xác nhận luôn phần màu đã sửa lúc chiều:** badge kênh **DMM hiện màu
+indigo**, phân biệt rõ với **DML (sky)** và **TGDD (amber)**. Bảng xếp đúng thứ tự thưởng giảm dần
+(B 3 Tr → A 2 Tr → C 0 Tr) và "Siêu Thị A" gộp 2 ngành thành 1 dòng "1 / 2 đạt 100%".
+
+**Kiểm chứng:** 3 E2E test **passed (22s)**; `tsc` **0 lỗi**; `test:unit` **536 passed | 1 skipped**
+(giảm 4 so với trước vì đã xoá 5 test-bản-sao và thêm 1 test thật); `eslint` sạch.
+

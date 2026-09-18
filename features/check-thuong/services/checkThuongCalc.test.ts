@@ -177,7 +177,20 @@ describe('checkThuongCalc', () => {
             expect(byBonusDesc[0].storeCode).toBe('1024');
         });
 
-        it('gets distinct channels', () => {
+        // Bổ sung 2026-09-18: ca dữ liệu RỖNG. Trước đây ca này chỉ có ở
+    // `tests/unit/check-thuong-top-logic.test.ts` — file đó KHÔNG import code thật mà tự chép lại
+    // logic, nên nó kiểm một bản sao chứ không kiểm production (nó còn kiểm khái niệm "top 20"
+    // vốn không hề tồn tại trong `checkThuongCalc.ts`). Đã xoá file đó và chuyển ca hữu ích sang
+    // đây, nơi hàm THẬT được gọi.
+    it('xử lý dữ liệu rỗng mà không ném lỗi', () => {
+        expect(parseStoreSummaryFromData([])).toEqual([]);
+        expect(getDistinctChannels([])).toEqual([]);
+        const stats = calculateSystemStats([]);
+        expect(stats).toBeDefined();
+        expect(filterAndSortStoreSummaries([], { channel: 'all', search: '', sortBy: 'bonus', sortDir: 'desc' } as never)).toEqual([]);
+    });
+
+    it('gets distinct channels', () => {
             expect(getDistinctChannels(stores)).toEqual(['DMX', 'TGDD']);
         });
 
