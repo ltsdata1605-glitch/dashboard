@@ -50,6 +50,7 @@
 'use strict';
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 const admin = require('firebase-admin');
@@ -80,18 +81,140 @@ const STICKER_DB_ID = stickerEntry.database;
 let defaultDb;
 let stickerDb;
 
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+
+/** projectId lấy từ `.firebaserc` — nguồn chân lý của Firebase CLI, không chép cứng. */
+const readProjectId = () => {
+    const rcPath = path.join(REPO_ROOT, '.firebaserc');
+    if (!fs.existsSync(rcPath)) return undefined;
+    const rc = JSON.parse(fs.readFileSync(rcPath, 'utf8'));
+    return rc && rc.projects ? rc.projects.default : undefined;
+};
+
+/**
+ * Xác thực DỰ PHÒNG: dùng lại phiên đăng nhập sẵn có của Firebase CLI.
+ *
+ * Vì sao cần: Admin SDK mặc định tìm ADC (`~/.config/gcloud/…` hoặc GOOGLE_APPLICATION_CREDENTIALS),
+ * còn `firebase login` lưu refresh token ở chỗ KHÁC (`~/.config/configstore/firebase-tools.json`).
+ * Máy dev của dự án này có cái sau mà không có cái trước, và cài thêm `gcloud` chỉ để chạy 1 script
+ * khảo sát là thừa.
+ *
+ * An toàn: refresh token chỉ được đọc vào BỘ NHỚ rồi đưa thẳng cho Admin SDK — không ghi ra file
+ * nào, không in ra log, không đi vào báo cáo. `client_id`/`client_secret` đọc từ chính package
+ * `firebase-tools` đã cài (2 hằng số công khai của CLI), KHÔNG hard-code vào mã nguồn — CLAUDE.md
+ * mục 0.5 cấm hard-code key.
+ */
+let tempAdcPath = null;
+
+const adcFromFirebaseCli = () => {
+    const cfgPath = path.join(os.homedir(), '.config', 'configstore', 'firebase-tools.json');
+    if (!fs.existsSync(cfgPath)) return null;
+
+    let refreshToken;
+    try {
+        const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+        refreshToken = cfg && cfg.tokens ? cfg.tokens.refresh_token : undefined;
+    } catch {
+        return null;
+    }
+    if (!refreshToken) return null;
+
+    let api;
+    try {
+        api = require(path.join(REPO_ROOT, 'node_modules', 'firebase-tools', 'lib', 'api.js'));
+    } catch {
+        return null;
+    }
+    if (typeof api.clientId !== 'function' || typeof api.clientSecret !== 'function') return null;
+
+    // Phải ghi ra FILE chứ không dùng admin.credential.refreshToken() trực tiếp: client Firestore
+    // của Admin SDK từ chối credential dạng refresh token ("Must initialize the SDK with a
+    // certificate credential or application default credentials") — đã thử và gặp lỗi đó thật.
+    // File có đúng định dạng `authorized_user` mà `gcloud auth application-default login` sinh ra.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ycx-adc-'));
+    const file = path.join(dir, 'adc.json');
+    fs.writeFileSync(file, JSON.stringify({
+        type: 'authorized_user',
+        client_id: api.clientId(),
+        client_secret: api.clientSecret(),
+        refresh_token: refreshToken,
+    }), { mode: 0o600 });
+    tempAdcPath = file;
+    return file;
+};
+
+/** Xoá file ADC tạm. Gọi ở MỌI đường thoát, kể cả khi lỗi hoặc bị Ctrl-C. */
+const cleanupTempAdc = () => {
+    if (!tempAdcPath) return;
+    try {
+        fs.rmSync(path.dirname(tempAdcPath), { recursive: true, force: true });
+    } catch {
+        // Không chặn luồng chính vì dọn file tạm thất bại.
+    }
+    tempAdcPath = null;
+};
+process.on('exit', cleanupTempAdc);
+process.on('SIGINT', () => { cleanupTempAdc(); process.exit(130); });
+
+/**
+ * Có ADC thật hay không.
+ *
+ * CỐ Ý kiểm bằng sự tồn tại của file, KHÔNG bằng try/catch quanh `applicationDefault()`:
+ * hàm đó KHÔNG ném lỗi lúc tạo credential — nó trả về object bình thường rồi mới hỏng lúc thực sự
+ * đi lấy access token, tức là quá muộn để chuyển sang nhánh dự phòng. (Gặp thật lúc chạy thử.)
+ */
+const hasApplicationDefaultCredentials = () => {
+    const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (envPath && fs.existsSync(envPath)) return true;
+    return fs.existsSync(path.join(os.homedir(), '.config', 'gcloud', 'application_default_credentials.json'));
+};
+
 const initFirestore = () => {
-    admin.initializeApp({ credential: admin.credential.applicationDefault() });
-    defaultDb = admin.firestore();
-    stickerDb = admin.firestore(admin.app(), STICKER_DB_ID);
+    const projectId = readProjectId();
+    let credential;
+    let source;
+
+    if (hasApplicationDefaultCredentials()) {
+        source = 'Application Default Credentials';
+    } else {
+        const file = adcFromFirebaseCli();
+        if (!file) throw new Error('NO_CREDENTIALS');
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = file;
+        source = 'phiên đăng nhập Firebase CLI (ADC tạm, xoá ngay sau khi chạy xong)';
+    }
+    credential = admin.credential.applicationDefault();
+
+    console.log(`  xác thực bằng     : ${source}`);
+    const app = admin.initializeApp({ credential, projectId });
+
+    // BẮT BUỘC dùng API modular `getFirestore(app, databaseId)` của 'firebase-admin/firestore'.
+    // API cũ `admin.firestore(app)` KHÔNG nhận tham số database thứ 2 — nó lặng lẽ bỏ qua và trả
+    // về database `(default)`. Lần chạy đầu tôi dùng nhầm cách đó: cả 2 handle cùng trỏ `(default)`
+    // nên `users` ở 2 "database" ra cùng một con số và `stores` đếm ra 0. Không có lỗi nào báo —
+    // đúng loại sai số liệu nguy hiểm nhất. `functions/src/firebaseAdmin.ts` vốn đã dùng đúng cách.
+    const { getFirestore } = require('firebase-admin/firestore');
+    defaultDb = getFirestore(app);
+    stickerDb = getFirestore(app, STICKER_DB_ID);
 };
 
 const fmt = (n) => n.toLocaleString('vi-VN');
 
+const isQuotaError = (err) => /RESOURCE_EXHAUSTED|Quota limit exceeded/i.test(String(err && err.message ? err.message : err));
+
+/** Đánh dấu "không đọc được vì hết hạn mức" thay vì để cả script chết. */
+const QUOTA_BLOCKED = Symbol('quota-blocked');
+
 const countOf = async (query) => {
-    const snap = await query.count().get();
-    return snap.data().count;
+    try {
+        const snap = await query.count().get();
+        return snap.data().count;
+    } catch (err) {
+        if (isQuotaError(err)) return QUOTA_BLOCKED;
+        throw err;
+    }
 };
+
+const show = (v) => (v === QUOTA_BLOCKED ? 'HẾT HẠN MỨC' : fmt(v));
 
 /**
  * Số document CÓ field này. Mẹo: `orderBy(field)` loại bỏ document THIẾU field đó, nên
@@ -109,13 +232,12 @@ const askYesNo = async (question) => {
 };
 
 async function main() {
-    initFirestore();
-
     console.log('='.repeat(78));
     console.log('KHẢO SÁT FIRESTORE — CHỈ ĐỌC');
     console.log(`  database mặc định : (default)`);
     console.log(`  database In Sticker: ${STICKER_DB_ID}`);
     console.log(`  mức chạy          : ${WANT_DEEP ? 'aggregation + uid + deep' : WANT_USERS ? 'aggregation + uid' : 'aggregation (an toàn)'}`);
+    initFirestore();
     console.log('='.repeat(78));
 
     // ── PHẦN 1: đếm bằng aggregation (rẻ) ────────────────────────────────────
@@ -123,8 +245,16 @@ async function main() {
 
     const defaultUsers = await countOf(defaultDb.collection('users'));
     const stickerUsers = await countOf(stickerDb.collection('users'));
-    console.log(`  users @ (default)   : ${fmt(defaultUsers)}`);
-    console.log(`  users @ In Sticker  : ${fmt(stickerUsers)}`);
+    console.log(`  users @ (default)   : ${show(defaultUsers)}`);
+    console.log(`  users @ In Sticker  : ${show(stickerUsers)}`);
+
+    if (stickerUsers === QUOTA_BLOCKED) {
+        console.log('\n  ⚠️  Database In Sticker đang HẾT HẠN MỨC ĐỌC — không khảo sát được phần của nó.');
+        console.log('      Đáng chú ý: database (default) vẫn đọc bình thường ở ngay trên → hai database');
+        console.log('      KHÔNG dùng chung bể hạn mức. Hạn mức reset lúc 0h giờ Thái Bình Dương');
+        console.log('      (khoảng 14-15h giờ Việt Nam). Chạy lại script sau mốc đó.\n');
+        return;
+    }
 
     // `listDocuments()` trả về cả document "ảo" (không tồn tại nhưng có subcollection) — đúng
     // trường hợp stores/{storeId} ở đây, vì code chỉ ghi vào subcollection chứ không tạo doc cha.
@@ -137,34 +267,57 @@ async function main() {
     let totalSavedLists = 0;
     const perStore = [];
 
+    // Hạn mức có thể cạn GIỮA CHỪNG (một số lượt count qua được, lượt sau bị chặn) — nên phải
+    // cộng dồn an toàn với giá trị QUOTA_BLOCKED và đánh dấu dòng nào không đọc đủ, thay vì để
+    // phép cộng ném "Cannot convert a Symbol value to a number" và mất sạch phần đã đọc được.
+    let blockedRows = 0;
     for (const storeRef of storeRefs) {
-        const row = { store: storeRef.id };
+        const row = { store: storeRef.id, blocked: false };
         for (const sub of SUB) {
-            row[sub] = await countOf(storeRef.collection(sub));
-            totals[sub] += row[sub];
+            const n = await countOf(storeRef.collection(sub));
+            if (n === QUOTA_BLOCKED) { row.blocked = true; row[sub] = QUOTA_BLOCKED; continue; }
+            row[sub] = n;
+            totals[sub] += n;
         }
+
         // Câu hỏi 2 (phần rẻ): bao nhiêu danh sách THIẾU authUid.
-        const withAuthUid = row.savedLists > 0 ? await countWithField(storeRef.collection('savedLists'), 'authUid') : 0;
-        row.missingAuthUid = row.savedLists - withAuthUid;
-        totalSavedLists += row.savedLists;
-        totalListsMissingAuthUid += row.missingAuthUid;
+        if (typeof row.savedLists === 'number' && row.savedLists > 0) {
+            const withAuthUid = await countWithField(storeRef.collection('savedLists'), 'authUid');
+            if (withAuthUid === QUOTA_BLOCKED) {
+                row.blocked = true;
+                row.missingAuthUid = QUOTA_BLOCKED;
+            } else {
+                row.missingAuthUid = row.savedLists - withAuthUid;
+                totalListsMissingAuthUid += row.missingAuthUid;
+            }
+            totalSavedLists += row.savedLists;
+        } else {
+            row.missingAuthUid = row.blocked ? QUOTA_BLOCKED : 0;
+        }
+
+        if (row.blocked) blockedRows += 1;
         perStore.push(row);
     }
 
-    perStore.sort((a, b) => b.savedLists - a.savedLists);
+    const num = (v) => (typeof v === 'number' ? v : -1);
+    perStore.sort((a, b) => num(b.savedLists) - num(a.savedLists));
     console.log('  Kho                       savedLists  thiếu authUid  productChunks  inventoryChunks  manualProducts');
     console.log('  ' + '-'.repeat(100));
     for (const r of perStore) {
+        const cell = (v) => (v === QUOTA_BLOCKED ? '—' : String(v));
         console.log(
             '  ' + r.store.padEnd(24) +
-            String(r.savedLists).padStart(11) +
-            String(r.missingAuthUid).padStart(15) +
-            String(r.productChunks).padStart(15) +
-            String(r.inventoryChunks).padStart(17) +
-            String(r.manualProducts).padStart(16)
+            cell(r.savedLists).padStart(11) +
+            cell(r.missingAuthUid).padStart(15) +
+            cell(r.productChunks).padStart(15) +
+            cell(r.inventoryChunks).padStart(17) +
+            cell(r.manualProducts).padStart(16)
         );
     }
     console.log('  ' + '-'.repeat(100));
+    if (blockedRows > 0) {
+        console.log(`  ⚠️  ${blockedRows}/${perStore.length} kho đọc KHÔNG ĐỦ vì hết hạn mức (ô '—'). Số TỔNG bên dưới là THIẾU.`);
+    }
     console.log(
         '  ' + 'TỔNG'.padEnd(24) +
         String(totals.savedLists).padStart(11) +
@@ -177,7 +330,7 @@ async function main() {
     // ── Kết luận tự động cho các quyết định đang treo ────────────────────────
     console.log('\n[2] KẾT LUẬN CHO CÁC VIỆC ĐANG TREO\n');
 
-    const maxLists = perStore.length > 0 ? perStore[0].savedLists : 0;
+    const maxLists = perStore.length > 0 && typeof perStore[0].savedLists === 'number' ? perStore[0].savedLists : 0;
     console.log(`  • Mục 3b (phân trang "DS đã lưu"): kho nhiều danh sách nhất có ${fmt(maxLists)} bản.`);
     if (maxLists <= 50) {
         console.log('    → Phân trang KHÔNG tiết kiệm thêm được gì (1 trang 50 đã lấy hết). Không cần làm tiếp.');
@@ -194,7 +347,7 @@ async function main() {
         console.log('      BIẾN MẤT khỏi mắt nhân viên. Phải vá dữ liệu (điền authUid) trước, hoặc giữ lọc ở client.');
     }
 
-    const migrationDocs = totals.savedLists + totals.productChunks + totals.inventoryChunks + totals.manualProducts + stickerUsers;
+    const migrationDocs = totals.savedLists + totals.productChunks + totals.inventoryChunks + totals.manualProducts + (typeof stickerUsers === 'number' ? stickerUsers : 0);
     console.log(`\n  • Di trú database: khoảng ${fmt(migrationDocs)} document phải copy`);
     console.log('    (chưa tính subcollection itemChunks của danh sách lớn và các document metadata).');
 
@@ -259,14 +412,17 @@ async function main() {
         console.log('\n[4] SOI HOA THƯỜNG: bỏ qua (thêm --deep để chạy).');
     }
 
-    console.log('\nXong. Script này KHÔNG ghi bất cứ thứ gì.\n');
+    cleanupTempAdc();
+    console.log('\nXong. Script này KHÔNG ghi bất cứ thứ gì lên Firestore.\n');
 }
 
 main().catch((err) => {
+    cleanupTempAdc();
     console.error('\nLỖI:', err && err.message ? err.message : err);
     const msg = String(err && err.message ? err.message : err);
-    if (/Could not load the default credentials|Failed to read credentials|invalid-credential/i.test(msg)) {
-        console.error('\nChưa có thông tin đăng nhập. Chạy một trong hai:');
+    if (/NO_CREDENTIALS|Could not load the default credentials|Failed to read credentials|invalid-credential/i.test(msg)) {
+        console.error('\nKhông tìm thấy thông tin đăng nhập nào. Chạy MỘT trong ba:');
+        console.error('  ./node_modules/.bin/firebase login      (đơn giản nhất — script tự dùng lại phiên này)');
         console.error('  gcloud auth application-default login');
         console.error('  export GOOGLE_APPLICATION_CREDENTIALS=/duong/dan/service-account.json');
     }
