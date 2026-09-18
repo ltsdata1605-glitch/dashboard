@@ -12,6 +12,7 @@ import { CheckThuongLeaderboardView } from '../../features/check-thuong';
 export const CheckThuongView: React.FC = () => {
     const { activeTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
+    const [isIframeLoaded, setIsIframeLoaded] = useState(false);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [hasData, setHasData] = useState(false);
     const [codes, setCodes] = useState({ code1: '910', code2: '' });
@@ -129,6 +130,7 @@ export const CheckThuongView: React.FC = () => {
         if (!iframe) return;
 
         const onLoad = () => {
+            setIsIframeLoaded(true);
             // 1. Copy all parent styles (including Tailwind) to iframe so we don't need Tailwind CDN
             try {
                 const iframeDoc = iframe.contentDocument;
@@ -146,6 +148,9 @@ export const CheckThuongView: React.FC = () => {
             });
         };
         iframe.addEventListener('load', onLoad);
+        if (iframe.contentDocument && (iframe.contentDocument.readyState === 'complete' || iframe.contentDocument.readyState === 'interactive')) {
+            onLoad();
+        }
 
         // Also observe parent's dynamic font style changes (when user picks a new font)
         const observer = new MutationObserver(() => {
@@ -312,14 +317,22 @@ export const CheckThuongView: React.FC = () => {
             )}
 
             {/* TAB 1: GIAO DIỆN TRA CỨU & SO SÁNH (IFRAME) */}
-            <iframe
-                ref={iframeRef}
-                src={`${import.meta.env?.BASE_URL || '/'}check-thuong.html`}
-                title="Bảng Tra Cứu Thưởng Thi Đua"
-                className={`w-full h-full border-none flex-grow ${activeSubTab === 'search' ? 'block' : 'hidden'}`}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
-            />
+            <div className={`w-full h-full flex-grow relative ${activeSubTab === 'search' ? 'flex flex-col' : 'hidden'}`}>
+                {!isIframeLoaded && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-10">
+                        <div className="w-8 h-8 border-3 border-slate-200 dark:border-slate-700 border-t-sky-500 rounded-full animate-spin" />
+                        <span className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">Đang tải bảng tra cứu thưởng...</span>
+                    </div>
+                )}
+                <iframe
+                    ref={iframeRef}
+                    src={`${import.meta.env?.BASE_URL || '/'}check-thuong.html`}
+                    title="Bảng Tra Cứu Thưởng Thi Đua"
+                    className={`w-full h-full border-none flex-grow transition-opacity duration-200 ${isIframeLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
+                />
+            </div>
 
             {/* TAB 2: GIAO DIỆN BẢNG XẾP HẠNG TOP SIÊU THỊ THƯỞNG CAO */}
             {activeSubTab === 'leaderboard' && (

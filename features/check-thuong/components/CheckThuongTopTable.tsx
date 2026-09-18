@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { CheckThuongStoreSummary, LeaderboardSortField, SortDirection } from '../types';
 import { CHECK_THUONG_COLS, parseNumber } from '../services/checkThuongCalc';
 import { Button } from '../../../components/shared/ui/Button';
@@ -116,33 +116,64 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
         };
     };
 
+    const renderSortTh = (
+        field: LeaderboardSortField,
+        label: string,
+        widthStyle: string,
+        align: 'center' | 'left' | 'right' = 'center',
+        extraClass: string = ''
+    ) => {
+        const isActive = sortField === field;
+        const alignClasses =
+            align === 'left' ? 'justify-start text-left' :
+            align === 'right' ? 'justify-end text-right' :
+            'justify-center text-center';
+
+        const directionLabel = isActive
+            ? (sortOrder === 'asc' ? 'Tăng dần (bấm để đổi sang Giảm dần)' : 'Giảm dần (bấm để đổi sang Tăng dần)')
+            : 'Bấm để sắp xếp theo ' + label;
+
+        return (
+            <th
+                onClick={() => onSort(field)}
+                title={directionLabel}
+                className={`py-2 px-2 sm:px-3 border-r border-slate-200 dark:border-slate-700/80 cursor-pointer transition-colors select-none group/th ${widthStyle} ${extraClass} ${
+                    isActive
+                        ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 font-black'
+                        : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-sky-600 dark:hover:text-sky-400'
+                }`}
+            >
+                <div className={`flex items-center gap-1.5 ${alignClasses}`}>
+                    <span>{label}</span>
+                    <span className="inline-flex items-center shrink-0">
+                        {isActive ? (
+                            sortOrder === 'asc' ? (
+                                <ArrowUp className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                            ) : (
+                                <ArrowDown className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                            )
+                        ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/th:opacity-60 transition-opacity text-slate-400" />
+                        )}
+                    </span>
+                </div>
+            </th>
+        );
+    };
+
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-none border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/90 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/80 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-extrabold select-none">
-                            <th className="py-2 px-2 sm:px-3 text-center w-14 cursor-pointer hover:text-sky-600 transition-colors border-r border-slate-200 dark:border-slate-700/80" onClick={() => onSort('rank')}>
-                                Hạng
-                            </th>
-                            <th className="py-2 px-2 sm:px-3 text-center w-20 border-r border-slate-200 dark:border-slate-700/80">
-                                Kênh
-                            </th>
-                            <th className="py-2 px-2 sm:px-3 text-center w-20 cursor-pointer hover:text-sky-600 transition-colors border-r border-slate-200 dark:border-slate-700/80" onClick={() => onSort('code')}>
-                                Kho
-                            </th>
-                            <th className="py-2 px-2.5 sm:px-3 text-center min-w-[190px] border-r border-slate-200 dark:border-slate-700/80">
-                                Tên Siêu Thị
-                            </th>
-                            <th className="py-2 px-2 sm:px-3 text-center w-28 cursor-pointer hover:text-sky-600 transition-colors border-r border-slate-200 dark:border-slate-700/80" onClick={() => onSort('achievedCount')}>
-                                Đạt 100%
-                            </th>
-                            <th className="py-2 px-2 sm:px-3 text-center w-24 cursor-pointer hover:text-sky-600 transition-colors border-r border-slate-200 dark:border-slate-700/80" onClick={() => onSort('percent')}>
-                                %Đạt
-                            </th>
-                            <th className="py-2 px-2.5 sm:px-3 text-center min-w-[110px] cursor-pointer hover:text-sky-600 transition-colors border-r border-slate-200 dark:border-slate-700/80" onClick={() => onSort('bonus')}>
-                                Thưởng
-                            </th>
+                            {renderSortTh('rank', 'Hạng', 'w-16 sm:w-20', 'center')}
+                            {renderSortTh('channel', 'Kênh', 'w-20', 'center')}
+                            {renderSortTh('code', 'Kho', 'w-20', 'center')}
+                            {renderSortTh('name', 'Tên Siêu Thị', 'min-w-[190px]', 'left')}
+                            {renderSortTh('achievedCount', 'Đạt 100%', 'w-28', 'center')}
+                            {renderSortTh('percent', '%Đạt', 'w-24', 'center')}
+                            {renderSortTh('bonus', 'Thưởng', 'min-w-[110px]', 'center')}
                             <th className="py-2 px-2 sm:px-3 text-center w-20">
                                 Chi tiết
                             </th>
@@ -294,7 +325,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                         {isExpanded && (
                                             <tr className="bg-slate-50/90 dark:bg-slate-800/60 border-y border-slate-200 dark:border-slate-700">
                                                 <td colSpan={8} className="p-3 sm:p-4">
-                                                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs">
+                                                    <div className="bg-white dark:bg-slate-900 rounded-none border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs">
                                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -326,10 +357,10 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                                 {awardedList.map((item, idx) => (
                                                                     <div
                                                                         key={idx}
-                                                                        className="flex items-center justify-between p-2 rounded-lg bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 text-xs hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
+                                                                        className="flex items-center justify-between p-2 rounded-none bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 text-xs hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
                                                                     >
                                                                         <div className="flex items-center gap-1.5 min-w-0 mr-2">
-                                                                            <span className="w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center shrink-0">
+                                                                            <span className="w-4 h-4 rounded-none bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center shrink-0">
                                                                                 {idx + 1}
                                                                             </span>
                                                                             <span className="font-semibold text-slate-700 dark:text-slate-200 truncate" title={item.category}>
@@ -370,7 +401,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                             value={pageSize}
                             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                             aria-label="Chọn số dòng mỗi trang"
-                            className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                            className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
                         >
                             <option value={25}>25</option>
                             <option value={50}>50</option>
@@ -385,7 +416,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                             size="none"
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-200/60 dark:hover:bg-slate-700 text-xs font-bold"
+                            className="px-2.5 py-1 rounded-none border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-200/60 dark:hover:bg-slate-700 text-xs font-bold"
                         >
                             Trang trước
                         </Button>
@@ -397,7 +428,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                             size="none"
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-200/60 dark:hover:bg-slate-700 text-xs font-bold"
+                            className="px-2.5 py-1 rounded-none border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-200/60 dark:hover:bg-slate-700 text-xs font-bold"
                         >
                             Trang sau
                         </Button>

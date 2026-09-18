@@ -174,11 +174,23 @@ export const filterAndSortStoreSummaries = (
             case 'code':
                 cmp = a.storeCode.localeCompare(b.storeCode, undefined, { numeric: true });
                 break;
+            case 'channel':
+                cmp = a.channel.localeCompare(b.channel, 'vi', { sensitivity: 'base' });
+                break;
+            case 'name':
+                cmp = a.storeName.localeCompare(b.storeName, 'vi', { sensitivity: 'base' });
+                break;
             case 'rank':
             default:
                 cmp = a.rank - b.rank;
                 break;
         }
+
+        // Nếu giá trị so sánh bằng nhau, giữ thứ hạng rank ban đầu làm tie-breaker ổn định
+        if (cmp === 0 && filters.sortBy !== 'rank') {
+            cmp = a.rank - b.rank;
+        }
+
         return filters.sortOrder === 'asc' ? cmp : -cmp;
     });
 

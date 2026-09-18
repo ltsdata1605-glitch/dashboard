@@ -139,6 +139,44 @@ describe('checkThuongCalc', () => {
             expect(filtered[0].storeCode).toBe('910');
         });
 
+        it('sorts correctly by channel, name, bonus and code', () => {
+            // Sort by channel asc: DMX before TGDD
+            const byChannelAsc = filterAndSortStoreSummaries(stores, {
+                channel: 'ALL',
+                searchQuery: '',
+                sortBy: 'channel',
+                sortOrder: 'asc'
+            });
+            expect(byChannelAsc[0].channel).toBe('DMX');
+
+            // Sort by channel desc: TGDD before DMX
+            const byChannelDesc = filterAndSortStoreSummaries(stores, {
+                channel: 'ALL',
+                searchQuery: '',
+                sortBy: 'channel',
+                sortOrder: 'desc'
+            });
+            expect(byChannelDesc[0].channel).toBe('TGDD');
+
+            // Sort by name asc: "99 Hùng Vương" before "Thốt Nốt"
+            const byNameAsc = filterAndSortStoreSummaries(stores, {
+                channel: 'ALL',
+                searchQuery: '',
+                sortBy: 'name',
+                sortOrder: 'asc'
+            });
+            expect(byNameAsc[0].storeCode).toBe('910');
+
+            // Sort by bonus desc: 50.000.000 (1024) before 30.000.000 (910)
+            const byBonusDesc = filterAndSortStoreSummaries(stores, {
+                channel: 'ALL',
+                searchQuery: '',
+                sortBy: 'bonus',
+                sortOrder: 'desc'
+            });
+            expect(byBonusDesc[0].storeCode).toBe('1024');
+        });
+
         it('gets distinct channels', () => {
             expect(getDistinctChannels(stores)).toEqual(['DMX', 'TGDD']);
         });

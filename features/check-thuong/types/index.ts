@@ -11,7 +11,7 @@ export interface CheckThuongStoreSummary {
     rows: any[][];
 }
 
-export type LeaderboardSortField = 'bonus' | 'percent' | 'achievedCount' | 'code' | 'rank';
+export type LeaderboardSortField = 'rank' | 'channel' | 'code' | 'name' | 'achievedCount' | 'percent' | 'bonus';
 export type SortDirection = 'asc' | 'desc';
 
 export interface LeaderboardFilterState {

@@ -33,6 +33,8 @@
         .sort-asc::after { content: ' ▲'; font-size: 0.7em; color: #6366f1; }
         .sort-desc::after { content: ' ▼'; font-size: 0.7em; color: #6366f1; }
         .capture-fix { display: flex; align-items: center; }
+        .hidden { display: none !important; }
+        @keyframes initial-spin { to { transform: rotate(360deg); } }
         .app-shell { max-width: 960px; margin: 0 auto; padding: 0; }
         /* Landing hero */
         .landing-hero { background: linear-gradient(180deg, #eef2ff 0%, #f0f9ff 40%, #f8fafc 100%); padding: 0 0 30px 0; text-align: center; }
@@ -238,8 +240,14 @@
     </style>
 </head>
 <body>
-    <!-- Landing Page -->
-    <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#f8fafc] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
+    <!-- Initial Loading State (Ngăn chặn chớp nháy màn hình thô FOUC trước khi nạp xong dữ liệu) -->
+    <div id="initialLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; color: #64748b; font-family: 'UTM Avo', sans-serif;">
+        <div style="width: 34px; height: 34px; border: 3px solid #e2e8f0; border-top-color: #0ea5e9; border-radius: 50%; animation: initial-spin 0.8s linear infinite;"></div>
+        <span style="margin-top: 14px; font-size: 13px; font-weight: 600; color: #64748b;">Đang tải dữ liệu thưởng...</span>
+    </div>
+
+    <!-- Landing Page (Chỉ hiển thị khi đã xác nhận người dùng chưa có file dữ liệu) -->
+    <div id="landingPage" class="hidden relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#f8fafc] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8" style="display: none;">
         
         <!-- Ambient Background Grid -->
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#64748b0a_1px,transparent_1px),linear-gradient(to_bottom,#64748b0a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
@@ -567,8 +575,17 @@
                 }
             };
 
+            const initialLoadingEl = document.getElementById('initialLoading');
+            const hideInitialLoader = () => {
+                if (initialLoadingEl) {
+                    initialLoadingEl.style.display = 'none';
+                    initialLoadingEl.classList.add('hidden');
+                }
+            };
+
             const reloadFromIDB = () => {
                 idbKeyval.get('checkthuong_data').then(savedData => {
+                    hideInitialLoader();
                     if (savedData) {
                         if (savedData.code1) storeCodeInput1.value = savedData.code1;
                         if (savedData.code2) storeCodeInput2.value = savedData.code2;
@@ -583,6 +600,7 @@
                             // Show the dashboard UI
                             searchSection.classList.remove('hidden');
                             landingPage.classList.add('hidden');
+                            landingPage.style.display = 'none';
                             changeFileButton.classList.remove('hidden');
                             
                             if (storeCodeInput1.value) {
@@ -602,17 +620,22 @@
                             }
                         } else {
                             landingPage.classList.remove('hidden');
+                            landingPage.style.display = '';
                             searchSection.classList.add('hidden');
                             changeFileButton.classList.add('hidden');
                             mainContent.classList.add('hidden');
                         }
                     } else {
                         landingPage.classList.remove('hidden');
+                        landingPage.style.display = '';
                         searchSection.classList.add('hidden');
                         changeFileButton.classList.add('hidden');
                         mainContent.classList.add('hidden');
                     }
                 }).catch(e => {
+                    hideInitialLoader();
+                    landingPage.classList.remove('hidden');
+                    landingPage.style.display = '';
                     console.warn('IDB Load Error:', e);
                     if (window.parent) {
                         window.parent.postMessage({ type: 'CHECK_THUONG_LOAD_ERROR', message: String((e && e.message) || e) }, '*');
@@ -1040,6 +1063,8 @@
                         fileStatus.className = 'mt-4 text-center text-sm font-medium text-emerald-600';
                         searchSection.classList.remove('hidden');
                         landingPage.classList.add('hidden');
+                        landingPage.style.display = 'none';
+                        hideInitialLoader();
                         changeFileButton.classList.remove('hidden');
                         window.parent.postMessage({
                             type: 'CHECK_THUONG_FILE_LOADED',
@@ -1186,16 +1211,16 @@
                             <p style="font-size:10.5px;opacity:0.75;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
                             <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:4px 0 0 0;letter-spacing:-0.02em;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,0.2)">${formatCurrencyFull(totalBonus)}</p>
                         </div>
-                        <div style="background:linear-gradient(135deg,#047857 0%,#059669 40%,#10b981 100%);padding:10px 18px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.45);box-shadow:0 8px 24px rgba(5,150,105,0.45),0 2px 8px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
+                        <div style="background:linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);padding:10px 18px;border-radius:0;border:1.5px solid rgba(255,255,255,0.4);box-shadow:0 8px 24px rgba(2,132,199,0.35),0 2px 8px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
                             <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:4px">
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);color:#ffffff">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:0;background:rgba(255,255,255,0.25);color:#ffffff">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                 </span>
                                 <p style="font-size:11px;color:#ffffff;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-shadow:0 1px 3px rgba(0,0,0,0.25)">% Nhóm Đạt ≥ 100%</p>
                             </div>
                             <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:10px">
-                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.35)">${pctAchieved100Formatted}</p>
-                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.22);color:#ffffff;padding:4px 10px;border-radius:9999px;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.45);box-shadow:0 2px 6px rgba(0,0,0,0.15)">${countAchieved100}/${totalCategories}</span>
+                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.3)">${pctAchieved100Formatted}</p>
+                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.25);color:#ffffff;padding:3px 8px;border-radius:0;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.12)">${countAchieved100}/${totalCategories}</span>
                             </div>
                         </div>
                     </div>
@@ -1521,12 +1546,12 @@
 
             function getGroupDefinitions(data) {
                 return [
-                    { key: 'achieved', title: 'Đạt thưởng', color: 'bg-emerald-500', data: data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0) },
-                    { key: 'nearly', title: 'Sắp có', color: 'bg-amber-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
-                    { key: 'achieved100', title: 'Đạt 100%', color: 'bg-sky-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1) },
-                    { key: 'notAchieved100', title: '<100%', color: 'bg-rose-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1) },
-                    { key: 'noFund', title: 'Không Quỹ', color: 'bg-indigo-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; return noFundGroups.has(groupKey); }) },
-                    { key: 'noSale', title: 'No Sale', color: 'bg-slate-600', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
+                    { key: 'achieved', title: 'Đạt thưởng', shortTitle: 'Đạt thưởng', color: 'bg-emerald-500', data: data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0) },
+                    { key: 'nearly', title: 'Sắp có', shortTitle: 'Sắp có', color: 'bg-amber-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
+                    { key: 'achieved100', title: 'Nhóm Đạt ≥ 100%', shortTitle: 'Đạt ≥ 100%', color: 'bg-sky-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1) },
+                    { key: 'notAchieved100', title: 'Nhóm Chưa Đạt < 100%', shortTitle: '< 100%', color: 'bg-rose-500', data: data.filter(row => parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1) },
+                    { key: 'noFund', title: 'Không Quỹ', shortTitle: 'Không Quỹ', color: 'bg-indigo-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; return noFundGroups.has(groupKey); }) },
+                    { key: 'noSale', title: 'No Sale', shortTitle: 'No Sale', color: 'bg-slate-600', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
                 ];
             }
 
@@ -1539,7 +1564,7 @@
                     <div class="stat-mini" onclick="const el=document.getElementById('group-section-${g.key}');if(el){const y=el.getBoundingClientRect().top+window.scrollY-20;window.scrollTo({top:y,behavior:'smooth'});}" style="--stat-color: ${statColors[g.key]||'#6366f1'}">
                         <div style="position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; background: ${statColors[g.key]||'#6366f1'}; filter: blur(25px); opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
                         <div class="stat-mini-title" style="display:flex; align-items:flex-start; height: 28px; width: 100%; position: relative; z-index: 1">
-                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="${g.title}">${g.title}</p>
+                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="${g.title}">${g.shortTitle || g.title}</p>
                         </div>
                         <p style="font-size:26px;font-weight:800;color:#0f172a;margin:0;margin-top:auto;line-height:1; position: relative; z-index: 1; font-feature-settings: 'tnum'; letter-spacing: -0.02em">${g.data.length}</p>
                     </div>
@@ -1983,11 +2008,17 @@
                         contentHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:10px">${groupCardsHtml}</div>`;
                     }
                     
+                    const groupIconHtml = group.key === 'achieved100'
+                        ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:0;background:rgba(2,132,199,0.18);color:#0284c7;font-size:11px;font-weight:900;margin-right:6px">✓</span>`
+                        : group.key === 'notAchieved100'
+                        ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:0;background:rgba(225,29,72,0.18);color:#e11d48;font-size:11px;font-weight:900;margin-right:6px">!</span>`
+                        : '';
+                    
                     const groupHtml = `<div id="group-section-${group.key}" class="group-container" data-group-key="${group.key}" style="margin-bottom:16px">
                         <div class="capture-target border border-slate-300 bg-white rounded-none overflow-hidden shadow-xs ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden;border-radius:0">
                             <div class="capture-fix ${pastelClass} border-b border-slate-200/80 flex justify-between items-center" style="padding:8px 14px">
-                                <h2 style="font-size:13px;font-weight:800;margin:0;letter-spacing:0.02em">${group.title.toUpperCase()} (${group.data.length})</h2>
-                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition cursor-pointer" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.6);color:rgba(0,0,0,0.7);border:1px solid rgba(0,0,0,0.06)" onmouseover="this.style.background='rgba(255,255,255,0.9)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='rgba(0,0,0,0.7)'">
+                                <h2 style="font-size:13px;font-weight:800;margin:0;letter-spacing:0.02em;display:flex;align-items:center">${groupIconHtml}${group.title.toUpperCase()} (${group.data.length})</h2>
+                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition cursor-pointer" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:26px;height:26px;border-radius:0;background:rgba(255,255,255,0.6);color:rgba(0,0,0,0.7);border:1px solid rgba(0,0,0,0.06)" onmouseover="this.style.background='rgba(255,255,255,0.9)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='rgba(0,0,0,0.7)'">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
                             </div>

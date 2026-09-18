@@ -145,7 +145,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                 return (
                     <div
                         key={channel}
-                        className={`bg-white dark:bg-slate-900 rounded-2xl border ${theme.cardBorder || 'border-slate-200/80 dark:border-slate-800'} shadow-2xs overflow-hidden flex flex-col justify-between`}
+                        className={`bg-white dark:bg-slate-900 rounded-none border ${theme.cardBorder || 'border-slate-200/80 dark:border-slate-800'} shadow-2xs overflow-hidden flex flex-col justify-between`}
                     >
                         {/* TIÊU ĐỀ KÊNH VỚI MÀU NỀN PASTEL RIÊNG BIỆT */}
                         <div 
@@ -155,7 +155,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                             <div className="flex items-center gap-1.5">
                                 <span
                                     style={theme.badgeStyle}
-                                    className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-md border shadow-2xs ${theme.badge}`}
+                                    className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-none border shadow-2xs ${theme.badge}`}
                                 >
                                     {channel}
                                 </span>
@@ -172,7 +172,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 }}
                                 disabled={isExporting}
                                 title={`Xuất ảnh Top 10 siêu thị thưởng cao kênh ${channel}`}
-                                className={`p-1.5 ${theme.button} border rounded-lg transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
+                                className={`p-1.5 ${theme.button} border rounded-none transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
                             >
                                 <Camera className={`w-3.5 h-3.5 ${theme.icon}`} />
                             </button>

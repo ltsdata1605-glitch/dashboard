@@ -100,10 +100,14 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                     sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc'
                 };
             }
+            // Chiều mặc định cho lần bấm đầu tiên:
+            // Hạng, Mã kho, Kênh, Tên siêu thị: tăng dần (asc: 1->N, A->Z)
+            // Thưởng, %Đạt, Đạt 100%: giảm dần (desc: cao->thấp)
+            const defaultOrder = (field === 'rank' || field === 'code' || field === 'channel' || field === 'name') ? 'asc' : 'desc';
             return {
                 ...prev,
                 sortBy: field,
-                sortOrder: 'desc'
+                sortOrder: defaultOrder
             };
         });
     }, []);
