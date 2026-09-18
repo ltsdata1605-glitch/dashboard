@@ -4596,3 +4596,40 @@ indigo**, phân biệt rõ với **DML (sky)** và **TGDD (amber)**. Bảng xế
 **Kiểm chứng:** 3 E2E test **passed (22s)**; `tsc` **0 lỗi**; `test:unit` **536 passed | 1 skipped**
 (giảm 4 so với trước vì đã xoá 5 test-bản-sao và thêm 1 test thật); `eslint` sạch.
 
+
+### CI: job `e2e` ĐỎ trên runner GitHub trong khi xanh ở mọi môi trường tại chỗ (2026-09-18)
+
+**Hiện trạng:** job `check` xanh cả 2 lượt; job `e2e` **đỏ cả 2 lượt**, cùng một bước
+("Test E2E"), trên `be3687b0` và `39b7ae95`. Lỗi **tái lập được**, không phải chập chờn.
+
+**KHÔNG đọc được log CI:** `GET /repos/.../actions/jobs/{id}/logs` trả **HTTP 403** — GitHub bắt
+buộc xác thực để đọc log Actions kể cả với repo công khai, và `gh` trên máy này chưa `auth login`.
+
+**Đã thử tái hiện, ĐỀU XANH:**
+| Môi trường | Kết quả |
+|---|---|
+| Máy dev, dùng lại dev server sẵn có | **22 passed (2,7 phút)** |
+| **Clone SẠCH** + `npm ci` + `CI=true` (Playwright tự khởi động dev server riêng, cổng 5199) | **22 passed (2,7 phút)** |
+
+Bản clone sạch là mô phỏng gần CI nhất có thể tại chỗ: checkout mới, cài lại từ `package-lock.json`,
+server riêng do Playwright bật. Vẫn xanh → khác biệt nằm ở **runner Linux của GitHub**, không nằm ở
+mã nguồn hay trạng thái máy dev.
+
+**Đã loại trừ:**
+- `features/sticker-event/firebase-applet-config.json` **CÓ** trong git → CI không thiếu.
+  *(Tiện thể: CLAUDE.md mục 1.1 ghi file này "gitignored" — thêm một câu SAI nữa cần sửa.)*
+- `.env.local` chỉ có `GEMINI_API_KEY`, không cần cho dev server.
+- Không spec nào trong danh sách CI cần hồ sơ dữ liệu thật hay `.e2e-chrome-profile`.
+- Không spec nào có khẳng định theo thời gian chạy/hiệu năng (đã grep `toBeLessThan`,
+  `performance.`, `Date.now`, `elapsed`) → loại giả thuyết "runner chậm nên vỡ ngưỡng".
+
+**Khác biệt còn lại (chưa kiểm được):** hệ điều hành Linux vs macOS, bản Chromium do
+`playwright install --with-deps` cài, múi giờ UTC vs UTC+7, bộ font hệ thống.
+
+**Việc cần để đi tiếp:** vài dòng lỗi từ log bước "Test E2E" của lượt chạy đỏ, hoặc artifact
+`playwright-report` (job đã cấu hình `if: failure()` nên artifact có sẵn, kèm ảnh chụp + trace từng
+test đỏ). Đoán tiếp mà không có dữ liệu đó là lãng phí.
+
+**Ghi nhận:** job `e2e` mới thêm hôm nay nên **chưa từng xanh trên CI lần nào** — đây là lượt chạy
+đầu tiên của nó, không phải hồi quy từ trạng thái tốt.
+
