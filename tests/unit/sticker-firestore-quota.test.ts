@@ -142,6 +142,9 @@ const {
     fetchManualProducts,
     saveManualProduct,
     deleteManualProduct,
+    fetchAllUsers,
+    invalidateAllUsersCache,
+    updateUserRole,
 } = await import('../../features/sticker-event/services/firebaseService');
 
 const STORE_ID = 'TESTQUOTA';
@@ -511,5 +514,68 @@ describe('Hạn mức Firestore — phân trang "DS đã lưu" (mục 3b)', () =
         // Vẫn tìm được đủ danh sách của nhân viên đó qua nhánh fallback limit(500).
         expect(lists).toHaveLength(10);
         expect(lists.every(l => l.userId === 'nv_old')).toBe(true);
+    });
+});
+
+
+describe('Hạn mức Firestore — danh sách người dùng (rà soát sâu 2026-09-18)', () => {
+    beforeEach(() => {
+        store.clear(); resetOps(); autoId = 0;
+        invalidateAllUsersCache();
+        // 40 người dùng cùng kho — UserManagementModal gọi query limit(100) mỗi lần mở.
+        for (let i = 0; i < 40; i++) {
+            store.set(`users/u${i}`, { uid: `u${i}`, username: `nv${i}`, storeId: STORE_ID, role: 'staff' });
+        }
+        // Người của kho khác — phải bị `where('storeId','==',…)` loại ở server.
+        for (let i = 0; i < 10; i++) {
+            store.set(`users/other${i}`, { uid: `other${i}`, username: `x${i}`, storeId: 'KHOKHAC', role: 'staff' });
+        }
+    });
+
+    it('lần mở đầu: đọc đúng số người CÙNG KHO, không đọc kho khác', async () => {
+        resetOps();
+        const users = await fetchAllUsers(STORE_ID);
+        expect(users).toHaveLength(40);
+        expect(ops.reads).toBe(40);
+    });
+
+    it('mở lại modal trong 5 phút: 0 lượt đọc (trước bản sửa: 40 mỗi lần)', async () => {
+        await fetchAllUsers(STORE_ID);
+        resetOps();
+
+        for (let i = 0; i < 5; i++) await fetchAllUsers(STORE_ID);
+
+        expect(ops.reads).toBe(0);
+    });
+
+    it('cache không bị nơi gọi làm bẩn', async () => {
+        const first = await fetchAllUsers(STORE_ID);
+        first.length = 0;
+        expect(await fetchAllUsers(STORE_ID)).toHaveLength(40);
+    });
+
+    it('đổi quyền người dùng làm mới cache NGAY, không phải chờ TTL', async () => {
+        await fetchAllUsers(STORE_ID);
+        await updateUserRole('u0', 'admin');
+        resetOps();
+
+        await fetchAllUsers(STORE_ID);
+
+        expect(ops.reads).toBe(40); // đã đọc lại thật
+    });
+
+    it('forceRefresh bỏ qua cache', async () => {
+        await fetchAllUsers(STORE_ID);
+        resetOps();
+        await fetchAllUsers(STORE_ID, { forceRefresh: true });
+        expect(ops.reads).toBe(40);
+    });
+
+    it('cache tách theo kho — kho khác không dùng chung kết quả', async () => {
+        await fetchAllUsers(STORE_ID);
+        resetOps();
+        const other = await fetchAllUsers('KHOKHAC');
+        expect(other).toHaveLength(10);
+        expect(ops.reads).toBe(10);
     });
 });

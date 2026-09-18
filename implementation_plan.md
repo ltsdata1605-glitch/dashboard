@@ -4025,3 +4025,58 @@ chịu — nó khiến người dùng thử lại, và ở đây mỗi lần th�
 …) — bundler nội tuyến/rút gọn chúng nên không tìm thấy là chuyện bình thường, không phải thiếu
 code. Chỉ grep **chuỗi ký tự thật** (thông báo lỗi, tên event) mới đáng tin.
 
+
+---
+
+## RÀ SOÁT SÂU In Sticker — bảng chi phí Firestore mỗi phiên (2026-09-18)
+
+Đã liệt kê **mọi** hàm chạm Firestore của `features/sticker-event` và đối chiếu nơi gọi.
+
+### Kết quả quan trọng nhất: KHÔNG còn listener realtime nào
+
+`grep -rn "onSnapshot" features/sticker-event` → **rỗng**. Đây là thủ phạm kinh điển của hết hạn
+mức (1 listener mở suốt ngày trên 1 collection có thể ăn hàng chục nghìn lượt đọc) và In Sticker
+hoàn toàn không có. Mọi truy cập đều là `getDoc`/`getDocs` một lần.
+
+### Chi phí một phiên làm việc SAU toàn bộ bản sửa
+
+| Thời điểm | Thao tác Firestore | Lượt đọc | Lượt ghi |
+|---|---|---|---|
+| Đăng nhập | `stickerResolveSession` đọc `users/{uid}` (+1 query nếu là staff) | 1–2 | 0 |
+| Đăng nhập | `fetchUserState` → `users/{uid}/state/current` | 1 | 0 |
+| Đăng nhập | `metadata/sync` (1 doc, mang cả 3 mốc products/inventory/manualProducts) | 1 | 0 |
+| Đăng nhập | products/inventory — **0 nếu dữ liệu không đổi** (smart-sync) | 0 | 0 |
+| Đăng nhập | manualProducts — **0 nếu không đổi** (mục 5) | 0 | 0 |
+| **Tổng mỗi phiên** | | **3–4** | **0** |
+| Trong lúc làm | `saveUserState` — tối đa 1 lượt mỗi 20s CÓ THAY ĐỔI (mục 2) | 0 | ≤1/20s |
+| Mở "DS đã lưu" | ~30 lượt lần đầu, **0** trong 10 phút sau (mục 3) | ~30 → 0 | 0 |
+| Mở "Quản lý người dùng" | ~40 lượt lần đầu, **0** trong 5 phút sau (mới) | ~40 → 0 | 0 |
+| Admin tải file tồn kho | 1 đọc + 12 ghi (trước: ~112 thao tác) | 1 | 12 |
+
+→ Một ngày thật với ~5 nhân viên × 3 phiên + vài lượt tải file ≈ **vài trăm lượt đọc/ghi**, tức
+khoảng **0,5%** của trần 50.000. Sau các bản sửa, tải nền không còn là vấn đề.
+
+### Mục vừa sửa trong lượt rà soát này
+
+`fetchAllUsers()` **chưa có cache**, mà `UserManagementModal` gọi nó trong
+`useEffect([isOpen, storeId])` — tức MỖI LẦN mở modal là 1 query `limit(100)`, tới 100 lượt đọc.
+Đã thêm cache phiên TTL 5 phút + `invalidateAllUsersCache()` gọi ngay trong `updateUserRole()`,
+`deleteUserDoc()`, `clearAllUsers()` nên admin vừa đổi quyền là thấy liền, không phải chờ TTL.
+Đo: mở lại modal 5 lần → **40 lượt đọc → 0**. Cache tách theo kho, trả bản copy.
+
+### Đã kiểm và KẾT LUẬN KHÔNG PHẢI vấn đề (ghi lại để không rà lại)
+
+- `saveUserState` được gọi ở **4 chỗ**, nhưng 3 chỗ ngoài `useStickerEventState` đều là **một lần,
+  do người dùng chủ động**: `StickerEventApp.tsx:285` (đồng bộ local→cloud 1 lần lúc đăng nhập),
+  `:357` (bấm nút "Đồng bộ lên Cloud"), `:404` (sau khi bấm "Lưu DS"). Không phải lượt ghi lặp.
+- `clearStoreDataOnFirestore` ở `useStickerEventFile.ts:121` và `fetchSavedListsFromFirestore` ở
+  `SavedListsModal.tsx:94` là **false positive của grep** — khớp vào chính comment giải thích việc
+  đã xoá, không phải lệnh gọi.
+- Lỗ smart-sync `|| localProducts.length === 0`: kho RỖNG thì mỗi phiên vẫn `getDocs` 2 collection
+  rỗng = 2 lượt đọc. Cố ý không sửa: 2 lượt đọc/phiên, và bỏ điều kiện này sẽ khiến máy mới/máy vừa
+  xoá dữ liệu trình duyệt kẹt vĩnh viễn ở trạng thái rỗng.
+
+**Kiểm chứng:** `npm run test:unit` **504 passed | 1 skipped** (+6 test mới, tổng 30 test trong bộ
+đếm hạn mức); `npm run build` ✓ 8.23s; `eslint` sạch; `tsc` 0 lỗi trong file đợt này (tổng vẫn 18
+baseline); `lint:ratchet` vẫn 13 baseline.
+

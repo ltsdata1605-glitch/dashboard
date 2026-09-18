@@ -251,13 +251,40 @@ export const clearStoreDataOnFirestore = async (storeId: string, collectionName:
     }
 }
 
-export const fetchAllUsers = async (storeId: string): Promise<StickerEventUserRecord[]> => {
+// QUOTA FIX (2026-09-18, rà soát sâu In Sticker): cache phiên cho danh sách người dùng.
+//
+// `UserManagementModal` gọi `fetchAllUsers()` trong `useEffect([isOpen, storeId])`, tức MỖI LẦN mở
+// modal là 1 query `limit(100)` — tới 100 lượt đọc, không cache gì. Danh sách người dùng của 1 kho
+// gần như không đổi trong một phiên làm việc, nên đây là lượt đọc lặp lại vô ích. Cùng cách đã áp
+// cho "DS đã lưu" (xem SAVED_LISTS_CACHE_TTL_MS): TTL + xoá cache ngay khi có thao tác đổi người
+// dùng, nên admin vừa đổi quyền là thấy liền, không phải chờ TTL.
+const ALL_USERS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const allUsersCache = new Map<string, { at: number; users: StickerEventUserRecord[] }>();
+
+/** Xoá cache danh sách người dùng. Gọi sau mọi thao tác đổi quyền/xoá người dùng. */
+export const invalidateAllUsersCache = () => allUsersCache.clear();
+
+export const fetchAllUsers = async (
+    storeId: string,
+    options?: { forceRefresh?: boolean }
+): Promise<StickerEventUserRecord[]> => {
     if (!storeId) return [];
+
+    if (!options?.forceRefresh) {
+        const hit = allUsersCache.get(storeId);
+        if (hit && Date.now() - hit.at < ALL_USERS_CACHE_TTL_MS) {
+            return hit.users.slice(); // bản copy — nơi gọi sort/filter tại chỗ không làm bẩn cache
+        }
+    }
+
     const usersRef = collection(db, 'users');
     try {
         const q = query(usersRef, where('storeId', '==', storeId), limit(100)); // Add limit to prevent massive reads
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => doc.data() as StickerEventUserRecord);
+        const users = snapshot.docs.map(doc => doc.data() as StickerEventUserRecord);
+        allUsersCache.set(storeId, { at: Date.now(), users });
+        return users.slice();
     } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'users');
         return [];
@@ -272,6 +299,7 @@ export const updateUserRole = async (userId: string, role: 'admin' | 'staff') =>
     if (!userId) throw new Error("User ID is required");
     try {
         await stickerAdminUpdateUser({ action: 'setRole', targetUid: userId, role });
+        invalidateAllUsersCache();
     } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
     }
@@ -281,6 +309,7 @@ export const deleteUserDoc = async (userId: string) => {
     if (!userId) throw new Error("User ID is required");
     try {
         await stickerAdminUpdateUser({ action: 'delete', targetUid: userId });
+        invalidateAllUsersCache();
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, `users/${userId}`);
     }
@@ -290,6 +319,7 @@ export const clearAllUsers = async (storeId: string) => {
     if (!storeId) return;
     try {
         await stickerAdminUpdateUser({ action: 'clearStore', storeId });
+        invalidateAllUsersCache();
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, 'users');
     }
