@@ -16,7 +16,8 @@
       "ignore": [
         "node_modules",
         ".git",
-        "*.log"
+        "*.log",
+        "scripts"
       ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run build"

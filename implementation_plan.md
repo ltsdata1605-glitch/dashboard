@@ -3801,3 +3801,46 @@ sửa mock — không nên tin API luôn hành xử như mong đợi khi hậu q
 chạy Playwright cũng tiêu lượt đọc của nó. Đây là thay đổi thuần về đường đi đọc dữ liệu, đã có
 fallback về hành vi cũ, nên chờ hạn mức hồi rồi mở "DS đã lưu" một lần để xác nhận trực quan là đủ.
 
+
+---
+
+## Script khảo sát Firestore CHỈ-ĐỌC (2026-09-17)
+
+`functions/scripts/audit-firestore-readonly.cjs` — **user chạy, không phải agent** (cần
+`firebase login`/ADC bằng tài khoản có quyền trên project, CLAUDE.md mục 1.1).
+
+**Trả lời 4 câu hỏi đang chặn các việc còn treo:**
+1. Mỗi kho có bao nhiêu danh sách đã lưu → mục 3b có đáng làm tiếp không (kho ≤50 danh sách thì
+   phân trang không tiết kiệm thêm gì).
+2. Bao nhiêu document `stores/*/savedLists` **thiếu `authUid`** → có an toàn để chuyển bộ lọc quyền
+   của nhân viên sang server (`where('authUid','==',uid)`) hay không.
+3. Có `uid` nào tồn tại ở **cả hai** collection `users` (2 database) → tiền đề bắt buộc của kế
+   hoạch di trú.
+4. Khối lượng document phải copy nếu di trú.
+
+**Thiết kế để KHÔNG tự ngốn hạn mức đang thiếu** — đây là ràng buộc chính, vì database In Sticker
+đang chạm trần ĐỌC:
+- Mặc định **chỉ dùng aggregation `.count()`** (Firestore tính 1 lượt đọc / 1.000 mục index khớp)
+  → khảo sát cả project thường chỉ vài chục lượt đọc.
+- Mẹo đếm document THIẾU một field mà không phải tải document nào: `orderBy(field)` tự loại document
+  không có field đó, nên `count(all) - count(orderBy(field))` = số document thiếu. **2 lượt
+  aggregation thay vì N lượt đọc.**
+- `--users` (đối chiếu uid) và `--deep` (soi lệch hoa thường) là 2 mức ĐẮT, phải bật cờ riêng,
+  và script **in ước tính chi phí rồi hỏi xác nhận** trước khi chạy (`--yes` để bỏ qua hỏi).
+- Lấy id database In Sticker từ `firebase.json` thay vì chép cứng → không lệch với nguồn chân lý.
+
+**An toàn:** không có một lệnh `set/update/delete/add/create` nào trong file (đã kiểm bằng grep).
+
+**Một lỗi thật tìm ra khi tự chạy thử:** `admin.initializeApp()` đặt ở top-level nên khi thiếu
+thông tin đăng nhập, lỗi văng NGOÀI `main().catch()` — người dùng nhận nguyên stack trace của
+firebase-admin thay vì hướng dẫn đăng nhập đã viết sẵn ở cuối file. Đã chuyển khởi tạo vào trong
+hàm và mở rộng nhận diện lỗi credential. Chạy thử lại (ép `GOOGLE_APPLICATION_CREDENTIALS` trỏ vào
+file không tồn tại → **0 lượt đọc, không chạm project**) cho ra đúng thông báo mong muốn.
+
+**Kiểm chứng đã chạy:** `node --check` ✓; chạy thử với credential sai → thoát sạch kèm hướng dẫn;
+`cd functions && npm run typecheck && npm run build` ✓ (script `.cjs` không thuộc tsconfig của
+functions); `npm run test:unit` **491 passed | 1 skipped**; `npm run build` ✓ 9.67s; `eslint` xác
+nhận file nằm trong `functions/**` đã được ignore sẵn nên không ảnh hưởng `npm run check`.
+Đã thêm `"scripts"` vào `firebase.json → functions.ignore` để script KHÔNG bị deploy lên Cloud
+Functions.
+
