@@ -109,13 +109,15 @@ export const useRevenueData = ({
 
             const prevData = prevMonthRows.length > 0 ? (prevMonthRowsMap.get(emp.originalName) ?? null) : null;
 
-            // 3. Chế độ Realtime: D.Kiến theo khung giờ 8h - 21h30
+            // 3. Chế độ Realtime: Bỏ D.Kiến; %D.KIẾN đổi thành %HT = DTQĐ / M.Tiêu
             const empDuKien = isRealtime 
-                ? (emp.dtqd / timeRatioRealtime) 
+                ? emp.dtqd
                 : (daysPassed > 0 ? (emp.dtqd / daysPassed) * totalDays : 0);
             
-            // 4. %D.KIẾN = D.Kiến / M.Tiêu
-            const empPctDkht = empTarget > 0 ? (empDuKien / empTarget) * 100 : 0;
+            // 4. %HT (hoặc %D.KIẾN ở Luỹ kế)
+            const empPctDkht = isRealtime
+                ? (empTarget > 0 ? (emp.dtqd / empTarget) * 100 : 0)
+                : (empTarget > 0 ? (empDuKien / empTarget) * 100 : 0);
 
             let prevCompData = null;
             if (prevData) {
@@ -183,8 +185,12 @@ export const useRevenueData = ({
                 const sumDtlk = result.reduce((s, e) => s + e.dtlk, 0);
                 const sumDtqd = result.reduce((s, e) => s + e.dtqd, 0);
                 const sumTarget = result.reduce((s, e) => s + (e.calculatedTarget || 0), 0);
-                const sumDuKien = daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0;
-                const sumPctDkht = sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0;
+                const sumDuKien = isRealtime
+                    ? sumDtqd
+                    : (daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0);
+                const sumPctDkht = isRealtime
+                    ? (sumTarget > 0 ? (sumDtqd / sumTarget) * 100 : 0)
+                    : (sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0);
                 const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
                 const avgInstallment = result.reduce((s, e) => s + e.calculatedInstallment, 0) / result.length;
                 const avgBk = result.reduce((s, e) => s + (e.pctBillBk || 0), 0) / result.length;
@@ -249,9 +255,11 @@ export const useRevenueData = ({
             const sumDtqd = deptEmployees.reduce((s, e) => s + e.dtqd, 0);
             const sumTarget = deptEmployees.reduce((s, e) => s + (e.calculatedTarget || 0), 0);
             const sumDuKien = isRealtime 
-                ? (sumDtqd / timeRatioRealtime) 
+                ? sumDtqd 
                 : (daysPassed > 0 ? (sumDtqd / daysPassed) * totalDays : 0);
-            const deptPctDkht = sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0;
+            const deptPctDkht = isRealtime
+                ? (sumTarget > 0 ? (sumDtqd / sumTarget) * 100 : 0)
+                : (sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0);
             const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + e.calculatedInstallment, 0) / deptEmployees.length : 0;
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
             const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
@@ -339,9 +347,11 @@ export const useRevenueData = ({
         if (finalOutput.length > 0 && !exportDeptFilter) {
             const grandSumBonusTong = finalOutput.filter(r => r.type === 'department').reduce((s, d) => s + (d.bonus_tong || 0), 0);
             const grandSumDuKien = isRealtime 
-                ? (grandSumDtqd / timeRatioRealtime) 
+                ? grandSumDtqd 
                 : (daysPassed > 0 ? (grandSumDtqd / daysPassed) * totalDays : 0);
-            const grandPctDkht = grandSumTarget > 0 ? (grandSumDuKien / grandSumTarget) * 100 : 0;
+            const grandPctDkht = isRealtime
+                ? (grandSumTarget > 0 ? (grandSumDtqd / grandSumTarget) * 100 : 0)
+                : (grandSumTarget > 0 ? (grandSumDuKien / grandSumTarget) * 100 : 0);
             const grandPrevDk = daysPassed > 0 ? (grandPrevDtqd / daysPassed) * totalDays : 0;
 
             finalOutput.push({

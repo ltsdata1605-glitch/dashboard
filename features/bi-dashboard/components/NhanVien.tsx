@@ -348,7 +348,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                             className="border-r border-slate-200 dark:border-slate-700"
                             triggerClassName="rounded-l-full"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
-                            triggerLabel={activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
+                            triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
                             allLabel="Chọn tất cả"
                             allChecked={activeSupermarkets.length === supermarkets.length}

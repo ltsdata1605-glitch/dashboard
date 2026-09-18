@@ -20,6 +20,7 @@ interface RevenueDesktopRowProps {
     isShowRemaining?: boolean;
     targetTraGop?: number;
     targetQuyDoi?: number;
+    isRealtimeMode?: boolean;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -35,7 +36,8 @@ export const RevenueDesktopRow = React.memo(({
     getDkhtColor = defaultGetDkhtColor,
     isShowRemaining = false,
     targetTraGop = 45,
-    targetQuyDoi = 40
+    targetQuyDoi = 40,
+    isRealtimeMode = false
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
     const hasTarget = (row.calculatedTarget || 0) > 0;
@@ -67,18 +69,20 @@ export const RevenueDesktopRow = React.memo(({
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
             <td 
-                className="px-2 py-[3px] text-center font-black tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-sky-50/70 dark:bg-sky-950/25" 
+                className="px-2 py-[3px] text-center !font-normal tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-sky-50/70 dark:bg-sky-950/25" 
                 style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}
             >
-                <div className="font-black text-[14px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
+                <div className="!font-normal text-[13.5px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
-            <td className="px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 text-slate-800 dark:text-slate-100">
-                <div>{f.format(roundUp(row.duKien || 0))}</div>
-                <DeltaBadge current={row.duKien} previous={prev?.duKien} isCurrency />
-            </td>
+            {!isRealtimeMode && (
+                <td className="px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 text-slate-800 dark:text-slate-100">
+                    <div>{f.format(roundUp(row.duKien || 0))}</div>
+                    <DeltaBadge current={row.duKien} previous={prev?.duKien} isCurrency />
+                </td>
+            )}
             <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
+                <Pill className="!font-normal" color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
                 <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
             </td>
             {isShowRemaining && (
@@ -96,21 +100,23 @@ export const RevenueDesktopRow = React.memo(({
                 </>
             )}
             <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
+                <Pill className="!font-normal" color={getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>
-            <td className="px-2 py-[3px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50">
-                <Pill color={getMetricColorByTarget(row.calculatedInstallment, targetTraGop)}>{roundUp(row.calculatedInstallment)}%</Pill>
+            <td className={`px-2 py-[3px] text-center tabular-nums ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-700/50' : ''}`}>
+                <Pill className="!font-normal" color={getMetricColorByTarget(row.calculatedInstallment, targetTraGop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
-            <td className={`px-2 py-[3px] text-center tabular-nums ${
-                !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
-                row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
-                row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :
-                'text-slate-900 dark:text-white text-[13px] font-black'
-            }`}>
-                <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
-            </td>
+            {!isRealtimeMode && (
+                <td className={`px-2 py-[3px] text-center tabular-nums ${
+                    !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
+                    row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
+                    row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :
+                    'text-slate-900 dark:text-white text-[13px] font-black'
+                }`}>
+                    <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
+                </td>
+            )}
         </tr>
     );
 });
