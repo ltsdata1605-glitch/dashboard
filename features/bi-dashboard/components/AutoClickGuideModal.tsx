@@ -34,7 +34,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             maxWidth="lg"
             title={
                 <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-sm shadow-emerald-500/30">
+                    <div className="p-2 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 text-white shadow-sm shadow-emerald-500/30">
                         <Zap className="h-5 w-5" />
                     </div>
                     <div>
@@ -71,7 +71,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
         >
             <div className="space-y-4 py-1 text-slate-700 dark:text-slate-200">
                 {/* LỢI ÍCH TÍNH NĂNG */}
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50/80 via-teal-50/50 to-sky-50/50 dark:from-emerald-950/20 dark:via-teal-950/20 dark:to-sky-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
+                <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50/80 via-sky-50/50 to-sky-50/50 dark:from-emerald-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
                     <div className="flex items-start gap-2.5">
                         <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <div className="text-xs space-y-1">
@@ -118,7 +118,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                         e.preventDefault();
                                         toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: '🖱️', duration: 4000 });
                                     }}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-lg shadow-md shadow-emerald-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-emerald-400/40"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-md shadow-emerald-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-emerald-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
                                     <Sparkles className="w-4 h-4 text-emerald-100" />
@@ -225,7 +225,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2 flex flex-col justify-between">
                         <div>
                             <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
-                                <MousePointerClick className="w-3.5 h-3.5 text-purple-500" />
+                                <MousePointerClick className="w-3.5 h-3.5 text-slate-500" />
                                 <span>Userscript Tampermonkey (v4.2)</span>
                             </div>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
@@ -236,7 +236,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             variant="unstyled"
                             size="none"
                             onClick={() => window.open('/scripts/mwg-auto-thu-thap-diem-thuong.user.js', '_blank')}
-                            className="w-full flex items-center justify-center gap-1.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 text-xs font-semibold active:scale-95 transition-all"
+                            className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 dark:bg-slate-950/60 dark:hover:bg-slate-900/60 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold active:scale-95 transition-all"
                         >
                             <ExternalLink className="w-3.5 h-3.5" />
                             <span>Cài đặt Userscript v4.2</span>

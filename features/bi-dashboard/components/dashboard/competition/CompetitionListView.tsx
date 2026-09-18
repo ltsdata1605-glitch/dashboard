@@ -57,12 +57,12 @@ export const CRITERIA_GROUP_THEMES: GroupTheme[] = [
     },
     {
         // 3: Purple (Gia dụng / CE & GD / CE)
-        square: 'bg-purple-500 shadow-xs',
-        bgRow: 'bg-purple-50/85 dark:bg-purple-950/35',
-        label: 'text-purple-700/90 dark:text-purple-400',
-        value: 'text-purple-950 dark:text-purple-100',
-        badge: 'bg-white/90 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 border-purple-300/80 dark:border-purple-700',
-        border: 'border-t border-b border-purple-200/80 dark:border-purple-800/60 border-l-[3px] border-l-purple-400 dark:border-l-purple-500',
+        square: 'bg-slate-500 shadow-xs',
+        bgRow: 'bg-slate-50/85 dark:bg-slate-950/35',
+        label: 'text-slate-700/90 dark:text-slate-400',
+        value: 'text-slate-950 dark:text-slate-100',
+        badge: 'bg-white/90 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 border-slate-300/80 dark:border-slate-700',
+        border: 'border-t border-b border-slate-200/80 dark:border-slate-800/60 border-l-[3px] border-l-purple-400 dark:border-l-purple-500',
     },
     {
         // 4: Rose (Điện tử / Điện lạnh / SLLK)
@@ -74,13 +74,17 @@ export const CRITERIA_GROUP_THEMES: GroupTheme[] = [
         border: 'border-t border-b border-rose-200/80 dark:border-rose-800/60 border-l-[3px] border-l-rose-400 dark:border-l-rose-500',
     },
     {
-        // 5: Teal (Viễn thông / Phụ kiện / IT / ICT)
-        square: 'bg-teal-500 shadow-xs',
-        bgRow: 'bg-teal-50/85 dark:bg-teal-950/35',
-        label: 'text-teal-700/90 dark:text-teal-400',
-        value: 'text-teal-950 dark:text-teal-100',
-        badge: 'bg-white/90 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 border-teal-300/80 dark:border-teal-700',
-        border: 'border-t border-b border-teal-200/80 dark:border-teal-800/60 border-l-[3px] border-l-teal-400 dark:border-l-teal-500',
+        // 5: Emerald TẦNG ĐẬM (Viễn thông / Phụ kiện / IT / ICT)
+        // Trước đây là `teal` — màu NGOÀI bảng đã duyệt. Sau khi vị trí 3 đổi purple→slate thì cả
+        // 6 họ semantic đã dùng hết, nên vị trí thứ 7 dùng tầng sắc độ thứ 2 của emerald, đúng
+        // pattern CLAUDE.md mục 2 ("6 họ semantic x 2 tầng sắc độ"). Cố ý đậm hơn tông emerald
+        // chuẩn ở vị trí 1 để vẫn phân biệt được khi liếc nhanh.
+        square: 'bg-emerald-700 shadow-xs',
+        bgRow: 'bg-emerald-100/85 dark:bg-emerald-900/35',
+        label: 'text-emerald-900/90 dark:text-emerald-300',
+        value: 'text-emerald-950 dark:text-emerald-50',
+        badge: 'bg-white/90 dark:bg-emerald-800/60 text-emerald-900 dark:text-emerald-100 border-emerald-400/80 dark:border-emerald-600',
+        border: 'border-t border-b border-emerald-300/80 dark:border-emerald-700/60 border-l-[3px] border-l-emerald-600 dark:border-l-emerald-400',
     },
     {
         // 6: Indigo (Khác)

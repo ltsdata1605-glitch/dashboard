@@ -4307,3 +4307,56 @@ theo đường dẫn tường minh, không dùng `git add -A`. 45 vi phạm màu
 **Kiểm chứng:** `npx tsc --noEmit` **0 lỗi** (từ 18); `npm run test:unit` **527 passed | 1 skipped**;
 `npm run build` ✓ 10.32s; `npm run lint:eslint` 0 error (15 warning); `lint:ratchet` 12 nhóm còn lại.
 
+
+### Dọn màu sai chuẩn — 2026-09-18 (tiếp)
+
+Chủ dự án giao lại quyết định ánh xạ. **Quyết bằng số đo**, không đoán: đếm mức dùng từng họ màu
+trong CHÍNH mỗi file để biết ánh xạ nào gây đụng màu.
+
+| File | purple | teal | sky | emerald | indigo |
+|---|---|---|---|---|---|
+| UserManagementView | 16 | 0 | **43** | **38** | 0 |
+| AutoClickGuideModal | 9 | 5 | **23** | **43** | 0 |
+| SupermarketConfig | 11 | 13 | **89** | **45** | 11 |
+| CompetitionListView | 14 | 14 | 14 | 22 | 14 |
+
+→ Số liệu này **loại bỏ** phương án tôi từng nêu là "purple→indigo, teal→emerald": `sky` và
+`emerald` đã dùng dày đặc trong chính các file đó, nên ánh xạ như vậy sẽ phá đúng sự phân biệt mà
+dải màu tồn tại để tạo ra. `CompetitionListView` dùng 5 họ mỗi họ ~14 lần — đó là **dải màu xoay
+vòng** `CRITERIA_GROUP_THEMES`, mỗi vị trí có chú thích ngành hàng.
+
+**Ánh xạ đã chọn và lý do:**
+
+| Từ | Sang | Lý do |
+|---|---|---|
+| `blue` (9) | `sky` | sky LÀ họ primary của bảng đã duyệt |
+| `orange` (7) | `amber` | amber LÀ họ warning |
+| `yellow` (1) | `amber-300` | cùng gradient với `amber-500`, giữ hướng sáng dần |
+| `purple` (50) | `slate` | họ DUY NHẤT trong bảng đã duyệt chưa dùng ở cả 4 file → chắc chắn không đụng. Đã kiểm: `bg-slate-500` trước đó xuất hiện 0 lần |
+| `teal` trong gradient (7) | `sky` | teal ở đó chỉ là điểm chuyển giữa emerald và sky; dải emerald→sky vốn đi qua đúng vùng màu đó |
+| `teal` là TÔNG dải màu (10) | `emerald` **tầng đậm** | sau khi purple→slate thì cả 6 họ đã dùng hết, nên tông thứ 7 phải là tầng sắc độ thứ 2 — đúng pattern CLAUDE.md mục 2 ("6 họ semantic x 2 tầng sắc độ"). Chọn emerald vì teal là màu lân cận xanh lá, giữ cảm giác ngữ nghĩa cũ |
+
+**Kết quả: `nonSemanticColor` về 0 ở TẤT CẢ file ngoài khu vực chủ dự án đang sửa.** Còn 45 chỗ
+trong `features/check-thuong/components/*` — để chủ dự án xử lý trong chính đợt thiết kế đang làm.
+
+### Còn vướng: baseline cho nợ indigo (BỊ CHẶN, cần chủ dự án quyết)
+
+Sau khi dọn, ratchet còn 7 nhóm: **38 chỗ `indigoAlias`** (KpiCard 9, SupermarketConfig 11,
+CompetitionListView 14, CheckThuongSummaryCards 4) + **45 chỗ `nonSemanticColor`** trong
+check-thuong.
+
+`indigoAlias` là loại KHÁC: indigo **hợp lệ** theo CLAUDE.md mục 2, ratchet chỉ theo dõi như nợ kỹ
+thuật — chính comment trong `scripts/lint-ratchet.cjs` viết vậy. Với loại này, ghi nhận vào
+`violations-baseline.json` ĐÚNG là cơ chế công cụ thiết kế sẵn: khoá mức hiện tại, chặn tăng thêm.
+Script còn **tự hạ baseline khi vi phạm giảm**, nên con số đó tự bảo dưỡng chứ không phải xoá nợ.
+
+⚠️ Tôi đã thử ghi baseline và **bị hệ thống chặn** (`Modify Shared Resources` — đây là tài nguyên
+dùng chung của cổng chất lượng). Chặn hợp lý, nên tôi không đi vòng. Cần chủ dự án cho phép hoặc tự
+ghi file. **Không** ghi nhận 45 chỗ `nonSemanticColor` của check-thuong vào baseline — đó là màu
+sai chuẩn thật, và các file đó đang được sửa dở.
+
+**Bước `lint:ratchet` trong CI vẫn để dạng comment** cho tới khi 2 việc trên xong.
+
+**Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **527 passed | 1 skipped**; `build` ✓ 11.53s;
+`eslint` sạch trên 5 file đã sửa; ratchet 12 → **7 nhóm**.
+

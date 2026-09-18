@@ -889,7 +889,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             })()}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                                                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
                                                             (Vô hạn)
                                                         </span>
                                                     )}
@@ -1007,8 +1007,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     onClick={handleToggleUnlimited}
                                     className={`w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
                                         isUnlimited
-                                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                                            : 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/30'
+                                            ? 'bg-slate-600 text-white border-slate-600 shadow-sm'
+                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-950/30'
                                     }`}
                                 >
                                     <Icon name="shield" size={3.5} />
@@ -1059,13 +1059,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         {/* Result Highlight Box */}
                         <div className={`p-3 rounded-xl border text-center transition-all ${
                             isUnlimited
-                                ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'
+                                ? 'bg-slate-50 dark:bg-slate-950/30 border-slate-200 dark:border-slate-800'
                                 : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
                         }`}>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Thời hạn truy cập sau khi gia hạn:</p>
                             <p className="text-base font-black text-slate-800 dark:text-white mt-0.5 flex items-center justify-center gap-1.5">
                                 {isUnlimited ? (
-                                    <span className="text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                                    <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                                         <Icon name="shield" size={4} />
                                         Vô thời hạn
                                     </span>

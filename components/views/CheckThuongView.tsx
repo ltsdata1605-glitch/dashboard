@@ -230,7 +230,7 @@ export const CheckThuongView: React.FC = () => {
                     }}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                         activeSubTab === 'leaderboard'
-                            ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-xs font-black'
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 shadow-xs font-black'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                     }`}
                     title="Xem Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao"

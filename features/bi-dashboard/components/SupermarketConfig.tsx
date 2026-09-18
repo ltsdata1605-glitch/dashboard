@@ -67,10 +67,10 @@ const CRITERIA_GROUP_PALETTES = [
         badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
     },
     {
-        square: 'bg-purple-500 shadow-xs',
-        label: 'text-purple-700 dark:text-purple-400',
-        value: 'text-purple-950 dark:text-purple-100',
-        badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+        square: 'bg-slate-500 shadow-xs',
+        label: 'text-slate-700 dark:text-slate-400',
+        value: 'text-slate-950 dark:text-slate-100',
+        badge: 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950/60 dark:text-slate-300 dark:border-slate-800',
     },
     {
         square: 'bg-rose-500 shadow-xs',
@@ -79,10 +79,12 @@ const CRITERIA_GROUP_PALETTES = [
         badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
     },
     {
-        square: 'bg-teal-500 shadow-xs',
-        label: 'text-teal-700 dark:text-teal-400',
-        value: 'text-teal-950 dark:text-teal-100',
-        badge: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800',
+        // Emerald TẦNG ĐẬM — tầng sắc độ thứ 2 của họ emerald (CLAUDE.md mục 2: "6 họ semantic
+        // x 2 tầng sắc độ"). Trước đây dùng `teal`, là màu NGOÀI bảng đã duyệt.
+        square: 'bg-emerald-700 shadow-xs',
+        label: 'text-emerald-900 dark:text-emerald-300',
+        value: 'text-emerald-950 dark:text-emerald-50',
+        badge: 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-100 dark:border-emerald-600',
     },
     {
         square: 'bg-indigo-500 shadow-xs',
@@ -1147,7 +1149,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:via-teal-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
+                            className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-sky-600 to-emerald-600 hover:from-emerald-500 hover:via-sky-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();
