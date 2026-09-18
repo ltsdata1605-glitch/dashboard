@@ -80,6 +80,13 @@ test('In Sticker mount được và không ghi Firestore dồn dập khi thao t�
         await page.waitForTimeout(20000); // warm-up Firestore WebChannel thường chậm lần đầu
     }
     loggedIn = await page.getByText(/TESTCLAUDEQA/i).first().isVisible().catch(() => false);
+
+    // Ghi lại NGUYÊN VĂN thông báo lỗi đăng nhập (nếu có). Từ 2026-09-18, lỗi hết hạn mức phải hiện
+    // thông điệp tiếng Việt rõ ràng chứ KHÔNG còn "Lỗi kết nối (functions/internal): INTERNAL" —
+    // xem withQuotaMessage() trong functions/src/stickerEvent.ts.
+    const errorBanner = page.locator('text=/Lỗi|hạn mức|INTERNAL/i').first();
+    const errorText = await errorBanner.innerText().catch(() => '');
+    console.log(`[KẾT QUẢ] thông báo lỗi đăng nhập = "${errorText.replace(/\s+/g, ' ').trim()}"`);
     console.log(`[KẾT QUẢ] module sticker đã mount = ${stickerMounted}`);
 
     // ---- Thao tác liên tục 15 lần rồi ngồi im 25s (dài hơn debounce cloud 20s) ----

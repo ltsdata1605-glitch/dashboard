@@ -3963,3 +3963,42 @@ không cần di trú**. Cả hai giữ làm phương án dự phòng.
 8.64s; `npx eslint` 2 file: sạch; `npx tsc --noEmit` 0 lỗi trong file đợt này (tổng vẫn 18 baseline);
 `lint:ratchet` vẫn 13 baseline.
 
+
+### Lỗi đăng nhập "INTERNAL" — mắt xích cuối cùng (2026-09-18, ĐÃ DEPLOY)
+
+**Chẩn đoán bằng bằng chứng, không phỏng đoán.** Chủ dự án gặp
+`Lỗi kết nối (functions/internal): INTERNAL` khi đăng nhập. Đọc log Cloud Function
+(`firebase functions:log --only stickerResolveSession`):
+
+```
+code: 8   (RESOURCE_EXHAUSTED)
+details: "Quota limit exceeded ... 'Free daily read units per project (free tier database)'"
+at Firestore.getAll
+```
+
+Lỗi Firestore ném từ TRONG Cloud Function **không phải `HttpsError`**, nên Cloud Functions bọc lại
+thành `internal` — client chỉ nhận đúng chữ "INTERNAL". **Đây chính là mắt xích khiến sự cố 17/09
+leo thang**: người dùng không thể đoán đó là hết hạn mức nên bấm đăng nhập lại nhiều lần, mà mỗi
+lần lại đốt thêm hạn mức.
+
+**Đã sửa + đã deploy:**
+- `functions/src/stickerEvent.ts` — `withQuotaMessage()` bọc **cả 4 callable** (`stickerRegister`,
+  `stickerResolveSession`, `stickerAdminUpdateUser`, `stickerStaffAuth`). Nhận diện gRPC `code === 8`
+  + so khớp chuỗi dự phòng, đổi thành `HttpsError('resource-exhausted')` kèm thông điệp tiếng Việt.
+  `HttpsError` sẵn có được giữ nguyên, không bị nuốt.
+- `features/sticker-event/Login.tsx` — nhánh `resource-exhausted` hiện **nguyên văn** thông điệp từ
+  server, không bọc thêm chữ "Lỗi kết nối".
+- Deploy: `firebase deploy --only functions:sticker*` → 4/4 "Successful update operation".
+
+**Kiểm chứng RUNTIME thật (Playwright, chạy khi hạn mức vẫn đang cạn — đúng lúc tốt nhất để test
+đường lỗi):** màn hình đăng nhập giờ hiện:
+
+> *"Hệ thống đã dùng hết hạn mức truy cập miễn phí trong ngày. Bấm đăng nhập lại lúc này cũng không
+> vào được và còn tốn thêm hạn mức. Vui lòng quay lại sau (hạn mức được cấp lại vào khoảng 14 giờ
+> mỗi ngày)."*
+
+thay cho `Lỗi kết nối (functions/internal): INTERNAL`. 0 lỗi JS runtime.
+
+**Nguyên tắc rút ra cho cả dự án:** lỗi phải NÓI ĐÚNG SỰ THẬT. Một thông báo vô nghĩa không chỉ khó
+chịu — nó khiến người dùng thử lại, và ở đây mỗi lần thử lại có giá bằng hạn mức thật.
+
