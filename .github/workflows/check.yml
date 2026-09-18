@@ -1,0 +1,68 @@
+# Cổng kiểm tự động cho mọi lần push và pull request.
+#
+# VÌ SAO CÓ FILE NÀY (thêm 2026-09-18): dự án đã có `npm run check` gộp đủ typecheck/eslint/test/
+# build/ratchet, NHƯNG không có gì chạy nó tự động — không có CI nào cả. Hậu quả đã xảy ra thật:
+# 18 lỗi typecheck và 143 vi phạm màu sắc lọt vào nhánh `main` qua các commit tính năng gần đây mà
+# không ai biết. Có công cụ mà không thực thi thì bằng không.
+#
+# Bước `lint:ratchet` CHƯA được bật ở đây — xem ghi chú ở cuối file.
+
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Push liên tiếp lên cùng nhánh thì huỷ lượt chạy cũ, đỡ tốn phút CI.
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Khớp Node đang dùng ở máy dev (v22.11.0) để không lệch hành vi build.
+          node-version: '22'
+          cache: npm
+
+      - name: Cài dependency
+        run: npm ci
+
+      # 4 bước dưới đây ĐANG XANH tại thời điểm thêm file này — chạy riêng từng bước (không gộp
+      # `npm run check`) để log chỉ đúng bước nào đỏ, khỏi phải đọc ngược cả output.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint:eslint
+
+      - name: Test đơn vị
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build
+
+      # ─────────────────────────────────────────────────────────────────────────────────────────
+      # CHƯA BẬT: npm run lint:ratchet
+      #
+      # Hiện còn 12 nhóm vi phạm màu sắc (109 chỗ dùng `purple`/`teal` — 2 họ màu KHÔNG có màu
+      # semantic tương đương, nên ánh xạ chúng là một QUYẾT ĐỊNH THIẾT KẾ, không phải việc máy
+      # móc; cộng 34 chỗ `indigo` là nợ kỹ thuật đã được CLAUDE.md coi là hợp lệ).
+      #
+      # CỐ Ý không nhồi số liệu hiện tại vào `violations-baseline.json` để CI xanh: file đó đang là
+      # `{}` — tức dự án từng đạt trạng thái sạch tuyệt đối (cột mốc "npm run check XANH lần đầu",
+      # xem CLAUDE.md). Ghi nhận 143 vi phạm vào baseline là xoá bỏ thành quả đó.
+      #
+      # Bỏ 3 dòng comment dưới đây ngay sau khi dọn xong màu sắc:
+      # - name: Ratchet quy chuẩn thiết kế
+      #   run: npm run lint:ratchet
+      # ─────────────────────────────────────────────────────────────────────────────────────────

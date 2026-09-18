@@ -42,8 +42,20 @@ describe('Check Thưởng - TOP Supermarkets Logic', () => {
     };
 
     // Implemented logic from check-thuong.html
+    /** Một dòng tổng hợp theo siêu thị. Khai kiểu tường minh vì `any` khiến
+     *  `Object.values()` trả `unknown[]` — đó là nguồn của 10 lỗi typecheck ở file này. */
+    interface SupermarketRow {
+        sieuThi: string;
+        kenh: string;
+        tongThuong: number;
+        soNhom: number;
+        soNhomDat: number;
+        tongPercentTarget: number;
+    }
+
+    // `data: any[]` giữ nguyên: đây là dòng Excel thô, đúng ngoại lệ CLAUDE.md mục 3.
     const calculateTopSupermarkets = (data: any[]) => {
-        const supermarketMap: any = {};
+        const supermarketMap: Record<string, SupermarketRow> = {};
         data.forEach(row => {
             const kenh = row[COLS.KENH] || 'N/A';
             const sieuThi = row[COLS.SIÊU_THỊ];
@@ -73,7 +85,7 @@ describe('Check Thưởng - TOP Supermarkets Logic', () => {
         });
 
         const topList = Object.values(supermarketMap)
-            .sort((a: any, b: any) => b.tongThuong - a.tongThuong);
+            .sort((a, b) => b.tongThuong - a.tongThuong);
 
         return {
             all: topList,
@@ -101,7 +113,7 @@ describe('Check Thưởng - TOP Supermarkets Logic', () => {
         expect(result.all[0].tongThuong).toBeGreaterThanOrEqual(result.all[1]?.tongThuong || 0);
 
         // Verify aggregation
-        const sieuThi1 = result.all.find((s: any) => s.sieuThi === '910 - Siêu Thị 1');
+        const sieuThi1 = result.all.find((s) => s.sieuThi === '910 - Siêu Thị 1');
         expect(sieuThi1?.tongThuong).toBe(1500000); // 1M + 500k
         expect(sieuThi1?.soNhom).toBe(2);
         expect(sieuThi1?.soNhomDat).toBe(1); // Only 1 >= 100%

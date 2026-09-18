@@ -10,7 +10,7 @@ import { Modal } from '../shared/ui/Modal';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
-import { adminUpdateUser, listManagedUsers, AdminRole, ManagedUserDoc } from '../../services/adminUserService';
+import { adminUpdateUser, listManagedUsers, AdminRole, AdminStatus, ManagedUserDoc } from '../../services/adminUserService';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -49,21 +49,42 @@ const getIsoDateString = (val: unknown): string => {
     return '';
 };
 
+/**
+ * Hồ sơ người dùng SAU khi component chuyển ngày tháng — khác `ManagedUserDoc` (dữ liệu thô từ
+ * Cloud Function, ngày là chuỗi ISO) ở chỗ `createdAt`/`requestDate` đã bọc thành `TimestampLike`
+ * (xem `toTimestampLike()` dùng ở dưới).
+ *
+ * SỬA 2026-09-18: trước đây file này tự khai lại union cho `role`/`status` **hẹp hơn** nguồn chân
+ * lý `AdminRole`/`AdminStatus` trong `services/adminUserService.ts` — thiếu `'expired'`/`'blocked'`
+ * dù code ở ngay file này vẫn so sánh với 2 giá trị đó (dòng 230, 360, 708). Đó là nguồn của 8 lỗi
+ * typecheck. Nay dùng LẠI 2 kiểu gốc để không thể lệch lần nữa.
+ */
 interface AccessRequest {
     id: string;
     displayName: string;
     email: string;
     photoURL: string;
     requestedRole: 'manager' | 'employee';
-    role?: 'admin' | 'manager' | 'employee' | 'pending';
+    role?: AdminRole;
     departmentId: string;
     employeeName: string;
-    status: 'pending' | 'approved' | 'rejected' | 'new';
+    status: AdminStatus;
     createdAt: TimestampLike;
     requestDate: TimestampLike;
     loginCount?: number;
-    expiresAt?: { toDate: () => Date };
+    /** Chuỗi ISO (từ Cloud Function) HOẶC object có `.toDate()` (dữ liệu giả ở chế độ Dùng Thử).
+     *  `isUserExpired()` bên dưới đã xử lý được cả hai dạng. */
+    expiresAt?: { toDate: () => Date } | string | null;
 }
+
+/**
+ * Chỉ những field mà modal "Gia hạn" và xác nhận "Thu hồi" THỰC SỰ dùng.
+ *
+ * Trước đây 3 chỗ đó khai kiểu `ManagedUserDoc` (rộng hơn nhu cầu), nhưng vòng render lại truyền
+ * vào `AccessRequest` — hai kiểu không tương thích ở field ngày tháng nên sinh 4 lỗi typecheck.
+ * Thu hẹp về đúng những gì cần thì nhận được CẢ HAI kiểu, không phải chuyển đổi gì.
+ */
+type UserActionTarget = Pick<ManagedUserDoc, 'id' | 'displayName' | 'email' | 'employeeName' | 'departmentId' | 'role'>;
 
 interface UserManagementViewProps {
     isEmbedded?: boolean;
@@ -99,8 +120,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
     // States cho Gia Hạn và Thu Hồi
     const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-    const [confirmRevokeUser, setConfirmRevokeUser] = useState<ManagedUserDoc | null>(null);
-    const [extendingUser, setExtendingUser] = useState<ManagedUserDoc | null>(null);
+    const [confirmRevokeUser, setConfirmRevokeUser] = useState<UserActionTarget | null>(null);
+    const [extendingUser, setExtendingUser] = useState<UserActionTarget | null>(null);
     const [extendDays, setExtendDays] = useState<number>(30);
     const [extendDate, setExtendDate] = useState<string>('');
     const [isUnlimited, setIsUnlimited] = useState<boolean>(false);
@@ -338,14 +359,25 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             setEditRoles(newRoles);
             
             // Helper kiểm tra hết hạn
-            const isUserExpired = (status?: string, expiresAtObj?: TimestampLike | { toDate?: () => Date }): boolean => {
+            const isUserExpired = (status?: string, expiresAt?: TimestampLike | { toDate?: () => Date } | string | null): boolean => {
                 if (status === 'expired') return true;
-                if (expiresAtObj?.toDate) {
-                    try {
-                        return expiresAtObj.toDate().getTime() < Date.now();
-                    } catch {
-                        return false;
+                if (!expiresAt) return false;
+                // Phải xử lý CẢ HAI dạng. Lúc TẢI danh sách, `expiresAt` đã được
+                // `toTimestampLike()` bọc thành object (xem chỗ dựng `data` ở trên) — nên đường
+                // đó vốn đã đúng. Nhưng sau khi DUYỆT một người dùng, `setRequests` gán thẳng
+                // chuỗi ISO vào `expiresAt` (không qua `toTimestampLike`), nên bản ghi đó mang
+                // chuỗi cho tới lần tải lại kế tiếp — và nhánh cũ chỉ kiểm `.toDate` sẽ coi nó là
+                // "chưa hết hạn" trong suốt thời gian đó.
+                try {
+                    if (typeof expiresAt === 'string') {
+                        const ms = new Date(expiresAt).getTime();
+                        return Number.isFinite(ms) && ms < Date.now();
                     }
+                    if (typeof expiresAt.toDate === 'function') {
+                        return expiresAt.toDate().getTime() < Date.now();
+                    }
+                } catch {
+                    return false;
                 }
                 return false;
             };
@@ -519,7 +551,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     };
 
     // Các hàm xử lý Modal Gia Hạn
-    const handleOpenExtendModal = (req: ManagedUserDoc) => {
+    const handleOpenExtendModal = (req: UserActionTarget) => {
         setExtendingUser(req);
         setIsUnlimited(false);
         const defaultDays = 30;

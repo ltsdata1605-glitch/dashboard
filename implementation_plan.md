@@ -4240,3 +4240,70 @@ nhỏ và đối chiếu `git diff` sau mỗi bước.
 **Bước 2 (đổi listener collection → listener 1 document "chỉ mục mốc thời gian") CHƯA làm.** Xem
 đánh giá lợi ích/rủi ro ở cuối mục này trước khi quyết định làm tiếp.
 
+
+---
+
+## Dọn cổng kiểm + thêm CI — 2026-09-18
+
+### Typecheck: 18 lỗi → 0
+
+**`tests/unit/check-thuong-top-logic.test.ts` (10 lỗi).** Nguyên nhân: `supermarketMap: any` khiến
+`Object.values()` trả `unknown[]`. Đã khai `interface SupermarketRow` tường minh; `data: any[]` giữ
+nguyên vì đó là dòng Excel thô — đúng ngoại lệ CLAUDE.md mục 3.
+
+**`components/views/UserManagementView.tsx` (8 lỗi).** Nguyên nhân gốc: file này tự khai lại
+interface `AccessRequest` **trùng lặp và đã lệch** so với nguồn chân lý `ManagedUserDoc` /
+`AdminRole` / `AdminStatus` trong `services/adminUserService.ts` — union `role`/`status` khai hẹp
+hơn thực tế, thiếu `'expired'`/`'blocked'` dù code ở ngay file đó vẫn so sánh với 2 giá trị này.
+Đã dùng LẠI `AdminRole`/`AdminStatus` để không thể lệch lần nữa. Thêm `type UserActionTarget =
+Pick<ManagedUserDoc, …>` cho 3 chỗ (modal Gia hạn / xác nhận Thu hồi) vốn khai kiểu rộng hơn nhu
+cầu — thu hẹp về đúng field thực dùng thì nhận được cả `ManagedUserDoc` lẫn `AccessRequest`.
+
+**Một bug nhỏ tìm ra khi sửa** (và một suy đoán SAI của tôi, ghi lại cả hai): tôi nghi `isUserExpired()`
+không bao giờ nhận ra hạn của người dùng thật, vì nó chỉ kiểm `.toDate`. **Suy đoán đó sai** — chỗ
+dựng `data` đã bọc `expiresAt` bằng `toTimestampLike()`, nên đường TẢI vốn đúng. Nhưng sau khi
+DUYỆT một người dùng, `setRequests` gán thẳng **chuỗi ISO** vào `expiresAt` (không qua
+`toTimestampLike`), nên bản ghi đó mang chuỗi cho tới lần tải lại kế tiếp — và nhánh cũ coi nó là
+"chưa hết hạn" trong suốt thời gian đó. Đã xử lý cả 2 dạng.
+
+### Ratchet: 13 → 12 nhóm, và phần còn lại là QUYẾT ĐỊNH THIẾT KẾ
+
+Đã sửa 16 chỗ có ánh xạ **rõ ràng, do chính CLAUDE.md mục 2 quy định**: `blue` → `sky` (sky là
+primary), `orange` → `amber` (amber là warning), cùng sắc độ nên khác biệt thị giác rất nhỏ.
+`BonusGroupListTable.tsx` nhờ đó sạch hoàn toàn (14 → 0).
+
+**Phần còn lại KHÔNG tự sửa** — 109 chỗ dùng `purple` (61) và `teal` (32). Hai họ này **không có
+màu semantic tương đương**: bảng đã duyệt chỉ có `sky`/`slate`/`emerald`/`amber`/`rose` + `indigo`.
+Ánh xạ chúng là quyết định thiết kế thật, và có một cái bẫy: `styles.css` cố tình override
+`--color-indigo-*` thành đúng hex của `sky`, nên `purple` → `indigo` sẽ render ra **màu sky** —
+làm các hạng mục dữ liệu vốn phân biệt nhau trở thành giống hệt. Chính comment trong
+`scripts/lint-ratchet.cjs` gọi đây là "bug thật". Cần chủ dự án chốt ánh xạ.
+
+🔴 **CỐ Ý KHÔNG nhồi số liệu hiện tại vào `violations-baseline.json`** để CI xanh cho nhanh. File
+đó đang là `{}` — tức dự án từng đạt trạng thái sạch tuyệt đối (cột mốc "npm run check XANH lần
+đầu", CLAUDE.md). Ghi nhận 143 vi phạm vào baseline là **xoá bỏ thành quả đó**, và biến ratchet
+thành công cụ vô nghĩa.
+
+### CI: `.github/workflows/check.yml` (MỚI)
+
+Chạy trên mọi push vào `main`, mọi pull request, và gọi tay được. Node 22 (khớp máy dev), `npm ci`,
+cache npm, huỷ lượt chạy cũ khi push liên tiếp, timeout 20 phút. **4 bước đang xanh** chạy RIÊNG
+từng bước để log chỉ đúng bước nào đỏ: typecheck → eslint → test đơn vị → build.
+
+Bước `lint:ratchet` để dạng comment kèm hướng dẫn bỏ comment, vì nó còn đỏ do phần màu sắc ở trên.
+
+**Vì sao CI là việc đáng làm nhất ở đây:** dự án đã có `npm run check` gộp đủ mọi thứ, nhưng
+**không có gì chạy nó tự động**. Chính lỗ hổng đó để 18 lỗi typecheck lọt vào `main`. Có công cụ mà
+không thực thi thì bằng không.
+
+### Không chạm việc đang dở của chủ dự án
+
+Lúc làm, `git status` cho thấy 5 file đang được sửa (13:42–13:51, file cuối cách đó 30 giây):
+4 component `features/check-thuong/*` và `public/check-thuong.html` — chủ dự án đang áp chuẩn bo
+góc (`rounded-xl`/`rounded-md` → `rounded-none`). Đã **tránh hoàn toàn** khu vực đó và chỉ `git add`
+theo đường dẫn tường minh, không dùng `git add -A`. 45 vi phạm màu trong `features/check-thuong/*`
+để chủ dự án xử lý trong chính đợt thiết kế đang làm.
+
+**Kiểm chứng:** `npx tsc --noEmit` **0 lỗi** (từ 18); `npm run test:unit` **527 passed | 1 skipped**;
+`npm run build` ✓ 10.32s; `npm run lint:eslint` 0 error (15 warning); `lint:ratchet` 12 nhóm còn lại.
+
