@@ -4080,3 +4080,76 @@ khoảng **0,5%** của trần 50.000. Sau các bản sửa, tải nền không 
 đếm hạn mức); `npm run build` ✓ 8.23s; `eslint` sạch; `tsc` 0 lỗi trong file đợt này (tổng vẫn 18
 baseline); `lint:ratchet` vẫn 13 baseline.
 
+
+---
+
+## Rà soát đọc/ghi 3 khu vực trên database `(default)` — 2026-09-18
+
+Chủ dự án khoanh đỏ 3 chức năng: **Phân tích YCX**, **Report BI**, **Phân ca**. Cả 3 dùng database
+`(default)` (STANDARD edition) — **bể hạn mức RIÊNG**, không liên quan database In Sticker.
+
+Đã thêm cờ `--default-db` vào `functions/scripts/audit-firestore-readonly.cjs` và **đo thật**
+(aggregation, gần như không tốn hạn mức).
+
+### Kết quả xếp hạng
+
+| Khu vực | Listener realtime | Thao tác Firestore | Đánh giá |
+|---|---|---|---|
+| **Phân ca** | **0** | 2 (`getDoc`/`setDoc`, 1 file `firestoreSync.ts`), 43 doc `schedules` | ✅ gần như bằng 0 |
+| **Report BI** | **0** | 14 thao tác doc-level / 4 service; 2 doc `biData/*/reports`, 3 doc `biSupermarketMap` | ✅ rất nhẹ |
+| **Phân tích YCX** | **5** | nhiều | ⚠️ cao nhất — chi tiết dưới |
+
+### Số liệu đo được trên `(default)`
+
+| Collection | Số doc | Ai đọc |
+|---|---|---|
+| `users/*/configs` | **1.416 / 52 user = ~27 doc/user** | listener `useCloudSync.ts:193` — **KHÔNG limit** |
+| `*/chunks` | 208 | `assembleChunkedHeavyValue` + dọn chunk sau mỗi lần ghi |
+| `users/*/notifications` | 311 (~6/user) | listener `NotificationDropdown.tsx:144`, limit 20 |
+| `shared_configs` | **10** | listener `DashboardView.tsx:121`, limit 100 |
+| `users/*/salesData` | 220 | listener `useDataManagement.ts:566` chỉ nghe 1 doc `meta` |
+| `khoData/*/salesFiles` | 52 | đọc theo yêu cầu |
+| `users/*/schedules` | 43 | Phân ca |
+| `biData/*/reports` | 2 | Report BI |
+
+### 🔴 Phát hiện chính: MỘT listener chiếm ~60% chi phí đọc mỗi phiên
+
+`hooks/useCloudSync.ts:192-193` gắn `onSnapshot` lên **TOÀN BỘ collection** `users/{uid}/configs`,
+**không có `limit`**. Firestore tính tiền toàn bộ tập kết quả ở lượt gắn đầu → **~27 lượt đọc mỗi
+phiên, mỗi người**. Và listener này **không** được tạm dừng khi ẩn tab (khác với
+`usePendingApprovalCount`/`useSystemTraffic` đã có xử lý đó) — dòng `visibilitychange` ở
+`useCloudSync.ts:377` là cho việc GHI (`syncIfChanged`), không phải tháo listener.
+
+**Chi phí một phiên của người dùng thường (đã cộng mọi listener):**
+
+| Nguồn | Lượt đọc |
+|---|---|
+| `users/*/configs` (listener, không limit) | **~27** |
+| `shared_configs` (listener, limit 100) | 10 |
+| `users/*/notifications` (listener, limit 20) | ~6 |
+| `setting/configuration` + `salesData/meta` + `_system/stats` | 3 |
+| **Tổng** | **~46** |
+
+52 user × ~3 phiên/ngày × 46 ≈ **7.200 lượt đọc/ngày ≈ 14% của trần 50.000**. Không có gì chạy
+hoang, nhưng **1 listener chiếm 27/46 = 59%** của con số đó.
+
+### Cách sửa đề xuất (CHƯA làm — cần user quyết vì rủi ro thật)
+
+Áp đúng mẫu đã dùng cho In Sticker mục 5: thay listener-trên-cả-collection bằng **1 document
+"chỉ mục mốc thời gian"** (kiểu `metadata/sync`) ghi lại khoá nào đổi lúc nào; listener chỉ nghe 1
+doc đó, rồi tải đúng khoá đã đổi khi cần. **27 lượt đọc → 1 lượt.**
+
+⚠️ **Rủi ro phải nói rõ:** đây là đường đồng bộ then chốt, và code tại đó đã mang rất nhiều comment
+BUG FIX về các lỗi từng xảy ra thật (self-echo 3 lần, lệch đồng hồ client/server, chunk 1MiB,
+"Write stream exhausted"). Sửa sai là làm mất dữ liệu cấu hình của người dùng. Nếu làm thì phải
+làm thành một đợt riêng, có test trước, không gộp vào việc khác.
+
+**Việc rẻ hơn, rủi ro thấp, làm ngay được:** tháo listener khi ẩn tab và gắn lại khi hiện — giảm
+lượt gắn lại khi mạng chập chờn hoặc máy ngủ, không chạm logic đồng bộ.
+
+### Mục 7 (còn treo) đã xác nhận vẫn đúng
+
+`services/firestoreService.ts:381` và `:394` — mỗi lần ghi khoá nặng đều kèm 1 `getDocs(chunksRef)`
+để dọn chunk, kể cả khi không chunk và subcollection rỗng (query rỗng vẫn tính tối thiểu 1 lượt
+đọc). Có `chunkCount` lưu sẵn thì bỏ được lượt đọc này — cùng cách đã làm cho In Sticker mục 1.
+

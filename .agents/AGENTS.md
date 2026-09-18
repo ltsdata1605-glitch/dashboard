@@ -19,6 +19,13 @@ Mỗi khi người dùng yêu cầu push (ví dụ: "push", "hãy push", "push c
 - The Agent MUST ensure that robust error handling (try/catch, Error Boundaries, null-checks) is integrated into new or modified modules.
 - For error tracking and monitoring, the Agent should utilize global logging mechanisms or suggest integration with tracking services (like Sentry/Firebase Crashlytics) if critical errors occur.
 
+## Targeted Testing & Fast Execution Rule
+- **Nguyên tắc Targeted Testing**: Khi người dùng yêu cầu sửa đổi, tối ưu hoặc thêm tính năng, Agent **BẮT BUỘC chỉ chạy test liên quan trực tiếp đến tính năng/file đó** (dùng `npx vitest related <file> --run` hoặc `npx vitest run <path/to/test.ts>`).
+- **Tối ưu tốc độ (Fast Execution)**: Tuyệt đối KHÔNG tự động chạy full test suite (toàn bộ 30+ test suites) hay full build sau mỗi lần sửa nhỏ, trừ khi:
+  1. Người dùng yêu cầu rõ ràng ("test all", "kiểm tra toàn bộ").
+  2. Khi chuẩn bị deploy production (`npm run deploy`).
+- **Chạy ngầm (Background Task)**: Với các lệnh test hoặc kiểm tra, Agent ưu tiên chạy ngầm hoặc kiểm tra tức thì (thời gian dưới 1 giây) để phản hồi người dùng nhanh nhất có thể.
+
 
 ## Communication Style & Reporting
 - Luôn mô tả và trình bày rõ ràng các hành động sẽ làm (Kế hoạch thực thi) trước khi bắt tay vào code hoặc sửa lỗi.

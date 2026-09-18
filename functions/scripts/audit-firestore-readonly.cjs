@@ -59,6 +59,7 @@ const admin = require('firebase-admin');
 const argv = process.argv.slice(2);
 const WANT_USERS = argv.includes('--users');
 const WANT_DEEP = argv.includes('--deep');
+const WANT_DEFAULT_DB = argv.includes('--default-db');
 const AUTO_YES = argv.includes('--yes');
 
 // ── Lấy id database In Sticker từ firebase.json (nguồn chân lý duy nhất, không chép cứng) ──
@@ -231,6 +232,50 @@ const askYesNo = async (question) => {
     return /^y(es)?$/i.test(answer.trim());
 };
 
+/**
+ * Khảo sát database `(default)` — nơi Phân tích YCX / Report BI / Phân ca cùng chạy.
+ *
+ * Tách thành hàm riêng để chạy được CẢ KHI database In Sticker đang hết hạn mức: hai database có
+ * bể hạn mức riêng, nên phần này không bị ảnh hưởng.
+ */
+const auditDefaultDb = async () => {
+
+    console.log('\n[2b] DATABASE (default) — chi phí LISTENER của Phân tích YCX\n');
+
+    // `shared_configs`: DashboardView.tsx gắn onSnapshot orderBy+limit(100) lên collection này.
+    // DashboardView LÀ tab mặc định (`analysis`) → MỌI người dùng, MỌI phiên đều gắn listener
+    // này. Số document ở đây chính là chi phí đọc mỗi lần gắn.
+    const sharedConfigs = await countOf(defaultDb.collection('shared_configs'));
+    console.log(`  shared_configs (listener DashboardView, limit 100) : ${show(sharedConfigs)}`);
+
+    // `users/{uid}/configs`: useCloudSync.ts gắn onSnapshot lên TOÀN BỘ collection này (không
+    // limit). collectionGroup cho tổng trên mọi user để suy ra mức trung bình.
+    const configsTotal = await countOf(defaultDb.collectionGroup('configs'));
+    const notifTotal = await countOf(defaultDb.collectionGroup('notifications'));
+    const usersCount = await countOf(defaultDb.collection('users'));
+    console.log(`  users/*/configs (listener useCloudSync, KHÔNG limit): ${show(configsTotal)} trên ${show(usersCount)} user`);
+    if (typeof configsTotal === 'number' && typeof usersCount === 'number' && usersCount > 0) {
+        console.log(`      → trung bình ${(configsTotal / usersCount).toFixed(1)} doc/user = chi phí mỗi lần gắn listener`);
+    }
+    console.log(`  users/*/notifications (listener, limit 20)          : ${show(notifTotal)}`);
+
+    // Dữ liệu nặng khác trên (default).
+    for (const [label, ref] of [
+        ['biData/*/reports        (Report BI)', defaultDb.collectionGroup('reports')],
+        ['biSupermarketMap        (Report BI)', defaultDb.collection('biSupermarketMap')],
+        ['khoData/*/salesFiles    (Phân tích)', defaultDb.collectionGroup('salesFiles')],
+        ['users/*/salesData       (Phân tích)', defaultDb.collectionGroup('salesData')],
+        ['users/*/schedules       (Phân ca)  ', defaultDb.collectionGroup('schedules')],
+        ['users/*/state           (In Sticker)', defaultDb.collectionGroup('state')],
+    ]) {
+        console.log(`  ${label}: ${show(await countOf(ref))}`);
+    }
+
+    // Chunk của khoá nặng — mỗi lần ghi khoá nặng còn kèm 1 getDocs dọn chunk (mục 7 còn treo).
+    const chunksTotal = await countOf(defaultDb.collectionGroup('chunks'));
+    console.log(`  */chunks (khoá nặng đã cắt nhỏ)                     : ${show(chunksTotal)}`);
+};
+
 async function main() {
     console.log('='.repeat(78));
     console.log('KHẢO SÁT FIRESTORE — CHỈ ĐỌC');
@@ -253,6 +298,10 @@ async function main() {
         console.log('      Đáng chú ý: database (default) vẫn đọc bình thường ở ngay trên → hai database');
         console.log('      KHÔNG dùng chung bể hạn mức. Hạn mức reset lúc 0h giờ Thái Bình Dương');
         console.log('      (khoảng 14-15h giờ Việt Nam). Chạy lại script sau mốc đó.\n');
+        if (!WANT_DEFAULT_DB) return;
+        // Phần [2b] chỉ đọc database (default) — KHÔNG bị ảnh hưởng bởi hạn mức của database In
+        // Sticker, nên vẫn chạy được. Nhảy xuống đó.
+        await auditDefaultDb();
         return;
     }
 
@@ -350,6 +399,13 @@ async function main() {
     const migrationDocs = totals.savedLists + totals.productChunks + totals.inventoryChunks + totals.manualProducts + (typeof stickerUsers === 'number' ? stickerUsers : 0);
     console.log(`\n  • Di trú database: khoảng ${fmt(migrationDocs)} document phải copy`);
     console.log('    (chưa tính subcollection itemChunks của danh sách lớn và các document metadata).');
+
+    // ── PHẦN 2b ──
+    if (WANT_DEFAULT_DB) {
+        await auditDefaultDb();
+    } else {
+        console.log('\n[2b] DATABASE (default): bỏ qua (thêm --default-db để chạy).');
+    }
 
     // ── PHẦN 3: đối chiếu uid (đắt hơn, phải bật cờ) ─────────────────────────
     if (WANT_USERS) {
