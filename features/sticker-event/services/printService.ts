@@ -1291,6 +1291,9 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
   const commonStyles = getPrintStyles(settings);
 
   if (isMobile) {
+    if (allTags.length > 30) {
+      toast('Đang xử lý ' + allTags.length + ' tem trên điện thoại. Vui lòng đợi trong giây lát...', { icon: 'ℹ️', duration: 3000 });
+    }
     const { jsPDF } = await import('jspdf');
     const { default: html2canvas } = await import('html2canvas');
     
@@ -1348,77 +1351,70 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
 
             pdf.addPage([billPageWidth, dynamicHeightMm], 'p');
             
-            try {
-                fixOklchColors(pageElement);
-            } catch(e) { console.warn("Error fixing colors", e); }
-            
-            const canvas = await html2canvas(pageElement, { 
+            const canvas = await html2canvas(pageElement, {
                 scale: 2,
-                useCORS: true, 
-                allowTaint: true,
+                useCORS: true,
                 logging: false,
+                backgroundColor: '#ffffff'
             });
-            const imgData = canvas.toDataURL('image/png');
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, billPageWidth, dynamicHeightMm);
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            pdf.addImage(imgData, 'JPEG', 0, 0, billPageWidth, dynamicHeightMm);
+            // Dọn sạch container sau mỗi trang để giải phóng RAM ngay lập tức trên mobile
+            renderContainer.innerHTML = '';
         }
         
         document.body.removeChild(renderContainer);
         return pdf.output('datauristring');
+
+    } else {
+        const pdf = new jsPDF({
+            orientation: (getLayoutConfig(settings.tagsPerPage).orientation === 'landscape' ? 'l' : 'p') as 'p' | 'l',
+            unit: 'mm',
+            format: 'a4'
+        });
+        pdf.deletePage(1);
+
+        const tagsPerPage = cols * rows;
+        const totalPages = Math.ceil(allTags.length / tagsPerPage);
+
+        for (let i = 0; i < totalPages; i++) {
+            const pageTags = allTags.slice(i * tagsPerPage, (i + 1) * tagsPerPage).join('');
+            renderContainer.innerHTML = `
+                <style>${commonStyles}</style>
+                <div class="print-page ${sizeClass}">${pageTags}</div>
+            `;
+            const pageElement = renderContainer.querySelector('.print-page') as HTMLElement;
+
+            try {
+                await document.fonts.ready;
+                await waitForImages(pageElement);
+            } catch(e) { console.error("Error loading assets for canvas", e); }
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            const canvas = await html2canvas(pageElement, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            pdf.addPage('a4', (getLayoutConfig(settings.tagsPerPage).orientation === 'landscape' ? 'l' : 'p') as 'p' | 'l');
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            // Dọn sạch container sau mỗi trang để giải phóng RAM ngay lập tức trên mobile
+            renderContainer.innerHTML = '';
+        }
+
+        document.body.removeChild(renderContainer);
+        return pdf.output('datauristring');
     }
-
-    const orientation = getLayoutConfig(settings.tagsPerPage).orientation.charAt(0) as 'p' | 'l';
-    const pdf = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
-    const tagsPerPage = cols * rows;
-    const totalPages = Math.ceil(allTags.length / tagsPerPage);
-
-    for (let i = 0; i < totalPages; i++) {
-      const pageTags = allTags.slice(i * tagsPerPage, (i + 1) * tagsPerPage).join('');
-      renderContainer.innerHTML = `
-          <style>${commonStyles}</style>
-          <div class="print-page ${sizeClass}">${pageTags}</div>
-      `;
-      const pageElement = renderContainer.querySelector('.print-page') as HTMLElement;
-      
-      try {
-        await document.fonts.ready;
-        await waitForImages(pageElement);
-      } catch (e) {
-        console.error("Error loading print assets:", e);
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      try {
-        fixOklchColors(pageElement);
-      } catch(e) { console.warn("Error fixing colors", e); }
-
-      const canvas = await html2canvas(pageElement, { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: true,
-          logging: false,
-      });
-      const imgData = canvas.toDataURL('image/png');
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
-    }
-    
-    document.body.removeChild(renderContainer);
-    return pdf.output('datauristring');
 
   } else {
-    // Desktop: Open print dialog
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Vui lòng cho phép cửa sổ bật lên để in.');
-      return;
-    }
-    
+    // Desktop: In an toàn qua Hidden Iframe (100% không bao giờ bị trình duyệt chặn Pop-up)
     const tagsPerPage = cols * rows;
     const totalPages = Math.ceil(allTags.length / tagsPerPage);
     let allPagesHTML = '';
@@ -1437,12 +1433,14 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Oswald:wght@700&display=swap" rel="stylesheet">
           <style>
+            @page { margin: 0; size: auto; }
             body {
                 margin: 0;
-                background-color: #ccc;
+                background-color: #fff;
             }
             .print-page {
                 page-break-after: always;
+                break-after: page;
                 background-color: #fff;
             }
             ${commonStyles}
@@ -1450,19 +1448,62 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
         </head>
         <body>
             ${allPagesHTML}
-            <script>
-              window.onload = () => {
-                setTimeout(() => {
-                  window.print();
-                  window.close();
-                }, 250);
-              };
-            </script>
         </body>
         </html>`;
-    
-    printWindow.document.write(finalDesktopHTML);
-    printWindow.document.close();
-    printWindow.focus();
+
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+    printFrame.style.zIndex = '-9999';
+    printFrame.style.visibility = 'hidden';
+    document.body.appendChild(printFrame);
+
+    const frameDoc = printFrame.contentDocument || printFrame.contentWindow?.document;
+    if (frameDoc) {
+      frameDoc.open();
+      frameDoc.write(finalDesktopHTML);
+      frameDoc.close();
+
+      const triggerPrint = () => {
+        try {
+          printFrame.contentWindow?.focus();
+          printFrame.contentWindow?.print();
+        } catch (e) {
+          console.error("Lỗi khi mở hộp thoại in qua iframe:", e);
+        } finally {
+          setTimeout(() => {
+            if (document.body.contains(printFrame)) {
+              document.body.removeChild(printFrame);
+            }
+          }, 2000);
+        }
+      };
+
+      if (printFrame.contentDocument?.fonts?.ready) {
+        printFrame.contentDocument.fonts.ready.then(() => {
+          setTimeout(triggerPrint, 250);
+        }).catch(() => setTimeout(triggerPrint, 250));
+      } else {
+        setTimeout(triggerPrint, 350);
+      }
+    } else {
+      // Fallback nếu trình duyệt đặc thù chặn iframe
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(finalDesktopHTML);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 250);
+      } else {
+        toast.error('Vui lòng cho phép mở cửa sổ in trên trình duyệt.');
+      }
+    }
   }
 };

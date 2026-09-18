@@ -25,6 +25,20 @@ import {
   clearStoreDataOnFirestore 
 } from '../services/firebaseService';
 
+interface SyncMetaCacheEntry {
+  timestamp: number;
+  productsLastUpdated: number;
+  inventoryLastUpdated: number;
+  manualProductsLastUpdated: number;
+}
+const syncMetaMemoryCache = new Map<string, SyncMetaCacheEntry>();
+const SYNC_META_TTL_MS = 60 * 1000; // 60 giây TTL chống đọc lặp lại khi chuyển tab
+
+export const invalidateSyncMetaMemoryCache = (storeId?: string) => {
+  if (storeId) syncMetaMemoryCache.delete(storeId);
+  else syncMetaMemoryCache.clear();
+};
+
 interface UseStickerEventDbProps {
   user: User | null;
   userData: StickerEventUserData | null;
@@ -110,41 +124,54 @@ export function useStickerEventDb({
           return;
         }
 
-        // Smart Sync: Check single merged metadata doc
-        const syncMetaRef = doc(db, 'stores', storeId, 'metadata', 'sync');
-        let syncMetaSnap;
-        let retries = 3;
-        while (retries > 0) {
-            try {
-                syncMetaSnap = await getDoc(syncMetaRef);
-                break;
-            } catch (err: unknown) {
-                console.warn(`Lỗi tải metadata (còn ${retries - 1} lần thử):`, err);
-                retries--;
-                if (retries === 0) throw err;
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-
         let firestoreLatestProducts = 0;
         let firestoreLatestInv = 0;
-        
         // QUOTA FIX (2026-09-17, mục 5): lấy luôn mốc của sản phẩm nhập tay từ CHÍNH document
         // metadata/sync đang đọc — không tốn thêm lượt đọc nào.
         let firestoreLatestManual = 0;
 
-        if (syncMetaSnap!.exists()) {
-          const syncData = syncMetaSnap!.data();
-          firestoreLatestProducts = syncData.productsLastUpdated?.toMillis() || 0;
-          firestoreLatestInv = syncData.inventoryLastUpdated?.toMillis() || 0;
-          firestoreLatestManual = syncData.manualProductsLastUpdated?.toMillis() || 0;
+        const cachedMeta = syncMetaMemoryCache.get(storeId);
+        if (cachedMeta && Date.now() - cachedMeta.timestamp < SYNC_META_TTL_MS) {
+          firestoreLatestProducts = cachedMeta.productsLastUpdated;
+          firestoreLatestInv = cachedMeta.inventoryLastUpdated;
+          firestoreLatestManual = cachedMeta.manualProductsLastUpdated;
         } else {
-          const [prodMetaSnap, invMetaSnap] = await Promise.all([
-              getDoc(doc(db, 'stores', storeId, 'metadata', 'products')),
-              getDoc(doc(db, 'stores', storeId, 'metadata', 'inventory'))
-          ]);
-          firestoreLatestProducts = prodMetaSnap.exists() ? prodMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
-          firestoreLatestInv = invMetaSnap.exists() ? invMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
+          // Smart Sync: Check single merged metadata doc
+          const syncMetaRef = doc(db, 'stores', storeId, 'metadata', 'sync');
+          let syncMetaSnap;
+          let retries = 3;
+          while (retries > 0) {
+              try {
+                  syncMetaSnap = await getDoc(syncMetaRef);
+                  break;
+              } catch (err: unknown) {
+                  console.warn(`Lỗi tải metadata (còn ${retries - 1} lần thử):`, err);
+                  retries--;
+                  if (retries === 0) throw err;
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+          }
+
+          if (syncMetaSnap!.exists()) {
+            const syncData = syncMetaSnap!.data();
+            firestoreLatestProducts = syncData.productsLastUpdated?.toMillis() || 0;
+            firestoreLatestInv = syncData.inventoryLastUpdated?.toMillis() || 0;
+            firestoreLatestManual = syncData.manualProductsLastUpdated?.toMillis() || 0;
+          } else {
+            const [prodMetaSnap, invMetaSnap] = await Promise.all([
+                getDoc(doc(db, 'stores', storeId, 'metadata', 'products')),
+                getDoc(doc(db, 'stores', storeId, 'metadata', 'inventory'))
+            ]);
+            firestoreLatestProducts = prodMetaSnap.exists() ? prodMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
+            firestoreLatestInv = invMetaSnap.exists() ? invMetaSnap.data().lastUpdated?.toMillis() || 0 : 0;
+          }
+
+          syncMetaMemoryCache.set(storeId, {
+            timestamp: Date.now(),
+            productsLastUpdated: firestoreLatestProducts,
+            inventoryLastUpdated: firestoreLatestInv,
+            manualProductsLastUpdated: firestoreLatestManual,
+          });
         }
 
         const localLatestProducts = localProdTs?.getTime() || 0;
@@ -238,18 +265,22 @@ export function useStickerEventDb({
       if (errMessage && errMessage.includes("8s")) {
          displayError = "Không thể kết nối đến máy chủ (Quá thời gian phản hồi 8s). Bạn đang sử dụng dữ liệu offline.";
       } else if (errMessage) {
-        try {
-          const errObj = JSON.parse(errMessage);
-          if (errObj.error) {
-            displayError = `Lỗi hệ thống: ${errObj.error}`;
-            if (errObj.error.includes('insufficient permissions')) {
-              displayError = "Bạn không có quyền truy cập dữ liệu của kho này. Vui lòng liên hệ Admin để kiểm tra quyền hạn.";
-            } else if (errObj.error.includes('Quota exceeded')) {
-              displayError = "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày. Vui lòng quay lại vào ngày mai.";
+        if (/RESOURCE_EXHAUSTED|Quota limit exceeded|Quota exceeded/i.test(errMessage)) {
+          displayError = "Hệ thống đã dùng hết hạn mức truy cập Cloud miễn phí trong ngày (50.000 lượt đọc Firestore). Bạn vẫn có thể nhập file trực tiếp hoặc sử dụng dữ liệu ngoại tuyến (Offline). Hạn mức sẽ tự động được cấp lại vào khoảng 14:00 - 15:00 hàng ngày.";
+        } else {
+          try {
+            const errObj = JSON.parse(errMessage);
+            if (errObj.error) {
+              displayError = `Lỗi hệ thống: ${errObj.error}`;
+              if (errObj.error.includes('insufficient permissions')) {
+                displayError = "Bạn không có quyền truy cập dữ liệu của kho này. Vui lòng liên hệ Admin để kiểm tra quyền hạn.";
+              } else if (/Quota exceeded|RESOURCE_EXHAUSTED/i.test(errObj.error)) {
+                displayError = "Hệ thống đã dùng hết hạn mức truy cập Cloud miễn phí trong ngày. Bạn vẫn có thể sử dụng dữ liệu offline hoặc nhập file trực tiếp.";
+              }
             }
+          } catch {
+            displayError = errMessage;
           }
-        } catch {
-          displayError = errMessage;
         }
       }
       setError(displayError);
@@ -291,6 +322,7 @@ export function useStickerEventDb({
       // QUOTA FIX (2026-09-17, mục 5): vô hiệu cache NGAY, không chờ ghi xong — phiên sau sẽ tải
       // lại đúng 1 lần để lấy `firebaseId` thật thay cho id tạm (xem clearManualProductsCache).
       clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
+      invalidateSyncMetaMemoryCache(userData.storeId);
 
       saveManualProduct(userData.storeId, docData).then(docId => {
         if (docId) {
@@ -316,6 +348,7 @@ export function useStickerEventDb({
 
     if (userData?.storeId && !docId.startsWith('temp_')) {
       clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
+      invalidateSyncMetaMemoryCache(userData.storeId);
       deleteManualProduct(userData.storeId, docId).catch(err => {
         console.error('Background Firebase delete failed:', err);
       });
@@ -345,6 +378,7 @@ export function useStickerEventDb({
       };
 
       clearManualProductsCache().catch(err => console.error('Clear manual cache failed:', err));
+      invalidateSyncMetaMemoryCache(userData.storeId);
       saveManualProduct(userData.storeId, docData, product.firebaseId).catch(err => {
         console.error('Background Firebase update failed:', err);
       });
@@ -360,6 +394,7 @@ export function useStickerEventDb({
             // "Xóa toàn bộ dữ liệu" báo thành công mà chunk trên cloud còn nguyên: mở app lần
             // sau local rỗng → smart-sync tải lại đúng bộ dữ liệu vừa "xoá". 100 lệnh xoá mỗi
             // lượt cũng trừ hạn mức miễn phí mà không dọn được gì.
+            invalidateSyncMetaMemoryCache(userData.storeId);
             await Promise.all([
                 clearStoreDataOnFirestore(userData.storeId, 'productChunks'),
                 clearStoreDataOnFirestore(userData.storeId, 'inventoryChunks')

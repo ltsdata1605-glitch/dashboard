@@ -584,19 +584,26 @@ export default function App(): React.JSX.Element {
                   </div>
                 )}
                 {error && (
-                  <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4" role="alert">
-                    <div className="flex items-center gap-3">
-                        <WarningIcon className="h-5 w-5 text-rose-500 shrink-0" />
-                        <p className="text-sm font-medium">{error}</p>
-                    </div>
-                    <Button
-                        variant="ghost"
-                        onClick={() => userData?.storeId && loadFirestoreData(userData.storeId, allProducts, inventory, uploadTimestamp, inventoryUploadTimestamp)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-bold"
-                    >
-                        Thử lại
-                    </Button>
-                  </div>
+                  (() => {
+                    const isQuota = /hạn mức|Quota/i.test(error);
+                    return (
+                      <div className={`${isQuota ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-rose-50 border-rose-200 text-rose-700'} border p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4`} role="alert">
+                        <div className="flex items-center gap-3">
+                            <WarningIcon className={`h-5 w-5 ${isQuota ? 'text-amber-500' : 'text-rose-500'} shrink-0`} />
+                            <p className="text-sm font-medium">{error}</p>
+                        </div>
+                        {!isQuota && (
+                          <Button
+                              variant="ghost"
+                              onClick={() => userData?.storeId && loadFirestoreData(userData.storeId, allProducts, inventory, uploadTimestamp, inventoryUploadTimestamp)}
+                              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-bold"
+                          >
+                              Thử lại
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
                 {duplicateError && (
                     <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-4 rounded-md" role="alert">

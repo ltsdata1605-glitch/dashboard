@@ -100,6 +100,14 @@ export function useStickerEventState({
     }
   };
 
+  // Pre-indexed search keys for fast lookup & early-break iteration (tránh gọi toLowerCase hàng chục nghìn lần khi gõ phím)
+  const searchableProducts = useMemo(() => {
+    return allProducts.map(p => ({
+      product: p,
+      searchKey: `${(p.msp || '').trim().toLowerCase()} ${(p.sanPham || '').trim().toLowerCase()}`
+    }));
+  }, [allProducts]);
+
   // Autocomplete Suggestions
   useEffect(() => {
     if (debounceTimeout.current) {
@@ -113,22 +121,28 @@ export function useStickerEventState({
       return;
     }
 
+    // Tối ưu tốc độ: Tìm kiếm có điểm dừng sớm (early break khi đủ 10 kết quả)
+    // Giảm debounce xuống 100ms giúp hiển thị gợi ý tức thì, không gây lag bàn phím
     debounceTimeout.current = window.setTimeout(() => {
-      const filteredSuggestions = allProducts.filter(p =>
-        p.msp?.trim().toLowerCase().includes(queryStr) ||
-        p.sanPham?.trim().toLowerCase().includes(queryStr)
-      ).slice(0, 10);
+      const results: Product[] = [];
+      const len = searchableProducts.length;
+      for (let i = 0; i < len; i++) {
+        if (searchableProducts[i].searchKey.includes(queryStr)) {
+          results.push(searchableProducts[i].product);
+          if (results.length >= 10) break;
+        }
+      }
       
-      setSuggestions(filteredSuggestions);
-      setShowNoResults(queryStr.length > 0 && filteredSuggestions.length === 0);
-    }, 200);
+      setSuggestions(results);
+      setShowNoResults(queryStr.length > 0 && results.length === 0);
+    }, 100);
 
     return () => {
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
       }
     };
-  }, [searchQuery, allProducts]);
+  }, [searchQuery, searchableProducts]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
