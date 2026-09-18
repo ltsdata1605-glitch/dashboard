@@ -4775,3 +4775,38 @@ Kiểm TĨNH trên mã nguồn, bổ sung (không thay thế) spec e2e: thêm ta
 
 **Đã kiểm chứng bằng đột biến** (không chỉ "chạy thấy xanh"): bỏ `https://*.run.app` khỏi `frame-src`
 và hạ xlsx về `0.18.5` trên cdnjs → **4 test đỏ**; khôi phục → **8 xanh**, `git diff` sạch.
+
+### KẾT LUẬN: job `e2e` XANH — và bằng chứng nó từng chập chờn chứ không hỏng cứng (2026-09-18)
+
+Lượt chạy `f5c9d3bc`: **cả 2 job xanh**, 7/7 bước E2E xanh. `iframe-tabs-csp` chạy **7s** thay vì
+16s — bản cũ ngủ vô điều kiện 10,5 giây, bản mới chỉ chờ đúng lúc cần.
+
+**Phát hiện thêm nhờ commit sync `c8b73c97` của chủ dự án chen vào giữa:** commit đó **chưa có**
+bản sửa iframe mà `E2E: iframe-tabs-csp` vẫn **xanh** trên CI. Vậy trước khi sửa, CI cho
+**2 đỏ / 1 xanh trên 3 lượt** → lỗi chập chờn (đua thời gian), không phải hỏng cứng. Điều này:
+- củng cố chẩn đoán "ngủ cố định + React.lazy" (đua thời gian thì lúc trúng lúc không);
+- bác hẳn mọi giả thuyết "môi trường runner khác biệt về bản chất";
+- và có nghĩa **một lượt CI xanh sau sửa chưa đủ làm bằng chứng** — một lượt xanh cũng từng xảy ra
+  khi chưa sửa. Bằng chứng thật nằm ở phép đo lặp tại chỗ (`--repeat-each=3` → 9/9) và ở việc cơ
+  chế sửa đúng bản chất lỗi (chờ điều kiện thay vì chờ thời gian).
+
+**Lịch sử đầy đủ của cuộc điều tra, để lần sau khỏi đi lại:**
+
+| Bước | Giả thuyết | Kết quả |
+|---|---|---|
+| 1 | Linux vs macOS, font, múi giờ | Sai — không có gì trong spec phụ thuộc mấy thứ đó |
+| 2 | Tách mỗi spec một bước để tên bước chỉ mặt | **Đúng hướng** — lộ ra `iframe-tabs-csp` |
+| 3 | Dọc đường bắt được flake `scrollIntoViewIfNeeded` ở spec khác | Lỗi thật, đã sửa, **nhưng không phải nguyên nhân** |
+| 4 | Runner không ra được mạng ngoài | Sai — test tải CDN xanh trên cùng lượt |
+| 5 | Bật reporter `github` để annotation mang lỗi thật | **Đúng** — chỉ ra "1 frame, không chrome-error" |
+| 6 | Ngủ 4s rồi chụp frames trong khi `ExternalToolView` là `React.lazy` | **ĐÚNG**, đã sửa, CI xanh |
+
+Ba giả thuyết sai (1, 3-như-nguyên-nhân, 4) đều có chung một lỗi tư duy: **tái hiện được một lỗi
+giống giống rồi coi là đã tìm ra.** Hai bước đúng (2, 5) đều là **làm cho hệ thống tự nói ra sự
+thật** thay vì đoán. Lần sau gặp CI đỏ: làm bước 2 và 5 TRƯỚC, đừng đoán.
+
+**Việc còn lại duy nhất để `npm run check` xanh hẳn:** `violations-baseline.json` (13 file, 80
+`indigoAlias`, 0 `nonSemanticColor`) — đã kiểm lại sau commit sync của chủ dự án, **vẫn khớp
+hoàn toàn**. Agent bị chặn ghi file này 2 lần (Modify Shared Resources, Auto-Mode Bypass), chủ dự
+án cần tự chạy lệnh `cp` (đường dẫn ở mục trước). Sau đó bỏ 3 dòng comment `lint:ratchet` trong
+`check.yml`.
