@@ -24,8 +24,12 @@ const moBangPivot = async (page: import('@playwright/test').Page) => {
     await page.waitForTimeout(1500);
 
     const section = page.locator('#pivot-table-section');
+    // Chờ hiện hữu TRƯỚC rồi mới cuộn. Thứ tự ngược lại từng làm
+    // `phan-tich-performance-modal.spec.ts` đỏ chập chờn: cuộn đòi phần tử đứng yên, mà React
+    // còn đang thay thẻ bọc skeleton bằng thẻ thật thì nó bị gỡ giữa chừng
+    // (`Element is not attached to the DOM`).
+    await expect(section).toBeVisible({ timeout: 20_000 });
     await section.scrollIntoViewIfNeeded();
-    await expect(section).toBeVisible();
     return section;
 };
 

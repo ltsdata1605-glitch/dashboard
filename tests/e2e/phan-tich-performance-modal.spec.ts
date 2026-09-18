@@ -19,13 +19,25 @@ test.describe('Phân Tích — modal hiệu quả cá nhân', () => {
         // Bảng nhân viên nằm ngay trong trang Phân tích (không phải tab riêng); tên hiển thị đã rút
         // gọn nên tìm theo mã nhân viên cho chắc.
         const section = page.locator('#employee-analysis-section');
-        await section.scrollIntoViewIfNeeded();
 
         // SỬA FLAKY (2026-09-09): từ Đợt 3, section này được lazy-load qua React.Suspense —
         // thẻ <div id="employee-analysis-section"> xuất hiện NGAY (bọc skeleton), còn nội dung
         // thật tới sau khi chunk tải xong. Trước đây test bấm luôn nên thỉnh thoảng bấm trúng
         // lúc còn skeleton và hỏng (đã đỏ 2 lần khi chạy cả bộ, chạy riêng thì luôn xanh).
         // Chờ đúng dòng nhân viên hiện ra rồi mới bấm.
+        //
+        // SỬA FLAKY LẦN 2 (2026-09-18): bản vá trên vẫn sót `section.scrollIntoViewIfNeeded()`
+        // đứng TRƯỚC phần chờ — và chính nó đỏ với `Element is not attached to the DOM`. Cuộn
+        // là thao tác cần phần tử ĐỨNG YÊN; lúc đó React đang thay thẻ bọc skeleton bằng thẻ
+        // thật, nên thẻ mà locator vừa tìm được đã bị gỡ khỏi DOM giữa chừng. Bỏ hẳn lệnh cuộn:
+        // `click()` của Playwright tự cuộn tới phần tử, còn `toBeVisible()` không đòi phần tử
+        // phải nằm trong khung nhìn.
+        //
+        // ĐÃ ĐO (không phải ước lượng): bản chưa sửa chạy `--repeat-each=8` → 1 đỏ / 39 xanh;
+        // cộng 1 lần đỏ quan sát trước đó ⇒ 2 lỗi trên ~50 lượt `beforeEach` ở máy dev (~4%).
+        // Bản đã sửa: 40/40 xanh. Đáng chú ý, 2 lần đỏ rơi vào 2 TEST KHÁC NHAU — vì lỗi ở
+        // `beforeEach` nên nó vồ trúng bất kỳ test nào đang chạy lúc cửa sổ thời gian rơi vào.
+        // Runner CI chậm hơn máy dev nên cửa sổ đó rộng hơn.
         const employeeRow = section.getByText(new RegExp(TEST_EMPLOYEE.split(' - ')[0])).first();
         await expect(employeeRow).toBeVisible({ timeout: 20_000 });
         await employeeRow.click();

@@ -4633,3 +4633,61 @@ test đỏ). Đoán tiếp mà không có dữ liệu đó là lãng phí.
 **Ghi nhận:** job `e2e` mới thêm hôm nay nên **chưa từng xanh trên CI lần nào** — đây là lượt chạy
 đầu tiên của nó, không phải hồi quy từ trạng thái tốt.
 
+
+### Tìm ra một nguyên nhân thật: test chập chờn ở `beforeEach` (2026-09-18, cùng ngày)
+
+Sau khi tách CI thành **mỗi spec một bước**, tôi chạy lại đúng khuôn đó ở máy dev (server Vite dựng
+riêng trên cổng 5199, `E2E_BASE_URL` trỏ vào, `CI=true`) — và **bắt được lỗi đỏ ngay ở máy dev**,
+điều mà 2 lượt chạy cả-7-spec-một-lượt trước đó không lộ ra:
+
+```
+phan-tich-performance-modal.spec.ts:55 › header dành cho ảnh xuất ...
+Error: locator.scrollIntoViewIfNeeded: Element is not attached to the DOM
+```
+
+**Lỗi KHÔNG nằm ở dòng 55** như tên test gợi ý, mà ở `beforeEach` dòng 22. Chạy lại ngay sau đó thì
+XANH → chập chờn, không phải hỏng thật.
+
+**Cơ chế:** `#employee-analysis-section` được lazy-load qua `React.Suspense`. Thẻ bọc skeleton xuất
+hiện tức thì, rồi React **thay** nó bằng thẻ thật khi chunk tải xong. `scrollIntoViewIfNeeded()` là
+thao tác đòi phần tử **đứng yên**; nếu nó chạy đúng lúc React đang thay thẻ thì thẻ mà locator vừa
+bắt được đã rời khỏi DOM → ném lỗi.
+
+Đây là **lần thứ 2** cùng một `beforeEach` này chập chờn. Bản vá 2026-09-09 đã thêm phần chờ dòng
+nhân viên hiện ra, nhưng **để sót lệnh cuộn đứng TRƯỚC phần chờ đó** — nên vá xong vẫn còn cửa sổ lỗi.
+
+**Đã sửa:**
+- `tests/e2e/phan-tich-performance-modal.spec.ts` — **bỏ hẳn** `section.scrollIntoViewIfNeeded()`.
+  `click()` của Playwright tự cuộn tới phần tử, còn `toBeVisible()` không đòi phần tử nằm trong khung
+  nhìn ⇒ lệnh cuộn đó vốn thừa, chỉ tổ thêm một điểm hỏng.
+- `tests/e2e/pivot-table.spec.ts` — cùng khuôn sai (cuộn TRƯỚC, khẳng định hiện hữu SAU) ở
+  `#pivot-table-section`. Đảo thứ tự: chờ hiện hữu rồi mới cuộn.
+  *(Chưa từng thấy nó đỏ, nhưng cùng một cái bẫy thì vá luôn.)*
+
+Đây là 2 chỗ **duy nhất** trong `tests/e2e/` dùng `scrollIntoViewIfNeeded` (đã grep toàn thư mục).
+
+**Vì sao máy dev giấu được lỗi này còn CI thì không:** cửa sổ trúng lỗi bằng đúng thời gian React
+thay thẻ. Máy dev nhanh nên cửa sổ hẹp (~1/6 lượt); runner GitHub chậm hơn, CPU chia sẻ, nên cửa sổ
+rộng hơn nhiều. **Không** phải khác biệt Linux/macOS như tôi đoán ban đầu.
+
+⚠️ **CHƯA XÁC NHẬN đây là toàn bộ nguyên nhân job `e2e` đỏ** — vẫn không đọc được log CI, nên chưa
+biết lượt chạy đỏ có phải hỏng đúng spec này không. Lượt chạy tới sẽ trả lời: nếu còn đỏ thì tên bước
+sẽ chỉ thẳng spec nào.
+
+### Sửa kèm: `BROWSER=none` cho job `e2e`
+
+`vite.config.ts` đặt `server.open: true` (tiện ở máy dev: chạy `npm run dev` là trình duyệt tự mở).
+Runner Linux không có trình duyệt lẫn `xdg-open`. Đặt `BROWSER: none` ở cấp job để Vite khỏi cố mở —
+đây là biến Vite đọc sẵn, không phải sửa `vite.config.ts` (không đụng trải nghiệm máy dev).
+
+### Sửa kèm: một server cho cả 7 bước
+
+Tách 7 bước mà mỗi bước để Playwright tự bật `webServer` là khởi động Vite 7 lần. Thay bằng: một
+bước dựng dev server rồi đặt `E2E_BASE_URL` ở cấp job — `playwright.config.ts` sẵn có nhánh
+"`E2E_BASE_URL` được đặt thì bỏ qua `webServer`". Bước server mang `id: server`, và 7 bước test gắn
+`if: ${{ !cancelled() && steps.server.outcome == 'success' }}` để:
+- một spec đỏ **không chặn** 6 spec còn lại (một lượt chạy cho ra đủ bức tranh);
+- nhưng server không lên thì **bỏ qua cả 7** thay vì đỏ 7 lần vô nghĩa.
+
+`--output` riêng cho từng spec: Playwright **dọn sạch** thư mục output ở đầu mỗi lượt, để chung thì
+ảnh chụp/trace của spec đỏ bị lượt sau xoá mất — đúng thứ cần nhất lại là thứ mất trước.

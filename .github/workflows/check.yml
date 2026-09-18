@@ -75,10 +75,24 @@ jobs:
   # dán dữ liệu vào hư không MÀ KHÔNG BÁO LỖI — `bi-competition.spec.ts` (4 test) và
   # `xss-header-sanitization.spec.ts` cùng hỏng, mỗi test treo 60 giây. Test chống XSS không hề
   # kiểm gì suốt thời gian đó. Không có CI chạy E2E thì lớp lỗi này nằm im vô thời hạn.
+  #
+  # ⚠️ MỖI SPEC MỘT BƯỚC RIÊNG (đổi 2026-09-18). Trước đây cả 7 spec chạy trong 1 bước; job đỏ 2
+  # lượt liên tiếp mà KHÔNG đọc được log (GitHub bắt buộc xác thực để tải log Actions, kể cả repo
+  # công khai) nên không biết spec nào hỏng. Tách bước ra thì trang tóm tắt lượt chạy tự chỉ mặt
+  # spec đỏ bằng TÊN BƯỚC, không cần mở log. `if: always()` để một spec đỏ không chặn 6 spec còn
+  # lại — một lượt chạy cho ra đủ bức tranh thay vì phải sửa-đẩy-chờ từng cái một.
   # ───────────────────────────────────────────────────────────────────────────────────────────
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
+
+    env:
+      # Trỏ Playwright vào server tự dựng ở bước dưới → `playwright.config.ts` bỏ qua khối
+      # `webServer`, nhờ vậy 7 bước dùng CHUNG 1 server thay vì khởi động lại Vite 7 lần.
+      E2E_BASE_URL: http://127.0.0.1:5173
+      # `vite.config.ts` đặt `server.open: true` (tiện ở máy dev). Runner Linux không có trình
+      # duyệt lẫn `xdg-open` — biến này bảo Vite đừng cố mở.
+      BROWSER: none
 
     steps:
       - uses: actions/checkout@v4
@@ -94,9 +108,24 @@ jobs:
       - name: Cài trình duyệt Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Khởi động dev server
+        id: server
+        run: |
+          npm run dev > "$RUNNER_TEMP/dev-server.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:5173 > /dev/null; then
+              echo "dev server sẵn sàng sau khoảng $((i * 2))s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::dev server KHÔNG lên sau 120s"
+          cat "$RUNNER_TEMP/dev-server.log"
+          exit 1
+
       # CỐ Ý liệt kê tường minh, KHÔNG chạy cả thư mục. Tiêu chí: chỉ những spec chạy được bằng
       # Chế độ Dùng Thử + dữ liệu giả, không cần đăng nhập thật hay hồ sơ dữ liệu thật.
-      # Đã đo ngày 2026-09-18: 20 test, 2,4 phút, xanh toàn bộ.
+      # Đã đo ngày 2026-09-18 ở máy dev (kể cả bản clone sạch, `CI=true`): 22 test, 2,7 phút, XANH.
       #
       # KHÔNG đưa vào (và lý do):
       #   real-data*.spec.ts, table-rules, ui-baseline  → cần hồ sơ dữ liệu THẬT (tự `test.skip`
@@ -106,25 +135,48 @@ jobs:
       #   sticker-firestore-write-rate                  → cần đăng nhập In Sticker thật
       #   perf-audit                                    → đo hiệu năng, số liệu phụ thuộc máy
       #
-      # Thêm spec mới vào danh sách này khi nó chạy được mà không cần dữ liệu/đăng nhập thật.
-      - name: Test E2E (tập chạy được không cần dữ liệu thật)
-        run: |
-          npx playwright test \
-            tests/e2e/smoke.spec.ts \
-            tests/e2e/pivot-table.spec.ts \
-            tests/e2e/phan-tich-performance-modal.spec.ts \
-            tests/e2e/iframe-tabs-csp.spec.ts \
-            tests/e2e/check-thuong-top-feature.spec.ts \
-            tests/e2e/bi-competition.spec.ts \
-            tests/e2e/xss-header-sanitization.spec.ts
+      # Thêm spec mới thì thêm 1 BƯỚC ở đây (đừng gộp vào bước sẵn có — gộp là mất khả năng chỉ
+      # mặt spec đỏ bằng tên bước). `--output` riêng cho từng spec vì Playwright DỌN SẠCH thư mục
+      # output ở đầu mỗi lượt chạy: để chung thì ảnh chụp/trace của spec đỏ bị lượt sau xoá mất.
+      - name: 'E2E: smoke'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/smoke.spec.ts --output=test-results/smoke
+
+      - name: 'E2E: pivot-table'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/pivot-table.spec.ts --output=test-results/pivot-table
+
+      - name: 'E2E: phan-tich-performance-modal'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/phan-tich-performance-modal.spec.ts --output=test-results/phan-tich-performance-modal
+
+      - name: 'E2E: iframe-tabs-csp'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/iframe-tabs-csp.spec.ts --output=test-results/iframe-tabs-csp
+
+      - name: 'E2E: check-thuong-top-feature'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/check-thuong-top-feature.spec.ts --output=test-results/check-thuong-top-feature
+
+      - name: 'E2E: bi-competition'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-competition.spec.ts --output=test-results/bi-competition
+
+      - name: 'E2E: xss-header-sanitization'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/xss-header-sanitization.spec.ts --output=test-results/xss-header-sanitization
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
+      # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và
+      # chỉ log này nói ra điều đó.
+      - name: Gom log dev server
+        if: failure()
+        run: cp "$RUNNER_TEMP/dev-server.log" test-results/dev-server.log || true
+
       - name: Lưu báo cáo khi đỏ
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
+          path: test-results/
           retention-days: 7
