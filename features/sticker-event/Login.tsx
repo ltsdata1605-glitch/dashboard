@@ -90,7 +90,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           const code = getErrorCode(err) || '';
           const msg = getErrorMessage(err) || '';
 
-          if (code.includes('not-found')) {
+          if (code.includes('resource-exhausted') || msg.includes('hạn mức')) {
+            // Hết hạn mức Firestore. Cloud Function stickerResolveSession đã dịch sang thông điệp
+            // tiếng Việt rõ ràng (xem withQuotaMessage trong functions/src/stickerEvent.ts) — hiện
+            // NGUYÊN VĂN, đừng bọc thêm chữ "Lỗi kết nối" làm loãng.
+            //
+            // Trước bản sửa 2026-09-18, lỗi này rơi xuống nhánh mặc định và người dùng chỉ thấy
+            // "Lỗi kết nối (functions/internal): INTERNAL" — không đoán được nguyên nhân nên bấm
+            // đăng nhập lại nhiều lần, mà mỗi lần lại đốt thêm hạn mức.
+            setError(msg || 'Hệ thống đã dùng hết hạn mức truy cập miễn phí trong ngày. Vui lòng quay lại sau.');
+          } else if (code.includes('not-found')) {
             setError('Không tìm thấy thông tin người dùng. Tài khoản có thể đã bị xóa.');
             await signOut(auth);
           } else if (code.includes('permission-denied') || msg.includes('permissions') || msg.includes('Quyền')) {

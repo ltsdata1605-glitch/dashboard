@@ -27,7 +27,7 @@ async function setStickerClaims(uid: string, role: StickerClaimRole, storeId: st
 
 // Thay Login.tsx tự setDoc(role, storeId) do client chọn — server tự kiểm tra
 // điều kiện "kho đã có admin chưa" thay vì tin client đã kiểm tra đúng.
-export const stickerRegister = onCall(async (request) => {
+export const stickerRegister = onCall(async (request) => withQuotaMessage(async () => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {
@@ -91,12 +91,48 @@ export const stickerRegister = onCall(async (request) => {
   // storeHasAdmin: đăng ký admin vừa tạo ra admin (true); đăng ký staff chỉ tới được đây khi
   // adminSnap đã KHÔNG rỗng ở trên (else throw failed-precondition) — nên cũng luôn là true.
   return { role: requestedRole, storeId: cleanStoreId, username, storeHasAdmin: true };
-});
+}));
 
 // Thay việc Login.tsx đọc thẳng users/{uid} trong onAuthStateChanged — gọi mỗi
 // lần đăng nhập để đồng bộ lại custom claims theo dữ liệu Firestore mới nhất
 // (vd: admin vừa đổi role cho user này trong lúc họ không online).
-export const stickerResolveSession = onCall(async (request) => {
+/**
+ * Đổi lỗi HẾT HẠN MỨC của Firestore thành `HttpsError('resource-exhausted')` có thông điệp tiếng
+ * Việt rõ ràng.
+ *
+ * Vì sao cần (bài học từ sự cố 17/09/2026, xem implementation_plan.md mục "Biểu đồ Usage thật"):
+ * lỗi Firestore ném từ trong Cloud Function KHÔNG phải HttpsError, nên Cloud Functions bọc lại
+ * thành `internal` — client chỉ nhận đúng chữ **"Lỗi kết nối (functions/internal): INTERNAL"**.
+ * Người dùng không thể đoán đó là hết hạn mức nên sẽ **bấm lại nhiều lần**, mà mỗi lần bấm lại đốt
+ * thêm hạn mức — đúng vòng lặp đã làm cạn hạn mức ngày và khoá cả hệ thống suốt nhiều giờ.
+ *
+ * Lỗi phải NÓI ĐÚNG SỰ THẬT thì người dùng mới biết ngừng thử lại.
+ */
+const QUOTA_MESSAGE =
+  'Hệ thống đã dùng hết hạn mức truy cập miễn phí trong ngày. ' +
+  'Bấm đăng nhập lại lúc này cũng không vào được và còn tốn thêm hạn mức. ' +
+  'Vui lòng quay lại sau (hạn mức được cấp lại vào khoảng 14 giờ mỗi ngày).';
+
+const isQuotaError = (err: unknown): boolean => {
+  // gRPC code 8 = RESOURCE_EXHAUSTED. Kiểm cả chuỗi để phòng trường hợp lỗi đi qua lớp bọc khác.
+  const code = (err as { code?: unknown })?.code;
+  if (code === 8) return true;
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  return /RESOURCE_EXHAUSTED|Quota limit exceeded|Quota exceeded/i.test(msg);
+};
+
+/** Bọc phần thân của 1 callable: giữ nguyên HttpsError, chỉ dịch lỗi hết hạn mức. */
+const withQuotaMessage = async <T>(fn: () => Promise<T>): Promise<T> => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof HttpsError) throw err;
+    if (isQuotaError(err)) throw new HttpsError('resource-exhausted', QUOTA_MESSAGE);
+    throw err;
+  }
+};
+
+export const stickerResolveSession = onCall(async (request) => withQuotaMessage(async () => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {
@@ -132,7 +168,7 @@ export const stickerResolveSession = onCall(async (request) => {
   }
 
   return { role, storeId, username: username ?? null, storeHasAdmin };
-});
+}));
 
 interface StickerAdminUpdateInput {
   action: 'setRole' | 'delete' | 'clearStore';
@@ -145,7 +181,7 @@ interface StickerAdminUpdateInput {
 // trực tiếp từ client trước đây không hề kiểm tra target có cùng storeId với
 // admin gọi hay không (lỗ hổng cross-tenant). superadmin (claim, không phải
 // tự nhận ở client) mới được bỏ qua ràng buộc storeId.
-export const stickerAdminUpdateUser = onCall(async (request) => {
+export const stickerAdminUpdateUser = onCall(async (request) => withQuotaMessage(async () => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
@@ -217,7 +253,7 @@ export const stickerAdminUpdateUser = onCall(async (request) => {
   }
 
   throw new HttpsError('invalid-argument', 'action không hợp lệ.');
-});
+}));
 
 interface StaffAuthInput {
   username?: string;
@@ -225,7 +261,7 @@ interface StaffAuthInput {
   isLogin?: boolean;
 }
 
-export const stickerStaffAuth = onCall(async (request) => {
+export const stickerStaffAuth = onCall(async (request) => withQuotaMessage(async () => {
   const { username, storeId, isLogin } = (request.data ?? {}) as StaffAuthInput;
 
   const cleanUsername = (username ?? '').trim();
@@ -315,4 +351,4 @@ export const stickerStaffAuth = onCall(async (request) => {
     const customToken = await auth.createCustomToken(userRecord.uid);
     return { customToken, username: cleanUsername, storeId: cleanStoreId, role: 'staff' };
   }
-});
+}));
