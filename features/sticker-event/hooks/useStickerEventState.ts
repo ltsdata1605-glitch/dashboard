@@ -209,6 +209,10 @@ export function useStickerEventState({
     );
   }, []);
 
+  const handleToggleAllSelect = useCallback((select: boolean) => {
+    setDisplayedProducts(prev => prev.map(p => ({ ...p, selected: select })));
+  }, []);
+
   const handleQuantityChange = useCallback((msp: string, delta: number) => {
     setDisplayedProducts(prev =>
       prev.map(p =>
@@ -514,6 +518,7 @@ export function useStickerEventState({
     handleSuggestionClick,
     handleScanSuccess,
     handleToggleSelect,
+    handleToggleAllSelect,
     handleQuantityChange,
     handleSetQuantity,
     handleDeleteProduct,

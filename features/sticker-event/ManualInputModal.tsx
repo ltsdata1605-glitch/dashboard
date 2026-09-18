@@ -231,17 +231,17 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
             subTitle={<>Ngành hàng: <b className="text-sky-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</>}
             maxWidth="lg"
             footer={
-                <div className="flex justify-between items-center">
-                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-white hover:bg-slate-100 h-10 px-4 py-2">
+                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 w-full">
+                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2 order-2 sm:order-1">
                         Đóng
                     </Button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 order-1 sm:order-2">
                         {selectedCount > 0 && (
                             <Button
                                 type="button"
                                 variant="ghost"
                                 onClick={handlePrintSelected}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 h-10 px-5 py-2"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 sm:flex-initial p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 h-10 px-4 py-2"
                             >
                                 In đã chọn ({selectedCount})
                             </Button>
@@ -251,7 +251,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             variant="ghost"
                             onClick={handlePrintAll}
                             disabled={manualProducts.length === 0}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 sm:flex-initial p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             In tất cả ({manualProducts.length})
                         </Button>

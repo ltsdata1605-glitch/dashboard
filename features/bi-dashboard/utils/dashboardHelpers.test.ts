@@ -938,13 +938,17 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         expect(parsed.kpis.tb3t).toBe('15,166');
 
         expect(parsed.table.rows).toHaveLength(2);
-        expect(parsed.table.rows[0][0]).toBe('HÙNG VƯƠNG');
+        expect(parsed.table.rows[0][0]).toBe('Siêu thị');
         expect(parsed.table.rows[0][1]).toBe('5,554'); // Số lượng
         expect(parsed.table.rows[0][2]).toBe('17,000'); // DTQĐ
         expect(parsed.table.rows[0][4]).toBe('11,075'); // DTLK
         expect(parsed.table.rows[0][5]).toBe('28,562'); // Target
         expect(parsed.table.rows[0][6]).toBe('59.5%'); // %HT Target
         expect(parsed.table.rows[1][0]).toBe('Tổng');
+
+        // Khi truyền fallbackStoreName
+        const parsedWithFallback = parseSummaryData(userLuyKeData, '1032 - ĐML_STR_STR - Tân Phú');
+        expect(parsedWithFallback.table.rows[0][0]).toBe('1032 - ĐML_STR_STR - Tân Phú');
     });
 
     it('parseSummaryData trích xuất đầy đủ KPIs và tạo bảng chuẩn từ Realtime mới', async () => {
@@ -965,7 +969,7 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         expect(parsed.kpis.tb3t).toBe('948');
 
         expect(parsed.table.rows).toHaveLength(2);
-        expect(parsed.table.rows[0][0]).toBe('HÙNG VƯƠNG');
+        expect(parsed.table.rows[0][0]).toBe('Siêu thị');
         expect(parsed.table.rows[0][1]).toBe('123');
         expect(parsed.table.rows[0][2]).toBe('425');
         expect(parsed.table.rows[0][4]).toBe('285');
@@ -978,7 +982,7 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         expect(smList).not.toContain('1 - Viễn thông di động');
         expect(smList).not.toContain('9 - Gia dụng');
         expect(smList).not.toContain('35 - Điện gia dụng');
-        expect(smList).toContain('HÙNG VƯƠNG');
+        expect(smList).toContain('Siêu thị');
     });
 
     it('parseIndustryLuyKeData bóc tách đủ 12 nhóm ngành cha', async () => {
@@ -1005,6 +1009,40 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         const laptop = parsed.tree.find(t => t.name === '2 - Laptop');
         expect(laptop?.children.length).toBe(2);
     });
+
+    it('extractAllSupermarketList gom đúng siêu thị từ LK, RT, Thi đua, mã kho và customSupermarkets', async () => {
+        const { extractAllSupermarketList } = await import('./dashboardHelpers');
+        const result = extractAllSupermarketList({
+            summaryLuyKe: 'Tên miền\tDTLK\tDTQĐ\n910 - ĐML_STR_STR - 99 Hùng Vương\t100\t200\nTổng\t100\t200',
+            summaryRealtime: 'Tên miền\tDTLK\tDTQĐ\n1032 - ĐML_STR_STR - Tân Phú\t50\t80\nTổng\t50\t80',
+            customSupermarkets: ['ĐMX Cần Thơ', '3717 - An Giang'],
+            supermarketMap: { 'ĐMX Bình Dương': '5566' }
+        });
+
+        expect(result).toContain('910 - ĐML_STR_STR - 99 Hùng Vương');
+        expect(result).toContain('1032 - ĐML_STR_STR - Tân Phú');
+        expect(result).toContain('ĐMX Cần Thơ');
+        expect(result).toContain('3717 - An Giang');
+        expect(result).toContain('ĐMX Bình Dương');
+        expect(result).not.toContain('Tổng');
+    });
+
+    it('parseNewPortalSummaryData nhận diện đúng tên siêu thị khác từ văn bản không phải Hùng Vương', async () => {
+        const { parseSummaryData } = await import('./dashboardHelpers');
+        const customReport = [
+            'Doanh thu hợp nhất',
+            '3717 - ĐML_STR_STR - 123 Trần Hưng Đạo An Giang',
+            'DT quy đổi 500',
+            'NGÀNH HÀNG BI / NHÓM HÀNG BI',
+            'SỐ LƯỢNG\tDOANH THU QĐ',
+            '1 - Viễn thông di động\t10\t50',
+            'Tổng\t10\t50'
+        ].join('\n');
+
+        const parsed = parseSummaryData(customReport);
+        expect(parsed.table.rows[0][0]).toBe('3717 - ĐML_STR_STR - 123 Trần Hưng Đạo An Giang');
+    });
 });
+
 
 

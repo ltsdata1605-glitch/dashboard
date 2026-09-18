@@ -174,7 +174,7 @@ export default function StickerPrinterView() {
                 </div>
             )}
 
-            <div className={`w-full h-full overflow-y-auto p-4 lg:p-8 flex flex-col lg:flex-row gap-8 justify-center items-start ${stickerMode === 'event' ? 'invisible' : 'visible'}`}>
+            <div className={`w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-8 flex flex-col lg:flex-row gap-4 lg:gap-8 justify-start lg:justify-center items-center lg:items-start ${stickerMode === 'event' ? 'invisible' : 'visible'}`}>
                 <div className="flex flex-col gap-4 w-full max-w-sm shrink-0">
                     <StickerPrintPreview
                         batchItems={batchItems}

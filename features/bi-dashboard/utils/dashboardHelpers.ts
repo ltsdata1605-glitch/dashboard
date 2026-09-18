@@ -94,7 +94,7 @@ export function extractBillAndKhachFromText(text: string): { bill: string | null
 
 // --- DATA PARSERS ---
 
-export const parseSummaryData = (text: string) => {
+export const parseSummaryData = (text: string, fallbackStoreName?: string) => {
     if (!text) return { kpis: {}, table: { headers: [], rows: [] } };
     const lines = text.split('\n');
     const kpis: Record<string, string> = {};
@@ -289,8 +289,34 @@ export const parseSummaryData = (text: string) => {
                 }
             }
 
+            // Tự động nhận diện tên siêu thị thực tế từ toàn bộ các dòng trong báo cáo (thay vì gán cứng HÙNG VƯƠNG)
+            let detectedStoreName = '';
+            for (let j = 0; j < lines.length; j++) {
+                const l = lines[j].trim();
+                if (!l || l === 'Tổng' || l === 'TỔNG' || l.startsWith('BP ') || isEmployeeName(l) || isParentIndustry(l)) continue;
+                if (l.includes(' liên hệ ') || l.includes('Đơn vị:') || l.includes('http') || l.includes('Dashboards')) continue;
+                if (l.toLowerCase().includes('doanh thu hợp nhất') || l.toLowerCase().includes('quỹ thời gian') || l.toLowerCase().includes('tiến độ')) continue;
+
+                // Khớp mẫu: "910 - ĐML_STR_STR - 99 Hùng Vương", "3717 - ĐML_STR_STR...", "1234 - ĐM Cần Thơ", "ĐML_STR_..."
+                if (/^\d{3,5}\s*-\s*/.test(l) && (l.includes(' - ') || l.startsWith('ĐM') || l.startsWith('TGD') || l.includes('STR') || l.includes('Kho') || l.length > 5)) {
+                    detectedStoreName = l;
+                    break;
+                }
+                if (l.startsWith('ĐML_') || l.startsWith('ĐMX ') || l.startsWith('TGDĐ ') || (l.startsWith('ĐM ') && l.includes(' - '))) {
+                    detectedStoreName = l;
+                    break;
+                }
+                const smMatch = l.match(/^(?:Siêu thị|Kho|Store)\s*:\s*(.+)$/i);
+                if (smMatch && smMatch[1].trim()) {
+                    detectedStoreName = smMatch[1].trim();
+                    break;
+                }
+            }
+
+            const finalStoreName = detectedStoreName || (fallbackStoreName ? fallbackStoreName.trim() : 'Siêu thị');
+
             const storeRow = [
-                'HÙNG VƯƠNG',
+                finalStoreName,
                 totSL,
                 totDTQD,
                 totTiTrong,
@@ -414,9 +440,9 @@ export const parseSummaryData = (text: string) => {
 export const isEmployeeName = (text: string): boolean => {
     if (!text) return false;
     const trimmed = text.trim();
-    // Khớp mẫu: [Mã NV 3-8 số] - [Họ tên]
-    if (/^\d{3,8}\s*-\s*/.test(trimmed)) {
-        const afterDash = trimmed.replace(/^\d{3,8}\s*-\s*/, '').trim();
+    // Mã NV MWG thường là 5-8 chữ số (VD: 276650, 17952...). Mã 3-4 số là mã kho/siêu thị (910, 1032, 3717...)
+    if (/^\d{5,8}\s*-\s*/.test(trimmed)) {
+        const afterDash = trimmed.replace(/^\d{5,8}\s*-\s*/, '').trim();
         // Nếu sau dấu '-' còn có dấu '-' nữa (VD: "910 - ĐML_STR_STR - 99 Hùng Vương") thì chắc chắn là siêu thị
         if (afterDash.includes(' - ')) {
             return false;
@@ -1515,4 +1541,82 @@ export const findMatchingSupermarketKey = (targetName: string, candidateKeys: st
     // 2. Tìm theo isSupermarketMatch
     return candidateKeys.find(k => isSupermarketMatch(targetName, k));
 };
+
+/**
+ * Gom và trích xuất danh sách siêu thị từ TẤT CẢ các nguồn dữ liệu:
+ * - Doanh thu Luỹ kế (summaryLuyKe)
+ * - Doanh thu Realtime (summaryRealtime)
+ * - Thi đua Luỹ kế (competitionLuyKe)
+ * - Thi đua Realtime (competitionRealtime)
+ * - Bảng ánh xạ siêu thị - kho (supermarketMap)
+ * - Danh sách siêu thị tùy chỉnh người dùng tự thêm (customSupermarkets)
+ */
+export const extractAllSupermarketList = (options: {
+    summaryLuyKe?: string | null;
+    summaryRealtime?: string | null;
+    competitionLuyKe?: string | null;
+    competitionRealtime?: string | null;
+    customSupermarkets?: string[];
+    supermarketMap?: Record<string, string>;
+}): string[] => {
+    const {
+        summaryLuyKe,
+        summaryRealtime,
+        competitionLuyKe,
+        competitionRealtime,
+        customSupermarkets = [],
+        supermarketMap = {}
+    } = options;
+
+    const names: string[] = [];
+
+    // 1. Từ Doanh thu LK
+    if (summaryLuyKe) {
+        names.push(...extractSupermarketList(summaryLuyKe));
+    }
+    // 2. Từ Doanh thu RT
+    if (summaryRealtime) {
+        names.push(...extractSupermarketList(summaryRealtime));
+    }
+    // 3. Từ Thi đua LK
+    if (competitionLuyKe) {
+        try {
+            const compData = parseCompetitionDataBySupermarket(competitionLuyKe);
+            names.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
+        } catch { /* ignore */ }
+    }
+    // 4. Từ Thi đua RT
+    if (competitionRealtime) {
+        try {
+            const compData = parseCompetitionDataBySupermarket(competitionRealtime);
+            names.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
+        } catch { /* ignore */ }
+    }
+    // 5. Từ Bảng ánh xạ mã kho
+    if (supermarketMap) {
+        names.push(...Object.keys(supermarketMap));
+    }
+    // 6. Từ Custom Supermarkets người dùng tự thêm
+    if (customSupermarkets && customSupermarkets.length > 0) {
+        names.push(...customSupermarkets);
+    }
+
+    // Khử trùng lặp thông minh theo shortenSupermarketName
+    const uniqueShortNames = new Set<string>();
+    const result: string[] = [];
+    for (const name of names) {
+        const trimmed = (name || '').trim();
+        if (!trimmed || trimmed === 'Tổng' || trimmed === 'TỔNG' || isParentIndustry(trimmed)) continue;
+        const isCustomOrMap = customSupermarkets.includes(trimmed) || Boolean(supermarketMap[trimmed]);
+        if (!isCustomOrMap && isEmployeeName(trimmed)) continue;
+
+        const short = shortenSupermarketName(trimmed);
+        if (!uniqueShortNames.has(short)) {
+            uniqueShortNames.add(short);
+            result.push(trimmed);
+        }
+    }
+    return result;
+};
+
 

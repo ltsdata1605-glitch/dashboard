@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, extractSupermarketList, extractAllSupermarketList } from '../utils/dashboardHelpers';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
@@ -11,11 +11,23 @@ import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY,
 
 export function useNhanVienData(isActive?: boolean) {
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
+    const [summaryRealtime] = useIndexedDBState<string>('summary-realtime', '');
+    const [competitionLuyKe] = useIndexedDBState<string>('competition-luy-ke', '');
+    const [competitionRealtime] = useIndexedDBState<string>('competition-realtime', '');
+    const [customSupermarkets] = useIndexedDBState<string[]>('updater-custom-supermarkets', []);
     const [activeSupermarketsRaw, setActiveSupermarkets, isActiveSupermarketsLoaded] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
     const [hiddenEmployees, setHiddenEmployees] = useState<string[]>([]);
     const [analysisEmployeesPayload, setAnalysisEmployeesPayload] = useState<AnalysisEmployeesPayload | null>(null);
     
-    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
+    const supermarkets = useMemo(() => {
+        return extractAllSupermarketList({
+            summaryLuyKe,
+            summaryRealtime,
+            competitionLuyKe,
+            competitionRealtime,
+            customSupermarkets
+        });
+    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets]);
     const activeSupermarkets = useMemo(() => Array.isArray(activeSupermarketsRaw) 
         ? activeSupermarketsRaw.filter(sm => supermarkets.includes(sm)) 
         : [], [activeSupermarketsRaw, supermarkets]);

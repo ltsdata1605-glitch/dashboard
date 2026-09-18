@@ -398,7 +398,10 @@ const StatusTile: React.FC<{
                         fireSuccessCelebration();
                         return;
                     } else {
-                        toast.error(`Dữ liệu trong bộ nhớ tạm không đúng định dạng của ô ${title}!`);
+                        toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                            duration: 5000,
+                            id: `paste-err-${title}`
+                        });
                         setIsPasting(true);
                         return;
                     }
@@ -473,6 +476,11 @@ const StatusTile: React.FC<{
                                 const ok = await onChange(text);
                                 if (ok !== false) {
                                     fireSuccessCelebration();
+                                } else {
+                                    toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                                        duration: 5000,
+                                        id: `paste-err-${title}`
+                                    });
                                 }
                             }}
                             onBlur={() => setIsPasting(false)}
@@ -1114,14 +1122,25 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         return parseCompetitions(competitionLuyKeData);
     }, [competitionLuyKeData]);
 
-    const handleUpdate = (key: string, val: string, validator: (s: string) => boolean, tsSetter: (value: string | null) => void, updateMsg: string, id: string): boolean => {
+    const handleUpdate = (
+        key: string,
+        val: string,
+        validator: (s: string) => boolean,
+        dataSetter: (value: string) => void,
+        tsSetter: (value: string | null) => void,
+        updateMsg: string,
+        id: string,
+        tileTitle: string
+    ): boolean => {
         if (val === '') {
+            dataSetter('');
             setErrors(p => ({...p, [key]: null}));
             tsSetter(null);
             removeUpdate(id);
             return false;
         }
         if (validator(val)) {
+            dataSetter(val);
             const newTs = getDetailedTimestamp();
             setErrors(p => ({...p, [key]: null}));
             tsSetter(newTs);
@@ -1129,7 +1148,10 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             return true;
         } else {
             setErrors(p => ({...p, [key]: 'Dữ liệu sai định dạng.'}));
-            tsSetter(null);
+            toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${tileTitle}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                duration: 5000,
+                id: `err-${key}`
+            });
             return false;
         }
     };
@@ -1188,8 +1210,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('industry-realtime', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-realtime', 'Realtime', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
-                                        setIndustryRealtimeData(v); 
-                                        return handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng\tSL Realtime') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); 
+                                        return handleUpdate(
+                                            'industryRealtime',
+                                            v,
+                                            s => s.includes('Nhóm ngành hàng\tSL Realtime') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')),
+                                            setIndustryRealtimeData,
+                                            setIndustryRealtimeTs,
+                                            `Ngành hàng (RT) - ${supermarketName}`,
+                                            ids.rt!,
+                                            'Realtime Ngành hàng'
+                                        ); 
                                     }}
                                     onClear={(title) => { 
                                         setIndustryRealtimeData(''); 
@@ -1202,8 +1232,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('industry-luyke', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-luyke', 'Luỹ kế', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
-                                        setIndustryLuyKeData(v); 
-                                        return handleUpdate('industryLuyKe', v, s => s.includes('Ngành hàng\tSL') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')), setIndustryLuyKeTs, `Ngành hàng (LK) - ${supermarketName}`, ids.lk!); 
+                                        return handleUpdate(
+                                            'industryLuyKe',
+                                            v,
+                                            s => s.includes('Ngành hàng\tSL') || s.toUpperCase().includes('NGÀNH HÀNG / NHÓM HÀNG') || (s.toUpperCase().includes('SỐ LƯỢNG') && s.toUpperCase().includes('DOANH THU QĐ')),
+                                            setIndustryLuyKeData,
+                                            setIndustryLuyKeTs,
+                                            `Ngành hàng (LK) - ${supermarketName}`,
+                                            ids.lk!,
+                                            'Luỹ kế Ngành hàng'
+                                        ); 
                                     }}
                                     onClear={(title) => { 
                                         setIndustryLuyKeData(''); 
@@ -1227,12 +1265,20 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('nhanvien-realtime', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime', 'REALTIME', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
-                                        setEmployeeRealtimeData(v); 
-                                        return handleUpdate('employeeRealtime', v, s => {
-                                            const lower = s.toLowerCase();
-                                            return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
-                                                   (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('realtime'));
-                                        }, setEmployeeRealtimeTs, `Nhân viên Realtime - ${supermarketName}`, ids.empRt!); 
+                                        return handleUpdate(
+                                            'employeeRealtime',
+                                            v,
+                                            s => {
+                                                const lower = s.toLowerCase();
+                                                return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                       (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('realtime'));
+                                            },
+                                            setEmployeeRealtimeData,
+                                            setEmployeeRealtimeTs,
+                                            `Nhân viên Realtime - ${supermarketName}`,
+                                            ids.empRt!,
+                                            'Nhân viên Realtime'
+                                        ); 
                                     }}
                                     onClear={(title) => { 
                                         setEmployeeRealtimeData(''); 
@@ -1246,12 +1292,20 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('nhanvien-doanhthu', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
-                                        setDanhSachData(v); 
-                                        return handleUpdate('danhSach', v, s => {
-                                            const lower = s.toLowerCase();
-                                            return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
-                                                   (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('số lượng'));
-                                        }, setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); 
+                                        return handleUpdate(
+                                            'danhSach',
+                                            v,
+                                            s => {
+                                                const lower = s.toLowerCase();
+                                                return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                       (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('số lượng'));
+                                            },
+                                            setDanhSachData,
+                                            setDanhSachTs,
+                                            `Nhân viên (DS) - ${supermarketName}`,
+                                            ids.ds!,
+                                            'Nhân viên Luỹ kế'
+                                        ); 
                                     }}
                                     onClear={(title) => { 
                                         setDanhSachData(''); 
@@ -1274,14 +1328,21 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('nhanvien-thidua', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 
-                                        setThiDuaData(v); 
-                                        if(v && validateThiDuaData(v)) { 
-                                            onThiDuaDataChange(supermarketName, v); 
-                                            return handleUpdate('thiDua', v, validateThiDuaData, setThiDuaTs, `Nhân viên (TĐ) - ${supermarketName}`, ids.td!); 
-                                        } else {
-                                            setErrors(p => ({...p, thiDua: 'Sai định dạng Thi đua.'})); 
-                                            return false;
-                                        }
+                                        return handleUpdate(
+                                            'thiDua',
+                                            v,
+                                            validateThiDuaData,
+                                            (validVal) => {
+                                                setThiDuaData(validVal);
+                                                if (validVal) {
+                                                    onThiDuaDataChange(supermarketName, validVal);
+                                                }
+                                            },
+                                            setThiDuaTs,
+                                            `Nhân viên (TĐ) - ${supermarketName}`,
+                                            ids.td!,
+                                            'Thi đua Nhân viên'
+                                        );
                                     }}
                                     onClear={(title) => { 
                                         setThiDuaData(''); 
@@ -1295,12 +1356,20 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     linkUrl={getTileLink('nhanvien-tragop', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'TRẢ CHẬM', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 
-                                        setTraGopData(v); 
-                                        return handleUpdate('traGop', v, s => {
-                                            const lower = s.toLowerCase();
-                                            return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
-                                                   (lower.includes('trả góp') || lower.includes('tra gop') || lower.includes('trả chậm') || lower.includes('tra cham') || lower.includes('homecredit') || lower.includes('dt siêu thị'));
-                                        }, setTraGopTs, `Nhân viên (TC) - ${supermarketName}`, ids.tg!); 
+                                        return handleUpdate(
+                                            'traGop',
+                                            v,
+                                            s => {
+                                                const lower = s.toLowerCase();
+                                                return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                       (lower.includes('trả góp') || lower.includes('tra gop') || lower.includes('trả chậm') || lower.includes('tra cham') || lower.includes('homecredit') || lower.includes('dt siêu thị'));
+                                            },
+                                            setTraGopData,
+                                            setTraGopTs,
+                                            `Nhân viên (TC) - ${supermarketName}`,
+                                            ids.tg!,
+                                            'Trả chậm'
+                                        ); 
                                     }}
                                     onClear={(title) => { 
                                         setTraGopData(''); 

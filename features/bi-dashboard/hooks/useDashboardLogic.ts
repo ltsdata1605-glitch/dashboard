@@ -12,6 +12,7 @@ import {
     parseNumber,
     shortenSupermarketName,
     extractSupermarketList,
+    extractAllSupermarketList,
     isSupermarketMatch
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
@@ -67,7 +68,16 @@ export const useDashboardLogic = (isActive?: boolean) => {
     }, [allowedKhos.join(','), isActive, user?.uid]);
 
     const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;
-    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
+    const [customSupermarkets] = useIndexedDBState<string[]>('updater-custom-supermarkets', []);
+    const supermarkets = useMemo(() => {
+        return extractAllSupermarketList({
+            summaryLuyKe,
+            summaryRealtime,
+            competitionLuyKe: localCompetitionLuyKe,
+            competitionRealtime,
+            customSupermarkets
+        });
+    }, [summaryLuyKe, summaryRealtime, localCompetitionLuyKe, competitionRealtime, customSupermarkets]);
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
     const [competitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);

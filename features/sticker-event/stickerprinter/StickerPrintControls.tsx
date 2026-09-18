@@ -161,7 +161,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     ];
 
     return (
-        <SectionCard className="w-full max-w-sm aspect-[197/285] p-3 lg:p-6 no-print flex flex-col overflow-hidden">
+        <SectionCard className="w-full max-w-sm lg:aspect-[197/285] min-h-[460px] p-3 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
             <div className="flex gap-2 mb-3 shrink-0">
                 <Button 

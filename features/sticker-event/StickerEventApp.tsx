@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
@@ -25,7 +25,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { WarningIcon } from './Icons';
 import SuperAdminModal from './SuperAdminModal';
 import UserGuideModal from './UserGuideModal';
-import { Info } from 'lucide-react';
+import { Info, Printer, FolderOpen } from 'lucide-react';
 import { auth } from './firebase';
 import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from './services/uiService';
 
@@ -99,6 +99,7 @@ export default function App(): React.JSX.Element {
     handleSuggestionClick,
     handleScanSuccess,
     handleToggleSelect,
+    handleToggleAllSelect,
     handleQuantityChange,
     handleSetQuantity,
     handleDeleteProduct,
@@ -227,7 +228,27 @@ export default function App(): React.JSX.Element {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const [isMobile] = useState(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
+  const selectedProducts = useMemo(() => displayedProducts.filter(p => p.selected), [displayedProducts]);
+  const selectedCount = selectedProducts.length;
+  const selectedTotalQty = useMemo(() => selectedProducts.reduce((sum, p) => sum + (p.quantity || 1), 0), [selectedProducts]);
+
   const importInputRef = useRef<HTMLInputElement>(null);
   const productListRef = useRef<HTMLDivElement>(null);
 
@@ -383,9 +404,19 @@ export default function App(): React.JSX.Element {
     setIsSaveListModalOpen(false);
     try {
       setIsLoading(true);
+      // Lưu đầy đủ thông tin chi tiết của sản phẩm để khi mở lại trên bất kỳ thiết bị nào
+      // (Laptop hoặc Mobile chưa có file bảng giá nạp sẵn), danh sách vẫn hiển thị đầy đủ
+      // tên sản phẩm, giá bán, khuyến mãi và tiền thưởng để in ấn tức thì!
       const itemsToSave = displayedProducts.map(p => ({
         msp: p.msp,
-        quantity: p.quantity,
+        sanPham: p.sanPham,
+        giaGoc: p.giaGoc || '',
+        giaGiam: p.giaGiam || '',
+        khuyenMai: p.khuyenMai || '',
+        tongThuong: p.tongThuong || 0,
+        thuongERP: p.thuongERP || 0,
+        thuongNong: p.thuongNong || 0,
+        quantity: p.quantity || 1,
       }));
       // BUG FIX: 'cached_dept_id'/'cached_emp_name' KHÔNG PHẢI cache riêng của sticker-event —
       // đây là 2 khoá do contexts/AuthContext.tsx (app gốc, dự án Firebase khác hẳn) ghi vào,
@@ -468,16 +499,16 @@ export default function App(): React.JSX.Element {
           ẩn/hiện thanh địa chỉ. */}
       <div
         className={`min-h-dvh bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0' : 'p-2 sm:p-3'}`}
-        style={isMobile ? { paddingBottom: 'calc(3.5rem + 52px + env(safe-area-inset-bottom, 0px) + 8px)' } : {}}
+        style={isMobile ? { paddingBottom: selectedCount > 0 ? 'calc(3.5rem + 76px + env(safe-area-inset-bottom, 0px))' : 'calc(3.5rem + 24px + env(safe-area-inset-bottom, 0px))' } : {}}
       >
         <div className="w-full max-w-7xl mx-auto">
-          <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white border-b border-slate-100 px-2 py-1.5' : 'mb-3 px-1'}`}>
+          <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-3 py-2 shadow-2xs' : 'mb-3 px-1'}`}>
             <div className="flex items-center gap-2 min-w-0">
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${userData?.role === 'admin' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                 {userData?.role === 'admin' ? 'Admin' : 'NV'}
               </span>
               {userData?.storeId && (
-                <span className="text-[11px] font-medium text-slate-500 shrink-0">Kho: {userData.storeId}</span>
+                <span className="text-xs font-semibold text-slate-600 shrink-0">Kho: {userData.storeId}</span>
               )}
               {(uploadTimestamp || inventoryUploadTimestamp) && !isMobile && (
                 <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 shrink-0">
@@ -486,6 +517,26 @@ export default function App(): React.JSX.Element {
               )}
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  onClick={handleViewSavedLists}
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
+                  title="Danh sách đã lưu"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
+              )}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsUserGuideOpen(true)}
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-sky-600 rounded-lg transition-colors"
+                  title="Hướng dẫn sử dụng"
+                >
+                  <Info className="h-4 w-4" />
+                </Button>
+              )}
               {!isMobile && userData?.role !== 'staff' && (
                 <Button
                   variant="ghost"
@@ -522,7 +573,7 @@ export default function App(): React.JSX.Element {
                   setSuggestions([]);
                   await clearData();
                 }}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors uppercase`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-1 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors uppercase`}
               >
                 Đăng xuất
               </Button>
@@ -673,6 +724,41 @@ export default function App(): React.JSX.Element {
           </main>
         </div>
 
+        {/* ───────── FLOATING PRINT ACTION BAR TRÊN MOBILE (KHI Ở TAB HOME VÀ CÓ CHỌN SẢN PHẨM) ───────── */}
+        {isMobile && activeTab === 'home' && selectedCount > 0 && (
+          <div 
+            className="fixed left-2 right-2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-xl border border-slate-700/60 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
+            style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 8px)' }}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-2.5 w-2.5 relative shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-white truncate">
+                  Đã chọn: <span className="text-sky-300">{selectedCount}</span> SP (<span className="text-amber-300">{selectedTotalQty}</span> tem)
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleToggleAllSelect(false)}
+                  className="text-[10px] text-slate-300 hover:text-white underline cursor-pointer"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              </div>
+            </div>
+
+            <Button
+              onClick={handlePrintSelected}
+              className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-sky-500/30 active:scale-95 transition-all shrink-0 border-0 cursor-pointer"
+            >
+              <Printer className="h-4 w-4" />
+              <span>IN NGAY ({selectedCount})</span>
+            </Button>
+          </div>
+        )}
+
         {isMobile && (
           <BottomNavigation
             activeTab={activeTab}
@@ -785,15 +871,10 @@ export default function App(): React.JSX.Element {
         />
 
         {isSavedListsModalOpen && user && (
-          // BUG FIX: trước đây gate bằng `userData?.storeId &&` — tài khoản không gắn kho cụ thể
-          // (vd SuperAdmin) có storeId rỗng, khiến modal không bao giờ mở (bấm "DS đã lưu" không có
-          // phản ứng gì, không báo lỗi). onConfirmSaveList() đã dùng fallback `|| 'SUPERADMIN'` khi
-          // lưu — SavedListsModal cũng phải dùng ĐÚNG fallback này khi xem, nếu không 2 bên lệch
-          // storeId (bên lưu ra 'SUPERADMIN', bên xem đòi storeId thật) gây "lưu xong không thấy".
           <SavedListsModal
             storeId={userData?.storeId || 'SUPERADMIN'}
-            userId={user.uid}
-            isAdmin={userData?.role === 'admin'}
+            userId={userData?.username || user.uid}
+            isAdmin={userData?.role === 'admin' || isSuperAdmin}
             onClose={() => setIsSavedListsModalOpen(false)}
             onLoadList={handleLoadSavedList}
           />

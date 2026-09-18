@@ -2,6 +2,7 @@ import React from 'react';
 import { QRIcon } from './Icons';
 import { Product } from './types';
 import { Button } from '../../components/shared/ui/Button';
+import { Search, X, ScanLine, ChevronRight } from 'lucide-react';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -24,59 +25,111 @@ const SearchBar: React.FC<SearchBarProps> = ({
   showNoResults,
   isMobile
 }) => {
+  const handleClear = () => {
+    // Kích hoạt sự kiện change với chuỗi rỗng
+    const dummyEvent = {
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLInputElement>;
+    onSearchChange(dummyEvent);
+  };
 
   return (
-    <div>
-      <div className={`flex justify-between items-center mb-1 ${isMobile ? 'hidden' : ''}`}>
-        <h2 className="text-lg font-semibold text-slate-800">Tìm kiếm sản phẩm</h2>
-      </div>
+    <div className="w-full">
+      {!isMobile && (
+        <div className="flex justify-between items-center mb-1.5">
+          <h2 className="text-sm font-semibold text-slate-800">Tìm kiếm sản phẩm</h2>
+        </div>
+      )}
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-grow">
+      <div className="relative w-full">
+        {/* Input container */}
+        <div className={`relative flex items-center bg-white rounded-xl sm:rounded-lg border transition-all ${
+          isMobile 
+            ? 'border-slate-200 shadow-xs focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100' 
+            : 'border-slate-300 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500'
+        } ${disabled ? 'bg-slate-50 opacity-60' : ''}`}>
+          {/* Icon Search */}
+          <div className="pl-3 pr-1 text-slate-400 flex items-center pointer-events-none">
+            <Search className={`${isMobile ? 'h-4 w-4' : 'h-4.5 w-4.5'} text-slate-400`} />
+          </div>
+
+          {/* Input text */}
           <input
             type="text"
-            placeholder="Nhập mã hoặc tên sản phẩm..."
+            placeholder={isMobile ? "Nhập tên hoặc mã sản phẩm..." : "Nhập mã hoặc tên sản phẩm..."}
             value={searchQuery}
             onChange={onSearchChange}
             disabled={disabled}
             autoComplete="off"
-            className={`w-full ${isMobile ? 'pl-10 pr-3 py-2 text-sm' : 'pl-12 pr-4 py-3 text-base'} border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:cursor-not-allowed`}
+            className={`w-full py-2.5 sm:py-2.5 pl-1 pr-2 text-sm sm:text-base text-slate-800 placeholder-slate-400 bg-transparent border-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed`}
           />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-             <Button
+
+          {/* Nút Clear X (khi có text) */}
+          {searchQuery && !disabled && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors mr-1 cursor-pointer"
+              title="Xóa tìm kiếm"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+
+          {/* Nút Quét mã Scan / QR */}
+          <div className="pr-1.5 flex items-center">
+            <Button
               type="button"
               variant="ghost"
               onClick={onIconClick}
               disabled={disabled}
-              title="Quét mã vạch/mã QR"
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Quét mã vạch / QR"
+              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors flex items-center gap-1 font-bold ${
+                isMobile ? 'bg-sky-50/80 text-sky-600 text-xs px-2' : ''
+              }`}
             >
-              <QRIcon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-slate-400`} />
+              <ScanLine className="h-4 w-4" />
+              {isMobile && <span className="text-[11px] font-semibold hidden xs:inline">Quét</span>}
             </Button>
           </div>
-          {(suggestions.length > 0 || showNoResults) && (
-             <ul className={`absolute z-20 w-full ${isMobile ? 'bottom-full mb-1' : 'mt-1'} bg-white border border-slate-300 rounded-lg shadow-xl max-h-60 overflow-y-auto`}>
-                {suggestions.map((suggestion) => (
-                    <li
-                        key={suggestion.msp}
-                        onClick={() => onSuggestionClick(suggestion)}
-                        className="px-4 py-3 cursor-pointer hover:bg-sky-50 transition-colors border-b border-slate-100 last:border-0 flex items-center justify-between"
-                        tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && onSuggestionClick(suggestion)}
-                    >
-                        <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-slate-800 truncate" title={suggestion.sanPham}>{suggestion.sanPham}</p>
-                            <p className="text-sm text-slate-500">MSP: {suggestion.msp}</p>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right text-slate-400 flex-shrink-0 ml-2"><path d="m9 18 6-6-6-6"/></svg>
-                    </li>
-                ))}
-                {showNoResults && (
-                    <li className="px-4 py-2 text-slate-500">Không tìm thấy sản phẩm.</li>
-                )}
-             </ul>
-          )}
         </div>
+
+        {/* Dropdown Gợi ý kết quả */}
+        {(suggestions.length > 0 || showNoResults) && (
+          <ul className={`absolute z-50 w-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl max-h-64 sm:max-h-80 overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-1 duration-150`}>
+            {suggestions.map((suggestion) => (
+              <li
+                key={suggestion.msp}
+                onClick={() => onSuggestionClick(suggestion)}
+                className="px-3.5 py-2.5 sm:py-3 cursor-pointer hover:bg-sky-50/80 active:bg-sky-100 transition-colors flex items-center justify-between gap-2"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onSuggestionClick(suggestion)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-mono text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200/50">
+                      {suggestion.msp}
+                    </span>
+                    {suggestion.giaGiam && (
+                      <span className="text-xs font-bold text-rose-600 tabular-nums">
+                        {suggestion.giaGiam}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-semibold text-xs sm:text-sm text-slate-800 truncate mt-0.5" title={suggestion.sanPham}>
+                    {suggestion.sanPham}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+              </li>
+            ))}
+            {showNoResults && (
+              <li className="px-4 py-3 text-xs sm:text-sm text-slate-500 text-center">
+                Không tìm thấy sản phẩm phù hợp.
+              </li>
+            )}
+          </ul>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon } from './Icons';
+import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, PlusIcon } from './Icons';
 import { Link2, Pencil } from 'lucide-react';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
@@ -16,10 +16,12 @@ import {
     resetTileLink,
     TILE_CUSTOM_LINKS_KEY,
 } from '../services/tileLinkService';
-import { extractSupermarketList } from '../utils/dashboardHelpers';
+import { extractSupermarketList, extractAllSupermarketList } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
+import { Modal } from '../../../components/shared/ui/Modal';
+import { Input } from '../../../components/shared/ui/Input';
 import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
 import { fetchSupermarketMap, clearSupermarketMap } from '../services/biSupermarketMapService';
@@ -140,7 +142,10 @@ const StatusTile: React.FC<{
                         fireSuccessCelebration();
                         return;
                     } else {
-                        toast.error(`Dữ liệu trong bộ nhớ tạm không đúng định dạng của ô ${title}!`);
+                        toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                            duration: 5000,
+                            id: `paste-err-${title}`
+                        });
                         setIsPasting(true);
                         return;
                     }
@@ -216,6 +221,11 @@ const StatusTile: React.FC<{
                                 const ok = await onChange(text);
                                 if (ok !== false) {
                                     fireSuccessCelebration();
+                                } else {
+                                    toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                                        duration: 5000,
+                                        id: `paste-err-${title}`
+                                    });
                                 }
                             }}
                             onBlur={() => setIsPasting(false)}
@@ -404,9 +414,44 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         if (currentData && currentData !== newData) await db.set(`previous-${key}`, currentData);
     };
 
-    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
+    const [customSupermarkets, setCustomSupermarkets] = useIndexedDBState<string[]>('updater-custom-supermarkets', []);
+    const [isAddingSupermarket, setIsAddingSupermarket] = useState(false);
+    const [newSupermarketName, setNewSupermarketName] = useState('');
+
+    const supermarkets = useMemo(() => {
+        return extractAllSupermarketList({
+            summaryLuyKe,
+            summaryRealtime,
+            competitionLuyKe,
+            competitionRealtime,
+            customSupermarkets,
+            supermarketMap: supermarketNameToKho
+        });
+    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets, supermarketNameToKho]);
+
     const [activeSupermarket, setActiveSupermarket] = useIndexedDBState<string | null>('updater-active-supermarket', null);
     const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);
+
+    const handleAddSupermarket = () => {
+        const trimmed = newSupermarketName.trim();
+        if (!trimmed) {
+            toast.error('Vui lòng nhập tên siêu thị!');
+            return;
+        }
+        const exists = supermarkets.find(s => s.toLowerCase() === trimmed.toLowerCase());
+        if (exists) {
+            toast('Siêu thị đã có trong danh sách.', { icon: 'ℹ️' });
+            setActiveSupermarket(exists);
+            setIsAddingSupermarket(false);
+            setNewSupermarketName('');
+            return;
+        }
+        setCustomSupermarkets(prev => [...(prev || []), trimmed]);
+        setActiveSupermarket(trimmed);
+        setIsAddingSupermarket(false);
+        setNewSupermarketName('');
+        toast.success(`Đã thêm siêu thị "${trimmed}". Bạn có thể cấu hình dữ liệu ngay!`);
+    };
 
     useEffect(() => {
         getAnalysisEmployees().then(setAnalysisEmployees).catch(console.error);
@@ -445,6 +490,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         setCompetitionLuyKeTs(null);
         setLastUpdates([]);
         setActiveSupermarket(null);
+        setCustomSupermarkets([]);
         setErrors({});
         setSupermarketNameToKho({});
 
@@ -736,6 +782,15 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                         {sm.split(' - ').pop()}
                                     </Button>
                                 ))}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={() => setIsAddingSupermarket(true)}
+                                    className="shrink-0 px-3 py-1.5 rounded-md text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1 transition-all"
+                                    title="Thêm siêu thị mới để cấu hình và dán dữ liệu"
+                                >
+                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    <span>Thêm siêu thị</span>
+                                </Button>
                             </div>
                         }
                     >
@@ -749,12 +804,20 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         />
                     </Card>
                 ) : (
-                    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 flex flex-col items-center justify-center text-center">
                         <EmptyState
                             icon={<UploadIcon className="h-6 w-6" />}
                             title="Chưa có danh sách siêu thị"
-                            description="Vui lòng cập nhật Luỹ kế phía trên để tải danh sách siêu thị."
+                            description="Vui lòng dán dữ liệu Luỹ kế / Realtime / Thi đua phía trên, hoặc chủ động thêm siêu thị để bắt đầu cấu hình."
                         />
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => setIsAddingSupermarket(true)}
+                            className="mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            <span>+ Thêm siêu thị thủ công</span>
+                        </Button>
                     </div>
                 )}
             </div>
@@ -781,6 +844,61 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     onSave={handleSaveLink}
                     onReset={handleResetLink}
                 />
+            )}
+
+            {isAddingSupermarket && (
+                <Modal
+                    isOpen={isAddingSupermarket}
+                    onClose={() => {
+                        setIsAddingSupermarket(false);
+                        setNewSupermarketName('');
+                    }}
+                    title="Thêm siêu thị mới"
+                    subTitle="Nhập tên siêu thị hoặc mã kho để tạo tab cấu hình riêng biệt"
+                >
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAddSupermarket();
+                        }}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                Tên siêu thị / Mã kho
+                            </label>
+                            <Input
+                                autoFocus
+                                type="text"
+                                placeholder="VD: 1032 - ĐML_STR_STR - Tân Phú hoặc Cần Thơ..."
+                                value={newSupermarketName}
+                                onChange={(e) => setNewSupermarketName(e.target.value)}
+                                className="w-full text-xs"
+                            />
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                                Sau khi tạo, bạn có thể chuyển sang tab siêu thị này để dán dữ liệu Ngành hàng, Doanh thu Nhân viên, Thi đua & Trả chậm.
+                            </p>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setIsAddingSupermarket(false);
+                                    setNewSupermarketName('');
+                                }}
+                            >
+                                Huỷ
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Thêm siêu thị
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
             )}
         </div>
     );
