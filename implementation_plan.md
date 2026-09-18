@@ -4002,3 +4002,26 @@ thay cho `Lỗi kết nối (functions/internal): INTERNAL`. 0 lỗi JS runtime.
 **Nguyên tắc rút ra cho cả dự án:** lỗi phải NÓI ĐÚNG SỰ THẬT. Một thông báo vô nghĩa không chỉ khó
 chịu — nó khiến người dùng thử lại, và ở đây mỗi lần thử lại có giá bằng hạn mức thật.
 
+
+### Trạng thái DEPLOY — đã xác minh 2026-09-18
+
+| Thành phần | Trạng thái | Cách xác minh |
+|---|---|---|
+| Cloud Functions (4 hàm `sticker*`) | ✅ agent deploy | `firebase deploy --only functions:sticker*` → 4/4 "Successful update operation" |
+| Web app (`dashboard.pro.vn`) | ✅ đã publish | bundle live chứa đúng chuỗi của bản sửa (xem dưới) |
+| Firestore Rules | — không cần | `git log --name-only` xác nhận cả 2 file `*.rules` KHÔNG đổi trong đợt này |
+
+**Xác minh web app bằng nội dung thật, không bằng giả định:**
+- `origin/gh-pages:assets/StickerEventApp-BIuEGCPM.js` **trùng ĐÚNG hash** với bản build tại máy
+  → bản publish byte-identical với bản build mới nhất.
+- Tải thẳng từ site thật `https://dashboard.pro.vn/assets/StickerEventApp-BIuEGCPM.js` (HTTP 200,
+  593KB): có `"ĐỪNG bấm tải lên lại liên tục"` (trần 180s, commit `415d7f54`) và
+  `"resource-exhausted"` (nhánh mới ở `Login.tsx`, commit `379e6106`).
+- `https://dashboard.pro.vn/assets/index-Bz8rB6TI.js` (HTTP 200, 190KB): có
+  `"ycx-managed-users-changed"` → mục 4 (nguồn poll dùng chung) đã live.
+- Cả 2 file `dist/assets/index-*.js` cùng mốc 11:37:13 → cùng một lượt build, không phải rác build cũ.
+
+⚠️ **Lưu ý khi xác minh deploy lần sau:** đừng grep tên hằng số (`PENDING_APPROVALS_POLL_INTERVAL_MS`
+…) — bundler nội tuyến/rút gọn chúng nên không tìm thấy là chuyện bình thường, không phải thiếu
+code. Chỉ grep **chuỗi ký tự thật** (thông báo lỗi, tên event) mới đáng tin.
+
