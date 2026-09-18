@@ -3909,3 +3909,57 @@ lúc 8–9h sáng 18/09 (khớp thời điểm agent chạy Playwright + script 
 3. Giữ nguyên 7 mục tối ưu đã làm: chúng hạ tải nền, giúp cú bùng nổ tiếp theo (nếu có) không cộng
    thêm vào một nền vốn đã cao.
 
+
+---
+
+## NGUYÊN NHÂN GỐC đã xác định + bản sửa chặn tái diễn (2026-09-18)
+
+**Chủ dự án xác nhận:** khung 18h–21h ngày 17/09 đã bấm tải file tồn kho lên **rất nhiều lần**.
+Khớp hoàn toàn với biểu đồ Usage (toàn bộ 80K đọc + 41K ghi dồn đúng khung đó).
+
+### Vì sao phải tải lại trang mới thử lại được — mắt xích bị bỏ sót
+
+`ControlPanel.tsx:146` đã có `disabled={props.isLoading}` cho ô chọn file, nên **không** bấm chồng
+nhau được. Nhưng `setIsLoading(false)` chỉ nằm trong `finally` của `handleInventoryFileChange`, và
+**luồng tải file KHÔNG có trần thời gian nào**. Một bước treo → `finally` không bao giờ chạy →
+`isLoading` kẹt `true` **vĩnh viễn** → ô chọn file `disabled` mãi → cách duy nhất còn lại là **tải
+lại trang rồi thử lại**. Lặp vòng đó suốt 3 tiếng chính là thứ đốt sạch hạn mức ngày.
+
+Nói cách khác: bug treo (đã sửa ở đợt trước, commit `17ec39c7`) là nguyên nhân, còn **thiếu đường
+thoát** là thứ biến một lỗi thành một cú đốt hạn mức.
+
+### Đã sửa
+
+`features/sticker-event/hooks/useStickerEventFile.ts`:
+- `UPLOAD_TIMEOUT_MS = 180s` + `withUploadTimeout()` bọc **cả 3 bước** của luồng tải tồn kho (đọc
+  file → lưu vào máy → đồng bộ lên máy chủ) và **cả 2 bước** của luồng bảng giá.
+- 180 giây cố ý rộng rãi: mục đích KHÔNG phải cắt ngang lượt tải bình thường (10 chunk × ~300KB ghi
+  tuần tự, mạng chậm vẫn kịp), mà là bảo đảm **luôn có đường thoát**.
+- Khi hết giờ: nói rõ **bước nào** treo, khẳng định dữ liệu đã giữ trên máy, và **nói thẳng "ĐỪNG
+  bấm tải lên lại liên tục — mỗi lần thử đều tốn hạn mức của máy chủ"**. Đây là phần quan trọng
+  nhất: người dùng cần biết việc thử lại có giá, chứ không phải đoán.
+- Lỗi thật của từng bước (vd sai định dạng file) vẫn được ném nguyên vẹn, không bị nhầm thành
+  timeout — `isUploadTimeout()` phân biệt bằng tiền tố mã lỗi.
+
+`tests/unit/sticker-upload-timeout.test.ts` (MỚI, 7 test), trong đó test quan trọng nhất dùng
+promise **không bao giờ resolve** (đúng tình huống thật) và chứng minh nó vẫn bị cắt sau đúng trần.
+
+### Chi phí một lượt tải tồn kho 3.000 dòng, trước và sau CẢ ĐỢT
+
+| | Trước | Sau |
+|---|---|---|
+| Ghi/xoá mỗi lượt tải | ~112 thao tác | **12 ghi, 0 xoá** |
+| Treo thì thoát được không? | ❌ kẹt vĩnh viễn, phải tải lại trang | ✅ 180s là báo lỗi rõ |
+| Người dùng có biết thử lại tốn hạn mức không? | ❌ không | ✅ ghi thẳng trong thông báo |
+
+### Hệ quả cho khuyến nghị
+
+Nguyên nhân là **một sự cố dùng-lại-nhiều-lần do bug**, không phải tải nền cao. Database chỉ có vài
+trăm document và ngoài khung 18h–21h đó thì lượt đọc/ghi gần như bằng 0. Sau khi hạn mức reset,
+mức dùng bình thường sẽ thấp hơn trần rất xa → **có thể KHÔNG cần bấm "Upgrade database", cũng
+không cần di trú**. Cả hai giữ làm phương án dự phòng.
+
+**Kiểm chứng:** `npm run test:unit` **498 passed | 1 skipped** (+7 test mới); `npm run build` ✓
+8.64s; `npx eslint` 2 file: sạch; `npx tsc --noEmit` 0 lỗi trong file đợt này (tổng vẫn 18 baseline);
+`lint:ratchet` vẫn 13 baseline.
+

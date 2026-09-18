@@ -39,6 +39,38 @@ interface UseStickerEventFileProps {
   setFileExportDate: (val: string | null) => void;
 }
 
+/**
+ * Trần thời gian cho MỘT lượt tải file lên (tồn kho / bảng giá).
+ *
+ * Vì sao cần (đây là bài học đắt, ghi lại đầy đủ — xem implementation_plan.md mục "Biểu đồ Usage
+ * thật của database In Sticker"): trước bản sửa này luồng tải file KHÔNG có trần thời gian nào.
+ * `setIsLoading(false)` chỉ nằm trong `finally`, nên nếu bất kỳ bước nào treo thì `isLoading` kẹt
+ * `true` VĨNH VIỄN → ô chọn file bị `disabled` mãi → người dùng không còn cách nào khác ngoài TẢI
+ * LẠI TRANG rồi thử lại. Ngày 17/09/2026 điều đó xảy ra thật: chủ dự án lặp lại vòng "tải lại
+ * trang → upload" rất nhiều lần trong 3 tiếng, đốt 41.000 lượt ghi + 80.000 lượt đọc và làm cạn
+ * hạn mức ngày của database.
+ *
+ * 180 giây là rộng rãi cho file 3.000 dòng (10 chunk × ~300KB ghi tuần tự) kể cả trên mạng chậm —
+ * mục đích KHÔNG phải cắt ngang lượt tải bình thường, mà là bảo đảm luôn có đường thoát và người
+ * dùng nhận được lời giải thích thay vì một màn hình treo câm lặng.
+ */
+export const UPLOAD_TIMEOUT_MS = 180_000;
+
+/** Bọc 1 promise bằng trần thời gian. Lỗi mang mã riêng để bên ngoài hiện đúng thông điệp. */
+export const withUploadTimeout = <T,>(promise: Promise<T>, stepName: string): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`UPLOAD_TIMEOUT:${stepName}`)),
+        UPLOAD_TIMEOUT_MS
+      )
+    ),
+  ]);
+
+export const isUploadTimeout = (err: unknown): boolean =>
+  err instanceof Error && err.message.startsWith('UPLOAD_TIMEOUT:');
+
 export function useStickerEventFile({
   user,
   userData,
@@ -133,18 +165,27 @@ export function useStickerEventFile({
         setUploadTimestamp(newUploadTimestamp);
         setFileExportDate(latestExportDate);
         
-        await saveData(combinedProducts, {
+        await withUploadTimeout(saveData(combinedProducts, {
           fileName: fileNamesForStorage,
           uploadTimestamp: newUploadTimestamp,
           fileExportDate: latestExportDate
-        });
+        }), 'lưu vào máy');
 
         if (userData && userData.storeId) {
-            await uploadProductsToFirestore(userData.storeId, combinedProducts);
+            await withUploadTimeout(uploadProductsToFirestore(userData.storeId, combinedProducts), 'đồng bộ lên máy chủ');
         }
 
       } catch (err) {
-        setError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
+        if (isUploadTimeout(err)) {
+          const step = (err as Error).message.split(':')[1];
+          setError(
+            `Quá ${UPLOAD_TIMEOUT_MS / 1000} giây ở bước "${step}" mà chưa xong. Bảng giá đã được giữ ` +
+            `trên máy bạn. ĐỪNG bấm tải lên lại liên tục — mỗi lần thử đều tốn hạn mức của máy chủ. ` +
+            `Hãy kiểm tra mạng rồi thử lại SAU ÍT PHÚT; nếu vẫn vậy, báo người phụ trách.`
+          );
+        } else {
+          setError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
+        }
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -217,15 +258,15 @@ export function useStickerEventFile({
         // sai tên collection ('inventory' thay vì 'inventoryChunks') nên vô tác dụng; việc dọn
         // chunk dư đã chuyển vào uploadInventoryToFirestore().
 
-        const items = await parseInventoryFile(file);
+        const items = await withUploadTimeout(parseInventoryFile(file), 'đọc file');
         const newTimestamp = new Date();
         setInventory(items);
         setInventoryUploadTimestamp(newTimestamp);
-        
-        await saveInventoryData(items, newTimestamp);
+
+        await withUploadTimeout(saveInventoryData(items, newTimestamp), 'lưu vào máy');
 
         if (userData && userData.storeId) {
-            await uploadInventoryToFirestore(userData.storeId, items);
+            await withUploadTimeout(uploadInventoryToFirestore(userData.storeId, items), 'đồng bộ lên máy chủ');
         }
 
         setError(null);
@@ -235,7 +276,18 @@ export function useStickerEventFile({
         }, 500);
 
       } catch (err) {
-        setError('Lỗi khi xử lý file tồn kho. Vui lòng kiểm tra định dạng file.');
+        if (isUploadTimeout(err)) {
+          const step = (err as Error).message.split(':')[1];
+          // Nói RÕ đừng thử lại liên tục: mỗi lượt thử đều tốn hạn mức ghi của database, và chính
+          // việc thử lại hàng trăm lần đã làm cạn hạn mức ngày 17/09/2026.
+          setError(
+            `Quá ${UPLOAD_TIMEOUT_MS / 1000} giây ở bước "${step}" mà chưa xong. Dữ liệu tồn kho đã được ` +
+            `giữ trên máy bạn. ĐỪNG bấm tải lên lại liên tục — mỗi lần thử đều tốn hạn mức của máy chủ. ` +
+            `Hãy kiểm tra mạng rồi thử lại SAU ÍT PHÚT; nếu vẫn vậy, báo người phụ trách.`
+          );
+        } else {
+          setError('Lỗi khi xử lý file tồn kho. Vui lòng kiểm tra định dạng file.');
+        }
         console.error(err);
       } finally {
         setIsLoading(false);
