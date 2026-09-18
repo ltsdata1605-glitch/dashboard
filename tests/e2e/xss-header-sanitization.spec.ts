@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openReportBi, pasteIntoTile, SUMMARY_LUYKE, SUMMARY_REALTIME } from './helpers/seed';
+import { openReportBi, seedCompetitionData, openCompetitionTable } from './helpers/seed';
 
 /**
  * Kiểm chứng fix bảo mật Đợt 2 (KE_HOACH_TONG_THE.md mục 2.3): trước đây bảng Thi đua render tên
@@ -23,22 +23,9 @@ test('dán tên cột chứa HTML/script độc vào dữ liệu Thi đua KHÔNG
     ].join('\n');
 
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click(); // openReportBi() chỉ chờ nút hiện ra, chưa bấm
-    await pasteIntoTile(page, 'Báo cáo Tổng hợp', 'Realtime', SUMMARY_REALTIME);
-    await pasteIntoTile(page, 'Báo cáo Tổng hợp', 'Luỹ kế', SUMMARY_LUYKE);
-    await pasteIntoTile(page, 'Thi đua Cụm', 'Luỹ kế', maliciousCompetitionLuyKe);
-
-    await page.getByRole('button', { name: /Tổng quan/i }).first().click();
-    await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click();
-    await page.getByText('Luỹ kế', { exact: true }).first().click();
-    if (!(await page.getByText('NHÓM THI ĐUA').isVisible().catch(() => false))) {
-        const picker = page.getByText('CỤM', { exact: true }).first();
-        if (await picker.isVisible().catch(() => false)) {
-            await picker.click();
-            await page.locator('[role="button"]').filter({ hasNotText: 'Chọn tất cả' }).first().click();
-            await page.keyboard.press('Escape');
-        }
-    }
+    // Nạp dữ liệu Thi đua CÓ CHỨA payload độc ở phần header cột.
+    await seedCompetitionData(page, maliciousCompetitionLuyKe);
+    await openCompetitionTable(page);
     await expect(page.getByText('NHÓM THI ĐUA')).toBeVisible({ timeout: 30_000 });
 
     // GHI CHÚ 2026-09-09 — vì sao test này KHÔNG còn bật cột độc lên để soi chữ:

@@ -1,18 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { openReportBi, seedCompetitionData } from './helpers/seed';
+import { openReportBi, seedCompetitionData, openCompetitionTable } from './helpers/seed';
 
 /** Bảng Thi đua (Report BI > Tổng quan > Thi đua) — kiểm chứng các thay đổi ngày 2026-09-05. */
 test.describe('Report BI — bảng Thi đua Luỹ kế', () => {
     test.beforeEach(async ({ page }) => {
         await openReportBi(page);
         await seedCompetitionData(page);
-        await page.getByRole('button', { name: /Tổng quan/i }).first().click();
-        await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click();
-        // Mặc định là chế độ Realtime + siêu thị "Tổng" (chưa có dữ liệu) — chuyển sang Luỹ kế và
-        // chọn đúng siêu thị trong dữ liệu giả.
-        await page.getByText('Luỹ kế', { exact: true }).first().click();
-        await page.getByText('CỤM', { exact: true }).first().click();
-        await page.getByText(/Hùng Vương/).first().click();
+        // Toàn bộ chuỗi điều hướng (chọn siêu thị + gạt sang Luỹ kế) đã chuyển vào helper —
+        // xem `openCompetitionTable()` để biết vì sao đường cũ không còn đúng.
+        await openCompetitionTable(page);
         await expect(page.getByText('NHÓM THI ĐUA')).toBeVisible({ timeout: 15_000 });
     });
 

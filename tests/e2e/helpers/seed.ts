@@ -56,27 +56,72 @@ export async function openReportBi(page: Page) {
     await page.getByRole('button', { name: /Cập nhật/i }).first().waitFor({ state: 'visible', timeout: 20_000 });
 }
 
+/** Thứ tự 4 ô dán ở màn "Cập nhật" — xem `pasteIntoTile()` để biết vì sao dùng chỉ số. */
+export const TILE = {
+    DOANH_THU_REALTIME: 0,
+    DOANH_THU_LUYKE: 1,
+    THI_DUA_REALTIME: 2,
+    THI_DUA_LUYKE: 3,
+} as const;
+
 /**
- * Dán dữ liệu vào một ô "Click để cập nhật". Ô chỉ lắng nghe sự kiện `paste` thật (đọc
+ * Dán dữ liệu vào ô thứ `tileIndex` của màn "Cập nhật". Ô chỉ lắng nghe sự kiện `paste` thật (đọc
  * clipboardData), nên `fill()` không có tác dụng — phải dispatch ClipboardEvent.
+ *
+ * SỬA 2026-09-18 — hàm này TRƯỚC ĐÂY nhận (groupLabel, tileTitle) và tìm nhóm bằng
+ * `//h3[contains(., "Báo cáo Tổng hợp")]`. Giao diện đã đổi: giờ chỉ có MỘT `<h2>` "DOANH THU &
+ * THI ĐUA CỤM" chứa 4 ô `<h4>`. Selector cũ không khớp gì cả nên hàm **dán vào hư không mà KHÔNG
+ * báo lỗi** — `bi-competition.spec.ts` (4 test) và `xss-header-sanitization.spec.ts` cùng hỏng
+ * theo, mỗi test treo 1 phút rồi timeout. Dùng chỉ số ô là cách bền nhất với bố cục hiện tại.
  */
-export async function pasteIntoTile(page: Page, groupLabel: string, tileTitle: string, text: string) {
-    const group = page.locator(`xpath=//h3[contains(., "${groupLabel}")]/following-sibling::div[1]`);
-    await group.getByText(tileTitle, { exact: true }).first().click();
-    const textarea = group.locator('textarea').first();
-    await textarea.waitFor({ state: 'visible' });
+export async function pasteIntoTile(page: Page, tileIndex: number, text: string) {
+    await page.locator('h4').nth(tileIndex).click();
+    const textarea = page.locator('textarea').first();
+    await textarea.waitFor({ state: 'visible', timeout: 10_000 });
     await textarea.evaluate((el, value) => {
         const dt = new DataTransfer();
         dt.setData('text', value);
         el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
     }, text);
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(600);
 }
 
-/** Nạp đủ dữ liệu để bảng Thi đua có nội dung. */
-export async function seedCompetitionData(page: Page) {
+/** Nạp đủ dữ liệu để bảng Thi đua có nội dung. Gọi SAU `openReportBi()`. */
+export async function seedCompetitionData(page: Page, competitionLuyKe: string = COMPETITION_LUYKE) {
     await page.getByRole('button', { name: /Cập nhật/i }).first().click();
-    await pasteIntoTile(page, 'Báo cáo Tổng hợp', 'Realtime', SUMMARY_REALTIME);
-    await pasteIntoTile(page, 'Báo cáo Tổng hợp', 'Luỹ kế', SUMMARY_LUYKE);
-    await pasteIntoTile(page, 'Thi đua Cụm', 'Luỹ kế', COMPETITION_LUYKE);
+    await page.waitForTimeout(800);
+    await pasteIntoTile(page, TILE.DOANH_THU_REALTIME, SUMMARY_REALTIME);
+    await pasteIntoTile(page, TILE.DOANH_THU_LUYKE, SUMMARY_LUYKE);
+    await pasteIntoTile(page, TILE.THI_DUA_LUYKE, competitionLuyKe);
+}
+
+/**
+ * Mở bảng Thi đua Luỹ kế của siêu thị trong dữ liệu giả.
+ *
+ * SỬA 2026-09-18 — đường điều hướng cũ (`Tổng quan` → `Thi đua` → `Luỹ kế`) không còn đúng:
+ * thanh trên cùng giờ là "Siêu thị | Nhân viên | Cập nhật", bảng Thi đua nằm trong "Siêu thị".
+ *
+ * ⚠️ Nút chế độ là NÚT GẠT, không phải menu: bấm 1 lần là chuyển Realtime → Luỹ kế. Bấm thêm vào
+ * chữ "Luỹ kế" sẽ gạt NGƯỢC về Realtime — đúng cái bẫy đã làm mất thời gian dò lỗi.
+ */
+export async function openCompetitionTable(page: Page) {
+    await page.getByRole('button', { name: /Siêu thị/i }).first().click();
+    await page.waitForTimeout(1500);
+    await page.getByText('Thi đua', { exact: true }).first().click();
+    await page.waitForTimeout(1500);
+
+    // Chọn siêu thị cụ thể — dữ liệu thi đua giả không có ở mức "Tổng"/CỤM.
+    const picker = page.getByText('CỤM', { exact: true }).first();
+    if (await picker.isVisible().catch(() => false)) {
+        await picker.click();
+        await page.waitForTimeout(600);
+        await page.getByText(/Hùng Vương/).first().click();
+        await page.waitForTimeout(800);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+    }
+
+    await page.getByRole('button', { name: /Realtime/i }).first().click();
+    await page.getByText('NHÓM THI ĐUA').waitFor({ timeout: 20_000 });
+    await page.waitForTimeout(800);
 }

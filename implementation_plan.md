@@ -4480,3 +4480,35 @@ dùng màu ngoài bảng đã duyệt.
 **Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped**; `build` ✓ 8.06s;
 `eslint` 0 error (5 warning có sẵn về `<button>` thô); `lint:ratchet` nonSemanticColor **0**.
 
+
+### Sửa 2 test E2E đã hỏng âm thầm — 2026-09-18
+
+Phát hiện khi tìm cách xem Report BI: `tests/e2e/helpers/seed.ts` tìm nhóm ô dán bằng
+`//h3[contains(., "Báo cáo Tổng hợp")]`, nhưng giao diện đã đổi — giờ chỉ có MỘT `<h2>` "DOANH THU
+& THI ĐUA CỤM" chứa 4 ô `<h4>`. Selector cũ không khớp gì cả nên hàm **dán vào hư không mà KHÔNG
+báo lỗi**. Đường điều hướng cũng lỗi thời (`Tổng quan` → … ; thanh trên cùng giờ là
+"Siêu thị | Nhân viên | Cập nhật").
+
+**Đã xác nhận hỏng thật trước khi sửa:** chạy `bi-competition.spec.ts` → **4/4 test timeout**, mỗi
+test treo đủ 60 giây. `xss-header-sanitization.spec.ts` cũng vậy.
+
+⚠️ Đáng lo nhất: test chống XSS **không hề kiểm gì** trong suốt thời gian đó. Một test đỏ còn đỡ —
+test hỏng theo kiểu này vẫn nằm trong repo như thể đang bảo vệ điều gì đó.
+
+**Đã sửa trong helper (2 spec dùng chung nên chỉ sửa 1 chỗ):**
+- `pasteIntoTile(page, tileIndex, text)` — dán theo **chỉ số ô** thay vì tên nhóm; thêm hằng số
+  `TILE` đặt tên cho 4 vị trí.
+- `seedCompetitionData(page, competitionLuyKe?)` — nhận dữ liệu thi đua tuỳ biến, để spec XSS dùng
+  lại được thay vì tự dán từng ô.
+- `openCompetitionTable(page)` (MỚI) — gom cả chuỗi điều hướng: Siêu thị → Thi đua → chọn siêu thị
+  → gạt sang Luỹ kế.
+
+**Cái bẫy đã ghi lại trong comment:** nút chế độ là **NÚT GẠT**, không phải menu. Bấm 1 lần là
+Realtime → Luỹ kế; bấm thêm vào chữ "Luỹ kế" sẽ gạt NGƯỢC về Realtime. Tôi mất vài lượt chạy mới
+nhận ra.
+
+**Kết quả:** 5/5 test xanh, mỗi test **~11 giây** thay vì treo 60 giây.
+
+**Kiểm chứng:** `tsc` **0 lỗi**; `test:unit` **540 passed | 1 skipped**; `build` ✓ 9.05s;
+`eslint` sạch; Playwright **5 passed (54.8s)**.
+
