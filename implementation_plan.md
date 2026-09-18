@@ -4153,3 +4153,56 @@ lượt gắn lại khi mạng chập chờn hoặc máy ngủ, không chạm lo
 để dọn chunk, kể cả khi không chunk và subcollection rỗng (query rỗng vẫn tính tối thiểu 1 lượt
 đọc). Có `chunkCount` lưu sẵn thì bỏ được lượt đọc này — cùng cách đã làm cho In Sticker mục 1.
 
+
+### ĐÃ LÀM: mục 7 — bỏ lượt ĐỌC ăn theo mỗi lần ghi khoá nặng (2026-09-18)
+
+`services/firestoreService.ts` — thêm `lastKnownChunkCount` (Map theo `docRef.path`, phạm vi phiên)
+ghi nhớ số chunk vừa ghi, nên lần ghi sau không phải `getDocs(chunksRef)` nữa:
+- biết lần trước **0 chunk** → bỏ qua hẳn việc dọn (0 đọc, 0 xoá);
+- biết lần trước **N chunk** → xoá đúng khoảng dư bằng 1 batch (0 đọc);
+- **chưa biết** (lần ghi đầu của khoá trong phiên) → vẫn quét 1 lần như cũ. Cố ý giữ: đoán bừa
+  trạng thái cũ sẽ để lại chunk mồ côi vĩnh viễn.
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| 10 lần ghi liên tiếp 1 khoá nhỏ | **10 lượt đọc** | **0** (sau lượt đầu) |
+| Ghi lại dữ liệu lớn cùng cỡ | 1 lượt đọc/lần | **0** |
+| Dữ liệu co lại 3 chunk → 2 | 1 đọc + 1 xoá | **0 đọc**, 1 xoá |
+| Từ chunk về không-chunk | 1 đọc + 3 xoá | **0 đọc**, 3 xoá (không để rác) |
+
+`tests/unit/heavy-sync-chunk-cleanup.test.ts` (MỚI, 6 test) — có test cho cả 2 chiều phình/co và
+test chứng minh mỗi khoá có bộ nhớ riêng.
+
+### ❌ KHÔNG LÀM: "tháo listener khi ẩn tab" — tôi tự phản bác đề xuất của chính mình
+
+Lượt trước tôi đề xuất tháo listener `users/{uid}/configs` khi ẩn tab và gắn lại khi hiện, gọi đó là
+"việc rẻ, rủi ro thấp". **Đề xuất đó SAI.** Tài liệu giá Firestore:
+
+> *"When a listener first attaches, you are charged for a read operation for each document in the
+> result set, just as if you had issued a brand-new query."*
+
+Gắn listener = **bị tính phí như một query mới hoàn toàn**. Còn khi đang gắn thì chỉ tính document
+có thay đổi. Nên tháo-rồi-gắn-lại sẽ tốn **~27 lượt đọc MỖI LẦN người dùng quay lại tab** — tệ hơn
+hẳn so với cứ để nguyên. Nếu tôi làm theo đề xuất của mình thì đã tạo ra một hồi quy.
+
+### Phát hiện kèm theo: dự án KHÔNG bật offline persistence
+
+`services/firebase.ts` chỉ gọi `getFirestore(app)` — không `persistentLocalCache`/
+`enableIndexedDbPersistence`. Tài liệu giá:
+
+> *"If offline persistence is disabled, you will be charged … as if you had issued a brand-new query
+> whenever the listener disconnects and reconnects."*
+
+Tức **mỗi lần mất/khôi phục kết nối đều bị tính lại đủ ~27 lượt đọc** (mốc ân hạn 30 phút chỉ áp
+khi có persistence). Laptop siêu thị wifi chập chờn, máy ngủ rồi thức → con số thật có thể cao hơn
+ước lượng 27/phiên khá nhiều.
+
+→ Điều này làm **tăng** giá trị của bản sửa thật (đổi listener-trên-cả-collection thành listener
+trên 1 document "chỉ mục mốc thời gian", 27 → 1), và nó là cách duy nhất còn lại có tác dụng.
+Bật offline persistence cũng giảm được số lần tính lại, nhưng KHÔNG an toàn: phân tích bug self-echo
+ở `useCloudSync.ts` dựa trên giả định "ứng dụng không bật multi-tab persistence nên cache của tab
+khác không lẫn vào đây" — bật lên là mở lại đúng lớp bug đó.
+
+**Kiểm chứng:** `npm run test:unit` **510 passed | 1 skipped** (+6 test mới); `npm run build` ✓
+10.64s; `eslint` sạch; `tsc` 0 lỗi trong file đợt này (tổng vẫn 18 baseline); `lint:ratchet` 13 baseline.
+

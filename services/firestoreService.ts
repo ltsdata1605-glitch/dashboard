@@ -313,6 +313,22 @@ export function restoreNestedArraysFromFirestore(value: unknown): unknown {
 // có dấu chiếm tới 3 byte/ký tự khi encode UTF-8.
 const CHUNK_CHAR_SIZE = 300_000;
 
+/**
+ * Số chunk đã ghi gần nhất cho từng document khoá nặng, theo PHIÊN (khoá theo `docRef.path` nên
+ * không lẫn giữa các user).
+ *
+ * QUOTA FIX (2026-09-18, mục 7 — xem implementation_plan.md mục "Audit hạn mức đọc/ghi Firestore"):
+ * trước bản sửa này, MỖI lần ghi khoá nặng đều kèm 1 `getDocs(chunksRef)` để dọn chunk cũ/dư — kể
+ * cả khi dữ liệu không chunk và subcollection rỗng (query rỗng vẫn bị tính tối thiểu 1 lượt đọc).
+ * Khoá nặng được ghi lại mỗi 2 giây có thay đổi, nên đây là lượt đọc ăn theo mỗi lần ghi.
+ *
+ * Nhớ lại số chunh vừa ghi thì lần ghi sau không cần đọc nữa: biết trước đó có 0 chunk → bỏ qua
+ * hẳn việc dọn; biết trước đó có N chunk → xoá đúng khoảng dư, không phải đọc. Chỉ lần ghi ĐẦU
+ * TIÊN của mỗi khoá trong phiên còn phải `getDocs` (chưa biết trạng thái cũ) — giữ nguyên hành vi
+ * an toàn đó thay vì đoán.
+ */
+const lastKnownChunkCount = new Map<string, number>();
+
 function splitIntoChunks(serialized: string): string[] {
     const chunks: string[] = [];
     for (let i = 0; i < serialized.length; i += CHUNK_CHAR_SIZE) {
@@ -378,6 +394,21 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
         }, { merge: false });
 
         // Dọn chunk cũ nếu khoá này từng bị chunk ở lần ghi trước — chạy nền, không chặn ghi chính.
+        const knownBefore = lastKnownChunkCount.get(docRef.path);
+        lastKnownChunkCount.set(docRef.path, 0);
+
+        if (knownBefore === 0) {
+            // Lần ghi trước cũng không chunk → chắc chắn không có gì phải dọn. 0 lượt đọc, 0 lượt xoá.
+            return;
+        }
+        if (knownBefore !== undefined) {
+            // Biết chính xác có bao nhiêu chunk → xoá đúng khoảng đó, KHÔNG cần đọc.
+            const batch = writeBatch(db);
+            for (let i = 0; i < knownBefore; i++) batch.delete(doc(chunksRef, `chunk_${i}`));
+            batch.commit().catch(err => console.warn(`[Heavy Sync] Không dọn được chunk cũ của "${key}":`, err));
+            return;
+        }
+        // Lần ghi ĐẦU TIÊN của khoá này trong phiên — chưa biết trạng thái cũ, phải quét 1 lần.
         getDocs(chunksRef)
             .then(snap => snap.empty ? undefined : Promise.all(snap.docs.map(d => deleteDoc(d.ref))))
             .catch(err => console.warn(`[Heavy Sync] Không dọn được chunk cũ của "${key}":`, err));
@@ -391,6 +422,20 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
     await batch.commit();
 
     // Dọn chunk dư ra nếu lần ghi này ít chunk hơn lần trước — chạy nền, không chặn ghi chính.
+    const knownBefore = lastKnownChunkCount.get(docRef.path);
+    lastKnownChunkCount.set(docRef.path, parts.length);
+
+    if (knownBefore !== undefined) {
+        // Biết số chunk lần trước → chỉ xoá phần dư, KHÔNG cần đọc. Lần ghi cùng cỡ (hoặc lớn hơn)
+        // thì không có gì dư, tốn 0 lượt xoá luôn.
+        if (knownBefore > parts.length) {
+            const batch = writeBatch(db);
+            for (let i = parts.length; i < knownBefore; i++) batch.delete(doc(chunksRef, `chunk_${i}`));
+            batch.commit().catch(err => console.warn(`[Heavy Sync] Không dọn được chunk dư của "${key}":`, err));
+        }
+        return;
+    }
+    // Lần ghi ĐẦU TIÊN của khoá này trong phiên — phải quét 1 lần để biết có chunk mồ côi nào không.
     getDocs(chunksRef)
         .then(snap => {
             const stale = snap.docs.filter(d => {
