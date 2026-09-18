@@ -3844,3 +3844,68 @@ nhận file nằm trong `functions/**` đã được ignore sẵn nên không �
 Đã thêm `"scripts"` vào `firebase.json → functions.ignore` để script KHÔNG bị deploy lên Cloud
 Functions.
 
+
+---
+
+## Biểu đồ Usage thật của database In Sticker — 2026-09-18
+
+Chủ dự án gửi ảnh Firebase Console → Firestore → database `ai-studio-…` → Usage, 24 giờ
+(Sep 17 → Sep 18).
+
+### 🔴 SỬA LẠI kết luận quan trọng nhất của đợt này
+
+Console hiện banner:
+
+> **"This database is currently subject to AI shared quota limits. Move this database to
+> pay-as-you-go billing to remove these restrictions."** — kèm nút **"Upgrade database"**.
+
+Tôi đã kết luận (dựa trên nguyên văn lỗi API *"This database cannot exceed free quota limits even
+when a billing instrument is enabled"*) rằng **trần này không nới được dù bật thanh toán** → nên
+phải di trú sang `(default)`. **KẾT LUẬN ĐÓ SAI.** Console nói rõ có đường nâng cấp 1 nút cho
+chính database này. Trần hiện tại là **"AI shared quota limits"** — hạn mức dùng chung của database
+do Google AI Studio tạo, không phải hạn mức Spark thông thường.
+
+→ **Kế hoạch di trú sang `(default)` có thể KHÔNG CẦN THIẾT.** Vẫn giữ lại làm phương án B (khảo
+sát đã xong, khối lượng nhỏ), nhưng phương án A giờ là bấm "Upgrade database".
+
+### Số liệu 24 giờ
+
+| Chỉ số | Tổng 24h |
+|---|---|
+| Reads | **80.000** |
+| Writes | **41.000** |
+| Real-time reads | 2 |
+
+**Toàn bộ tải dồn vào ĐÚNG MỘT KHUNG ~3 GIỜ (18h–21h ngày 17/09):** writes đạt đỉnh ~41K lúc 19h,
+reads đạt đỉnh ~60K lúc 20h. Trước và sau khung đó gần như bằng 0, chỉ còn 1 bướu nhỏ ~10K reads
+lúc 8–9h sáng 18/09 (khớp thời điểm agent chạy Playwright + script khảo sát).
+
+### Điều này đổi cách hiểu vấn đề
+
+1. **Không phải tải đều đặn — là một cú bùng nổ.** 7 mục tối ưu đã làm đều giảm chi phí MỖI PHIÊN
+   (mở app, mở modal, mỗi thao tác). Chúng vẫn đúng và vẫn cần, nhưng **không phải nguyên nhân gốc**
+   của lần chạm trần này.
+2. **41.000 lượt ghi không giải thích được bằng code trong repo.** Đã rà: mọi đường ghi của
+   `features/sticker-event` đều chunk, tối đa ~50 thao tác mỗi lần (`uploadInventoryToFirestore` 10
+   chunk + 2 metadata; `clearStoreDataOnFirestore` ≤50 delete; `saveListToFirestore` chunk 3000
+   item/doc). Để đạt 41K cần lặp lại hàng trăm lần. Hai giả thuyết:
+   - Người dùng bấm upload lại NHIỀU LẦN trong lúc tính năng bị treo (đúng bug đã báo đầu đợt:
+     *"File 217kb ~ 3000 dòng / Bị treo vĩnh viễn"*). Mỗi lần upload trước bản sửa mục 1 tốn ~110
+     thao tác ghi/xoá.
+   - Có ứng dụng KHÁC ngoài repo này cùng ghi vào database (database do Google AI Studio tạo và có
+     thể đang chia sẻ với 1 app AI Studio khác — tên `ai-studio-…`, và trần là "AI **shared** quota").
+   Chỉ chủ dự án mới biết chắc đã làm gì trong khung 18h–21h ngày 17/09.
+3. Firebase ghi rõ biểu đồ này **có tính cả thao tác từ Firebase Console**, nhưng **không** tính
+   import/export/bulk-delete/indexing/restore.
+
+### Khuyến nghị
+
+1. **Bấm "Upgrade database"** — gỡ trần ngay, không cần sửa code hay di trú. Ở mức tải quan sát được
+   (80K đọc + 41K ghi/ngày) chi phí Firestore chỉ vài cent/ngày.
+   ⚠️ Đánh đổi phải biết: pay-as-you-go biến "bị chặn" thành "bị tính tiền". Nếu có vòng lặp chạy
+   hoang thì nó sẽ không dừng nữa mà tính phí. Ở mức đang thấy thì rủi ro không đáng kể, nhưng nên
+   xem lại biểu đồ sau 2-3 ngày.
+2. Xác định nguồn của cú bùng nổ 18h–21h ngày 17/09 trước khi kết luận đã xong.
+3. Giữ nguyên 7 mục tối ưu đã làm: chúng hạ tải nền, giúp cú bùng nổ tiếp theo (nếu có) không cộng
+   thêm vào một nền vốn đã cao.
+
