@@ -128,6 +128,38 @@ service cloud.firestore {
                     && request.resource.data.totalVisits == resource.data.totalVisits + 1;
       allow delete: if false;
     }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // PHÂN HỆ IN STICKER (EVENT - TỒN KHO) — Database (default)
+    // ───────────────────────────────────────────────────────────────────────────
+    function stickerRole()        { return isSignedIn() ? request.auth.token.stickerRole : null; }
+    function myStickerStoreId()   { return isSignedIn() ? request.auth.token.stickerStoreId : null; }
+    function isStickerSuperAdmin() { return stickerRole() == 'superadmin'; }
+    function isStickerAdmin()      { return stickerRole() == 'admin' || isStickerSuperAdmin(); }
+    function stickerProtectedKeys() {
+      return ['role', 'storeId', 'username'];
+    }
+
+    match /stickerUsers/{uid} {
+      allow get:    if isSelf(uid) || isStickerSuperAdmin() || (stickerRole() == 'admin' && resource.data.storeId == myStickerStoreId());
+      allow list:   if isStickerSuperAdmin() || (stickerRole() == 'admin' && resource.data.storeId == myStickerStoreId());
+      allow update: if isSelf(uid)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(stickerProtectedKeys());
+
+      match /state/{doc} { allow read, write: if isSelf(uid); }
+    }
+
+    match /stores/{storeId}/savedLists/{listId} {
+      allow read, write: if isSignedIn();
+
+      match /itemChunks/{chunkId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    match /stores/{storeId}/{document=**} {
+      allow read, write: if isSignedIn() && (isStickerSuperAdmin() || myStickerStoreId() == storeId || request.auth.token.departmentId == storeId || storeId == 'SUPERADMIN');
+    }
   }
 }
 

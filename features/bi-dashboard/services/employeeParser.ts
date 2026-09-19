@@ -3,7 +3,7 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
 import { parseRevenueData, standardizeEmployeeName, formatEmployeeName } from '../utils/nhanVienHelpers';
-import { parseCompetitionDataBySupermarket, parseSummaryData } from '../utils/dashboardHelpers';
+import { parseCompetitionDataBySupermarket, parseSummaryData, findMatchingSupermarketKey } from '../utils/dashboardHelpers';
 import { isSystemOrIgnoredEmployee, type AnalysisEmployeeItem } from './analysisEmployeeSyncService';
 import { isIgnoredDept } from '../utils/nhanVienHelpers';
 
@@ -123,7 +123,7 @@ export const parseBaseTargetsMap = (competitionLuyKeData: string, supermarketNam
     if (!competitionLuyKeData || !supermarketName) return {};
     const smData = parseCompetitionDataBySupermarket(competitionLuyKeData);
     const map: Record<string, number> = {};
-    const targetSm = Object.keys(smData).find(k => k.includes(supermarketName) || supermarketName.includes(k) || k === supermarketName);
+    const targetSm = findMatchingSupermarketKey(supermarketName, Object.keys(smData));
     if (targetSm && smData[targetSm]) {
         const headers = smData[targetSm].headers;
         const targetIdx = headers.findIndex(h => h.toUpperCase().includes('TARGET'));
@@ -352,13 +352,8 @@ export const parseEmployeeCompetitionTargets = (
         const smData = smDataMap.get(sm);
         const competitionTargetsData = smData?.competitionTargets;
         const departmentWeightsData = smData?.departmentWeights;
-        const shortSm = shortenSupermarketName(sm);
-
-        // Tìm siêu thị trong parsed data (fuzzy match)
-        const matchedSmKey = Object.keys(parsedBySm).find(k =>
-            shortenSupermarketName(k) === shortSm ||
-            k.includes(sm) || sm.includes(k)
-        );
+        // Tìm siêu thị trong parsed data (sử dụng findMatchingSupermarketKey chuẩn hoá mã kho và tên)
+        const matchedSmKey = findMatchingSupermarketKey(sm, Object.keys(parsedBySm));
 
         if (!matchedSmKey || !parsedBySm[matchedSmKey]) continue;
 

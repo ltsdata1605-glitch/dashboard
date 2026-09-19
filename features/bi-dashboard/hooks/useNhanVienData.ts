@@ -8,6 +8,8 @@ import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';
+import { fetchSupermarketMap } from '../services/biSupermarketMapService';
+import { auth } from '../../../services/firebase';
 
 export function useNhanVienData(isActive?: boolean) {
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
@@ -18,6 +20,19 @@ export function useNhanVienData(isActive?: boolean) {
     const [activeSupermarketsRaw, setActiveSupermarkets, isActiveSupermarketsLoaded] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
     const [hiddenEmployees, setHiddenEmployees] = useState<string[]>([]);
     const [analysisEmployeesPayload, setAnalysisEmployeesPayload] = useState<AnalysisEmployeesPayload | null>(null);
+    const [supermarketMap, setSupermarketMap] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const uid = auth.currentUser?.uid;
+        fetchSupermarketMap(uid).then(setSupermarketMap).catch(() => {});
+        const handleMapChange = (e: CustomEvent<{ userId: string; map: Record<string, string> }>) => {
+            if (!uid || e.detail?.userId === uid) {
+                setSupermarketMap(e.detail?.map || {});
+            }
+        };
+        window.addEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+        return () => window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+    }, []);
     
     const supermarkets = useMemo(() => {
         return extractAllSupermarketList({
@@ -25,9 +40,10 @@ export function useNhanVienData(isActive?: boolean) {
             summaryRealtime,
             competitionLuyKe,
             competitionRealtime,
-            customSupermarkets
+            customSupermarkets,
+            supermarketMap
         });
-    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets]);
+    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets, supermarketMap]);
     const activeSupermarkets = useMemo(() => Array.isArray(activeSupermarketsRaw) 
         ? activeSupermarketsRaw.filter(sm => supermarkets.includes(sm)) 
         : [], [activeSupermarketsRaw, supermarkets]);

@@ -43,7 +43,7 @@ import {
 } from './types';
 import { createFullSchedule } from './services/scheduleService';
 import { abbreviateVietnameseName } from './utils/stringUtils';
-import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, rotateArray } from './constants';
+import { DEFAULT_DEPARTMENT_PATTERNS, rotateArray } from './constants';
 const App: React.FC = () => {
   const {
     isImportingRef,
@@ -513,9 +513,9 @@ const App: React.FC = () => {
         const depts = [...new Set(staffWithGenders.map(s => s.department))];
         const patternsToSet: { [key: string]: string[] } = {};
         depts.forEach(dept => {
-            if (dept.includes("Quản Lý") || dept.includes("Trưởng Ca")) patternsToSet[dept] = DEFAULT_PATTERNS_HUNG_VUONG_910_99['BP Quản lý/Trưởng Ca'];
-            else if (dept.includes("Tiếp Đón") || dept.includes("Thu Ngân")) patternsToSet[dept] = DEFAULT_PATTERNS_HUNG_VUONG_910_99['BP Tiếp Đón Khách Hàng'];
-            else patternsToSet[dept] = DEFAULT_PATTERNS_HUNG_VUONG_910_99['BP All In One'];
+            if (dept.includes("Quản Lý") || dept.includes("Trưởng Ca")) patternsToSet[dept] = DEFAULT_DEPARTMENT_PATTERNS['BP Quản lý/Trưởng Ca'];
+            else if (dept.includes("Tiếp Đón") || dept.includes("Thu Ngân")) patternsToSet[dept] = DEFAULT_DEPARTMENT_PATTERNS['BP Tiếp Đón Khách Hàng'];
+            else patternsToSet[dept] = DEFAULT_DEPARTMENT_PATTERNS['BP All In One'];
         });
         const keyPrefix = `${supermarketName}::`;
         await idb.saveData(keyPrefix + 'nams', newNams);

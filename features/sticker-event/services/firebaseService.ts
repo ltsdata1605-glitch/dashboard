@@ -278,7 +278,7 @@ export const fetchAllUsers = async (
         }
     }
 
-    const usersRef = collection(db, 'users');
+    const usersRef = collection(db, 'stickerUsers');
     try {
         const q = query(usersRef, where('storeId', '==', storeId), limit(100)); // Add limit to prevent massive reads
         const snapshot = await getDocs(q);
@@ -286,7 +286,7 @@ export const fetchAllUsers = async (
         allUsersCache.set(storeId, { at: Date.now(), users });
         return users.slice();
     } catch (error) {
-        handleFirestoreError(error, OperationType.LIST, 'users');
+        handleFirestoreError(error, OperationType.LIST, 'stickerUsers');
         return [];
     }
 };
@@ -301,7 +301,7 @@ export const updateUserRole = async (userId: string, role: 'admin' | 'staff') =>
         await stickerAdminUpdateUser({ action: 'setRole', targetUid: userId, role });
         invalidateAllUsersCache();
     } catch (error) {
-        handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+        handleFirestoreError(error, OperationType.UPDATE, `stickerUsers/${userId}`);
     }
 };
 
@@ -311,7 +311,7 @@ export const deleteUserDoc = async (userId: string) => {
         await stickerAdminUpdateUser({ action: 'delete', targetUid: userId });
         invalidateAllUsersCache();
     } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, `users/${userId}`);
+        handleFirestoreError(error, OperationType.DELETE, `stickerUsers/${userId}`);
     }
 };
 
@@ -321,7 +321,7 @@ export const clearAllUsers = async (storeId: string) => {
         await stickerAdminUpdateUser({ action: 'clearStore', storeId });
         invalidateAllUsersCache();
     } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, 'users');
+        handleFirestoreError(error, OperationType.DELETE, 'stickerUsers');
     }
 };
 
@@ -654,7 +654,7 @@ const USER_STATE_MAX_PRODUCTS = 3000;
 export const saveUserState = async (userId: string, state: { displayedProducts: Product[], inventoryFilters: InventoryFilters }) => {
   if (!userId) return;
 
-  const stateRef = doc(db, 'users', userId, 'state', 'current');
+  const stateRef = doc(db, 'stickerUsers', userId, 'state', 'current');
   const tooLarge = state.displayedProducts.length > USER_STATE_MAX_PRODUCTS;
   try {
     await setDoc(stateRef, {
@@ -674,7 +674,7 @@ export const saveUserState = async (userId: string, state: { displayedProducts: 
 export const fetchUserState = async (userId: string): Promise<{ displayedProducts: Product[], inventoryFilters: InventoryFilters, updatedAt: number } | null> => {
   if (!userId) return null;
   
-  const stateRef = doc(db, 'users', userId, 'state', 'current');
+  const stateRef = doc(db, 'stickerUsers', userId, 'state', 'current');
   try {
     const docSnap = await getDoc(stateRef);
     

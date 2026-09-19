@@ -17,7 +17,7 @@ import {
     resetTileLink,
     TILE_CUSTOM_LINKS_KEY,
 } from '../services/tileLinkService';
-import { shortenName, shortenSupermarketName, getDefaultGroupLabel } from '../utils/dashboardHelpers';
+import { shortenName, shortenSupermarketName, getDefaultGroupLabel, detectSupermarketNameFromReport, isSupermarketMatch } from '../utils/dashboardHelpers';
 import { cn } from '../../../components/shared/ui/utils';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
@@ -1070,8 +1070,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     } | null>(null);
 
     const handleOpenLinkConfig = (tileId: string, tileName: string, groupName: string) => {
-        const currentUrl = getTileLink(tileId, customLinks);
-        const defaultUrl = DEFAULT_TILE_LINKS[tileId] || 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated';
+        const currentUrl = getTileLink(tileId, customLinks, supermarketName);
+        const defaultUrl = getTileLink(tileId, null, supermarketName);
         setModalConfig({
             isOpen: true,
             tileId,
@@ -1145,6 +1145,22 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             setErrors(p => ({...p, [key]: null}));
             tsSetter(newTs);
             addUpdate(id, updateMsg, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+
+            // Cảnh báo thông minh nếu dữ liệu dán vào có chứa tên siêu thị khác với tab đang chọn
+            if (supermarketName) {
+                const detectedStore = detectSupermarketNameFromReport(val);
+                if (detectedStore && !isSupermarketMatch(detectedStore, supermarketName)) {
+                    toast((t) => (
+                        <div className="flex flex-col gap-1">
+                            <span className="font-bold text-amber-600 dark:text-amber-400">⚠️ Chú ý tên siêu thị!</span>
+                            <span className="text-xs">
+                                Dữ liệu vừa dán có vẻ của siêu thị <b>{shortenSupermarketName(detectedStore)}</b>, trong khi bạn đang chọn tab <b>{shortenSupermarketName(supermarketName)}</b>.
+                            </span>
+                        </div>
+                    ), { duration: 7000, id: `warn-sm-mismatch-${key}` });
+                }
+            }
+
             return true;
         } else {
             setErrors(p => ({...p, [key]: 'Dữ liệu sai định dạng.'}));
@@ -1207,7 +1223,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
-                                    linkUrl={getTileLink('industry-realtime', customLinks)}
+                                    linkUrl={getTileLink('industry-realtime', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-realtime', 'Realtime', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
                                         return handleUpdate(
@@ -1229,7 +1245,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     }} />
                                 <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData}
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="emerald"
-                                    linkUrl={getTileLink('industry-luyke', customLinks)}
+                                    linkUrl={getTileLink('industry-luyke', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-luyke', 'Luỹ kế', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
                                         return handleUpdate(
@@ -1262,7 +1278,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán dữ liệu Realtime..." error={errors.employeeRealtime}
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
-                                    linkUrl={getTileLink('nhanvien-realtime', customLinks)}
+                                    linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime', 'REALTIME', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         return handleUpdate(
@@ -1289,7 +1305,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
                                 <StatusTile title="LUỸ KẾ" lastUpdated={danhSachTs} value={danhSachData}
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="emerald"
-                                    linkUrl={getTileLink('nhanvien-doanhthu', customLinks)}
+                                    linkUrl={getTileLink('nhanvien-doanhthu', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
                                         return handleUpdate(
@@ -1325,7 +1341,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="THI ĐUA" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua..." error={errors.thiDua} 
                                     icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
-                                    linkUrl={getTileLink('nhanvien-thidua', customLinks)}
+                                    linkUrl={getTileLink('nhanvien-thidua', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 
                                         return handleUpdate(
@@ -1353,7 +1369,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
                                 <StatusTile title="TRẢ CHẬM" lastUpdated={traGopTs} value={traGopData} placeholder="Dán dữ liệu Trả chậm..."
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
-                                    linkUrl={getTileLink('nhanvien-tragop', customLinks)}
+                                    linkUrl={getTileLink('nhanvien-tragop', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'TRẢ CHẬM', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 
                                         return handleUpdate(

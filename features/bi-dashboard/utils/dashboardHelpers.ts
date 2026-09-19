@@ -290,29 +290,7 @@ export const parseSummaryData = (text: string, fallbackStoreName?: string) => {
             }
 
             // Tự động nhận diện tên siêu thị thực tế từ toàn bộ các dòng trong báo cáo (thay vì gán cứng HÙNG VƯƠNG)
-            let detectedStoreName = '';
-            for (let j = 0; j < lines.length; j++) {
-                const l = lines[j].trim();
-                if (!l || l === 'Tổng' || l === 'TỔNG' || l.startsWith('BP ') || isEmployeeName(l) || isParentIndustry(l)) continue;
-                if (l.includes(' liên hệ ') || l.includes('Đơn vị:') || l.includes('http') || l.includes('Dashboards')) continue;
-                if (l.toLowerCase().includes('doanh thu hợp nhất') || l.toLowerCase().includes('quỹ thời gian') || l.toLowerCase().includes('tiến độ')) continue;
-
-                // Khớp mẫu: "910 - ĐML_STR_STR - 99 Hùng Vương", "3717 - ĐML_STR_STR...", "1234 - ĐM Cần Thơ", "ĐML_STR_..."
-                if (/^\d{3,5}\s*-\s*/.test(l) && (l.includes(' - ') || l.startsWith('ĐM') || l.startsWith('TGD') || l.includes('STR') || l.includes('Kho') || l.length > 5)) {
-                    detectedStoreName = l;
-                    break;
-                }
-                if (l.startsWith('ĐML_') || l.startsWith('ĐMX ') || l.startsWith('TGDĐ ') || (l.startsWith('ĐM ') && l.includes(' - '))) {
-                    detectedStoreName = l;
-                    break;
-                }
-                const smMatch = l.match(/^(?:Siêu thị|Kho|Store)\s*:\s*(.+)$/i);
-                if (smMatch && smMatch[1].trim()) {
-                    detectedStoreName = smMatch[1].trim();
-                    break;
-                }
-            }
-
+            const detectedStoreName = detectSupermarketNameFromReport(text) || '';
             const finalStoreName = detectedStoreName || (fallbackStoreName ? fallbackStoreName.trim() : 'Siêu thị');
 
             const storeRow = [
@@ -533,11 +511,10 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
             continue;
         }
 
-        // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương")
+        // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương", "DMX Cần Thơ", "1234 - ĐM...")
         const isEntity = line.toUpperCase() === 'TỔNG' || 
-                         line.startsWith('ĐM') || 
-                         line.startsWith('TGD') || 
-                         /^\d+\s*-\s*(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(line) ||
+                         /^(ĐM|DM|TGD|TGDD|DMX|BHX|KHO|CH|SIÊU THỊ)/i.test(line) ||
+                         /^\d+\s*-\s*(ĐM|DM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(line) ||
                          (!isEmployeeName(line) && line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%') && !/^\d{3,8}\s*-/.test(line));
 
         if (isEntity) {
@@ -1044,6 +1021,33 @@ export function isParentIndustry(name: string): boolean {
     }
     return false;
 }
+
+/**
+ * Tự động nhận diện tên siêu thị thực tế từ nội dung báo cáo copy (hỗ trợ mọi định dạng siêu thị MWG)
+ */
+export const detectSupermarketNameFromReport = (text: string): string | null => {
+    if (!text) return null;
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for (let j = 0; j < lines.length; j++) {
+        const l = lines[j];
+        if (!l || l === 'Tổng' || l === 'TỔNG' || l.startsWith('BP ') || isEmployeeName(l) || isParentIndustry(l)) continue;
+        if (l.includes(' liên hệ ') || l.includes('Đơn vị:') || l.includes('http') || l.includes('Dashboards')) continue;
+        if (l.toLowerCase().includes('doanh thu hợp nhất') || l.toLowerCase().includes('quỹ thời gian') || l.toLowerCase().includes('tiến độ')) continue;
+
+        // Khớp mẫu: "910 - ĐML_STR_STR - 99 Hùng Vương", "3717 - ĐML_STR_STR...", "1234 - ĐM Cần Thơ", "ĐML_STR_..."
+        if (/^\d{3,5}\s*-\s*/.test(l) && (l.includes(' - ') || /^(ĐM|DM|TGD|TGDD|DMX|BHX|KHO|CH|SIÊU THỊ)/i.test(l.replace(/^\d{3,5}\s*-\s*/, '')) || l.includes('STR') || l.includes('Kho') || l.length > 5)) {
+            return l;
+        }
+        if (/^(ĐML_|DML_|ĐMX\b|DMX\b|TGDĐ\b|TGDD\b|BHX\b)/i.test(l) || (/^(ĐM|DM)\s/i.test(l) && l.includes(' - '))) {
+            return l;
+        }
+        const smMatch = l.match(/^(?:Siêu thị|Kho|Store)\s*:\s*(.+)$/i);
+        if (smMatch && smMatch[1].trim()) {
+            return smMatch[1].trim();
+        }
+    }
+    return null;
+};
 
 
 export function parseNewPortalIndustryData(text: string) {

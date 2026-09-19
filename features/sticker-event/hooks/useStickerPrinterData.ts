@@ -20,7 +20,7 @@ const DEFAULT_DRAW_TICKET_TEMPLATE: TicketDrawData = {
     id: '1',
     title: 'PHIẾU RÚT THĂM TRÚNG THƯỞNG 19 & 26/9',
     code: '1',
-    footer: 'HÙNG VƯƠNG',
+    footer: 'ĐIỆN MÁY XANH',
     contentTop: '<div style="font-size: 4.5cqw; line-height: 1.1;"><b>RÚT THĂM 19H</b></div><div style="font-size: 3.5cqw; line-height: 1.1;"><b>MIỄN PHÍ 370 SUẤT:</b></div>',
     contentTopRight: '<div style="font-size: 8cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
     contentBottom: '<div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 150 Bộ 3 hộp</b> <span style="font-weight: normal;">(75 Suất/ngày)</span></div><div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 8 Tủ sấy quần áo</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div><div style="font-size: 2.9cqw; line-height: 1.4;"><b>- 8 Nồi cơm</b> <span style="font-weight: normal;">(4 Suất/ngày)</span></div>',

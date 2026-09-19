@@ -524,11 +524,11 @@ describe('Hạn mức Firestore — danh sách người dùng (rà soát sâu 20
         invalidateAllUsersCache();
         // 40 người dùng cùng kho — UserManagementModal gọi query limit(100) mỗi lần mở.
         for (let i = 0; i < 40; i++) {
-            store.set(`users/u${i}`, { uid: `u${i}`, username: `nv${i}`, storeId: STORE_ID, role: 'staff' });
+            store.set(`stickerUsers/u${i}`, { uid: `u${i}`, username: `nv${i}`, storeId: STORE_ID, role: 'staff' });
         }
         // Người của kho khác — phải bị `where('storeId','==',…)` loại ở server.
         for (let i = 0; i < 10; i++) {
-            store.set(`users/other${i}`, { uid: `other${i}`, username: `x${i}`, storeId: 'KHOKHAC', role: 'staff' });
+            store.set(`stickerUsers/other${i}`, { uid: `other${i}`, username: `x${i}`, storeId: 'KHOKHAC', role: 'staff' });
         }
     });
 

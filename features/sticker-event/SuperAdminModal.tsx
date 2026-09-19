@@ -26,7 +26,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     setLoading(true);
     setError(null);
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, 'stickerUsers');
       let q: Query<DocumentData>;
       
       const trimmed = term.trim();

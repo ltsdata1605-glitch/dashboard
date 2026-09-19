@@ -29,19 +29,21 @@ export const ZERO_REQUIREMENTS: DailyRequirements = {
     '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0
 };
 
-// Cập nhật các mẫu ca mặc định theo yêu cầu mới
-export const DEFAULT_PATTERNS_HUNG_VUONG_910_99 = {
+// Cập nhật các mẫu ca mặc định tổng quát (không gán cứng tên nhân viên của một siêu thị cụ thể)
+export const DEFAULT_DEPARTMENT_PATTERNS = {
   'BP All In One': [
     "123", "456", "2345", "123", "456", "23", "45", "123", "456", "2345", 
     "123", "456", "2345", "123", "456"
   ],
   'BP Quản lý/Trưởng Ca': [
-    "A.Hiệp 123", "12345", "23456", "T.Thạnh 123", "123", "456", "12356"
+    "123", "12345", "23456", "123", "123", "456", "12356"
   ],
   'BP Tiếp Đón Khách Hàng': [
     "123", "456", "245"
   ]
 };
+
+export const DEFAULT_PATTERNS_HUNG_VUONG_910_99 = DEFAULT_DEPARTMENT_PATTERNS;
 
 
 export const HOURS_CONFIG: { [key: string]: number } = { '1': 1, '2': 3, '3': 3, '4': 3, '5': 3, '6': 0.5 };

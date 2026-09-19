@@ -95,7 +95,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
           type="text"
           error={showError ? 'Vui lòng nhập tên siêu thị!' : undefined}
           className="font-bold"
-          placeholder="VD: ĐML_STR_STR - 99 Hùng Vương"
+          placeholder="VD: 1234 - ĐM Cần Thơ hoặc ĐML_STR..."
           value={supermarketName}
           onChange={(e) => {
             setSupermarketName(e.target.value);

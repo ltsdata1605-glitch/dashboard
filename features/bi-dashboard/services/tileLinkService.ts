@@ -11,7 +11,19 @@ import * as db from '../utils/db';
 export const TILE_CUSTOM_LINKS_KEY = 'tile-custom-links';
 
 /**
- * Danh sách link mặc định cho tất cả các ô theo yêu cầu
+ * Trích xuất mã kho/siêu thị từ tên siêu thị (VD: "910 - ĐML_STR_STR..." -> "910", "3717 - ĐM..." -> "3717")
+ */
+export function extractStoreCode(supermarketName?: string | null): string | null {
+    if (!supermarketName) return null;
+    const trimmed = supermarketName.trim();
+    if (/^\d{3,5}$/.test(trimmed)) return trimmed;
+    const match = trimmed.match(/^(\d{3,5})\s*-\s*/);
+    if (match) return match[1];
+    return null;
+}
+
+/**
+ * Danh sách link mặc định sạch (hoàn toàn không hardcode mã kho hay siêu thị cố định nào)
  */
 export const DEFAULT_TILE_LINKS: Record<string, string> = {
     // Báo cáo Tổng hợp (Doanh thu hợp nhất)
@@ -23,15 +35,15 @@ export const DEFAULT_TILE_LINKS: Record<string, string> = {
     'competition-luyke': 'https://baocao.dienmayxanh.com/dashboard/thi-dua',
 
     // Siêu thị ngành hàng
-    'industry-realtime': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910&timetype=1',
-    'industry-luyke': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910',
+    'industry-realtime': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?timetype=1',
+    'industry-luyke': 'https://baocao.dienmayxanh.com/dashboard/thi-dua',
 
     // DOANH THU NHÂN VIÊN
     'nhanvien-realtime': 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?timetype=1',
     'nhanvien-doanhthu': 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated',
 
     // THI ĐUA & TRẢ CHẬM
-    'nhanvien-thidua': 'https://baocao.dienmayxanh.com/dashboard/thi-dua?sieuthi=910&st=9567',
+    'nhanvien-thidua': 'https://baocao.dienmayxanh.com/dashboard/thi-dua',
     'nhanvien-tragop': 'https://baocao.dienmayxanh.com/dashboard/tra-cham',
 };
 
@@ -52,13 +64,32 @@ export const TILE_LABELS: Record<string, { group: string; name: string }> = {
 };
 
 /**
- * Lấy link hiện tại (custom nếu có, ngược lại fallback về default)
+ * Lấy link hiện tại (custom nếu có, ngược lại fallback về default kèm tự động gắn mã kho tương ứng)
  */
-export function getTileLink(tileId: string, customLinks?: Record<string, string> | null): string {
+export function getTileLink(
+    tileId: string, 
+    customLinks?: Record<string, string> | null,
+    supermarketNameOrKho?: string | null
+): string {
     if (customLinks && customLinks[tileId]?.trim()) {
         return customLinks[tileId].trim();
     }
-    return DEFAULT_TILE_LINKS[tileId] || 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated';
+    const defaultUrl = DEFAULT_TILE_LINKS[tileId] || 'https://baocao.dienmayxanh.com/dashboard/revenue-consolidated';
+
+    // Tự động gắn tham số sieuthi=${storeCode} linh hoạt cho bất kỳ siêu thị nào
+    const storeCode = extractStoreCode(supermarketNameOrKho);
+    if (storeCode && (tileId === 'industry-realtime' || tileId === 'industry-luyke' || tileId === 'nhanvien-thidua')) {
+        try {
+            const url = new URL(defaultUrl);
+            url.searchParams.set('sieuthi', storeCode);
+            return url.toString();
+        } catch {
+            const separator = defaultUrl.includes('?') ? '&' : '?';
+            return `${defaultUrl}${separator}sieuthi=${storeCode}`;
+        }
+    }
+
+    return defaultUrl;
 }
 
 /**

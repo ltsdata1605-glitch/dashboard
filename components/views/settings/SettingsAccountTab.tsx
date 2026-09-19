@@ -28,7 +28,7 @@ export const SettingsAccountTab: React.FC = () => {
         const codes = value.split(',').map(c => c.trim()).filter(c => c);
         if (codes.length === 0) return "Mã Kho không được bỏ trống";
         for (const code of codes) {
-            if (!/^\d{3,6}$/.test(code)) return `Mã Kho phải là số (ví dụ: 910, 58614). Hiện tại: "${code}" không hợp lệ`;
+            if (!/^\d{3,6}$/.test(code)) return `Mã Kho phải là số (ví dụ: 1032, 3717, 910, 58614). Hiện tại: "${code}" không hợp lệ`;
         }
         return '';
     };
@@ -179,7 +179,7 @@ export const SettingsAccountTab: React.FC = () => {
                                             handleSaveProfile();
                                         }
                                     }}
-                                    placeholder="Ví dụ: 910, 58614, 58615"
+                                    placeholder="Ví dụ: 1032, 3717, 910, 58614"
                                     className={`text-sm bg-slate-50 dark:bg-slate-900 border p-3 outline-none transition-all uppercase rounded-md text-slate-700 dark:text-slate-300 font-mono ${
                                         deptError
                                             ? 'border-rose-300 dark:border-rose-700 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
@@ -196,7 +196,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         type="text"
                                         value={stagedEmployee}
                                         onChange={e => setStagedEmployee(e.target.value)}
-                                        placeholder="Ví dụ: 910 - Nguyễn Đăng Khoa"
+                                        placeholder="Ví dụ: 276650 - Nguyễn Văn A hoặc 1032 - Nguyễn Văn A"
                                         className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-700 dark:text-slate-300 transition-all rounded-md"
                                     />
                                 </div>

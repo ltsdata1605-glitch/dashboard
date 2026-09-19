@@ -52,7 +52,7 @@ export const stickerRegister = onCall(async (request) => withQuotaMessage(async 
     throw new HttpsError('invalid-argument', 'Vui lòng nhập mã kho siêu thị.');
   }
 
-  const usersRef = stickerDb.collection('users');
+  const usersRef = stickerDb.collection('stickerUsers');
   const adminSnap = await usersRef
     .where('storeId', '==', cleanStoreId)
     .where('role', '==', 'admin')
@@ -161,6 +161,20 @@ const withQuotaMessage = async <T>(fn: () => Promise<T>): Promise<T> => {
     return await fn();
   } catch (err) {
     if (err instanceof HttpsError) throw err;
+
+    // LUÔN ghi lỗi gốc trước khi dịch. Bài học 2026-09-19: bản trước nuốt mất lỗi gốc, nên khi
+    // stickerStaffAuth trả "hết hạn mức trong ngày" mà Firestore vẫn đọc được bình thường (lỗi
+    // đảo chiều trong 25 giây → thực ra là giới hạn TỐC ĐỘ ở một bước khác), không có cách nào
+    // biết bước nào ném và Google nói gì. Dịch lỗi cho người dùng là đúng, nhưng log phải giữ
+    // nguyên văn — nếu không thì bản dịch sai sẽ dẫn cả người chẩn đoán đi lạc.
+    const e = err as { code?: unknown; message?: unknown; details?: unknown; errorInfo?: unknown };
+    console.warn('[withQuotaMessage] lỗi gốc trước khi dịch:', JSON.stringify({
+      code: e?.code,
+      message: typeof e?.message === 'string' ? e.message.slice(0, 500) : e?.message,
+      details: e?.details,
+      errorInfo: e?.errorInfo,
+    }));
+
     if (isQuotaError(err)) throw new HttpsError('resource-exhausted', QUOTA_MESSAGE);
     if (isSignPermissionError(err)) throw new HttpsError('unavailable', SIGN_PERMISSION_MESSAGE);
     throw err;
@@ -174,7 +188,7 @@ export const stickerResolveSession = onCall(async (request) => withQuotaMessage(
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
 
-  const snap = await stickerDb.collection('users').doc(uid).get();
+  const snap = await stickerDb.collection('stickerUsers').doc(uid).get();
   if (!snap.exists) {
     throw new HttpsError('not-found', 'Chưa có hồ sơ người dùng. Vui lòng đăng ký trước.');
   }
@@ -194,7 +208,7 @@ export const stickerResolveSession = onCall(async (request) => withQuotaMessage(
   // không qua Rules) và trả về cùng lúc đăng nhập, client không cần tự query nữa.
   let storeHasAdmin = true;
   if (role === 'staff' && storeId) {
-    const adminSnap = await stickerDb.collection('users')
+    const adminSnap = await stickerDb.collection('stickerUsers')
       .where('storeId', '==', storeId)
       .where('role', '==', 'admin')
       .limit(1)
@@ -227,7 +241,7 @@ export const stickerAdminUpdateUser = onCall(async (request) => withQuotaMessage
   }
 
   const { action, targetUid, role, storeId } = (request.data ?? {}) as StickerAdminUpdateInput;
-  const usersRef = stickerDb.collection('users');
+  const usersRef = stickerDb.collection('stickerUsers');
 
   if (action === 'clearStore') {
     const targetStoreId = (storeId ?? '').trim().toUpperCase();
@@ -305,7 +319,7 @@ export const stickerStaffAuth = onCall(async (request) => withQuotaMessage(async
   }
 
   const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@example.com`;
-  const usersRef = stickerDb.collection('users');
+  const usersRef = stickerDb.collection('stickerUsers');
 
   let userRecord;
   try {

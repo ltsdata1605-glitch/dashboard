@@ -69,15 +69,29 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;
     const [customSupermarkets] = useIndexedDBState<string[]>('updater-custom-supermarkets', []);
+    const [supermarketMap, setSupermarketMap] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        fetchSupermarketMap(user?.uid).then(setSupermarketMap).catch(() => {});
+        const handleMapChange = (e: CustomEvent<{ userId: string; map: Record<string, string> }>) => {
+            if (!user?.uid || e.detail?.userId === user?.uid) {
+                setSupermarketMap(e.detail?.map || {});
+            }
+        };
+        window.addEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+        return () => window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
+    }, [user?.uid]);
+
     const supermarkets = useMemo(() => {
         return extractAllSupermarketList({
             summaryLuyKe,
             summaryRealtime,
             competitionLuyKe: localCompetitionLuyKe,
             competitionRealtime,
-            customSupermarkets
+            customSupermarkets,
+            supermarketMap
         });
-    }, [summaryLuyKe, summaryRealtime, localCompetitionLuyKe, competitionRealtime, customSupermarkets]);
+    }, [summaryLuyKe, summaryRealtime, localCompetitionLuyKe, competitionRealtime, customSupermarkets, supermarketMap]);
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
     const [competitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);
@@ -576,10 +590,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
         }
 
         const headers = sourceData.table.headers || [];
-        const safeActive = activeSupermarket ? shortenSupermarketName(activeSupermarket).trim().toLowerCase() : '';
         const row = sourceData.table.rows.find(r => 
-            r[0] === activeSupermarket || 
-            (safeActive && shortenSupermarketName(r[0]).trim().toLowerCase() === safeActive)
+            activeSupermarket === 'Tổng'
+                ? (r[0] === 'Tổng' || r[0]?.trim().startsWith('Tổng'))
+                : isSupermarketMatch(r[0], activeSupermarket)
         );
         if (row) {
             const mapping: Record<string, string> = isRealtime 
@@ -719,9 +733,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
         let deltaDtlk = 0;
         let deltaDtqd = 0;
 
-        const safeActive = activeSupermarket ? shortenSupermarketName(activeSupermarket).trim().toLowerCase() : '';
         const updatedRows = summaryRealtimeParsed.table.rows.map(row => {
-            const isTargetStore = row[0] === activeSupermarket || (safeActive && shortenSupermarketName(row[0]).trim().toLowerCase() === safeActive);
+            const isTargetStore = activeSupermarket === 'Tổng'
+                ? (row[0] === 'Tổng' || row[0]?.trim().startsWith('Tổng'))
+                : isSupermarketMatch(row[0], activeSupermarket);
             if (isTargetStore) {
                 const oldDtlk = parseNumber(row[dtlkIdx]);
                 const oldDtqd = parseNumber(row[dtqdIdx]);
