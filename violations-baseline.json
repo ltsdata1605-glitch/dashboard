@@ -1,1 +1,67 @@
-{}
+{
+  "components/common/FilterProcessingOverlay.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 2,
+    "missingMobileToolbar": 0
+  },
+  "components/common/ProcessingLoader.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 2,
+    "missingMobileToolbar": 0
+  },
+  "components/employees/EmployeeAnalysisContent.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 1,
+    "missingMobileToolbar": 0
+  },
+  "components/employees/industry/useIndustryAnalysisLogic.ts": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 2,
+    "missingMobileToolbar": 0
+  },
+  "components/shared/ui/KpiCard.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 13,
+    "missingMobileToolbar": 0
+  },
+  "features/bi-dashboard/components/SupermarketConfig.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 11,
+    "missingMobileToolbar": 0
+  },
+  "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 16,
+    "missingMobileToolbar": 0
+  },
+  "features/check-thuong/components/CheckThuongChannelTopGrid.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 19,
+    "missingMobileToolbar": 0
+  },
+  "features/check-thuong/components/CheckThuongSummaryCards.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 4,
+    "missingMobileToolbar": 0
+  },
+  "features/check-thuong/components/CheckThuongTopTable.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 6,
+    "missingMobileToolbar": 0
+  },
+  "features/phan-ca/components/DailyStatsTable.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 1,
+    "missingMobileToolbar": 0
+  },
+  "features/sticker-event/SavedListsModal.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 1,
+    "missingMobileToolbar": 0
+  },
+  "utils/dataUtils.ts": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 2,
+    "missingMobileToolbar": 0
+  }
+}

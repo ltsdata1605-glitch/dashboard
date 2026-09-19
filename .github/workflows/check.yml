@@ -5,7 +5,7 @@
 # 18 lỗi typecheck và 143 vi phạm màu sắc lọt vào nhánh `main` qua các commit tính năng gần đây mà
 # không ai biết. Có công cụ mà không thực thi thì bằng không.
 #
-# Bước `lint:ratchet` CHƯA được bật ở đây — xem ghi chú ở cuối file.
+# Đủ 5 bước của `npm run check` (typecheck/eslint/test/build/ratchet) + job E2E riêng.
 
 name: check
 
@@ -51,21 +51,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      # ─────────────────────────────────────────────────────────────────────────────────────────
-      # CHƯA BẬT: npm run lint:ratchet
-      #
-      # Hiện còn 12 nhóm vi phạm màu sắc (109 chỗ dùng `purple`/`teal` — 2 họ màu KHÔNG có màu
-      # semantic tương đương, nên ánh xạ chúng là một QUYẾT ĐỊNH THIẾT KẾ, không phải việc máy
-      # móc; cộng 34 chỗ `indigo` là nợ kỹ thuật đã được CLAUDE.md coi là hợp lệ).
-      #
-      # CỐ Ý không nhồi số liệu hiện tại vào `violations-baseline.json` để CI xanh: file đó đang là
-      # `{}` — tức dự án từng đạt trạng thái sạch tuyệt đối (cột mốc "npm run check XANH lần đầu",
-      # xem CLAUDE.md). Ghi nhận 143 vi phạm vào baseline là xoá bỏ thành quả đó.
-      #
-      # Bỏ 3 dòng comment dưới đây ngay sau khi dọn xong màu sắc:
-      # - name: Ratchet quy chuẩn thiết kế
-      #   run: npm run lint:ratchet
-      # ─────────────────────────────────────────────────────────────────────────────────────────
+      # Ratchet chỉ cho phép vi phạm GIẢM so với `violations-baseline.json`, không cho tăng.
+      # Bật 2026-09-19 sau khi dọn màu xong: `nonSemanticColor` (purple/teal…) = 0 toàn dự án;
+      # baseline chỉ còn ghi 80 chỗ `indigo` ở 13 file — họ màu CLAUDE.md mục 2 cho phép trong
+      # pattern ramp "6 họ × 2 tầng", nên đó là nợ ĐƯỢC THỪA NHẬN chứ không phải vi phạm đang giấu.
+      # Thêm `indigo` mới hay bất kỳ màu ngoài palette nào là đỏ ở đây.
+      - name: Ratchet quy chuẩn thiết kế
+        run: npm run lint:ratchet
 
   # ───────────────────────────────────────────────────────────────────────────────────────────
   # Test E2E (Playwright). Tách JOB RIÊNG, chạy song song với `check`, để khi đỏ thì biết ngay
