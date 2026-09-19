@@ -4869,3 +4869,45 @@ phải trả về `customToken` thay vì `UNAVAILABLE`. Không cần deploy lạ
 thành `INTERNAL` ở client → người dùng không hiểu → bấm lại → tốn tài nguyên và làm nhiễu log.
 `withQuotaMessage` giờ là chỗ tập trung dịch lớp lỗi này; lỗi hạ tầng mới thì thêm nhánh vào đó.
 Và: **đọc client trước khi đổi mã lỗi phía server** — client có thể đang dựa vào mã cũ để rẽ nhánh.
+
+## Di trú In Sticker sang database (default) — HOÀN TẤT: runbook cutover 14:00 (2026-09-19)
+
+**Bối cảnh:** chủ dự án đã commit toàn bộ CODE di trú ở `dc0c578b` (đã push). Tôi được yêu cầu giúp
+hoàn tất cho nhất quán. Lệnh `deploy` của tôi trước đó đã vô tình deploy `stickerStaffAuth` với code
+mới (khi nó còn chưa commit) → hiện production **nửa nạc nửa mỡ**:
+- `stickerStaffAuth` → `(default)` + `stickerUsers` (deploy rồi; trả `NOT_FOUND` vì chưa có dữ liệu)
+- 3 hàm kia → AI Studio + `users` (bản cũ; trả `RESOURCE_EXHAUSTED`)
+In Sticker vốn đã hỏng từ trước do AI Studio cạn hạn mức — split-brain này KHÔNG gây hại thêm cho
+người dùng trong lúc chờ, nên để nguyên tới cutover.
+
+**ĐÃ XÁC MINH (2026-09-19 sáng):**
+- Code HEAD nhất quán: client `firebaseService.ts` + 4 hàm + `firebaseAdmin.ts` đều `(default)` /
+  `stickerUsers`. Chỗ `collection('users')` còn sót ở `stickerEvent.ts:205` chỉ là **comment**.
+- Phần sửa signBlob/logging của tôi còn nguyên trong `dc0c578b` (bị cuốn vào lúc commit-all).
+- `firestore.rules` +32 dòng là **THÊM MỚI** (block `stickerUsers`, `stores/*`), không sửa rule cũ;
+  helper `isSignedIn`/`isSelf` có sẵn; không khu vực nào ngoài sticker dùng `stores` trên `(default)`
+  → rủi ro cho root/BI/Phân Ca **thấp**.
+- Script `functions/scripts/migrate-sticker-to-default.cjs`: copy `users→stickerUsers` (kèm subcol
+  `state`) và `stores→stores` (đệ quy subcol). `set` = ghi đè, **idempotent**, chạy lại an toàn.
+- **ĐIỂM CHẶN:** `--dry-run` xác nhận AI Studio vẫn `RESOURCE_EXHAUSTED` — không đọc được nguồn.
+  Reset lúc **14:00 VN (00:00 Pacific)**. Di trú dữ liệu BẮT BUỘC chờ tới đó.
+
+**THỨ TỰ CUTOVER (chạy lúc/ sau 14:00, theo đúng thứ tự — dữ liệu TRƯỚC, deploy SAU):**
+1. Kiểm nguồn đọc lại được: `node functions/scripts/migrate-sticker-to-default.cjs --dry-run`
+   → phải in số tài khoản/kho, không còn RESOURCE_EXHAUSTED.
+2. (An toàn) Xác nhận `(default)/stickerUsers` đang TRỐNG trước khi ghi (không thì `set` ghi đè dữ
+   liệu client có thể đã tạo). Nếu trống → tiếp.
+3. Di trú thật: `node functions/scripts/migrate-sticker-to-default.cjs --execute`.
+4. Deploy rules: `npm run deploy:rules` (deploy CẢ 2 file; `(default)` nhận rule sticker mới).
+5. Deploy 3 hàm còn lại cho nhất quán:
+   `./node_modules/.bin/firebase deploy --only functions:stickerResolveSession,functions:stickerRegister,functions:stickerAdminUpdateUser --project dashboa-7e20b`
+6. Kiểm chứng đầu-cuối: `curl` `stickerStaffAuth` (login `nv_test_claude_qa`) → phải có `customToken`
+   HOẶC `NOT_FOUND` chuyển thành đăng nhập được; `stickerResolveSession` với token → trả role/store.
+   Đăng nhập thử 1 admin + 1 staff thật.
+
+**CÒN LẠI SAU CUTOVER (không gấp, cần chủ dự án quyết vì có bước phá huỷ):**
+- IAM: cấp `roles/iam.serviceAccountTokenCreator` cho SA Compute để `createCustomToken` chạy (hiện
+  đang nhờ đường dự phòng mật khẩu — xem mục stickerStaffAuth signBlob). Không phụ thuộc di trú.
+- `firebase.json` vẫn khai database AI Studio + `firestore.stickerevent.rules`. Sau khi xác nhận
+  `(default)` chạy ổn vài ngày, có thể gỡ khỏi `firebase.json` và cuối cùng **xoá database AI Studio**
+  (phá huỷ, không hoàn tác — chỉ làm khi đã chắc chắn, và báo trước).
