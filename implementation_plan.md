@@ -4977,3 +4977,44 @@ với dữ liệu trống.
   14:00 (khi AI Studio còn hạn mức đọc). Script đã sửa đủ (listDocuments + batch theo size + resume).
 - Database AI Studio giờ không còn ai dùng (4 hàm + client đều sang (default)). Sau khi chắc chắn ổn,
   có thể gỡ khỏi firebase.json + xoá (phá huỷ — hỏi trước).
+
+---
+
+# [Click+ / userscript] Tự bật "Trả góp" + "DT quy đổi" trước khi mở cấp & copy (2026-09-19)
+
+## Yêu cầu
+Trên trang BI mới (baocao.dienmayxanh.com, báo cáo "Doanh thu hợp nhất"), khi bấm nút nổi
+"⚡ Click+", script phải TỰ bật 2 nút nếu đang tắt, rồi mới mở dấu cộng + copy:
+- Ô check **"Trả góp"** (nhóm cột tuỳ chọn cạnh Tỉ trọng/Target/Tăng trưởng/Dự kiến/Off-Onl).
+- Nút **"DT quy đổi"** (cặp segment "DT thực | DT quy đổi").
+
+HTML thật user gửi (trạng thái CHƯA bật):
+- Trả góp: `<button class="… border-slate-200 bg-white text-slate-600 …"><span class="… border-slate-300"></span>Trả góp</button>`
+  → span đầu RỖNG + viền xám `border-slate-200`.
+- DT quy đổi: `<button class="… bg-white text-gray-600 …">DT quy đổi</button>` → nền trắng `bg-white`.
+
+## Thiết kế
+- Nhận diện nút theo NHÃN (text node trực tiếp của `<button>`, bỏ qua span icon) chứ không theo
+  class — class Tailwind đổi thường xuyên, nhãn thì không.
+- Chỉ click khi CHẮC CHẮN đang tắt (khớp đủ mọi dấu hiệu: span rỗng + viền xám; nền trắng). Nghi
+  ngờ thì bỏ qua — click nhầm nút đang bật sẽ TẮT nó, tệ hơn là không tự bật.
+- Sau mỗi click: chờ vòng xoay (dùng lại `acpWaitForSpinnersToClear`) + poll tới khi nút đổi
+  trạng thái (tối đa 1.5s). Không đổi được → ghi nhận "không bật được" và báo trong hộp trạng thái,
+  KHÔNG chặn việc mở cấp/copy.
+- Quét ứng viên dấu cộng SAU khi bật toggle (bảng có thể render lại).
+- Hộp trạng thái: thêm dòng "Đã tự bật: …" / "Không bật được: …"; `acpSanitizeText` thêm mẫu lọc
+  tương ứng để không lọt vào clipboard.
+
+## File thay đổi
+- `public/scripts/mwg-auto-thu-thap-diem-thuong.user.js` — bản 4.4: thêm `acpEnsureTogglesOn()`
+  + 4 hàm nhận diện; gọi ở đầu `acpRunCycle`; changelog.
+- `features/bi-dashboard/components/AutoClickGuideModal.tsx` — bookmarklet Auto Click+ đồng bộ
+  cùng logic (lịch sử bản 4.2/4.3 đều giữ 2 bản đồng bộ); thêm 1 câu mô tả trong hướng dẫn.
+- `tests/e2e/click-plus-auto-toggle.spec.ts` — fixture HTML tái tạo đúng 2 nút theo HTML user
+  gửi, route giả `https://baocao.dienmayxanh.com/…` để script rẽ đúng nhánh BI, nạp userscript
+  với shim GM_*; kiểm: (1) đang tắt → được bật; (2) đang bật → KHÔNG bị click lại (không tắt nhầm).
+
+## Rủi ro
+- Trạng thái ĐÃ BẬT chưa có HTML thật (user chỉ gửi trạng thái tắt). Giả định: span có dấu ✓ /
+  viền đổi màu; segment đổi nền. Nếu site dùng cách khác mà VẪN giữ nguyên đủ dấu hiệu "tắt" thì
+  script có thể click nhầm → user cần kiểm 1 lần trên trang thật.

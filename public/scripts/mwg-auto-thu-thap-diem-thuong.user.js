@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.3
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật)
+// @version      4.4
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật; tự bật "Trả góp" + "DT quy đổi" trên baocao.dienmayxanh.com trước khi mở)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -31,6 +31,19 @@
  *   plain-text khi Ctrl+C cả bảng, nên ra y hệt lúc copy tay.
  * - Copy vào clipboard: không tự gọi ngay sau vòng lặp fetch dài (dễ bị trình duyệt
  *   âm thầm chặn vì "user gesture" gốc đã hết hạn) — luôn cần 1 cú click Copy riêng.
+ *
+ * BẢN 4.4 — TỰ BẬT "TRẢ GÓP" + "DT QUY ĐỔI" TRƯỚC KHI MỞ CẤP & COPY (trang BI mới):
+ * - Yêu cầu user (2026-09-19): báo cáo "Doanh thu hợp nhất" trên baocao.dienmayxanh.com có ô check
+ *   "Trả góp" và cặp nút "DT thực | DT quy đổi" quyết định cột nào có trong bảng. Dashboard YCX
+ *   cần đủ cả 2 → mỗi lần bấm Click+, script tự bật 2 nút đó nếu đang tắt, RỒI mới quét dấu cộng.
+ * - Nhận diện theo NHÃN nút (text node trực tiếp của <button>, bỏ qua span icon), không theo class
+ *   Tailwind (đổi thường xuyên). Chỉ click khi CHẮC CHẮN đang tắt theo đúng HTML thật user gửi:
+ *   "Trả góp" tắt = span đầu rỗng + viền xám border-slate-200; "DT quy đổi" tắt = nền trắng bg-white.
+ *   Nghi ngờ thì bỏ qua — click nhầm nút đang bật sẽ TẮT nó đi, tệ hơn là không tự bật.
+ * - Sau mỗi click: chờ vòng xoay + poll tới khi nút đổi trạng thái (tối đa 1.5s). Không đổi được
+ *   thì báo "Không bật được" trong hộp trạng thái nhưng KHÔNG chặn việc mở cấp/copy.
+ * - Quét ứng viên dấu cộng SAU khi bật toggle (bảng React có thể render lại toàn bộ dòng).
+ * - Đồng bộ cùng logic sang Bookmarklet Auto Click+ trên Dashboard YCX.
  *
  * BẢN 4.3 — THANH LỌC 100% VĂN BẢN CLIPBOARD, LOẠI BỎ RÁC STATUS BOX & NÚT NỔI:
  * - Khắc phục triệt để lỗi dính chuỗi '⚡ Đang mở cấp hiện tại... Đã mở: 0 · Còn lại: 27 ⏹ Dừng lại' vào clipboard.
@@ -1243,6 +1256,8 @@
       /^✅\s*Đã mở/i,
       /^⚠️\s*Không có dữ liệu/i,
       /^❌\s*(Thất bại|Lỗi)/i,
+      /^🔘\s*Đã tự bật/i,
+      /^⚠️\s*Không bật được/i,
     ];
     return rawText
       .split('\n')
@@ -1330,6 +1345,100 @@
     return acpSanitizeText(text);
   }
 
+  // ====== BẢN 4.4 — TỰ BẬT "TRẢ GÓP" + "DT QUY ĐỔI" TRƯỚC KHI MỞ CẤP ======
+  // Trang BI mới (baocao.dienmayxanh.com) có 2 nút quyết định cột nào có trong bảng: ô check
+  // "Trả góp" và nút "DT quy đổi" (cặp segment "DT thực | DT quy đổi"). Dashboard YCX cần đủ
+  // cả 2 → Click+ tự bật nếu đang tắt, rồi mới quét dấu cộng. Nhận diện theo NHÃN nút (không
+  // theo class Tailwind — đổi thường xuyên). Trạng thái TẮT theo đúng HTML thật user gửi:
+  //   Trả góp   : <button class="… border-slate-200 bg-white …"><span class="… border-slate-300"></span>Trả góp</button>
+  //               → span đầu RỖNG (bật thì có dấu ✓) + viền xám border-slate-200.
+  //   DT quy đổi: <button class="… bg-white text-gray-600 …">DT quy đổi</button> → nền trắng.
+  // Nguyên tắc: chỉ click khi CHẮC CHẮN đang tắt (khớp đủ mọi dấu hiệu). Nghi ngờ thì bỏ qua —
+  // click nhầm 1 nút đang bật sẽ TẮT nó đi, tệ hơn là không tự bật.
+  const ACP_TOGGLE_CONFIRM_MAX_MS = 1500; // chờ tối đa để nút đổi trạng thái sau khi click
+  const ACP_TOGGLE_SETTLE_MS = 120; // React cần 1 nhịp render + có thể gọi lại API sau khi đổi toggle
+
+  // Nhãn = các text node trực tiếp của <button> (bỏ qua span icon ✓ / svg), gộp khoảng trắng.
+  function acpButtonLabel(btn) {
+    const direct = Array.from(btn.childNodes)
+      .filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent)
+      .join('');
+    return (direct.trim() || (btn.textContent || '').trim()).replace(/\s+/g, ' ');
+  }
+
+  function acpFindToggleButton(label) {
+    const wanted = label.toLowerCase();
+    const buttons = Array.from(document.querySelectorAll('button'));
+    return buttons.find((btn) => {
+      if (btn.id === 'acp-float-btn' || btn.closest('#acp-status-box')) return false;
+      if (!acpIsVisible(btn)) return false;
+      return acpButtonLabel(btn).toLowerCase() === wanted;
+    }) || null;
+  }
+
+  function acpHasAriaOn(btn) {
+    return btn.getAttribute('aria-pressed') === 'true'
+      || btn.getAttribute('aria-checked') === 'true'
+      || btn.getAttribute('aria-selected') === 'true'
+      || btn.getAttribute('data-state') === 'on'
+      || btn.getAttribute('data-state') === 'checked';
+  }
+
+  // Ô check dạng nút ("Trả góp"): TẮT = span đầu rỗng (không ✓, không svg) + viền xám.
+  function acpIsCheckToggleOff(btn) {
+    if (acpHasAriaOn(btn)) return false;
+    const mark = btn.querySelector(':scope > span');
+    if (!mark) return false;
+    const markEmpty = mark.textContent.trim() === '' && !mark.querySelector('svg, i, img');
+    return markEmpty && btn.classList.contains('border-slate-200');
+  }
+
+  // Nút segment ("DT quy đổi" trong cặp "DT thực | DT quy đổi"): TẮT = nền trắng.
+  function acpIsSegmentOff(btn) {
+    if (acpHasAriaOn(btn)) return false;
+    return btn.classList.contains('bg-white');
+  }
+
+  const ACP_AUTO_TOGGLES = [
+    { label: 'Trả góp', isOff: acpIsCheckToggleOff },
+    { label: 'DT quy đổi', isOff: acpIsSegmentOff },
+  ];
+
+  // Trả về { turnedOn: [nhãn đã bật], failed: [nhãn click rồi mà vẫn tắt] }. Không tìm thấy nút
+  // (trang BI cũ bi.thegioididong.com không có) hoặc đã bật sẵn → bỏ qua im lặng.
+  async function acpEnsureTogglesOn(onProgress) {
+    const turnedOn = [];
+    const failed = [];
+    for (const toggle of ACP_AUTO_TOGGLES) {
+      const btn = acpFindToggleButton(toggle.label);
+      if (!btn || !toggle.isOff(btn)) continue;
+      if (onProgress) onProgress(toggle.label);
+      btn.click();
+      await acpWaitForSpinnersToClear(ACP_SPINNER_MAX_WAIT_MS, ACP_SPINNER_POLL_MS, ACP_TOGGLE_SETTLE_MS);
+      // Xác nhận nút đã đổi trạng thái thật (tìm lại theo nhãn vì React có thể tạo phần tử mới).
+      const start = Date.now();
+      let confirmed = false;
+      while (Date.now() - start < ACP_TOGGLE_CONFIRM_MAX_MS) {
+        const fresh = acpFindToggleButton(toggle.label);
+        if (!fresh || !toggle.isOff(fresh)) { confirmed = true; break; }
+        await sleep(50);
+      }
+      (confirmed ? turnedOn : failed).push(toggle.label);
+      if (!confirmed) console.warn('[Click+] Đã click nhưng nút vẫn ở trạng thái tắt:', toggle.label);
+    }
+    return { turnedOn, failed };
+  }
+
+  function acpUpdateStatusToggling(box, label) {
+    box.style.display = 'block';
+    box.style.background = `linear-gradient(135deg, ${COLOR_PRIMARY_LIGHT}, ${COLOR_PRIMARY})`;
+    box.innerHTML = `
+      <div style="font-weight:800;margin-bottom:4px;">⚡ Đang bật "${label}"...</div>
+      <div>Bật xong sẽ tự quét dấu cộng và copy.</div>
+    `;
+  }
+
   function acpEnsureStatusBox() {
     let box = document.getElementById('acp-status-box');
     if (box) return box;
@@ -1375,9 +1484,13 @@
     `;
   }
 
-  function acpShowDone(box, clicked, stillPending, copiedLength, lastText, stoppedEarly) {
+  function acpShowDone(box, clicked, stillPending, copiedLength, lastText, stoppedEarly, toggles) {
     box.style.display = 'block';
     box.style.background = `linear-gradient(135deg, ${COLOR_SUCCESS}, #16a34a)`;
+    const turnedOn = (toggles && toggles.turnedOn) || [];
+    const failed = (toggles && toggles.failed) || [];
+    const toggleNote = (turnedOn.length ? `<div style="margin-top:4px;">🔘 Đã tự bật: ${turnedOn.join(', ')}</div>` : '')
+      + (failed.length ? `<div style="margin-top:4px;">⚠️ Không bật được: ${failed.join(', ')} — bật tay rồi bấm Click+ lại.</div>` : '');
     const remainNote = stillPending > 0
       ? `<div style="margin-top:4px;">Còn ${stillPending} nút (cấp con) — bấm Click+ thêm lần nữa để mở tiếp.</div>`
       : '<div style="margin-top:4px;">Đã mở hết cấp hiện tại.</div>';
@@ -1386,6 +1499,7 @@
       : '';
     box.innerHTML = `
       <div style="font-weight:800;margin-bottom:4px;">✅ Đã mở ${clicked} mục · đã copy ${copiedLength.toLocaleString('vi-VN')} ký tự</div>
+      ${toggleNote}
       ${stopNote}
       ${remainNote}
       <a id="acp-copy-again" href="#" style="color:#fff;text-decoration:underline;font-size:12px;">📋 Copy lại</a>
@@ -1421,7 +1535,12 @@
     let stopRequested = false;
     const requestStop = () => { stopRequested = true; };
 
+    let toggles = { turnedOn: [], failed: [] };
     try {
+      // Bật "Trả góp" + "DT quy đổi" TRƯỚC, rồi mới quét dấu cộng — bảng có thể render lại sau khi
+      // đổi toggle, quét trước sẽ cầm phần tử đã bị gỡ khỏi DOM.
+      toggles = await acpEnsureTogglesOn((label) => acpUpdateStatusToggling(statusBox, label));
+
       const pending = acpGetPlusCandidates();
       const total = pending.length;
       let clicked = 0;
@@ -1479,7 +1598,7 @@
       copyToClipboard(finalText);
 
       const stillPending = acpGetPlusCandidates().length;
-      acpShowDone(statusBox, clicked, stillPending, finalText.length, finalText, stopRequested);
+      acpShowDone(statusBox, clicked, stillPending, finalText.length, finalText, stopRequested, toggles);
     } catch (e) {
       console.error('[Click+] Lỗi khi chạy:', e);
       acpShowError(statusBox, e);
