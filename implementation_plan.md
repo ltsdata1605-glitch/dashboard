@@ -4911,3 +4911,39 @@ người dùng trong lúc chờ, nên để nguyên tới cutover.
 - `firebase.json` vẫn khai database AI Studio + `firestore.stickerevent.rules`. Sau khi xác nhận
   `(default)` chạy ổn vài ngày, có thể gỡ khỏi `firebase.json` và cuối cùng **xoá database AI Studio**
   (phá huỷ, không hoàn tác — chỉ làm khi đã chắc chắn, và báo trước).
+
+### CUTOVER 2026-09-19: dừng ở 130/1186 doc vì CẠN TRẦN ĐỌC/NGÀY của AI Studio
+
+Cutover chạy lúc 14:07 theo lịch. Diễn biến (chạy có kiểm chứng từng bước — nhờ vậy bắt được bug
+thay vì mất dữ liệu):
+- ✅ Bước 1 (dry-run): AI Studio đọc lại được → **phát hiện `stores`=0**, dò ra BUG doc "bóng".
+- ✅ Bước 2: xoá 2 tài khoản test (EkOk…, FVv8…) chủ dự án đăng ký, xác nhận sạch.
+- 🔴 Bước 3 lần 1: **BUG batch >11 MiB** → sửa commit theo kích thước. Batch all-or-nothing nên
+  ghi 0, chạy lại an toàn.
+- 🔴 Bước 3 lần 2: ghi được **130/1186 doc** rồi **RESOURCE_EXHAUSTED (Free daily read units, per day)**.
+- 🔴 Bước 3 lần 3 (thêm resume+throttle 60ms): vẫn cạn ngay → **đúng là trần ĐỌC theo NGÀY**, không
+  phải rate-limit. Đọc lặp nhiều lần lúc dò bug đã đốt hết ngân sách đọc/ngày của database free-tier.
+
+**Bug đã sửa & commit (`42c06105`):** (1) `.get()`→`listDocuments()` bắt doc bóng — nếu không sẽ MẤT
+~1000 doc kho; (2) batch theo kích thước ≤8 MiB; (3) resume (bỏ qua doc target đã có) + throttle.
+
+**HOÀN TẤT NGÀY MAI (sau reset 14:00):** chạy MỘT lệnh duy nhất, KHÔNG dry-run (đừng đốt đọc thừa):
+```
+node functions/scripts/migrate-sticker-to-default.cjs --execute
+```
+Resume sẽ bỏ qua 130 doc đã có, chỉ đọc ~1050 doc còn thiếu (thừa sức trong hạn mức ngày mới). Rồi:
+```
+npm run deploy:rules
+./node_modules/.bin/firebase deploy --only functions:stickerResolveSession,functions:stickerRegister,functions:stickerAdminUpdateUser --project dashboa-7e20b
+```
+Rồi kiểm chứng đăng nhập staff (bước 6 runbook cũ).
+
+**TRẠNG THÁI HIỆN TẠI (an toàn):**
+- Dữ liệu nguồn AI Studio **còn nguyên** — chưa xoá gì bên nguồn.
+- `(default)` có 130 doc di trú một phần (100 tài khoản + kho 908/3979). **CỐ Ý GIỮ** để resume mai
+  bỏ qua. Idempotent nên chạy lại an toàn.
+- In Sticker vẫn "down" với người dùng (3 hàm còn trên AI Studio đã cạn → báo hết hạn mức). Không có
+  nguy cơ người dùng thấy dữ liệu thiếu vì họ không vào được.
+- ⚠️ Bài học: **database free-tier có trần đọc/ngày THẤP — chỉ được đọc nguồn 1 LẦN.** Lần sau di
+  trú kiểu này phải: đọc 1 lần đổ ra file JSON local, rồi ghi từ local (ghi (default) không giới hạn),
+  KHÔNG dry-run nhiều lần. Đã trả giá bằng nguyên ngày hạn mức.
