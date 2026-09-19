@@ -28,7 +28,7 @@
 bán hàng), **chỉ với việc PHÁ HUỶ KHÔNG HOÀN TÁC ĐƯỢC trên dữ liệu production:**
 - Xoá collection/database/document thật (khác với ghi đè mà bản sao nguồn vẫn còn nguyên).
 - `git push --force`, xoá nhánh từ xa, viết lại lịch sử đã đẩy.
-- Xoá/thay `firebase-applet-config.json`, `.env`, service account key.
+- Xoá/thay `.env`, service account key, hoặc `firebase-applet-config.json` (không bí mật, nhưng sai một ký tự là In Sticker trỏ nhầm database).
 
 *Ba nhóm trên do agent tự thêm 2026-09-18, chủ dự án có thể bỏ nếu không muốn. Lý do: quyền đã cấp
 đủ rồi, nhưng ba nhóm này không có đường lùi — sai là mất dữ liệu thật của siêu thị đang chạy, mà
@@ -48,7 +48,7 @@ một câu báo trước rẻ hơn nhiều so với khôi phục. Mọi việc k
    Lệnh này tự động nén zip lưu trong `archive` và đồng bộ lên Github.
 3. **Lập kế hoạch trước khi sửa**: Luôn tạo hoặc cập nhật tệp `implementation_plan.md` mô tả các tệp thay đổi và thiết kế giải pháp trước khi thực hiện.
 4. **Phạm vi tác động**: Chỉ thực hiện đúng phạm vi yêu cầu của task. Không tự ý mở rộng, không tự ý refactor lớn khi task yêu cầu sửa nhỏ, không đổi tên biến/file/route/function nếu không cần thiết.
-5. **Bảo mật**: Không tự ý hard-code API key mới vào mã nguồn, không in nội dung token/key ra log hay báo cáo, không commit file bí mật (`.env`, `firebase-applet-config.json`, service account key) vào Git. *(Sửa 2026-09-18 theo mục 0.0: agent ĐƯỢC đọc/dùng các file này để làm việc; chỉ XOÁ hoặc THAY chúng mới cần báo trước một câu.)*
+5. **Bảo mật**: Không tự ý hard-code API key mới vào mã nguồn, không in nội dung token/key ra log hay báo cáo, không commit file bí mật (`.env`, service account key) vào Git. *(Sửa 2026-09-19: bản cũ liệt kê cả `firebase-applet-config.json` — không đúng, xem mục 1.1: đó là cấu hình web công khai, đang được commit và nên vậy.)* *(Sửa 2026-09-18 theo mục 0.0: agent ĐƯỢC đọc/dùng các file này để làm việc; chỉ XOÁ hoặc THAY chúng mới cần báo trước một câu.)*
 6. **Báo cáo hoàn tất**: Sau khi sửa xong, báo cáo rõ ràng: các file đã sửa, lý do sửa, rủi ro, cách kiểm tra.
 7. **Xác minh trước khi báo cáo**: Bắt buộc chạy lệnh kiểm tra tự động trước khi báo cáo hoàn thành:
    ```bash
@@ -115,7 +115,7 @@ deploy CẢ HAI file cùng lúc.
 - 🔵 **Phân quyền theo siêu thị ở Report BI** (bổ sung 2026-08-31): dữ liệu Thi đua/Summary Luỹ kế dùng chung theo siêu thị lưu ở `biData/{maKho}/…` — dùng LẠI đúng field `departmentId`/hàm `myKhos()` đã có (1 Kho = 1 Siêu thị trong thực tế công ty, xác nhận với user), KHÔNG có custom claim `allowedSupermarkets` riêng. Chỉ manager/admin được ghi (`isManager()`), mọi user cùng Kho đọc được. Xem `implementation_plan.md` mục "Đợt 4" để biết đầy đủ thiết kế + bảng map "tên siêu thị trong báo cáo" → "Mã Kho".
 - `functions/` là project TypeScript độc lập (tsconfig/package.json riêng), bị loại trừ khỏi `tsconfig.json` và `eslint.config.js` ở gốc — không chạy qua `npm run check`, phải tự `cd functions && npm run typecheck && npm run build` để kiểm tra riêng.
 - Deploy: `npm run deploy:rules` (deploy CẢ HAI file rules) / `npm run deploy:functions`. *(Sửa 2026-09-18: bản cũ ghi "không phải việc agent tự chạy" — xem mục 0.0, chủ dự án đã cấp quyền.)*
-- 🔴 **`features/sticker-event` dùng CHUNG project Firebase `dashboa-7e20b` với 3 khu vực còn lại, chỉ khác *database*** — database `ai-studio-16672ec9-22fb-43a6-b6ee-e59aa8a8c699`, cấu hình động qua `firebase-applet-config.json` (gitignored). Phía Cloud Functions, `functions/src/firebaseAdmin.ts` có sẵn 2 instance: `db` (database `(default)`) và `stickerDb` (database In Sticker).
+- 🔴 **`features/sticker-event` dùng CHUNG project Firebase `dashboa-7e20b` với 3 khu vực còn lại, chỉ khác *database*** — database `ai-studio-16672ec9-22fb-43a6-b6ee-e59aa8a8c699`, cấu hình động qua `firebase-applet-config.json` — file này **ĐƯỢC commit trong git** và điều đó đúng: nó chỉ chứa cấu hình Firebase *web* (`apiKey`, `projectId`, `authDomain`…), thứ Firebase thiết kế để gửi tới mọi trình duyệt, bảo mật nằm ở Firestore Rules chứ không ở việc giấu `apiKey`. *(Sửa 2026-09-19: bản cũ ghi "gitignored" — SAI, đã kiểm bằng `git ls-files` + `git check-ignore`. Câu sai này từng làm agent nghi CI thiếu file khi điều tra job e2e đỏ.)* Phía Cloud Functions, `functions/src/firebaseAdmin.ts` có sẵn 2 instance: `db` (database `(default)`) và `stickerDb` (database In Sticker).
   *(Sửa 2026-09-17: bản cũ ghi "dùng Firebase project **riêng**" và "**chưa** áp dụng pattern Cloud Functions này, vẫn ghi `role` trực tiếp từ client" — **CẢ HAI ĐỀU SAI**. Đã đo trên code: `firebase-applet-config.json` có `projectId: dashboa-7e20b`; còn `firestore.stickerevent.rules` hiện đã khoá `protectedKeys() = ['role','storeId','username']` khỏi mọi lượt update từ client và **bỏ hẳn `allow create`** — hồ sơ user chỉ tạo được qua Cloud Function `stickerRegister`, đổi role/storeId chỉ qua `stickerAdminUpdateUser`. Câu sai này nguy hiểm thật: nó từng làm agent kết luận sai về nguồn gốc hết hạn mức Firestore, xem `implementation_plan.md` mục "Audit hạn mức đọc/ghi Firestore".)*
 - 🔴 **Hạn mức Firestore — trần CỨNG của database In Sticker.** Đo thật bằng
   `./node_modules/.bin/firebase firestore:databases:list --project dashboa-7e20b` (2026-09-18):
