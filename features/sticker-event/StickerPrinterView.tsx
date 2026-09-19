@@ -75,6 +75,7 @@ export default function StickerPrinterView() {
         applyFontSizeToSelection,
         updateBatchItem,
         updateSubQueryParam,
+        applySubTab,
         handleDiscountThresholdChange,
         handleExcelUpload,
         downloadTemplate,
@@ -104,31 +105,19 @@ export default function StickerPrinterView() {
                 stickerMode={stickerMode}
                 stickerType={stickerType}
                 onSelectGiaSoc={() => {
-                    setStickerMode('sticker');
-                    setStickerType('gia_soc');
-                    setHeaderTextContent('QUẠT ĐIỀU HOÀ');
-                    setBgImage('/frame/X24_NEW.png');
-                    setHeaderTextSize(8);
+                    applySubTab('gia-soc');
                     updateSubQueryParam('gia-soc');
                 }}
                 onSelectGioVang={() => {
-                    setStickerMode('sticker');
-                    setStickerType('gio_vang');
-                    setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
-                    setBgImage('/frame/GVO2-scaled.png');
-                    setHeaderTextSize(8);
+                    applySubTab('gio-vang');
                     updateSubQueryParam('gio-vang');
                 }}
                 onSelectDraw={() => {
-                    setStickerMode('sticker');
-                    setStickerType('draw');
-                    setBgImage('/frame/bg_phieu.png');
+                    applySubTab('draw');
                     updateSubQueryParam('draw');
-                    setActiveField('drawContentBottomLeft');
                 }}
                 onSelectEvent={() => {
-                    setStickerMode('event');
-                    setEventEverOpened(true);
+                    applySubTab('event');
                     updateSubQueryParam('event');
                 }}
                 getActiveFieldLabel={getActiveFieldLabel}
@@ -159,12 +148,12 @@ export default function StickerPrinterView() {
 
             {eventEverOpened && (
                 <div className={`absolute inset-0 z-10 w-full h-full overflow-y-auto transition-opacity duration-200 ${stickerMode === 'event' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <ErrorBoundary name="Event - Tồn kho">
+                    <ErrorBoundary name="Sticker">
                         <Suspense fallback={
                             <div className="w-full h-full flex items-center justify-center bg-slate-50">
                                 <div className="flex flex-col items-center gap-3">
                                     <div className="w-8 h-8 border-3 border-sky-600 border-t-transparent rounded-full animate-spin" />
-                                    <p className="text-sm text-slate-500 font-medium">Đang tải Event - Tồn kho...</p>
+                                    <p className="text-sm text-slate-500 font-medium">Đang tải Sticker...</p>
                                 </div>
                             </div>
                         }>

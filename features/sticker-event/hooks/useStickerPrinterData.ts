@@ -7,6 +7,18 @@ import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDraw
 import { resolvePagePrices, generatePageHtml, isHistoryDuplicate, generateDrawPagesHtml } from '../stickerprinter/pageHtmlUtils';
 import { parsePercentValue, parseBatchItemsFromExcelRows, downloadStickerTemplate, parseTemplateExcelData, parseErpPriceExcelData } from '../stickerprinter/excelParsers';
 import { getStickerPreviewStyles } from '../stickerprinter/stickerPreviewStyles';
+import {
+    getDefaultBgImageForType,
+    isValidBgImageForType,
+    resolveEffectiveBgImage,
+    getDefaultHeaderForType,
+    getDefaultSubHeaderForType,
+    getDefaultActiveFieldForType,
+    GIO_VANG_DEFAULT_BG,
+    GIA_SOC_DEFAULT_BG,
+    DRAW_DMX_DEFAULT_BG,
+    StickerType,
+} from '../stickerprinter/stickerBackgroundHelpers';
 
 const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
@@ -341,6 +353,34 @@ export function useStickerPrinterData() {
         }
     }, [priceSource, activeQueuePageId, manualPages]);
 
+    // Helper to switch and apply sub tab correctly without cross-tab leak
+    const applySubTab = useCallback((sub: string) => {
+        if (sub === 'gia-soc') {
+            setStickerMode('sticker');
+            setStickerType('gia_soc');
+            setBgImage(prev => isValidBgImageForType('gia_soc', prev) ? prev : GIA_SOC_DEFAULT_BG);
+            setHeaderTextContent(prev => (prev && !prev.includes('TỪ 00/00')) ? prev : 'QUẠT ĐIỀU HOÀ');
+            setHeaderTextSize(8);
+            setActiveField('header');
+        } else if (sub === 'gio-vang') {
+            setStickerMode('sticker');
+            setStickerType('gio_vang');
+            setBgImage(GIO_VANG_DEFAULT_BG);
+            setHeaderTextContent(prev => (prev && prev.includes('ĐẾN')) ? prev : 'TỪ 00/00 ĐẾN 00/00');
+            setSubHeaderTextContent(prev => (prev && prev.includes('SUẤT')) ? prev : '5 SUẤT/NGÀY');
+            setHeaderTextSize(8);
+            setActiveField('header');
+        } else if (sub === 'draw') {
+            setStickerMode('sticker');
+            setStickerType('draw');
+            setBgImage(prev => isValidBgImageForType('draw', prev) ? prev : DRAW_DMX_DEFAULT_BG);
+            setActiveField('drawContentBottomLeft');
+        } else if (sub === 'event') {
+            setStickerMode('event');
+            setEventEverOpened(true);
+        }
+    }, []);
+
     // Helper to update sub tab in URL
     const updateSubQueryParam = (sub: string) => {
         try {
@@ -360,28 +400,7 @@ export function useStickerPrinterData() {
             sub = 'draw';
             updateSubQueryParam('draw');
         }
-        
-        if (sub === 'gia-soc') {
-            setStickerMode('sticker');
-            setStickerType('gia_soc');
-            setHeaderTextContent('QUẠT ĐIỀU HOÀ');
-            setBgImage('/frame/X24_NEW.png');
-            setHeaderTextSize(8);
-        } else if (sub === 'gio-vang') {
-            setStickerMode('sticker');
-            setStickerType('gio_vang');
-            setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
-            setBgImage('/frame/GVO2-scaled.png');
-            setHeaderTextSize(8);
-        } else if (sub === 'draw') {
-            setStickerMode('sticker');
-            setStickerType('draw');
-            setBgImage('/frame/bg_phieu.png');
-            setActiveField('drawContentBottomLeft');
-        } else if (sub === 'event') {
-            setStickerMode('event');
-            setEventEverOpened(true);
-        }
+        applySubTab(sub);
         
         const timer = setTimeout(() => {
             import('../StickerEventApp').catch(err => {
@@ -389,7 +408,18 @@ export function useStickerPrinterData() {
             });
         }, 1000);
         return () => clearTimeout(timer);
-    }, []);
+    }, [applySubTab]);
+
+    // Lắng nghe popstate (Back/Forward trình duyệt) để đổi tab đồng bộ
+    useEffect(() => {
+        const handlePopState = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sub = urlParams.get('sub') || 'draw';
+            applySubTab(sub);
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [applySubTab]);
 
     // Load settings, saved lists, and print history purely from IndexedDB
     useEffect(() => {
@@ -402,28 +432,67 @@ export function useStickerPrinterData() {
                     const urlParams = new URLSearchParams(window.location.search);
                     const currentSub = urlParams.get('sub');
                     
+                    let effectiveType: StickerType = 'draw';
                     if (!currentSub) {
                         setStickerMode('sticker');
                         setStickerType('draw');
-                        setBgImage('/frame/bg_phieu.png');
-                    } else {
-                        if (currentSub === 'gia-soc') {
-                            setStickerMode('sticker');
-                            setStickerType('gia_soc');
-                        } else if (currentSub === 'gio-vang') {
-                            setStickerMode('sticker');
-                            setStickerType('gio_vang');
-                        } else if (currentSub === 'draw') {
-                            setStickerMode('sticker');
-                            setStickerType('draw');
-                        } else if (currentSub === 'event') {
-                            setStickerMode('event');
-                            setEventEverOpened(true);
-                        }
+                        effectiveType = 'draw';
+                    } else if (currentSub === 'gia-soc') {
+                        setStickerMode('sticker');
+                        setStickerType('gia_soc');
+                        effectiveType = 'gia_soc';
+                    } else if (currentSub === 'gio-vang') {
+                        setStickerMode('sticker');
+                        setStickerType('gio_vang');
+                        effectiveType = 'gio_vang';
+                    } else if (currentSub === 'draw') {
+                        setStickerMode('sticker');
+                        setStickerType('draw');
+                        effectiveType = 'draw';
+                    } else if (currentSub === 'event') {
+                        setStickerMode('event');
+                        setEventEverOpened(true);
                     }
-                    if (savedState.bgImage) setBgImage(savedState.bgImage);
-                    if (savedState.headerTextContent) setHeaderTextContent(savedState.headerTextContent);
-                    if (savedState.subHeaderTextContent) setSubHeaderTextContent(savedState.subHeaderTextContent);
+
+                    // STRICT BG IMAGE BINDING: Chỉ khôi phục bgImage nếu nó thuộc đúng loại tem hiện tại
+                    const targetBg = isValidBgImageForType(effectiveType, savedState.bgImage)
+                        ? savedState.bgImage
+                        : getDefaultBgImageForType(effectiveType);
+                    setBgImage(targetBg);
+
+                    // Khôi phục headerTextContent có ngữ cảnh loại tem
+                    if (savedState.headerTextContent) {
+                        if (effectiveType === 'gio_vang') {
+                            if (savedState.headerTextContent.includes('ĐẾN') || savedState.headerTextContent.includes('/')) {
+                                setHeaderTextContent(savedState.headerTextContent);
+                            } else {
+                                setHeaderTextContent(getDefaultHeaderForType('gio_vang'));
+                            }
+                        } else if (effectiveType === 'gia_soc') {
+                            if (savedState.headerTextContent.includes('TỪ 00/00') || savedState.headerTextContent.includes('SUẤT/')) {
+                                setHeaderTextContent(getDefaultHeaderForType('gia_soc'));
+                            } else {
+                                setHeaderTextContent(savedState.headerTextContent);
+                            }
+                        } else {
+                            setHeaderTextContent(savedState.headerTextContent);
+                        }
+                    } else {
+                        setHeaderTextContent(getDefaultHeaderForType(effectiveType));
+                    }
+
+                    if (effectiveType === 'gio_vang') {
+                        if (savedState.subHeaderTextContent && savedState.subHeaderTextContent.includes('SUẤT')) {
+                            setSubHeaderTextContent(savedState.subHeaderTextContent);
+                        } else {
+                            setSubHeaderTextContent(getDefaultSubHeaderForType('gio_vang'));
+                        }
+                    } else if (savedState.subHeaderTextContent) {
+                        setSubHeaderTextContent(savedState.subHeaderTextContent);
+                    }
+
+                    setActiveField(getDefaultActiveFieldForType(effectiveType));
+
                     if (savedState.footerTextContent) setFooterTextContent(savedState.footerTextContent);
                     if (savedState.showBarcode != null) setShowBarcode(savedState.showBarcode);
                     if (savedState.previewName) setPreviewName(savedState.previewName);
@@ -1292,6 +1361,7 @@ export function useStickerPrinterData() {
             const printHost = document.createElement('div');
             printHost.id = 'print-host';
             
+            const effectiveBg = resolveEffectiveBgImage(stickerType, bgImage);
             printHost.innerHTML = `
                 <style>
                     #print-host .header-text { font-size: ${headerTextSize}cqi !important; }
@@ -1306,7 +1376,7 @@ export function useStickerPrinterData() {
                     }
                     ${getStickerPreviewStyles({
                         stickerType,
-                        bgImage,
+                        bgImage: effectiveBg,
                         headerTextSize,
                         subHeaderTextSize,
                         percentTextSize,
@@ -1321,7 +1391,7 @@ export function useStickerPrinterData() {
             // Sinh HTML cho tất cả trang từ data (preview chỉ render 1 trang)
             const allPagesHtml = generateDrawPagesHtml({
                 drawTickets,
-                bgImage,
+                bgImage: effectiveBg,
                 drawTitleSize: drawTitleSize,
                 drawCodeSize: drawCodeSize,
                 drawFooterSize: drawFooterSize,
@@ -1345,7 +1415,7 @@ export function useStickerPrinterData() {
                 label: 'Phiếu Rút Thăm',
                 pageCount: totalPages,
                 stickerType,
-                bgImage,
+                bgImage: effectiveBg,
                 headerTextSize,
                 subHeaderTextSize,
                 percentTextSize,
@@ -1414,6 +1484,7 @@ export function useStickerPrinterData() {
             </style>
         `;
 
+        const effectiveBg = resolveEffectiveBgImage(stickerType, bgImage);
         if (batchItems.length > 0) {
             const selectedBatchItems = batchItems.filter(i => i.selected);
             selectedBatchItems.forEach(item => {
@@ -1430,7 +1501,7 @@ export function useStickerPrinterData() {
                     subHeader: subHeaderTextContent,
                     footer: footerTextContent,
                 };
-                printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode));
+                printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, effectiveBg, discountDisplayMode));
             });
         } else if (manualPages.length === 0) {
             const printSection = document.getElementById('print-section');
@@ -1465,7 +1536,7 @@ export function useStickerPrinterData() {
                 subHeader: finalSubHeader,
                 footer: finalFooter || footerTextContent
             };
-            printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode));
+            printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, effectiveBg, discountDisplayMode));
         });
 
         document.body.appendChild(printHost);
@@ -1479,7 +1550,7 @@ export function useStickerPrinterData() {
             label: headerTextContent || 'Sticker',
             pageCount: totalPages,
             stickerType,
-            bgImage,
+            bgImage: effectiveBg,
             headerTextSize,
             subHeaderTextSize,
             percentTextSize,
@@ -1578,6 +1649,7 @@ export function useStickerPrinterData() {
         applyFontSizeToSelection,
         updateBatchItem,
         updateSubQueryParam,
+        applySubTab,
         handleDiscountThresholdChange,
         handleExcelUpload,
         downloadTemplate,

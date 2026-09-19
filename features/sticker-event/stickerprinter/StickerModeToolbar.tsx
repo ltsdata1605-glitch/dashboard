@@ -78,8 +78,8 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
-                    <span className="lg:hidden">Rút Thăm</span>
-                    <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu Rút Thăm</span>
+                    <span className="lg:hidden">Phiếu</span>
+                    <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu</span>
                 </Button>
                 <Button
                     variant="ghost"
@@ -90,8 +90,8 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
-                    <span className="lg:hidden">Event</span>
-                    <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Event - Tồn kho</span>
+                    <span className="lg:hidden">Sticker</span>
+                    <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Sticker</span>
                 </Button>
             </div>
 

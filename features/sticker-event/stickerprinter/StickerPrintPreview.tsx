@@ -9,6 +9,7 @@ import { renderAmountDiscount, renderPercentDiscount } from './discountHelpers';
 import { getStickerPreviewStyles } from './stickerPreviewStyles';
 import { normalizeStickerPriceUnit, formatDiscountAmount } from '../utils/format';
 import { FloatingFormatToolbar } from './FloatingFormatToolbar';
+import { resolveEffectiveBgImage } from './stickerBackgroundHelpers';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -215,13 +216,18 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
 
 
+    const effectiveBgImage = useMemo(
+        () => resolveEffectiveBgImage(stickerType, bgImage),
+        [stickerType, bgImage]
+    );
+
     return (
         <SectionCard className="p-0 shrink-0 w-full max-w-sm mx-auto overflow-hidden rounded-none lg:rounded-none no-print-bg">
             <style>
                 {useMemo(() => getStickerPreviewStyles({
-                    stickerType, bgImage, headerTextSize, subHeaderTextSize, percentTextSize,
+                    stickerType, bgImage: effectiveBgImage, headerTextSize, subHeaderTextSize, percentTextSize,
                     oldPriceTextSize, nameTextSize, newPriceTextSize, footerTextSize,
-                }), [stickerType, bgImage, headerTextSize, percentTextSize, nameTextSize, oldPriceTextSize, newPriceTextSize, footerTextSize, subHeaderTextSize])}
+                }), [stickerType, effectiveBgImage, headerTextSize, percentTextSize, nameTextSize, oldPriceTextSize, newPriceTextSize, footerTextSize, subHeaderTextSize])}
             </style>
             <div id="print-section" className="w-full">
                 {stickerType === 'draw' ? (
@@ -235,7 +241,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 className="sticker-container draw-page active-preview-page"
                                 data-type="draw"
                                 style={{
-                                    backgroundImage: `url(${bgImage})`,
+                                    backgroundImage: `url(${effectiveBgImage})`,
                                 }}
                             >
                                 {currentPageTickets.map((ticket, index) => {
@@ -268,7 +274,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 ) : batchItems.length > 0 ? (
                     <>
                         {batchItems.filter(it => it.selected).slice(0, 20).map((item, index, arr) => (
-                            <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
+                            <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${effectiveBgImage})` }}>
                                 {showBarcode && item.imei && (
                                 <div className="barcode">
                                     <BarcodeCanvas value={item.imei} />
@@ -323,7 +329,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         )}
                     </>
                 ) : (
-                    <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
+                    <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${effectiveBgImage})` }}>
                         {showBarcode && barcodeImei && (
                             <div className="barcode">
                                 <BarcodeCanvas value={barcodeImei} />

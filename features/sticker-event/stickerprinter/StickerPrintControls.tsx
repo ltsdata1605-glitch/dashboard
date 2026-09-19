@@ -510,7 +510,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 {entry.stickerType === 'gia_soc' 
                                                     ? 'Giá Sốc' 
                                                     : entry.stickerType === 'draw' 
-                                                        ? 'Rút Thăm' 
+                                                        ? 'Phiếu' 
                                                         : 'Giờ Vàng'}
                                             </span>
                                         </div>

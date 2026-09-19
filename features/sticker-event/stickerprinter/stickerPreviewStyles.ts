@@ -214,8 +214,8 @@ export function getStickerPreviewStyles({
                 .sticker-container[data-type="gio_vang"] .old {
                     font-size: ${oldPriceTextSize}cqw;
                     font-weight: 400 !important;
-                    top: 73%;
-                    height: 9%;
+                    top: 74.5%;
+                    height: 6%;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
                     text-decoration: line-through;
@@ -224,8 +224,8 @@ export function getStickerPreviewStyles({
                 .sticker-container[data-type="gio_vang"] .extra2 {
                     font-size: ${newPriceTextSize}cqw;
                     font-weight: 400 !important;
-                    top: 77%;
-                    height: 20%;
+                    top: 80.5%;
+                    height: 17.5%;
                     right: 0;
                     left: 0;
                     width: 100%;
