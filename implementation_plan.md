@@ -4810,3 +4810,62 @@ thật** thay vì đoán. Lần sau gặp CI đỏ: làm bước 2 và 5 TRƯỚ
 hoàn toàn**. Agent bị chặn ghi file này 2 lần (Modify Shared Resources, Auto-Mode Bypass), chủ dự
 án cần tự chạy lệnh `cp` (đường dẫn ở mục trước). Sau đó bỏ 3 dòng comment `lint:ratchet` trong
 `check.yml`.
+
+## Sự cố mới phát hiện: `stickerStaffAuth` đổ ở bước ký token — 9 ngày, >100 lượt (2026-09-19)
+
+**Cách tìm ra:** đang kiểm xem bản sửa hạn mức có giữ được không, soi `functions:log` 24h → **không
+có** lỗi hết hạn mức (tốt), nhưng lộ ra một lỗi khác:
+
+```
+E stickerstaffauth: Unhandled error FirebaseAuthError:
+  Permission 'iam.serviceAccounts.signBlob' denied on resource
+  code: 'auth/insufficient-permission'   at auth.createCustomToken()
+```
+
+Kéo log rộng ra (`--only stickerStaffAuth -n 3000`, phủ 07/09 → 19/09): lỗi này **liên tục từ
+10/09**, hơn 100 lượt; **không** có lượt nào trong log tới được bước ký token mà không đổ. Tức không
+phải do lần deploy 18/09 của tôi. Cụm 12 lượt/giờ (10/09), 16 (12/09), 20 (18/09 — có thể là tôi
+chạy test) là người dùng bấm lại vì màn hình chỉ báo `INTERNAL`.
+
+**Nguyên nhân kỹ thuật:** 4 callable In Sticker là **thế hệ 2** (Cloud Run), chạy bằng service
+account mặc định của Compute `388853115750-compute@developer.gserviceaccount.com` (code không khai
+SA riêng, không `setGlobalOptions`). `createCustomToken()` ký token qua IAM `signBlob` **trên chính
+SA đó**, cần vai trò **Service Account Token Creator** — mặc định không có. `createCustomToken` được
+đưa vào từ 05/08 (commit `143a8619`); log chỉ giữ tới 07/09 nên không biết nó có từng chạy được
+không — nhưng không có dấu hiệu nào là có.
+
+**Tác động thật — NHẸ hơn tưởng ban đầu, nhờ đường dự phòng của client:** `Login.tsx:176-260` khi
+nhận lỗi không thuộc 3 mã nghiệp vụ (`not-found`/`permission-denied`/`failed-precondition`) thì
+**tự chuyển sang `signInWithEmailAndPassword` bằng mật khẩu mặc định** — và hàm đã kịp
+`updateUser(password)` *trước* khi đổ ở bước ký, nên đường này **thành công**. Bằng chứng trong log
+19/09 08:45: `stickerResolveSession auth: VALID` ngay 5 giây sau lượt đổ. Nhân viên **vẫn đăng nhập
+được**, chỉ chậm hơn, tốn thêm 1 lượt gọi hàm + 1 `updateUser` + 1 `setCustomUserClaims` vô ích mỗi
+lần, và mong manh (phụ thuộc mật khẩu suy được từ tên đăng nhập).
+
+**Suýt làm hỏng thứ đang chạy:** bản nháp đầu tôi dịch lỗi thành `failed-precondition` — client bắt
+mã đó ở dòng 170, hiện thông điệp SAI ("kho chưa có Admin") và **dừng luôn, không chạy đường dự
+phòng** → biến lỗi đang tự vá được thành lỗi cứng. Phát hiện nhờ đọc client trước khi deploy.
+
+**Đã làm (commit này), đã deploy `stickerStaffAuth`, đã kiểm chứng trên production:**
+- `functions/src/stickerEvent.ts`: `withQuotaMessage` thêm nhánh `isSignPermissionError` → ném
+  `HttpsError('unavailable', SIGN_PERMISSION_MESSAGE)`. Mã **`unavailable`** là cố ý: client không
+  bắt riêng nên đường dự phòng vẫn chạy. Log giờ ghi thông điệp tiếng Việt mức W thay vì stack trace
+  `Unhandled error` mức E.
+- `features/sticker-event/Login.tsx`: nhớ `serverCannotSignToken`; đường dự phòng chạy y như cũ,
+  nhưng nếu nó **cũng** hỏng thì hiện nguyên nhân thật thay vì "Tên đăng nhập chưa có tài khoản"
+  (sai) hay "Xác thực thất bại" (vô nghĩa).
+- Kiểm chứng: `POST …/stickerStaffAuth` với `nv_test_claude_qa` → **`UNAVAILABLE`** + thông điệp
+  đúng (trước là `INTERNAL`); rồi `signInWithPassword` bằng mật khẩu mặc định → **đăng nhập được**
+  (đường dự phòng còn nguyên).
+
+**CÁCH SỬA THẬT — cần tay chủ dự án, tôi bị chặn (Credential Exploration) khi thử qua API:**
+cấp vai trò `roles/iam.serviceAccountTokenCreator` cho SA `388853115750-compute@developer.gserviceaccount.com`
+**trên chính nó**. Google Cloud Console → IAM & Admin → Service Accounts → chọn SA đó → tab
+**Permissions** → Grant Access → Principal = chính SA đó → Role = "Service Account Token Creator".
+(Hoặc cấp ở cấp project trong IAM — rộng hơn nhưng cũng được.) Sau khi cấp, gọi lại lệnh curl ở trên
+phải trả về `customToken` thay vì `UNAVAILABLE`. Không cần deploy lại gì.
+
+**Bài học (lặp lại bài học hạn mức, giờ có 2 ví dụ):** lỗi hạ tầng ném từ trong Cloud Function
+thành `INTERNAL` ở client → người dùng không hiểu → bấm lại → tốn tài nguyên và làm nhiễu log.
+`withQuotaMessage` giờ là chỗ tập trung dịch lớp lỗi này; lỗi hạ tầng mới thì thêm nhánh vào đó.
+Và: **đọc client trước khi đổi mã lỗi phía server** — client có thể đang dựa vào mã cũ để rẽ nhánh.

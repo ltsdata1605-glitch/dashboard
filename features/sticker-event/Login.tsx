@@ -173,6 +173,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           return;
         }
 
+        // Máy chủ báo THIẾU QUYỀN KÝ TOKEN (`unavailable` + thông điệp nêu vai trò IAM): hàm đã kịp
+        // đặt lại mật khẩu trước khi đổ, nên đường dự phòng bên dưới vẫn đăng nhập được. Chỉ ghi
+        // nhớ để nếu dự phòng CŨNG hỏng thì hiện đúng nguyên nhân — không phải "sai tên đăng nhập".
+        const serverCannotSignToken = fnCode.includes('unavailable') && fnMsg.includes('Token Creator');
+        if (serverCannotSignToken) {
+          console.warn('stickerStaffAuth: máy chủ thiếu quyền ký custom token (IAM) — dùng đường dự phòng. ' + fnMsg);
+        }
+
         // 2. If Cloud Function returns internal / not-deployed error, fallback to client-side Auth
         console.warn("Cloud Function stickerStaffAuth unavailable, using client-side fallback:", fnErr);
         try {
@@ -197,7 +205,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 } catch { /* continue */ }
               }
               if (!loggedIn) {
-                setError('Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
+                setError(serverCannotSignToken
+                  ? fnMsg
+                  : 'Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
                 setLoading(false);
                 return;
               }
@@ -251,6 +261,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           const errCode = (fallbackErr as AuthErrorLike).code || '';
           if (errCode === 'auth/too-many-requests') {
             setError('Hệ thống tạm khóa thao tác do đăng nhập sai nhiều lần. Vui lòng thử lại sau 2-3 phút.');
+          } else if (serverCannotSignToken) {
+            setError(fnMsg);
           } else {
             setError('Xác thực thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc chọn "Đăng ký".');
           }

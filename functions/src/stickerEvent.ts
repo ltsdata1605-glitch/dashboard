@@ -121,13 +121,48 @@ const isQuotaError = (err: unknown): boolean => {
   return /RESOURCE_EXHAUSTED|Quota limit exceeded|Quota exceeded/i.test(msg);
 };
 
-/** Bọc phần thân của 1 callable: giữ nguyên HttpsError, chỉ dịch lỗi hết hạn mức. */
+/**
+ * Lỗi THIẾU QUYỀN KÝ TOKEN của chính máy chủ — cùng họ với lỗi hết hạn mức: người dùng không thể tự
+ * sửa, và bấm lại chỉ tốn thêm lượt gọi.
+ *
+ * Phát hiện 2026-09-19 khi soi `functions:log`: `stickerStaffAuth` đổ ở `auth.createCustomToken()`
+ * với `auth/insufficient-permission: Permission 'iam.serviceAccounts.signBlob' denied` — LIÊN TỤC
+ * từ ít nhất 10/09, hơn 100 lượt thử thất bại. Cloud Functions thế hệ 2 chạy bằng service account
+ * mặc định của Compute, và ký custom token cần vai trò **Service Account Token Creator** trên chính
+ * account đó — vai trò này không có sẵn. Cách sửa THẬT là cấp IAM (Console → IAM), không phải sửa
+ * code; đoạn này chỉ để log và màn hình nói đúng sự thật thay vì "INTERNAL".
+ *
+ * ⚠️ MÃ LỖI PHẢI LÀ `unavailable`, KHÔNG được là `failed-precondition`/`permission-denied`/
+ * `not-found`: `features/sticker-event/Login.tsx` bắt riêng 3 mã đó để hiện thông điệp nghiệp vụ
+ * ("kho chưa có Admin", "đây là tài khoản Quản lý"…) rồi DỪNG — còn mọi mã khác thì nó chuyển sang
+ * ĐƯỜNG DỰ PHÒNG đăng nhập trực tiếp bằng mật khẩu mặc định. Đường dự phòng đó hiện đang CỨU cả
+ * luồng: hàm này kịp `updateUser(password)` trước khi đổ ở bước ký token, nên đăng nhập trực tiếp
+ * thành công (log 19/09 08:45: `stickerResolveSession auth: VALID` ngay sau lượt đổ). Bản nháp đầu
+ * dùng `failed-precondition` — sẽ hiện sai thông điệp "kho chưa có Admin" VÀ chặn luôn đường dự
+ * phòng, biến lỗi đang tự vá được thành lỗi cứng. Suýt deploy.
+ */
+const SIGN_PERMISSION_MESSAGE =
+  'Máy chủ chưa được cấp quyền tạo phiên đăng nhập cho nhân viên (thiếu vai trò ' +
+  '"Service Account Token Creator" trên service account của Cloud Functions). ' +
+  'Đây là lỗi cấu hình phía quản trị — bấm đăng nhập lại không giúp gì. Vui lòng báo quản lý hệ thống.';
+
+const isSignPermissionError = (err: unknown): boolean => {
+  const code = (err as { code?: unknown })?.code;
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  return code === 'auth/insufficient-permission' || /iam\.serviceAccounts\.signBlob/i.test(msg);
+};
+
+/**
+ * Bọc phần thân của 1 callable: giữ nguyên HttpsError, dịch 2 loại lỗi hạ tầng (hết hạn mức, thiếu
+ * quyền ký token) thành thông điệp tiếng Việt nói rõ "đừng thử lại". Mọi lỗi khác ném nguyên.
+ */
 const withQuotaMessage = async <T>(fn: () => Promise<T>): Promise<T> => {
   try {
     return await fn();
   } catch (err) {
     if (err instanceof HttpsError) throw err;
     if (isQuotaError(err)) throw new HttpsError('resource-exhausted', QUOTA_MESSAGE);
+    if (isSignPermissionError(err)) throw new HttpsError('unavailable', SIGN_PERMISSION_MESSAGE);
     throw err;
   }
 };
