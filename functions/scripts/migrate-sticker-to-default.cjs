@@ -97,13 +97,26 @@ const initFirestore = () => {
     return { sourceDb, targetDb };
 };
 
+// Firestore giới hạn batch: 500 thao tác VÀ ~11 MiB payload/lần commit. Chỉ đếm số doc là chưa đủ:
+// các doc chunk (inventoryChunks/productChunks/itemChunks) mỗi cái tới ~1 MB, 300 cái đã vượt 11 MiB
+// (lỗi thật 2026-09-19). Nên commit theo CẢ số lượng LẪN kích thước ước lượng.
+const BATCH_MAX_DOCS = 200;
+const BATCH_MAX_BYTES = 8 * 1024 * 1024; // 8 MiB — chừa biên dưới trần 11 MiB của Firestore
+
 class BatchWriter {
     constructor(db, isDryRun) {
         this.db = db;
         this.isDryRun = isDryRun;
         this.batch = db.batch();
         this.count = 0;
+        this.bytes = 0;
         this.totalWritten = 0;
+    }
+
+    _estimateSize(data) {
+        // Ước lượng thô bằng JSON; đủ tốt để tránh vượt trần. Timestamp/GeoPoint tính hụt đôi chút
+        // nhưng biên 8/11 MiB đã bù. Không serialize được thì coi như 1 MiB (trần 1 doc của Firestore).
+        try { return Buffer.byteLength(JSON.stringify(data)); } catch { return 1024 * 1024; }
     }
 
     async set(docRef, data) {
@@ -111,13 +124,15 @@ class BatchWriter {
             this.totalWritten++;
             return;
         }
-        this.batch.set(docRef, data);
-        this.count++;
-        this.totalWritten++;
-
-        if (this.count >= 300) {
+        const size = this._estimateSize(data);
+        // Nếu thêm doc này làm batch hiện tại vượt biên, commit batch cũ TRƯỚC rồi mới thêm.
+        if (this.count > 0 && (this.count >= BATCH_MAX_DOCS || this.bytes + size >= BATCH_MAX_BYTES)) {
             await this.commit();
         }
+        this.batch.set(docRef, data);
+        this.count++;
+        this.bytes += size;
+        this.totalWritten++;
     }
 
     async commit() {
@@ -125,20 +140,40 @@ class BatchWriter {
             await this.batch.commit();
             this.batch = this.db.batch();
             this.count = 0;
+            this.bytes = 0;
         }
     }
 }
 
-async function migrateCollectionRecursively(srcColRef, targetColRef, writer, stats) {
-    const snap = await srcColRef.get();
-    for (const doc of snap.docs) {
-        const data = doc.data();
-        const targetDocRef = targetColRef.doc(doc.id);
-        await writer.set(targetDocRef, data);
-        stats.copiedDocs++;
+// Giãn nhịp đọc để tránh rate-limit của database "free tier" AI Studio (đọc dồn dập bị
+// RESOURCE_EXHAUSTED dù trần NGÀY chưa hết). Chỉnh qua env MIGRATE_THROTTLE_MS.
+const THROTTLE_MS = Number(process.env.MIGRATE_THROTTLE_MS || 60);
+const sleep = (ms) => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
 
-        // Subcollections
-        const subCollections = await doc.ref.listCollections();
+async function migrateCollectionRecursively(srcColRef, targetColRef, writer, stats) {
+    // listDocuments() thay cho get(): bắt cả document "bóng" ở mọi tầng (vd savedList lớn lưu dạng
+    // chunk có thể có doc cha bóng + subcollection itemChunks). get() sẽ bỏ sót chúng.
+    const docRefs = await srcColRef.listDocuments();
+    for (const srcRef of docRefs) {
+        const targetDocRef = targetColRef.doc(srcRef.id);
+        // RESUME: nếu target đã có doc này (từ lần chạy trước) thì bỏ qua đọc nguồn — tiết kiệm
+        // hạn mức đọc AI Studio. Đọc (default) không bị giới hạn. Vẫn đệ quy subcollection phòng
+        // trường hợp lần trước ghi cha xong nhưng con còn dở.
+        const done = (await targetDocRef.get()).exists;
+        if (!done) {
+            await sleep(THROTTLE_MS);
+            const snap = await srcRef.get();
+            if (snap.exists) {
+                await writer.set(targetDocRef, snap.data());
+                stats.copiedDocs++;
+            }
+        } else {
+            stats.skipped++;
+        }
+
+        // Subcollections (đệ quy)
+        await sleep(THROTTLE_MS);
+        const subCollections = await srcRef.listCollections();
         for (const subCol of subCollections) {
             const targetSubColRef = targetDocRef.collection(subCol.id);
             await migrateCollectionRecursively(subCol, targetSubColRef, writer, stats);
@@ -165,44 +200,60 @@ async function main() {
     }
 
     const writer = new BatchWriter(targetDb, IS_DRY_RUN);
-    const stats = { copiedDocs: 0, users: 0, stores: 0 };
+    const stats = { copiedDocs: 0, users: 0, stores: 0, skipped: 0 };
 
     try {
         console.log('\n[1/2] Đang sao chép collection users -> stickerUsers...');
-        const usersSnap = await sourceDb.collection('users').get();
-        stats.users = usersSnap.size;
-        console.log(`  Tìm thấy ${usersSnap.size} tài khoản In Sticker.`);
+        // DÙNG listDocuments() CHỨ KHÔNG .get(): .get() bỏ qua document "bóng" (có subcollection
+        // nhưng không có field). Đã đo thật 2026-09-19: stores toàn doc bóng nên .get() trả 0.
+        // Users hiện là doc thật, nhưng dùng listDocuments cho chắc — nếu có user chỉ còn state thì
+        // vẫn giữ được.
+        const userRefs = await sourceDb.collection('users').listDocuments();
+        stats.users = userRefs.length;
+        console.log(`  Tìm thấy ${userRefs.length} tài khoản In Sticker.`);
 
-        for (const userDoc of usersSnap.docs) {
-            const userData = userDoc.data();
-            const targetUserRef = targetDb.collection('stickerUsers').doc(userDoc.id);
-            await writer.set(targetUserRef, userData);
-            stats.copiedDocs++;
+        for (const userRef of userRefs) {
+            const targetUserRef = targetDb.collection('stickerUsers').doc(userRef.id);
+            if (!(await targetUserRef.get()).exists) {
+                await sleep(THROTTLE_MS);
+                const userSnap = await userRef.get();
+                if (userSnap.exists) {
+                    await writer.set(targetUserRef, userSnap.data());
+                    stats.copiedDocs++;
+                }
+            } else { stats.skipped++; }
 
-            // Kiểm tra state subcollection nếu có
-            const stateSnap = await userDoc.ref.collection('state').get();
-            for (const stateDoc of stateSnap.docs) {
-                await writer.set(targetUserRef.collection('state').doc(stateDoc.id), stateDoc.data());
-                stats.copiedDocs++;
-            }
+            // Kiểm tra state subcollection nếu có (đệ quy qua hàm chung để hưởng resume+throttle)
+            await migrateCollectionRecursively(userRef.collection('state'), targetUserRef.collection('state'), writer, stats);
         }
 
         console.log('\n[2/2] Đang sao chép collection stores (kho, tem đã lưu, tồn kho)...');
-        const storesSnap = await sourceDb.collection('stores').get();
-        stats.stores = storesSnap.size;
-        console.log(`  Tìm thấy ${storesSnap.size} kho gốc.`);
+        // 🔴 SỬA BUG MẤT DỮ LIỆU (2026-09-19): bản cũ dùng `collection('stores').get()` → trả 0 vì
+        // TẤT CẢ 10 kho là document "bóng" (chỉ có subcollection savedLists/inventoryChunks/…, không
+        // có field ở doc cha). `.get()` không trả doc bóng; phải dùng `listDocuments()`. Nếu chạy bản
+        // cũ sẽ MẤT ~688 savedLists + ~336 doc tồn kho/sản phẩm.
+        const storeRefs = await sourceDb.collection('stores').listDocuments();
+        stats.stores = storeRefs.length;
+        console.log(`  Tìm thấy ${storeRefs.length} kho gốc.`);
 
-        for (const storeDoc of storesSnap.docs) {
-            const targetStoreRef = targetDb.collection('stores').doc(storeDoc.id);
-            if (Object.keys(storeDoc.data() || {}).length > 0) {
-                await writer.set(targetStoreRef, storeDoc.data());
-                stats.copiedDocs++;
+        for (const storeRef of storeRefs) {
+            const targetStoreRef = targetDb.collection('stores').doc(storeRef.id);
+            // Kho toàn doc "bóng" nên thường không có field; chỉ ghi doc cha nếu nguồn có field và
+            // target chưa có. Dù sao subcollection mới là phần chính, luôn đệ quy bên dưới.
+            if (!(await targetStoreRef.get()).exists) {
+                await sleep(THROTTLE_MS);
+                const storeSnap = await storeRef.get();
+                if (storeSnap.exists && Object.keys(storeSnap.data() || {}).length > 0) {
+                    await writer.set(targetStoreRef, storeSnap.data());
+                    stats.copiedDocs++;
+                }
             }
 
-            const subCollections = await storeDoc.ref.listCollections();
+            await sleep(THROTTLE_MS);
+            const subCollections = await storeRef.listCollections();
             for (const subCol of subCollections) {
                 const targetSubColRef = targetStoreRef.collection(subCol.id);
-                console.log(`    - Đang sao chép subcollection: stores/${storeDoc.id}/${subCol.id}...`);
+                console.log(`    - Đang sao chép subcollection: stores/${storeRef.id}/${subCol.id}...`);
                 await migrateCollectionRecursively(subCol, targetSubColRef, writer, stats);
             }
         }
