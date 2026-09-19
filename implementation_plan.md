@@ -4947,3 +4947,33 @@ Rồi kiểm chứng đăng nhập staff (bước 6 runbook cũ).
 - ⚠️ Bài học: **database free-tier có trần đọc/ngày THẤP — chỉ được đọc nguồn 1 LẦN.** Lần sau di
   trú kiểu này phải: đọc 1 lần đổ ra file JSON local, rồi ghi từ local (ghi (default) không giới hạn),
   KHÔNG dry-run nhiều lần. Đã trả giá bằng nguyên ngày hạn mức.
+
+### QUYẾT ĐỊNH MỚI 2026-09-19: chủ dự án KHÔNG cần dữ liệu cũ → KHỞI ĐẦU MỚI trên (default)
+
+Chủ dự án chốt: "không cần dữ liệu cũ, chỉ cần In Sticker chạy được ngay". Nên BỎ việc di trú dữ
+liệu (khỏi phụ thuộc hạn mức AI Studio), chuyển sang làm In Sticker hoạt động NGAY trên (default)
+với dữ liệu trống.
+
+**Đã làm (tất cả xong, đã kiểm chứng thật):**
+1. Dọn 130 doc di trú dở trong (default)/stickerUsers + stores → sạch.
+2. `npm run deploy:rules` → (default) nhận block rules sticker.
+3. Deploy 3 hàm còn lại (stickerResolveSession/stickerRegister/stickerAdminUpdateUser) sang
+   (default) → **cả 4 hàm nhất quán trên (default)/stickerUsers**.
+4. Kiểm chứng đầu-cuối bằng tài khoản thật (đã xoá sau test):
+   - Admin: stickerRegister + stickerResolveSession → OK, hết RESOURCE_EXHAUSTED.
+   - Staff: stickerStaffAuth tạo doc + đăng nhập dự phòng bằng mật khẩu + resolveSession role:staff → OK.
+5. Web client đã deploy (dc0c578b, trỏ (default)) từ 13:03 → dashboard.pro.vn dùng được.
+
+**TRẠNG THÁI: In Sticker HOẠT ĐỘNG trên (default), dữ liệu trống (khởi đầu mới).** Nhân viên/quản lý
+đăng ký lại từ đầu.
+
+**Còn treo (không chặn sử dụng):**
+- 🔵 IAM `roles/iam.serviceAccountTokenCreator` cho SA Compute: chưa cấp → stickerStaffAuth vẫn trả
+  UNAVAILABLE ở bước createCustomToken, client tự dùng đường dự phòng mật khẩu (VẪN đăng nhập được).
+  Cấp IAM sẽ làm staff login "sạch" (token trực tiếp) thay vì qua dự phòng. Console → IAM → SA
+  388853115750-compute@developer.gserviceaccount.com → Service Account Token Creator.
+- Dữ liệu cũ (68 tài khoản + 688 danh sách + tồn kho) VẪN CÒN NGUYÊN trong AI Studio. Nếu sau này
+  đổi ý muốn khôi phục: chạy `node functions/scripts/migrate-sticker-to-default.cjs --execute` sau
+  14:00 (khi AI Studio còn hạn mức đọc). Script đã sửa đủ (listDocuments + batch theo size + resume).
+- Database AI Studio giờ không còn ai dùng (4 hàm + client đều sang (default)). Sau khi chắc chắn ổn,
+  có thể gỡ khỏi firebase.json + xoá (phá huỷ — hỏi trước).
