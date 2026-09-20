@@ -632,6 +632,83 @@ STR_BOSS SƠN_21707
 💡 Sao chép mã phía trên để sử dụng!`);
         });
 
+        it('tuyệt đối không nhận diện nhầm báo cáo thống kê tồn kho PMH thành form lọc phát mã PMH', async () => {
+            const { isInventoryOrStatisticsReport, parsePmhBlocks, filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const reportText = `@CMA_Nam 44517_TC
+📊 THỐNG KÊ PMH CÒN LẠI:
+------------------------
+⬢ PMH ICT TRỪ APPLE ( Hạn 30.09 )
+- Dưới 5 Triệu: 0
+- Từ 5 Đến 10 Triệu: 0
+- Từ 10 Đến 20 Triệu: 3673
+- Từ 20 Đến 30 Triệu: 186
+- Từ 30 Triệu: 359
+
+⬢ PMH ICT MOTOROLA ( 30/09 )
+- Giảm 2Tr SP Từ 10 Triệu: 0
+
+⬢ PMH ICT HONOR ( HẾT HẠN )
+- PMH 500K Honor 600 Lite 5G: 0
+
+⬢ PMH SAMSUNG S26 FE ( Hạn 30.09 )
+- PMH 1 Triệu samsung S26 FE: 0
+
+⬢ PMH LAPTOP TRỪ APPLE ( 30/09 )
+- PMH 500K DƯỚI 30 TRIỆU: 0
+- PMH 1TR TRÊN 30 TRIỆU: 0
+
+⬢ PMH ICT XIAOMI REDMI 17 ( hạn 07.09)
+- PMH 300k XIAOMI REDMI 17: 0
+
+⬢ PMH MÙA MƯA (Trừ Tủ lạnh dưới 200 lít , Endoffline)
+- Dưới 10 Triệu: 0
+- Từ 10 Đến 20 Triệu: 350
+- Trên 20 Triệu: 255
+
+⬢ PMH MLN SUNHOUSE 400K ( HẠN 01.09 )
+- MLN SUNHOUSE: 0
+
+⬢ ĐIỆN THOẠI GẬP ( hạn 30/09 )
+- GIẢM 2 TRIỆU DÒNG Flip: 0
+- GIẢM 3 TRIỆU DÒNG Fold: 0
+----
+📊 THỐNG KÊ PMH 20H00.
+
+📱 Smartphone - Tablet :
+• 50K : 0 Phiếu ❌
+• 100K : 0 Phiếu ❌
+• 200K : 2.155 Phiếu
+• 300K : 327 Phiếu
+• 500K : 319 Phiếu
+
+📱 Smartphone Hãng :
+• Samsung Galaxy Z Flip 7/8 + Motorola Razr 60 : 0 Phiếu ❌
+• Samsung Galaxy Z Fold 7/8 + Motorola Razr Fold + Oppo Find N6 : 7 Phiếu
+• Samsung Galaxy S26 FE : 0 Phiếu ❌
+• Motorola Trên 10 Triệu : 42 Phiếu
+👕 Máy Giặt :
+• Haier 800K : 0 Phiếu ❌
+
+🚰 Máy Lọc Nước :
+• Sunhouse 400K : 434 Phiếu
+
+⛈️ Nhóm Mùa Mưa (C.E) Số Lượng Phân Bổ Lớn Nên Sẽ Đủ Sử Dụng Hết Tháng 09.`;
+
+            // 1. Phải nhận diện chính xác đây là báo cáo thống kê / tồn kho
+            expect(isInventoryOrStatisticsReport(reportText)).toBe(true);
+
+            // 2. parsePmhBlocks phải trả về mảng rỗng (0 khối)
+            const blocks = parsePmhBlocks(reportText);
+            expect(blocks.length).toBe(0);
+
+            // 3. filterPmhByUsers phải trả về 0 block, không tạo tin nhắn spam
+            const candidates = ['STR_ Trường_21453-TC', 'Str_Tuấn_22094-TC', 'STR_BOSS SƠN_21707'];
+            const res = filterPmhByUsers(reportText, candidates);
+            expect(res.totalBlocks).toBe(0);
+            expect(res.matchedBlocks.length).toBe(0);
+        });
+
         it('bóc tách ngày lớn nhất từ danh sách mã và kiểm tra trạng thái hết hạn chuẩn xác', async () => {
             const {
                 extractLatestDateFromText,

@@ -112,10 +112,81 @@ export function parseCouponForm(text: string): ParsedCouponForm {
 }
 
 /**
- * Tách nội dung tin nhắn chuyển tiếp thành từng khối chứa "➜ PMH" hoặc "-> PMH"
+ * Kiểm tra xem tin nhắn có phải là Báo cáo Thống kê / Tồn kho / Phân bổ PMH hay không.
+ * (Để tuyệt đối không nhận diện nhầm thành form chuyển tiếp phát mã PMH).
+ */
+export function isInventoryOrStatisticsReport(text: string): boolean {
+    if (!text || typeof text !== 'string') return false;
+    const lower = text.toLowerCase();
+
+    // 1. Tiêu đề hoặc cụm từ đặc trưng của bảng thống kê / tồn kho / phân bổ
+    const reportKeywords = [
+        'thống kê pmh',
+        'thong ke pmh',
+        'thống kê tồn kho',
+        'thong ke ton kho',
+        'pmh còn lại',
+        'pmh con lai',
+        'tồn kho pmh',
+        'ton kho pmh',
+        'báo cáo pmh',
+        'bao cao pmh',
+        'báo cáo tồn kho',
+        'số lượng phân bổ',
+        'so luong phan bo',
+        'bảng thống kê',
+        'bang thong ke'
+    ];
+    if (reportKeywords.some(kw => lower.includes(kw))) {
+        return true;
+    }
+
+    // Tiêu đề thống kê kèm mốc giờ hoặc ngày (ví dụ: "THỐNG KÊ 20H00", "THỐNG KÊ 19H", "TỒN KHO 20H")
+    if (/(?:thống\s*kê|báo\s*cáo|tồn\s*kho).*(?:\d{1,2}h|\bpmh\b|còn\s*lại)/i.test(text)) {
+        return true;
+    }
+
+    // 2. Chứa nhiều dòng kiểm đếm số lượng phiếu (ví dụ: ": 0 Phiếu", ": 2.155 Phiếu", ": 42 Phiếu")
+    const countWithUnitMatches = text.match(/:\s*(?:\d+[\.,]?\d*)\s*(?:phiếu|phieu|cái|chiếc|[❌⚠️])/gi) || [];
+    if (countWithUnitMatches.length >= 2) {
+        return true;
+    }
+
+    // 3. Chứa nhiều dòng định mức hạn mức theo khoảng giá và số đếm (ví dụ: "- Dưới 5 Triệu: 0", "- Từ 10 Đến 20 Triệu: 3673")
+    const tierCountMatches = text.match(/(?:dưới|từ|trên)\s*\d+.*:\s*\d+/gi) || [];
+    if (tierCountMatches.length >= 2) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Kiểm tra tính hợp lệ của mã Coupon PMH thực tế
+ * (Loại trừ các số đếm tồn kho như 0, 1, 3673, 2155 hoặc các chữ số lượng "0 Phiếu")
+ */
+export function isValidCouponCode(code: string): boolean {
+    if (!code || typeof code !== 'string') return false;
+    const clean = code.trim();
+    // Mã coupon thực tế dài tối thiểu 5 ký tự, tối đa 40 ký tự
+    if (clean.length < 5 || clean.length > 40) return false;
+    // Nếu thuần là số, phải dài từ 7 chữ số trở lên (loại trừ các số đếm tồn kho như 0, 10, 186, 350, 3673)
+    if (/^\d+$/.test(clean) && clean.length < 7) return false;
+    // Không chứa các từ đơn vị, số lượng, hoặc trạng thái
+    if (/(?:phiếu|phieu|triệu|trieu|nghìn|nghin|\btr\b|\bvnd\b|hết|het|hạn|han)/i.test(clean)) return false;
+    return /^[A-Za-z0-9_-]+$/.test(clean);
+}
+
+/**
+ * Tách nội dung tin nhắn chuyển tiếp thành từng khối phát mã PMH hợp lệ
  */
 export function parsePmhBlocks(text: string): string[] {
     if (!text || typeof text !== 'string') return [];
+
+    // Nếu toàn bộ tin nhắn là báo cáo thống kê / tồn kho / phân bổ -> Bỏ qua ngay lập tức
+    if (isInventoryOrStatisticsReport(text)) {
+        return [];
+    }
 
     // 1. Tách theo vạch ngăn cách phổ biến (━━━, ───, ===, ---)
     let rawBlocks = text.split(/[━─—\-\=_~]{3,}/).map(b => b.trim()).filter(Boolean);
@@ -151,13 +222,31 @@ export function parsePmhBlocks(text: string): string[] {
         }
     }
 
-    // 3. Lọc chỉ giữ các khối có chứa kết quả PMH hoặc lỗi/thông báo (ví dụ: ➜ ❌ MĐH Áp Dụng Thiếu Hoặc Sai Cú Pháp.)
+    // 3. Lọc chỉ giữ các khối thật sự là phát mã PMH hoặc thông báo lỗi/từ chối từ BOT phát mã
     return rawBlocks.filter(block => {
-        const hasPmh = /(?:➜|->|=>|►|•)?\s*(?:PMH|phiếu)/i.test(block) || /\bPMH\b/i.test(block);
-        const hasError = /(?:➜|->|=>|►|•|^\s*)\s*[❌⚠️🚫❗⛔]/u.test(block) || /(?:➜|->|=>|►|•)\s*(?:thiếu|sai|lỗi|không|mđh)/i.test(block);
-        if (!hasPmh && !hasError) return false;
-        if (block.includes('Hãy chuyển tiếp tin nhắn này') && !block.includes(':') && !hasError) return false;
-        return true;
+        // Nếu khối là thống kê/tồn kho con -> Bỏ qua
+        if (isInventoryOrStatisticsReport(block)) return false;
+
+        // Bỏ qua nếu là hướng dẫn chuyển tiếp đơn thuần không có kết quả
+        if (block.includes('Hãy chuyển tiếp tin nhắn này') && !block.includes(':') && !/[❌⚠️🚫❗⛔]/.test(block)) return false;
+
+        // Kiểm tra xem khối có chứa kết quả cấp mã hợp lệ hay không:
+        // a) Có dòng cấp mã PMH với mã coupon hợp lệ (từ 5 ký tự trở lên, không phải số đếm 0, 1, 350...)
+        const lines = block.split(/\r?\n/).map(l => l.trim());
+        let hasValidCode = false;
+        for (const line of lines) {
+            const pmhMatch = line.match(/(?:➜|->|=>|►|•)?\s*(?:pmh|phiếu)\s*([^:]*?)\s*:\s*([A-Za-z0-9_-]{4,40})/i);
+            if (pmhMatch && isValidCouponCode(pmhMatch[2])) {
+                hasValidCode = true;
+                break;
+            }
+        }
+
+        // b) Hoặc có dòng báo lỗi/từ chối của bot phát mã (ví dụ: ➜ ❌ MĐH Áp Dụng Thiếu Hoặc Sai Cú Pháp, ❌ Đơn hàng chưa duyệt...)
+        const hasBotError = /(?:➜|->|=>|►|•|^\s*)\s*[❌⚠️🚫❗⛔]\s*(?:mđh|áp dụng|thiếu|sai|lỗi|hết|chưa|không|hợp lệ|thu hồi)/iu.test(block) ||
+            (/(?:➜|->|=>|►|•)\s*(?:thiếu|sai|lỗi|hết hạn|không hợp lệ|đã thu hồi)/iu.test(block) && /mđh|áp dụng|cú pháp/iu.test(block));
+
+        return hasValidCode || hasBotError;
     });
 }
 
@@ -243,16 +332,18 @@ export function parsePmhBlockDetails(block: string): {
         const pmhMatch = line.match(/(?:➜|->|=>|►|•)?\s*(?:pmh|phiếu)\s*([^:]*?)\s*:\s*([A-Za-z0-9_-]{4,40})/i);
         if (pmhMatch) {
             const rawType = pmhMatch[1].trim();
-            if (rawType && !typeOrProduct) {
-                typeOrProduct = rawType;
-            }
             const foundCode = pmhMatch[2].trim();
-            if (!code) code = foundCode;
-            allCodes.push({
-                typeOrProduct: rawType,
-                code: foundCode
-            });
-            continue;
+            if (isValidCouponCode(foundCode)) {
+                if (rawType && !typeOrProduct) {
+                    typeOrProduct = rawType;
+                }
+                if (!code) code = foundCode;
+                allCodes.push({
+                    typeOrProduct: rawType,
+                    code: foundCode
+                });
+                continue;
+            }
         }
 
         // 1b. Dòng thông báo lỗi hoặc trạng thái từ BOT phát mã: ➜ ❌ MĐH Áp Dụng..., ❌ ...
@@ -330,7 +421,7 @@ export function parsePmhBlockDetails(block: string): {
             orderId: orderId || undefined
         });
     } else if (allCodes.length === 0) {
-        const otherLines = lines.filter(l => l !== finalRecipient && !l.startsWith('---') && !l.startsWith('━━━'));
+        const otherLines = lines.filter(l => l !== finalRecipient && !l.startsWith('---') && !l.startsWith('━━━') && (l.includes('❌') || l.includes('⚠️') || l.includes('Lưu ý') || l.includes('Chú ý') || /mđh|áp dụng/i.test(l)));
         if (otherLines.length > 0) {
             otherLines.forEach(l => {
                 const cleanL = l.startsWith('➜') ? l : `➜ ${l}`;
@@ -375,6 +466,15 @@ export function parsePmhBlockDetails(block: string): {
  * Lọc toàn diện các khối PMH theo danh sách tên người dùng được cấu hình
  */
 export function filterPmhByUsers(text: string, candidateNames: string[]): PmhFilterResult {
+    if (isInventoryOrStatisticsReport(text)) {
+        return {
+            totalBlocks: 0,
+            matchedBlocks: [],
+            matchedCodes: [],
+            summaryMessage: ''
+        };
+    }
+
     const allBlocks = parsePmhBlocks(text);
     const cleanNames = (candidateNames || []).map(n => (n || '').trim()).filter(Boolean);
 
