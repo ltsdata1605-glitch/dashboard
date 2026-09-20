@@ -783,9 +783,10 @@ export type CouponCategory = 'EVENT' | 'GVGS' | 'ALL';
  * (Bao gồm Event, Event Cuối Tuần, Event Lớn để tương thích ngược)
  */
 export function isEventCategory(type?: string): boolean {
-    if (!type) return false;
+    if (!type) return true;
     const t = type.toLowerCase().trim();
-    return t === 'event' || t.startsWith('event') || t.includes('cuối tuần') || t.includes('cuoi tuan') || t.includes('event lớn') || t.includes('event lon');
+    if (isGvgsCategory(t)) return false;
+    return true;
 }
 
 /**
@@ -1029,7 +1030,7 @@ export function formatInventoryReportMessage(
     }
 
     for (const item of products) {
-        const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+        const cmdPrefix = isGvgs ? 'gv' : 'e';
         const cmdCode = `${cmdPrefix}${item.index}`;
         if (item.unused === 0) {
             text += `🔴 [${cmdCode}] ❌ ${item.productName}: HẾT MÃ (0/${item.total} mã)\n`;
@@ -1063,18 +1064,18 @@ export function createInventoryReportFlexMessage(params: {
     const { category, totalAll, totalUnused, products } = params;
     const isEvent = category === 'EVENT';
     const isGvgs = category === 'GVGS';
-    const categoryTitle = isEvent ? 'PMH EVENT' : isGvgs ? 'PMH GIỜ VÀNG' : 'TẤT CẢ PMH';
-    const headerColor = isEvent ? '#059669' : isGvgs ? '#D97706' : '#2563EB';
-    const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+    const categoryTitle = isGvgs ? 'PMH GIỜ VÀNG' : 'PMH EVENT';
+    const headerColor = isGvgs ? '#D97706' : '#059669';
+    const cmdPrefix = isGvgs ? 'gv' : 'e';
     const pct = totalAll > 0 ? Math.round((totalUnused / totalAll) * 100) : 0;
     const defaultAlt = `📊 Báo cáo tồn kho ${categoryTitle}: ${totalUnused}/${totalAll} mã khả dụng (${pct}%)`;
     const altText = params.altText || defaultAlt;
 
     const PAGE_SIZE = 10;
-    const totalPages = Math.ceil(products.length / PAGE_SIZE) || 1;
+    const totalPages = Math.min(Math.ceil(products.length / PAGE_SIZE) || 1, 10);
     const pages: ProductInventoryItem[][] = [];
 
-    for (let i = 0; i < products.length; i += PAGE_SIZE) {
+    for (let i = 0; i < products.length && pages.length < 10; i += PAGE_SIZE) {
         pages.push(products.slice(i, i + PAGE_SIZE));
     }
     if (pages.length === 0) {

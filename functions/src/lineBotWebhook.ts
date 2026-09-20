@@ -253,27 +253,7 @@ function createCouponFlexMessage(params: {
                 }
             ]
         },
-        // Nút bấm clipboard action
-        {
-            type: 'button',
-            style: 'primary',
-            color: '#06C755',
-            height: 'sm',
-            margin: 'md',
-            action: {
-                type: 'clipboard',
-                label: '📋 Chạm Để Copy Mã Coupon',
-                clipboardText: cleanCode
-            }
-        },
-        {
-            type: 'text',
-            text: '💡 Chạm vào khung hoặc nút để tự động copy mã',
-            size: 'xxs',
-            color: '#94A3B8',
-            align: 'center',
-            margin: 'xs'
-        },
+
         ...(params.warningSuffix ? [{
             type: 'text',
             text: params.warningSuffix.trim(),
@@ -604,9 +584,10 @@ interface ProductInventoryItem {
 type CouponCategory = 'EVENT' | 'GVGS' | 'ALL';
 
 function isEventCategory(type?: string): boolean {
-    if (!type) return false;
+    if (!type) return true;
     const t = type.toLowerCase().trim();
-    return t === 'event' || t.startsWith('event') || t.includes('cuối tuần') || t.includes('cuoi tuan') || t.includes('event lớn') || t.includes('event lon');
+    if (isGvgsCategory(t)) return false;
+    return true;
 }
 
 function isGvgsCategory(type?: string): boolean {
@@ -818,7 +799,7 @@ function formatInventoryReportMessage(
     }
 
     for (const item of products) {
-        const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+        const cmdPrefix = isGvgs ? 'gv' : 'e';
         const cmdCode = `${cmdPrefix}${item.index}`;
         if (item.unused === 0) {
             text += `🔴 [${cmdCode}] ❌ ${item.productName}: HẾT MÃ (0/${item.total} mã)\n`;
@@ -852,18 +833,18 @@ function createInventoryReportFlexMessage(params: {
     const { category, totalAll, totalUnused, products } = params;
     const isEvent = category === 'EVENT';
     const isGvgs = category === 'GVGS';
-    const categoryTitle = isEvent ? 'PMH EVENT' : isGvgs ? 'PMH GIỜ VÀNG' : 'TẤT CẢ PMH';
-    const headerColor = isEvent ? '#059669' : isGvgs ? '#D97706' : '#2563EB';
-    const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+    const categoryTitle = isGvgs ? 'PMH GIỜ VÀNG' : 'PMH EVENT';
+    const headerColor = isGvgs ? '#D97706' : '#059669';
+    const cmdPrefix = isGvgs ? 'gv' : 'e';
     const pct = totalAll > 0 ? Math.round((totalUnused / totalAll) * 100) : 0;
     const defaultAlt = `📊 Báo cáo tồn kho ${categoryTitle}: ${totalUnused}/${totalAll} mã khả dụng (${pct}%)`;
     const altText = params.altText || defaultAlt;
 
     const PAGE_SIZE = 10;
-    const totalPages = Math.ceil(products.length / PAGE_SIZE) || 1;
+    const totalPages = Math.min(Math.ceil(products.length / PAGE_SIZE) || 1, 10);
     const pages: ProductInventoryItem[][] = [];
 
-    for (let i = 0; i < products.length; i += PAGE_SIZE) {
+    for (let i = 0; i < products.length && pages.length < 10; i += PAGE_SIZE) {
         pages.push(products.slice(i, i + PAGE_SIZE));
     }
     if (pages.length === 0) {
@@ -1851,7 +1832,7 @@ export const lineBotWebhook = onRequest(
                 if (isTkEvent || isTkGvgs || isTkAll) {
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
                     const coupons = snap.docs.map(d => d.data());
-                    const cat: CouponCategory = isTkEvent ? 'EVENT' : isTkGvgs ? 'GVGS' : 'ALL';
+                    const cat: CouponCategory = isTkGvgs ? 'GVGS' : 'EVENT';
                     const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, cat);
 
                     if (products.length === 0) {

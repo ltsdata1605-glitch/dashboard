@@ -580,33 +580,6 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                 </div>
                                             </div>
 
-                                            {/* Nút bấm LINE Flex Button (action type: clipboard) */}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleCopyCode(activeCouponCode)}
-                                                className={`w-full py-2 px-3 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer select-none ${
-                                                    copiedCode === activeCouponCode
-                                                        ? 'bg-emerald-700 text-white ring-2 ring-emerald-400'
-                                                        : 'bg-[#06C755] hover:bg-[#05a847] text-white'
-                                                }`}
-                                            >
-                                                {copiedCode === activeCouponCode ? (
-                                                    <>
-                                                        <Check size={13} className="stroke-[3]" />
-                                                        <span>ĐÃ COPY MÃ COUPON!</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Copy size={13} />
-                                                        <span>Chạm Để Copy Mã Coupon</span>
-                                                    </>
-                                                )}
-                                            </button>
-
-                                            {/* Ghi chú cơ chế tự động copy */}
-                                            <div className="text-[8.5px] text-center text-slate-400 dark:text-slate-500 pt-0.5">
-                                                💡 Người dùng trên điện thoại chạm vào sẽ tự động copy mã
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
