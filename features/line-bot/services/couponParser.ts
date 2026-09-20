@@ -1069,7 +1069,7 @@ export function createInventoryReportFlexMessage(params: {
     const cmdPrefix = isGvgs ? 'gv' : 'e';
     const pct = totalAll > 0 ? Math.round((totalUnused / totalAll) * 100) : 0;
     const defaultAlt = `📊 Báo cáo tồn kho ${categoryTitle}: ${totalUnused}/${totalAll} mã khả dụng (${pct}%)`;
-    const altText = params.altText || defaultAlt;
+    const altText = (params.altText && params.altText.length <= 400) ? params.altText : defaultAlt;
 
     const PAGE_SIZE = 10;
     const totalPages = Math.min(Math.ceil(products.length / PAGE_SIZE) || 1, 10);
@@ -1241,7 +1241,7 @@ export function createInventoryReportFlexMessage(params: {
                         color: '#F1F5F9',
                         action: {
                             type: 'message',
-                            label: '❓ Hướng dẫn sử dụng (hd)',
+                            label: '❓ Hướng dẫn (hd)',
                             text: 'hd'
                         }
                     }
