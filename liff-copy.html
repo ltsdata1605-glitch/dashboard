@@ -83,6 +83,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const couponCode = (urlParams.get('code') || '').trim();
         const couponType = (urlParams.get('type') || 'PMH').trim();
+        const cardIndex = (urlParams.get('index') || '1').trim();
         const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
 
         const codeDisplay = document.getElementById('codeDisplay');
@@ -181,7 +182,8 @@
                 });
 
                 // 6. Gửi tin nhắn xác nhận thay cho user vào nhóm/chat
-                const messageText = `👉 Mã này đã được ${displayName} sử dụng lúc ${timeString}!`;
+                const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
+                const messageText = `👉 ${prefix} đã được ${displayName} sử dụng lúc ${timeString}!`;
 
                 try {
                     await liff.sendMessages([
