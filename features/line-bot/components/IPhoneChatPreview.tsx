@@ -681,7 +681,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
 
                                             <div className="text-[9px] text-slate-400 dark:text-slate-500 space-y-0.5 pt-0.5">
                                                 <div>• Lọc mã riêng: Chuyển tiếp tin nhắn gộp cho Bot (chat 1-1).</div>
-                                                <div>• Cú pháp mẫu: Gõ <strong className="text-slate-700 dark:text-slate-300">cp</strong> | Group ID: Gõ <strong className="text-slate-700 dark:text-slate-300">id</strong></div>
+                                                <div>• Tra cứu User ID / Group ID: Gõ <strong className="text-slate-700 dark:text-slate-300">id</strong></div>
                                             </div>
                                         </div>
 
