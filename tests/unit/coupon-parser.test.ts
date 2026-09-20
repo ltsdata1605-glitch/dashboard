@@ -773,5 +773,62 @@ MĐH Áp Dụng: 00910SO26090335446`;
             // -> Khi isBelongsToBot === false, Bot sẽ TUYỆT ĐỐI IM LẶNG!
         });
     });
+
+    describe('createInventoryReportFlexMessage (Giao diện Thẻ tương tác LINE Flex Message)', () => {
+        it('tạo cấu hình Flex Bubble chuẩn cho danh sách dưới hoặc bằng 10 sản phẩm', async () => {
+            const { createInventoryReportFlexMessage } = await import('../../features/line-bot/services/couponParser');
+            const sampleProducts = [
+                { index: 1, productName: 'Bếp điện từ đôi Sunhouse', total: 20, unused: 20 },
+                { index: 2, productName: 'Máy xay thịt Bear', total: 30, unused: 29 },
+                { index: 3, productName: 'Quạt đứng Midea', total: 10, unused: 0 }
+            ];
+
+            const flex = createInventoryReportFlexMessage({
+                category: 'EVENT',
+                totalAll: 60,
+                totalUnused: 49,
+                products: sampleProducts
+            });
+
+            expect(flex.type).toBe('flex');
+            expect(flex.contents.type).toBe('bubble');
+            expect(flex.contents.header.contents[0].contents[0].text).toContain('📊 TỒN KHO PMH EVENT');
+            
+            // Dòng thứ 2 (Máy xay Bear) phải có action gửi lệnh e2 khi chạm vào
+            const row2 = flex.contents.body.contents[1].contents[1];
+            expect(row2.action).toEqual({
+                type: 'message',
+                label: 'e2',
+                text: 'e2'
+            });
+
+            // Không được chứa quoteToken
+            expect((flex as any).quoteToken).toBeUndefined();
+        });
+
+        it('tự động phân trang Carousel khi danh sách có trên 10 sản phẩm để vừa màn hình', async () => {
+            const { createInventoryReportFlexMessage } = await import('../../features/line-bot/services/couponParser');
+            const sampleProducts = Array.from({ length: 15 }, (_, i) => ({
+                index: i + 1,
+                productName: `Sản phẩm số ${i + 1}`,
+                total: 30,
+                unused: 30
+            }));
+
+            const flex = createInventoryReportFlexMessage({
+                category: 'GVGS',
+                totalAll: 450,
+                totalUnused: 450,
+                products: sampleProducts
+            });
+
+            expect(flex.type).toBe('flex');
+            expect(flex.contents.type).toBe('carousel');
+            expect(flex.contents.contents.length).toBe(2); // 15 sản phẩm chia 2 slide (10 và 5)
+            expect(flex.contents.contents[0].header.contents[0].contents[0].text).toContain('(1/2)');
+            expect(flex.contents.contents[1].header.contents[0].contents[0].text).toContain('(2/2)');
+        });
+    });
 });
+
 

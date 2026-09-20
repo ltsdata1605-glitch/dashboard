@@ -808,12 +808,14 @@ function formatInventoryReportMessage(
     }
 
     for (const item of products) {
+        const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+        const cmdCode = `${cmdPrefix}${item.index}`;
         if (item.unused === 0) {
-            text += `${item.index}. ❌ ${item.productName}\n   ➜ HẾT MÃ (0/${item.total} mã)\n`;
+            text += `🔴 [${cmdCode}] ❌ ${item.productName}: HẾT MÃ (0/${item.total} mã)\n`;
         } else if (item.unused < 3) {
-            text += `${item.index}. ⚠️ ${item.productName}\n   ➜ SẮP HẾT: Còn ${item.unused}/${item.total} mã (CẦN NẠP GẤP!)\n`;
+            text += `🟡 [${cmdCode}] ⚠️ ${item.productName}: SẮP HẾT: Còn ${item.unused}/${item.total} mã (CẦN NẠP GẤP!)\n`;
         } else {
-            text += `${item.index}. ${item.productName}\n   ➜ Còn khả dụng: ${item.unused}/${item.total} mã\n`;
+            text += `🟢 [${cmdCode}] ${item.index}. ${item.productName}: Còn khả dụng: ${item.unused}/${item.total} mã\n`;
         }
     }
 
@@ -823,6 +825,235 @@ function formatInventoryReportMessage(
         totalUnused,
         totalAll,
         products
+    };
+}
+
+/**
+ * Tạo LINE Flex Message dạng Dashboard hiển thị danh sách tồn kho PMH
+ * Thiết kế hiện đại, có badge màu số lượng và cho phép chạm vào từng sản phẩm để nhận mã ngay lập tức
+ */
+function createInventoryReportFlexMessage(params: {
+    category: CouponCategory;
+    totalAll: number;
+    totalUnused: number;
+    products: ProductInventoryItem[];
+    altText?: string;
+}) {
+    const { category, totalAll, totalUnused, products } = params;
+    const isEvent = category === 'EVENT';
+    const isGvgs = category === 'GVGS';
+    const categoryTitle = isEvent ? 'PMH EVENT' : isGvgs ? 'PMH GIỜ VÀNG' : 'TẤT CẢ PMH';
+    const headerColor = isEvent ? '#059669' : isGvgs ? '#D97706' : '#2563EB';
+    const cmdPrefix = isEvent ? 'e' : isGvgs ? 'gv' : 'sp';
+    const pct = totalAll > 0 ? Math.round((totalUnused / totalAll) * 100) : 0;
+    const defaultAlt = `📊 Báo cáo tồn kho ${categoryTitle}: ${totalUnused}/${totalAll} mã khả dụng (${pct}%)`;
+    const altText = params.altText || defaultAlt;
+
+    const PAGE_SIZE = 10;
+    const totalPages = Math.ceil(products.length / PAGE_SIZE) || 1;
+    const pages: ProductInventoryItem[][] = [];
+
+    for (let i = 0; i < products.length; i += PAGE_SIZE) {
+        pages.push(products.slice(i, i + PAGE_SIZE));
+    }
+    if (pages.length === 0) {
+        pages.push([]);
+    }
+
+    const bubbles = pages.map((pageItems, pageIdx) => {
+        const pageLabel = totalPages > 1 ? ` (${pageIdx + 1}/${totalPages})` : '';
+
+        const itemBoxes = pageItems.map(item => {
+            const cmdCode = `${cmdPrefix}${item.index}`;
+            const isOut = item.unused === 0;
+            const isLow = item.unused > 0 && item.unused < 3;
+            const badgeBg = isOut ? '#FEE2E2' : isLow ? '#FEF3C7' : '#ECFDF5';
+            const badgeColor = isOut ? '#DC2626' : isLow ? '#D97706' : '#059669';
+            const statusText = isOut ? 'HẾT MÃ' : `${item.unused}/${item.total}`;
+
+            return {
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'sm',
+                alignItems: 'center',
+                backgroundColor: isOut ? '#FEF2F2' : isLow ? '#FFFBEB' : (item.index % 2 === 0 ? '#F8FAFC' : '#FFFFFF'),
+                cornerRadius: 'md',
+                paddingAll: '7px',
+                margin: 'xs',
+                action: {
+                    type: 'message',
+                    label: cmdCode,
+                    text: cmdCode
+                },
+                contents: [
+                    {
+                        type: 'box',
+                        layout: 'vertical',
+                        backgroundColor: badgeBg,
+                        cornerRadius: 'sm',
+                        paddingAll: '3px',
+                        width: '38px',
+                        alignItems: 'center',
+                        contents: [
+                            {
+                                type: 'text',
+                                text: cmdCode,
+                                weight: 'bold',
+                                size: 'xxs',
+                                color: badgeColor
+                            }
+                        ]
+                    },
+                    {
+                        type: 'text',
+                        text: item.productName,
+                        size: 'xs',
+                        color: isOut ? '#94A3B8' : '#1E293B',
+                        weight: isOut ? 'regular' : 'bold',
+                        flex: 7,
+                        wrap: true
+                    },
+                    {
+                        type: 'text',
+                        text: statusText,
+                        size: 'xxs',
+                        color: badgeColor,
+                        weight: 'bold',
+                        align: 'end',
+                        flex: 3
+                    }
+                ]
+            };
+        });
+
+        return {
+            type: 'bubble',
+            size: 'mega',
+            header: {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: headerColor,
+                paddingAll: '12px',
+                contents: [
+                    {
+                        type: 'box',
+                        layout: 'horizontal',
+                        contents: [
+                            {
+                                type: 'text',
+                                text: `📊 TỒN KHO ${categoryTitle}${pageLabel}`,
+                                color: '#FFFFFF',
+                                weight: 'bold',
+                                size: 'sm',
+                                flex: 8
+                            },
+                            {
+                                type: 'text',
+                                text: `${pct}%`,
+                                color: '#FCD34D',
+                                weight: 'bold',
+                                size: 'xs',
+                                align: 'end',
+                                flex: 2
+                            }
+                        ]
+                    },
+                    {
+                        type: 'text',
+                        text: `Khả dụng: ${totalUnused}/${totalAll} mã`,
+                        color: '#E2E8F0',
+                        size: 'xxs',
+                        margin: 'xs'
+                    }
+                ]
+            },
+            body: {
+                type: 'box',
+                layout: 'vertical',
+                paddingAll: '10px',
+                contents: [
+                    {
+                        type: 'box',
+                        layout: 'vertical',
+                        backgroundColor: '#F1F5F9',
+                        cornerRadius: 'sm',
+                        paddingAll: '5px',
+                        margin: 'none',
+                        contents: [
+                            {
+                                type: 'text',
+                                text: `💡 Chạm vào sản phẩm để tự động gửi lệnh nhận mã!`,
+                                size: 'xxs',
+                                color: '#475569',
+                                align: 'center'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'box',
+                        layout: 'vertical',
+                        margin: 'sm',
+                        contents: itemBoxes.length > 0 ? itemBoxes : [
+                            {
+                                type: 'text',
+                                text: 'Hiện không có sản phẩm nào.',
+                                size: 'xs',
+                                color: '#94A3B8',
+                                align: 'center',
+                                margin: 'md'
+                            }
+                        ]
+                    }
+                ]
+            },
+            footer: {
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'sm',
+                paddingAll: '10px',
+                contents: [
+                    {
+                        type: 'button',
+                        style: 'secondary',
+                        height: 'sm',
+                        color: '#F1F5F9',
+                        action: {
+                            type: 'message',
+                            label: '📋 Cú pháp (cp)',
+                            text: 'cp'
+                        }
+                    },
+                    {
+                        type: 'button',
+                        style: 'secondary',
+                        height: 'sm',
+                        color: '#F1F5F9',
+                        action: {
+                            type: 'message',
+                            label: '❓ Trợ giúp (hd)',
+                            text: 'hd'
+                        }
+                    }
+                ]
+            }
+        };
+    });
+
+    if (bubbles.length === 1) {
+        return {
+            type: 'flex',
+            altText,
+            contents: bubbles[0]
+        };
+    }
+
+    return {
+        type: 'flex',
+        altText,
+        contents: {
+            type: 'carousel',
+            contents: bubbles
+        }
     };
 }
 
@@ -1618,10 +1849,25 @@ export const lineBotWebhook = onRequest(
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
                     const coupons = snap.docs.map(d => d.data());
                     const cat: CouponCategory = isTkEvent ? 'EVENT' : isTkGvgs ? 'GVGS' : 'ALL';
-                    const { replyText } = formatInventoryReportMessage(coupons, cat);
-                    await replyLineMessage(token, replyToken, [
-                        { type: 'text', text: replyText }
-                    ]);
+                    const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, cat);
+
+                    if (products.length === 0) {
+                        await replyLineMessage(token, replyToken, [
+                            { type: 'text', text: replyText }
+                        ]);
+                        continue;
+                    }
+
+                    // Gửi Thẻ Flex Message Dashboard Tồn kho tương tác (1-chạm gửi lệnh lấy mã)
+                    const flexMsg = createInventoryReportFlexMessage({
+                        category: cat,
+                        totalAll,
+                        totalUnused,
+                        products,
+                        altText: replyText
+                    });
+
+                    await replyLineMessage(token, replyToken, [flexMsg]);
                     continue;
                 }
 
