@@ -865,12 +865,15 @@ function createInventoryReportFlexMessage(params: {
             return {
                 type: 'box',
                 layout: 'horizontal',
-                spacing: 'sm',
+                spacing: 'xs',
                 alignItems: 'center',
                 backgroundColor: isOut ? '#FEF2F2' : isLow ? '#FFFBEB' : (item.index % 2 === 0 ? '#F8FAFC' : '#FFFFFF'),
                 cornerRadius: 'md',
-                paddingAll: '7px',
-                margin: 'xs',
+                paddingStart: '6px',
+                paddingEnd: '6px',
+                paddingTop: '3px',
+                paddingBottom: '3px',
+                margin: 'xxs',
                 action: {
                     type: 'message',
                     label: cmdCode,
@@ -882,8 +885,8 @@ function createInventoryReportFlexMessage(params: {
                         layout: 'vertical',
                         backgroundColor: badgeBg,
                         cornerRadius: 'sm',
-                        paddingAll: '3px',
-                        width: '38px',
+                        paddingAll: '2px',
+                        width: '32px',
                         alignItems: 'center',
                         contents: [
                             {
@@ -898,7 +901,7 @@ function createInventoryReportFlexMessage(params: {
                     {
                         type: 'text',
                         text: item.productName,
-                        size: 'xs',
+                        size: 'xxs',
                         color: isOut ? '#94A3B8' : '#1E293B',
                         weight: isOut ? 'regular' : 'bold',
                         flex: 7,
@@ -924,7 +927,7 @@ function createInventoryReportFlexMessage(params: {
                 type: 'box',
                 layout: 'vertical',
                 backgroundColor: headerColor,
-                paddingAll: '12px',
+                paddingAll: '10px',
                 contents: [
                     {
                         type: 'box',
@@ -961,14 +964,14 @@ function createInventoryReportFlexMessage(params: {
             body: {
                 type: 'box',
                 layout: 'vertical',
-                paddingAll: '10px',
+                paddingAll: '8px',
                 contents: [
                     {
                         type: 'box',
                         layout: 'vertical',
                         backgroundColor: '#F1F5F9',
                         cornerRadius: 'sm',
-                        paddingAll: '5px',
+                        paddingAll: '4px',
                         margin: 'none',
                         contents: [
                             {
@@ -983,7 +986,7 @@ function createInventoryReportFlexMessage(params: {
                     {
                         type: 'box',
                         layout: 'vertical',
-                        margin: 'sm',
+                        margin: 'xs',
                         contents: itemBoxes.length > 0 ? itemBoxes : [
                             {
                                 type: 'text',
@@ -1000,8 +1003,8 @@ function createInventoryReportFlexMessage(params: {
             footer: {
                 type: 'box',
                 layout: 'vertical',
-                spacing: 'sm',
-                paddingAll: '10px',
+                spacing: 'xs',
+                paddingAll: '8px',
                 contents: [
                     {
                         type: 'button',
