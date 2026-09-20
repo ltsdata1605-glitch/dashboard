@@ -165,7 +165,7 @@ function createCouponFlexMessage(params: {
                     type: 'text',
                     text: `@${params.displayName}`,
                     weight: 'bold',
-                    size: 'md',
+                    size: 'xs',
                     color: '#0284C7',
                     flex: 8
                 },
@@ -183,10 +183,10 @@ function createCouponFlexMessage(params: {
         {
             type: 'box',
             layout: 'vertical',
-            margin: 'sm',
+            margin: 'xs',
             backgroundColor: '#F8FAFC',
             cornerRadius: 'md',
-            paddingAll: '8px',
+            paddingAll: '7px',
             contents: [
                 {
                     type: 'text',
@@ -222,12 +222,12 @@ function createCouponFlexMessage(params: {
         {
             type: 'box',
             layout: 'vertical',
-            margin: 'md',
+            margin: 'sm',
             backgroundColor: '#ECFDF5',
             cornerRadius: 'lg',
             borderWidth: '2px',
             borderColor: '#06C755',
-            paddingAll: '12px',
+            paddingAll: '8px',
             alignItems: 'center',
             action: {
                 type: 'clipboard',
@@ -246,7 +246,7 @@ function createCouponFlexMessage(params: {
                     type: 'text',
                     text: cleanCode,
                     weight: 'bold',
-                    size: 'xl',
+                    size: 'md',
                     color: '#0F172A',
                     align: 'center',
                     margin: 'xs'
@@ -260,7 +260,7 @@ function createCouponFlexMessage(params: {
             size: 'xxs',
             color: '#D97706',
             wrap: true,
-            margin: 'sm'
+            margin: 'xs'
         }] : [])
     ];
 

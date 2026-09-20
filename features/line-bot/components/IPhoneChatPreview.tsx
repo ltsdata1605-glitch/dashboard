@@ -527,7 +527,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         <div className="p-3 space-y-2 text-xs">
                                             {/* Tag / Recipient */}
                                             <div className="flex items-center justify-between">
-                                                <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono">
+                                                <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
                                                     <span>@{firstName}</span>
                                                     <span className="text-[8px] px-1 py-0.2 bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 rounded font-sans">
                                                         Đã tag tên
@@ -550,7 +550,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                             {/* Khung Mã Coupon Clickable (Mô phỏng Action: Clipboard của Flex Message) */}
                                             <div
                                                 onClick={() => handleCopyCode(activeCouponCode)}
-                                                className={`group relative p-2.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center ${
+                                                className={`group relative p-2 rounded-xl border-2 transition-all cursor-pointer select-none text-center ${
                                                     copiedCode === activeCouponCode
                                                         ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
                                                         : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
@@ -562,10 +562,10 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                     <span className="text-[8px] font-normal lowercase italic text-slate-400">(chạm để copy)</span>
                                                 </div>
                                                 
-                                                <div className="font-mono font-black text-base text-slate-900 dark:text-white tracking-widest my-1 flex items-center justify-center gap-1.5">
+                                                <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
                                                     <span>{activeCouponCode}</span>
                                                     <span className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                        {copiedCode === activeCouponCode ? <Check size={13} className="stroke-[3]" /> : <Copy size={13} />}
+                                                        {copiedCode === activeCouponCode ? <Check size={12} className="stroke-[3]" /> : <Copy size={12} />}
                                                     </span>
                                                 </div>
 
