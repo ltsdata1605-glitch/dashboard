@@ -873,7 +873,6 @@ function createInventoryReportFlexMessage(params: {
                 paddingEnd: '6px',
                 paddingTop: '3px',
                 paddingBottom: '3px',
-                margin: 'xxs',
                 action: {
                     type: 'message',
                     label: cmdCode,
@@ -986,6 +985,7 @@ function createInventoryReportFlexMessage(params: {
                     {
                         type: 'box',
                         layout: 'vertical',
+                        spacing: 'xs',
                         margin: 'xs',
                         contents: itemBoxes.length > 0 ? itemBoxes : [
                             {
@@ -1745,6 +1745,19 @@ export const lineBotWebhook = onRequest(
                             }
                         ]);
                     }
+                    continue;
+                }
+
+                // 1.4 Chào hỏi & menu trong chat riêng 1-1 (hi, hello, alo, xin chào...)
+                if (!groupId && /^(?:hi|hello|alo|xin\s*chào|chào|chao|start|bắt\s*đầu|bat\s*dau|ơi|oi|menu)$/i.test(cleanText)) {
+                    const welcomeMsg = `👋 Chào bạn! Em là BOT Quản Lý PMH ICT.\n━━━━━━━━━━━━━━━━━━━━━\n${formatHelpGuideMessage()}`;
+                    await replyLineMessage(token, replyToken, [
+                        {
+                            type: 'text',
+                            text: welcomeMsg,
+                            quoteToken: event.message?.quoteToken
+                        }
+                    ]);
                     continue;
                 }
 
@@ -2517,6 +2530,18 @@ export const lineBotWebhook = onRequest(
                             break;
                         }
                     }
+                }
+
+                // 6. Trong chat riêng 1-1: nếu tin nhắn không khớp lệnh nào, nhắc nhở cú pháp thay vì im lặng
+                if (!groupId) {
+                    await replyLineMessage(token, replyToken, [
+                        {
+                            type: 'text',
+                            text: `👋 Em là BOT Quản Lý PMH ICT.\n━━━━━━━━━━━━━━━━━━━━━\n💡 Gõ "tk" để xem tồn kho PMH\n⚡ Gõ "e1", "gv1"... để nhận mã\n📖 Gõ "hd" để xem hướng dẫn chi tiết nhé!`,
+                            quoteToken: event.message?.quoteToken
+                        }
+                    ]);
+                    continue;
                 }
             }
         }

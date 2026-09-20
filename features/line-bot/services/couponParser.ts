@@ -1104,7 +1104,6 @@ export function createInventoryReportFlexMessage(params: {
                 paddingEnd: '6px',
                 paddingTop: '3px',
                 paddingBottom: '3px',
-                margin: 'xxs',
                 action: {
                     type: 'message',
                     label: cmdCode,
@@ -1217,6 +1216,7 @@ export function createInventoryReportFlexMessage(params: {
                     {
                         type: 'box',
                         layout: 'vertical',
+                        spacing: 'xs',
                         margin: 'xs',
                         contents: itemBoxes.length > 0 ? itemBoxes : [
                             {
