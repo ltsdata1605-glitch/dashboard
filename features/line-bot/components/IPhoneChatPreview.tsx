@@ -57,7 +57,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
             navigator.clipboard.writeText(code);
             setCopiedCode(code);
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
             setUsedCouponInfo({ code, type, time: timeStr });
             toast.success(`⚡ [LIFF 0.2s] Đã copy mã & gửi trích dẫn xác nhận: ${code}`);
             setTimeout(() => setCopiedCode(null), 3000);
@@ -460,11 +460,8 @@ ${secondName}
 
                                 {usedCouponInfo && (
                                     <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-200 mt-2">
-                                        <div className="bg-[#06C755] text-white p-2.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-mono text-[10.5px] leading-relaxed border border-emerald-400/30">
-                                            <div className="font-bold">👉 Mã này đã được sử dụng!</div>
-                                            <div>👤 User: <span className="font-bold">@{firstName}</span></div>
-                                            <div>🎟️ Mã: <span className="font-bold tracking-wider">{usedCouponInfo.code}</span> ({usedCouponInfo.type})</div>
-                                            <div className="text-[9px] text-emerald-100 mt-1">⏰ Thời gian: {usedCouponInfo.time} ✓✓</div>
+                                        <div className="bg-[#06C755] text-white py-2 px-3 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-sans text-[11px] leading-relaxed border border-emerald-400/30">
+                                            <div>👉 Mã này đã được <span className="font-bold">{firstName}</span> sử dụng  lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
                                         </div>
                                     </div>
                                 )}

@@ -241,14 +241,10 @@ function createCouponFlexBubble(params: {
                     paddingTop: '6px',
                     paddingBottom: '6px',
                     alignItems: 'center',
-                    action: params.liffId ? {
+                    action: {
                         type: 'uri',
                         label: 'Copy & Dùng Mã',
-                        uri: `https://liff.line.me/${params.liffId}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}`
-                    } : {
-                        type: 'clipboard',
-                        label: 'Copy Mã',
-                        clipboardText: cleanCode
+                        uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}`
                     },
                     contents: [
                         {

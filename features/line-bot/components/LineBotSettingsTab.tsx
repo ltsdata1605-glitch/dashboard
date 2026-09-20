@@ -36,6 +36,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
 }) => {
     const [token, setToken] = useState<string>(config?.channelAccessToken || '');
     const [secret, setSecret] = useState<string>(config?.channelSecret || '');
+    const [liffId, setLiffId] = useState<string>(config?.liffId || '2011679071-BclvutpD');
     const [autoApprove, setAutoApprove] = useState<boolean>(config?.autoApprove ?? true);
     const [approvalCmd, setApprovalCmd] = useState<string>(config?.approvalCommand || 'DUYỆT');
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
@@ -44,6 +45,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
         if (config) {
             setToken(config.channelAccessToken || '');
             setSecret(config.channelSecret || '');
+            setLiffId(config.liffId || '2011679071-BclvutpD');
             setAutoApprove(config.autoApprove ?? true);
             setApprovalCmd(config.approvalCommand || 'DUYỆT');
         }
@@ -60,6 +62,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
         await onSaveConfig({
             channelAccessToken: token.trim(),
             channelSecret: secret.trim(),
+            liffId: liffId.trim() || '2011679071-BclvutpD',
             autoApprove,
             approvalCommand: approvalCmd.trim() || 'DUYỆT'
         });
@@ -207,6 +210,25 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         placeholder="Dán Channel secret từ tab Basic settings..."
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span>LINE LIFF ID (Tự động 1-Chạm Copy & Gửi phản hồi)</span>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300/40">1-Touch LIFF</span>
+                        </label>
+                    </div>
+                    <input
+                        type="text"
+                        value={liffId}
+                        onChange={e => setLiffId(e.target.value)}
+                        placeholder="2011679071-BclvutpD"
+                        className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                        💡 Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 Mã này đã được [Tên] sử dụng lúc HH:mm!"</em>
+                    </p>
                 </div>
             </div>
 

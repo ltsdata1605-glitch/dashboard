@@ -83,7 +83,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const couponCode = (urlParams.get('code') || '').trim();
         const couponType = (urlParams.get('type') || 'PMH').trim();
-        const targetLiffId = (urlParams.get('liffId') || '2006994783-O5m0MvY7').trim();
+        const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
 
         const codeDisplay = document.getElementById('codeDisplay');
         const statusTitle = document.getElementById('statusTitle');
@@ -171,27 +171,17 @@
                     console.warn('[LIFF] Không lấy được profile:', e);
                 }
 
-                // 5. Tính thời gian thực tế theo múi giờ Việt Nam
+                // 5. Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
-                    timeZone: 'Asia/Ho_Chi_Minh'
-                });
-                const dateString = now.toLocaleDateString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
+                    hour12: false,
                     timeZone: 'Asia/Ho_Chi_Minh'
                 });
 
                 // 6. Gửi tin nhắn xác nhận thay cho user vào nhóm/chat
-                const messageText = 
-`👉 Mã này đã được sử dụng!
-👤 User: @${displayName}
-🎟️ Mã: ${couponCode} (${couponType})
-⏰ Thời gian: ${timeString} ${dateString}`;
+                const messageText = `👉 Mã này đã được ${displayName} sử dụng  lúc ${timeString}!`;
 
                 try {
                     await liff.sendMessages([
