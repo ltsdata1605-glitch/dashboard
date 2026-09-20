@@ -687,8 +687,10 @@ Ngày 27/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bếp gas đôi Sunhouse 
             expect(guide).toContain('gv[STT] [MĐH]');
             expect(guide).toContain('huy [Mã coupon]');
             expect(guide).toContain('huy [MĐH]');
-            expect(guide).toContain('tự động copy');
+            expect(guide).toContain('FORM MẪU LẤY PMH');
+            expect(guide).toContain('TỰ ĐỘNG COPY');
             expect(guide).not.toContain('• "cp"');
+            expect(guide).not.toContain('check [MĐH]');
         });
 
         it('parses cancel coupon commands correctly', () => {
