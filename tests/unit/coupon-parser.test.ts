@@ -168,6 +168,114 @@ Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: 
         expect(items[4].productName).toBe('Tủ lạnh Panasonic NR-DZ601VGKV');
     });
 
+    it('parses Mẫu 4: 36 mã Máy lọc nước RO (Hòa Phát, Karofi, Sunhouse, Kangaroo) và tự động lọc bỏ mã trùng nếu dán lặp', () => {
+        const sampleWaterPurifiers = `Ngày 18/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDFKH8PDNTJB8
+Ngày 18/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX5PQBZ9VZZS7K
+Ngày 18/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX6TVJQ4ZNK1GH
+Ngày 18/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMXC8DBDH44GJS6
+Ngày 18/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDFGHDKHJJS2D
+Ngày 18/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX81N4FSK5G9H6
+Ngày 18/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX3K13D1JCBQ92
+Ngày 18/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMX9J8K1VRG4M4S
+Ngày 18/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDFNK6MT91CTF
+Ngày 18/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX4J98CFM5PBP3
+Ngày 18/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX214CQ6M1VNZC
+Ngày 18/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMX4CHRBH2DJPK4
+Ngày 19/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDFNJGF5M7Z8V
+Ngày 19/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX6XFGR86B6BC1
+Ngày 19/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX55FGJ2TZG2J1
+Ngày 19/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMX8T4DRZX75JNH
+Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDG845KR5KZR3
+Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX7VCC1B5ZQ8BT
+Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX26ZB1KGGB823
+Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMXC8DX8KR297H8
+Ngày 19/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDG38Q4ZK1NN4
+Ngày 19/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX82MTM6HBJT5D
+Ngày 19/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX2X2DPCXSC62K
+Ngày 19/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMXC7NMM45J4NM8
+Ngày 20/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDG2C5494QGQ2
+Ngày 20/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX7XCKSRXZ3NT8
+Ngày 20/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX7DCTNT1XKFM4
+Ngày 20/09/2026 : Mã Coupon 1 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMXC82JQQ6S57DC
+Ngày 20/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDFD53M1NKT8S
+Ngày 20/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX418V6FP1V1FX
+Ngày 20/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX9PJB2NXP3MB5
+Ngày 20/09/2026 : Mã Coupon 2 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMXC9KNHTSXTP92
+Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Hòa Phát HPN639: DMXDGNDT79X1H8B
+Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Karofi KAD-X68: DMX7SKK19152PTN
+Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S: DMX6BDSJJJ2MZZ6
+Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội lạnh tủ đứng Kangaroo KG12S2H4: DMX8G4F6QRPBK8K`;
+
+        // 1. Phải bóc tách chuẩn xác 36 mã (mỗi sản phẩm đúng 9 mã)
+        const items = parsePastedCouponList(sampleWaterPurifiers, 'Giờ Vàng Giá Sốc');
+        expect(items.length).toBe(36);
+
+        const hoaPhat = items.filter(i => i.productName.includes('Hòa Phát'));
+        const karofi = items.filter(i => i.productName.includes('Karofi'));
+        const sunhouse = items.filter(i => i.productName.includes('Sunhouse'));
+        const kangaroo = items.filter(i => i.productName.includes('Kangaroo'));
+
+        expect(hoaPhat.length).toBe(9);
+        expect(karofi.length).toBe(9);
+        expect(sunhouse.length).toBe(9);
+        expect(kangaroo.length).toBe(9);
+
+        // Model syntax tự động rút trích phải ngắn gọn chính xác
+        expect(hoaPhat[0].syntax).toBe('HPN639');
+        expect(karofi[0].syntax).toBe('KAD-X68');
+        expect(sunhouse[0].syntax).toBe('SHA76601S');
+        expect(kangaroo[0].syntax).toBe('KG12S2H4');
+
+        // 2. Nếu dán đúp 2 lần (72 dòng hoặc 71 dòng dán lặp), hệ thống tự lọc bỏ các mã trùng
+        let duplicateCount = 0;
+        const doubledText = `${sampleWaterPurifiers}\n${sampleWaterPurifiers}`;
+        const deduplicatedItems = parsePastedCouponList(doubledText, 'Giờ Vàng Giá Sốc', () => {
+            duplicateCount++;
+        });
+
+        expect(deduplicatedItems.length).toBe(36);
+        expect(duplicateCount).toBe(36);
+    });
+
+    it('parses Mẫu 5: danh sách 330 mã (11 sản phẩm x 30 mã) tự động khử trùng khi bị dán lặp 659 dòng', () => {
+        // Mô phỏng 11 sản phẩm, mỗi sản phẩm 30 mã duy nhất (tổng 330 mã)
+        const products = [
+            'Bếp gas đôi Sunhouse SHB3105MD',
+            'Nồi cơm nắp gài Toshiba RC-18JH1TVN(N) 1.8L',
+            'Bếp điện từ đơn Kangaroo KG20IH10N',
+            'Nồi cơm điện tử Toshiba RC-18DH2PV(W) 1.8L',
+            'Nồi chiên không dầu Kangaroo 6.5L KGAF65M1G',
+            'Bếp nướng điện Sunhouse SHD4607',
+            'Bình đun siêu tốc Rapido RK2015-C 2L',
+            'Máy lọc không khí Midea KJ400GVN',
+            'Máy xay thịt Bear CH-5H03P36',
+            'Nồi lẩu đa năng Kangaroo KG40EH2 4 lít',
+            'Quạt đứng Midea FS40-24EVN(K)'
+        ];
+
+        const rawLines: string[] = [];
+        for (let day = 18; day <= 27; day++) {
+            for (let sess = 1; sess <= 3; sess++) {
+                for (let pIdx = 0; pIdx < products.length; pIdx++) {
+                    const code = `CODE_D${day}_S${sess}_P${pIdx}`;
+                    rawLines.push(`Ngày ${day}/09/2026 : Mã Phiếu mua hàng ${sess} - dùng cho ${products[pIdx]}: ${code}`);
+                }
+            }
+        }
+        expect(rawLines.length).toBe(330);
+
+        // Trường hợp bị dán đúp thành 659 dòng (như tình huống người dùng gặp)
+        const duplicated659 = [...rawLines, ...rawLines.slice(1)].join('\n');
+
+        let skippedDups = 0;
+        const parsed = parsePastedCouponList(duplicated659, 'Event', () => {
+            skippedDups++;
+        });
+
+        expect(parsed.length).toBe(330);
+        expect(skippedDups).toBe(329); // 329 mã trùng lặp được lọc bỏ sạch sẽ
+    });
+
     it('formats syntax list for "cp" command correctly', () => {
         const sampleCoupons = [
             { productName: 'Bếp gas đôi Sunhouse SHB3105MD', syntax: '[ĐĂNG KÝ PMH] Bếp gas Sunhouse', status: 'UNUSED' },

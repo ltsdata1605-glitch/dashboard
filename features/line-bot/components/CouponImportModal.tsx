@@ -25,6 +25,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     const [customType, setCustomType] = useState<string>('');
     const [pasteText, setPasteText] = useState<string>('');
     const [parsedItems, setParsedItems] = useState<ParsedImportItem[]>([]);
+    const [duplicateCount, setDuplicateCount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     // Nhóm danh sách mã theo Tên Sản Phẩm (Mỗi sản phẩm 1 dòng đại diện)
@@ -142,10 +143,16 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     const autoParseText = (text: string, type: string) => {
         if (!text.trim()) {
             setParsedItems([]);
+            setDuplicateCount(0);
             return;
         }
 
-        const items = parsePastedCouponList(text, type);
+        let dupCount = 0;
+        const items = parsePastedCouponList(text, type, () => {
+            dupCount++;
+        });
+        setDuplicateCount(dupCount);
+
         // Lưu giữ lại các cú pháp đã được người dùng gõ trước đó theo từng sản phẩm
         setParsedItems(prev => {
             const existingSyntaxMap = new Map<string, string>();
@@ -310,13 +317,6 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         setPasteText(text);
                                         autoParseText(text, effectiveType);
                                     }}
-                                    onPaste={e => {
-                                        const pasted = e.clipboardData?.getData('text');
-                                        if (pasted) {
-                                            setPasteText(pasted);
-                                            autoParseText(pasted, effectiveType);
-                                        }
-                                    }}
                                     placeholder={`Dán danh sách mã vào đây (Hệ thống sẽ TỰ ĐỘNG TRÍCH XUẤT NGAY sau khi dán):\nNgày 18/09/2026 : Mã Phiếu mua hàng 1 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: CG5BBSGXJ9\nNgày 18/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: 4P1DXFTUM8`}
                                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500"
                                 />
@@ -326,6 +326,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         onClick={() => {
                                             setPasteText('');
                                             setParsedItems([]);
+                                            setDuplicateCount(0);
                                         }}
                                         className="absolute right-3 top-3 text-[11px] text-slate-400 hover:text-rose-500 bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors"
                                         title="Xoá nội dung ô dán"
@@ -368,12 +369,17 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                     {/* Grouped Product Preview Table: 1 DÒNG ĐẠI DIỆN CHO MỖI SẢN PHẨM */}
                     {parsedItems.length > 0 && (
                         <div className="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-xl space-y-2.5 animate-in fade-in duration-200">
-                            <div className="flex items-center justify-between gap-1 text-xs">
-                                <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300">
+                            <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
+                                <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300 flex-wrap">
                                     <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                                     <span>
                                         Đã sẵn sàng nạp: <strong className="text-emerald-700 dark:text-emerald-300 font-extrabold">{parsedItems.length} mã</strong> ({groupedProducts.length} sản phẩm) (Loại: {effectiveType})
                                     </span>
+                                    {duplicateCount > 0 && (
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-300/60 dark:border-amber-800/60">
+                                            ⚡ Tự động loại bỏ {duplicateCount} mã trùng lặp
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 

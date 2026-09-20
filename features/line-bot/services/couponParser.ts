@@ -498,11 +498,16 @@ export function formatFilteredPmhMessage(matchedBlocks: string[], candidateNames
  * - Mã Coupon là chuỗi chữ-số liền nhau sau dấu ':' cuối cùng (hoặc dòng liền kề nếu ngắt dòng)
  * - Tự động loại bỏ dòng trống, hỗ trợ danh sách nhiều mã cùng 1 sản phẩm
  */
-export function parsePastedCouponList(text: string, defaultType: string = 'Event'): ParsedImportItem[] {
+export function parsePastedCouponList(
+    text: string,
+    defaultType: string = 'Event',
+    onDuplicate?: (skippedCode: string) => void
+): ParsedImportItem[] {
     if (!text || typeof text !== 'string') return [];
 
     const lines = text.split(/\r?\n/).map(l => l.trim());
     const items: ParsedImportItem[] = [];
+    const seenCodes = new Set<string>();
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -560,9 +565,16 @@ export function parsePastedCouponList(text: string, defaultType: string = 'Event
         }
 
         if (rawCode && rawCode.length >= 3) {
+            const upperCode = rawCode.toUpperCase();
+            if (seenCodes.has(upperCode)) {
+                if (onDuplicate) onDuplicate(upperCode);
+                continue; // Tự động loại bỏ mã trùng lặp trong cùng danh sách nạp
+            }
+            seenCodes.add(upperCode);
+
             const autoSyntax = extractProductSyntax(productName);
             items.push({
-                code: rawCode.toUpperCase(),
+                code: upperCode,
                 productName: productName || '',
                 type: defaultType,
                 syntax: autoSyntax || productName || ''
@@ -580,8 +592,12 @@ function cleanModelCandidate(tok: string): string {
     let s = tok.replace(/^[^\w]+|[^\w]+$/g, '');
     // Bỏ hậu tố trong ngoặc đơn như (N), (W), (K) nếu còn dính
     s = s.replace(/\([A-Za-z0-9]+\)$/, '');
-    // Bỏ tiền tố 1-3 chữ cái + gạch ngang (như RC-, CH-, NR-)
-    s = s.replace(/^[A-Za-z]{1,3}-/, '');
+    // Bỏ tiền tố 1-3 chữ cái + gạch ngang (như RC-, CH-, NR-) nếu phần còn lại >= 4 ký tự
+    // Nếu phần còn lại < 4 (như KAD-X68 -> X68), thì giữ nguyên toàn bộ model KAD-X68
+    const strippedPrefix = s.replace(/^[A-Za-z]{1,3}-/, '');
+    if (strippedPrefix.length >= 4) {
+        s = strippedPrefix;
+    }
     // Bỏ hậu tố gạch ngang + 1-2 chữ cái (như -C, -VN)
     s = s.replace(/-[A-Za-z]{1,2}$/, '');
     return s;
