@@ -1229,7 +1229,7 @@ export function createInventoryReportFlexMessage(params: {
             },
             footer: {
                 type: 'box',
-                layout: 'horizontal',
+                layout: 'vertical',
                 spacing: 'sm',
                 paddingAll: '10px',
                 contents: [
@@ -1240,18 +1240,7 @@ export function createInventoryReportFlexMessage(params: {
                         color: '#F1F5F9',
                         action: {
                             type: 'message',
-                            label: '📋 Cú pháp (cp)',
-                            text: 'cp'
-                        }
-                    },
-                    {
-                        type: 'button',
-                        style: 'secondary',
-                        height: 'sm',
-                        color: '#F1F5F9',
-                        action: {
-                            type: 'message',
-                            label: '❓ Trợ giúp (hd)',
+                            label: '❓ Hướng dẫn sử dụng (hd)',
                             text: 'hd'
                         }
                     }
@@ -1284,7 +1273,7 @@ export function createInventoryReportFlexMessage(params: {
 export function isHelpCommand(text: string): boolean {
     if (!text || typeof text !== 'string') return false;
     const clean = text.trim().toLowerCase().replace(/^@[^\s]+\s*/, '');
-    return /^(?:[./!]?(?:hd|help|huongdan|hướng dẫn|\?)|huong\s*dan|hdsd|cu\s*phap|cú\s*pháp)$/i.test(clean);
+    return /^(?:[./!]?(?:hd|help|huongdan|hướng dẫn|\?)|huong\s*dan|hdsd)$/i.test(clean);
 }
 
 /**
@@ -1317,7 +1306,6 @@ export function formatHelpGuideMessage(): string {
         '• Bot sẽ tự động nhận diện và trích xuất đúng các mã thuộc tên bạn.',
         '',
         '📋 5. CÁC CÚ PHÁP TIỆN ÍCH KHÁC:',
-        '• "cp": Lấy danh sách mẫu cú pháp đăng ký chuẩn',
         '• "id": Tra cứu LINE User ID hoặc Group ID nhóm',
         '• "check [MĐH]": Tra cứu chi tiết đơn hàng (chat riêng)',
         '━━━━━━━━━━━━━━━━━━━━━',
