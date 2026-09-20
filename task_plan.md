@@ -1,33 +1,39 @@
-# Task Plan: Liên kết Target Trả Góp & Target Quy Đổi với cột %T.Góp & HQQĐ
+# Task Plan: Tính Năng Chọn Ngày Hết Hạn Mã PMH & Tự Động Xoá Khỏi Kho
 
 ## 1. Mục tiêu (Goals)
-- Liên kết giá trị **Target Trả góp** và **Target Quy đổi** (được cấu hình ở tab **Cập nhật** -> **Target Doanh thu**) vào 2 cột **`%T.Góp`** và **`HQQĐ`** trong bảng Doanh thu (`RevenueTab` & `RevenueDesktopRow`).
-- Dùng giá trị target động này làm mốc chuẩn để đánh giá dữ liệu và tô màu trạng thái:
-  - **`%T.Góp`**: Đánh giá dựa trên `Target Trả góp` (ví dụ: `60%`).
-  - **`HQQĐ`**: Đánh giá dựa trên `Target Quy đổi` (ví dụ: `60%`).
-- Xử lý phân cấp trạng thái cho các dữ liệu **kém hơn target** (dưới mốc target) với độ tương phản cao, màu sắc đậm nét, rõ ràng.
+- Bổ sung bộ chọn **Ngày hết hạn (Expiry Date)** tại góc dưới bên trái của modal "Nạp Mã PMH Vào Kho" (`CouponImportModal.tsx`).
+- Tự động nhận diện ngày trong nội dung dán (ví dụ `Ngày 18/09/2026` ... `Ngày 27/09/2026`) để gợi ý sẵn ngày hết hạn mới nhất cho người dùng.
+- **Tự động xoá khỏi kho**: Nếu qua ngày hết hạn (ví dụ chọn ngày `27/09/2026` thì bắt đầu từ 00:00 ngày `28/09/2026` trở đi), toàn bộ mã chưa dùng (`UNUSED`) của sản phẩm sẽ tự động xoá hoàn toàn khỏi kho PMH.
+- **Thông báo hết hạn khi người dùng xin mã**: Nếu người dùng gửi cú pháp xin mã cho sản phẩm mà mã đã bị xoá do hết hạn, Bot LINE sẽ thông báo rõ ràng cho người dùng là mã đã hết hạn dùng (kèm ngày hết hạn cụ thể), thay vì thông báo "Hết mã" hoặc không tìm thấy.
+- Hiển thị thông tin hạn sử dụng trực quan trong bảng quản lý kho PMH (`CouponManagerTab.tsx`).
 
 ---
 
 ## 2. Các giai đoạn thực hiện (Phases)
 
-### Phase 1: Phân tích & Đặc tả quy tắc điều kiện (Hoàn thành)
-- [x] Định vị nguồn dữ liệu Target Trả góp (`targethero-${safeName}-tragop`) và Target Quy đổi (`targethero-${safeName}-quydoi`) trong `TargetHero.tsx`.
-- [x] Khảo sát luồng truyền dữ liệu từ `TargetHero` $\rightarrow$ IndexedDB $\rightarrow$ `RevenueTab` / `RevenueDesktopRow`.
-- [x] Xác nhận với người dùng về công thức/mức phân tầng cụ thể khi dữ liệu **kém hơn target** (Phương án 3 mức: $\ge 100\%$ Xanh lá, $85\% - < 100\%$ Cam đậm, $< 85\%$ Đỏ đậm).
+### Phase 1: Chuẩn hoá Type & Dữ liệu (Hoàn thành)
+- [x] Cập nhật `Coupon` và `ParsedImportItem` với trường `expiryDate?: string` trong `lineBot.types.ts`.
+- [x] Định nghĩa interface `ExpiredProductRecord`.
 
-### Phase 2: Nạp Target Trả Góp & Target Quy Đổi vào RevenueTab (Hoàn thành)
-- [x] Trong `RevenueTab.tsx`, nạp `targetTraGop` và `targetQuyDoi` từ IndexedDB theo `supermarketName`.
-- [x] Tự động đồng bộ và tính trung bình khi xem ở chế độ nhiều siêu thị / "Tổng hợp".
-- [x] Truyền giá trị `targetTraGop` và `targetQuyDoi` xuống component `RevenueDesktopRow` và các dòng tổng phòng ban.
+### Phase 2: Nâng cấp Parser & Trích xuất Ngày (Hoàn thành)
+- [x] Bổ sung hàm bóc tách ngày `extractLatestDateFromText` và cập nhật `parsePastedCouponList` trong `couponParser.ts`.
+- [x] Bổ sung helper `isDateExpired(expiryDate, compareDate)`.
+- [x] Viết test trong `tests/unit/coupon-parser.test.ts`.
 
-### Phase 3: Cập nhật logic tính màu động theo Target (Hoàn thành)
-- [x] Viết hàm `getMetricColorByTarget(val: number, target: number)`.
-- [x] Áp dụng cho cột `HQQĐ` (`val = row.hieuQuaQD * 100`, `target = targetQuyDoi`).
-- [x] Áp dụng cho cột `%T.Góp` (`val = row.calculatedInstallment`, `target = targetTraGop`).
-- [x] Nâng cấp `toBoldVividColor` để loại bỏ màu vàng nhạt, thay bằng Cam đậm (`#ea580c`).
+### Phase 3: Nâng cấp Giao diện Nạp Mã & Quản lý Kho (Hoàn thành)
+- [x] Thêm input chọn ngày hết hạn ở góc dưới bên trái footer `CouponImportModal.tsx`.
+- [x] Tự động gợi ý ngày lớn nhất từ danh sách dán vào ô chọn ngày.
+- [x] Cập nhật `CouponManagerTab.tsx` thêm cột "Hạn Dùng" với các trạng thái màu sắc phù hợp.
 
-### Phase 4: Kiểm thử & Xác minh (Hoàn thành)
-- [x] Chạy `npm run typecheck` (0 errors).
-- [x] Chạy `npm run test:unit` (353 tests passed).
-- [x] Báo cáo đầy đủ và đính kèm timestamp thực tế.
+### Phase 4: Nâng cấp Service & Tự Động Xoá Khỏi Kho (Hoàn thành)
+- [x] Cập nhật `lineBotFirestoreService.addCouponsBatch` để lưu `expiryDate`.
+- [x] Bổ sung hàm `cleanupExpiredCoupons(userId)` tự động xoá mã hết hạn và lưu vết vào `expired_products`.
+
+### Phase 5: Nâng cấp Backend Bot LINE Webhook & Thông Báo Hết Hạn (Hoàn thành)
+- [x] Thêm hàm dọn dẹp mã hết hạn trong `functions/src/lineBotWebhook.ts`.
+- [x] Kiểm tra `expired_products` khi người dùng xin mã để trả về thông báo mã đã hết hạn dùng.
+
+### Phase 6: Kiểm thử, Build & Triển khai (Hoàn thành)
+- [x] Chạy targeted unit test: `npx vitest run tests/unit/coupon-parser.test.ts` (27/27 passed).
+- [x] Chạy `npx tsc --noEmit` (0 lỗi).
+- [x] Chạy `npm --prefix functions run build` (0 lỗi).

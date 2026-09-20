@@ -37,6 +37,14 @@ export function useCouponManager() {
         }
         setIsLoading(true);
         try {
+            // Tự động kiểm tra và xoá các mã UNUSED đã hết hạn khỏi kho
+            const cleanupRes = await lineBotFirestoreService.cleanupExpiredCoupons(userId);
+            if (cleanupRes.deleted > 0) {
+                toast.success(`Đã tự động xoá ${cleanupRes.deleted} mã PMH hết hạn khỏi kho (${cleanupRes.products.slice(0, 2).join(', ')}${cleanupRes.products.length > 2 ? '...' : ''})`, {
+                    icon: '🧹'
+                });
+            }
+
             const data = await lineBotFirestoreService.getCoupons(userId);
             setCoupons(data);
         } catch (error) {

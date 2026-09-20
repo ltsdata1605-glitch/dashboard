@@ -6,7 +6,11 @@ import {
     isBlockBelongToUser,
     parsePastedCouponList,
     formatSyntaxListMessage,
-    formatInventoryReportMessage
+    formatInventoryReportMessage,
+    isHelpCommand,
+    formatHelpGuideMessage,
+    parseCancelCouponCommand,
+    matchesProductSearch
 } from '../../features/line-bot/services/couponParser';
 
 describe('couponParser', () => {
@@ -315,17 +319,21 @@ Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội 
         expect(report.replyText).toContain('CẢNH BÁO TỒN KHO THẤP (< 3 MÃ)');
         expect(report.replyText).toContain('Có [2] sản phẩm sắp hết hoặc đã hết mã');
 
-        // Phải có icon cảnh báo và trạng thái từng món
+        // Phải có icon cảnh báo và trạng thái từng món (loại bỏ icon ✅ cho món bình thường)
         expect(report.replyText).toContain('❌ Quạt Midea');
         expect(report.replyText).toContain('HẾT MÃ (0/3 mã)');
 
         expect(report.replyText).toContain('⚠️ Nồi cơm Cuckoo');
         expect(report.replyText).toContain('SẮP HẾT: Còn 2/2 mã (CẦN NẠP GẤP!)');
 
-        expect(report.replyText).toContain('✅ Bếp gas Sunhouse');
+        expect(report.replyText).toContain('3. Bếp gas Sunhouse');
+        expect(report.replyText).not.toContain('✅');
         expect(report.replyText).toContain('Còn khả dụng: 58/60 mã');
         expect(report.replyText).toContain('Nhận mã Event: Gõ "e + STT"');
         expect(report.replyText).toContain('Nhận mã Giờ Vàng: Gõ "gv + STT"');
+
+        // Tổng tồn kho và cú pháp nhận mã phải nằm ở trên cùng (trước danh sách sản phẩm)
+        expect(report.replyText.indexOf('Tổng tồn kho:')).toBeLessThan(report.replyText.indexOf('Bếp gas Sunhouse'));
     });
 
     it('thống kê riêng "tk event" chỉ hiển thị các sản phẩm thuộc nhóm Event và hướng dẫn cú pháp e+STT', () => {
@@ -612,6 +620,157 @@ STR_BOSS SƠN_21707
 ➜ ❌ MĐH Áp Dụng Thiếu Hoặc Sai Cú Pháp.
 ━━━━━━
 💡 Sao chép mã phía trên để sử dụng!`);
+        });
+
+        it('bóc tách ngày lớn nhất từ danh sách mã và kiểm tra trạng thái hết hạn chuẩn xác', async () => {
+            const {
+                extractLatestDateFromText,
+                isDateExpired,
+                formatExpiredCouponNotification,
+                parsePastedCouponList
+            } = await import('../../features/line-bot/services/couponParser');
+
+            const sampleText = `Ngày 18/09/2026 : Mã Phiếu mua hàng 1 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: CG5BBSGXJ9
+Ngày 27/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: 4P1DXFTUM8`;
+
+            // 1. Kiểm tra trích xuất ngày muộn nhất
+            const latestDate = extractLatestDateFromText(sampleText);
+            expect(latestDate).toBe('2026-09-27');
+
+            // 2. Kiểm tra logic hết hạn theo quy tắc: Chọn 27/09/2026 => Qua 28/09/2026 mới hết hạn
+            expect(isDateExpired('2026-09-27', '2026-09-26')).toBe(false);
+            expect(isDateExpired('2026-09-27', '2026-09-27')).toBe(false); // Trong ngày 27 vẫn còn hạn!
+            expect(isDateExpired('2026-09-27', '2026-09-28')).toBe(true);  // Sang ngày 28 là ĐÃ HẾT HẠN!
+            expect(isDateExpired('2026-09-27', '2026-09-29')).toBe(true);
+
+            // 3. Kiểm tra parsePastedCouponList gán expiryDate
+            const items = parsePastedCouponList(sampleText, 'Event', undefined, '2026-09-27');
+            expect(items.length).toBe(2);
+            expect(items[0].expiryDate).toBe('2026-09-27');
+            expect(items[1].expiryDate).toBe('2026-09-27');
+
+            // 4. Kiểm tra tin nhắn thông báo hết hạn
+            const notifyMsg = formatExpiredCouponNotification('BOSS SƠN', 'Bếp gas đôi Sunhouse SHB3105MD', '2026-09-27');
+            expect(notifyMsg).toContain('@BOSS SƠN');
+            expect(notifyMsg).toContain('HẾT HẠN SỬ DỤNG');
+            expect(notifyMsg).toContain('27/09/2026');
+        });
+    });
+
+    describe('Help command ("hd") & Cancel coupon command ("huy")', () => {
+        it('recognizes various forms of help command', () => {
+            expect(isHelpCommand('hd')).toBe(true);
+            expect(isHelpCommand('HD')).toBe(true);
+            expect(isHelpCommand(' hd ')).toBe(true);
+            expect(isHelpCommand('help')).toBe(true);
+            expect(isHelpCommand('huong dan')).toBe(true);
+            expect(isHelpCommand('hướng dẫn')).toBe(true);
+            expect(isHelpCommand('cú pháp')).toBe(true);
+            expect(isHelpCommand('/hd')).toBe(true);
+            expect(isHelpCommand('/help')).toBe(true);
+            expect(isHelpCommand('?')).toBe(true);
+
+            expect(isHelpCommand('tk')).toBe(false);
+            expect(isHelpCommand('tk event')).toBe(false);
+            expect(isHelpCommand('e1 12345678')).toBe(false);
+            expect(isHelpCommand('huy 12345678')).toBe(false);
+        });
+
+        it('generates a detailed and structured help guide message', () => {
+            const guide = formatHelpGuideMessage();
+            expect(guide).toContain('HƯỚNG DẪN SỬ DỤNG BOT PMH ICT');
+            expect(guide).toContain('tk');
+            expect(guide).toContain('tk event');
+            expect(guide).toContain('tk gvgs');
+            expect(guide).toContain('e[STT] [MĐH]');
+            expect(guide).toContain('gv[STT] [MĐH]');
+            expect(guide).toContain('huy [Mã coupon]');
+            expect(guide).toContain('huy [MĐH]');
+            expect(guide).toContain('tự động copy');
+        });
+
+        it('parses cancel coupon commands correctly', () => {
+            // Test cancel with coupon code
+            const res1 = parseCancelCouponCommand('huy 6W43J4BI2S');
+            expect(res1.isCancel).toBe(true);
+            expect(res1.target).toBe('6W43J4BI2S');
+
+            const res2 = parseCancelCouponCommand('hủy PL47X3N9T8');
+            expect(res2.isCancel).toBe(true);
+            expect(res2.target).toBe('PL47X3N9T8');
+
+            const res3 = parseCancelCouponCommand('/cancel 59LCGSPUR7BY');
+            expect(res3.isCancel).toBe(true);
+            expect(res3.target).toBe('59LCGSPUR7BY');
+
+            // Test cancel with order ID (MĐH)
+            const res4 = parseCancelCouponCommand('huy 12345678');
+            expect(res4.isCancel).toBe(true);
+            expect(res4.target).toBe('12345678');
+
+            const res5 = parseCancelCouponCommand('huymã 88291029');
+            expect(res5.isCancel).toBe(true);
+            expect(res5.target).toBe('88291029');
+
+            // Non-cancel commands
+            expect(parseCancelCouponCommand('hd').isCancel).toBe(false);
+            expect(parseCancelCouponCommand('tk event').isCancel).toBe(false);
+            expect(parseCancelCouponCommand('e1 12345678').isCancel).toBe(false);
+        });
+    });
+
+    describe('Product matching & Silence for unmanaged products like MM700', () => {
+        const sampleIctCoupons = [
+            { productName: 'Bếp gas đôi Sunhouse SHB3105MD', syntax: 'SHB3105MD', type: 'Event' },
+            { productName: 'Bếp điện từ đơn Kangaroo KG20IH10N', syntax: 'KG20IH10N', type: 'Event' },
+            { productName: 'Máy lọc nước RO nóng lạnh tủ đứng Sunhouse UltraX SHA76601S', syntax: 'SHA76601S', type: 'Giờ Vàng Giá Sốc' },
+            { productName: 'Nồi chiên không dầu Kangaroo 6.5L KGAF65M1G', syntax: 'KGAF65M1G', type: 'Event' }
+        ];
+
+        it('strictly returns false for unmanaged coupon types like MM700, MM300, ML200', () => {
+            // Test MM700 - Người dùng gửi form xin MM700 bot ICT không được nhận bừa
+            for (const c of sampleIctCoupons) {
+                expect(matchesProductSearch(c, 'MM700')).toBe(false);
+                expect(matchesProductSearch(c, 'MM300')).toBe(false);
+                expect(matchesProductSearch(c, 'ML200')).toBe(false);
+                expect(matchesProductSearch(c, 'ML700')).toBe(false);
+                expect(matchesProductSearch(c, 'MOTO1500')).toBe(false);
+            }
+
+            // Kiểm tra không có bất kỳ sản phẩm nào trong kho khớp với MM700
+            const isAnyMatch = sampleIctCoupons.some(c => matchesProductSearch(c, 'MM700'));
+            expect(isAnyMatch).toBe(false);
+        });
+
+        it('correctly matches valid ICT products by syntax, model or product name', () => {
+            const bepGas = sampleIctCoupons[0];
+            expect(matchesProductSearch(bepGas, 'SHB3105MD')).toBe(true);
+            expect(matchesProductSearch(bepGas, 'Bếp gas đôi Sunhouse SHB3105MD')).toBe(true);
+            expect(matchesProductSearch(bepGas, 'Bếp gas')).toBe(true);
+            expect(matchesProductSearch(bepGas, 'Sunhouse SHB3105MD')).toBe(true);
+
+            const mayLocNuoc = sampleIctCoupons[2];
+            expect(matchesProductSearch(mayLocNuoc, 'SHA76601S')).toBe(true);
+            expect(matchesProductSearch(mayLocNuoc, 'Sunhouse UltraX')).toBe(true);
+            expect(matchesProductSearch(mayLocNuoc, 'Máy lọc nước RO')).toBe(true);
+        });
+
+        it('parses form with MM700 and ensures bot can verify it does not belong to ICT catalog', () => {
+            const rawForm = `FORM MẪU LẤY PMH
+Loại PMH : MM700
+Mã Kho Áp Dụng:910
+MĐH Áp Dụng: 00910SO26090335446`;
+
+            const parsed = parseCouponForm(rawForm);
+            expect(parsed.isValid).toBe(true);
+            expect(parsed.couponType).toBe('MM700');
+            expect(parsed.orderId).toBe('00910SO26090335446');
+            expect(parsed.warehouse).toBe('910');
+
+            // Xác minh kiểm tra danh mục: MM700 hoàn toàn không thuộc sản phẩm của bot
+            const isBelongsToBot = sampleIctCoupons.some(c => matchesProductSearch(c, parsed.couponType));
+            expect(isBelongsToBot).toBe(false);
+            // -> Khi isBelongsToBot === false, Bot sẽ TUYỆT ĐỐI IM LẶNG!
         });
     });
 });

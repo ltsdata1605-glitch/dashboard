@@ -9,7 +9,9 @@ import {
     Users,
     Sparkles,
     Zap,
-    Eye
+    Eye,
+    BookOpen,
+    RotateCcw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
@@ -42,7 +44,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
 }) => {
     const [syntax, setSyntax] = useState<string>(config?.syntaxTemplate || DEFAULT_SYNTAX);
     const [autoApprove, setAutoApprove] = useState<boolean>(config?.autoApprove ?? true);
-    const [previewTab, setPreviewTab] = useState<'filter' | 'tk' | 'issue'>('filter');
+    const [previewTab, setPreviewTab] = useState<'filter' | 'tk' | 'issue' | 'hd'>('filter');
     const [tkMode, setTkMode] = useState<'all' | 'event' | 'gvgs'>('all');
     const [issueMode, setIssueMode] = useState<'event' | 'gvgs'>('event');
     const [isSelectUserModalOpen, setIsSelectUserModalOpen] = useState<boolean>(false);
@@ -471,6 +473,48 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             </h4>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                 Nhân viên chỉ cần gửi <strong>e + STT [MĐH]</strong> (Event) hoặc <strong>gv + STT [MĐH]</strong> (Giờ Vàng), Bot lập tức phát mã PMH và tag tên người nhận.
+                            </p>
+                        </div>
+
+                        {/* Command HD & Cancel */}
+                        <div
+                            onClick={() => {
+                                setPreviewTab('hd');
+                            }}
+                            className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                                previewTab === 'hd'
+                                    ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-400 dark:border-amber-500 ring-2 ring-amber-500/50 shadow-md shadow-amber-500/10'
+                                    : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/20'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/60">
+                                        hd
+                                    </span>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200/60">
+                                        help
+                                    </span>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200/60">
+                                        huy [mã/MĐH]
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    {previewTab === 'hd' && (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300/60 animate-in fade-in">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                            <span>Đang xem trên iPhone</span>
+                                        </span>
+                                    )}
+                                    <BookOpen size={14} className={previewTab === 'hd' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                                </div>
+                            </div>
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                <span>Cú Pháp &quot;hd&quot; &amp; Huỷ Mã PMH (Mới)</span>
+                                <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-900/50 px-1.5 py-0.2 rounded">Tự Động 24/7</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Gõ <strong>hd</strong> (hoặc <em>help, hướng dẫn</em>) để Bot xuất sổ tay đầy đủ: kiểm tra tồn kho (<code>tk</code>, <code>tk event</code>, <code>tk gvgs</code>), nhận mã siêu tốc, và cú pháp <strong>huy [mã]</strong> để hoàn trả PMH về kho khi khách đổi ý.
                             </p>
                         </div>
                     </div>

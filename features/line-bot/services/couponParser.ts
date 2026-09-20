@@ -41,7 +41,7 @@ export function parseCouponForm(text: string): ParsedCouponForm {
 
         // 1. Tìm mã kho (tuỳ chọn)
         if (!warehouse && (lower.includes('kho') || lower.includes('siêu thị') || lower.includes('st:'))) {
-            const match = line.match(/(?:kho|siêu thị|st)[\s:.-]*([A-Za-z0-9_-]{2,10})/i);
+            const match = line.match(/(?:mã\s*kho\s*(?:áp\s*dụng)?|kho\s*(?:áp\s*dụng)?|siêu\s*thị|st)[\s:.-]*([A-Za-z0-9_-]{2,10})/i);
             if (match && match[1]) {
                 warehouse = match[1].trim();
             }
@@ -492,16 +492,92 @@ export function formatFilteredPmhMessage(matchedBlocks: string[], candidateNames
 }
 
 /**
+ * Lấy chuỗi ngày hôm nay theo múi giờ Việt Nam (Asia/Ho_Chi_Minh) dạng 'YYYY-MM-DD'
+ */
+export function getVietnamTodayString(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
+}
+
+/**
+ * Kiểm tra xem ngày hết hạn đã qua hay chưa (theo múi giờ Việt Nam)
+ * Ví dụ: expiryDate là '2026-09-27'
+ * - Ngày 27/09/2026: Chưa hết hạn (vẫn dùng được trọn vẹn ngày 27)
+ * - Ngày 28/09/2026 trở đi: ĐÃ HẾT HẠN (tự động xoá khỏi kho)
+ */
+export function isDateExpired(expiryDateStr?: string, compareDateStr?: string): boolean {
+    if (!expiryDateStr) return false;
+    const refDate = compareDateStr || getVietnamTodayString();
+    return expiryDateStr < refDate;
+}
+
+/**
+ * Định dạng ngày YYYY-MM-DD sang DD/MM/YYYY để hiển thị cho người dùng
+ */
+export function formatDisplayDate(dateStr?: string): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+}
+
+/**
+ * Tự động tìm và trích xuất ngày lớn nhất / muộn nhất từ đoạn văn bản (định dạng DD/MM/YYYY)
+ * Trả về chuỗi dạng 'YYYY-MM-DD' hoặc null nếu không tìm thấy
+ */
+export function extractLatestDateFromText(text: string): string | null {
+    if (!text || typeof text !== 'string') return null;
+    const regex = /(?:ngày\s+)?(\d{1,2})[/-](\d{1,2})[/-](\d{4})/gi;
+    let match: RegExpExecArray | null;
+    const dates: string[] = [];
+    while ((match = regex.exec(text)) !== null) {
+        const d = match[1].padStart(2, '0');
+        const m = match[2].padStart(2, '0');
+        const y = match[3];
+        dates.push(`${y}-${m}-${d}`);
+    }
+    if (dates.length === 0) return null;
+    dates.sort();
+    return dates[dates.length - 1];
+}
+
+/**
+ * Tạo nội dung tin nhắn thông báo mã PMH đã hết hạn sử dụng
+ */
+export function formatExpiredCouponNotification(
+    recipientName: string,
+    productName: string,
+    expiryDate?: string
+): string {
+    const dispDate = formatDisplayDate(expiryDate);
+    const tag = recipientName ? `@${recipientName}` : '';
+    return [
+        tag,
+        `⚠️ THÔNG BÁO HẾT HẠN MÃ PMH!`,
+        `Mã PMH cho sản phẩm [${productName}] đã HẾT HẠN SỬ DỤNG${dispDate ? ` (Hạn dùng đến hết ngày ${dispDate})` : ''}.`,
+        `Kho đã tự động huỷ bỏ các mã này theo quy định!`
+    ].filter(Boolean).join('\n');
+}
+
+/**
  * Tự động bóc tách danh sách mã PMH từ văn bản dán (Paste)
  * Nhận diện linh hoạt:
  * - Tên sản phẩm từ cụm 'dùng cho <Tên sản phẩm>:'
  * - Mã Coupon là chuỗi chữ-số liền nhau sau dấu ':' cuối cùng (hoặc dòng liền kề nếu ngắt dòng)
+ * - Ngày hết hạn từ dòng hoặc truyền vào mặc định
  * - Tự động loại bỏ dòng trống, hỗ trợ danh sách nhiều mã cùng 1 sản phẩm
  */
 export function parsePastedCouponList(
     text: string,
     defaultType: string = 'Event',
-    onDuplicate?: (skippedCode: string) => void
+    onDuplicate?: (skippedCode: string) => void,
+    defaultExpiryDate?: string
 ): ParsedImportItem[] {
     if (!text || typeof text !== 'string') return [];
 
@@ -518,6 +594,16 @@ export function parsePastedCouponList(
 
         let rawCode = '';
         let productName = '';
+        let lineExpiry: string | undefined = undefined;
+
+        // 0. Trích xuất ngày nếu có trên dòng (ví dụ: 'Ngày 18/09/2026 : ...')
+        const dateMatch = line.match(/(?:ngày\s+)?(\d{1,2})[/-](\d{1,2})[/-](\d{4})/i);
+        if (dateMatch) {
+            const d = dateMatch[1].padStart(2, '0');
+            const m = dateMatch[2].padStart(2, '0');
+            const y = dateMatch[3];
+            lineExpiry = `${y}-${m}-${d}`;
+        }
 
         // 1. Trích xuất tên sản phẩm (nếu có)
         // Tìm pattern: 'dùng cho <tên sp>:' hoặc 'cho sp <tên sp>:'
@@ -573,11 +659,13 @@ export function parsePastedCouponList(
             seenCodes.add(upperCode);
 
             const autoSyntax = extractProductSyntax(productName);
+            const resolvedExpiry = defaultExpiryDate || lineExpiry;
             items.push({
                 code: upperCode,
                 productName: productName || '',
                 type: defaultType,
-                syntax: autoSyntax || productName || ''
+                syntax: autoSyntax || productName || '',
+                expiryDate: resolvedExpiry || undefined
             });
         }
     }
@@ -920,10 +1008,24 @@ export function formatInventoryReportMessage(
     const lowStockItems = products.filter(i => i.unused < 3);
     const lowStockCount = lowStockItems.length;
 
-    let text = `📊 BÁO CÁO TỒN KHO ${categoryTitle}\n━━━━━━━━━━━━━━━━━━━━━\n`;
+    let text = `📊 BÁO CÁO TỒN KHO ${categoryTitle}\n━━━━━━━━━━━━━━━━━\n`;
+
+    if (isEvent) {
+        text += `📈 Tổng tồn kho Event: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)\n';
+    } else if (isGvgs) {
+        text += `📈 Tổng tồn kho Giờ Vàng: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)\n';
+    } else {
+        text += `📈 Tổng tồn kho: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2...)\n';
+        text += '⚡ Nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2...)\n';
+        text += '👉 Xem riêng từng loại: Gõ "tk event" hoặc "tk gvgs"\n';
+    }
+    text += '━━━━━━━━━━━━━━━━━\n';
 
     if (lowStockCount > 0) {
-        text += `🚨 CẢNH BÁO TỒN KHO THẤP (< 3 MÃ):\nCó [${lowStockCount}] sản phẩm sắp hết hoặc đã hết mã! Quản lý vui lòng nạp bổ sung mã mới.\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `🚨 CẢNH BÁO TỒN KHO THẤP (< 3 MÃ):\nCó [${lowStockCount}] sản phẩm sắp hết hoặc đã hết mã! Quản lý vui lòng nạp bổ sung mã mới.\n━━━━━━━━━━━━━━━━━\n`;
     }
 
     for (const item of products) {
@@ -932,22 +1034,8 @@ export function formatInventoryReportMessage(
         } else if (item.unused < 3) {
             text += `${item.index}. ⚠️ ${item.productName}\n   ➜ SẮP HẾT: Còn ${item.unused}/${item.total} mã (CẦN NẠP GẤP!)\n`;
         } else {
-            text += `${item.index}. ✅ ${item.productName}\n   ➜ Còn khả dụng: ${item.unused}/${item.total} mã\n`;
+            text += `${item.index}. ${item.productName}\n   ➜ Còn khả dụng: ${item.unused}/${item.total} mã\n`;
         }
-    }
-
-    text += '━━━━━━━━━━━━━━━━━━━━━\n';
-    if (isEvent) {
-        text += `📈 Tổng tồn kho Event: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)';
-    } else if (isGvgs) {
-        text += `📈 Tổng tồn kho Giờ Vàng: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)';
-    } else {
-        text += `📈 Tổng tồn kho: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2...)\n';
-        text += '⚡ Nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2...)\n';
-        text += '👉 Xem riêng từng loại: Gõ "tk event" hoặc "tk gvgs"';
     }
 
     return {
@@ -958,4 +1046,114 @@ export function formatInventoryReportMessage(
         products
     };
 }
+
+/**
+ * Kiểm tra xem tin nhắn có phải là lệnh yêu cầu hướng dẫn (hd / help / huong dan...) không
+ */
+export function isHelpCommand(text: string): boolean {
+    if (!text || typeof text !== 'string') return false;
+    const clean = text.trim().toLowerCase().replace(/^@[^\s]+\s*/, '');
+    return /^(?:[./!]?(?:hd|help|huongdan|hướng dẫn|\?)|huong\s*dan|hdsd|cu\s*phap|cú\s*pháp)$/i.test(clean);
+}
+
+/**
+ * Tạo nội dung tin nhắn hướng dẫn sử dụng bot toàn diện
+ */
+export function formatHelpGuideMessage(): string {
+    return [
+        '📖 HƯỚNG DẪN SỬ DỤNG BOT PMH ICT',
+        '━━━━━━━━━━━━━━━━━━━━━',
+        '📊 1. KIỂM TRA TỒN KHO MÃ:',
+        '• "tk": Xem toàn bộ tồn kho tất cả sản phẩm',
+        '• "tk event": Xem tồn kho PMH Event (kèm số e1, e2...)',
+        '• "tk gvgs": Xem tồn kho PMH Giờ Vàng (kèm số gv1, gv2...)',
+        '',
+        '⚡ 2. XIN NHẬN MÃ COUPON (1-CHẠM TỰ COPY):',
+        '• Cú pháp Event: e[STT] [MĐH]',
+        '  ➜ Ví dụ: e4 12345678 (lấy mã Event cho sản phẩm số 4)',
+        '• Cú pháp Giờ Vàng: gv[STT] [MĐH]',
+        '  ➜ Ví dụ: gv2 87654321 (lấy mã Giờ Vàng cho sản phẩm số 2)',
+        '💡 Chạm trực tiếp vào khung mã trên tin nhắn để tự động copy!',
+        '',
+        '🔄 3. HƯỚNG DẪN HỦY MÃ (NẾU KHÔNG DÙNG):',
+        '• Gõ: "huy [Mã coupon]" hoặc "huy [MĐH]"',
+        '  ➜ Ví dụ: huy 6W43J4BI2S hoặc huy 12345678',
+        '  ➜ Bot sẽ tự động thu hồi mã về kho để các bạn khác sử dụng.',
+        '• Hoặc báo Quản lý bấm "Thu hồi về kho" trên Web Quản Trị.',
+        '',
+        '🎯 4. LỌC PMH CỦA BẠN (CHUYỂN TIẾP CHO BOT):',
+        '• Chuyển tiếp tin nhắn gộp danh sách mã cho BOT (chat riêng 1-1).',
+        '• Bot sẽ tự động nhận diện và trích xuất đúng các mã thuộc tên bạn.',
+        '',
+        '📋 5. CÁC CÚ PHÁP TIỆN ÍCH KHÁC:',
+        '• "cp": Lấy danh sách mẫu cú pháp đăng ký chuẩn',
+        '• "id": Tra cứu LINE User ID hoặc Group ID nhóm',
+        '• "check [MĐH]": Tra cứu chi tiết đơn hàng (chat riêng)',
+        '━━━━━━━━━━━━━━━━━━━━━',
+        '💡 Mẹo: Luôn gõ "tk event" hoặc "tk gvgs" trước để biết sản phẩm còn mã không và lấy đúng số thứ tự!'
+    ].join('\n');
+}
+
+/**
+ * Nhận diện lệnh huỷ/trả mã coupon vừa xin (nếu không dùng)
+ * Cú pháp: huy [mã coupon hoặc MĐH]
+ */
+export function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string } {
+    if (!text || typeof text !== 'string') return { isCancel: false };
+    const clean = text.trim().normalize('NFC').replace(/^@[^\s]+\s*/, '');
+    const match = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))\s*[:\-]?\s*([A-Za-z0-9_-]{4,40})$/i);
+    if (match && match[1]) {
+        return { isCancel: true, target: match[1].trim().toUpperCase() };
+    }
+    return { isCancel: false };
+}
+
+/**
+ * Kiểm tra xem một coupon có khớp với từ khoá tìm kiếm / tên sản phẩm / cú pháp không
+ */
+export function matchesProductSearch(
+    coupon: { productName?: string; syntax?: string; type?: string },
+    searchKey: string
+): boolean {
+    if (!searchKey || !coupon) return false;
+    const key = searchKey.trim().toLowerCase();
+    if (!key) return false;
+    const cleanKey = key.replace(/[^a-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/g, '');
+
+    const pName = (coupon.productName || '').trim().toLowerCase();
+    const syn = (coupon.syntax || '').trim().toLowerCase();
+    const type = (coupon.type || '').trim().toLowerCase();
+
+    // 1. Khớp chính xác cú pháp / model
+    if (syn) {
+        const cleanSyn = syn.replace(/[^a-z0-9]/g, '');
+        if (syn === key || (cleanKey.length >= 3 && cleanSyn === cleanKey)) return true;
+        if (key.includes(syn) && syn.length >= 3) return true;
+    }
+
+    // 2. Khớp theo tên sản phẩm
+    if (pName) {
+        if (pName === key) return true;
+        if (pName.includes(key)) return true;
+        if (key.length >= 5 && key.includes(pName)) return true;
+
+        // Trích xuất mã model trong tên sản phẩm để so sánh
+        const modelMatch = pName.match(/\b([A-Z0-9-]{4,20})\b/i);
+        if (modelMatch && modelMatch[1]) {
+            const m = modelMatch[1].toLowerCase();
+            if (m === key || key.includes(m)) return true;
+        }
+    }
+
+    // 3. Khớp theo nhóm Event / Giờ Vàng
+    if (key === 'event' || key === 'pmh event') {
+        return type.includes('event');
+    }
+    if (key === 'giờ vàng' || key === 'gio vang' || key === 'gvgs' || key === 'gv' || key === 'giờ vàng giá sốc') {
+        return !type.includes('event') && (type.includes('giờ vàng') || type.includes('gvgs'));
+    }
+
+    return false;
+}
+
 

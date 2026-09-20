@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Ticket,
     Plus,
@@ -9,12 +9,17 @@ import {
     AlertTriangle,
     CheckCircle2,
     Clock,
-    RefreshCw
+    RefreshCw,
+    Calendar,
+    History,
+    Copy,
+    Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
 import { CouponImportModal } from './CouponImportModal';
+import { formatDisplayDate, getVietnamTodayString } from '../services/couponParser';
 
 interface CouponManagerTabProps {
     coupons: Coupon[];
@@ -66,6 +71,116 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const [isDeletingAll, setIsDeletingAll] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(5); // Mặc định hiển thị đúng 5 dòng
+    const todayVN = getVietnamTodayString();
+
+    // State & Handlers cho Lịch Sử Phát Mã PMH
+    const [historySearch, setHistorySearch] = useState<string>('');
+    const [historyStatusFilter, setHistoryStatusFilter] = useState<'ALL' | 'SENT' | 'REVOKED'>('ALL');
+    const [historyPage, setHistoryPage] = useState<number>(1);
+    const [historyPageSize, setHistoryPageSize] = useState<number>(5);
+    const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+    const handleCopyCode = (code: string) => {
+        navigator.clipboard.writeText(code);
+        setCopiedCode(code);
+        toast.success(`Đã copy mã: ${code}`);
+        setTimeout(() => {
+            setCopiedCode(null);
+        }, 2000);
+    };
+
+    const formatHistoryTime = (isoString?: string) => {
+        if (!isoString) return '—';
+        try {
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return isoString;
+            const pad = (n: number) => String(n).padStart(2, '0');
+            const day = pad(d.getDate());
+            const month = pad(d.getMonth() + 1);
+            const year = d.getFullYear();
+            const hours = pad(d.getHours());
+            const minutes = pad(d.getMinutes());
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        } catch {
+            return isoString;
+        }
+    };
+
+    // Danh sách các coupon đã phát hoặc đã thu hồi
+    const sentHistoryCoupons = useMemo(() => {
+        return coupons
+            .filter(c => c.status === 'SENT' || c.status === 'REVOKED' || Boolean(c.orderId) || Boolean(c.recipient))
+            .sort((a, b) => {
+                const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                return timeB - timeA;
+            });
+    }, [coupons]);
+
+    // Tự động quay về trang 1 khi lọc hoặc tìm kiếm lịch sử
+    React.useEffect(() => {
+        setHistoryPage(1);
+    }, [historySearch, historyStatusFilter]);
+
+    // Lọc danh sách lịch sử phát mã
+    const filteredHistory = useMemo(() => {
+        const raw = historySearch.trim().toLowerCase();
+        return sentHistoryCoupons.filter(c => {
+            if (historyStatusFilter !== 'ALL' && c.status !== historyStatusFilter) return false;
+            if (!raw) return true;
+            const searchFields = [
+                c.code,
+                c.orderId || '',
+                c.warehouse || '',
+                c.recipient || '',
+                c.recipientId || '',
+                c.productName || '',
+                c.type || '',
+                c.syntax || '',
+                c.revokeReason || ''
+            ].map(s => s.toLowerCase());
+            return searchFields.some(f => f.includes(raw));
+        });
+    }, [sentHistoryCoupons, historySearch, historyStatusFilter]);
+
+    const historyTotalItems = filteredHistory.length;
+    const historyTotalPages = Math.max(1, Math.ceil(historyTotalItems / historyPageSize));
+    const historySafePage = Math.min(historyPage, historyTotalPages);
+    const historyStartIndex = (historySafePage - 1) * historyPageSize;
+    const historyEndIndex = Math.min(historyStartIndex + historyPageSize, historyTotalItems);
+    const displayedHistory = filteredHistory.slice(historyStartIndex, historyEndIndex);
+
+    const handleExportHistoryExcel = async () => {
+        if (filteredHistory.length === 0) {
+            toast.error('Không có dữ liệu lịch sử để xuất!');
+            return;
+        }
+        try {
+            const XLSX = await import('xlsx');
+            const data = filteredHistory.map((c, idx) => ({
+                'STT': idx + 1,
+                'Thời Gian Phát': formatHistoryTime(c.updatedAt || c.createdAt),
+                'Mã Coupon': c.code,
+                'Tên Sản Phẩm': c.productName || '',
+                'Loại PMH': c.type,
+                'Cú Pháp': c.syntax || '',
+                'Mã Đơn Hàng': c.orderId || '',
+                'Mã Kho': c.warehouse || '',
+                'Người Nhận': c.recipient || '',
+                'LINE User ID': c.recipientId || '',
+                'Trạng Thái': c.status === 'SENT' ? 'Đã phát' : (c.status === 'REVOKED' ? 'Đã thu hồi' : 'Chưa dùng'),
+                'Lý Do Thu Hồi': c.revokeReason || '',
+                'Thời Gian Thu Hồi': c.revokedAt ? formatHistoryTime(c.revokedAt) : ''
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Lịch Sử Phát PMH');
+            XLSX.writeFile(wb, `Lich_Su_Phat_PMH_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            toast.success('Đã xuất file Excel lịch sử phát mã!');
+        } catch (err: any) {
+            toast.error('Lỗi khi xuất Excel: ' + (err.message || 'Thất bại'));
+        }
+    };
 
     // Xử lý xoá toàn bộ kho mã
     const handleConfirmDeleteAll = async () => {
@@ -167,28 +282,37 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 </div>
             )}
 
-            {/* Controls bar */}
-            <div className="p-4 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
-                    <div className="relative flex-1 min-w-[200px]">
-                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* Controls bar: Toàn bộ nằm trên 1 dòng duy nhất, các nút và input có cùng size h-9 */}
+            <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between gap-2.5 overflow-x-auto flex-nowrap">
+                {/* Nhóm bộ lọc & tìm kiếm bên trái */}
+                <div className="flex items-center gap-2 flex-1 min-w-0 flex-nowrap">
+                    <div className="relative flex-1 min-w-[140px] max-w-[280px]">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Tìm theo mã, MĐH, kho, người nhận..."
-                            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full h-9 pl-8.5 pr-7 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
                         />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"
+                            >
+                                ✕
+                            </button>
+                        )}
                     </div>
 
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value as any)}
-                        className="py-1.5 px-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
+                        className="h-9 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700 dark:text-slate-200 shrink-0 cursor-pointer"
                     >
                         <option value="ALL">Tất cả trạng thái</option>
                         <option value="UNUSED">Chưa dùng (Khả dụng)</option>
-                        <option value="SENT">Đã phát mã</option>
+                        <option value="SENT">Đã phát</option>
                         <option value="REVOKED">Đã thu hồi</option>
                     </select>
 
@@ -196,7 +320,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <select
                             value={typeFilter}
                             onChange={e => setTypeFilter(e.target.value)}
-                            className="py-1.5 px-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300"
+                            className="h-9 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700 dark:text-slate-200 shrink-0 max-w-[150px] truncate cursor-pointer"
                         >
                             <option value="ALL">Tất cả loại PMH</option>
                             {availableTypes.map(t => (
@@ -205,17 +329,23 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </select>
                     )}
 
-                    <Button variant="ghost" onClick={onRefresh} className="p-1.5 text-slate-500 hover:text-slate-700 rounded-xl" title="Làm mới">
-                        <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                    <Button
+                        variant="ghost"
+                        onClick={onRefresh}
+                        className="h-9 w-9 p-0 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl shrink-0 transition-colors"
+                        title="Làm mới"
+                    >
+                        <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                {/* Nhóm các nút thao tác bên phải - Đồng bộ kích thước h-9 px-3.5 */}
+                <div className="flex items-center gap-2 shrink-0 flex-nowrap">
                     <Button
                         variant="ghost"
                         onClick={() => setIsConfirmDeleteAllOpen(true)}
                         disabled={coupons.length === 0 || isDeletingAll}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-xl transition-colors disabled:opacity-40"
+                        className="h-9 px-3.5 flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-xl transition-colors disabled:opacity-40 whitespace-nowrap"
                         title="Xoá tất cả mã coupon hiện có trong kho"
                     >
                         <Trash2 size={14} className={isDeletingAll ? 'animate-spin' : ''} />
@@ -225,7 +355,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onExportExcel}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200"
+                        className="h-9 px-3.5 flex items-center gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors whitespace-nowrap"
                     >
                         <Download size={14} />
                         <span>Xuất Excel</span>
@@ -234,7 +364,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <Button
                         variant="primary"
                         onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm"
+                        className="h-9 px-3.5 flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors whitespace-nowrap"
                     >
                         <Plus size={15} />
                         <span>Nạp mã mới</span>
@@ -252,6 +382,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                 <th className="py-2 px-2.5">Mã Coupon</th>
                                 <th className="py-2 px-2.5 min-w-[200px]">Sản Phẩm & Cú Pháp</th>
                                 <th className="py-2 px-2.5">Loại PMH</th>
+                                <th className="py-2 px-2.5">Hạn Dùng</th>
                                 <th className="py-2 px-2.5">Trạng Thái</th>
                                 <th className="py-2 px-2.5">MĐH / Kho</th>
                                 <th className="py-2 px-2.5">Người Nhận</th>
@@ -262,7 +393,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 font-medium">
                             {filteredCoupons.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
+                                    <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
                                         {isLoading ? 'Đang tải dữ liệu...' : 'Không tìm thấy mã coupon nào trong kho.'}
                                     </td>
                                 </tr>
@@ -299,6 +430,29 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                             <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
                                                 {c.type}
                                             </span>
+                                        </td>
+                                        <td className="py-1.5 px-2.5 whitespace-nowrap">
+                                            {c.expiryDate ? (
+                                                <span
+                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono ${
+                                                        c.expiryDate === todayVN
+                                                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
+                                                            : c.expiryDate < todayVN
+                                                            ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400'
+                                                            : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                                                    }`}
+                                                    title={
+                                                        c.expiryDate === todayVN
+                                                            ? 'Hôm nay hết hạn (tự xoá khi sang ngày mới)'
+                                                            : `Hạn dùng đến hết ngày ${formatDisplayDate(c.expiryDate)}`
+                                                    }
+                                                >
+                                                    <Calendar size={11} className={c.expiryDate === todayVN ? 'text-amber-600' : 'text-slate-400'} />
+                                                    <span>{formatDisplayDate(c.expiryDate)}</span>
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-400 dark:text-slate-500 text-[10px]">Vô thời hạn</span>
+                                            )}
                                         </td>
                                         <td className="py-1.5 px-2.5 whitespace-nowrap">
                                             {c.status === 'UNUSED' || !c.status ? (
@@ -426,6 +580,316 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                 variant="ghost"
                                 onClick={() => setCurrentPage(totalPages)}
                                 disabled={safePage >= totalPages}
+                                className="px-2 py-1 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30"
+                                title="Đến trang cuối"
+                            >
+                                &raquo;
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* PHÂN HỆ: LỊCH SỬ PHÁT MÃ PMH (BÊN DƯỚI KHO MÃ) */}
+            <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm overflow-hidden">
+                {/* Header & Thanh công cụ Lịch Sử Phát Mã */}
+                <div className="p-4 border-b border-slate-200/80 dark:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
+                            <History size={18} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-bold text-slate-800 dark:text-white">Lịch Sử Phát Mã PMH</h3>
+                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/60">
+                                    {sentHistoryCoupons.length} lượt phát
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                Ghi nhận chi tiết các mã PMH đã được Bot LINE hoặc Quản lý cấp cho nhân viên & đơn hàng
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Thanh tìm kiếm & lọc trên 1 dòng */}
+                    <div className="w-full md:w-auto flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 md:pb-0">
+                        <div className="relative min-w-[200px] flex-1 md:w-64 shrink-0">
+                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                value={historySearch}
+                                onChange={e => setHistorySearch(e.target.value)}
+                                placeholder="Tìm mã, MĐH, người nhận, kho..."
+                                className="w-full h-9 pl-8.5 pr-7 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+                            />
+                            {historySearch && (
+                                <button
+                                    onClick={() => setHistorySearch('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        <select
+                            value={historyStatusFilter}
+                            onChange={e => setHistoryStatusFilter(e.target.value as any)}
+                            className="h-9 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-700 dark:text-slate-200 shrink-0 cursor-pointer"
+                        >
+                            <option value="ALL">Tất cả trạng thái ({sentHistoryCoupons.length})</option>
+                            <option value="SENT">Đã phát ({sentHistoryCoupons.filter(c => c.status === 'SENT').length})</option>
+                            <option value="REVOKED">Đã thu hồi ({sentHistoryCoupons.filter(c => c.status === 'REVOKED').length})</option>
+                        </select>
+
+                        <Button
+                            variant="ghost"
+                            onClick={handleExportHistoryExcel}
+                            disabled={sentHistoryCoupons.length === 0}
+                            className="h-9 px-3.5 flex items-center gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors whitespace-nowrap shrink-0 disabled:opacity-40"
+                            title="Xuất lịch sử phát mã ra Excel"
+                        >
+                            <Download size={14} />
+                            <span>Xuất Excel</span>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Bảng dữ liệu Lịch Sử Phát Mã */}
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr className="border-b border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] font-bold">
+                                <th className="py-2.5 pl-3.5 pr-2 w-10 text-center">#</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">Thời Gian Phát</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">Mã Coupon</th>
+                                <th className="py-2.5 px-2.5 min-w-[200px]">Sản Phẩm & Cú Pháp</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">Loại PMH</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">MĐH Áp Dụng</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">Kho</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap">Người Nhận</th>
+                                <th className="py-2.5 px-2.5 whitespace-nowrap text-center">Trạng Thái</th>
+                                <th className="py-2.5 pr-3.5 pl-2 whitespace-nowrap text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            {displayedHistory.length === 0 ? (
+                                <tr>
+                                    <td colSpan={10} className="py-10 text-center text-slate-400">
+                                        <History size={32} className="mx-auto mb-2 opacity-30 text-slate-400" />
+                                        <p className="font-semibold text-slate-600 dark:text-slate-400 text-xs">
+                                            {sentHistoryCoupons.length === 0
+                                                ? 'Chưa có lịch sử phát mã nào trong kho'
+                                                : 'Không tìm thấy kết quả phù hợp với từ khoá tìm kiếm'}
+                                        </p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">
+                                            {sentHistoryCoupons.length === 0
+                                                ? 'Khi Bot LINE hoặc Quản lý cấp phát mã cho nhân viên, thông tin sẽ tự động hiển thị tại đây.'
+                                                : 'Vui lòng thử tìm với từ khoá khác hoặc chọn lại bộ lọc.'}
+                                        </p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                displayedHistory.map((c, idx) => {
+                                    const rowNum = historyStartIndex + idx + 1;
+                                    return (
+                                        <tr
+                                            key={c.id}
+                                            className="hover:bg-blue-50/30 dark:hover:bg-blue-950/10 transition-colors group"
+                                        >
+                                            <td className="py-2 pl-3.5 pr-2 font-mono text-[11px] text-slate-400 text-center">
+                                                {rowNum}
+                                            </td>
+                                            <td className="py-2 px-2.5 text-slate-600 dark:text-slate-300 font-mono text-[11px] whitespace-nowrap">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock size={12} className="text-slate-400 shrink-0" />
+                                                    <span>{formatHistoryTime(c.updatedAt || c.createdAt)}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-2 px-2.5 whitespace-nowrap">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="font-mono font-bold text-slate-900 dark:text-white tracking-wide select-all text-xs bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-lg border border-slate-200/80 dark:border-slate-600/80">
+                                                        {c.code}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleCopyCode(c.code)}
+                                                        className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
+                                                        title="Copy mã coupon"
+                                                    >
+                                                        {copiedCode === c.code ? (
+                                                            <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
+                                                        ) : (
+                                                            <Copy size={12} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="py-2 px-2.5">
+                                                <div className="leading-tight">
+                                                    <span className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 text-xs" title={c.productName}>
+                                                        {c.productName || '—'}
+                                                    </span>
+                                                    {c.syntax && (
+                                                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                                                            {c.syntax}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="py-2 px-2.5 whitespace-nowrap">
+                                                <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                                    {c.type}
+                                                </span>
+                                            </td>
+                                            <td className="py-2 px-2.5 text-slate-800 dark:text-slate-200 font-mono font-bold whitespace-nowrap text-xs">
+                                                {c.orderId ? (
+                                                    <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/40">
+                                                        {c.orderId}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-300 dark:text-slate-600">—</span>
+                                                )}
+                                            </td>
+                                            <td className="py-2 px-2.5 text-slate-600 dark:text-slate-300 font-mono text-xs whitespace-nowrap">
+                                                {c.warehouse ? (
+                                                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 font-semibold">
+                                                        Kho {c.warehouse}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-300 dark:text-slate-600">—</span>
+                                                )}
+                                            </td>
+                                            <td className="py-2 px-2.5 text-slate-700 dark:text-slate-200 whitespace-nowrap text-xs">
+                                                {c.recipient ? (
+                                                    <div className="leading-tight">
+                                                        <span className="font-semibold text-slate-800 dark:text-white">{c.recipient}</span>
+                                                        {c.recipientId && (
+                                                            <span className="text-slate-400 block font-mono text-[9px] truncate max-w-[110px]" title={c.recipientId}>
+                                                                {c.recipientId}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-300 dark:text-slate-600">—</span>
+                                                )}
+                                            </td>
+                                            <td className="py-2 px-2.5 whitespace-nowrap text-center">
+                                                {c.status === 'SENT' ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
+                                                        <Clock size={10} /> Đã phát
+                                                    </span>
+                                                ) : c.status === 'REVOKED' ? (
+                                                    <div className="inline-flex flex-col items-center">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60">
+                                                            <RotateCcw size={10} /> Đã thu hồi
+                                                        </span>
+                                                        {c.revokeReason && (
+                                                            <span className="text-[9px] text-amber-600/80 dark:text-amber-400/80 truncate max-w-[100px] mt-0.5" title={c.revokeReason}>
+                                                                {c.revokeReason}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-300 dark:text-slate-600">—</span>
+                                                )}
+                                            </td>
+                                            <td className="py-2 pr-3.5 pl-2 text-right whitespace-nowrap">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => handleCopyCode(c.code)}
+                                                        className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded transition-colors"
+                                                        title="Copy mã coupon"
+                                                    >
+                                                        <Copy size={13} />
+                                                    </Button>
+                                                    {c.status === 'SENT' && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => onRevokeCoupon(c.id)}
+                                                            className="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors"
+                                                            title="Thu hồi mã về kho (Khả dụng lại)"
+                                                        >
+                                                            <RotateCcw size={13} />
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => onDeleteCoupon(c.id)}
+                                                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors"
+                                                        title="Xoá vĩnh viễn"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Phân trang Pagination Bar cho Lịch Sử Phát Mã */}
+                {filteredHistory.length > 0 && (
+                    <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                            <span>
+                                Hiển thị <strong className="text-slate-800 dark:text-white font-bold">{historyStartIndex + 1} - {historyEndIndex}</strong> trong <strong className="text-slate-800 dark:text-white font-bold">{historyTotalItems}</strong> lượt phát
+                            </span>
+                            <span className="text-slate-300 dark:text-slate-700">|</span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[11px]">Xem:</span>
+                                <select
+                                    value={historyPageSize}
+                                    onChange={e => {
+                                        setHistoryPageSize(Number(e.target.value));
+                                        setHistoryPage(1);
+                                    }}
+                                    className="py-1 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                                >
+                                    <option value={5}>5 dòng</option>
+                                    <option value={10}>10 dòng</option>
+                                    <option value={20}>20 dòng</option>
+                                    <option value={50}>50 dòng</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setHistoryPage(1)}
+                                disabled={historySafePage <= 1}
+                                className="px-2 py-1 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30"
+                                title="Về trang đầu"
+                            >
+                                &laquo;
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setHistoryPage(prev => Math.max(1, prev - 1))}
+                                disabled={historySafePage <= 1}
+                                className="px-2.5 py-1 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30"
+                            >
+                                Trước
+                            </Button>
+                            <span className="px-3 py-1 font-bold text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xs font-mono">
+                                {historySafePage} / {historyTotalPages}
+                            </span>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setHistoryPage(prev => Math.min(historyTotalPages, prev + 1))}
+                                disabled={historySafePage >= historyTotalPages}
+                                className="px-2.5 py-1 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30"
+                            >
+                                Sau
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setHistoryPage(historyTotalPages)}
+                                disabled={historySafePage >= historyTotalPages}
                                 className="px-2 py-1 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30"
                                 title="Đến trang cuối"
                             >

@@ -97,6 +97,185 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
 }
 
 /**
+ * Tạo LINE Flex Message Card cấp mã coupon
+ * Tích hợp action: 'clipboard' - người dùng chạm vào khung mã hoặc nút bấm sẽ tự động copy mã coupon
+ */
+function createCouponFlexMessage(params: {
+    displayName: string;
+    productName: string;
+    categoryLabel: string;
+    code: string;
+    orderId?: string;
+    warehouse?: string;
+    quoteToken?: string;
+    warningSuffix?: string;
+}) {
+    const cleanCode = String(params.code || '').trim();
+    const isEvent = params.categoryLabel.toLowerCase().includes('event');
+    const headerColor = isEvent ? '#06C755' : '#0284C7';
+    const headerTitle = `🎁 MÃ PMH ${params.categoryLabel.toUpperCase()}`;
+
+    const bodyContents: any[] = [
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                {
+                    type: 'text',
+                    text: `@${params.displayName}`,
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#0284C7',
+                    flex: 8
+                },
+                {
+                    type: 'text',
+                    text: 'Đã cấp',
+                    size: 'xxs',
+                    color: '#06C755',
+                    align: 'end',
+                    weight: 'bold',
+                    flex: 4
+                }
+            ]
+        },
+        {
+            type: 'box',
+            layout: 'vertical',
+            margin: 'sm',
+            backgroundColor: '#F8FAFC',
+            cornerRadius: 'md',
+            paddingAll: '8px',
+            contents: [
+                {
+                    type: 'text',
+                    text: `🛍️ ${params.productName}`,
+                    size: 'xs',
+                    color: '#1E293B',
+                    weight: 'bold',
+                    wrap: true
+                },
+                ...(params.orderId ? [{
+                    type: 'box',
+                    layout: 'baseline',
+                    margin: 'xs',
+                    spacing: 'sm',
+                    contents: [
+                        { type: 'text', text: 'MĐH Áp dụng:', color: '#64748B', size: 'xxs', flex: 4 },
+                        { type: 'text', text: params.orderId, color: '#0F172A', size: 'xs', weight: 'bold', flex: 6 }
+                    ]
+                }] : []),
+                ...(params.warehouse ? [{
+                    type: 'box',
+                    layout: 'baseline',
+                    margin: 'xxs',
+                    spacing: 'sm',
+                    contents: [
+                        { type: 'text', text: 'Kho hàng:', color: '#64748B', size: 'xxs', flex: 4 },
+                        { type: 'text', text: String(params.warehouse), color: '#0F172A', size: 'xs', weight: 'bold', flex: 6 }
+                    ]
+                }] : [])
+            ]
+        },
+        // Khung mã coupon hỗ trợ chạm để copy trực tiếp
+        {
+            type: 'box',
+            layout: 'vertical',
+            margin: 'md',
+            backgroundColor: '#ECFDF5',
+            cornerRadius: 'lg',
+            borderWidth: '2px',
+            borderColor: '#06C755',
+            paddingAll: '12px',
+            alignItems: 'center',
+            action: {
+                type: 'clipboard',
+                label: 'Copy Mã',
+                clipboardText: cleanCode
+            },
+            contents: [
+                {
+                    type: 'text',
+                    text: `➜ PMH ${params.categoryLabel.toUpperCase()} (CHẠM ĐỂ COPY)`,
+                    weight: 'bold',
+                    size: 'xxs',
+                    color: '#06C755'
+                },
+                {
+                    type: 'text',
+                    text: cleanCode,
+                    weight: 'bold',
+                    size: 'xl',
+                    color: '#0F172A',
+                    align: 'center',
+                    margin: 'xs'
+                }
+            ]
+        },
+        // Nút bấm clipboard action
+        {
+            type: 'button',
+            style: 'primary',
+            color: '#06C755',
+            height: 'sm',
+            margin: 'md',
+            action: {
+                type: 'clipboard',
+                label: '📋 Chạm Để Copy Mã Coupon',
+                clipboardText: cleanCode
+            }
+        },
+        {
+            type: 'text',
+            text: '💡 Chạm vào khung hoặc nút để tự động copy mã',
+            size: 'xxs',
+            color: '#94A3B8',
+            align: 'center',
+            margin: 'xs'
+        },
+        ...(params.warningSuffix ? [{
+            type: 'text',
+            text: params.warningSuffix.trim(),
+            size: 'xxs',
+            color: '#D97706',
+            wrap: true,
+            margin: 'sm'
+        }] : [])
+    ];
+
+    return {
+        type: 'flex',
+        altText: `🎁 Mã PMH ${params.categoryLabel}: ${cleanCode} - ${params.productName}`,
+        quoteToken: params.quoteToken,
+        contents: {
+            type: 'bubble',
+            size: 'mega',
+            header: {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: headerColor,
+                paddingAll: '10px',
+                contents: [
+                    {
+                        type: 'text',
+                        text: headerTitle,
+                        color: '#FFFFFF',
+                        weight: 'bold',
+                        size: 'sm'
+                    }
+                ]
+            },
+            body: {
+                type: 'box',
+                layout: 'vertical',
+                paddingAll: '12px',
+                contents: bodyContents
+            }
+        }
+    };
+}
+
+/**
  * Format tin nhắn cho lệnh "cp" (Danh sách cú pháp đăng ký của tất cả sản phẩm)
  */
 function formatSyntaxListMessage(
@@ -136,6 +315,239 @@ function formatSyntaxListMessage(
     text += '💡 Sao chép cú pháp sản phẩm tương ứng và gửi kèm thông tin để xin mã!\n';
     text += '👉 Gõ "tk" để kiểm tra số lượng tồn kho từng sản phẩm.';
     return text.trim();
+}
+
+/**
+ * Kiểm tra xem tin nhắn có phải là lệnh yêu cầu hướng dẫn (hd / help / huong dan...) không
+ */
+function isHelpCommand(text: string): boolean {
+    if (!text || typeof text !== 'string') return false;
+    const clean = text.trim().toLowerCase().replace(/^@[^\s]+\s*/, '');
+    return /^(?:[./!]?(?:hd|help|huongdan|hướng dẫn|\?)|huong\s*dan|hdsd|cu\s*phap|cú\s*pháp)$/i.test(clean);
+}
+
+/**
+ * Tạo nội dung tin nhắn hướng dẫn sử dụng bot toàn diện cho lệnh "hd"
+ */
+function formatHelpGuideMessage(): string {
+    return [
+        '📖 HƯỚNG DẪN SỬ DỤNG BOT PMH ICT',
+        '━━━━━━━━━━━━━━━━━━━━━',
+        '📊 1. KIỂM TRA TỒN KHO MÃ:',
+        '• "tk": Xem toàn bộ tồn kho tất cả sản phẩm',
+        '• "tk event": Xem tồn kho PMH Event (kèm số e1, e2...)',
+        '• "tk gvgs": Xem tồn kho PMH Giờ Vàng (kèm số gv1, gv2...)',
+        '',
+        '⚡ 2. XIN NHẬN MÃ COUPON (1-CHẠM TỰ COPY):',
+        '• Cú pháp Event: e[STT] [MĐH]',
+        '  ➜ Ví dụ: e4 12345678 (lấy mã Event cho sản phẩm số 4)',
+        '• Cú pháp Giờ Vàng: gv[STT] [MĐH]',
+        '  ➜ Ví dụ: gv2 87654321 (lấy mã Giờ Vàng cho sản phẩm số 2)',
+        '💡 Chạm trực tiếp vào khung mã trên tin nhắn để tự động copy!',
+        '',
+        '🔄 3. HƯỚNG DẪN HỦY MÃ (NẾU KHÔNG DÙNG):',
+        '• Gõ: "huy [Mã coupon]" hoặc "huy [MĐH]"',
+        '  ➜ Ví dụ: huy 6W43J4BI2S hoặc huy 12345678',
+        '  ➜ Bot sẽ tự động thu hồi mã về kho để các bạn khác sử dụng.',
+        '• Hoặc báo Quản lý bấm "Thu hồi về kho" trên Web Quản Trị.',
+        '',
+        '🎯 4. LỌC PMH CỦA BẠN (CHUYỂN TIẾP CHO BOT):',
+        '• Chuyển tiếp tin nhắn gộp danh sách mã cho BOT (chat riêng 1-1).',
+        '• Bot sẽ tự động nhận diện và trích xuất đúng các mã thuộc tên bạn.',
+        '',
+        '📋 5. CÁC CÚ PHÁP TIỆN ÍCH KHÁC:',
+        '• "cp": Lấy danh sách mẫu cú pháp đăng ký chuẩn',
+        '• "id": Tra cứu LINE User ID hoặc Group ID nhóm',
+        '• "check [MĐH]": Tra cứu chi tiết đơn hàng (chat riêng)',
+        '━━━━━━━━━━━━━━━━━━━━━',
+        '💡 Mẹo: Luôn gõ "tk event" hoặc "tk gvgs" trước để biết sản phẩm còn mã không và lấy đúng số thứ tự!'
+    ].join('\n');
+}
+
+/**
+ * Nhận diện lệnh huỷ/trả mã coupon vừa xin (nếu không dùng)
+ * Cú pháp: huy [mã coupon hoặc MĐH]
+ */
+function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string } {
+    if (!text || typeof text !== 'string') return { isCancel: false };
+    const clean = text.trim().normalize('NFC').replace(/^@[^\s]+\s*/, '');
+    const match = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))\s*[:\-]?\s*([A-Za-z0-9_-]{4,40})$/i);
+    if (match && match[1]) {
+        return { isCancel: true, target: match[1].trim().toUpperCase() };
+    }
+    return { isCancel: false };
+}
+
+/**
+ * Lấy chuỗi ngày hôm nay theo múi giờ Việt Nam (Asia/Ho_Chi_Minh) dạng 'YYYY-MM-DD'
+ */
+function getVietnamTodayString(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
+}
+
+/**
+ * Định dạng YYYY-MM-DD sang DD/MM/YYYY
+ */
+function formatDisplayDate(dateStr?: string): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return dateStr;
+}
+
+/**
+ * Tự động quét và xoá các mã coupon UNUSED đã quá ngày hết hạn khỏi kho
+ * Đồng thời lưu vết thông tin sản phẩm hết hạn vào 'expired_products'
+ */
+async function cleanupExpiredCoupons(uid: string): Promise<{ deleted: number; products: string[] }> {
+    if (!uid) return { deleted: 0, products: [] };
+    try {
+        const todayVN = getVietnamTodayString();
+        const colRef = db.collection('line_bots').doc(uid).collection('coupons');
+        const snap = await colRef.where('status', '==', 'UNUSED').get();
+        if (snap.empty) return { deleted: 0, products: [] };
+
+        const expiredDocs: FirebaseFirestore.QueryDocumentSnapshot[] = [];
+        const productMap = new Map<string, { productName: string; syntax?: string; type?: string; expiryDate: string; count: number }>();
+
+        for (const doc of snap.docs) {
+            const data = doc.data();
+            if (data.expiryDate && data.expiryDate < todayVN) {
+                expiredDocs.push(doc);
+                const pName = (data.productName || data.type || 'PMH').trim();
+                const key = pName.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'pmh';
+                const existing = productMap.get(key);
+                if (!existing) {
+                    productMap.set(key, {
+                        productName: pName,
+                        syntax: data.syntax || '',
+                        type: data.type || '',
+                        expiryDate: data.expiryDate,
+                        count: 1
+                    });
+                } else {
+                    existing.count++;
+                    if (data.expiryDate > existing.expiryDate) {
+                        existing.expiryDate = data.expiryDate;
+                    }
+                }
+            }
+        }
+
+        if (expiredDocs.length === 0) return { deleted: 0, products: [] };
+
+        // Xoá các document coupon hết hạn khỏi kho UNUSED
+        const batchSize = 450;
+        const now = new Date().toISOString();
+        for (let i = 0; i < expiredDocs.length; i += batchSize) {
+            const chunk = expiredDocs.slice(i, i + batchSize);
+            const batch = db.batch();
+            for (const d of chunk) {
+                batch.delete(d.ref);
+            }
+            await batch.commit();
+        }
+
+        // Lưu thông tin vào expired_products để Bot nhận diện và báo hết hạn
+        for (const [key, item] of productMap.entries()) {
+            await db.collection('line_bots').doc(uid).collection('expired_products').doc(key).set({
+                id: key,
+                productName: item.productName,
+                syntax: item.syntax || '',
+                type: item.type || '',
+                expiryDate: item.expiryDate,
+                expiredAt: now,
+                count: item.count
+            }, { merge: true });
+        }
+
+        return { deleted: expiredDocs.length, products: Array.from(productMap.values()).map(p => p.productName) };
+    } catch (e) {
+        console.error('[cleanupExpiredCoupons error]', e);
+        return { deleted: 0, products: [] };
+    }
+}
+
+/**
+ * Tìm kiếm xem sản phẩm có trong danh sách đã hết hạn hay không
+ */
+async function findExpiredProduct(uid: string, searchKey: string): Promise<{ productName: string; expiryDate: string } | null> {
+    if (!uid || !searchKey) return null;
+    try {
+        const cleanKey = searchKey.trim().toLowerCase();
+        if (!cleanKey) return null;
+
+        const snap = await db.collection('line_bots').doc(uid).collection('expired_products').get();
+        if (snap.empty) return null;
+
+        for (const d of snap.docs) {
+            const data = d.data();
+            const pName = (data.productName || '').toLowerCase();
+            const syn = (data.syntax || '').toLowerCase();
+            if (pName.includes(cleanKey) || cleanKey.includes(pName) || (syn && (syn.includes(cleanKey) || cleanKey.includes(syn)))) {
+                return {
+                    productName: data.productName || searchKey,
+                    expiryDate: data.expiryDate || ''
+                };
+            }
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Kiểm tra xem một coupon có khớp với từ khoá tìm kiếm / tên sản phẩm / cú pháp không
+ */
+function matchesProductSearch(
+    coupon: { productName?: string; syntax?: string; type?: string },
+    searchKey: string
+): boolean {
+    if (!searchKey || !coupon) return false;
+    const key = searchKey.trim().toLowerCase();
+    if (!key) return false;
+    const cleanKey = key.replace(/[^a-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/g, '');
+
+    const pName = (coupon.productName || '').trim().toLowerCase();
+    const syn = (coupon.syntax || '').trim().toLowerCase();
+    const type = (coupon.type || '').trim().toLowerCase();
+
+    // 1. Khớp chính xác cú pháp / model
+    if (syn) {
+        const cleanSyn = syn.replace(/[^a-z0-9]/g, '');
+        if (syn === key || (cleanKey.length >= 3 && cleanSyn === cleanKey)) return true;
+        if (key.includes(syn) && syn.length >= 3) return true;
+    }
+
+    // 2. Khớp theo tên sản phẩm
+    if (pName) {
+        if (pName === key) return true;
+        if (pName.includes(key)) return true;
+        if (key.length >= 5 && key.includes(pName)) return true;
+
+        // Trích xuất mã model trong tên sản phẩm để so sánh
+        const modelMatch = pName.match(/\b([A-Z0-9-]{4,20})\b/i);
+        if (modelMatch && modelMatch[1]) {
+            const m = modelMatch[1].toLowerCase();
+            if (m === key || key.includes(m)) return true;
+        }
+    }
+
+    // 3. Khớp theo nhóm Event / Giờ Vàng
+    if (key === 'event' || key === 'pmh event') {
+        return type.includes('event');
+    }
+    if (key === 'giờ vàng' || key === 'gio vang' || key === 'gvgs' || key === 'gv' || key === 'giờ vàng giá sốc') {
+        return !type.includes('event') && (type.includes('giờ vàng') || type.includes('gvgs'));
+    }
+
+    return false;
 }
 
 interface ProductInventoryItem {
@@ -341,10 +753,24 @@ function formatInventoryReportMessage(
     const lowStockItems = products.filter(i => i.unused < 3);
     const lowStockCount = lowStockItems.length;
 
-    let text = `📊 BÁO CÁO TỒN KHO ${categoryTitle}\n━━━━━━━━━━━━━━━━━━━━━\n`;
+    let text = `📊 BÁO CÁO TỒN KHO ${categoryTitle}\n━━━━━━━━━━━━━━━━━\n`;
+
+    if (isEvent) {
+        text += `📈 Tổng tồn kho Event: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)\n';
+    } else if (isGvgs) {
+        text += `📈 Tổng tồn kho Giờ Vàng: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)\n';
+    } else {
+        text += `📈 Tổng tồn kho: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += '💡 Nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2...)\n';
+        text += '⚡ Nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2...)\n';
+        text += '👉 Xem riêng từng loại: Gõ "tk event" hoặc "tk gvgs"\n';
+    }
+    text += '━━━━━━━━━━━━━━━━━\n';
 
     if (lowStockCount > 0) {
-        text += `🚨 CẢNH BÁO TỒN KHO THẤP (< 3 MÃ):\nCó [${lowStockCount}] sản phẩm sắp hết hoặc đã hết mã! Quản lý vui lòng nạp bổ sung mã mới.\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `🚨 CẢNH BÁO TỒN KHO THẤP (< 3 MÃ):\nCó [${lowStockCount}] sản phẩm sắp hết hoặc đã hết mã! Quản lý vui lòng nạp bổ sung mã mới.\n━━━━━━━━━━━━━━━━━\n`;
     }
 
     for (const item of products) {
@@ -353,22 +779,8 @@ function formatInventoryReportMessage(
         } else if (item.unused < 3) {
             text += `${item.index}. ⚠️ ${item.productName}\n   ➜ SẮP HẾT: Còn ${item.unused}/${item.total} mã (CẦN NẠP GẤP!)\n`;
         } else {
-            text += `${item.index}. ✅ ${item.productName}\n   ➜ Còn khả dụng: ${item.unused}/${item.total} mã\n`;
+            text += `${item.index}. ${item.productName}\n   ➜ Còn khả dụng: ${item.unused}/${item.total} mã\n`;
         }
-    }
-
-    text += '━━━━━━━━━━━━━━━━━━━━━\n';
-    if (isEvent) {
-        text += `📈 Tổng tồn kho Event: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)';
-    } else if (isGvgs) {
-        text += `📈 Tổng tồn kho Giờ Vàng: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)';
-    } else {
-        text += `📈 Tổng tồn kho: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2...)\n';
-        text += '⚡ Nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2...)\n';
-        text += '👉 Xem riêng từng loại: Gõ "tk event" hoặc "tk gvgs"';
     }
 
     return {
@@ -1086,6 +1498,83 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
+                // 1.5 Kiểm tra lệnh hướng dẫn sử dụng (hd, help, huong dan, ...)
+                if (isHelpCommand(cleanText)) {
+                    const helpMsg = formatHelpGuideMessage();
+                    await replyLineMessage(token, replyToken, [
+                        {
+                            type: 'text',
+                            text: helpMsg,
+                            quoteToken: event.message?.quoteToken
+                        }
+                    ]);
+                    continue;
+                }
+
+                // 1.6 Kiểm tra lệnh huỷ mã vừa xin nếu không dùng (huy [mã coupon] hoặc huy [MĐH])
+                const cancelCmd = parseCancelCouponCommand(cleanText);
+                if (cancelCmd.isCancel && cancelCmd.target) {
+                    const target = cancelCmd.target;
+                    const userProfile = await getLineUserProfile(token, senderUserId, groupId);
+                    const displayName = userProfile?.displayName || 'Bạn';
+
+                    // Tìm mã theo coupon code hoặc MĐH
+                    let querySnap = await db.collection('line_bots').doc(uid).collection('coupons')
+                        .where('code', '==', target).limit(1).get();
+
+                    if (querySnap.empty) {
+                        querySnap = await db.collection('line_bots').doc(uid).collection('coupons')
+                            .where('orderId', '==', target).limit(1).get();
+                    }
+
+                    if (!querySnap.empty) {
+                        const cDoc = querySnap.docs[0];
+                        const cData = cDoc.data();
+                        const now = new Date().toISOString();
+
+                        await cDoc.ref.update({
+                            status: 'UNUSED',
+                            orderId: '',
+                            recipient: '',
+                            recipientId: '',
+                            revokedAt: now,
+                            revokeReason: `Huỷ qua lệnh LINE bot bởi ${displayName}`,
+                            updatedAt: now
+                        });
+
+                        const cancelMsg = `✅ ĐÃ THU HỒI MÃ VỀ KHO THÀNH CÔNG!\n━━━━━━━━━━━━━━━━━━━━━\n• Mã PMH: ${cData.code}\n• Sản phẩm: ${cData.productName || cData.type}\n• MĐH đã huỷ: ${cData.orderId || target}\n• Người huỷ: ${displayName}\n━━━━━━━━━━━━━━━━━━━━━\n👉 Mã coupon này đã được đưa về trạng thái "Khả dụng" trong kho để bạn khác có thể sử dụng!`;
+
+                        await replyLineMessage(token, replyToken, [
+                            {
+                                type: 'text',
+                                text: cancelMsg,
+                                quoteToken: event.message?.quoteToken
+                            }
+                        ]);
+                        continue;
+                    } else {
+                        await replyLineMessage(token, replyToken, [
+                            {
+                                type: 'text',
+                                text: `⚠️ Không tìm thấy mã coupon hoặc MĐH [${target}] trong danh sách đã cấp của kho!\n👉 Vui lòng kiểm tra lại chính xác mã coupon hoặc MĐH cần huỷ.`,
+                                quoteToken: event.message?.quoteToken
+                            }
+                        ]);
+                        continue;
+                    }
+                }
+
+                // 1.7 Kiểm tra lệnh cú pháp mẫu (cp, cú pháp, mau...)
+                if (lower === 'cp' || lower === 'cú pháp' || lower === 'cu phap' || lower === 'mau' || lower === 'mẫu') {
+                    const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
+                    const coupons = snap.docs.map(d => d.data());
+                    const cpText = formatSyntaxListMessage(coupons, config.syntaxTemplate);
+                    await replyLineMessage(token, replyToken, [
+                        { type: 'text', text: cpText, quoteToken: event.message?.quoteToken }
+                    ]);
+                    continue;
+                }
+
                 // 2. Kiểm tra lệnh thống kê tồn kho (tk, tk event, tk gvgs...)
                 const isTkEvent = /^(?:[./!]?tk\s*(?:event|e|evt)|(?:thống kê|thong ke)\s*(?:event|e))$/i.test(cleanText);
                 const isTkGvgs = /^(?:[./!]?tk\s*(?:gvgs|gv|giovang|giờ vàng)|(?:thống kê|thong ke)\s*(?:gvgs|gv))$/i.test(cleanText);
@@ -1128,6 +1617,7 @@ export const lineBotWebhook = onRequest(
                 }
 
                 if (claimCmd.isClaim && claimCmd.category && claimCmd.productIndex) {
+                    await cleanupExpiredCoupons(uid);
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
                     const coupons = snap.docs.map(d => d.data());
                     const productList = getProductInventoryList(coupons, claimCmd.category);
@@ -1148,6 +1638,19 @@ export const lineBotWebhook = onRequest(
                     const targetProduct = productList[claimCmd.productIndex - 1];
 
                     if (targetProduct.unused <= 0) {
+                        const expiredInfo = await findExpiredProduct(uid, targetProduct.productName);
+                        if (expiredInfo) {
+                            const expDateVN = formatDisplayDate(expiredInfo.expiryDate);
+                            await replyLineMessage(token, replyToken, [
+                                {
+                                    type: 'text',
+                                    text: `⚠️ THÔNG BÁO HẾT HẠN MÃ PMH!\nMã PMH cho sản phẩm [${targetProduct.productName}] đã HẾT HẠN SỬ DỤNG${expDateVN ? ` (Hạn dùng đến hết ngày ${expDateVN})` : ''}.\nKho đã tự động huỷ bỏ mã này theo quy định!`,
+                                    quoteToken: event.message?.quoteToken
+                                }
+                            ]);
+                            continue;
+                        }
+
                         await replyLineMessage(token, replyToken, [
                             {
                                 type: 'text',
@@ -1230,19 +1733,18 @@ export const lineBotWebhook = onRequest(
 
                         const mdhLine = claimCmd.orderId ? `\nMĐH Áp dụng: ${claimCmd.orderId}` : '';
                         const shortCat = claimCmd.category === 'EVENT' ? 'Event' : 'Giờ Vàng';
-                        const replyMsg = `${tagString}\n🛍️ PMH ${shortCat}: ${targetProduct.productName}${mdhLine}\n➜ PMH: ${cData.code}`;
 
-                        const payload: any = {
-                            type: 'text',
-                            text: replyMsg,
+                        // Gửi Flex Message Card hỗ trợ chạm tự động copy mã
+                        const flexMsg = createCouponFlexMessage({
+                            displayName,
+                            productName: targetProduct.productName,
+                            categoryLabel: shortCat,
+                            code: cData.code,
+                            orderId: claimCmd.orderId,
                             quoteToken: event.message?.quoteToken
-                        };
-                        if (senderUserId) {
-                            payload.mention = {
-                                mentionees: [{ index: 0, length: tagString.length, userId: senderUserId }]
-                            };
-                        }
-                        await replyLineMessage(token, replyToken, [payload]);
+                        });
+
+                        await replyLineMessage(token, replyToken, [flexMsg]);
                         continue;
                     } else {
                         // Chờ Admin duyệt
@@ -1279,6 +1781,7 @@ export const lineBotWebhook = onRequest(
                 const approvalMatch = cleanText.match(/^(?:duyệt|duyet|approve)\s+([A-Za-z0-9_-]{4,25})/i);
 
                 if (isApprovalAll) {
+                    await cleanupExpiredCoupons(uid);
                     const pendingSnap = await db.collection('line_bots').doc(uid).collection('pending_requests')
                         .where('status', '==', 'PENDING').get();
 
@@ -1379,6 +1882,7 @@ export const lineBotWebhook = onRequest(
                 }
 
                 if (approvalMatch) {
+                    await cleanupExpiredCoupons(uid);
                     const targetOrderId = approvalMatch[1].trim().toUpperCase();
                     const pendingDoc = await db.collection('line_bots').doc(uid).collection('pending_requests').doc(targetOrderId).get();
                     if (!pendingDoc.exists) {
@@ -1455,21 +1959,21 @@ export const lineBotWebhook = onRequest(
                         updatedAt: now
                     });
 
-                    const requesterTag = `@${pData.managerName || 'Bạn'}`;
                     const displayTitle = cData.productName || cData.type || pData.couponType || 'PMH';
-                    const approvedText = `${requesterTag}\nLoại PMH: ${displayTitle}\nMĐH Áp dụng: ${targetOrderId}\n➜ PMH: ${cData.code}`;
+                    const categoryLabel = pData.category === 'EVENT' ? 'Event' : 'Giờ Vàng';
 
-                    const replyPayload: any = {
-                        type: 'text',
-                        text: approvedText,
+                    // Gửi Flex Message Card hỗ trợ chạm tự động copy mã
+                    const flexMsg = createCouponFlexMessage({
+                        displayName: pData.managerName || 'Bạn',
+                        productName: displayTitle,
+                        categoryLabel,
+                        code: cData.code,
+                        orderId: targetOrderId,
+                        warehouse: pData.warehouse,
                         quoteToken: pData.quoteToken || event.message?.quoteToken
-                    };
-                    if (pData.senderUserId) {
-                        replyPayload.mention = {
-                            mentionees: [{ index: 0, length: requesterTag.length, userId: pData.senderUserId }]
-                        };
-                    }
-                    await replyLineMessage(token, replyToken, [replyPayload]);
+                    });
+
+                    await replyLineMessage(token, replyToken, [flexMsg]);
                     continue;
                 }
 
@@ -1506,10 +2010,87 @@ export const lineBotWebhook = onRequest(
                     parsed.orderId &&
                     (parsed.couponType || parsed.requestedProduct || lower.includes('lấy pmh') || lower.includes('loại pmh') || lower.includes('áp dụng'))
                 ) {
+                    const targetProdKey = (parsed.requestedProduct || parsed.couponType || '').trim();
+
+                    // Nếu không có Loại PMH / Sản phẩm nào được chỉ định, Bot giữ im lặng (không đoán mò)
+                    if (!targetProdKey) {
+                        console.log('[Form PMH] Form không chứa Loại PMH/Sản phẩm cụ thể. Bot giữ im lặng.');
+                        continue;
+                    }
+
+                    // 1. Tự động dọn dẹp các mã UNUSED đã quá hạn khỏi kho
+                    await cleanupExpiredCoupons(uid);
+
+                    // Lấy toàn bộ coupon của kho
+                    const couponsSnap = await db.collection('line_bots').doc(uid).collection('coupons').get();
+                    if (couponsSnap.empty) {
+                        console.log('[Form PMH] Kho chưa có mã nào. Bỏ qua form.');
+                        continue;
+                    }
+
+                    // Lọc các mã UNUSED
+                    const unusedDocs = couponsSnap.docs.filter(d => d.data().status === 'UNUSED');
+
+                    // Tìm mã khả dụng khớp với sản phẩm được yêu cầu
+                    let chosenDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+                    for (const d of unusedDocs) {
+                        if (matchesProductSearch(d.data(), targetProdKey)) {
+                            chosenDoc = d;
+                            break;
+                        }
+                    }
+
+                    // Kiểm tra xem sản phẩm có trong danh mục quản lý của Bot không (kể cả các mã đã từng phát)
+                    const isProductBelongsToBot = couponsSnap.docs.some(d => matchesProductSearch(d.data(), targetProdKey));
+                    const expiredInfo = !chosenDoc ? await findExpiredProduct(uid, targetProdKey) : null;
+
+                    // QUAN TRỌNG: Nếu sản phẩm KHÔNG thuộc danh mục quản lý của Bot này (ví dụ: MM700, ML200, đồ gia dụng của Bot khác...)
+                    // VÀ KHÔNG có trong danh sách sản phẩm hết hạn của Bot:
+                    // BOT BẮT BUỘC PHẢI TUYỆT ĐỐI IM LẶNG để các bot khác hoặc quản lý khác xử lý!
+                    if (!chosenDoc && !isProductBelongsToBot && !expiredInfo) {
+                        console.log(`[Form PMH] Loại PMH/Sản phẩm "${targetProdKey}" không thuộc quản lý của Bot này. Bot giữ im lặng.`);
+                        continue;
+                    }
+
                     // Lấy profile LINE người gửi để tag tên chính xác
                     const userProfile = await getLineUserProfile(token, senderUserId, groupId);
                     const displayName = userProfile?.displayName || parsed.managerName || 'Bạn';
                     const tagString = `@${displayName}`;
+
+                    // Nếu sản phẩm thuộc Bot nhưng đã hết hạn:
+                    if (!chosenDoc && expiredInfo) {
+                        const expDateVN = formatDisplayDate(expiredInfo.expiryDate);
+                        const expiredText = `${tagString}\n⚠️ THÔNG BÁO HẾT HẠN MÃ PMH!\nMã PMH cho sản phẩm [${expiredInfo.productName}] đã HẾT HẠN SỬ DỤNG${expDateVN ? ` (Hạn dùng đến hết ngày ${expDateVN})` : ''}.\nKho đã tự động huỷ bỏ mã này theo quy định!`;
+                        const expPayload: any = {
+                            type: 'text',
+                            text: expiredText,
+                            quoteToken: event.message?.quoteToken
+                        };
+                        if (senderUserId) {
+                            expPayload.mention = {
+                                mentionees: [{ index: 0, length: tagString.length, userId: senderUserId }]
+                            };
+                        }
+                        await replyLineMessage(token, replyToken, [expPayload]);
+                        continue;
+                    }
+
+                    // Nếu sản phẩm thuộc Bot nhưng kho đã hết mã khả dụng:
+                    if (!chosenDoc) {
+                        const emptyText = `${tagString}\n❌ HẾT MÃ TRONG KHO!\nSản phẩm [${targetProdKey}] hiện đã hết mã khả dụng. Vui lòng báo Quản lý nạp thêm mã vào Dashboard!`;
+                        const emptyPayload: any = {
+                            type: 'text',
+                            text: emptyText,
+                            quoteToken: event.message?.quoteToken
+                        };
+                        if (senderUserId) {
+                            emptyPayload.mention = {
+                                mentionees: [{ index: 0, length: tagString.length, userId: senderUserId }]
+                            };
+                        }
+                        await replyLineMessage(token, replyToken, [emptyPayload]);
+                        continue;
+                    }
 
                     // Kiểm tra trùng lặp MĐH
                     const dupSnap = await db.collection('line_bots').doc(uid).collection('coupons')
@@ -1535,62 +2116,6 @@ export const lineBotWebhook = onRequest(
 
                     // Tự động duyệt hoặc chờ Admin duyệt (Tuỳ thiết lập của admin)
                     if (config.autoApprove !== false) {
-                        // TỰ ĐỘNG DUYỆT & PHÁT MÃ
-                        const unusedSnap = await db.collection('line_bots').doc(uid).collection('coupons')
-                            .where('status', '==', 'UNUSED').get();
-
-                        if (unusedSnap.empty) {
-                            const emptyText = `${tagString}\n❌ HẾT MÃ TRONG KHO!\nKho hiện tại đã hết mã khả dụng. Vui lòng báo Quản lý nạp thêm mã vào Dashboard!`;
-                            const emptyPayload: any = {
-                                type: 'text',
-                                text: emptyText,
-                                quoteToken: event.message?.quoteToken
-                            };
-                            if (senderUserId) {
-                                emptyPayload.mention = {
-                                    mentionees: [{ index: 0, length: tagString.length, userId: senderUserId }]
-                                };
-                            }
-                            await replyLineMessage(token, replyToken, [emptyPayload]);
-                            continue;
-                        }
-
-                        // Tìm mã khớp nhất:
-                        let chosenDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
-
-                        // Ưu tiên 1: Khớp theo requestedProduct
-                        if (parsed.requestedProduct) {
-                            const reqLower = parsed.requestedProduct.toLowerCase();
-                            for (const d of unusedSnap.docs) {
-                                const c = d.data();
-                                const pName = (c.productName || '').toLowerCase();
-                                const syn = (c.syntax || '').toLowerCase();
-                                if (pName.includes(reqLower) || reqLower.includes(pName) || syn.includes(reqLower)) {
-                                    chosenDoc = d;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Ưu tiên 2: Khớp theo couponType
-                        if (!chosenDoc && parsed.couponType) {
-                            const typeLower = parsed.couponType.toLowerCase();
-                            for (const d of unusedSnap.docs) {
-                                const c = d.data();
-                                const tName = (c.type || '').toLowerCase();
-                                const pName = (c.productName || '').toLowerCase();
-                                if (tName.includes(typeLower) || pName.includes(typeLower)) {
-                                    chosenDoc = d;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Ưu tiên 3: Fallback lấy mã đầu tiên
-                        if (!chosenDoc) {
-                            chosenDoc = unusedSnap.docs[0];
-                        }
-
                         const couponDoc = chosenDoc;
                         const cData = couponDoc.data();
                         const now = new Date().toISOString();
@@ -1606,7 +2131,7 @@ export const lineBotWebhook = onRequest(
 
                         // Đếm số mã còn lại của sản phẩm này sau khi cấp
                         const targetKey = (cData.productName || cData.type || '').trim();
-                        const remainingCount = unusedSnap.docs.filter(d => {
+                        const remainingCount = unusedDocs.filter(d => {
                             if (d.id === couponDoc.id) return false;
                             const c = d.data();
                             return (c.productName || c.type || '').trim() === targetKey;
@@ -1623,31 +2148,19 @@ export const lineBotWebhook = onRequest(
 
                         const displayTitle = cData.productName || cData.type || parsed.couponType || 'PMH';
 
-                        // Định dạng phản hồi chuẩn xác:
-                        // @CTH-AN-33747-BOSS
-                        // Loại PMH: ....
-                        // MĐH Áp dụng:.... 
-                        // ➜ PMH: 6W43J4BI2S
-                        const replyText = `${tagString}\nLoại PMH: ${displayTitle}\nMĐH Áp dụng: ${parsed.orderId}\n➜ PMH: ${cData.code}${warningSuffix}`;
+                        // Gửi Flex Message Card hỗ trợ chạm tự động copy mã
+                        const flexMsg = createCouponFlexMessage({
+                            displayName,
+                            productName: displayTitle,
+                            categoryLabel: String(cData.type || parsed.couponType || 'PMH').toUpperCase().includes('EVENT') ? 'Event' : 'Giờ Vàng',
+                            code: cData.code,
+                            orderId: parsed.orderId,
+                            warehouse: parsed.warehouse,
+                            quoteToken: event.message?.quoteToken,
+                            warningSuffix
+                        });
 
-                        const replyPayload: any = {
-                            type: 'text',
-                            text: replyText,
-                            quoteToken: event.message?.quoteToken
-                        };
-                        if (senderUserId) {
-                            replyPayload.mention = {
-                                mentionees: [
-                                    {
-                                        index: 0,
-                                        length: tagString.length,
-                                        userId: senderUserId
-                                    }
-                                ]
-                            };
-                        }
-
-                        await replyLineMessage(token, replyToken, [replyPayload]);
+                        await replyLineMessage(token, replyToken, [flexMsg]);
                         continue;
                     } else {
                         // CHẾ ĐỘ CHỜ ADMIN DUYỆT

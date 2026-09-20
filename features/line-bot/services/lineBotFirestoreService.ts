@@ -24,8 +24,10 @@ import {
     LineAdmin,
     LineGroup,
     AuditLog,
-    InteractedUser
+    InteractedUser,
+    ExpiredProductRecord
 } from '../types/lineBot.types';
+import { getVietnamTodayString } from './couponParser';
 
 const ROOT_COLLECTION = 'line_bots';
 
@@ -89,11 +91,11 @@ export const lineBotFirestoreService = {
     },
 
     /**
-     * Nạp hàng loạt mã coupon (tự động loại bỏ trùng lặp mã đã có)
+     * Nạp hàng loạt mã coupon (tự động loại bỏ trùng lặp mã đã có, lưu ngày hết hạn nếu có)
      */
     async addCouponsBatch(
         userId: string,
-        newCoupons: Array<{ code: string; type: string; productName?: string; syntax?: string }>
+        newCoupons: Array<{ code: string; type: string; productName?: string; syntax?: string; expiryDate?: string }>
     ): Promise<{ added: number; skipped: number }> {
         if (!userId || !newCoupons || newCoupons.length === 0) {
             return { added: 0, skipped: 0 };
@@ -102,7 +104,7 @@ export const lineBotFirestoreService = {
         const existingCoupons = await this.getCoupons(userId);
         const existingCodeSet = new Set(existingCoupons.map(c => c.code.trim().toUpperCase()));
 
-        const toAdd: Array<{ code: string; type: string; productName?: string; syntax?: string }> = [];
+        const toAdd: Array<{ code: string; type: string; productName?: string; syntax?: string; expiryDate?: string }> = [];
         let skipped = 0;
 
         for (const item of newCoupons) {
@@ -116,7 +118,8 @@ export const lineBotFirestoreService = {
                 code: cleanCode,
                 type: item.type.trim() || 'PMH',
                 productName: item.productName?.trim() || '',
-                syntax: item.syntax?.trim() || ''
+                syntax: item.syntax?.trim() || '',
+                expiryDate: item.expiryDate?.trim() || ''
             });
         }
 
@@ -141,7 +144,8 @@ export const lineBotFirestoreService = {
                     syntax: c.syntax || '',
                     status: 'UNUSED',
                     createdAt: now,
-                    updatedAt: now
+                    updatedAt: now,
+                    ...(c.expiryDate ? { expiryDate: c.expiryDate } : {})
                 };
                 batch.set(newDoc, couponData);
             }
@@ -152,6 +156,115 @@ export const lineBotFirestoreService = {
         await this.logAudit(userId, 'IMPORT_COUPONS', `Đã nạp ${toAdd.length} mã coupon mới (bỏ qua ${skipped} mã trùng)`, 'Quản lý');
 
         return { added: toAdd.length, skipped };
+    },
+
+    /**
+     * Tự động quét và xoá các mã coupon UNUSED đã quá ngày hết hạn khỏi kho
+     * Đồng thời lưu thông tin sản phẩm hết hạn vào 'expired_products' để Bot LINE thông báo cho người dùng
+     */
+    async cleanupExpiredCoupons(userId: string): Promise<{ deleted: number; products: string[] }> {
+        if (!userId) return { deleted: 0, products: [] };
+        try {
+            const todayVN = getVietnamTodayString();
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'coupons');
+            const q = query(colRef, orderBy('createdAt', 'desc'));
+            const snap = await getDocs(q);
+
+            const expiredDocs: Array<{ doc: any; data: Coupon }> = [];
+            for (const d of snap.docs) {
+                const data = d.data() as Coupon;
+                if ((data.status === 'UNUSED' || !data.status) && data.expiryDate && data.expiryDate < todayVN) {
+                    expiredDocs.push({ doc: d, data });
+                }
+            }
+
+            if (expiredDocs.length === 0) {
+                return { deleted: 0, products: [] };
+            }
+
+            // Gom nhóm theo sản phẩm để ghi nhận vào expired_products
+            const productMap = new Map<string, {
+                productName: string;
+                syntax?: string;
+                type?: string;
+                expiryDate: string;
+                count: number;
+            }>();
+
+            for (const item of expiredDocs) {
+                const pName = (item.data.productName || item.data.type || 'PMH').trim();
+                const key = pName.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'pmh';
+                const existing = productMap.get(key);
+                if (!existing) {
+                    productMap.set(key, {
+                        productName: pName,
+                        syntax: item.data.syntax,
+                        type: item.data.type,
+                        expiryDate: item.data.expiryDate || todayVN,
+                        count: 1
+                    });
+                } else {
+                    existing.count++;
+                    if (item.data.expiryDate && item.data.expiryDate > existing.expiryDate) {
+                        existing.expiryDate = item.data.expiryDate;
+                    }
+                }
+            }
+
+            // Xoá các document coupon hết hạn khỏi kho (UNUSED) theo batch
+            const batchSize = 450;
+            const now = new Date().toISOString();
+
+            for (let i = 0; i < expiredDocs.length; i += batchSize) {
+                const chunk = expiredDocs.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+                for (const item of chunk) {
+                    batch.delete(item.doc.ref);
+                }
+                await batch.commit();
+            }
+
+            // Lưu vết các sản phẩm hết hạn vào collection expired_products
+            for (const [key, prod] of productMap.entries()) {
+                const expDocRef = doc(db, ROOT_COLLECTION, userId, 'expired_products', key);
+                await setDoc(expDocRef, {
+                    id: key,
+                    productName: prod.productName,
+                    syntax: prod.syntax || '',
+                    type: prod.type || '',
+                    expiryDate: prod.expiryDate,
+                    expiredAt: now,
+                    count: prod.count
+                }, { merge: true });
+            }
+
+            const affectedProducts = Array.from(productMap.values()).map(p => p.productName);
+            await this.logAudit(
+                userId,
+                'CLEANUP_EXPIRED_COUPONS',
+                `Đã tự động xoá ${expiredDocs.length} mã coupon hết hạn khỏi kho (${affectedProducts.join(', ')})`,
+                'Hệ thống tự động'
+            );
+
+            return { deleted: expiredDocs.length, products: affectedProducts };
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi cleanupExpiredCoupons:', error);
+            return { deleted: 0, products: [] };
+        }
+    },
+
+    /**
+     * Lấy danh sách sản phẩm đã hết hạn
+     */
+    async getExpiredProducts(userId: string): Promise<ExpiredProductRecord[]> {
+        if (!userId) return [];
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'expired_products');
+            const snap = await getDocs(colRef);
+            return snap.docs.map(d => ({ id: d.id, ...d.data() } as ExpiredProductRecord));
+        } catch {
+            return [];
+        }
     },
 
     /**

@@ -20,6 +20,7 @@ export interface Coupon {
     updatedAt: string;
     revokedAt?: string;
     revokeReason?: string;
+    expiryDate?: string; // Định dạng "YYYY-MM-DD" (hết hạn khi bước sang 00:00 ngày hôm sau)
 }
 
 export interface ParsedImportItem {
@@ -27,6 +28,17 @@ export interface ParsedImportItem {
     type: string;
     productName?: string;
     syntax?: string;
+    expiryDate?: string; // Định dạng "YYYY-MM-DD"
+}
+
+export interface ExpiredProductRecord {
+    id: string;
+    productName: string;
+    syntax?: string;
+    type?: string;
+    expiryDate: string; // "YYYY-MM-DD"
+    expiredAt: string;
+    count: number;
 }
 
 export type KeywordMatchType = 'EXACT' | 'CONTAINS';

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, Upload, Download, Sparkles, Trash2, CheckCircle2 } from 'lucide-react';
+import { X, Upload, Download, Sparkles, Trash2, CheckCircle2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { Button } from '../../../components/shared/ui/Button';
 import { ParsedImportItem } from '../types/lineBot.types';
-import { parsePastedCouponList, extractProductSyntax } from '../services/couponParser';
+import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString } from '../services/couponParser';
 
 interface CouponImportModalProps {
     isOpen: boolean;
@@ -24,6 +24,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     const [selectedType, setSelectedType] = useState<string>('Event');
     const [customType, setCustomType] = useState<string>('');
     const [pasteText, setPasteText] = useState<string>('');
+    const [expiryDate, setExpiryDate] = useState<string>('');
     const [parsedItems, setParsedItems] = useState<ParsedImportItem[]>([]);
     const [duplicateCount, setDuplicateCount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -140,17 +141,27 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     };
 
     // Tự động bóc tách mã khi dán hoặc sửa nội dung
-    const autoParseText = (text: string, type: string) => {
+    const autoParseText = (text: string, type: string, explicitExpiry?: string) => {
         if (!text.trim()) {
             setParsedItems([]);
             setDuplicateCount(0);
             return;
         }
 
+        // Tự động dò ngày muộn nhất trong văn bản nếu chưa có ngày hết hạn
+        let currentExpiry = explicitExpiry !== undefined ? explicitExpiry : expiryDate;
+        if (!currentExpiry) {
+            const detectedDate = extractLatestDateFromText(text);
+            if (detectedDate) {
+                currentExpiry = detectedDate;
+                setExpiryDate(detectedDate);
+            }
+        }
+
         let dupCount = 0;
         const items = parsePastedCouponList(text, type, () => {
             dupCount++;
-        });
+        }, currentExpiry);
         setDuplicateCount(dupCount);
 
         // Lưu giữ lại các cú pháp đã được người dùng gõ trước đó theo từng sản phẩm
@@ -168,10 +179,20 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 const existing = existingSyntaxMap.get(key);
                 return {
                     ...it,
-                    syntax: existing !== undefined ? existing : (it.syntax || autoSyntax || it.productName || '')
+                    syntax: existing !== undefined ? existing : (it.syntax || autoSyntax || it.productName || ''),
+                    expiryDate: currentExpiry || it.expiryDate || undefined
                 };
             });
         });
+    };
+
+    // Khi người dùng thay đổi ngày hết hạn từ ô chọn ngày
+    const handleExpiryDateChange = (newDate: string) => {
+        setExpiryDate(newDate);
+        setParsedItems(prev => prev.map(item => ({
+            ...item,
+            expiryDate: newDate || undefined
+        })));
     };
 
     // Khi người dùng thay đổi Loại PMH mặc định, đồng bộ lại loại cho các mã đã bóc tách
@@ -219,12 +240,17 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
 
         setIsSubmitting(true);
         try {
-            const res = await onImport(parsedItems);
+            const finalItems = parsedItems.map(it => ({
+                ...it,
+                expiryDate: it.expiryDate || expiryDate || undefined
+            }));
+            const res = await onImport(finalItems);
             toast.success(`Đã thêm ${res.added} mã vào kho (bỏ qua ${res.skipped} mã trùng)!`);
             // Sau khi nạp thành công: Xoá sạch toàn bộ nội dung đã dán & đã bóc tách
             setPasteText('');
             setParsedItems([]);
             setCustomType('');
+            setExpiryDate('');
             onClose();
         } catch (err: any) {
             toast.error('Lỗi khi nạp mã: ' + err.message);
@@ -327,6 +353,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             setPasteText('');
                                             setParsedItems([]);
                                             setDuplicateCount(0);
+                                            setExpiryDate('');
                                         }}
                                         className="absolute right-3 top-3 text-[11px] text-slate-400 hover:text-rose-500 bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors"
                                         title="Xoá nội dung ô dán"
@@ -432,18 +459,57 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                     )}
                 </div>
 
-                <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                    <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
-                        Huỷ
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleConfirmImport}
-                        disabled={isSubmitting || parsedItems.length === 0}
-                        className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
-                    >
-                        {isSubmitting ? 'Đang nạp...' : `Xác nhận nạp (${parsedItems.length})`}
-                    </Button>
+                <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-slate-50/50 dark:bg-slate-800/50">
+                    {/* Widget Chọn Ngày Hết Hạn - Đặt góc dưới bên trái đúng vị trí khoanh đỏ */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
+                            <Calendar size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
+                                Hạn dùng:
+                            </label>
+                            <input
+                                id="import-expiry-date"
+                                type="date"
+                                value={expiryDate}
+                                onChange={e => handleExpiryDateChange(e.target.value)}
+                                className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+                                title="Mã sẽ tự động xoá khỏi kho khi bước sang 00:00 ngày hôm sau"
+                            />
+                            {expiryDate && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleExpiryDateChange('')}
+                                    className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors rounded"
+                                    title="Xoá hạn dùng (không thời hạn)"
+                                >
+                                    <X size={13} />
+                                </button>
+                            )}
+                        </div>
+                        {expiryDate ? (
+                            <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
+                                Tự xoá khi sang ngày mới
+                            </span>
+                        ) : (
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                (Để trống nếu không giới hạn)
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 shrink-0">
+                        <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
+                            Huỷ
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleConfirmImport}
+                            disabled={isSubmitting || parsedItems.length === 0}
+                            className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
+                        >
+                            {isSubmitting ? 'Đang nạp...' : `Xác nhận nạp (${parsedItems.length})`}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
