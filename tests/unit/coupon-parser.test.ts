@@ -502,6 +502,16 @@ Trần Thị B
             expect(res.summaryMessage).toContain('VWQU13YUQX');
             expect(res.summaryMessage).not.toContain('ABCD1234');
             expect(res.summaryMessage).not.toContain('99998888');
+
+            // Tính năng mới: Thẻ Flex Cards (Mỗi mã PMH là 1 thẻ)
+            expect(res.flexMessages).toBeDefined();
+            expect(res.flexMessages!.length).toBe(1);
+            const carousel = res.flexMessages![0].contents as any;
+            expect(carousel.type).toBe('carousel');
+            expect(carousel.contents.length).toBe(2);
+            expect(carousel.contents[0].body.contents[0].contents[0].text).toContain('Lê Trường Sơn');
+            expect(carousel.contents[0].body.contents[2].contents[0].contents[1].text).toBe('6W43J4BI2S');
+            expect(carousel.contents[0].body.contents[2].contents[0].action.clipboardText).toBe('6W43J4BI2S');
         });
 
         it('báo rõ khi không tìm thấy mã nào thuộc về tên cấu hình', async () => {

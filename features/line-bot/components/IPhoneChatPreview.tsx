@@ -222,14 +222,15 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                             </span>
                         </div>
 
-                        {/* TAB 1: LỌC PMH */}
+                        {/* TAB 1: LỌC PMH (THẺ FLEX CARDS - MỖI MÃ 1 THẺ THEO HÌNH 2) */}
                         {previewTab === 'filter' && (
                             <>
                                 <div className="flex justify-end">
                                     <div className="bg-[#06C755] text-white p-2.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[88%] font-mono text-[10.5px] whitespace-pre-wrap leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-150">
 {`[Tin nhắn chuyển tiếp từ Nhóm]:
 ${firstName}
-➜ PMH 18JH1TVN : 6W43J4BI2S
+➜ PMH Event : DMXXSP8QD5RNCQM
+➜ PMH MM300 : 1P1GU5CAS5
 ━━━━━━
 Nhân Viên Khác (Không trong DS lọc)
 ➜ PMH KG20IH10N : ABCD1234
@@ -244,97 +245,212 @@ ${secondName}
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
                                         <Bot size={12} />
                                     </div>
-                                    <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[90%] space-y-1.5">
-                                        <div className="text-slate-400 dark:text-slate-500 text-[9.5px] border-l-2 border-emerald-500 pl-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/60 rounded-r font-mono">
-                                            <span>💬 Trích dẫn: </span>
-                                            <span className="italic text-slate-600 dark:text-slate-300">Tin nhắn chuyển tiếp chứa nhiều mã...</span>
+                                    
+                                    <div className="w-full max-w-[92%] space-y-2.5">
+                                        <div className="text-[9.5px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center justify-between px-1">
+                                            <span>🎯 ĐÃ LỌC {secondName !== firstName ? '3' : '2'} MÃ PMH (MỖI MÃ 1 THẺ):</span>
+                                            <span className="text-[8.5px] text-slate-400">13:48</span>
                                         </div>
 
-                                        <div className="font-mono text-xs space-y-1.5">
-                                            <div className="font-bold text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center justify-between">
-                                                <span>🎯 KẾT QUẢ LỌC PMH (FLEX CARDS):</span>
-                                                <span className="text-[9px] font-sans font-normal text-slate-400">Chạm để copy</span>
+                                        {/* Card 1: Bếp điện từ đôi Sunhouse (Giống 100% Hình 2) */}
+                                        <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                            <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs">🎁</span>
+                                                    <span className="font-bold text-[11px] tracking-wide uppercase">
+                                                        MÃ PMH EVENT
+                                                    </span>
+                                                </div>
+                                                <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
+                                                    1/{secondName !== firstName ? '3' : '2'}
+                                                </span>
                                             </div>
 
-                                            <div className="space-y-1 text-[10.5px]">
-                                                <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                                                    <span>👤 {firstName}</span>
-                                                    <span className="text-[9px] font-normal text-emerald-600 dark:text-emerald-400">2 mã PMH</span>
+                                            <div className="p-3 space-y-2 text-xs">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
+                                                        <span>@{firstName}</span>
+                                                    </div>
+                                                    <span className="text-[10.5px] font-bold text-[#06C755]">
+                                                        Đã cấp
+                                                    </span>
                                                 </div>
 
-                                                <div
-                                                    onClick={() => handleCopyCode('R6KDPXGZU6')}
-                                                    className="flex items-center justify-between p-1.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 cursor-pointer hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 transition-all select-none"
-                                                    title="Chạm để copy mã R6KDPXGZU6"
-                                                >
-                                                    <div className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                                                        <span>➜ PMH ICT200:</span>
-                                                        <span className="text-slate-900 dark:text-white font-mono font-bold tracking-wider">R6KDPXGZU6</span>
+                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                    <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
+                                                        🛍️ Bếp điện từ đôi Sunhouse SHB81272-MD
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-2xs"
-                                                    >
-                                                        {copiedCode === 'R6KDPXGZU6' ? <Check size={10} /> : <Copy size={10} />}
-                                                        <span>{copiedCode === 'R6KDPXGZU6' ? 'Đã copy' : 'Copy'}</span>
-                                                    </button>
                                                 </div>
 
-                                                <div
-                                                    onClick={() => handleCopyCode('WX81K2L9PQ')}
-                                                    className="flex items-center justify-between p-1.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 cursor-pointer hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 transition-all select-none"
-                                                    title="Chạm để copy mã WX81K2L9PQ"
-                                                >
-                                                    <div className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                                                        <span>➜ PMH ICT400:</span>
-                                                        <span className="text-slate-900 dark:text-white font-mono font-bold tracking-wider">WX81K2L9PQ</span>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-2xs"
-                                                    >
-                                                        {copiedCode === 'WX81K2L9PQ' ? <Check size={10} /> : <Copy size={10} />}
-                                                        <span>{copiedCode === 'WX81K2L9PQ' ? 'Đã copy' : 'Copy'}</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {secondName !== firstName && (
-                                                <div className="space-y-1 text-[10.5px] pt-1 border-t border-slate-100 dark:border-slate-800">
-                                                    <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                                                        <span>👤 {secondName}</span>
-                                                        <span className="text-[9px] font-normal text-emerald-600 dark:text-emerald-400">1 mã PMH</span>
-                                                    </div>
-
+                                                <div className="flex justify-center pt-0.5">
                                                     <div
-                                                        onClick={() => handleCopyCode('73KX4BKDXE')}
-                                                        className="flex items-center justify-between p-1.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 cursor-pointer hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 transition-all select-none"
-                                                        title="Chạm để copy mã 73KX4BKDXE"
+                                                        onClick={() => handleCopyCode('DMXXSP8QD5RNCQM')}
+                                                        className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                            copiedCode === 'DMXXSP8QD5RNCQM'
+                                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
+                                                                : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                        }`}
+                                                        title="Nhấp vào khung để tự động copy mã DMXXSP8QD5RNCQM"
                                                     >
-                                                        <div className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                                                            <span>➜ PMH MM700:</span>
-                                                            <span className="text-slate-900 dark:text-white font-mono font-bold tracking-wider">73KX4BKDXE</span>
+                                                        <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                                                            <span>➔ PMH Event</span>
+                                                            <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
                                                         </div>
-                                                        <button
-                                                            type="button"
-                                                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-2xs"
-                                                        >
-                                                            {copiedCode === '73KX4BKDXE' ? <Check size={10} /> : <Copy size={10} />}
-                                                            <span>{copiedCode === '73KX4BKDXE' ? 'Đã copy' : 'Copy'}</span>
-                                                        </button>
+
+                                                        <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
+                                                            <span>DMXXSP8QD5RNCQM</span>
+                                                            <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
+                                                                {copiedCode === 'DMXXSP8QD5RNCQM' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
+                                                            {copiedCode === 'DMXXSP8QD5RNCQM' ? (
+                                                                <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
+                                                                    <Check size={10} /> Đã copy mã!
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            <div className="text-[9.5px] text-amber-600 dark:text-amber-400 font-sans flex items-center gap-1 pt-0.5">
-                                                <span>💡 Chạm vào từng ô để tự động copy mã nhanh</span>
                                             </div>
                                         </div>
 
-                                        <div className="text-[9px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                            <span>⚡ Tự động gôm mã theo người nhận</span>
-                                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">13:48</span>
+                                        {/* Card 2: PMH MM300 */}
+                                        <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                            <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs">🎁</span>
+                                                    <span className="font-bold text-[11px] tracking-wide uppercase">
+                                                        MÃ PMH MM300
+                                                    </span>
+                                                </div>
+                                                <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
+                                                    2/{secondName !== firstName ? '3' : '2'}
+                                                </span>
+                                            </div>
+
+                                            <div className="p-3 space-y-2 text-xs">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
+                                                        <span>@{firstName}</span>
+                                                    </div>
+                                                    <span className="text-[10.5px] font-bold text-[#06C755]">
+                                                        Đã cấp
+                                                    </span>
+                                                </div>
+
+                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                    <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
+                                                        🛍️ PMH MM300 (Phiếu mua hàng)
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex justify-center pt-0.5">
+                                                    <div
+                                                        onClick={() => handleCopyCode('1P1GU5CAS5')}
+                                                        className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                            copiedCode === '1P1GU5CAS5'
+                                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
+                                                                : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                        }`}
+                                                        title="Nhấp vào khung để tự động copy mã 1P1GU5CAS5"
+                                                    >
+                                                        <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                                                            <span>➜ PMH MM300</span>
+                                                            <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
+                                                        </div>
+
+                                                        <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
+                                                            <span>1P1GU5CAS5</span>
+                                                            <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
+                                                                {copiedCode === '1P1GU5CAS5' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
+                                                            {copiedCode === '1P1GU5CAS5' ? (
+                                                                <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
+                                                                    <Check size={10} /> Đã copy mã!
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* Card 3 (nếu có người thứ 2): PMH SHD4607 */}
+                                        {secondName !== firstName && (
+                                            <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                                <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-xs">🎁</span>
+                                                        <span className="font-bold text-[11px] tracking-wide uppercase">
+                                                            MÃ PMH SHD4607
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
+                                                        3/3
+                                                    </span>
+                                                </div>
+
+                                                <div className="p-3 space-y-2 text-xs">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
+                                                            <span>@{secondName}</span>
+                                                        </div>
+                                                        <span className="text-[10.5px] font-bold text-[#06C755]">
+                                                            Đã cấp
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                        <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
+                                                            🛍️ Bếp hồng ngoại Sunhouse SHD4607
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-center pt-0.5">
+                                                        <div
+                                                            onClick={() => handleCopyCode('VWQU13YUQX')}
+                                                            className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                                copiedCode === 'VWQU13YUQX'
+                                                                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
+                                                                    : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                            }`}
+                                                            title="Nhấp vào khung để tự động copy mã VWQU13YUQX"
+                                                        >
+                                                            <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                                                                <span>➜ PMH SHD4607</span>
+                                                                <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
+                                                            </div>
+
+                                                            <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
+                                                                <span>VWQU13YUQX</span>
+                                                                <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
+                                                                    {copiedCode === 'VWQU13YUQX' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
+                                                                {copiedCode === 'VWQU13YUQX' ? (
+                                                                    <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
+                                                                        <Check size={10} /> Đã copy mã!
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </>

@@ -150,6 +150,7 @@ export interface PmhFilterResult {
         compactBlock?: string;
     }>;
     summaryMessage: string;
+    flexMessages?: any[];
 }
 
 export interface AuditLog {

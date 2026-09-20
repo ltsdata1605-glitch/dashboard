@@ -142,7 +142,7 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
  * Tạo LINE Flex Message Card cấp mã coupon
  * Tích hợp action: 'clipboard' - người dùng chạm vào khung mã hoặc nút bấm sẽ tự động copy mã coupon
  */
-function createCouponFlexMessage(params: {
+function createCouponFlexBubble(params: {
     displayName: string;
     productName: string;
     categoryLabel: string;
@@ -155,6 +155,7 @@ function createCouponFlexMessage(params: {
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
     const headerColor = isEvent ? '#06C755' : '#0284C7';
     const headerTitle = `🎁 MÃ PMH ${params.categoryLabel.toUpperCase()}`;
+    const cleanName = (params.displayName || 'Quản lý').replace(/^[@👤\s]+/, '').trim();
 
     const bodyContents: any[] = [
         {
@@ -163,7 +164,7 @@ function createCouponFlexMessage(params: {
             contents: [
                 {
                     type: 'text',
-                    text: `@${params.displayName}`,
+                    text: `@${cleanName}`,
                     weight: 'bold',
                     size: 'xs',
                     color: '#0284C7',
@@ -276,34 +277,95 @@ function createCouponFlexMessage(params: {
     ];
 
     return {
-        type: 'flex',
-        altText: `🎁 Mã PMH ${params.categoryLabel}: ${cleanCode} - ${params.productName}`,
-        contents: {
-            type: 'bubble',
-            size: 'mega',
-            header: {
-                type: 'box',
-                layout: 'vertical',
-                backgroundColor: headerColor,
-                paddingAll: '10px',
-                contents: [
-                    {
-                        type: 'text',
-                        text: headerTitle,
-                        color: '#FFFFFF',
-                        weight: 'bold',
-                        size: 'sm'
-                    }
-                ]
-            },
-            body: {
-                type: 'box',
-                layout: 'vertical',
-                paddingAll: '12px',
-                contents: bodyContents
-            }
+        type: 'bubble',
+        size: 'mega',
+        header: {
+            type: 'box',
+            layout: 'vertical',
+            backgroundColor: headerColor,
+            paddingAll: '10px',
+            contents: [
+                {
+                    type: 'text',
+                    text: headerTitle,
+                    color: '#FFFFFF',
+                    weight: 'bold',
+                    size: 'sm'
+                }
+            ]
+        },
+        body: {
+            type: 'box',
+            layout: 'vertical',
+            paddingAll: '12px',
+            contents: bodyContents
         }
     };
+}
+
+function createCouponFlexMessage(params: {
+    displayName: string;
+    productName: string;
+    categoryLabel: string;
+    code: string;
+    orderId?: string;
+    warehouse?: string;
+    warningSuffix?: string;
+}) {
+    const cleanCode = String(params.code || '').trim();
+    const bubble = createCouponFlexBubble(params);
+    return {
+        type: 'flex',
+        altText: `🎁 Mã PMH ${params.categoryLabel}: ${cleanCode} - ${params.productName}`,
+        contents: bubble
+    };
+}
+
+/**
+ * Tạo danh sách LINE Flex Messages dạng Thẻ (Bubble hoặc Carousel) cho các mã PMH lọc được
+ */
+function createFilteredPmhFlexMessages(matchedItems: Array<{
+    recipient: string;
+    productName: string;
+    categoryLabel: string;
+    code: string;
+    orderId?: string;
+    warningSuffix?: string;
+}>): any[] {
+    if (!matchedItems || matchedItems.length === 0) return [];
+
+    const bubbles = matchedItems.map(item => createCouponFlexBubble({
+        displayName: item.recipient,
+        productName: item.productName,
+        categoryLabel: item.categoryLabel,
+        code: item.code,
+        orderId: item.orderId,
+        warningSuffix: item.warningSuffix
+    }));
+
+    const messages: any[] = [];
+    const chunkSize = 10;
+    for (let i = 0; i < bubbles.length; i += chunkSize) {
+        const chunk = bubbles.slice(i, i + chunkSize);
+        if (chunk.length === 1 && bubbles.length === 1) {
+            messages.push({
+                type: 'flex',
+                altText: `🎁 Mã PMH ${matchedItems[0].categoryLabel}: ${matchedItems[0].code} (${matchedItems[0].recipient})`,
+                contents: chunk[0]
+            });
+        } else {
+            const pageInfo = bubbles.length > chunkSize ? ` (${Math.floor(i / chunkSize) + 1}/${Math.ceil(bubbles.length / chunkSize)})` : '';
+            messages.push({
+                type: 'flex',
+                altText: `🎁 Danh sách mã PMH lọc được${pageInfo}`,
+                contents: {
+                    type: 'carousel',
+                    contents: chunk
+                }
+            });
+        }
+    }
+    return messages.slice(0, 5);
 }
 
 /**
@@ -1350,6 +1412,7 @@ function filterPmhByUsers(text: string, candidateNames: string[]): {
     totalBlocks: number;
     matchedBlocks: string[];
     replyText: string;
+    flexMessages?: any[];
 } {
     const allBlocks = parsePmhBlocks(text);
     const cleanNames = (candidateNames || []).map(n => (n || '').trim()).filter(Boolean);
@@ -1373,13 +1436,21 @@ function filterPmhByUsers(text: string, candidateNames: string[]): {
         };
     }
 
-    // Gôm mã theo từng người nhận
+    // Gôm mã theo từng người nhận & chuẩn bị dữ liệu Thẻ Flex Card (mỗi mã 1 thẻ)
     interface RecipientGroup {
         recipient: string;
         items: string[];
     }
 
     const groups = new Map<string, RecipientGroup>();
+    const matchedItemsForFlex: Array<{
+        recipient: string;
+        productName: string;
+        categoryLabel: string;
+        code: string;
+        orderId?: string;
+        warningSuffix?: string;
+    }> = [];
 
     for (const block of matchedBlocks) {
         const details = parsePmhBlockDetails(block);
@@ -1409,6 +1480,26 @@ function filterPmhByUsers(text: string, candidateNames: string[]): {
                 if (item.revokedCode) {
                     line += ` (Thu hồi: ${item.revokedCode})`;
                 }
+
+                // Chuẩn bị item cho Flex Card
+                let cat = 'EVENT';
+                if (/event/i.test(rawType)) cat = 'EVENT';
+                else if (/gv|giờ vàng/i.test(rawType)) cat = 'GIỜ VÀNG';
+                else if (rawType) cat = rawType.replace(/^pmh\s*/i, '').trim() || 'EVENT';
+
+                let prod = rawType || 'Phiếu mua hàng PMH';
+                if (!prod.toLowerCase().startsWith('pmh') && !prod.toLowerCase().startsWith('bếp') && !prod.toLowerCase().startsWith('nồi') && !prod.toLowerCase().startsWith('quạt') && !prod.toLowerCase().startsWith('tủ') && !prod.toLowerCase().startsWith('máy')) {
+                    prod = `PMH ${prod}`;
+                }
+
+                matchedItemsForFlex.push({
+                    recipient,
+                    productName: prod,
+                    categoryLabel: cat,
+                    code: item.code,
+                    orderId: item.orderId || details.orderId,
+                    warningSuffix: item.revokedCode ? `(Thu hồi: ${item.revokedCode})` : undefined
+                });
             } else {
                 continue;
             }
@@ -1444,10 +1535,13 @@ function filterPmhByUsers(text: string, candidateNames: string[]): {
     msg += `━━━━━━\n`;
     msg += `💡 Sao chép mã phía trên để sử dụng!`;
 
+    const flexMessages = createFilteredPmhFlexMessages(matchedItemsForFlex);
+
     return {
         totalBlocks: allBlocks.length,
         matchedBlocks,
-        replyText: msg.trim()
+        replyText: msg.trim(),
+        flexMessages
     };
 }
 
@@ -2344,13 +2438,17 @@ export const lineBotWebhook = onRequest(
                     }
 
                     const filterResult = filterPmhByUsers(rawText, candidates);
-                    await replyLineMessage(token, replyToken, [
-                        {
-                            type: 'text',
-                            text: filterResult.replyText,
-                            quoteToken: event.message?.quoteToken
-                        }
-                    ]);
+                    if (filterResult.flexMessages && filterResult.flexMessages.length > 0) {
+                        await replyLineMessage(token, replyToken, filterResult.flexMessages);
+                    } else {
+                        await replyLineMessage(token, replyToken, [
+                            {
+                                type: 'text',
+                                text: filterResult.replyText,
+                                quoteToken: event.message?.quoteToken
+                            }
+                        ]);
+                    }
                     continue;
                 }
 

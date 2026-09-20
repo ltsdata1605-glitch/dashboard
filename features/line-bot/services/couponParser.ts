@@ -389,22 +389,276 @@ export function filterPmhByUsers(text: string, candidateNames: string[]): PmhFil
 
     const matchedBlocks: string[] = [];
     const matchedCodes: PmhFilterResult['matchedCodes'] = [];
+    const matchedItemsForFlex: Array<{
+        recipient: string;
+        productName: string;
+        categoryLabel: string;
+        code: string;
+        orderId?: string;
+        warningSuffix?: string;
+    }> = [];
 
     for (const block of allBlocks) {
         if (isBlockBelongToUser(block, cleanNames)) {
             matchedBlocks.push(block);
-            matchedCodes.push(parsePmhBlockDetails(block));
+            const details = parsePmhBlockDetails(block);
+            matchedCodes.push(details);
+
+            const codesToProcess = (details.allCodes && details.allCodes.length > 0)
+                ? details.allCodes
+                : [{
+                    typeOrProduct: details.typeOrProduct,
+                    code: details.code,
+                    revokedCode: details.revokedCode,
+                    orderId: details.orderId
+                }];
+
+            for (const item of codesToProcess) {
+                if (item.code) {
+                    const rawType = (item.typeOrProduct || '').trim();
+                    let cat = 'EVENT';
+                    if (/event/i.test(rawType)) cat = 'EVENT';
+                    else if (/gv|giờ vàng/i.test(rawType)) cat = 'GIỜ VÀNG';
+                    else if (rawType) cat = rawType.replace(/^pmh\s*/i, '').trim() || 'EVENT';
+
+                    let prod = rawType || 'Phiếu mua hàng PMH';
+                    if (!prod.toLowerCase().startsWith('pmh') && !prod.toLowerCase().startsWith('bếp') && !prod.toLowerCase().startsWith('nồi') && !prod.toLowerCase().startsWith('quạt') && !prod.toLowerCase().startsWith('tủ') && !prod.toLowerCase().startsWith('máy')) {
+                        prod = `PMH ${prod}`;
+                    }
+
+                    matchedItemsForFlex.push({
+                        recipient: details.recipient || 'Quản lý',
+                        productName: prod,
+                        categoryLabel: cat,
+                        code: item.code,
+                        orderId: item.orderId || details.orderId,
+                        warningSuffix: item.revokedCode ? `(Thu hồi: ${item.revokedCode})` : undefined
+                    });
+                }
+            }
         }
     }
 
+    const flexMessages = createFilteredPmhFlexMessages(matchedItemsForFlex);
     const summaryMessage = formatFilteredPmhMessage(matchedBlocks, cleanNames);
 
     return {
         totalBlocks: allBlocks.length,
         matchedBlocks,
         matchedCodes,
-        summaryMessage
+        summaryMessage,
+        flexMessages
     };
+}
+
+/**
+ * Tạo LINE Flex Bubble Card cho 1 mã PMH (Khung đồ hoạ bo góc, viền xanh, 1-chạm copy)
+ */
+export function createCouponCardBubble(params: {
+    displayName: string;
+    productName: string;
+    categoryLabel: string;
+    code: string;
+    orderId?: string;
+    warehouse?: string;
+    warningSuffix?: string;
+}) {
+    const cleanCode = String(params.code || '').trim();
+    const isEvent = params.categoryLabel.toLowerCase().includes('event');
+    const headerColor = isEvent ? '#06C755' : '#0284C7';
+    const headerTitle = `🎁 MÃ PMH ${params.categoryLabel.toUpperCase()}`;
+    const cleanName = (params.displayName || 'Quản lý').replace(/^[@👤\s]+/, '').trim();
+
+    const bodyContents: any[] = [
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                {
+                    type: 'text',
+                    text: `@${cleanName}`,
+                    weight: 'bold',
+                    size: 'xs',
+                    color: '#0284C7',
+                    flex: 8
+                },
+                {
+                    type: 'text',
+                    text: 'Đã cấp',
+                    size: 'xxs',
+                    color: '#06C755',
+                    align: 'end',
+                    weight: 'bold',
+                    flex: 4
+                }
+            ]
+        },
+        {
+            type: 'box',
+            layout: 'vertical',
+            margin: 'xs',
+            backgroundColor: '#F8FAFC',
+            cornerRadius: 'md',
+            paddingAll: '7px',
+            contents: [
+                {
+                    type: 'text',
+                    text: `🛍️ ${params.productName}`,
+                    size: 'xs',
+                    color: '#1E293B',
+                    weight: 'bold',
+                    wrap: true
+                },
+                ...(params.orderId ? [{
+                    type: 'box',
+                    layout: 'baseline',
+                    margin: 'xs',
+                    spacing: 'sm',
+                    contents: [
+                        { type: 'text', text: 'MĐH Áp dụng:', color: '#64748B', size: 'xxs', flex: 4 },
+                        { type: 'text', text: params.orderId, color: '#0F172A', size: 'xs', weight: 'bold', flex: 6 }
+                    ]
+                }] : []),
+                ...(params.warehouse ? [{
+                    type: 'box',
+                    layout: 'baseline',
+                    margin: 'xxs',
+                    spacing: 'sm',
+                    contents: [
+                        { type: 'text', text: 'Kho hàng:', color: '#64748B', size: 'xxs', flex: 4 },
+                        { type: 'text', text: String(params.warehouse), color: '#0F172A', size: 'xs', weight: 'bold', flex: 6 }
+                    ]
+                }] : [])
+            ]
+        },
+        // Khung bọc căn giữa giúp khung mã coupon thu gọn vừa với nội dung (fit-content)
+        {
+            type: 'box',
+            layout: 'horizontal',
+            justifyContent: 'center',
+            margin: 'sm',
+            contents: [
+                {
+                    type: 'box',
+                    layout: 'vertical',
+                    flex: 0,
+                    backgroundColor: '#ECFDF5',
+                    cornerRadius: 'lg',
+                    borderWidth: '2px',
+                    borderColor: '#06C755',
+                    paddingStart: '18px',
+                    paddingEnd: '18px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    alignItems: 'center',
+                    action: {
+                        type: 'clipboard',
+                        label: 'Copy Mã',
+                        clipboardText: cleanCode
+                    },
+                    contents: [
+                        {
+                            type: 'text',
+                            text: `➜ PMH ${params.categoryLabel} (chạm để copy)`,
+                            size: 'xxs',
+                            color: '#059669',
+                            align: 'center'
+                        },
+                        {
+                            type: 'text',
+                            text: cleanCode,
+                            weight: 'bold',
+                            size: 'md',
+                            color: '#0F172A',
+                            align: 'center',
+                            margin: 'xs'
+                        }
+                    ]
+                }
+            ]
+        },
+        ...(params.warningSuffix ? [{
+            type: 'text',
+            text: params.warningSuffix.trim(),
+            size: 'xxs',
+            color: '#D97706',
+            wrap: true,
+            margin: 'xs'
+        }] : [])
+    ];
+
+    return {
+        type: 'bubble',
+        size: 'mega',
+        header: {
+            type: 'box',
+            layout: 'vertical',
+            backgroundColor: headerColor,
+            paddingAll: '10px',
+            contents: [
+                {
+                    type: 'text',
+                    text: headerTitle,
+                    color: '#FFFFFF',
+                    weight: 'bold',
+                    size: 'sm'
+                }
+            ]
+        },
+        body: {
+            type: 'box',
+            layout: 'vertical',
+            paddingAll: '12px',
+            contents: bodyContents
+        }
+    };
+}
+
+/**
+ * Tạo danh sách LINE Flex Messages dạng Thẻ (Bubble hoặc Carousel) cho các mã PMH lọc được
+ */
+export function createFilteredPmhFlexMessages(matchedItems: Array<{
+    recipient: string;
+    productName: string;
+    categoryLabel: string;
+    code: string;
+    orderId?: string;
+    warningSuffix?: string;
+}>): any[] {
+    if (!matchedItems || matchedItems.length === 0) return [];
+
+    const bubbles = matchedItems.map(item => createCouponCardBubble({
+        displayName: item.recipient,
+        productName: item.productName,
+        categoryLabel: item.categoryLabel,
+        code: item.code,
+        orderId: item.orderId,
+        warningSuffix: item.warningSuffix
+    }));
+
+    const messages: any[] = [];
+    const chunkSize = 10;
+    for (let i = 0; i < bubbles.length; i += chunkSize) {
+        const chunk = bubbles.slice(i, i + chunkSize);
+        if (chunk.length === 1 && bubbles.length === 1) {
+            messages.push({
+                type: 'flex',
+                altText: `🎁 Mã PMH ${matchedItems[0].categoryLabel}: ${matchedItems[0].code} (${matchedItems[0].recipient})`,
+                contents: chunk[0]
+            });
+        } else {
+            const pageInfo = bubbles.length > chunkSize ? ` (${Math.floor(i / chunkSize) + 1}/${Math.ceil(bubbles.length / chunkSize)})` : '';
+            messages.push({
+                type: 'flex',
+                altText: `🎁 Danh sách mã PMH lọc được${pageInfo}`,
+                contents: {
+                    type: 'carousel',
+                    contents: chunk
+                }
+            });
+        }
+    }
+    return messages.slice(0, 5);
 }
 
 /**
