@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Đang xử lý mã PMH...</title>
+    <!-- Preconnect to LINE servers to speed up SDK download and API calls -->
+    <link rel="preconnect" href="https://static.line-scdn.net" crossorigin>
+    <link rel="preconnect" href="https://api.line.me" crossorigin>
+    <link rel="dns-prefetch" href="https://static.line-scdn.net">
     <!-- LINE LIFF SDK v2 -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
@@ -69,110 +76,117 @@
     </style>
 </head>
 <body>
-    <div class="card">
-        <div id="spinner" class="spinner"></div>
-        <div id="statusTitle" class="title">⚡ Đang sao chép & gửi xác nhận...</div>
-        <div id="statusDesc" class="desc">Vui lòng chờ trong tích tắc...</div>
-        <div id="codeDisplay" class="code-box">---</div>
-        <button id="btnManualCopy" class="btn-copy" onclick="manualCopy()">📋 Sao chép thủ công</button>
-        <div id="statusDetail" class="status-msg">Tự động đóng cửa sổ...</div>
-    </div>
-
     <script>
-        // Lấy query parameters từ URL
+        // BƯỚC 0: Tối ưu hoá cực hạn - Trích xuất params & Copy Clipboard NGAY TỨC THÌ trong 1ms
         const urlParams = new URLSearchParams(window.location.search);
         const couponCode = (urlParams.get('code') || '').trim();
         const couponType = (urlParams.get('type') || 'PMH').trim();
         const cardIndex = (urlParams.get('index') || '1').trim();
         const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
 
-        const codeDisplay = document.getElementById('codeDisplay');
+        // Copy tức thì vào bộ nhớ tạm không chờ LIFF
+        if (couponCode) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = couponCode;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            } catch (_) {}
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(couponCode).catch(() => {});
+            }
+        }
+    </script>
+
+    <div class="card">
+        <div id="spinner" class="spinner"></div>
+        <div id="statusTitle" class="title">⚡ Đang xử lý...</div>
+        <div id="statusDesc" class="desc">Tự động sao chép & gửi xác nhận</div>
+        <div id="codeDisplay" class="code-box"><script>document.write(couponCode || '---');</script></div>
+        <button id="btnManualCopy" class="btn-copy" onclick="manualCopy()">📋 Sao chép thủ công</button>
+        <div id="statusDetail" class="status-msg">Tự động đóng trong tích tắc...</div>
+    </div>
+
+    <script>
         const statusTitle = document.getElementById('statusTitle');
         const statusDesc = document.getElementById('statusDesc');
         const statusDetail = document.getElementById('statusDetail');
         const spinner = document.getElementById('spinner');
         const btnManualCopy = document.getElementById('btnManualCopy');
 
-        if (couponCode) {
-            codeDisplay.textContent = couponCode;
-        }
-
-        // Hàm sao chép vào bộ nhớ tạm
-        async function copyToClipboard(text) {
-            if (!text) return false;
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(text);
-                    return true;
-                }
-            } catch (e) {
-                console.warn('[Clipboard] Fallback to execCommand:', e);
-            }
-
-            try {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                textArea.style.position = 'fixed';
-                textArea.style.opacity = '0';
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                const successful = document.execCommand('copy');
-                document.body.removeChild(textArea);
-                return successful;
-            } catch (err) {
-                console.error('[Clipboard] Failed:', err);
-                return false;
-            }
-        }
-
+        // Hàm sao chép thủ công phòng khi người dùng cần
         function manualCopy() {
-            copyToClipboard(couponCode).then(ok => {
-                if (ok) {
-                    btnManualCopy.textContent = '✅ Đã sao chép!';
-                    btnManualCopy.style.background = '#059669';
-                }
+            if (!couponCode) return;
+            navigator.clipboard.writeText(couponCode).then(() => {
+                btnManualCopy.textContent = '✅ Đã sao chép!';
+                btnManualCopy.style.background = '#059669';
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = couponCode;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btnManualCopy.textContent = '✅ Đã sao chép!';
             });
         }
 
-        async function initAndProcess() {
-            // 1. Sao chép ngay lập tức không cần chờ LIFF
-            if (couponCode) {
-                await copyToClipboard(couponCode);
+        // BẢO HIỂM TỐC ĐỘ: Tối đa 1.8 giây là BẮT BUỘC tự động đóng cửa sổ, tuyệt đối không để treo
+        const safetyCloseTimer = setTimeout(() => {
+            if (typeof liff !== 'undefined' && liff.closeWindow) {
+                liff.closeWindow();
             }
+        }, 1800);
 
-            // 2. Khởi tạo LINE LIFF SDK
+        async function fastProcess() {
             try {
-                await liff.init({ liffId: targetLiffId });
+                // Khởi tạo LIFF siêu tốc
+                await liff.init({ liffId: targetLiffId, withLoginOnExternalBrowser: false });
 
                 if (!liff.isInClient()) {
-                    // Mở trên trình duyệt ngoài (Desktop/Safari)
+                    clearTimeout(safetyCloseTimer);
                     spinner.style.display = 'none';
                     statusTitle.textContent = '✅ Đã sao chép mã coupon!';
-                    statusDesc.textContent = 'Bạn đang mở trên trình duyệt bên ngoài ứng dụng LINE.';
+                    statusDesc.textContent = 'Bạn đang mở trên trình duyệt ngoài.';
                     btnManualCopy.style.display = 'block';
                     statusDetail.textContent = '💡 Bạn có thể dán mã vào nơi cần dùng.';
                     return;
                 }
 
-                // 3. Nếu chưa đăng nhập trong client
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-
-                // 4. Lấy Profile người dùng
-                let displayName = 'Quản lý';
+                // TỐI ƯU ĐỘT PHÁ VỀ TỐC ĐỘ (0ms):
+                // Lấy Profile trực tiếp từ ID Token có sẵn trong bộ nhớ LINE client thay vì gọi API liff.getProfile() qua mạng (tiết kiệm 1 - 2 giây)
+                let displayName = '';
                 try {
-                    const profile = await liff.getProfile();
-                    if (profile && profile.displayName) {
-                        displayName = profile.displayName;
+                    const idToken = liff.getDecodedIDToken();
+                    if (idToken && idToken.name) {
+                        displayName = idToken.name;
                     }
-                } catch (e) {
-                    console.warn('[LIFF] Không lấy được profile:', e);
+                } catch (_) {}
+
+                // Fallback nhanh với timeout tối đa 500ms nếu ID Token chưa có name
+                if (!displayName) {
+                    try {
+                        const profile = await Promise.race([
+                            liff.getProfile(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500))
+                        ]);
+                        if (profile && profile.displayName) {
+                            displayName = profile.displayName;
+                        }
+                    } catch (_) {}
                 }
 
-                // 5. Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
+                if (!displayName) {
+                    displayName = 'Quản lý';
+                }
+
+                // Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
@@ -181,43 +195,35 @@
                     timeZone: 'Asia/Ho_Chi_Minh'
                 });
 
-                // 6. Gửi tin nhắn xác nhận thay cho user vào nhóm/chat
+                // Tin nhắn xác nhận tự động
                 const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
                 const messageText = `👉 ${prefix} đã được ${displayName} sử dụng lúc ${timeString}!`;
 
+                // Gửi tin nhắn xác nhận thay cho người dùng (Race tối đa 800ms để không bị block lâu)
                 try {
-                    await liff.sendMessages([
-                        {
-                            type: 'text',
-                            text: messageText
-                        }
+                    await Promise.race([
+                        liff.sendMessages([{ type: 'text', text: messageText }]),
+                        new Promise(resolve => setTimeout(resolve, 800))
                     ]);
                 } catch (sendErr) {
-                    console.error('[LIFF] Lỗi sendMessages:', sendErr);
+                    console.warn('[LIFF] sendMessages error:', sendErr);
                 }
 
-                // 7. Đóng cửa sổ LIFF ngay lập tức (0.2s)
-                setTimeout(() => {
-                    liff.closeWindow();
-                }, 150);
+                // ĐÓNG NGAY LẬP TỨC (0ms delay)
+                clearTimeout(safetyCloseTimer);
+                liff.closeWindow();
 
             } catch (err) {
-                console.error('[LIFF] Lỗi khởi tạo:', err);
-                spinner.style.display = 'none';
-                statusTitle.textContent = '✅ Đã copy mã coupon!';
-                statusDesc.textContent = 'Đã sao chép mã: ' + couponCode;
-                btnManualCopy.style.display = 'block';
-                statusDetail.textContent = 'Vui lòng chạm nút bên dưới hoặc đóng cửa sổ.';
-
-                // Vẫn thử đóng sau 1.5s
+                console.warn('[LIFF] Init error:', err);
+                clearTimeout(safetyCloseTimer);
                 if (typeof liff !== 'undefined' && liff.closeWindow) {
-                    setTimeout(() => liff.closeWindow(), 1500);
+                    liff.closeWindow();
                 }
             }
         }
 
-        // Thực thi ngay khi tải xong DOM
-        document.addEventListener('DOMContentLoaded', initAndProcess);
+        // Kích hoạt xử lý siêu tốc ngay lập tức
+        fastProcess();
     </script>
 </body>
 </html>
