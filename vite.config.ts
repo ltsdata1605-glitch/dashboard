@@ -8,6 +8,14 @@ export default defineConfig(() => {
       base: '/',
       server: {
         open: true,
+        proxy: {
+          '/api-line-proxy': {
+            target: 'https://api.line.me',
+            changeOrigin: true,
+            secure: true,
+            rewrite: (path) => path.replace(/^\/api-line-proxy/, '')
+          }
+        },
         watch: {
           ignored: ['**/backup_temp/**', '**/dashboardycx_backup_*/**'],
         },

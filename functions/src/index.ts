@@ -4,3 +4,4 @@ export { resolveSession, requestAccess, demoteExpiredUsers } from './session';
 export { adminUpdateUser, listManagedUsers } from './admin';
 export { generateWithGemini } from './gemini';
 export { stickerRegister, stickerResolveSession, stickerAdminUpdateUser, stickerStaffAuth } from './stickerEvent';
+export { lineBotWebhook } from './lineBotWebhook';

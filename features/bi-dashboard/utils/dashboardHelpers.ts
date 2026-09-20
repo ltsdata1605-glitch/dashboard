@@ -418,15 +418,25 @@ export const parseSummaryData = (text: string, fallbackStoreName?: string) => {
 export const isEmployeeName = (text: string): boolean => {
     if (!text) return false;
     const trimmed = text.trim();
-    // Mã NV MWG thường là 5-8 chữ số (VD: 276650, 17952...). Mã 3-4 số là mã kho/siêu thị (910, 1032, 3717...)
-    if (/^\d{5,8}\s*-\s*/.test(trimmed)) {
-        const afterDash = trimmed.replace(/^\d{5,8}\s*-\s*/, '').trim();
+    // Trường hợp tài khoản hệ thống đặc biệt
+    if (/^online\s*-\s*/i.test(trimmed)) {
+        return true;
+    }
+    // Mã NV MWG là dãy 4-8 chữ số (VD: 276650, 17952, 7587...).
+    // Mã 3-4 chữ số cũng có thể là mã kho/siêu thị (VD: 910, 1032, 3717...).
+    const empMatch = trimmed.match(/^(\d{4,8})\s*-\s*(.+)$/);
+    if (empMatch) {
+        const afterDash = empMatch[2].trim();
         // Nếu sau dấu '-' còn có dấu '-' nữa (VD: "910 - ĐML_STR_STR - 99 Hùng Vương") thì chắc chắn là siêu thị
         if (afterDash.includes(' - ')) {
             return false;
         }
-        // Nếu sau dấu '-' là tên siêu thị/kho thì vẫn là siêu thị (VD: "1234 - ĐM Cần Thơ", "5678 - Kho Hùng Vương", "910 - ĐML...")
-        if (/^(ĐM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(afterDash)) {
+        // Nếu sau dấu '-' là tên siêu thị/kho (bắt đầu bằng từ khoá + ranh giới/phân cách rõ ràng) thì là siêu thị
+        // Lưu ý: Dùng [\\s_\\-:\\d]|$ thay vì \\b vì ký tự tiếng Việt có dấu (như 'ế' trong 'Chế') bị regex coi là \\W, gây nhầm 'Ch' thành từ riêng
+        if (/^(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(afterDash)) {
+            return false;
+        }
+        if (afterDash.includes('STR_') || afterDash.toLowerCase().includes('siêu thị') || afterDash.toLowerCase().includes('chi nhánh')) {
             return false;
         }
         return true;
@@ -513,8 +523,8 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
 
         // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương", "DMX Cần Thơ", "1234 - ĐM...")
         const isEntity = line.toUpperCase() === 'TỔNG' || 
-                         /^(ĐM|DM|TGD|TGDD|DMX|BHX|KHO|CH|SIÊU THỊ)/i.test(line) ||
-                         /^\d+\s*-\s*(ĐM|DM|TGD|DMX|TGDD|KHO|CH|STR|SIÊU THỊ|CHI NHÁNH|BHX)/i.test(line) ||
+                         /^(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
+                         /^\d+\s*-\s*(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
                          (!isEmployeeName(line) && line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%') && !/^\d{3,8}\s*-/.test(line));
 
         if (isEntity) {
@@ -1023,6 +1033,14 @@ export function isParentIndustry(name: string): boolean {
 }
 
 /**
+ * Danh sách tên chuỗi / thương hiệu cấp công ty (KHÔNG PHẢI tên siêu thị)
+ */
+const STANDALONE_CHAIN_BRANDS = new Set([
+    'TGDD', 'TGDĐ', 'DMX', 'ĐMX', 'BHX', 'TOPZONE', 
+    'THEGIOIDIDONG', 'DIENMAYXANH', 'BACHHOAXANH', 'ANKHANG', 'AVAKIDS'
+]);
+
+/**
  * Tự động nhận diện tên siêu thị thực tế từ nội dung báo cáo copy (hỗ trợ mọi định dạng siêu thị MWG)
  */
 export const detectSupermarketNameFromReport = (text: string): string | null => {
@@ -1032,15 +1050,64 @@ export const detectSupermarketNameFromReport = (text: string): string | null => 
         const l = lines[j];
         if (!l || l === 'Tổng' || l === 'TỔNG' || l.startsWith('BP ') || isEmployeeName(l) || isParentIndustry(l)) continue;
         if (l.includes(' liên hệ ') || l.includes('Đơn vị:') || l.includes('http') || l.includes('Dashboards')) continue;
-        if (l.toLowerCase().includes('doanh thu hợp nhất') || l.toLowerCase().includes('quỹ thời gian') || l.toLowerCase().includes('tiến độ')) continue;
 
-        // Khớp mẫu: "910 - ĐML_STR_STR - 99 Hùng Vương", "3717 - ĐML_STR_STR...", "1234 - ĐM Cần Thơ", "ĐML_STR_..."
-        if (/^\d{3,5}\s*-\s*/.test(l) && (l.includes(' - ') || /^(ĐM|DM|TGD|TGDD|DMX|BHX|KHO|CH|SIÊU THỊ)/i.test(l.replace(/^\d{3,5}\s*-\s*/, '')) || l.includes('STR') || l.includes('Kho') || l.length > 5)) {
+        // Loại trừ các từ khoá chỉ chuỗi độc lập hoặc tiêu đề thanh điều hướng / lọc / báo cáo
+        const upper = l.toUpperCase();
+        if (STANDALONE_CHAIN_BRANDS.has(upper)) continue;
+
+        const lower = l.toLowerCase();
+        if (
+            lower.includes('doanh thu hợp nhất') || 
+            lower.includes('quỹ thời gian') || 
+            lower.includes('tiến độ') ||
+            lower.includes('lượt bill') ||
+            lower.includes('thời gian làm việc') ||
+            lower.includes('tlpvtc') ||
+            lower.includes('triệu đồng') ||
+            lower.includes('tỉ trọng') ||
+            lower.includes('danh mục báo cáo') ||
+            lower.includes('xuất excel') ||
+            lower.includes('tải lại') ||
+            lower.startsWith('chuỗi') ||
+            lower.startsWith('miền') ||
+            lower.startsWith('vùng') ||
+            lower.startsWith('khu vực')
+        ) continue;
+
+        // 1. Khớp mẫu có mã kho và tên chi tiết: "910 - ĐML_STR_STR - 99 Hùng Vương", "3717 - ĐML_STR_STR...", "1234 - ĐM Cần Thơ"
+        if (/^\d{3,5}\s*-\s*/.test(l)) {
+            const afterCode = l.replace(/^\d{3,5}\s*-\s*/, '').trim();
+            if (
+                l.includes(' - ') || 
+                /^(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(afterCode) || 
+                afterCode.includes('STR_') || 
+                afterCode.toLowerCase().includes('kho') ||
+                afterCode.toLowerCase().includes('siêu thị')
+            ) {
+                return l;
+            }
+        }
+
+        // 2. Khớp tiền tố hệ thống cửa hàng ĐML_ / DML_ (VD: "ĐML_STR_STR - 99 Hùng Vương")
+        if (/^(?:ĐML_|DML_)/i.test(l)) {
             return l;
         }
-        if (/^(ĐML_|DML_|ĐMX\b|DMX\b|TGDĐ\b|TGDD\b|BHX\b)/i.test(l) || (/^(ĐM|DM)\s/i.test(l) && l.includes(' - '))) {
+
+        // 3. Khớp tiền tố thương hiệu + tên cửa hàng (phải có tên cửa hàng phía sau, không phải từ đơn): "ĐMX 99 Hùng Vương", "TGDĐ Ba Tháng Hai"
+        if (/^(?:ĐMX|DMX|TGDĐ|TGDD|BHX)\s+([A-Za-z0-9À-ỹ\s/_-]{3,})/i.test(l)) {
             return l;
         }
+        if (/^(?:ĐM|DM)\s/i.test(l) && l.includes(' - ')) {
+            return l;
+        }
+
+        // 4. Khớp nút / nhãn siêu thị chứa mã kho: "Toàn công tySiêu thị 910", "Siêu thị 910", "Kho 910"
+        const stCodeMatch = l.match(/(?:Toàn công ty\s*)?(?:Siêu thị|Kho|Store)\s*[:\s-]?\s*(\d{3,5})\b/i);
+        if (stCodeMatch) {
+            return `Siêu thị ${stCodeMatch[1]}`;
+        }
+
+        // 5. Khớp nhãn có dấu hai chấm: "Siêu thị: 99 Hùng Vương", "Kho: Cần Thơ"
         const smMatch = l.match(/^(?:Siêu thị|Kho|Store)\s*:\s*(.+)$/i);
         if (smMatch && smMatch[1].trim()) {
             return smMatch[1].trim();
@@ -1490,14 +1557,44 @@ export const normalizeSupermarketKey = (name: string): string => {
 };
 
 /**
+ * Trích xuất mã kho / mã siêu thị từ chuỗi tên siêu thị hoặc nội dung báo cáo.
+ * Hỗ trợ các định dạng:
+ * - "910 - ĐML_STR_STR - 99 Hùng Vương" -> "910"
+ * - "Siêu thị 910", "Kho 910", "Store 910", "Toàn công tySiêu thị 910" -> "910"
+ * - Chuỗi số thuần 3-5 chữ số: "910", "3717" -> "910", "3717"
+ */
+export const extractStoreCode = (name: string): string | null => {
+    if (!name) return null;
+    const clean = name.trim();
+    // 1. "910 - ĐML_STR_STR - 99 Hùng Vương" -> 910
+    const leadingMatch = clean.match(/^(\d{3,5})\s*-/);
+    if (leadingMatch) return leadingMatch[1];
+
+    // 2. "Siêu thị 910", "Kho 910", "Store 910", "Toàn công tySiêu thị 910"
+    const keywordMatch = clean.match(/(?:Toàn công ty\s*)?(?:Siêu thị|Kho|Store)\s*[:\s-]?\s*(\d{3,5})\b/i);
+    if (keywordMatch) return keywordMatch[1];
+
+    // 3. Chuỗi thuần số 3-5 chữ số (VD: "910", "3717")
+    if (/^\d{3,5}$/.test(clean)) return clean;
+
+    return null;
+};
+
+/**
  * So khớp xem 2 tên siêu thị có trỏ về cùng một siêu thị hay không:
  * Hỗ trợ các trường hợp:
  * - Khớp tuyệt đối hoặc khớp không phân biệt hoa thường / khoảng trắng
+ * - Khớp theo mã kho trích xuất được (VD: "Siêu thị 910" vs "910 - ĐML_STR_STR - 99 Hùng Vương")
+ * - Tra cứu mã kho qua bảng ánh xạ supermarketMap (nếu được truyền)
  * - Một bên có mã kho ở đầu, một bên không (VD: "910 - ĐML_STR_STR - 99 Hùng Vương" vs "DML_STR_STR - 99 Hùng Vương")
  * - Lệch ký tự Đ / D (VD: "ĐML_STR_STR" vs "DML_STR_STR")
  * - Cùng tên rút gọn qua shortenSupermarketName (VD: cùng là "Hùng Vương")
  */
-export const isSupermarketMatch = (nameA: string, nameB: string): boolean => {
+export const isSupermarketMatch = (
+    nameA: string, 
+    nameB: string, 
+    supermarketMap?: Record<string, string> | null
+): boolean => {
     if (!nameA || !nameB) return false;
     const cleanA = nameA.trim();
     const cleanB = nameB.trim();
@@ -1511,17 +1608,30 @@ export const isSupermarketMatch = (nameA: string, nameB: string): boolean => {
     const isTotalB = cleanB.toUpperCase() === 'TỔNG';
     if (isTotalA || isTotalB) return isTotalA === isTotalB;
 
-    // 3. Khớp sau khi chuẩn hoá (bỏ tiền tố mã kho "910 - ", chuẩn hoá D/Đ và dấu)
+    // 3. Khớp theo mã kho / siêu thị (VD: "Siêu thị 910" vs "910 - ĐML_STR_STR - 99 Hùng Vương")
+    let codeA = extractStoreCode(cleanA);
+    let codeB = extractStoreCode(cleanB);
+    if (supermarketMap) {
+        if (!codeA) {
+            codeA = supermarketMap[cleanA] || supermarketMap[shortenSupermarketName(cleanA)] || null;
+        }
+        if (!codeB) {
+            codeB = supermarketMap[cleanB] || supermarketMap[shortenSupermarketName(cleanB)] || null;
+        }
+    }
+    if (codeA && codeB && codeA === codeB) return true;
+
+    // 4. Khớp sau khi chuẩn hoá (bỏ tiền tố mã kho "910 - ", chuẩn hoá D/Đ và dấu)
     const normA = normalizeSupermarketKey(cleanA);
     const normB = normalizeSupermarketKey(cleanB);
     if (normA && normB && normA === normB) return true;
 
-    // 4. Khớp theo shortenSupermarketName (VD: "Hùng Vương" == "Hùng Vương")
+    // 5. Khớp theo shortenSupermarketName (VD: "Hùng Vương" == "Hùng Vương")
     const shortA = shortenSupermarketName(cleanA).trim().toLowerCase();
     const shortB = shortenSupermarketName(cleanB).trim().toLowerCase();
     if (shortA && shortB && shortA === shortB) return true;
 
-    // 5. Khớp bao hàm (substring) theo tên rút gọn nếu đủ dài
+    // 6. Khớp bao hàm (substring) theo tên rút gọn nếu đủ dài
     if (shortA.length >= 3 && shortB.length >= 3) {
         if (normA.includes(normB) || normB.includes(normA)) return true;
     }

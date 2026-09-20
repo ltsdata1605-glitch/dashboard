@@ -18,6 +18,7 @@ import {
     TILE_CUSTOM_LINKS_KEY,
 } from '../services/tileLinkService';
 import { shortenName, shortenSupermarketName, getDefaultGroupLabel, detectSupermarketNameFromReport, isSupermarketMatch } from '../utils/dashboardHelpers';
+import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { cn } from '../../../components/shared/ui/utils';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
@@ -1022,6 +1023,18 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
         }
     }, []);
 
+    const [supermarketMap, setSupermarketMap] = useState<Record<string, string>>({});
+    useEffect(() => {
+        fetchSupermarketMap().then(setSupermarketMap).catch(() => {});
+        const handleMapChanged = (e: any) => {
+            if (e.detail?.map) {
+                setSupermarketMap(e.detail?.map || {});
+            }
+        };
+        window.addEventListener('supermarketMapChanged', handleMapChanged);
+        return () => window.removeEventListener('supermarketMapChanged', handleMapChanged);
+    }, []);
+
     const safeName = useMemo(() => supermarketName ? shortenSupermarketName(supermarketName) : '', [supermarketName]);
 
     const ids = useMemo(() => {
@@ -1149,7 +1162,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             // Cảnh báo thông minh nếu dữ liệu dán vào có chứa tên siêu thị khác với tab đang chọn
             if (supermarketName) {
                 const detectedStore = detectSupermarketNameFromReport(val);
-                if (detectedStore && !isSupermarketMatch(detectedStore, supermarketName)) {
+                if (detectedStore && !isSupermarketMatch(detectedStore, supermarketName, supermarketMap)) {
                     toast((t) => (
                         <div className="flex flex-col gap-1">
                             <span className="font-bold text-amber-600 dark:text-amber-400">⚠️ Chú ý tên siêu thị!</span>

@@ -1,0 +1,510 @@
+import { describe, it, expect } from 'vitest';
+import {
+    looksLikeCouponForm,
+    parseCouponForm,
+    parsePmhBlocks,
+    isBlockBelongToUser,
+    parsePastedCouponList,
+    formatSyntaxListMessage,
+    formatInventoryReportMessage
+} from '../../features/line-bot/services/couponParser';
+
+describe('couponParser', () => {
+    it('detects coupon form correctly', () => {
+        expect(looksLikeCouponForm('Kho 910 xin mã PMH đơn hàng 12345678')).toBe(true);
+        expect(looksLikeCouponForm('Xin chào buổi sáng')).toBe(false);
+    });
+
+    it('parses structured coupon form correctly', () => {
+        const formText = `[ĐĂNG KÝ PMH]
+Kho: 910
+MĐH: 88291029
+Loại: 100k
+Quản lý: Lê Trường Sơn`;
+
+        const res = parseCouponForm(formText);
+        expect(res.isValid).toBe(true);
+        expect(res.warehouse).toBe('910');
+        expect(res.orderId).toBe('88291029');
+        expect(res.couponType).toBe('PMH 100K');
+        expect(res.managerName).toBe('Lê Trường Sơn');
+    });
+
+    it('parses "FORM MẪU LẤY PMH" without warehouse correctly', () => {
+        const formText = `📝 FORM MẪU LẤY PMH 
+Loại PMH: Bếp gas đôi Sunhouse SHB3105MD
+MĐH Áp dụng: 12345678`;
+
+        const res = parseCouponForm(formText);
+        expect(res.isValid).toBe(true);
+        expect(res.orderId).toBe('12345678');
+        expect(res.couponType).toBe('Bếp gas đôi Sunhouse SHB3105MD');
+    });
+
+    it('reports missing fields for incomplete form', () => {
+        const incompleteText = `Quản lý: Sơn`;
+        const res = parseCouponForm(incompleteText);
+        expect(res.isValid).toBe(false);
+        expect(res.errorMessage).toContain('MĐH Áp dụng');
+    });
+
+    it('splits forwarded PMH message into individual blocks', () => {
+        const forwardedMessage = `KHO 910 PHÁT MÃ
+━━━━━━━━━━━━━━━━━━━━
+Anh Tuấn:
+➜ PMH 100K: ABCD-1234
+━━━━━━━━━━━━━━━━━━━━
+Lê Sơn:
+➜ PMH 200K: XYZW-5678
+━━━━━━━━━━━━━━━━━━━━`;
+
+        const blocks = parsePmhBlocks(forwardedMessage);
+        expect(blocks.length).toBe(2);
+        expect(blocks[0]).toContain('ABCD-1234');
+        expect(blocks[1]).toContain('XYZW-5678');
+    });
+
+    it('filters PMH block belonging to specific user only', () => {
+        const block1 = `Anh Tuấn:\n➜ PMH 100K: ABCD-1234`;
+        const block2 = `Lê Trường Sơn:\n➜ PMH 200K: XYZW-5678`;
+
+        expect(isBlockBelongToUser(block1, ['Lê Trường Sơn', 'Sơn'])).toBe(false);
+        expect(isBlockBelongToUser(block2, ['Lê Trường Sơn', 'Sơn'])).toBe(true);
+    });
+
+    it('parses Mẫu 1: Bộ 3 hộp nhựa chữ nhật Hokkaido (hỗ trợ cả cùng dòng và xuống dòng)', () => {
+        const sample1 = `Ngày 18/09/2026 : Mã Phiếu mua hàng 1 - dùng cho Bộ 3 hộp nhựa chữ nhật Hokkaido:
+BNXOONE4CM
+Ngày 18/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bộ 3 hộp nhựa chữ nhật Hokkaido: NH9CJIRX6N
+Ngày 18/09/2026 : Mã Phiếu mua hàng 3 - dùng cho Bộ 3 hộp nhựa chữ nhật Hokkaido: VUH7FB87H0
+Ngày 18/09/2026 : Mã Phiếu mua hàng 4 - dùng cho Bộ 3 hộp nhựa chữ nhật Hokkaido: NJWZJXVAV1`;
+
+        const items = parsePastedCouponList(sample1, 'Giờ Vàng Giá Sốc');
+        expect(items.length).toBe(4);
+        expect(items[0].code).toBe('BNXOONE4CM');
+        expect(items[0].productName).toBe('Bộ 3 hộp nhựa chữ nhật Hokkaido');
+        expect(items[0].type).toBe('Giờ Vàng Giá Sốc');
+
+        expect(items[1].code).toBe('NH9CJIRX6N');
+        expect(items[1].productName).toBe('Bộ 3 hộp nhựa chữ nhật Hokkaido');
+
+        expect(items[2].code).toBe('VUH7FB87H0');
+        expect(items[3].code).toBe('NJWZJXVAV1');
+    });
+
+    it('parses Mẫu 2: 22 Mã PMH Quạt đứng Midea FS40-10NAVN(K) có dòng trống', () => {
+        const sample2 = `Mã PMH 1 - dùng cho Quạt đứng Midea FS40-10NAVN(K): 21UOZG9KHC
+
+Mã PMH 2 - dùng cho Quạt đứng Midea FS40-10NAVN(K): VVD38R5WXM
+
+Mã PMH 3 - dùng cho Quạt đứng Midea FS40-10NAVN(K): 2Z787JJANM
+
+Mã PMH 4 - dùng cho Quạt đứng Midea FS40-10NAVN(K): XCOFTZ4CMB
+
+Mã PMH 5 - dùng cho Quạt đứng Midea FS40-10NAVN(K): J5NBXO308L
+
+Mã PMH 6 - dùng cho Quạt đứng Midea FS40-10NAVN(K): XTANWC5AMN
+
+Mã PMH 7 - dùng cho Quạt đứng Midea FS40-10NAVN(K): JSFHCRUN51
+
+Mã PMH 8 - dùng cho Quạt đứng Midea FS40-10NAVN(K): YBG4NUZDAC
+
+Mã PMH 9 - dùng cho Quạt đứng Midea FS40-10NAVN(K): RC7UZSTH1M
+
+Mã PMH 10 - dùng cho Quạt đứng Midea FS40-10NAVN(K): PFFJCYP55G
+
+Mã PMH 11 - dùng cho Quạt đứng Midea FS40-10NAVN(K): XFPNB1W3H7
+
+Mã PMH 12 - dùng cho Quạt đứng Midea FS40-10NAVN(K): 1S1IVDVMA9
+
+Mã PMH 13 - dùng cho Quạt đứng Midea FS40-10NAVN(K): WRWR9R93VU
+
+Mã PMH 14 - dùng cho Quạt đứng Midea FS40-10NAVN(K): VKMIYL5SIE
+
+Mã PMH 15 - dùng cho Quạt đứng Midea FS40-10NAVN(K): LATG6O62ES
+
+Mã PMH 16 - dùng cho Quạt đứng Midea FS40-10NAVN(K): FL1M7CWLPD
+
+Mã PMH 17 - dùng cho Quạt đứng Midea FS40-10NAVN(K): CV5X32LTT9
+
+Mã PMH 18 - dùng cho Quạt đứng Midea FS40-10NAVN(K): ES040NYY7G
+
+Mã PMH 19 - dùng cho Quạt đứng Midea FS40-10NAVN(K): UQ4RC0CAND
+
+Mã PMH 20 - dùng cho Quạt đứng Midea FS40-10NAVN(K): 6L5HO3SWZG
+
+Mã PMH 21 - dùng cho Quạt đứng Midea FS40-10NAVN(K): 0C9PH5S951
+
+Mã PMH 22 - dùng cho Quạt đứng Midea FS40-10NAVN(K): UBMOBRSB0E`;
+
+        const items = parsePastedCouponList(sample2, 'Event Cuối Tuần');
+        expect(items.length).toBe(22);
+        expect(items[0].code).toBe('21UOZG9KHC');
+        expect(items[0].productName).toBe('Quạt đứng Midea FS40-10NAVN(K)');
+        expect(items[0].type).toBe('Event Cuối Tuần');
+
+        expect(items[21].code).toBe('UBMOBRSB0E');
+        expect(items[21].productName).toBe('Quạt đứng Midea FS40-10NAVN(K)');
+    });
+
+    it('parses Mẫu 3: Tủ lạnh Panasonic NR-DZ601VGKV', () => {
+        const sample3 = `Ngày 18/09/2026 : Mã Coupon 1 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: DMXT8K781T448KG
+
+Ngày 18/09/2026 : Mã Coupon 2 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: DMXT69BSZ4CBZHX
+
+Ngày 18/09/2026 : Mã Coupon 3 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: DMXTB2BK2PS3G1R
+
+Ngày 19/09/2026 : Mã Coupon 1 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: DMXT8PX7TGPC7D6
+
+Ngày 19/09/2026 : Mã Coupon 2 - dùng cho Tủ lạnh Panasonic NR-DZ601VGKV: DMXT7D6H6DHGBZR`;
+
+        const items = parsePastedCouponList(sample3, 'Event Lớn');
+        expect(items.length).toBe(5);
+        expect(items[0].code).toBe('DMXT8K781T448KG');
+        expect(items[0].productName).toBe('Tủ lạnh Panasonic NR-DZ601VGKV');
+        expect(items[0].type).toBe('Event Lớn');
+
+        expect(items[4].code).toBe('DMXT7D6H6DHGBZR');
+        expect(items[4].productName).toBe('Tủ lạnh Panasonic NR-DZ601VGKV');
+    });
+
+    it('formats syntax list for "cp" command correctly', () => {
+        const sampleCoupons = [
+            { productName: 'Bếp gas đôi Sunhouse SHB3105MD', syntax: '[ĐĂNG KÝ PMH] Bếp gas Sunhouse', status: 'UNUSED' },
+            { productName: 'Bếp gas đôi Sunhouse SHB3105MD', syntax: '[ĐĂNG KÝ PMH] Bếp gas Sunhouse', status: 'UNUSED' },
+            { productName: 'Quạt đứng Midea FS40', syntax: '[ĐĂNG KÝ PMH] Quạt Midea', status: 'SENT' },
+        ];
+
+        const output = formatSyntaxListMessage(sampleCoupons);
+        expect(output).toContain('DANH SÁCH CÚ PHÁP ĐĂNG KÝ PMH');
+        expect(output).toContain('Bếp gas đôi Sunhouse SHB3105MD');
+        expect(output).toContain('[ĐĂNG KÝ PMH] Bếp gas Sunhouse');
+        expect(output).toContain('Quạt đứng Midea FS40');
+        expect(output).toContain('[ĐĂNG KÝ PMH] Quạt Midea');
+        expect(output).toContain('Gõ "tk" để kiểm tra số lượng tồn kho');
+    });
+
+    it('formats inventory report for "tk" command with low stock (<3) warning', () => {
+        const sampleCoupons = [
+            // Bếp gas: 60 mã, 58 còn, 2 đã dùng -> OK
+            ...Array(58).fill({ productName: 'Bếp gas Sunhouse', status: 'UNUSED' }),
+            ...Array(2).fill({ productName: 'Bếp gas Sunhouse', status: 'SENT' }),
+            // Nồi cơm điện: 2 mã UNUSED (< 3) -> SẮP HẾT CẢNH BÁO
+            { productName: 'Nồi cơm Cuckoo', status: 'UNUSED' },
+            { productName: 'Nồi cơm Cuckoo', status: 'UNUSED' },
+            // Quạt: 3 mã nhưng đều SENT -> HẾT MÃ (0)
+            { productName: 'Quạt Midea', status: 'SENT' },
+            { productName: 'Quạt Midea', status: 'SENT' },
+            { productName: 'Quạt Midea', status: 'SENT' },
+        ];
+
+        const report = formatInventoryReportMessage(sampleCoupons);
+        expect(report.lowStockCount).toBe(2); // Quạt Midea (0) và Nồi cơm Cuckoo (2)
+        expect(report.totalUnused).toBe(60);
+        expect(report.totalAll).toBe(65);
+
+        // Tin nhắn phải chứa cảnh báo nổi bật
+        expect(report.replyText).toContain('CẢNH BÁO TỒN KHO THẤP (< 3 MÃ)');
+        expect(report.replyText).toContain('Có [2] sản phẩm sắp hết hoặc đã hết mã');
+
+        // Phải có icon cảnh báo và trạng thái từng món
+        expect(report.replyText).toContain('❌ Quạt Midea');
+        expect(report.replyText).toContain('HẾT MÃ (0/3 mã)');
+
+        expect(report.replyText).toContain('⚠️ Nồi cơm Cuckoo');
+        expect(report.replyText).toContain('SẮP HẾT: Còn 2/2 mã (CẦN NẠP GẤP!)');
+
+        expect(report.replyText).toContain('✅ Bếp gas Sunhouse');
+        expect(report.replyText).toContain('Còn khả dụng: 58/60 mã');
+        expect(report.replyText).toContain('Nhận mã Event: Gõ "e + STT"');
+        expect(report.replyText).toContain('Nhận mã Giờ Vàng: Gõ "gv + STT"');
+    });
+
+    it('thống kê riêng "tk event" chỉ hiển thị các sản phẩm thuộc nhóm Event và hướng dẫn cú pháp e+STT', () => {
+        const sampleCoupons = [
+            { productName: 'Quạt đứng Midea', type: 'Event', status: 'UNUSED' },
+            { productName: 'Quạt đứng Midea', type: 'Event', status: 'UNUSED' },
+            { productName: 'Nồi chiên Kangaroo', type: 'Giờ Vàng Giá Sốc', status: 'UNUSED' },
+        ];
+
+        const report = formatInventoryReportMessage(sampleCoupons, 'EVENT');
+        expect(report.replyText).toContain('📊 BÁO CÁO TỒN KHO PMH EVENT');
+        expect(report.replyText).toContain('Quạt đứng Midea');
+        expect(report.replyText).not.toContain('Nồi chiên Kangaroo');
+        expect(report.replyText).toContain('Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)');
+        expect(report.products.length).toBe(1);
+    });
+
+    it('thống kê riêng "tk gvgs" chỉ hiển thị các sản phẩm thuộc nhóm Giờ Vàng Giá Sốc và hướng dẫn cú pháp gv+STT', () => {
+        const sampleCoupons = [
+            { productName: 'Quạt đứng Midea', type: 'Event', status: 'UNUSED' },
+            { productName: 'Nồi chiên Kangaroo', type: 'Giờ Vàng Giá Sốc', status: 'UNUSED' },
+            { productName: 'Bình đun Rapido', type: 'Giờ Vàng Giá Sốc', status: 'UNUSED' },
+        ];
+
+        const report = formatInventoryReportMessage(sampleCoupons, 'GVGS');
+        expect(report.replyText).toContain('📊 BÁO CÁO TỒN KHO PMH GIỜ VÀNG GIÁ SỐC');
+        expect(report.replyText).toContain('Nồi chiên Kangaroo');
+        expect(report.replyText).toContain('Bình đun Rapido');
+        expect(report.replyText).not.toContain('Quạt đứng Midea');
+        expect(report.replyText).toContain('Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)');
+        expect(report.products.length).toBe(2);
+    });
+
+    describe('Cơ chế xin mã coupon: e + STT (Event) và gv + STT (Giờ Vàng Giá Sốc)', () => {
+        it('nhận diện chính xác cú pháp e + STT để lấy PMH Event', async () => {
+            const { parseCouponClaimCommand } = await import('../../features/line-bot/services/couponParser');
+
+            // Cú pháp Event đơn giản
+            expect(parseCouponClaimCommand('e1')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('e 2')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('E10')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 10, orderId: undefined });
+            expect(parseCouponClaimCommand('event 3')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 3, orderId: undefined });
+
+            // Cú pháp Event kèm MĐH
+            expect(parseCouponClaimCommand('e2 12345678')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 2, orderId: '12345678' });
+            expect(parseCouponClaimCommand('e1 01602SO26090873565')).toEqual({ isSelection: true, isClaim: true, category: 'EVENT', productIndex: 1, orderId: '01602SO26090873565' });
+        });
+
+        it('nhận diện chính xác cú pháp gv + STT để lấy PMH Giờ Vàng Giá Sốc', async () => {
+            const { parseCouponClaimCommand } = await import('../../features/line-bot/services/couponParser');
+
+            // Cú pháp Giờ Vàng đơn giản
+            expect(parseCouponClaimCommand('gv1')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('gv 2')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('GV5')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 5, orderId: undefined });
+            expect(parseCouponClaimCommand('gvgs 4')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 4, orderId: undefined });
+
+            // Cú pháp Giờ Vàng kèm MĐH
+            expect(parseCouponClaimCommand('gv1 12345678')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 1, orderId: '12345678' });
+            expect(parseCouponClaimCommand('gv2 01602SO26090873565')).toEqual({ isSelection: true, isClaim: true, category: 'GVGS', productIndex: 2, orderId: '01602SO26090873565' });
+        });
+
+        it('nhận diện số trần và đánh dấu isBareNumber để nhắc người dùng phân loại e hoặc gv', async () => {
+            const { parseCouponClaimCommand } = await import('../../features/line-bot/services/couponParser');
+
+            // Số trần không có e/gv
+            expect(parseCouponClaimCommand('2')).toEqual({ isSelection: true, isClaim: false, isBareNumber: true, productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('2 12345678')).toEqual({ isSelection: true, isClaim: false, isBareNumber: true, productIndex: 2, orderId: '12345678' });
+
+            // Không phải lệnh xin mã
+            expect(parseCouponClaimCommand('tk').isSelection).toBe(false);
+            expect(parseCouponClaimCommand('tk event').isSelection).toBe(false);
+            expect(parseCouponClaimCommand('12345678').isSelection).toBe(false);
+        });
+
+        it('đánh số thứ tự sản phẩm chuẩn xác theo từng nhóm Event và GVGS', async () => {
+            const { getProductInventoryList } = await import('../../features/line-bot/services/couponParser');
+
+            const sampleCoupons = [
+                // Event 1: Quạt
+                ...Array(20).fill({ productName: 'Quạt đứng Midea', type: 'Event', status: 'UNUSED' }),
+                // GVGS 1: Bình đun
+                ...Array(15).fill({ productName: 'Bình đun Rapido', type: 'Giờ Vàng Giá Sốc', status: 'UNUSED' }),
+                // Event 2: Nồi cơm
+                ...Array(10).fill({ productName: 'Nồi cơm Toshiba', type: 'Event', status: 'UNUSED' }),
+            ];
+
+            const eventList = getProductInventoryList(sampleCoupons, 'EVENT');
+            expect(eventList.length).toBe(2);
+            expect(eventList[0].index).toBe(1);
+            expect(eventList[0].productName).toBe('Nồi cơm Toshiba'); // 10 mã (còn ít hơn xếp trước)
+            expect(eventList[1].index).toBe(2);
+            expect(eventList[1].productName).toBe('Quạt đứng Midea'); // 20 mã
+
+            const gvgsList = getProductInventoryList(sampleCoupons, 'GVGS');
+            expect(gvgsList.length).toBe(1);
+            expect(gvgsList[0].index).toBe(1);
+            expect(gvgsList[0].productName).toBe('Bình đun Rapido');
+        });
+    });
+
+    describe('extractProductSyntax & auto-prefill syntax', () => {
+        it('tự động trích xuất mã model từ tên sản phẩm làm cú pháp mặc định', async () => {
+            const { extractProductSyntax } = await import('../../features/line-bot/services/couponParser');
+            
+            // Các sản phẩm từ thực tế người dùng chụp ảnh
+            expect(extractProductSyntax('Nồi lẩu đa năng Kangaroo KG40EH2 4 lít')).toBe('KG40EH2');
+            expect(extractProductSyntax('Bình đun siêu tốc Rapido RK2015-C 2L')).toBe('RK2015');
+            expect(extractProductSyntax('Máy xay thịt Bear CH-5H03P36')).toBe('5H03P36');
+            expect(extractProductSyntax('Bếp nướng điện Sunhouse SHD4607')).toBe('SHD4607');
+            expect(extractProductSyntax('Nồi cơm nắp gài Toshiba RC-18JH1TVN(N) 1.8L')).toBe('18JH1TVN');
+            expect(extractProductSyntax('Bếp điện từ đơn Kangaroo KG20IH10N')).toBe('KG20IH10N');
+            expect(extractProductSyntax('Nồi cơm điện tử Toshiba RC-18DH2PV(W) 1.8L')).toBe('18DH2PV');
+            expect(extractProductSyntax('Nồi chiên không dầu Kangaroo 6.5L KGAF65M1')).toBe('KGAF65M1');
+            expect(extractProductSyntax('Bếp gas đôi Sunhouse SHB3105MD')).toBe('SHB3105MD');
+            expect(extractProductSyntax('Quạt đứng Midea FS40-10NAVN(K)')).toBe('FS40-10NAVN');
+            
+            // Sản phẩm không có mã model -> fallback về nguyên tên
+            expect(extractProductSyntax('Bộ 3 hộp nhựa chữ nhật Hokkaido')).toBe('Bộ 3 hộp nhựa chữ nhật Hokkaido');
+        });
+
+        it('parsePastedCouponList tự động gán syntax = model/tên sản phẩm thay vì để rỗng', () => {
+            const rawText = [
+                'Ngày 27/09/2026 : Mã Phiếu mua hàng 1 – dùng cho Bếp nướng điện Sunhouse SHD4607: ZJA7RESDNJ',
+                'Ngày 27/09/2026 : Mã Phiếu mua hàng 2 – dùng cho Bếp nướng điện Sunhouse SHD4607: VWQU13YUQX',
+                'Ngày 27/09/2026 : Mã Phiếu mua hàng 3 – dùng cho Nồi lẩu đa năng Kangaroo KG40EH2 4 lít: IJNFVEZBHE'
+            ].join('\n');
+
+            const items = parsePastedCouponList(rawText, 'Event Cuối Tuần');
+            expect(items.length).toBe(3);
+            expect(items[0].syntax).toBe('SHD4607');
+            expect(items[1].syntax).toBe('SHD4607');
+            expect(items[2].syntax).toBe('KG40EH2');
+        });
+    });
+
+    describe('filterPmhByUsers (Tính năng Lọc PMH cho BOT)', () => {
+        it('lọc chính xác các mã thuộc về tên cấu hình từ tin nhắn gộp', async () => {
+            const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const forwardedText = `Lê Trường Sơn
+➜ PMH 18JH1TVN : 6W43J4BI2S
+━━━━━━
+Nguyễn Văn A
+➜ PMH KG20IH10N : ABCD1234
+━━━━━━
+Lê Sơn
+➜ PMH SHD4607 : VWQU13YUQX
+━━━━━━
+Trần Thị B
+➜ PMH 5H03P36 : 99998888`;
+
+            const res = filterPmhByUsers(forwardedText, ['Lê Trường Sơn', 'Sơn']);
+            expect(res.totalBlocks).toBe(4);
+            expect(res.matchedBlocks.length).toBe(2);
+            expect(res.matchedCodes.length).toBe(2);
+
+            // Kiểm tra mã đã bóc tách
+            expect(res.matchedCodes[0].code).toBe('6W43J4BI2S');
+            expect(res.matchedCodes[0].typeOrProduct).toBe('18JH1TVN');
+            expect(res.matchedCodes[1].code).toBe('VWQU13YUQX');
+            expect(res.matchedCodes[1].typeOrProduct).toBe('SHD4607');
+
+            // Tin nhắn trả lời phải chứa đúng các mã của người đó
+            expect(res.summaryMessage).toContain('6W43J4BI2S');
+            expect(res.summaryMessage).toContain('VWQU13YUQX');
+            expect(res.summaryMessage).not.toContain('ABCD1234');
+            expect(res.summaryMessage).not.toContain('99998888');
+        });
+
+        it('báo rõ khi không tìm thấy mã nào thuộc về tên cấu hình', async () => {
+            const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const forwardedText = `Nguyễn Văn A
+➜ PMH KG20IH10N : ABCD1234
+━━━━━━
+Trần Thị B
+➜ PMH 5H03P36 : 99998888`;
+
+            const res = filterPmhByUsers(forwardedText, ['Lê Trường Sơn']);
+            expect(res.totalBlocks).toBe(2);
+            expect(res.matchedBlocks.length).toBe(0);
+            expect(res.summaryMessage).toContain('BOT KHÔNG TÌM THẤY MÃ PMH');
+            expect(res.summaryMessage).toContain('Lê Trường Sơn');
+        });
+
+        it('làm gọn khối THU HỒI & CẤP LẠI xuống 2 dòng, bóc tách đúng người nhận và mã thu hồi', async () => {
+            const { parsePmhBlockDetails, filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const block1 = `🔄 THU HỒI & CẤP LẠI (TRÙNG MĐH: 01602SO26090873565)
+ℹ️ Đã thu hồi mã "JV4FL9I14N" (14:31 19-09)
+STR_BOSS SƠN_21707
+➜ PMH ICT500 : 18PBPT78G4`;
+
+            const details1 = parsePmhBlockDetails(block1);
+            expect(details1.recipient).toBe('STR_BOSS SƠN_21707');
+            expect(details1.orderId).toBe('01602SO26090873565');
+            expect(details1.revokedCode).toBe('JV4FL9I14N');
+            expect(details1.code).toBe('18PBPT78G4');
+            expect(details1.typeOrProduct).toBe('ICT500');
+            expect(details1.isReissue).toBe(true);
+            expect(details1.compactBlock).toBe(
+                'STR_BOSS SƠN_21707 🔄 Cấp lại [MĐH: 01602SO26090873565]\n➜ PMH ICT500 : 18PBPT78G4 (Thu hồi: JV4FL9I14N)'
+            );
+
+            // Kiểm tra trường hợp rớt dòng (như ảnh chụp thực tế)
+            const block2 = `🔄 THU HỒI & CẤP LẠI (TRÙNG MĐH:
+01602SO2609085241)
+ℹ️ Đã thu hồi mã "R6M322942J" (14:57 19-09)
+STR_BOSS SƠN_21707
+➜ PMH ICT500 : IAC5XU4LLH`;
+
+            const details2 = parsePmhBlockDetails(block2);
+            expect(details2.recipient).toBe('STR_BOSS SƠN_21707');
+            expect(details2.orderId).toBe('01602SO2609085241');
+            expect(details2.revokedCode).toBe('R6M322942J');
+            expect(details2.code).toBe('IAC5XU4LLH');
+            expect(details2.compactBlock).toBe(
+                'STR_BOSS SƠN_21707 🔄 Cấp lại [MĐH: 01602SO2609085241]\n➜ PMH ICT500 : IAC5XU4LLH (Thu hồi: R6M322942J)'
+            );
+
+            // Kiểm tra filter tin nhắn gộp cả 2 khối thu hồi (gôm theo người nhận)
+            const fullForwarded = `${block1}\n\n${block2}`;
+            const filterRes = filterPmhByUsers(fullForwarded, ['STR_BOSS SƠN_21707']);
+            expect(filterRes.matchedBlocks.length).toBe(2);
+            expect(filterRes.summaryMessage).toContain('STR_BOSS SƠN_21707');
+            expect(filterRes.summaryMessage).toContain('➜ PMH ICT500 : 18PBPT78G4 (Thu hồi: JV4FL9I14N)');
+            expect(filterRes.summaryMessage).toContain('➜ PMH ICT500 : IAC5XU4LLH (Thu hồi: R6M322942J)');
+        });
+
+        it('gôm nhiều mã PMH của cùng 1 người lại theo định dạng rút gọn chuẩn', async () => {
+            const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const forwardedText = `STR_BOSS SƠN_21707
+➜ PMH ICT200 : R6KDPXGZU6
+━━━━━━
+STR_BOSS SƠN_21707
+➜ PMH ICT400 : R6KDPXGZU6
+━━━━━━
+STR_BOSS SƠN_21707
+➜ PMH ICT100 : R6KDPXGZU6`;
+
+            const res = filterPmhByUsers(forwardedText, ['STR_BOSS SƠN_21707']);
+            expect(res.summaryMessage).toBe(`🎯 KẾT QUẢ LỌC PMH:
+━━━━━━
+STR_BOSS SƠN_21707
+➜ PMH ICT200 : R6KDPXGZU6
+➜ PMH ICT400 : R6KDPXGZU6
+➜ PMH ICT100 : R6KDPXGZU6
+━━━━━━
+💡 Sao chép mã phía trên để sử dụng!`);
+        });
+
+        it('bóc tách và hiển thị thông báo lỗi ❌ MĐH khi bot phát mã từ chối thay vì báo không tìm thấy', async () => {
+            const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            // Tin nhắn thực tế từ LINE chuyển tiếp nhiều người
+            const forwardedText = `AGI-Tèo-7176 Boss
+➜ PMH MM200 : RKAI1UJJJC
+━━━━━━
+CMA-THẢO🍀40924🍭BOSS
+➜ PMH MM300 : 3NWSPVE8N1
+━━━━━━
+CTH-THANH-98336-TC
+➜ PMH MM300 : G7PPXYOR1B
+━━━━━━
+BLI_LINH110002-BOSS2
+➜ PMH MM300 : 2CH65FLI3R
+━━━━━━
+BLI_LINH110002-BOSS2
+➜ PMH MM300 : SR3A50CETL
+━━━━━━
+STR_BOSS SƠN_21707
+➜ ❌ MĐH Áp Dụng Thiếu Hoặc Sai Cú Pháp.`;
+
+            const candidates = ['STR_ Trường_21453-TC', 'Str_Tuấn_22094-TC', 'STR_BOSS SƠN_21707'];
+            const res = filterPmhByUsers(forwardedText, candidates);
+
+            expect(res.totalBlocks).toBe(6);
+            expect(res.matchedBlocks.length).toBe(1);
+            expect(res.summaryMessage).toBe(`🎯 KẾT QUẢ LỌC PMH:
+━━━━━━
+STR_BOSS SƠN_21707
+➜ ❌ MĐH Áp Dụng Thiếu Hoặc Sai Cú Pháp.
+━━━━━━
+💡 Sao chép mã phía trên để sử dụng!`);
+        });
+    });
+});
+

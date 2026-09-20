@@ -160,6 +160,17 @@ service cloud.firestore {
     match /stores/{storeId}/{document=**} {
       allow read, write: if isSignedIn() && (isStickerSuperAdmin() || myStickerStoreId() == storeId || request.auth.token.departmentId == storeId || storeId == 'SUPERADMIN');
     }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // PHÂN HỆ BOT LINE QUẢN LÝ PMH (Multi-tenant theo Quản lý)
+    // ───────────────────────────────────────────────────────────────────────────
+    match /line_bots/{userId} {
+      allow read, write: if isSignedIn() && (isSelf(userId) || isAdmin());
+
+      match /{subcollection=**} {
+        allow read, write: if isSignedIn() && (isSelf(userId) || isAdmin());
+      }
+    }
   }
 }
 

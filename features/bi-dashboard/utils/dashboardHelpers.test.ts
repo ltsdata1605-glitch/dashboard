@@ -1042,6 +1042,77 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         const parsed = parseSummaryData(customReport);
         expect(parsed.table.rows[0][0]).toBe('3717 - ĐML_STR_STR - 123 Trần Hưng Đạo An Giang');
     });
+
+    describe('Khắc phục lỗi nhận diện siêu thị 910 & không nhầm với TGDD hay nhân viên Chế Thị Út', () => {
+        it('isEmployeeName nhận diện đúng nhân viên có tên bắt đầu bằng Ch (Chế, Châu, Chi...) và mã NV 4 số', async () => {
+            const { isEmployeeName } = await import('./dashboardHelpers');
+            expect(isEmployeeName('95970 - Chế Thị Út')).toBe(true);
+            expect(isEmployeeName('235415 - Châu Quang Hiền')).toBe(true);
+            expect(isEmployeeName('111395 - Nguyễn Chí Tâm')).toBe(true);
+            expect(isEmployeeName('7587 - Nguyễn Thị Túy')).toBe(true);
+            expect(isEmployeeName('online - Online - 18001060')).toBe(true);
+
+            // Siêu thị thật có mã kho và tên vẫn trả về false
+            expect(isEmployeeName('910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(false);
+            expect(isEmployeeName('1024 - TGDD Trần Phú')).toBe(false);
+            expect(isEmployeeName('1234 - ĐM Cần Thơ')).toBe(false);
+        });
+
+        it('extractStoreCode trích xuất chính xác mã kho từ các định dạng khác nhau', async () => {
+            const { extractStoreCode } = await import('./dashboardHelpers');
+            expect(extractStoreCode('910 - ĐML_STR_STR - 99 Hùng Vương')).toBe('910');
+            expect(extractStoreCode('Siêu thị 910')).toBe('910');
+            expect(extractStoreCode('Toàn công tySiêu thị 910')).toBe('910');
+            expect(extractStoreCode('Kho 3717')).toBe('3717');
+            expect(extractStoreCode('910')).toBe('910');
+            expect(extractStoreCode('99 Hùng Vương')).toBe(null);
+        });
+
+        it('detectSupermarketNameFromReport không nhận nhầm chuỗi TGDD/ĐMX và trích xuất đúng Siêu thị 910 từ dữ liệu thô của user', async () => {
+            const { detectSupermarketNameFromReport } = await import('./dashboardHelpers');
+            
+            // Dữ liệu thô copy từ portal của user
+            const rawUserText = [
+                'Dashboards',
+                'Doanh thu hợp nhất',
+                '21707 - Sơn Lê Trường',
+                'Tìm báo cáo⌘KCập nhật lúc: 12:11:0520/9/2026',
+                'ChuỗiChọn',
+                'Siêu thị1 siêu thị×',
+                'Toàn công tySiêu thị 910',
+                'THỜI GIAN LÀM VIỆC: 08:00 - 22:00',
+                'DT quy đổi 466',
+                'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ',
+                '95970 - Chế Thị Út\t8\t57',
+                '281084 - Cao Thành Phúc\t6\t46',
+                'Tổng (50 dòng)\t130\t466'
+            ].join('\n');
+
+            const detected = detectSupermarketNameFromReport(rawUserText);
+            expect(detected).toBe('Siêu thị 910');
+
+            // Từ khoá thương hiệu đơn lẻ không bao giờ bị coi là siêu thị
+            expect(detectSupermarketNameFromReport('TGDD')).toBe(null);
+            expect(detectSupermarketNameFromReport('TGDĐ')).toBe(null);
+            expect(detectSupermarketNameFromReport('ĐMX')).toBe(null);
+            expect(detectSupermarketNameFromReport('BHX')).toBe(null);
+        });
+
+        it('isSupermarketMatch so khớp đúng siêu thị qua mã kho 910', async () => {
+            const { isSupermarketMatch } = await import('./dashboardHelpers');
+            // Cùng mã kho 910
+            expect(isSupermarketMatch('Siêu thị 910', '910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(true);
+            expect(isSupermarketMatch('910 - ĐML_STR_STR - 99 Hùng Vương', 'Siêu thị 910')).toBe(true);
+            expect(isSupermarketMatch('Toàn công tySiêu thị 910', '910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(true);
+
+            // Tra cứu qua supermarketMap
+            expect(isSupermarketMatch('Siêu thị 910', '99 Hùng Vương', { '99 Hùng Vương': '910' })).toBe(true);
+
+            // Khác mã kho -> không khớp
+            expect(isSupermarketMatch('Siêu thị 1032', '910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(false);
+            expect(isSupermarketMatch('TGDD', '910 - ĐML_STR_STR - 99 Hùng Vương')).toBe(false);
+        });
+    });
 });
 
 

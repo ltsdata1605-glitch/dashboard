@@ -19,7 +19,8 @@ import {
     Shield,
     Wrench,
     ChevronLeft,
-    ArrowUpDown
+    ArrowUpDown,
+    Bot
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -31,6 +32,7 @@ const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const PriceComparisonView = lazy(() => import('./components/views/PriceComparisonView'));
+const LineBotView = lazy(() => import('./features/line-bot/LineBotView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
@@ -77,6 +79,7 @@ const TabContent = React.memo(() => {
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
         { id: 'tools-price-compare', className: 'w-full h-full', component: <PriceComparisonView /> },
+        { id: 'tools-line-bot', className: 'w-full h-full bg-slate-50 dark:bg-slate-900', component: <LineBotView /> },
     ], []);
 
     return (
@@ -126,6 +129,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
     'tools-price-compare': { main: 'So sánh', highlight: 'Giá' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
+    'tools-line-bot': { main: 'Bot LINE', highlight: 'PMH' },
 
     'settings': { main: 'Phân Quyền &', highlight: 'Duyệt Yêu Cầu' },
     'help': { main: 'Giới', highlight: 'Thiệu' },
@@ -181,6 +185,7 @@ function AppContent() {
             case 'employees': return <Users size={18} color="white" strokeWidth={2.5} />;
             case 'tools-print-sticker': return <Printer size={18} color="white" strokeWidth={2.5} />;
             case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
+            case 'tools-line-bot': return <Bot size={18} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
             case 'tools-tax': return <Calculator size={18} color="white" strokeWidth={2.5} />;
             case 'tools-price-compare': return <ArrowUpDown size={18} color="white" strokeWidth={2.5} />;

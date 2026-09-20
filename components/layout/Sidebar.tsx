@@ -24,6 +24,7 @@ import {
     ExternalLink,
     Calendar,
     ArrowUpDown,
+    Bot,
     type LucideIcon
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
@@ -92,6 +93,7 @@ const NavItem = React.memo(({
                         else if (item.path === '/') setActiveTab('check-thuong');
                         else if (item.path === '/employees') setActiveTab('employees');
                         else if (item.path === '/reports') setActiveTab('reports');
+                        else if (item.path === '/line-bot') setActiveTab('tools-line-bot');
                         else if (item.path === '/tools') setActiveTab('tools');
                         else if (item.id) setActiveTab(item.id);
                         if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
@@ -213,6 +215,9 @@ export default function Sidebar() {
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
 
         { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/' },
+        ...(isDemoMode || userRole === 'admin' || userRole === 'manager' ? [
+            { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot, path: '/line-bot' }
+        ] : []),
         { 
             id: 'tools', 
             label: 'Công cụ', 

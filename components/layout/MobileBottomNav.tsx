@@ -19,6 +19,7 @@ import {
     Calendar,
     FileText,
     ArrowUpDown,
+    Bot
 } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -42,6 +43,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
         { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
+        { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot },
         { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
         { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
             { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: ArrowUpDown },
