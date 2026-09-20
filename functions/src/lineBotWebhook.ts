@@ -218,38 +218,49 @@ function createCouponFlexMessage(params: {
                 }] : [])
             ]
         },
-        // Khung mã coupon hỗ trợ chạm để copy trực tiếp
+        // Khung bọc căn giữa giúp khung mã coupon thu gọn vừa với nội dung (fit-content)
         {
             type: 'box',
-            layout: 'vertical',
+            layout: 'horizontal',
+            justifyContent: 'center',
             margin: 'sm',
-            backgroundColor: '#ECFDF5',
-            cornerRadius: 'lg',
-            borderWidth: '2px',
-            borderColor: '#06C755',
-            paddingAll: '8px',
-            alignItems: 'center',
-            action: {
-                type: 'clipboard',
-                label: 'Copy Mã',
-                clipboardText: cleanCode
-            },
             contents: [
                 {
-                    type: 'text',
-                    text: `➜ PMH ${params.categoryLabel.toUpperCase()} (CHẠM ĐỂ COPY)`,
-                    weight: 'bold',
-                    size: 'xxs',
-                    color: '#06C755'
-                },
-                {
-                    type: 'text',
-                    text: cleanCode,
-                    weight: 'bold',
-                    size: 'md',
-                    color: '#0F172A',
-                    align: 'center',
-                    margin: 'xs'
+                    type: 'box',
+                    layout: 'vertical',
+                    flex: 0,
+                    backgroundColor: '#ECFDF5',
+                    cornerRadius: 'lg',
+                    borderWidth: '2px',
+                    borderColor: '#06C755',
+                    paddingStart: '18px',
+                    paddingEnd: '18px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    alignItems: 'center',
+                    action: {
+                        type: 'clipboard',
+                        label: 'Copy Mã',
+                        clipboardText: cleanCode
+                    },
+                    contents: [
+                        {
+                            type: 'text',
+                            text: `➜ PMH ${params.categoryLabel} (chạm để copy)`,
+                            size: 'xxs',
+                            color: '#059669',
+                            align: 'center'
+                        },
+                        {
+                            type: 'text',
+                            text: cleanCode,
+                            weight: 'bold',
+                            size: 'md',
+                            color: '#0F172A',
+                            align: 'center',
+                            margin: 'xxs'
+                        }
+                    ]
                 }
             ]
         },

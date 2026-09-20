@@ -548,31 +548,25 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                             </div>
 
                                             {/* Khung Mã Coupon Clickable (Mô phỏng Action: Clipboard của Flex Message) */}
-                                            <div
-                                                onClick={() => handleCopyCode(activeCouponCode)}
-                                                className={`group relative p-2 rounded-xl border-2 transition-all cursor-pointer select-none text-center ${
-                                                    copiedCode === activeCouponCode
-                                                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
-                                                        : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
-                                                }`}
-                                                title="Nhấp vào khung để tự động copy mã coupon"
-                                            >
-                                                <div className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 uppercase tracking-wider">
-                                                    <span>➜ PMH {issueMode === 'event' ? 'EVENT' : 'GIỜ VÀNG'}</span>
-                                                    <span className="text-[8px] font-normal lowercase italic text-slate-400">(chạm để copy)</span>
-                                                </div>
-                                                
-                                                <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
-                                                    <span>{activeCouponCode}</span>
-                                                    <span className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                        {copiedCode === activeCouponCode ? <Check size={12} className="stroke-[3]" /> : <Copy size={12} />}
-                                                    </span>
-                                                </div>
-
-                                                <div className="text-[9px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
-                                                    {copiedCode === activeCouponCode ? (
-                                                        <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
-                                                            <Check size={11} /> Đã copy mã vào bộ nhớ tạm!
+                                            <div className="flex justify-center pt-0.5">
+                                                <div
+                                                    onClick={() => handleCopyCode(activeCouponCode)}
+                                                    className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                        copiedCode === activeCouponCode
+                                                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
+                                                            : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                    }`}
+                                                    title="Nhấp vào khung để tự động copy mã coupon"
+                                                >
+                                                    <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                                                        <span>➜ PMH {issueMode === 'event' ? 'Event' : 'Giờ Vàng'}</span>
+                                                        <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
+                                                    </div>
+                                                    
+                                                    <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
+                                                        <span>{activeCouponCode}</span>
+                                                        <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
+                                                            {copiedCode === activeCouponCode ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
                                                         </span>
                                                     ) : (
                                                         <span>📋 Nhấp vào đây để copy nhanh mã</span>
