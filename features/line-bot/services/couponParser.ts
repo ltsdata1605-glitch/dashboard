@@ -563,12 +563,15 @@ export function createCouponCardBubble(params: {
     warehouse?: string;
     warningSuffix?: string;
     liffId?: string;
+    cardIndex?: number;
+    totalCards?: number;
 }) {
     const cleanCode = String(params.code || '').trim();
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
     const headerColor = isEvent ? '#06C755' : '#0284C7';
     const headerTitle = `🎁 MÃ PMH ${params.categoryLabel.toUpperCase()}`;
     const cleanName = (params.displayName || 'Quản lý').replace(/^[@👤\s]+/, '').trim();
+    const cardIndexNum = params.cardIndex || 1;
 
     const bodyContents: any[] = [
         {
@@ -652,14 +655,10 @@ export function createCouponCardBubble(params: {
                     paddingTop: '6px',
                     paddingBottom: '6px',
                     alignItems: 'center',
-                    action: params.liffId ? {
+                    action: {
                         type: 'uri',
                         label: 'Copy & Dùng Mã',
-                        uri: `https://liff.line.me/${params.liffId}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}`
-                    } : {
-                        type: 'clipboard',
-                        label: 'Copy Mã',
-                        clipboardText: cleanCode
+                        uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}&index=${cardIndexNum}`
                     },
                     contents: [
                         {
@@ -697,16 +696,38 @@ export function createCouponCardBubble(params: {
         size: 'mega',
         header: {
             type: 'box',
-            layout: 'vertical',
+            layout: 'horizontal',
             backgroundColor: headerColor,
             paddingAll: '10px',
+            alignItems: 'center',
             contents: [
                 {
                     type: 'text',
                     text: headerTitle,
                     color: '#FFFFFF',
                     weight: 'bold',
-                    size: 'sm'
+                    size: 'sm',
+                    flex: 1
+                },
+                {
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: '#FFFFFF',
+                    cornerRadius: 'md',
+                    paddingStart: '8px',
+                    paddingEnd: '8px',
+                    paddingTop: '2px',
+                    paddingBottom: '2px',
+                    flex: 0,
+                    contents: [
+                        {
+                            type: 'text',
+                            text: `PMH ${cardIndexNum}`,
+                            color: headerColor,
+                            weight: 'bold',
+                            size: 'xxs'
+                        }
+                    ]
                 }
             ]
         },
@@ -732,14 +753,16 @@ export function createFilteredPmhFlexMessages(matchedItems: Array<{
 }>, liffId?: string): any[] {
     if (!matchedItems || matchedItems.length === 0) return [];
 
-    const bubbles = matchedItems.map(item => createCouponCardBubble({
+    const bubbles = matchedItems.map((item, idx) => createCouponCardBubble({
         displayName: item.recipient,
         productName: item.productName,
         categoryLabel: item.categoryLabel,
         code: item.code,
         orderId: item.orderId,
         warningSuffix: item.warningSuffix,
-        liffId
+        liffId,
+        cardIndex: idx + 1,
+        totalCards: matchedItems.length
     }));
 
     const messages: any[] = [];

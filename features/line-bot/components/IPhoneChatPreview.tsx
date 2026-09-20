@@ -49,17 +49,17 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
 
     // State copy mã coupon cho mô phỏng
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
-    const [usedCouponInfo, setUsedCouponInfo] = useState<{ code: string; type: string; time: string } | null>(null);
+    const [usedCouponInfo, setUsedCouponInfo] = useState<{ code: string; type: string; time: string; cardIndex: number } | null>(null);
 
-    const handleCopyCode = (code: string, type: string = 'PMH', e?: React.MouseEvent) => {
+    const handleCopyCode = (code: string, type: string = 'PMH', cardIndex: number = 1, e?: React.MouseEvent) => {
         e?.stopPropagation();
         try {
             navigator.clipboard.writeText(code);
             setCopiedCode(code);
             const now = new Date();
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
-            setUsedCouponInfo({ code, type, time: timeStr });
-            toast.success(`⚡ [LIFF 0.2s] Đã copy mã & gửi trích dẫn xác nhận: ${code}`);
+            setUsedCouponInfo({ code, type, time: timeStr, cardIndex });
+            toast.success(`⚡ [LIFF 0.2s] Đã copy PMH ${cardIndex} & gửi trích dẫn xác nhận: ${code}`);
             setTimeout(() => setCopiedCode(null), 3000);
         } catch {
             toast.success(`Đã copy mã: ${code}`);
@@ -265,8 +265,8 @@ ${secondName}
                                                         MÃ PMH EVENT
                                                     </span>
                                                 </div>
-                                                <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
-                                                    1/{secondName !== firstName ? '3' : '2'}
+                                                <span className="text-[9px] font-bold bg-white text-[#06C755] px-2 py-0.5 rounded-md font-mono shadow-2xs">
+                                                    PMH 1
                                                 </span>
                                             </div>
 
@@ -288,7 +288,7 @@ ${secondName}
 
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
-                                                        onClick={() => handleCopyCode('DMXXSP8QD5RNCQM')}
+                                                        onClick={() => handleCopyCode('DMXXSP8QD5RNCQM', 'Event', 1)}
                                                         className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
                                                             copiedCode === 'DMXXSP8QD5RNCQM'
                                                                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
@@ -331,8 +331,8 @@ ${secondName}
                                                         MÃ PMH MM300
                                                     </span>
                                                 </div>
-                                                <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
-                                                    2/{secondName !== firstName ? '3' : '2'}
+                                                <span className="text-[9px] font-bold bg-white text-[#06C755] px-2 py-0.5 rounded-md font-mono shadow-2xs">
+                                                    PMH 2
                                                 </span>
                                             </div>
 
@@ -354,7 +354,7 @@ ${secondName}
 
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
-                                                        onClick={() => handleCopyCode('1P1GU5CAS5')}
+                                                        onClick={() => handleCopyCode('1P1GU5CAS5', 'MM300', 2)}
                                                         className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
                                                             copiedCode === '1P1GU5CAS5'
                                                                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
@@ -398,8 +398,8 @@ ${secondName}
                                                             MÃ PMH SHD4607
                                                         </span>
                                                     </div>
-                                                    <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full backdrop-blur-xs font-mono">
-                                                        3/3
+                                                    <span className="text-[9px] font-bold bg-white text-[#06C755] px-2 py-0.5 rounded-md font-mono shadow-2xs">
+                                                        PMH 3
                                                     </span>
                                                 </div>
 
@@ -421,7 +421,7 @@ ${secondName}
 
                                                     <div className="flex justify-center pt-0.5">
                                                         <div
-                                                            onClick={() => handleCopyCode('VWQU13YUQX')}
+                                                            onClick={() => handleCopyCode('VWQU13YUQX', 'SHD4607', 3)}
                                                             className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
                                                                 copiedCode === 'VWQU13YUQX'
                                                                     ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
@@ -461,7 +461,7 @@ ${secondName}
                                 {usedCouponInfo && (
                                     <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-200 mt-2">
                                         <div className="bg-[#06C755] text-white py-2 px-3 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-sans text-[11px] leading-relaxed border border-emerald-400/30">
-                                            <div>👉 Mã này đã được <span className="font-bold">{firstName}</span> sử dụng lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
+                                            <div>👉 PMH {usedCouponInfo.cardIndex} đã được <span className="font-bold">{firstName}</span> sử dụng lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
                                         </div>
                                     </div>
                                 )}

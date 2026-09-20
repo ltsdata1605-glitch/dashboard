@@ -511,7 +511,7 @@ Trần Thị B
             expect(carousel.contents.length).toBe(2);
             expect(carousel.contents[0].body.contents[0].contents[0].text).toContain('Lê Trường Sơn');
             expect(carousel.contents[0].body.contents[2].contents[0].contents[1].text).toBe('6W43J4BI2S');
-            expect(carousel.contents[0].body.contents[2].contents[0].action.clipboardText).toBe('6W43J4BI2S');
+            expect(carousel.contents[0].body.contents[2].contents[0].action.uri).toContain('6W43J4BI2S');
         });
 
         it('lọc danh sách mã PMH và tạo Thẻ Flex Message dạng Carousel chuẩn xác cho từng mã', async () => {
@@ -545,6 +545,14 @@ CTH_Phong_219586_TC
             expect(carousel.contents.length).toBe(2);
             expect(carousel.contents[0].body.contents[2].contents[0].contents[1].text).toBe('C3TEPRUR6T');
             expect(carousel.contents[1].body.contents[2].contents[0].contents[1].text).toBe('KII904M559');
+            // Kiểm tra số thứ tự thẻ PMH 1, PMH 2 ở góc phải header
+            expect(carousel.contents[0].header.contents[1].contents[0].text).toBe('PMH 1');
+            expect(carousel.contents[1].header.contents[1].contents[0].text).toBe('PMH 2');
+            // Kiểm tra URL action LIFF chứa tham số index tương ứng
+            const actionUri1 = carousel.contents[0].body.contents[2].contents[0].action?.uri || '';
+            const actionUri2 = carousel.contents[1].body.contents[2].contents[0].action?.uri || '';
+            expect(actionUri1).toContain('index=1');
+            expect(actionUri2).toContain('index=2');
         });
 
         it('báo rõ khi không tìm thấy mã nào thuộc về tên cấu hình', async () => {
