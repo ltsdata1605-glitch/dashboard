@@ -514,6 +514,39 @@ Trần Thị B
             expect(carousel.contents[0].body.contents[2].contents[0].action.clipboardText).toBe('6W43J4BI2S');
         });
 
+        it('lọc danh sách mã PMH và tạo Thẻ Flex Message dạng Carousel chuẩn xác cho từng mã', async () => {
+            const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
+
+            const forwardedText = `STR_THƯ_15464-BOSS
+➜ PMH ICT200 : OFLQCOQ9QC
+────────
+AGI_DUNG_72919_TC
+➜ PMH MM300 : HBTXBR4QKK
+────────
+AGI_DUNG_72919_TC
+➜ PMH ICT200 : QWZCO7DMEG
+────────
+Str_Tuấn_22094-TC
+➜ PMH MM300 : C3TEPRUR6T
+────────
+Str_Tuấn_22094-TC
+➜ PMH MM300 : KII904M559
+────────
+CTH_Phong_219586_TC
+➜ PMH MM300 : VXBUW671NF`;
+
+            const res = filterPmhByUsers(forwardedText, ['Str_Tuấn_22094-TC']);
+            expect(res.totalBlocks).toBe(6);
+            expect(res.matchedBlocks.length).toBe(2);
+            expect(res.flexMessages).toBeDefined();
+            expect(res.flexMessages!.length).toBe(1);
+            const carousel = res.flexMessages![0].contents as any;
+            expect(carousel.type).toBe('carousel');
+            expect(carousel.contents.length).toBe(2);
+            expect(carousel.contents[0].body.contents[2].contents[0].contents[1].text).toBe('C3TEPRUR6T');
+            expect(carousel.contents[1].body.contents[2].contents[0].contents[1].text).toBe('KII904M559');
+        });
+
         it('báo rõ khi không tìm thấy mã nào thuộc về tên cấu hình', async () => {
             const { filterPmhByUsers } = await import('../../features/line-bot/services/couponParser');
 
