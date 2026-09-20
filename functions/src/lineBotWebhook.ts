@@ -55,24 +55,60 @@ async function getLineUserProfile(token: string, userId: string, groupId?: strin
 async function replyLineMessage(token: string, replyToken: string, messages: any[]): Promise<boolean> {
     if (!token || !replyToken || !messages || messages.length === 0) return false;
     try {
+        // Sanitize messages: LINE Messaging API chỉ cho phép quoteToken trên text, image, video, audio, location, sticker.
+        // Tuyệt đối không cho phép quoteToken trên tin nhắn 'flex' (sẽ gây lỗi HTTP 400).
+        const sanitized = messages.map(m => {
+            const copy = { ...m };
+            if (copy.type === 'flex' || copy.type !== 'text') {
+                delete copy.quoteToken;
+            }
+            return copy;
+        });
+
         const res = await fetch('https://api.line.me/v2/bot/message/reply', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ replyToken, messages })
+            body: JSON.stringify({ replyToken, messages: sanitized })
         });
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             console.warn('[LINE Reply Error]', res.status, errData);
 
-            // Kiểm tra xem có tin nhắn nào chứa mention không
-            const hasMention = messages.some(m => m.mention);
+            // Fallback 1: Nếu gửi Flex Message bị lỗi (ví dụ phiên bản LINE cũ hoặc cấu trúc bị từ chối), tự động fallback sang text
+            const hasFlex = sanitized.some(m => m.type === 'flex');
+            if (hasFlex) {
+                console.info('[LINE Reply Fallback] Retrying with text fallback for flex messages...');
+                const textFallbackMsgs = sanitized.map(m => {
+                    if (m.type === 'flex') {
+                        return {
+                            type: 'text',
+                            text: m.altText || '🎁 Bạn đã nhận được mã PMH.'
+                        };
+                    }
+                    const copy = { ...m };
+                    delete copy.mention;
+                    return copy;
+                });
+                const retryRes = await fetch('https://api.line.me/v2/bot/message/reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ replyToken, messages: textFallbackMsgs })
+                });
+                if (retryRes.ok) return true;
+            }
+
+            // Fallback 2: Kiểm tra xem có tin nhắn nào chứa mention không
+            const hasMention = sanitized.some(m => m.mention);
             if (hasMention) {
                 // Fallback: Nếu hết lượt miễn phí tag hoặc lỗi mention, gửi lại chỉ dùng quoteToken (trả lời trích dẫn)
-                const fallbackMsgs = messages.map(m => {
+                const fallbackMsgs = sanitized.map(m => {
                     const copy = { ...m };
                     delete copy.mention;
                     return copy;
@@ -107,7 +143,6 @@ function createCouponFlexMessage(params: {
     code: string;
     orderId?: string;
     warehouse?: string;
-    quoteToken?: string;
     warningSuffix?: string;
 }) {
     const cleanCode = String(params.code || '').trim();
@@ -246,7 +281,6 @@ function createCouponFlexMessage(params: {
     return {
         type: 'flex',
         altText: `🎁 Mã PMH ${params.categoryLabel}: ${cleanCode} - ${params.productName}`,
-        quoteToken: params.quoteToken,
         contents: {
             type: 'bubble',
             size: 'mega',
@@ -1619,6 +1653,23 @@ export const lineBotWebhook = onRequest(
                 if (claimCmd.isClaim && claimCmd.category && claimCmd.productIndex) {
                     await cleanupExpiredCoupons(uid);
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
+
+                    // Tự động khôi phục mã bị kẹt do lỗi quoteToken lúc 15:50 (08:50 UTC) nếu có
+                    for (const d of snap.docs) {
+                        const c = d.data();
+                        if (c.status === 'SENT' && !c.orderId && c.updatedAt && c.updatedAt.startsWith('2026-09-20T08:50')) {
+                            await d.ref.update({
+                                status: 'UNUSED',
+                                recipient: '',
+                                recipientId: '',
+                                updatedAt: new Date().toISOString()
+                            });
+                            c.status = 'UNUSED';
+                            delete c.recipient;
+                            delete c.recipientId;
+                        }
+                    }
+
                     const coupons = snap.docs.map(d => d.data());
                     const productList = getProductInventoryList(coupons, claimCmd.category);
                     const catLabel = claimCmd.category === 'EVENT' ? 'Event' : 'Giờ Vàng Giá Sốc';
@@ -1740,11 +1791,20 @@ export const lineBotWebhook = onRequest(
                             productName: targetProduct.productName,
                             categoryLabel: shortCat,
                             code: cData.code,
-                            orderId: claimCmd.orderId,
-                            quoteToken: event.message?.quoteToken
+                            orderId: claimCmd.orderId
                         });
 
-                        await replyLineMessage(token, replyToken, [flexMsg]);
+                        const sendOk = await replyLineMessage(token, replyToken, [flexMsg]);
+                        if (!sendOk) {
+                            console.error(`[replyLineMessage failed] Reverting coupon ${chosenDoc.id} back to UNUSED`);
+                            await chosenDoc.ref.update({
+                                status: 'UNUSED',
+                                orderId: '',
+                                recipient: '',
+                                recipientId: '',
+                                updatedAt: now
+                            });
+                        }
                         continue;
                     } else {
                         // Chờ Admin duyệt
@@ -1969,8 +2029,7 @@ export const lineBotWebhook = onRequest(
                         categoryLabel,
                         code: cData.code,
                         orderId: targetOrderId,
-                        warehouse: pData.warehouse,
-                        quoteToken: pData.quoteToken || event.message?.quoteToken
+                        warehouse: pData.warehouse
                     });
 
                     await replyLineMessage(token, replyToken, [flexMsg]);
@@ -2156,7 +2215,6 @@ export const lineBotWebhook = onRequest(
                             code: cData.code,
                             orderId: parsed.orderId,
                             warehouse: parsed.warehouse,
-                            quoteToken: event.message?.quoteToken,
                             warningSuffix
                         });
 
