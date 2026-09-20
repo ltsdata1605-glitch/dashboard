@@ -793,11 +793,12 @@ MĐH Áp Dụng: 00910SO26090335446`;
             });
 
             expect(flex.type).toBe('flex');
-            expect(flex.contents.type).toBe('bubble');
-            expect(flex.contents.header.contents[0].contents[0].text).toContain('📊 TỒN KHO PMH EVENT');
+            const bubble = flex.contents as any;
+            expect(bubble.type).toBe('bubble');
+            expect(bubble.header.contents[0].contents[0].text).toContain('📊 TỒN KHO PMH EVENT');
             
             // Dòng thứ 2 (Máy xay Bear) phải có action gửi lệnh e2 khi chạm vào
-            const row2 = flex.contents.body.contents[1].contents[1];
+            const row2 = bubble.body.contents[1].contents[1];
             expect(row2.action).toEqual({
                 type: 'message',
                 label: 'e2',
@@ -825,10 +826,11 @@ MĐH Áp Dụng: 00910SO26090335446`;
             });
 
             expect(flex.type).toBe('flex');
-            expect(flex.contents.type).toBe('carousel');
-            expect(flex.contents.contents.length).toBe(2); // 15 sản phẩm chia 2 slide (10 và 5)
-            expect(flex.contents.contents[0].header.contents[0].contents[0].text).toContain('(1/2)');
-            expect(flex.contents.contents[1].header.contents[0].contents[0].text).toContain('(2/2)');
+            const carousel = flex.contents as any;
+            expect(carousel.type).toBe('carousel');
+            expect(carousel.contents.length).toBe(2); // 15 sản phẩm chia 2 slide (10 và 5)
+            expect(carousel.contents[0].header.contents[0].contents[0].text).toContain('(1/2)');
+            expect(carousel.contents[1].header.contents[0].contents[0].text).toContain('(2/2)');
         });
     });
 });

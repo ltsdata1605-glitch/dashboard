@@ -568,9 +568,17 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                         <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
                                                             {copiedCode === activeCouponCode ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
                                                         </span>
-                                                    ) : (
-                                                        <span>📋 Nhấp vào đây để copy nhanh mã</span>
-                                                    )}
+                                                    </div>
+
+                                                    <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
+                                                        {copiedCode === activeCouponCode ? (
+                                                            <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
+                                                                <Check size={10} /> Đã copy mã!
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
 
