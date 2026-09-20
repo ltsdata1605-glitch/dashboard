@@ -1291,19 +1291,15 @@ export function formatHelpGuideMessage(): string {
         '• "tk" hoặc "tk event" (tk e): Tồn kho PMH Event',
         '• "tk gvgs" (tk gv): Tồn kho PMH Giờ Vàng',
         '',
-        '⚡ 2. XIN NHẬN MÃ (TỰ ĐỘNG COPY):',
-        '• Event: e[STT] [MĐH] (VD: e2 hoặc e2 00910SO26090335446)',
-        '• Giờ Vàng: gv[STT] [MĐH] (VD: gv1 hoặc gv1 00910SO26090335446)',
+        '⚡ 2. XIN NHẬN MÃ:',
+        '• Chọn trực tiếp vào sản phẩm cần lấy Coupon',
         '💡 Gõ "tk" để xem danh sách & chạm lấy mã nhanh.',
         '',
         '🔄 3. HỦY / TRẢ MÃ VỀ KHO:',
-        '• "huy [Mã coupon]" hoặc "huy [MĐH]" (VD: huy 6W43J4BI2S)',
+        '• Soạn: "huy [Mã coupon]"',
         '',
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
-        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
-        '',
-        '📋 5. TIỆN ÍCH:',
-        '• "id": Tra cứu LINE User ID / Group ID'
+        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.'
     ].join('\n');
 }
 

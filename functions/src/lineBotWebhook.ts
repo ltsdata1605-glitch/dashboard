@@ -258,7 +258,7 @@ function createCouponFlexMessage(params: {
                             size: 'md',
                             color: '#0F172A',
                             align: 'center',
-                            margin: 'xxs'
+                            margin: 'xs'
                         }
                     ]
                 }
@@ -368,19 +368,15 @@ function formatHelpGuideMessage(): string {
         '• "tk" hoặc "tk event" (tk e): Tồn kho PMH Event',
         '• "tk gvgs" (tk gv): Tồn kho PMH Giờ Vàng',
         '',
-        '⚡ 2. XIN NHẬN MÃ (TỰ ĐỘNG COPY):',
-        '• Event: e[STT] [MĐH] (VD: e2 hoặc e2 00910SO26090335446)',
-        '• Giờ Vàng: gv[STT] [MĐH] (VD: gv1 hoặc gv1 00910SO26090335446)',
+        '⚡ 2. XIN NHẬN MÃ:',
+        '• Chọn trực tiếp vào sản phẩm cần lấy Coupon',
         '💡 Gõ "tk" để xem danh sách & chạm lấy mã nhanh.',
         '',
         '🔄 3. HỦY / TRẢ MÃ VỀ KHO:',
-        '• "huy [Mã coupon]" hoặc "huy [MĐH]" (VD: huy 6W43J4BI2S)',
+        '• Soạn: "huy [Mã coupon]"',
         '',
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
-        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
-        '',
-        '📋 5. TIỆN ÍCH:',
-        '• "id": Tra cứu LINE User ID / Group ID'
+        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.'
     ].join('\n');
 }
 
@@ -1848,26 +1844,74 @@ export const lineBotWebhook = onRequest(
                 if (isTkEvent || isTkGvgs || isTkAll) {
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
                     const coupons = snap.docs.map(d => d.data());
-                    const cat: CouponCategory = isTkGvgs ? 'GVGS' : 'EVENT';
-                    const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, cat);
 
-                    if (products.length === 0) {
+                    if (isTkEvent) {
+                        const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, 'EVENT');
+                        if (products.length === 0) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: replyText }]);
+                            continue;
+                        }
+                        const flexMsg = createInventoryReportFlexMessage({
+                            category: 'EVENT',
+                            totalAll,
+                            totalUnused,
+                            products,
+                            altText: `📊 Báo cáo tồn kho PMH Event: ${totalUnused}/${totalAll} mã khả dụng`
+                        });
+                        await replyLineMessage(token, replyToken, [flexMsg]);
+                        continue;
+                    }
+
+                    if (isTkGvgs) {
+                        const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, 'GVGS');
+                        if (products.length === 0) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: replyText }]);
+                            continue;
+                        }
+                        const flexMsg = createInventoryReportFlexMessage({
+                            category: 'GVGS',
+                            totalAll,
+                            totalUnused,
+                            products,
+                            altText: `📊 Báo cáo tồn kho PMH Giờ Vàng: ${totalUnused}/${totalAll} mã khả dụng`
+                        });
+                        await replyLineMessage(token, replyToken, [flexMsg]);
+                        continue;
+                    }
+
+                    // isTkAll: Gửi ALL tồn kho (cả PMH Event và PMH Giờ Vàng)
+                    const repEvent = formatInventoryReportMessage(coupons, 'EVENT');
+                    const repGvgs = formatInventoryReportMessage(coupons, 'GVGS');
+                    const flexMsgs: any[] = [];
+
+                    if (repEvent.products.length > 0) {
+                        flexMsgs.push(createInventoryReportFlexMessage({
+                            category: 'EVENT',
+                            totalAll: repEvent.totalAll,
+                            totalUnused: repEvent.totalUnused,
+                            products: repEvent.products,
+                            altText: `📊 Báo cáo tồn kho PMH Event: ${repEvent.totalUnused}/${repEvent.totalAll} mã khả dụng`
+                        }));
+                    }
+
+                    if (repGvgs.products.length > 0) {
+                        flexMsgs.push(createInventoryReportFlexMessage({
+                            category: 'GVGS',
+                            totalAll: repGvgs.totalAll,
+                            totalUnused: repGvgs.totalUnused,
+                            products: repGvgs.products,
+                            altText: `📊 Báo cáo tồn kho PMH Giờ Vàng: ${repGvgs.totalUnused}/${repGvgs.totalAll} mã khả dụng`
+                        }));
+                    }
+
+                    if (flexMsgs.length === 0) {
                         await replyLineMessage(token, replyToken, [
-                            { type: 'text', text: replyText }
+                            { type: 'text', text: '📊 BÁO CÁO TỒN KHO PMH\n━━━━━━━━━━━━━━━━━━━━━\nKho hiện tại chưa có mã nào khả dụng!\nQuản lý vui lòng nạp mã vào Dashboard YCX.' }
                         ]);
                         continue;
                     }
 
-                    // Gửi Thẻ Flex Message Dashboard Tồn kho tương tác (1-chạm gửi lệnh lấy mã)
-                    const flexMsg = createInventoryReportFlexMessage({
-                        category: cat,
-                        totalAll,
-                        totalUnused,
-                        products,
-                        altText: `📊 Báo cáo tồn kho ${cat === 'GVGS' ? 'PMH Giờ Vàng' : 'PMH Event'}: ${totalUnused}/${totalAll} mã khả dụng`
-                    });
-
-                    await replyLineMessage(token, replyToken, [flexMsg]);
+                    await replyLineMessage(token, replyToken, flexMsgs);
                     continue;
                 }
 
