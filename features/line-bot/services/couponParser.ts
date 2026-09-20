@@ -1329,12 +1329,16 @@ export function formatHelpGuideMessage(): string {
  * Nhận diện lệnh huỷ/trả mã coupon vừa xin (nếu không dùng)
  * Cú pháp: huy [mã coupon hoặc MĐH]
  */
-export function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string } {
+export function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string; isBareCancel?: boolean } {
     if (!text || typeof text !== 'string') return { isCancel: false };
     const clean = text.trim().normalize('NFC').replace(/^@[^\s]+\s*/, '');
     const match = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))\s*[:\-]?\s*([A-Za-z0-9_-]{4,40})$/i);
     if (match && match[1]) {
         return { isCancel: true, target: match[1].trim().toUpperCase() };
+    }
+    const bareMatch = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))$/i);
+    if (bareMatch) {
+        return { isCancel: true, isBareCancel: true };
     }
     return { isCancel: false };
 }

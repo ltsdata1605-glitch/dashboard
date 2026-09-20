@@ -35,9 +35,13 @@ async function getLineUserProfile(token: string, userId: string, groupId?: strin
         const url = groupId
             ? `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`
             : `https://api.line.me/v2/bot/profile/${userId}`;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
         const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal
+        }).finally(() => clearTimeout(timer));
+
         if (!res.ok) return null;
         const data = await res.json() as any;
         return data && typeof data.displayName === 'string'
@@ -59,7 +63,7 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
         // Tuyệt đối không cho phép quoteToken trên tin nhắn 'flex' (sẽ gây lỗi HTTP 400).
         const sanitized = messages.map(m => {
             const copy = { ...m };
-            if (copy.type === 'flex' || copy.type !== 'text') {
+            if (copy.type === 'flex' || copy.type !== 'text' || !copy.quoteToken) {
                 delete copy.quoteToken;
             }
             return copy;
@@ -73,6 +77,8 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
             },
             body: JSON.stringify({ replyToken, messages: sanitized })
         });
+
+        console.info(`[LINE Reply] Sent ${sanitized.length} msg(s). Status: ${res.status}`);
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
@@ -402,12 +408,16 @@ function formatHelpGuideMessage(): string {
  * Nhận diện lệnh huỷ/trả mã coupon vừa xin (nếu không dùng)
  * Cú pháp: huy [mã coupon hoặc MĐH]
  */
-function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string } {
+function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: string; isBareCancel?: boolean } {
     if (!text || typeof text !== 'string') return { isCancel: false };
     const clean = text.trim().normalize('NFC').replace(/^@[^\s]+\s*/, '');
     const match = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))\s*[:\-]?\s*([A-Za-z0-9_-]{4,40})$/i);
     if (match && match[1]) {
         return { isCancel: true, target: match[1].trim().toUpperCase() };
+    }
+    const bareMatch = clean.match(/^(?:[./!]?(?:huỷ\s*mã|hủy\s*mã|huy\s*mã|huy\s*ma|tra\s*mã|tra\s*ma|revoke|cancel|huỷ|hủy|huy|tra|trả))$/i);
+    if (bareMatch) {
+        return { isCancel: true, isBareCancel: true };
     }
     return { isCancel: false };
 }
@@ -1740,6 +1750,8 @@ export const lineBotWebhook = onRequest(
                 const cleanText = rawText.replace(/^@[^\s]+\s*/, '').trim();
                 const lower = cleanText.toLowerCase();
 
+                console.info(`[lineBotWebhook] Received message "${cleanText}" from ${groupId ? 'GROUP:' + groupId : 'DIRECT:' + senderUserId}`);
+
                 // 1. Kiểm tra lệnh hỏi ID (id, lineid, groupid)
                 if (lower === 'id' || lower === 'admin' || lower === 'lineid' || lower === 'groupid' || lower === '.id' || lower === '/id' || lower === '!id') {
                     if (groupId) {
@@ -1827,6 +1839,18 @@ export const lineBotWebhook = onRequest(
                         ]);
                         continue;
                     }
+                }
+
+                if (cancelCmd.isBareCancel) {
+                    const bareGuide = `⚠️ HƯỚNG DẪN HUỶ / THU HỒI MÃ PMH:\n━━━━━━━━━━━━━━━━━━━━━\n👉 Cú pháp: Gõ "huy [Mã coupon hoặc MĐH]"\n\nVí dụ:\n• huy 6W43J4BI2S (huỷ theo mã coupon)\n• huy 01602SO26090873565 (huỷ theo Mã Đơn Hàng)\n\n💡 Sau khi huỷ, mã sẽ được tự động hoàn lại kho để bạn khác có thể sử dụng!`;
+                    await replyLineMessage(token, replyToken, [
+                        {
+                            type: 'text',
+                            text: bareGuide,
+                            quoteToken: event.message?.quoteToken
+                        }
+                    ]);
+                    continue;
                 }
 
                 // 1.7 Kiểm tra lệnh cú pháp mẫu (cp, cú pháp, mau...)
