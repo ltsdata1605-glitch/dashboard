@@ -150,6 +150,7 @@ function createCouponFlexBubble(params: {
     orderId?: string;
     warehouse?: string;
     warningSuffix?: string;
+    liffId?: string;
 }) {
     const cleanCode = String(params.code || '').trim();
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
@@ -239,7 +240,11 @@ function createCouponFlexBubble(params: {
                     paddingTop: '6px',
                     paddingBottom: '6px',
                     alignItems: 'center',
-                    action: {
+                    action: params.liffId ? {
+                        type: 'uri',
+                        label: 'Copy & Dùng Mã',
+                        uri: `https://liff.line.me/${params.liffId}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}`
+                    } : {
                         type: 'clipboard',
                         label: 'Copy Mã',
                         clipboardText: cleanCode
@@ -311,6 +316,7 @@ function createCouponFlexMessage(params: {
     orderId?: string;
     warehouse?: string;
     warningSuffix?: string;
+    liffId?: string;
 }) {
     const cleanCode = String(params.code || '').trim();
     const bubble = createCouponFlexBubble(params);
@@ -331,7 +337,7 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
     code: string;
     orderId?: string;
     warningSuffix?: string;
-}>): any[] {
+}>, liffId?: string): any[] {
     if (!matchedItems || matchedItems.length === 0) return [];
 
     const bubbles = matchedItems.map(item => createCouponFlexBubble({
@@ -340,7 +346,8 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
         categoryLabel: item.categoryLabel,
         code: item.code,
         orderId: item.orderId,
-        warningSuffix: item.warningSuffix
+        warningSuffix: item.warningSuffix,
+        liffId
     }));
 
     const messages: any[] = [];
@@ -1408,7 +1415,7 @@ function parsePmhBlockDetails(block: string): {
 /**
  * Lọc các khối PMH theo tên và format kết quả trả về (Rút gọn & gôm theo người nhận)
  */
-function filterPmhByUsers(text: string, candidateNames: string[]): {
+function filterPmhByUsers(text: string, candidateNames: string[], liffId?: string): {
     totalBlocks: number;
     matchedBlocks: string[];
     replyText: string;
@@ -1535,7 +1542,7 @@ function filterPmhByUsers(text: string, candidateNames: string[]): {
     msg += `━━━━━━\n`;
     msg += `💡 Sao chép mã phía trên để sử dụng!`;
 
-    const flexMessages = createFilteredPmhFlexMessages(matchedItemsForFlex);
+    const flexMessages = createFilteredPmhFlexMessages(matchedItemsForFlex, liffId);
 
     return {
         totalBlocks: allBlocks.length,
@@ -2175,7 +2182,8 @@ export const lineBotWebhook = onRequest(
                             productName: targetProduct.productName,
                             categoryLabel: shortCat,
                             code: cData.code,
-                            orderId: claimCmd.orderId
+                            orderId: claimCmd.orderId,
+                            liffId: (config as any).liffId
                         });
 
                         const sendOk = await replyLineMessage(token, replyToken, [flexMsg]);
@@ -2413,7 +2421,8 @@ export const lineBotWebhook = onRequest(
                         categoryLabel,
                         code: cData.code,
                         orderId: targetOrderId,
-                        warehouse: pData.warehouse
+                        warehouse: pData.warehouse,
+                        liffId: (config as any).liffId
                     });
 
                     await replyLineMessage(token, replyToken, [flexMsg]);
@@ -2437,7 +2446,7 @@ export const lineBotWebhook = onRequest(
                         }
                     }
 
-                    const filterResult = filterPmhByUsers(rawText, candidates);
+                    const filterResult = filterPmhByUsers(rawText, candidates, (config as any).liffId);
                     if (filterResult.flexMessages && filterResult.flexMessages.length > 0) {
                         await replyLineMessage(token, replyToken, filterResult.flexMessages);
                     } else {
@@ -2603,7 +2612,8 @@ export const lineBotWebhook = onRequest(
                             code: cData.code,
                             orderId: parsed.orderId,
                             warehouse: parsed.warehouse,
-                            warningSuffix
+                            warningSuffix,
+                            liffId: (config as any).liffId
                         });
 
                         await replyLineMessage(token, replyToken, [flexMsg]);

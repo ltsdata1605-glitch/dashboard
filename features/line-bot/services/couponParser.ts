@@ -462,6 +462,7 @@ export function createCouponCardBubble(params: {
     orderId?: string;
     warehouse?: string;
     warningSuffix?: string;
+    liffId?: string;
 }) {
     const cleanCode = String(params.code || '').trim();
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
@@ -551,7 +552,11 @@ export function createCouponCardBubble(params: {
                     paddingTop: '6px',
                     paddingBottom: '6px',
                     alignItems: 'center',
-                    action: {
+                    action: params.liffId ? {
+                        type: 'uri',
+                        label: 'Copy & Dùng Mã',
+                        uri: `https://liff.line.me/${params.liffId}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}`
+                    } : {
                         type: 'clipboard',
                         label: 'Copy Mã',
                         clipboardText: cleanCode
@@ -624,7 +629,7 @@ export function createFilteredPmhFlexMessages(matchedItems: Array<{
     code: string;
     orderId?: string;
     warningSuffix?: string;
-}>): any[] {
+}>, liffId?: string): any[] {
     if (!matchedItems || matchedItems.length === 0) return [];
 
     const bubbles = matchedItems.map(item => createCouponCardBubble({
@@ -633,7 +638,8 @@ export function createFilteredPmhFlexMessages(matchedItems: Array<{
         categoryLabel: item.categoryLabel,
         code: item.code,
         orderId: item.orderId,
-        warningSuffix: item.warningSuffix
+        warningSuffix: item.warningSuffix,
+        liffId
     }));
 
     const messages: any[] = [];

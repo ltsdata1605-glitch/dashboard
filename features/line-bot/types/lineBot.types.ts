@@ -132,6 +132,7 @@ export interface LineBotConfig {
     };
     syntaxTemplate: string; // Mẫu cú pháp chuẩn
     filterUserNames?: string[]; // Danh sách tên người để lọc PMH (ví dụ: ["Lê Trường Sơn", "Sơn"])
+    liffId?: string; // LINE LIFF ID để 1-chạm vừa copy vừa gửi tin nhắn xác nhận
     createdAt: string;
     updatedAt: string;
 }

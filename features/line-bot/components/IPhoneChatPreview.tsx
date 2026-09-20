@@ -49,14 +49,18 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
 
     // State copy mã coupon cho mô phỏng
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
+    const [usedCouponInfo, setUsedCouponInfo] = useState<{ code: string; type: string; time: string } | null>(null);
 
-    const handleCopyCode = (code: string, e?: React.MouseEvent) => {
+    const handleCopyCode = (code: string, type: string = 'PMH', e?: React.MouseEvent) => {
         e?.stopPropagation();
         try {
             navigator.clipboard.writeText(code);
             setCopiedCode(code);
-            toast.success(`Đã copy mã coupon: ${code}`);
-            setTimeout(() => setCopiedCode(null), 2500);
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            setUsedCouponInfo({ code, type, time: timeStr });
+            toast.success(`⚡ [LIFF 0.2s] Đã copy mã & gửi trích dẫn xác nhận: ${code}`);
+            setTimeout(() => setCopiedCode(null), 3000);
         } catch {
             toast.success(`Đã copy mã: ${code}`);
         }
@@ -453,6 +457,17 @@ ${secondName}
                                         )}
                                     </div>
                                 </div>
+
+                                {usedCouponInfo && (
+                                    <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-200 mt-2">
+                                        <div className="bg-[#06C755] text-white p-2.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-mono text-[10.5px] leading-relaxed border border-emerald-400/30">
+                                            <div className="font-bold">👉 Mã này đã được sử dụng!</div>
+                                            <div>👤 User: <span className="font-bold">@{firstName}</span></div>
+                                            <div>🎟️ Mã: <span className="font-bold tracking-wider">{usedCouponInfo.code}</span> ({usedCouponInfo.type})</div>
+                                            <div className="text-[9px] text-emerald-100 mt-1">⏰ Thời gian: {usedCouponInfo.time} ✓✓</div>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
 
