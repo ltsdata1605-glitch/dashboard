@@ -1,11 +1,11 @@
 import React from 'react';
-import { Check, Copy, RotateCcw, AlertTriangle, Swords, Wallet } from 'lucide-react';
+import { Check, Copy, RotateCcw, AlertTriangle, Swords, Wallet, CreditCard } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import type { ItemGroup, ReportDraft, CustomField } from '../types';
 import { ITEM_GROUPS } from '../types';
-import { parseTr } from '../catalog';
-import { installmentRate, fmtTr } from '../utils/reportText';
+import { fmtTr } from '../utils/reportText';
+import { sanitizeExpressionInput, evaluateExpression, hasOperator } from '../utils/expression';
 import { GroupSection, BandHeader } from './GroupSection';
 
 interface ReportEntryTabProps {
@@ -24,14 +24,16 @@ interface ReportEntryTabProps {
     onSubmit: () => void;
 }
 
-const blockNonNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+const TONE_ON: Record<'sky' | 'rose' | 'emerald', { btn: string; box: string }> = {
+    sky: { btn: 'border-sky-300 bg-sky-50 text-sky-700', box: 'bg-sky-600 border-sky-600 text-white' },
+    rose: { btn: 'border-rose-300 bg-rose-50 text-rose-700', box: 'bg-rose-600 border-rose-600 text-white' },
+    emerald: { btn: 'border-emerald-300 bg-emerald-50 text-emerald-700', box: 'bg-emerald-600 border-emerald-600 text-white' },
 };
 
-const ToggleButton: React.FC<{ on: boolean; onClick: () => void; icon: React.ReactNode; label: string; tone: 'sky' | 'rose' }> = ({ on, onClick, icon, label, tone }) => (
+const ToggleButton: React.FC<{ on: boolean; onClick: () => void; icon: React.ReactNode; label: string; tone: 'sky' | 'rose' | 'emerald' }> = ({ on, onClick, icon, label, tone }) => (
     <Button variant="secondary" size="sm" onClick={onClick} aria-pressed={on}
-        className={`rounded h-9 lg:h-8 gap-1.5 ${on ? (tone === 'rose' ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-sky-300 bg-sky-50 text-sky-700') : ''}`}>
-        <span className={`flex h-4 w-4 items-center justify-center border rounded-sm ${on ? (tone === 'rose' ? 'bg-rose-600 border-rose-600 text-white' : 'bg-sky-600 border-sky-600 text-white') : 'border-slate-300 bg-white'}`}>
+        className={`rounded h-9 lg:h-8 gap-1.5 ${on ? TONE_ON[tone].btn : ''}`}>
+        <span className={`flex h-4 w-4 items-center justify-center border rounded-sm ${on ? TONE_ON[tone].box : 'border-slate-300 bg-white'}`}>
             {on && <Check size={11} strokeWidth={3} />}
         </span>
         {icon}
@@ -43,12 +45,12 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
     draft, fields, warnings, previewText, isSaving,
     onPatch, onCount, onAmount, onOther, onAddField, onDeleteField, onReset, onSubmit,
 }) => {
-    const total = parseTr(draft.revenueTotal);
-    const inst = parseTr(draft.installment);
-    const rate = installmentRate(total, inst);
-    const cash = Math.max(0, total - inst);
-
-    const toggleMoVi = () => onPatch({ moVi: !draft.moVi });
+    // Ô doanh thu nhận phép tính: hiện kết quả tạm khi đang gõ, rời ô (blur/Enter) thì thay bằng số đã tính.
+    const isExpression = hasOperator(draft.revenueTotal);
+    const evaluated = isExpression ? evaluateExpression(draft.revenueTotal) : null;
+    const commitRevenue = () => {
+        if (isExpression && evaluated !== null) onPatch({ revenueTotal: fmtTr(Math.max(0, evaluated)) });
+    };
 
     // Nút hành động vẽ 2 lần (cột phải desktop / cuối trang mobile) — test id khác nhau để test bấm đúng nút đang hiện.
     const renderActions = (where: 'desktop' | 'mobile') => (
@@ -77,34 +79,28 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
 
                 {/* Doanh thu đơn hàng */}
                 <section className="border border-slate-200 bg-white" data-testid="revenue-block">
-                    <BandHeader
-                        icon="banknote"
-                        title="Doanh thu đơn hàng (Tr)"
-                        right={
-                            <span className={`text-[11px] font-bold tabular-nums px-1.5 py-0.5 border ${rate > 0 ? 'border-sky-300 text-sky-700 bg-white' : 'border-slate-200 text-slate-400 bg-white'}`}>
-                                Trả chậm {rate}%
-                            </span>
-                        }
-                    />
-                    <div className="grid grid-cols-2 divide-x divide-slate-100">
-                        <div className="p-2 space-y-1">
-                            <label htmlFor="kt-revenue" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Tổng doanh thu</label>
-                            <Input id="kt-revenue" type="number" inputMode="decimal" min="0" step="0.1" placeholder="VD: 8.5"
-                                value={draft.revenueTotal} onChange={e => onPatch({ revenueTotal: e.target.value })} onKeyDown={blockNonNumericKeys}
+                    <BandHeader icon="banknote" title="Doanh thu đơn hàng (Tr)" />
+                    <div className="p-2 space-y-1">
+                        <label htmlFor="kt-revenue" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Tổng doanh thu</label>
+                        <div className="flex items-center gap-2">
+                            <Input id="kt-revenue" type="text" inputMode="decimal" placeholder="VD: 8.5 hoặc 5+3+4" autoComplete="off"
+                                value={draft.revenueTotal}
+                                onChange={e => onPatch({ revenueTotal: sanitizeExpressionInput(e.target.value) })}
+                                onBlur={commitRevenue}
+                                onKeyDown={e => { if (e.key === 'Enter') commitRevenue(); }}
                                 className="h-9 rounded text-[15px] tabular-nums font-semibold" />
-                            <p className="text-[11.5px] text-slate-500 tabular-nums">Tiền mặt: <b className="text-slate-800">{fmtTr(cash)}</b> Tr</p>
+                            {isExpression && (
+                                <span className={`shrink-0 text-[15px] font-semibold tabular-nums ${evaluated !== null ? 'text-sky-700' : 'text-slate-300'}`} data-testid="revenue-eval">
+                                    = {evaluated !== null ? fmtTr(evaluated) : '…'}
+                                </span>
+                            )}
                         </div>
-                        <div className="p-2 space-y-1">
-                            <label htmlFor="kt-installment" className="block text-[11px] font-bold uppercase tracking-wider text-sky-700">Trả chậm (kèm ví)</label>
-                            <Input id="kt-installment" type="number" inputMode="decimal" min="0" step="0.1" placeholder="VD: 0.3"
-                                value={draft.installment} onChange={e => onPatch({ installment: e.target.value })} onKeyDown={blockNonNumericKeys}
-                                className="h-9 rounded text-[15px] tabular-nums font-semibold text-sky-700" />
-                            <p className="text-[11.5px] text-slate-500">Phần trả chậm nằm trong tổng doanh thu</p>
-                        </div>
+                        <p className="text-[11.5px] text-slate-500">Gõ được phép tính (VD <span className="tabular-nums">5+3+4</span>) — rời ô là tự tính ra tổng.</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 p-2 border-t border-slate-100">
+                    <div className="grid grid-cols-3 gap-2 p-2 border-t border-slate-100">
+                        <ToggleButton on={draft.traGop} onClick={() => onPatch({ traGop: !draft.traGop })} icon={<CreditCard size={13} />} label="Trả góp" tone="emerald" />
+                        <ToggleButton on={draft.moVi} onClick={() => onPatch({ moVi: !draft.moVi })} icon={<Wallet size={13} />} label="Mở Ví" tone="sky" />
                         <ToggleButton on={draft.priceWar} onClick={() => onPatch({ priceWar: !draft.priceWar })} icon={<Swords size={13} />} label="Chiến giá" tone="rose" />
-                        <ToggleButton on={draft.moVi} onClick={toggleMoVi} icon={<Wallet size={13} />} label="Mở Ví" tone="sky" />
                     </div>
                 </section>
 

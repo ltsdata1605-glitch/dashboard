@@ -6,9 +6,9 @@ import { Tabs } from '../../components/shared/ui/Tabs';
 import { Button } from '../../components/shared/ui/Button';
 import { Input } from '../../components/shared/ui/Input';
 import type { ReportDraft, SavedReport, Lead, CustomField, ItemGroup, DashboardRange } from './types';
-import { createEmptyDraft, emptyCounts, emptyOthers, isValidStaffName, migrateAmounts } from './catalog';
+import { createEmptyDraft, emptyCounts, emptyOthers, isValidStaffName, migrateAmounts, resolveTraGop, parseTr } from './catalog';
 import { khaiThacDb, newId } from './services/khaiThacDb';
-import { buildReportText } from './utils/reportText';
+import { buildReportText, fmtTr } from './utils/reportText';
 import { streakWarnings, localDateKey } from './utils/aggregate';
 import { copyText } from './utils/exportImage';
 import { ReportEntryTab } from './components/ReportEntryTab';
@@ -27,6 +27,7 @@ function normalizeDraft(raw: Partial<ReportDraft> | null, fallbackName: string):
         ...base,
         ...raw,
         staffName: raw.staffName || fallbackName,
+        traGop: resolveTraGop(raw),
         counts: { ...emptyCounts(), ...(raw.counts ?? {}) },
         others: { ...emptyOthers(), ...(raw.others ?? {}) },
         amounts: migrateAmounts(raw.amounts),
@@ -35,7 +36,7 @@ function normalizeDraft(raw: Partial<ReportDraft> | null, fallbackName: string):
 
 /** Báo cáo đã lưu trước 2026-09-21 thiếu nhóm `insurance` và còn khoá BHMR cũ — vá khi nạp. */
 function normalizeReport(r: SavedReport): SavedReport {
-    return { ...r, counts: { ...emptyCounts(), ...(r.counts ?? {}) }, others: { ...emptyOthers(), ...(r.others ?? {}) }, amounts: migrateAmounts(r.amounts) };
+    return { ...r, traGop: resolveTraGop(r), counts: { ...emptyCounts(), ...(r.counts ?? {}) }, others: { ...emptyOthers(), ...(r.others ?? {}) }, amounts: migrateAmounts(r.amounts) };
 }
 
 /**
@@ -170,7 +171,9 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
         try {
             const text = buildReportText(draft, fields);
             const copied = await copyText(text);
-            const report: SavedReport = { ...draft, id: newId(), date: localDateKey(), savedAt: new Date().toISOString() };
+            // Lưu số đã tính (ô doanh thu có thể còn chứa phép tính "5+3+4" nếu bấm Báo cáo khi chưa rời ô).
+            const revenueValue = parseTr(draft.revenueTotal);
+            const report: SavedReport = { ...draft, revenueTotal: revenueValue > 0 ? fmtTr(revenueValue) : '', id: newId(), date: localDateKey(), savedAt: new Date().toISOString() };
             await khaiThacDb.saveReport(report);
             setReports(prev => [...prev, report]);
             updateDraft(p => createEmptyDraft(p.staffName));

@@ -28,8 +28,11 @@ export interface ReportDraft {
     staffName: string;
     /** Tổng doanh thu đơn hàng, đơn vị triệu đồng, giữ dạng chuỗi để ô nhập không bị ép số. */
     revenueTotal: string;
-    /** Phần trả chậm (kèm ví) trong tổng doanh thu, triệu đồng. */
-    installment: string;
+    /** Ô "Trả chậm (kèm ví)" cũ — BỎ khỏi form 2026-09-21, chỉ còn trong bản ghi cũ. Khi nạp, đơn cũ có
+     *  trả chậm > 0 được coi là `traGop = true` (xem normalize ở KhaiThacView). */
+    installment?: string;
+    /** Đơn có trả góp (nút gạt, thay cho ô số trả chậm). */
+    traGop: boolean;
     moVi: boolean;
     priceWar: boolean;
     /** Số lượng theo nhóm → theo khoá mục (mục chuẩn trong catalog hoặc id mục tuỳ chỉnh dạng đếm). */

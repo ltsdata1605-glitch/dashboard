@@ -45,9 +45,16 @@ test.describe('Báo cáo khai thác', () => {
         await nameInput.press('Enter');
         await expect(page.getByTestId('staff-name')).toContainText('21707 - Sơn');
 
-        // Doanh thu + trả chậm + Mở Ví (chỉ là cờ, không còn ô tiền Ví) + đếm mặt hàng.
-        await page.locator('#kt-revenue').fill('8.5');
-        await page.locator('#kt-installment').fill('0.3');
+        // Doanh thu nhận PHÉP TÍNH: gõ "5+ 3+ 0.5" → hiện "= 8.5", rời ô thì ô thành 8.5. Ký tự lạ bị lọc.
+        await page.locator('#kt-revenue').fill('5+ 3+ 0.5abc');
+        await expect(page.locator('#kt-revenue')).toHaveValue('5+ 3+ 0.5');
+        await expect(page.getByTestId('revenue-eval')).toHaveText('= 8.5');
+        await page.locator('#kt-revenue').press('Tab');
+        await expect(page.locator('#kt-revenue')).toHaveValue('8.5');
+        // 3 nút gạt đúng thứ tự Trả góp → Mở Ví → Chiến giá.
+        const toggles = page.getByTestId('revenue-block').getByRole('button');
+        await expect(toggles).toHaveText(['Trả góp', 'Mở Ví', 'Chiến giá']);
+        await page.getByRole('button', { name: 'Trả góp' }).click();
         await page.getByRole('button', { name: 'Mở Ví' }).click();
         await page.getByRole('button', { name: 'Tăng Tivi' }).click();
         await page.getByRole('button', { name: 'Tăng Tủ lạnh' }).click();
@@ -62,15 +69,15 @@ test.describe('Báo cáo khai thác', () => {
 
         const preview = page.getByTestId('preview');
         await expect(preview).toContainText('💰 Doanh thu: 8.5tr');
-        await expect(preview).toContainText('- T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓');
+        await expect(preview).toContainText('- Trả góp: ✓ | Mở Ví: ✓');
+        await expect(preview).not.toContainText('T.Chậm');
         await expect(preview).toContainText('📦 S.Phẩm: Tivi: 1 | TL: 2');
-        await expect(preview).toContainText('🛠 D.Vụ: SIM: 1 | Kaspersky: 1');
+        await expect(preview).toContainText('🛠 Vas: Kaspersky: 1');
         await expect(preview).not.toContainText('Ví: 0.3');
-        await expect(preview).toContainText('🛡 B.Hiểm: ĐMX: 1.2');
+        await expect(preview).toContainText('⭐ Ư.Tiên: SIM: 1 | BH ĐMX: 1.2');
         await expect(preview).toContainText('🎧 P.Kiện: T.Nghe: 1');
         await expect(preview).toContainText('🏠 G.Dụng: MLN: 1 | B.Điện: 1');
         await expect(preview).toContainText('📝 Khách hẹn giao chiều');
-        await expect(page.getByTestId('revenue-block')).toContainText('Trả chậm 4%');
         await page.screenshot({ path: `${SHOT_DIR}/01-entry-desktop.png`, fullPage: true });
 
         // Báo cáo → clipboard nhận đúng văn bản, form sạch, có toast.
@@ -98,7 +105,7 @@ test.describe('Báo cáo khai thác', () => {
         const kpi = page.getByTestId('kpi-strip');
         await expect(kpi).toBeVisible();
         await expect(kpi).toContainText('8.5');
-        await expect(kpi).toContainText('4');
+        await expect(kpi).toContainText('Trả góp');
         await page.screenshot({ path: `${SHOT_DIR}/03-dashboard.png`, fullPage: true });
 
         // Sửa lại từ Nhật ký → quay về form với dữ liệu cũ.

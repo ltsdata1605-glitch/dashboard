@@ -5,8 +5,8 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import type { SavedReport, CustomField } from '../types';
-import { parseTr, AMOUNT_ITEMS, migrateAmounts } from '../catalog';
-import { buildReportText, fmtTr, installmentRate } from '../utils/reportText';
+import { parseTr, AMOUNT_ITEMS, migrateAmounts, resolveTraGop } from '../catalog';
+import { buildReportText, fmtTr } from '../utils/reportText';
 import { groupTotal } from '../utils/aggregate';
 import { copyText } from '../utils/exportImage';
 import { BandHeader } from './GroupSection';
@@ -86,38 +86,38 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                     <TH>Thời gian</TH>
                                     <TH>Nhân viên</TH>
                                     <TH className="text-right">Doanh thu</TH>
-                                    <TH className="text-right">Trả chậm</TH>
-                                    <TH className="text-right">% TC</TH>
                                     <TH className="text-right">SP</TH>
                                     <TH className="text-right">GD</TH>
-                                    <TH className="text-right">DV</TH>
+                                    <TH className="text-right">Vas</TH>
+                                    <TH className="text-right">ƯT</TH>
                                     <TH className="text-right">PK</TH>
                                     <TH className="text-right">BH (Tr)</TH>
-                                    <TH className="text-center">Ví / Chiến</TH>
+                                    <TH className="text-center">Góp / Ví / Chiến</TH>
                                     <TH className="text-right">Thao tác</TH>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {rows.map(r => {
                                     const total = parseTr(r.revenueTotal);
-                                    const inst = parseTr(r.installment);
+                                    const traGop = resolveTraGop(r);
                                     const open = expanded === r.id;
                                     return (
                                         <React.Fragment key={r.id}>
-                                            <tr className={`h-[26px] hover:bg-slate-50 cursor-pointer border-l-[3px] ${inst > 0 ? 'border-l-emerald-600' : 'border-l-slate-200'}`}
+                                            <tr className={`h-[26px] hover:bg-slate-50 cursor-pointer border-l-[3px] ${traGop ? 'border-l-emerald-600' : 'border-l-slate-200'}`}
                                                 onClick={() => setExpanded(open ? null : r.id)} data-testid="history-row">
                                                 <td className="px-1 text-slate-400">{open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</td>
                                                 <td className="px-2 whitespace-nowrap text-slate-600">{fmtTime(r.savedAt, r.date)}</td>
                                                 <td className="px-2 truncate max-w-[160px] text-slate-800">{r.staffName || '—'}</td>
                                                 <td className="px-2 text-right font-semibold text-slate-900">{fmtTr(total)}</td>
-                                                <td className="px-2 text-right text-sky-700">{inst > 0 ? fmtTr(inst) : '—'}</td>
-                                                <td className="px-2 text-right text-slate-600">{inst > 0 ? `${installmentRate(total, inst)}%` : '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'products') || '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'household') || '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'services') || '—'}</td>
+                                                <td className="px-2 text-right">{groupTotal(r, 'insurance') || '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'accessories') || '—'}</td>
                                                 <td className="px-2 text-right">{insuranceOf(r) > 0 ? fmtTr(insuranceOf(r)) : '—'}</td>
                                                 <td className="px-2 text-center text-[12px]">
+                                                    <span className={traGop ? 'text-emerald-700 font-semibold' : 'text-slate-300'}>Góp</span>
+                                                    <span className="text-slate-300"> · </span>
                                                     <span className={r.moVi ? 'text-sky-700 font-semibold' : 'text-slate-300'}>Ví</span>
                                                     <span className="text-slate-300"> · </span>
                                                     <span className={r.priceWar ? 'text-rose-700 font-semibold' : 'text-slate-300'}>Chiến</span>
@@ -130,7 +130,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                             </tr>
                                             {open && (
                                                 <tr className="bg-slate-50/60">
-                                                    <td colSpan={13} className="px-3 py-2">
+                                                    <td colSpan={12} className="px-3 py-2">
                                                         <pre className="text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-slate-800" data-testid="history-text">{buildReportText(r, fields)}</pre>
                                                     </td>
                                                 </tr>
@@ -143,7 +143,6 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                 <tr className="h-7 bg-slate-100 border-t border-slate-200 font-semibold text-slate-800">
                                     <td colSpan={3} className="px-2 text-[11px] uppercase tracking-wider">Tổng ({rows.length} đơn)</td>
                                     <td className="px-2 text-right">{fmtTr(totalTr)}</td>
-                                    <td className="px-2 text-right text-sky-700">{fmtTr(rows.reduce((s, r) => s + parseTr(r.installment), 0))}</td>
                                     <td colSpan={8} />
                                 </tr>
                             </tfoot>

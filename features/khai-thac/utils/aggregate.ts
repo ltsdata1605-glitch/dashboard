@@ -1,6 +1,6 @@
 import type { SavedReport, ReportDraft, CustomField, ItemGroup, DashboardRange } from '../types';
 import { ITEM_GROUPS } from '../types';
-import { COUNT_ITEMS, AMOUNT_ITEMS, parseTr, customCountFields, customRevenueFields, migrateAmounts } from '../catalog';
+import { COUNT_ITEMS, AMOUNT_ITEMS, parseTr, customCountFields, customRevenueFields, migrateAmounts, resolveTraGop } from '../catalog';
 
 /** YYYY-MM-DD theo giờ máy (KHÔNG dùng toISOString — lệch ngày sau 17h ở múi giờ +7). */
 export function localDateKey(d: Date = new Date()): string {
@@ -36,9 +36,7 @@ export interface RankedItem {
 export interface DashboardSummary {
     orders: number;
     revenueTotal: number;
-    installment: number;
-    cash: number;
-    installmentRate: number;
+    traGopCount: number;
     moViCount: number;
     priceWarCount: number;
     /** Tổng mọi ô bảo hiểm (Khác + ĐMX + BHMR cũ đã di trú). */
@@ -56,17 +54,15 @@ const emptyByGroup = <T,>(make: () => T): Record<ItemGroup, T> =>
     Object.fromEntries(ITEM_GROUPS.map(g => [g, make()])) as Record<ItemGroup, T>;
 
 export function summarize(reports: SavedReport[], fields: CustomField[]): DashboardSummary {
-    let revenueTotal = 0, installment = 0, moViCount = 0, priceWarCount = 0;
+    let revenueTotal = 0, traGopCount = 0, moViCount = 0, priceWarCount = 0;
     const sums = emptyByGroup<Record<string, number>>(() => ({}));
     const otherCounts = emptyByGroup<number>(() => 0);
     const amounts: Record<string, number> = {};
     const customRevenue: Record<string, number> = {};
 
     for (const r of reports) {
-        const total = parseTr(r.revenueTotal);
-        const inst = parseTr(r.installment);
-        revenueTotal += total;
-        installment += inst;
+        revenueTotal += parseTr(r.revenueTotal);
+        if (resolveTraGop(r)) traGopCount++;
         if (r.moVi) moViCount++;
         if (r.priceWar) priceWarCount++;
         const rAmounts = migrateAmounts(r.amounts);
@@ -90,13 +86,10 @@ export function summarize(reports: SavedReport[], fields: CustomField[]): Dashbo
         ranking[g] = items.sort((a, b) => b.count - a.count);
     }
 
-    const cash = Math.max(0, revenueTotal - installment);
     return {
         orders: reports.length,
         revenueTotal,
-        installment,
-        cash,
-        installmentRate: revenueTotal > 0 ? Math.round((installment / revenueTotal) * 100) : 0,
+        traGopCount,
         moViCount,
         priceWarCount,
         insuranceTr: AMOUNT_ITEMS.insurance.reduce((s, item) => s + (amounts[item.key] ?? 0), 0),

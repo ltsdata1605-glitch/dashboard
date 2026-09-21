@@ -24,6 +24,7 @@ const RANGE_ITEMS = [
     { id: 'month', label: 'Tháng này' },
 ];
 const RANGE_LABEL: Record<DashboardRange, string> = { today: 'hôm nay', week: 'tuần này', month: 'tháng này' };
+const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
 
 /** Bảng xếp hạng một nhóm: tên · thanh tỉ lệ · số. Thanh tỉ lệ 3px màu đặc, không gradient. */
 const RankingTable: React.FC<{ group: ItemGroup; items: RankedItem[]; otherCount: number }> = ({ group, items, otherCount }) => {
@@ -92,13 +93,13 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                 ) : (
                     <>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2" data-testid="kpi-strip">
-                            <KpiCard icon="banknote" iconColor="sky" title="Tổng doanh số" trendLabel="Tiền mặt / Trả chậm" trendValue={<span className="tabular-nums">{fmtTr(s.cash)} / {fmtTr(s.installment)} Tr</span>}>
+                            <KpiCard icon="banknote" iconColor="sky" title="Tổng doanh số" trendLabel="Số đơn" trendValue={<span className="tabular-nums">{s.orders}</span>}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-slate-900">{fmtTr(s.revenueTotal)}<span className="text-[13px] text-slate-400 ml-1">Tr</span></span>
                             </KpiCard>
-                            <KpiCard icon="percent" iconColor="emerald" title="Tỉ lệ trả chậm" trendLabel="Số đơn" trendValue={<span className="tabular-nums">{s.orders}</span>} progressPercent={s.installmentRate}>
-                                <span className="text-[25px] leading-none font-semibold tabular-nums text-emerald-700">{s.installmentRate}<span className="text-[13px] text-slate-400 ml-1">%</span></span>
+                            <KpiCard icon="credit-card" iconColor="emerald" title="Trả góp" trendLabel="Tỉ lệ đơn trả góp" trendValue={<span className="tabular-nums">{pct(s.traGopCount, s.orders)}%</span>} progressPercent={pct(s.traGopCount, s.orders)}>
+                                <span className="text-[25px] leading-none font-semibold tabular-nums text-emerald-700">{s.traGopCount}<span className="text-[13px] text-slate-400 ml-1">đơn</span></span>
                             </KpiCard>
-                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tỉ lệ đơn có mở ví" trendValue={<span className="tabular-nums">{s.orders > 0 ? Math.round((s.moViCount / s.orders) * 100) : 0}%</span>}>
+                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tỉ lệ đơn có mở ví" trendValue={<span className="tabular-nums">{pct(s.moViCount, s.orders)}%</span>}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-sky-700">{s.moViCount}<span className="text-[13px] text-slate-400 ml-1">đơn</span></span>
                             </KpiCard>
                             <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm" trendValue={<span className="tabular-nums">{fmtTr(s.insuranceTr)} Tr</span>}>
@@ -110,7 +111,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                             <RankingTable group="products" items={s.ranking.products} otherCount={s.otherCounts.products} />
                             <RankingTable group="household" items={s.ranking.household} otherCount={s.otherCounts.household} />
                             <section className="border border-slate-200 bg-white">
-                                <BandHeader icon={GROUP_META.services.icon} title="Dịch vụ bổ sung" />
+                                <BandHeader icon={GROUP_META.services.icon} title={GROUP_META.services.label} />
                                 <table className="w-full text-[13px] tabular-nums">
                                     <tbody className="divide-y divide-slate-100">
                                         <tr className={`h-[26px] ${s.moViCount > 0 ? '' : 'text-slate-400'}`}><td className="px-2">Mở Ví</td><td className="px-2 text-right font-semibold">{s.moViCount} <span className="text-slate-400 font-normal">đơn</span></td></tr>
@@ -125,9 +126,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                                 </table>
                             </section>
                             <section className="border border-slate-200 bg-white">
-                                <BandHeader icon={GROUP_META.insurance.icon} title="Bảo hiểm" right={<span className="text-[11px] text-slate-500 tabular-nums">Tổng <b className="text-slate-800">{fmtTr(s.insuranceTr)} Tr</b></span>} />
+                                <BandHeader icon={GROUP_META.insurance.icon} title={GROUP_META.insurance.label} right={<span className="text-[11px] text-slate-500 tabular-nums">Bảo hiểm <b className="text-slate-800">{fmtTr(s.insuranceTr)} Tr</b></span>} />
                                 <table className="w-full text-[13px] tabular-nums">
                                     <tbody className="divide-y divide-slate-100">
+                                        {s.ranking.insurance.map(i => (
+                                            <tr key={i.key} className={`h-[26px] ${i.count > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{i.label}</td><td className="px-2 text-right font-semibold">{i.count}</td></tr>
+                                        ))}
                                         {AMOUNT_ITEMS.insurance.map(item => (
                                             <tr key={item.key} className={`h-[26px] ${(s.amounts[item.key] ?? 0) > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{item.label.replace(' (Tr)', '')}</td><td className="px-2 text-right font-semibold">{fmtTr(s.amounts[item.key] ?? 0)} Tr</td></tr>
                                         ))}

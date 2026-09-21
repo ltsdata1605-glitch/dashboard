@@ -1,15 +1,9 @@
 import type { ReportDraft, CustomField, ItemGroup } from '../types';
-import { COUNT_ITEMS, AMOUNT_ITEMS, ALL_AMOUNT_ITEMS, GROUP_META, TEXT_GROUP_ORDER, parseTr, customCountFields, customRevenueFields, migrateAmounts } from '../catalog';
+import { COUNT_ITEMS, AMOUNT_ITEMS, ALL_AMOUNT_ITEMS, GROUP_META, TEXT_GROUP_ORDER, parseTr, customCountFields, customRevenueFields, migrateAmounts, resolveTraGop } from '../catalog';
 
 /** Số Tr gọn: 8 → "8", 8.5 → "8.5", 0.30000001 → "0.3". */
 export function fmtTr(n: number): string {
     return String(parseFloat(n.toFixed(2)));
-}
-
-/** Tỉ lệ trả chậm % (làm tròn) trên tổng doanh thu; 0 khi chưa có doanh thu. */
-export function installmentRate(revenueTotal: number, installment: number): number {
-    if (revenueTotal <= 0) return 0;
-    return Math.round((installment / revenueTotal) * 100);
 }
 
 function groupLine(draft: ReportDraft, group: ItemGroup, fields: CustomField[]): string | null {
@@ -17,14 +11,14 @@ function groupLine(draft: ReportDraft, group: ItemGroup, fields: CustomField[]):
     const counts = draft.counts?.[group] ?? {};
     const amounts = migrateAmounts(draft.amounts);
 
-    // Ô tiền cố định của nhóm đứng TRƯỚC các mục đếm (Ví trong D.Vụ — đúng thứ tự app gốc).
-    for (const item of AMOUNT_ITEMS[group]) {
-        const v = parseTr(amounts[item.key]);
-        if (v > 0) parts.push(`${item.short}: ${fmtTr(v)}`);
-    }
+    // Mục đếm trước, ô tiền cố định sau (nhóm Ưu tiên: SIM, ĐH rồi BH Khác, BH ĐMX).
     for (const item of COUNT_ITEMS[group]) {
         const v = Number(counts[item.key]) || 0;
         if (v > 0) parts.push(`${item.short}: ${v}`);
+    }
+    for (const item of AMOUNT_ITEMS[group]) {
+        const v = parseTr(amounts[item.key]);
+        if (v > 0) parts.push(`${item.short}: ${fmtTr(v)}`);
     }
     for (const f of customCountFields(fields, group)) {
         const v = Number(counts[f.id]) || 0;
@@ -47,14 +41,12 @@ function groupLine(draft: ReportDraft, group: ItemGroup, fields: CustomField[]):
  */
 export function buildReportText(draft: ReportDraft, fields: CustomField[]): string {
     const total = parseTr(draft.revenueTotal);
-    const inst = parseTr(draft.installment);
-    const cash = Math.max(0, total - inst);
     const lines: string[] = ['📊 BÁO CÁO KHAI THÁC', ''];
 
+    // Từ 2026-09-21 không còn ô số trả chậm (T.Mặt/T.Chậm) — chỉ còn 2 cờ Trả góp / Mở Ví.
     if (total > 0) {
         lines.push(`💰 Doanh thu: ${fmtTr(total)}tr`);
-        lines.push(`   - T.Mặt: ${fmtTr(cash)}tr`);
-        lines.push(`   - T.Chậm: ${fmtTr(inst)}Tr ~ ${installmentRate(total, inst)}% | Mở Ví: ${draft.moVi ? '✓' : '✗'}`);
+        lines.push(`   - Trả góp: ${resolveTraGop(draft) ? '✓' : '✗'} | Mở Ví: ${draft.moVi ? '✓' : '✗'}`);
     }
 
     for (const group of TEXT_GROUP_ORDER) {

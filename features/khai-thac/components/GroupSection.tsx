@@ -73,12 +73,12 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                 }
             />
             <div className="grid grid-cols-1 md:grid-cols-2 md:[&>*:nth-child(odd)]:border-r md:[&>*:nth-child(odd)]:border-r-slate-100">
-                {AMOUNT_ITEMS[group].map(item => (
-                    <AmountRow key={item.key} icon={item.icon} label={item.label} value={draft.amounts[item.key] ?? ''} onChange={v => onAmount(item.key, v)} />
-                ))}
                 {COUNT_ITEMS[group].map(item => (
                     <CounterRow key={item.key} icon={item.icon} label={item.label} value={Number(counts[item.key]) || 0}
                         onChange={v => onCount(group, item.key, v)} />
+                ))}
+                {AMOUNT_ITEMS[group].map(item => (
+                    <AmountRow key={item.key} icon={item.icon} label={item.label} value={draft.amounts[item.key] ?? ''} onChange={v => onAmount(item.key, v)} />
                 ))}
                 {countFields.map(f => (
                     <CounterRow key={f.id} icon={meta.icon} label={f.name} value={Number(counts[f.id]) || 0}

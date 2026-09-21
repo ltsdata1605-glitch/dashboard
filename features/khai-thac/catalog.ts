@@ -1,5 +1,6 @@
 import { ITEM_GROUPS } from './types';
 import type { ItemGroup, ReportDraft, CustomField } from './types';
+import { evaluateExpression, hasOperator } from './utils/expression';
 
 /**
  * Danh mục mặt hàng cố định của từng nhóm. `short` là nhãn viết tắt dùng trong văn bản báo cáo
@@ -34,18 +35,19 @@ export const COUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
         { key: 'bepGas', label: 'Bếp gas', short: 'B.Gas', icon: 'flame' },
         { key: 'dcnb', label: 'DCNB', short: 'DCNB', icon: 'coffee' },
     ],
+    // Nhóm "Vas" (tên cũ "Dịch vụ bổ sung", đổi 2026-09-21). SIM/Đồng hồ đã chuyển sang nhóm Ưu tiên.
     services: [
-        // SIM đứng đầu theo yêu cầu chủ dự án 2026-09-21.
-        { key: 'sim', label: 'SIM', short: 'SIM', icon: 'cpu' },
         { key: 'vieon', label: 'Vieon', short: 'Vieon', icon: 'play-square' },
-        { key: 'dongHo', label: 'Đồng hồ', short: 'ĐH', icon: 'watch' },
-        // Bổ sung 2026-09-21 theo yêu cầu chủ dự án.
         { key: 'mango', label: 'Mango', short: 'Mango', icon: 'play-square' },
         { key: 'icalme', label: 'iCalme', short: 'iCalme', icon: 'smartphone-nfc' },
         { key: 'kaspersky', label: 'Kaspersky', short: 'Kaspersky', icon: 'shield' },
     ],
-    // Nhóm Bảo hiểm chỉ có ô tiền (AMOUNT_ITEMS), không có mục đếm.
-    insurance: [],
+    // Nhóm "Ưu tiên" (khoá nội bộ `insurance` giữ nguyên vì đã có dữ liệu lưu theo khoá này):
+    // 2 mục đếm SIM/Đồng hồ (chuyển từ Vas sang 2026-09-21) + 2 ô tiền bảo hiểm (AMOUNT_ITEMS).
+    insurance: [
+        { key: 'sim', label: 'SIM', short: 'SIM', icon: 'cpu' },
+        { key: 'dongHo', label: 'Đồng hồ', short: 'ĐH', icon: 'watch' },
+    ],
     accessories: [
         { key: 'camera', label: 'Camera', short: 'Cam', icon: 'camera' },
         { key: 'sdp', label: 'Sạc dự phòng', short: 'SDP', icon: 'battery-charging' },
@@ -65,8 +67,8 @@ export const AMOUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
     household: [],
     services: [],
     insurance: [
-        { key: 'bhKhac', label: 'Bảo hiểm Khác (Tr)', short: 'Khác', icon: 'shield-check' },
-        { key: 'bhDmx', label: 'Bảo hiểm ĐMX (Tr)', short: 'ĐMX', icon: 'shield-check' },
+        { key: 'bhKhac', label: 'Bảo hiểm Khác (Tr)', short: 'BH Khác', icon: 'shield-check' },
+        { key: 'bhDmx', label: 'Bảo hiểm ĐMX (Tr)', short: 'BH ĐMX', icon: 'shield-check' },
     ],
     accessories: [],
 };
@@ -77,13 +79,13 @@ export const ALL_AMOUNT_ITEMS: CatalogItem[] = ITEM_GROUPS.flatMap(g => AMOUNT_I
 export const GROUP_META: Record<ItemGroup, { label: string; short: string; emoji: string; icon: string; otherPlaceholder: string | null }> = {
     products: { label: 'Sản phẩm chính', short: 'S.Phẩm', emoji: '📦', icon: 'package', otherPlaceholder: 'Sản phẩm chính khác…' },
     household: { label: 'Điện gia dụng', short: 'G.Dụng', emoji: '🏠', icon: 'fan', otherPlaceholder: 'Gia dụng khác…' },
-    services: { label: 'Dịch vụ bổ sung', short: 'D.Vụ', emoji: '🛠', icon: 'shield-check', otherPlaceholder: 'Dịch vụ khác…' },
+    services: { label: 'Vas', short: 'Vas', emoji: '🛠', icon: 'shield-check', otherPlaceholder: 'Vas khác…' },
     // Không có dòng "khác" — "Bảo hiểm Khác" đã là một ô cố định, thêm dòng khác nữa sẽ rối.
-    insurance: { label: 'Bảo hiểm', short: 'B.Hiểm', emoji: '🛡', icon: 'shield-check', otherPlaceholder: null },
+    insurance: { label: 'Ưu tiên', short: 'Ư.Tiên', emoji: '⭐', icon: 'star', otherPlaceholder: null },
     accessories: { label: 'Phụ kiện', short: 'P.Kiện', emoji: '🎧', icon: 'headphones', otherPlaceholder: 'Phụ kiện khác…' },
 };
 
-/** Thứ tự nhóm trong văn bản báo cáo — giữ app gốc (S.Phẩm → D.Vụ → P.Kiện → G.Dụng), Bảo hiểm chen sau D.Vụ. */
+/** Thứ tự nhóm trong văn bản báo cáo — giữ app gốc (S.Phẩm → Vas → P.Kiện → G.Dụng), Ưu tiên chen sau Vas. */
 export const TEXT_GROUP_ORDER: ItemGroup[] = ['products', 'services', 'insurance', 'accessories', 'household'];
 
 export function emptyCounts(): Record<ItemGroup, Record<string, number>> {
@@ -113,11 +115,17 @@ export function migrateAmounts(amounts: Record<string, string> | undefined | nul
     return out;
 }
 
+/** Đơn cũ (trước 2026-09-21) chỉ có ô số trả chậm — có số > 0 nghĩa là có trả góp. */
+export function resolveTraGop(r: { traGop?: boolean; installment?: string }): boolean {
+    if (typeof r.traGop === 'boolean') return r.traGop;
+    return parseTr(r.installment) > 0;
+}
+
 export function createEmptyDraft(staffName = ''): ReportDraft {
     return {
         staffName,
         revenueTotal: '',
-        installment: '',
+        traGop: false,
         moVi: false,
         priceWar: false,
         counts: emptyCounts(),
@@ -132,9 +140,19 @@ export function isValidStaffName(name: string): boolean {
     return /^\d+\s*-\s*\S+/.test(name.trim());
 }
 
+/**
+ * Đọc số Tr từ ô nhập. Chuỗi có phép tính ("5+3+4") được tính ra giá trị; biểu thức dở ("5+") thì
+ * lấy phần số đầu như trước để xem trước không nhảy về 0 giữa lúc gõ.
+ */
 export function parseTr(value: string | number | undefined | null): number {
     if (value === undefined || value === null) return 0;
-    const n = typeof value === 'number' ? value : parseFloat(String(value).replace(',', '.'));
+    if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : 0;
+    const str = String(value);
+    if (hasOperator(str)) {
+        const v = evaluateExpression(str);
+        if (v !== null) return v > 0 ? v : 0;
+    }
+    const n = parseFloat(str.replace(',', '.'));
     return Number.isFinite(n) && n > 0 ? n : 0;
 }
 

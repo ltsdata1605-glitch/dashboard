@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { buildReportText, installmentRate, fmtTr } from '../../features/khai-thac/utils/reportText';
+import { buildReportText, fmtTr } from '../../features/khai-thac/utils/reportText';
+import { evaluateExpression, sanitizeExpressionInput } from '../../features/khai-thac/utils/expression';
 import { summarize, streakWarnings, isInRange, localDateKey, startOfWeek } from '../../features/khai-thac/utils/aggregate';
-import { createEmptyDraft, isValidStaffName, migrateAmounts } from '../../features/khai-thac/catalog';
+import { createEmptyDraft, isValidStaffName, migrateAmounts, parseTr, resolveTraGop } from '../../features/khai-thac/catalog';
 import type { SavedReport, CustomField } from '../../features/khai-thac/types';
 
 /**
@@ -12,11 +13,12 @@ import type { SavedReport, CustomField } from '../../features/khai-thac/types';
 const draftFull = () => {
     const d = createEmptyDraft('21707 - Sơn');
     d.revenueTotal = '8.5';
-    d.installment = '0.3';
+    d.traGop = true;
     d.moVi = true;
     d.priceWar = true;
     d.counts.products = { tivi: 1, tuLanh: 2 };
-    d.counts.services = { sim: 1, kaspersky: 1 };
+    d.counts.services = { kaspersky: 1 };
+    d.counts.insurance = { sim: 1, dongHo: 1 };
     d.counts.accessories = { camera: 1, taiNghe: 2 };
     d.counts.household = { mln: 1, noiChien: 1, bepGas: 1, dcnb: 3 };
     d.amounts = { bhDmx: '1.2', bhKhac: '0.5' };
@@ -26,17 +28,16 @@ const draftFull = () => {
 };
 
 describe('buildReportText — đúng mẫu app gốc', () => {
-    it('đủ 5 nhóm, đúng thứ tự S.Phẩm → D.Vụ → B.Hiểm → P.Kiện → G.Dụng, nhãn tắt, ghi chú cách 1 dòng trống', () => {
+    it('đủ 5 nhóm, đúng thứ tự S.Phẩm → Vas → Ư.Tiên → P.Kiện → G.Dụng, nhãn tắt, ghi chú cách 1 dòng trống', () => {
         expect(buildReportText(draftFull(), [])).toBe(
             [
                 '📊 BÁO CÁO KHAI THÁC',
                 '',
                 '💰 Doanh thu: 8.5tr',
-                '   - T.Mặt: 8.2tr',
-                '   - T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓',
+                '   - Trả góp: ✓ | Mở Ví: ✓',
                 '📦 S.Phẩm: Tivi: 1 | TL: 2 | Máy sấy: 1',
-                '🛠 D.Vụ: SIM: 1 | Kaspersky: 1',
-                '🛡 B.Hiểm: Khác: 0.5 | ĐMX: 1.2',
+                '🛠 Vas: Kaspersky: 1',
+                '⭐ Ư.Tiên: SIM: 1 | ĐH: 1 | BH Khác: 0.5 | BH ĐMX: 1.2',
                 '🎧 P.Kiện: Cam: 1 | T.Nghe: 2',
                 '🏠 G.Dụng: MLN: 1 | N.Chiên: 1 | B.Gas: 1 | DCNB: 3',
                 '⚔️ Chiến giá: ✓',
@@ -62,7 +63,7 @@ describe('buildReportText — đúng mẫu app gốc', () => {
         d.amounts = { cf_mothe: '0' };
         expect(buildReportText(d, fields)).toBe('📊 BÁO CÁO KHAI THÁC\n\n🎧 P.Kiện: Tai nghe: 3');
         d.amounts = { cf_mothe: '2.5' };
-        expect(buildReportText(d, fields)).toContain('🛠 D.Vụ: Mở thẻ: 2.5');
+        expect(buildReportText(d, fields)).toContain('🛠 Vas: Mở thẻ: 2.5');
     });
 
     it('bản ghi cũ có Ví (Tr) → không hiện nữa, Mở Ví vẫn theo cờ moVi', () => {
@@ -73,18 +74,50 @@ describe('buildReportText — đúng mẫu app gốc', () => {
         expect(t).not.toContain('Ví: 0.3');
     });
 
-    it('bản ghi cũ có BHMR (`amounts.insurance`) → hiện ở nhóm Bảo hiểm như ĐMX', () => {
+    it('bản ghi cũ có BHMR (`amounts.insurance`) → hiện ở nhóm Ưu tiên như BH ĐMX', () => {
         const d = createEmptyDraft('1 - A');
         d.amounts = { insurance: '1.2' };
-        expect(buildReportText(d, [])).toBe('📊 BÁO CÁO KHAI THÁC\n\n🛡 B.Hiểm: ĐMX: 1.2');
+        expect(buildReportText(d, [])).toBe('📊 BÁO CÁO KHAI THÁC\n\n⭐ Ư.Tiên: BH ĐMX: 1.2');
         expect(migrateAmounts({ insurance: '1.2', bhDmx: '0.7' })).toEqual({ bhDmx: '0.7' }); // đã có ĐMX thì không ghi đè
     });
 
-    it('installmentRate/fmtTr', () => {
-        expect(installmentRate(8.5, 0.3)).toBe(4);
-        expect(installmentRate(0, 1)).toBe(0);
+    it('đơn cũ có số trả chậm > 0 → coi là Trả góp ✓; doanh thu là phép tính thì tính ra số', () => {
+        const d = createEmptyDraft('1 - A');
+        d.revenueTotal = '5+3+4';
+        (d as unknown as { installment: string }).installment = '0.3';
+        (d as unknown as { traGop?: boolean }).traGop = undefined;
+        expect(resolveTraGop(d)).toBe(true);
+        expect(buildReportText(d, [])).toContain('💰 Doanh thu: 12tr\n   - Trả góp: ✓ | Mở Ví: ✗');
+    });
+
+    it('fmtTr', () => {
         expect(fmtTr(8.2000000001)).toBe('8.2');
         expect(fmtTr(8)).toBe('8');
+    });
+});
+
+describe('evaluateExpression / parseTr — ô doanh thu nhận phép tính', () => {
+    it('tính đúng + - * / ( ), ưu tiên nhân chia, dấu phẩy thập phân, khoảng trắng', () => {
+        expect(evaluateExpression('5+ 3+ 4')).toBe(12);
+        expect(evaluateExpression('2+3*4')).toBe(14);
+        expect(evaluateExpression('(2+3)*4')).toBe(20);
+        expect(evaluateExpression('10/4')).toBe(2.5);
+        expect(evaluateExpression('1,5+0,5')).toBe(2);
+        expect(evaluateExpression('0.1+0.2')).toBe(0.3);
+        expect(evaluateExpression('-2+5')).toBe(3);
+        expect(evaluateExpression('8.5')).toBe(8.5);
+    });
+    it('biểu thức dở/sai → null, không ném lỗi', () => {
+        for (const bad of ['', '5+', '+', '(2+3', '2+*3', '5/0', '1..2', 'abc']) expect(evaluateExpression(bad)).toBeNull();
+    });
+    it('sanitize chỉ giữ số, dấu thập phân, khoảng trắng và + - * / ( )', () => {
+        expect(sanitizeExpressionInput('5e+3 abc(2,5)*x/1')).toBe('5+3 (2,5)*/1');
+    });
+    it('parseTr: phép tính hoàn chỉnh → giá trị; đang gõ dở → lấy phần số đầu như cũ', () => {
+        expect(parseTr('5+3+4')).toBe(12);
+        expect(parseTr('5+')).toBe(5);
+        expect(parseTr('3-5')).toBe(0); // âm → 0
+        expect(parseTr('8,5')).toBe(8.5);
     });
 });
 
@@ -109,15 +142,14 @@ describe('summarize', () => {
     it('cộng doanh thu, trả chậm, đếm Mở Ví/Chiến giá, xếp hạng mặt hàng giảm dần', () => {
         const fields: CustomField[] = [{ id: 'cf_x', name: 'Tai nghe', group: 'accessories', type: 'count' }];
         const s = summarize([
-            report('2026-09-21', { revenueTotal: '10', installment: '2', moVi: true, counts: { ...createEmptyDraft().counts, products: { tivi: 1, mayLanh: 3 }, accessories: { cf_x: 2 } } }),
-            report('2026-09-21', { revenueTotal: '5', installment: '0', priceWar: true, counts: { ...createEmptyDraft().counts, products: { mayLanh: 1 } }, amounts: { vi: '0.3', insurance: '1' } }),
-            report('2026-09-21', { revenueTotal: '2', amounts: { bhKhac: '0.4', bhDmx: '0.6' } }),
+            report('2026-09-21', { revenueTotal: '10', traGop: true, moVi: true, counts: { ...createEmptyDraft().counts, products: { tivi: 1, mayLanh: 3 }, accessories: { cf_x: 2 } } }),
+            report('2026-09-21', { revenueTotal: '5', priceWar: true, counts: { ...createEmptyDraft().counts, products: { mayLanh: 1 } }, amounts: { vi: '0.3', insurance: '1' } }),
+            // đơn cũ: không có cờ traGop, chỉ có số trả chậm > 0 → tính là trả góp
+            { ...report('2026-09-21', { revenueTotal: '2', amounts: { bhKhac: '0.4', bhDmx: '0.6' } }), traGop: undefined as unknown as boolean, installment: '0.5' },
         ], fields);
         expect(s.orders).toBe(3);
         expect(s.revenueTotal).toBe(17);
-        expect(s.installment).toBe(2);
-        expect(s.cash).toBe(15);
-        expect(s.installmentRate).toBe(12);
+        expect(s.traGopCount).toBe(2);
         expect(s.moViCount).toBe(1);
         expect(s.priceWarCount).toBe(1);
         expect(s.insuranceTr).toBe(2);          // 1 (BHMR cũ → ĐMX) + 0.4 + 0.6
