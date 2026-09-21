@@ -286,49 +286,31 @@ function createCouponFlexBubble(params: {
                 }] : [])
             ]
         },
-        // Khung bọc căn giữa giúp khung mã coupon thu gọn vừa với nội dung (fit-content)
+        // Nút "Chạm để copy" nền xanh đặc, KHÔNG hiện mã trên thẻ (chủ dự án chốt 2026-09-21) —
+        // mã chỉ đi qua tham số LIFF; người dùng chạm là copy + bot xác nhận.
         {
             type: 'box',
-            layout: 'horizontal',
-            justifyContent: 'center',
-            margin: 'sm',
+            layout: 'vertical',
+            margin: 'md',
+            backgroundColor: '#06C755',
+            cornerRadius: 'lg',
+            paddingTop: '10px',
+            paddingBottom: '10px',
+            paddingStart: '12px',
+            paddingEnd: '12px',
+            action: {
+                type: 'uri',
+                label: 'Chạm để copy',
+                uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}&index=${cardIndexNum}&reqBy=${encodeURIComponent(cleanName)}&prod=${encodeURIComponent(params.productName || '')}`
+            },
             contents: [
                 {
-                    type: 'box',
-                    layout: 'vertical',
-                    flex: 0,
-                    backgroundColor: '#ECFDF5',
-                    cornerRadius: 'lg',
-                    borderWidth: '2px',
-                    borderColor: '#06C755',
-                    paddingStart: '18px',
-                    paddingEnd: '18px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    alignItems: 'center',
-                    action: {
-                        type: 'uri',
-                        label: 'Copy & Dùng Mã',
-                        uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}&index=${cardIndexNum}&reqBy=${encodeURIComponent(cleanName)}&prod=${encodeURIComponent(params.productName || '')}`
-                    },
-                    contents: [
-                        {
-                            type: 'text',
-                            text: '➜ Chạm để copy',
-                            size: 'xxs',
-                            color: '#059669',
-                            align: 'center'
-                        },
-                        {
-                            type: 'text',
-                            text: cleanCode,
-                            weight: 'bold',
-                            size: 'md',
-                            color: '#0F172A',
-                            align: 'center',
-                            margin: 'xs'
-                        }
-                    ]
+                    type: 'text',
+                    text: '➜ Chạm để copy',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#FFFFFF',
+                    align: 'center'
                 }
             ]
         },
@@ -404,12 +386,11 @@ function createCouponFlexMessage(params: {
     cardIndex?: number;
     totalCards?: number;
 }) {
-    const cleanCode = String(params.code || '').trim();
     // Chỉ các luồng CẤP MÃ TỪ KHO (duyệt form xin PMH / lệnh DUYỆT / tự cấp) gọi hàm này.
     const bubble = createCouponFlexBubble({ ...params, source: 'stock' });
     return {
         type: 'flex',
-        altText: `🎁 MÃ COUPON ${params.categoryLabel.toUpperCase()}: ${cleanCode} - ${params.productName}`,
+        altText: `🎁 MÃ COUPON ${params.categoryLabel.toUpperCase()} - ${params.productName}`,
         contents: bubble
     };
 }
@@ -447,7 +428,7 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
         if (chunk.length === 1 && bubbles.length === 1) {
             messages.push({
                 type: 'flex',
-                altText: `🎁 LỌC PMH ${matchedItems[0].categoryLabel.toUpperCase()}: ${matchedItems[0].code} (${matchedItems[0].recipient})`,
+                altText: `🎁 LỌC PMH ${matchedItems[0].categoryLabel.toUpperCase()} - ${matchedItems[0].recipient}`,
                 contents: chunk[0]
             });
         } else {
