@@ -133,8 +133,27 @@ export interface LineBotConfig {
     syntaxTemplate: string; // Mẫu cú pháp chuẩn
     filterUserNames?: string[]; // Danh sách tên người để lọc PMH (ví dụ: ["Lê Trường Sơn", "Sơn"])
     liffId?: string; // LINE LIFF ID để 1-chạm vừa copy vừa gửi tin nhắn xác nhận
+    scheduledGroupId?: string; // ID nhóm LINE nhận thông báo định kỳ (6h00 & 22h00)
+    scheduledNotifications?: {
+        morningReport?: boolean; // Bật thông báo 6h00 sáng (chỉ gửi khi còn tồn coupon)
+        eveningReport?: boolean; // Bật tổng kết 22h00 tối (tổng số phiếu & danh sách người dùng)
+    };
     createdAt: string;
     updatedAt: string;
+}
+
+export interface FilteredCouponRecord {
+    id: string;
+    code: string;
+    productName: string;
+    categoryLabel?: string;
+    recipient: string;
+    orderId?: string;
+    cardIndex: number;
+    status: 'UNUSED' | 'USED';
+    filteredAt: string;
+    usedBy?: string;
+    usedAt?: string;
 }
 
 export interface PmhFilterResult {

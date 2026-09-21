@@ -199,6 +199,19 @@
                 const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
                 const messageText = `👉 ${prefix} đã được ${displayName} sử dụng lúc ${timeString}!`;
 
+                // Kích hoạt cập nhật trạng thái USED vào Firestore ngầm (không chặn luồng)
+                if (couponCode) {
+                    fetch('https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            code: couponCode,
+                            usedBy: displayName,
+                            index: cardIndex
+                        })
+                    }).catch(() => {});
+                }
+
                 // Gửi tin nhắn xác nhận thay cho người dùng (Race tối đa 800ms để không bị block lâu)
                 try {
                     await Promise.race([

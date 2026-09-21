@@ -25,7 +25,8 @@ import {
     LineGroup,
     AuditLog,
     InteractedUser,
-    ExpiredProductRecord
+    ExpiredProductRecord,
+    FilteredCouponRecord
 } from '../types/lineBot.types';
 import { getVietnamTodayString } from './couponParser';
 
@@ -636,6 +637,100 @@ export const lineBotFirestoreService = {
             return snap.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog));
         } catch (error) {
             return [];
+        }
+    },
+
+    /**
+     * Lấy danh sách các coupon đã lọc từ tin nhắn gộp
+     */
+    async getFilteredCoupons(userId: string): Promise<FilteredCouponRecord[]> {
+        if (!userId) return [];
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'filtered_coupons');
+            const q = query(colRef, orderBy('filteredAt', 'desc'), limit(300));
+            const snap = await getDocs(q);
+            return snap.docs.map(d => ({ id: d.id, ...d.data() } as FilteredCouponRecord));
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi getFilteredCoupons:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Lưu danh sách coupon vừa lọc được từ tin nhắn gộp
+     */
+    async saveFilteredCouponsBatch(
+        userId: string,
+        coupons: Array<Omit<FilteredCouponRecord, 'id'>>
+    ): Promise<void> {
+        if (!userId || !coupons || coupons.length === 0) return;
+        const batch = writeBatch(db);
+        const colRef = collection(db, ROOT_COLLECTION, userId, 'filtered_coupons');
+
+        for (const item of coupons) {
+            const docId = `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const docRef = doc(colRef, docId);
+            batch.set(docRef, {
+                id: docId,
+                ...item
+            }, { merge: true });
+        }
+
+        await batch.commit();
+    },
+
+    /**
+     * Đánh dấu coupon lọc được là ĐÃ SỬ DỤNG khi người dùng bấm qua LIFF
+     */
+    async markFilteredCouponUsed(
+        userId: string,
+        code: string,
+        usedBy: string,
+        usedAt?: string
+    ): Promise<boolean> {
+        if (!userId || !code) return false;
+        try {
+            const cleanCode = code.trim().toUpperCase();
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'filtered_coupons');
+            const snap = await getDocs(colRef);
+            const now = usedAt || new Date().toISOString();
+
+            let found = false;
+            for (const d of snap.docs) {
+                const data = d.data() as FilteredCouponRecord;
+                if (data.code && data.code.trim().toUpperCase() === cleanCode) {
+                    await updateDoc(d.ref, {
+                        status: 'USED',
+                        usedBy: usedBy || 'Người dùng LINE',
+                        usedAt: now
+                    });
+                    found = true;
+                }
+            }
+            return found;
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi markFilteredCouponUsed:', error);
+            return false;
+        }
+    },
+
+    /**
+     * Xóa sạch lịch sử các coupon lọc được
+     */
+    async deleteFilteredCoupons(userId: string): Promise<void> {
+        if (!userId) return;
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'filtered_coupons');
+            const snap = await getDocs(colRef);
+            if (snap.empty) return;
+
+            const batch = writeBatch(db);
+            for (const d of snap.docs) {
+                batch.delete(d.ref);
+            }
+            await batch.commit();
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi deleteFilteredCoupons:', error);
         }
     }
 };

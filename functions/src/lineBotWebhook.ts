@@ -496,7 +496,7 @@ function parseCancelCouponCommand(text: string): { isCancel: boolean; target?: s
 /**
  * Lấy chuỗi ngày hôm nay theo múi giờ Việt Nam (Asia/Ho_Chi_Minh) dạng 'YYYY-MM-DD'
  */
-function getVietnamTodayString(): string {
+export function getVietnamTodayString(): string {
     return new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Ho_Chi_Minh',
         year: 'numeric',
@@ -819,7 +819,7 @@ function parseCouponClaimCommand(text: string): CouponClaimSelection {
 /**
  * Format tin nhắn cho lệnh "tk", "tk event", "tk gvgs"
  */
-function formatInventoryReportMessage(
+export function formatInventoryReportMessage(
     coupons: Array<{ productName?: string; syntax?: string; type?: string; status?: string }>,
     category?: CouponCategory
 ): {
@@ -914,7 +914,7 @@ function formatInventoryReportMessage(
  * Tạo LINE Flex Message dạng Dashboard hiển thị danh sách tồn kho PMH
  * Thiết kế hiện đại, có badge màu số lượng và cho phép chạm vào từng sản phẩm để nhận mã ngay lập tức
  */
-function createInventoryReportFlexMessage(params: {
+export function createInventoryReportFlexMessage(params: {
     category: CouponCategory;
     totalAll: number;
     totalUnused: number;
@@ -1537,6 +1537,14 @@ function filterPmhByUsers(text: string, candidateNames: string[], liffId?: strin
     matchedBlocks: string[];
     replyText: string;
     flexMessages?: any[];
+    matchedItems?: Array<{
+        recipient: string;
+        productName: string;
+        categoryLabel: string;
+        code: string;
+        orderId?: string;
+        warningSuffix?: string;
+    }>;
 } {
     if (isInventoryOrStatisticsReport(text)) {
         return {
@@ -1673,7 +1681,8 @@ function filterPmhByUsers(text: string, candidateNames: string[], liffId?: strin
         totalBlocks: allBlocks.length,
         matchedBlocks,
         replyText: msg.trim(),
-        flexMessages
+        flexMessages,
+        matchedItems: matchedItemsForFlex
     };
 }
 
@@ -1718,6 +1727,56 @@ export const lineBotWebhook = onRequest(
                     success: false,
                     error: err.message || 'Không thể kết nối đến máy chủ LINE API'
                 });
+                return;
+            }
+        }
+
+        // 1.5. Action: Đánh dấu coupon đã sử dụng khi người dùng bấm qua LIFF
+        if (action === 'mark-used' || action === 'markUsed') {
+            const code = String(req.body?.code || req.query.code || '').trim().toUpperCase();
+            const usedBy = String(req.body?.usedBy || req.query.usedBy || 'Người dùng LINE').trim();
+            const now = new Date().toISOString();
+
+            if (!code) {
+                res.status(200).json({ success: false, error: 'Thiếu mã coupon' });
+                return;
+            }
+
+            try {
+                const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
+                const uids = botsSnap.empty
+                    ? (await db.collection('line_bots').limit(5).get()).docs.map(d => d.id)
+                    : botsSnap.docs.map(d => d.id);
+
+                let updatedCount = 0;
+                for (const bUid of uids) {
+                    const fSnap = await db.collection('line_bots').doc(bUid).collection('filtered_coupons')
+                        .where('code', '==', code).get();
+                    for (const docItem of fSnap.docs) {
+                        await docItem.ref.update({
+                            status: 'USED',
+                            usedBy,
+                            usedAt: now
+                        });
+                        updatedCount++;
+                    }
+
+                    const cSnap = await db.collection('line_bots').doc(bUid).collection('coupons')
+                        .where('code', '==', code).get();
+                    for (const docItem of cSnap.docs) {
+                        await docItem.ref.update({
+                            status: 'USED',
+                            usedBy,
+                            usedAt: now
+                        });
+                        updatedCount++;
+                    }
+                }
+
+                res.status(200).json({ success: true, updatedCount });
+                return;
+            } catch (err: any) {
+                res.status(200).json({ success: false, error: err.message });
                 return;
             }
         }
@@ -2061,6 +2120,33 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
+                // 1.8. Kiểm tra tin nhắn xác nhận sử dụng thẻ PMH từ LIFF
+                const usedMatch = cleanText.match(/👉\s*(?:PMH\s*(\d+)|mã\s*này)?\s*đã\s*được\s*(.+?)\s*sử\s*dụng\s*lúc\s*(\d{1,2}:\d{2})/i);
+                if (usedMatch) {
+                    const matchedCardIndex = usedMatch[1] ? Number(usedMatch[1]) : undefined;
+                    const matchedUser = (usedMatch[2] || '').trim();
+                    const now = new Date().toISOString();
+
+                    try {
+                        const fRef = db.collection('line_bots').doc(uid).collection('filtered_coupons');
+                        let q = fRef.where('status', '==', 'UNUSED');
+                        if (matchedCardIndex) {
+                            q = q.where('cardIndex', '==', matchedCardIndex);
+                        }
+                        const fSnap = await q.orderBy('filteredAt', 'desc').limit(1).get();
+                        if (!fSnap.empty) {
+                            await fSnap.docs[0].ref.update({
+                                status: 'USED',
+                                usedBy: matchedUser || 'Người dùng LINE',
+                                usedAt: now
+                            });
+                            console.log(`[Filtered Coupons] Đã đánh dấu USED từ tin nhắn nhóm: PMH ${matchedCardIndex || 1} - ${matchedUser}`);
+                        }
+                    } catch (e) {
+                        console.warn('[Webhook] Cập nhật USED từ tin nhắn thất bại:', e);
+                    }
+                    continue;
+                }
 
                 // 2. Kiểm tra lệnh thống kê tồn kho (tk, tk event, tk gvgs...)
                 const isTkEvent = /^(?:[./!]?tk\s*(?:event|e|evt)|(?:thống kê|thong ke)\s*(?:event|e))$/i.test(cleanText);
@@ -2574,6 +2660,32 @@ export const lineBotWebhook = onRequest(
                     }
 
                     const filterResult = filterPmhByUsers(rawText, candidates, (config as any).liffId);
+
+                    // Tự động lưu các coupon lọc được vào Firestore để Admin theo dõi
+                    if (filterResult.matchedItems && filterResult.matchedItems.length > 0) {
+                        try {
+                            const fBatch = db.batch();
+                            const fNow = new Date().toISOString();
+                            filterResult.matchedItems.forEach((item, fIdx) => {
+                                const docId = `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                const docRef = db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId);
+                                fBatch.set(docRef, {
+                                    id: docId,
+                                    code: item.code,
+                                    productName: item.productName,
+                                    categoryLabel: item.categoryLabel,
+                                    recipient: item.recipient,
+                                    orderId: item.orderId || null,
+                                    cardIndex: fIdx + 1,
+                                    status: 'UNUSED',
+                                    filteredAt: fNow
+                                }, { merge: true });
+                            });
+                            await fBatch.commit();
+                        } catch (err) {
+                            console.warn('[Filtered Coupons] Lỗi lưu Firestore:', err);
+                        }
+                    }
 
                     // QUY TẮC NGHIÊM NGẶT TRONG NHÓM / ROOM:
                     // 1. Nếu không tìm thấy mã nào thuộc về cấu hình:

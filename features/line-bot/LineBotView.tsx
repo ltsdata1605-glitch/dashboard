@@ -11,7 +11,8 @@ import {
     HelpCircle,
     ShieldAlert,
     CheckCircle2,
-    XCircle
+    XCircle,
+    ListFilter
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
@@ -23,6 +24,7 @@ import { useAdminDeclaration } from './hooks/useAdminDeclaration';
 
 import { LineBotSettingsTab } from './components/LineBotSettingsTab';
 import { CouponManagerTab } from './components/CouponManagerTab';
+import { FilteredCouponsTab } from './components/FilteredCouponsTab';
 import { SyntaxConfigTab } from './components/SyntaxConfigTab';
 import { ScheduleManagerTab } from './components/ScheduleManagerTab';
 import { KeywordLibraryTab } from './components/KeywordLibraryTab';
@@ -30,7 +32,7 @@ import { AdminDeclarationTab } from './components/AdminDeclarationTab';
 import { AuditLogTab } from './components/AuditLogTab';
 import { LineBotOnboardingModal } from './components/LineBotOnboardingModal';
 
-type LineBotTab = 'coupons' | 'syntax' | 'schedules' | 'keywords' | 'admins' | 'settings' | 'audit';
+type LineBotTab = 'coupons' | 'filtered' | 'syntax' | 'schedules' | 'keywords' | 'admins' | 'settings' | 'audit';
 
 export default function LineBotView() {
     const { userRole, isDemoMode } = useAuth();
@@ -69,6 +71,7 @@ export default function LineBotView() {
 
     const tabs: Array<{ id: LineBotTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
         { id: 'coupons', label: 'Kho PMH', icon: Ticket },
+        { id: 'filtered', label: 'Coupon Đã Lọc', icon: ListFilter },
         { id: 'syntax', label: 'Cú pháp & Lọc', icon: MessageSquare },
         { id: 'schedules', label: 'Hẹn Giờ Báo', icon: Clock },
         { id: 'keywords', label: 'Từ Khoá', icon: Sparkles },
@@ -168,6 +171,12 @@ export default function LineBotView() {
                         />
                     )}
 
+                {activeSubTab === 'filtered' && (
+                    <FilteredCouponsTab
+                        userId={botConfigHook.config?.userId || ''}
+                    />
+                )}
+
                 {activeSubTab === 'syntax' && (
                     <SyntaxConfigTab
                         config={botConfigHook.config}
@@ -228,6 +237,7 @@ export default function LineBotView() {
                     <LineBotSettingsTab
                         config={botConfigHook.config}
                         botInfo={botConfigHook.botInfo}
+                        groups={scheduleHook.groups}
                         isSaving={botConfigHook.isSaving}
                         isVerifying={botConfigHook.isVerifying}
                         personalWebhookUrl={botConfigHook.personalWebhookUrl}
