@@ -82,6 +82,8 @@
         const couponCode = (urlParams.get('code') || '').trim();
         const couponType = (urlParams.get('type') || 'PMH').trim();
         const cardIndex = (urlParams.get('index') || '1').trim();
+        const requestedBy = (urlParams.get('reqBy') || '').trim().replace(/^[@👤\s]+/, '');
+        const productName = (urlParams.get('prod') || '').trim();
         const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
 
         // Copy tức thì vào bộ nhớ tạm không chờ LIFF
@@ -137,12 +139,12 @@
             });
         }
 
-        // BẢO HIỂM TỐC ĐỘ: Tối đa 1.8 giây là BẮT BUỘC tự động đóng cửa sổ, tuyệt đối không để treo
+        // BẢO HIỂM: Tối đa 3.5 giây tự động đóng cửa sổ nếu gặp sự cố mạng
         const safetyCloseTimer = setTimeout(() => {
             if (typeof liff !== 'undefined' && liff.closeWindow) {
                 liff.closeWindow();
             }
-        }, 1800);
+        }, 3500);
 
         async function fastProcess() {
             try {
@@ -159,34 +161,52 @@
                     return;
                 }
 
-                // TỐI ƯU ĐỘT PHÁ VỀ TỐC ĐỘ (0ms):
-                // Lấy Profile trực tiếp từ ID Token có sẵn trong bộ nhớ LINE client thay vì gọi API liff.getProfile() qua mạng (tiết kiệm 1 - 2 giây)
+                // 1. LẤY TÊN NGƯỜI DÙNG THỰC TẾ (STR_BOSS SƠN, ...)
+                // Ưu tiên 1: Lấy từ Cache LocalStorage (tức thì 0ms cho các lần sau)
                 let displayName = '';
                 try {
-                    const idToken = liff.getDecodedIDToken();
-                    if (idToken && idToken.name) {
-                        displayName = idToken.name;
-                    }
+                    displayName = localStorage.getItem('line_user_display_name') || '';
                 } catch (_) {}
 
-                // Fallback nhanh với timeout tối đa 500ms nếu ID Token chưa có name
+                // Ưu tiên 2: Nếu chưa có cache, lấy từ ID Token nếu có
                 if (!displayName) {
                     try {
-                        const profile = await Promise.race([
-                            liff.getProfile(),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500))
-                        ]);
-                        if (profile && profile.displayName) {
-                            displayName = profile.displayName;
+                        const idToken = liff.getDecodedIDToken();
+                        if (idToken && idToken.name) {
+                            displayName = idToken.name;
                         }
                     } catch (_) {}
                 }
 
+                // Ưu tiên 3: Gọi liff.getProfile() với timeout đủ lớn (2500ms) để không bị ngắt quãng
                 if (!displayName) {
-                    displayName = 'Quản lý';
+                    try {
+                        const profile = await Promise.race([
+                            liff.getProfile(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
+                        ]);
+                        if (profile && profile.displayName) {
+                            displayName = profile.displayName;
+                            try { localStorage.setItem('line_user_display_name', displayName); } catch (_) {}
+                        }
+                    } catch (errProfile) {
+                        console.warn('[LIFF] getProfile timeout or error:', errProfile);
+                    }
+                } else {
+                    // Nếu đã có từ cache, ngầm cập nhật lại cache profile nếu có thay đổi
+                    liff.getProfile().then(p => {
+                        if (p && p.displayName && p.displayName !== displayName) {
+                            try { localStorage.setItem('line_user_display_name', p.displayName); } catch (_) {}
+                        }
+                    }).catch(() => {});
                 }
 
-                // Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
+                // Nếu vẫn không lấy được (trường hợp cực kỳ hiếm) thì mới fallback
+                if (!displayName) {
+                    displayName = 'Bạn';
+                }
+
+                // 2. Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
@@ -195,11 +215,19 @@
                     timeZone: 'Asia/Ho_Chi_Minh'
                 });
 
-                // Tin nhắn xác nhận tự động
+                // 3. SOẠN TIN NHẮN XÁC NHẬN KÈM TRÍCH DẪN RÕ RÀNG
                 const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
-                const messageText = `👉 ${prefix} đã được ${displayName} sử dụng lúc ${timeString}!`;
+                let messageText = `👉 ${prefix} đã được ${displayName} sử dụng lúc ${timeString}!`;
 
-                // Kích hoạt cập nhật trạng thái USED vào Firestore ngầm (không chặn luồng)
+                // TRÍCH DẪN THÔNG TIN CẤP PHÁT BAN ĐẦU:
+                // Nếu người dùng bấm khác người yêu cầu ban đầu (ví dụ: bạn Út xin, nhưng anh Sơn bấm dùng)
+                if (requestedBy && requestedBy.toLowerCase() !== displayName.toLowerCase()) {
+                    messageText += `\n↳ Trích dẫn: Cấp cho @${requestedBy}${productName ? ` (${productName})` : ''}`;
+                } else if (productName) {
+                    messageText += `\n↳ Trích dẫn: ${productName}`;
+                }
+
+                // 4. Kích hoạt cập nhật trạng thái USED vào Firestore ngầm (không chặn luồng)
                 if (couponCode) {
                     fetch('https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used', {
                         method: 'POST',
@@ -212,17 +240,17 @@
                     }).catch(() => {});
                 }
 
-                // Gửi tin nhắn xác nhận thay cho người dùng (Race tối đa 800ms để không bị block lâu)
+                // 5. Gửi tin nhắn xác nhận thay cho người dùng
                 try {
                     await Promise.race([
                         liff.sendMessages([{ type: 'text', text: messageText }]),
-                        new Promise(resolve => setTimeout(resolve, 800))
+                        new Promise(resolve => setTimeout(resolve, 1500))
                     ]);
                 } catch (sendErr) {
                     console.warn('[LIFF] sendMessages error:', sendErr);
                 }
 
-                // ĐÓNG NGAY LẬP TỨC (0ms delay)
+                // ĐÓNG NGAY LẬP TỨC
                 clearTimeout(safetyCloseTimer);
                 liff.closeWindow();
 
