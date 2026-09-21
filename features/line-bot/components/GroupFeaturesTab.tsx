@@ -31,6 +31,32 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
         loadConfigs();
     }, [userId]);
 
+    // Auto-add config vào state khi chọn nhóm mới (để toggle hoạt động)
+    useEffect(() => {
+        if (!selectedGroupId) return;
+        const existing = configs.find(c => c.groupId === selectedGroupId);
+        if (!existing) {
+            const group = groups.find(g => g.groupId === selectedGroupId);
+            const newConfig: GroupFeatureConfig = {
+                id: `${userId}_${selectedGroupId}`,
+                userId,
+                groupId: selectedGroupId,
+                groupName: group?.groupName,
+                features: {
+                    filterCoupon: true,
+                    syntax_tk: true,
+                    syntax_cancel: true,
+                    syntax_search: true,
+                    keywordReply: true,
+                    autoReply: true
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            setConfigs(prev => [...prev, newConfig]);
+        }
+    }, [selectedGroupId, configs, userId, groups]);
+
     const loadConfigs = async () => {
         try {
             setIsLoading(true);
