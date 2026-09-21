@@ -1,9 +1,10 @@
 /**
- * Helper function để check cấu hình tính năng cho Nhóm
+ * Cấu hình bật/tắt tính năng bot THEO NHÓM LINE (tab "Giới Hạn Tính Năng" ở Dashboard).
+ * Dữ liệu: line_bots/{uid}/group_features/{groupId} — do features/line-bot ghi từ client.
+ * Chưa nhóm nào cấu hình thì mặc định BẬT hết để không đổi hành vi cũ.
  */
 
 import { db } from './firebaseAdmin';
-import { doc, getDoc } from 'firebase-admin/firestore';
 
 export interface GroupFeatures {
     filterCoupon: boolean;
@@ -14,7 +15,7 @@ export interface GroupFeatures {
     autoReply: boolean;
 }
 
-const defaultFeatures: GroupFeatures = {
+const DEFAULT_FEATURES: GroupFeatures = {
     filterCoupon: true,
     syntax_tk: true,
     syntax_cancel: true,
@@ -23,34 +24,20 @@ const defaultFeatures: GroupFeatures = {
     autoReply: true
 };
 
-/**
- * Lấy cấu hình tính năng cho Nhóm (mặc định: tất cả bật)
- */
 export async function getGroupFeatures(userId: string, groupId: string): Promise<GroupFeatures> {
     try {
-        const configRef = doc(db, 'line_bots', userId, 'group_features', groupId);
-        const snap = await getDoc(configRef);
-        if (snap.exists()) {
-            const data = snap.data();
-            return data.features || defaultFeatures;
-        }
+        const snap = await db.collection('line_bots').doc(userId).collection('group_features').doc(groupId).get();
+        const features = snap.exists ? (snap.data()?.features as Partial<GroupFeatures> | undefined) : undefined;
+        return { ...DEFAULT_FEATURES, ...(features || {}) };
     } catch (error) {
-        console.warn(`[groupFeatureHelper] Lỗi lấy config cho nhóm ${groupId}:`, error);
+        console.warn(`[groupFeatureHelper] Lỗi đọc cấu hình nhóm ${groupId}:`, error);
+        return DEFAULT_FEATURES;
     }
-    return defaultFeatures;
 }
 
-/**
- * Check xem tính năng có được bật cho Nhóm không
- */
-export async function isFeatureEnabled(
-    userId: string,
-    groupId: string | undefined,
-    featureKey: keyof GroupFeatures
-): Promise<boolean> {
-    // Nếu không phải Nhóm (1-on-1), cho phép tất cả
+/** Chat 1-1 (không có groupId) không bị giới hạn. */
+export async function isFeatureEnabled(userId: string, groupId: string | undefined, featureKey: keyof GroupFeatures): Promise<boolean> {
     if (!groupId) return true;
-    
     const features = await getGroupFeatures(userId, groupId);
     return features[featureKey] !== false;
 }

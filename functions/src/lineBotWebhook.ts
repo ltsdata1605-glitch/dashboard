@@ -57,8 +57,30 @@ async function getLineUserProfile(token: string, userId: string, groupId?: strin
  * Gửi tin nhắn trả lời (reply) qua LINE Messaging API có fallback tự động
  * Nếu gửi kèm mention bị lỗi (hết lượt miễn phí tag hoặc lỗi cú pháp tag), tự động gửi lại tin nhắn chỉ dùng quoteToken (trích dẫn)
  */
+/**
+ * Kết quả gửi kèm `sentMessages` (id + quoteToken của từng tin đã gửi) — cần để bot TRÍCH DẪN lại
+ * đúng thẻ coupon khi người dùng bấm "Chạm để copy" (xem action mark-used). Thẻ Flex có quoteToken
+ * (khi trích dẫn LINE hiển thị altText), tài liệu: developers.line.biz/en/docs/messaging-api/get-quote-tokens/
+ */
+interface LineSentMessage { id: string; quoteToken?: string }
+interface LineSendResult { ok: boolean; sentMessages: LineSentMessage[] }
+
+async function readSentMessages(res: Response): Promise<LineSentMessage[]> {
+    try {
+        const data = await res.json() as any;
+        return Array.isArray(data?.sentMessages) ? data.sentMessages : [];
+    } catch {
+        return [];
+    }
+}
+
 async function replyLineMessage(token: string, replyToken: string, messages: any[]): Promise<boolean> {
-    if (!token || !replyToken || !messages || messages.length === 0) return false;
+    return (await replyLineMessageDetailed(token, replyToken, messages)).ok;
+}
+
+async function replyLineMessageDetailed(token: string, replyToken: string, messages: any[]): Promise<LineSendResult> {
+    const fail: LineSendResult = { ok: false, sentMessages: [] };
+    if (!token || !replyToken || !messages || messages.length === 0) return fail;
     try {
         // Sanitize messages: LINE Messaging API chỉ cho phép quoteToken trên text, image, video, audio, location, sticker.
         // Tuyệt đối không cho phép quoteToken trên tin nhắn 'flex' (sẽ gây lỗi HTTP 400).
@@ -81,7 +103,9 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
 
         console.info(`[LINE Reply] Sent ${sanitized.length} msg(s). Status: ${res.status}`);
 
-        if (!res.ok) {
+        if (res.ok) return { ok: true, sentMessages: await readSentMessages(res) };
+
+        {
             const errData = await res.json().catch(() => ({}));
             console.warn('[LINE Reply Error]', res.status, errData);
 
@@ -108,7 +132,7 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
                     },
                     body: JSON.stringify({ replyToken, messages: textFallbackMsgs })
                 });
-                if (retryRes.ok) return true;
+                if (retryRes.ok) return { ok: true, sentMessages: await readSentMessages(retryRes) };
             }
 
             // Fallback 2: Kiểm tra xem có tin nhắn nào chứa mention không
@@ -128,14 +152,47 @@ async function replyLineMessage(token: string, replyToken: string, messages: any
                     },
                     body: JSON.stringify({ replyToken, messages: fallbackMsgs })
                 });
-                return retryRes.ok;
+                return retryRes.ok ? { ok: true, sentMessages: await readSentMessages(retryRes) } : fail;
             }
-            return false;
+            return fail;
         }
-        return true;
     } catch (e) {
         console.error('[LINE Reply Error]', e);
-        return false;
+        return fail;
+    }
+}
+
+/**
+ * Bot chủ động gửi (push) vào 1 chat. Dùng cho tin xác nhận trích dẫn thẻ coupon — không có replyToken
+ * vì người dùng bấm từ LIFF chứ không nhắn gì. ⚠️ Push TÍNH VÀO hạn mức tin nhắn tháng của OA
+ * (reply thì miễn phí); hết hạn mức LINE trả 429 → trả ok=false để LIFF tự gửi thay như trước.
+ * Nếu quoteToken bị từ chối (400, vd thẻ đã bị thu hồi) thì gửi lại không trích dẫn.
+ */
+async function pushLineMessage(token: string, to: string, messages: any[]): Promise<{ ok: boolean; status: number; error?: string }> {
+    if (!token || !to || !messages || messages.length === 0) return { ok: false, status: 0, error: 'missing-params' };
+    const send = async (msgs: any[]) => fetch('https://api.line.me/v2/bot/message/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ to, messages: msgs })
+    });
+    try {
+        const sanitized = messages.map(m => {
+            const copy = { ...m };
+            if (copy.type !== 'text' || !copy.quoteToken) delete copy.quoteToken;
+            return copy;
+        });
+        let res = await send(sanitized);
+        if (res.ok) return { ok: true, status: res.status };
+        const errData = await res.json().catch(() => ({})) as any;
+        console.warn('[LINE Push Error]', res.status, errData);
+        if (res.status === 400 && sanitized.some(m => m.quoteToken)) {
+            res = await send(sanitized.map(m => { const c = { ...m }; delete c.quoteToken; return c; }));
+            if (res.ok) return { ok: true, status: res.status };
+        }
+        return { ok: false, status: res.status, error: errData?.message || `HTTP ${res.status}` };
+    } catch (e: any) {
+        console.error('[LINE Push Error]', e);
+        return { ok: false, status: 0, error: e?.message || 'network' };
     }
 }
 
@@ -1846,6 +1903,8 @@ export const lineBotWebhook = onRequest(
                 let updatedCount = 0;
                 let wasAlreadyUsed = false;
                 let previousUser = '';
+                // Thẻ đầu tiên vừa đánh dấu USED có đủ quoteToken + chatId → bot gửi xác nhận trích dẫn thẻ đó
+                let quoteTarget: { bUid: string; chatId: string; quoteToken: string; cardIndex: number } | null = null;
 
                 for (const bUid of uids) {
                     const fSnap = await db.collection('line_bots').doc(bUid).collection('filtered_coupons')
@@ -1862,6 +1921,9 @@ export const lineBotWebhook = onRequest(
                                 usedAt: now
                             });
                             updatedCount++;
+                            if (!quoteTarget && d.quoteToken && d.chatId) {
+                                quoteTarget = { bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index) || 1 };
+                            }
                         }
                     }
 
@@ -1884,11 +1946,33 @@ export const lineBotWebhook = onRequest(
                 }
 
                 const isDuplicate = wasAlreadyUsed && updatedCount === 0;
+
+                // Bot gửi tin xác nhận TRÍCH DẪN thẻ coupon (LIFF sendMessages không hỗ trợ quoteToken —
+                // developers.line.biz/en/reference/liff/#send-messages). Thất bại (hết hạn mức push…) →
+                // quotedSent=false, LIFF tự gửi tin thường thay người dùng như trước.
+                let quotedSent = false;
+                let quoteError: string | undefined;
+                if (!isDuplicate && quoteTarget) {
+                    try {
+                        const botSnap = await db.collection('line_bots').doc(quoteTarget.bUid).get();
+                        const botToken = String(botSnap.data()?.channelAccessToken || '');
+                        const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
+                        const text = `👉 PMH ${quoteTarget.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${usedBy}`;
+                        const pushed = await pushLineMessage(botToken, quoteTarget.chatId, [{ type: 'text', text, quoteToken: quoteTarget.quoteToken }]);
+                        quotedSent = pushed.ok;
+                        quoteError = pushed.ok ? undefined : (pushed.status === 429 ? 'quota' : pushed.error);
+                    } catch (e: any) {
+                        quoteError = e?.message || 'push-failed';
+                    }
+                }
+
                 res.status(200).json({
                     success: true,
                     updatedCount,
                     alreadyUsed: isDuplicate,
-                    previousUser: previousUser || undefined
+                    previousUser: previousUser || undefined,
+                    quotedSent,
+                    quoteError
                 });
                 return;
             } catch (err: any) {
@@ -2884,7 +2968,28 @@ export const lineBotWebhook = onRequest(
                     }
 
                     if (filterResult.flexMessages && filterResult.flexMessages.length > 0) {
-                        await replyLineMessage(token, replyToken, filterResult.flexMessages);
+                        const sent = await replyLineMessageDetailed(token, replyToken, filterResult.flexMessages);
+                        // Lưu quoteToken của thẻ + chat đích để mark-used (LIFF) cho bot gửi xác nhận TRÍCH DẪN đúng thẻ.
+                        // Thẻ thứ fIdx nằm trong tin nhắn thứ floor(fIdx/10) (carousel gom 10 thẻ/tin, xem createFilteredPmhFlexMessages).
+                        if (sent.ok && sent.sentMessages.length > 0 && filterResult.matchedItems && filterResult.matchedItems.length > 0) {
+                            try {
+                                const qBatch = db.batch();
+                                const chatId = groupId || event.source?.roomId || senderUserId;
+                                filterResult.matchedItems.forEach((item, fIdx) => {
+                                    const quoteToken = sent.sentMessages[Math.floor(fIdx / 10)]?.quoteToken;
+                                    if (!quoteToken || !chatId) return;
+                                    const docId = `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                    qBatch.update(db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId), {
+                                        quoteToken,
+                                        chatId,
+                                        chatType: groupId ? 'group' : (event.source?.roomId ? 'room' : 'user')
+                                    });
+                                });
+                                await qBatch.commit();
+                            } catch (err) {
+                                console.warn('[Filtered Coupons] Lỗi lưu quoteToken:', err);
+                            }
+                        }
                     } else if (filterResult.matchedBlocks.length > 0 || !isGroupOrRoom || isExplicitFilter) {
                         await replyLineMessage(token, replyToken, [
                             {
