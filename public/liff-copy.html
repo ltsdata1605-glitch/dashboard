@@ -227,20 +227,77 @@
                     messageText += `\n↳ Trích dẫn: ${productName}`;
                 }
 
-                // 4. Kích hoạt cập nhật trạng thái USED vào Firestore ngầm (không chặn luồng)
-                if (couponCode) {
-                    fetch('https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            code: couponCode,
-                            usedBy: displayName,
-                            index: cardIndex
-                        })
-                    }).catch(() => {});
+                // 4. CHỐNG SPAM: Kiểm tra & Cập nhật trạng thái USED vào server
+                const localSentKey = couponCode ? ('coupon_sent_' + couponCode) : '';
+                const alreadySentLocally = Boolean(localSentKey && localStorage.getItem(localSentKey));
+
+                if (alreadySentLocally) {
+                    clearTimeout(safetyCloseTimer);
+                    spinner.style.display = 'none';
+                    statusTitle.textContent = '✅ Đã sao chép mã coupon!';
+                    statusDesc.textContent = '💡 Bạn đã xác nhận sử dụng mã này rồi.';
+                    statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
+                    setTimeout(() => {
+                        if (typeof liff !== 'undefined' && liff.closeWindow) {
+                            liff.closeWindow();
+                        }
+                    }, 1000);
+                    return;
                 }
 
-                // 5. Gửi tin nhắn xác nhận thay cho người dùng
+                let alreadyUsedOnServer = false;
+                let previousUserName = '';
+
+                if (couponCode) {
+                    try {
+                        const markRes = await Promise.race([
+                            fetch('https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    code: couponCode,
+                                    usedBy: displayName,
+                                    index: cardIndex
+                                })
+                            }).then(r => r.json()),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+                        ]);
+
+                        if (markRes && markRes.alreadyUsed) {
+                            alreadyUsedOnServer = true;
+                            previousUserName = markRes.previousUser || '';
+                        }
+                    } catch (e) {
+                        console.warn('[LIFF] mark-used fetch error:', e);
+                    }
+                }
+
+                // Nếu mã này đã được sử dụng trước đó (tránh spam tin nhắn vào nhóm)
+                if (alreadyUsedOnServer) {
+                    if (localSentKey) {
+                        try { localStorage.setItem(localSentKey, 'true'); } catch (_) {}
+                    }
+                    clearTimeout(safetyCloseTimer);
+                    spinner.style.display = 'none';
+                    statusTitle.textContent = '⚠️ Mã này đã được sử dụng!';
+                    statusDesc.textContent = previousUserName
+                        ? `Đã được ${previousUserName} bấm sử dụng trước đó.`
+                        : 'Mã này đã có người xác nhận sử dụng.';
+                    statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
+                    setTimeout(() => {
+                        if (typeof liff !== 'undefined' && liff.closeWindow) {
+                            liff.closeWindow();
+                        }
+                    }, 1400);
+                    return;
+                }
+
+                // 5. Đánh dấu đã gửi thành công trên máy này ngay lập tức để không bao giờ gửi lần 2
+                if (localSentKey) {
+                    try { localStorage.setItem(localSentKey, 'true'); } catch (_) {}
+                }
+
+                // 6. Gửi tin nhắn xác nhận duy nhất 1 lần thay cho người dùng
                 try {
                     await Promise.race([
                         liff.sendMessages([{ type: 'text', text: messageText }]),

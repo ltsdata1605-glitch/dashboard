@@ -1749,31 +1749,52 @@ export const lineBotWebhook = onRequest(
                     : botsSnap.docs.map(d => d.id);
 
                 let updatedCount = 0;
+                let wasAlreadyUsed = false;
+                let previousUser = '';
+
                 for (const bUid of uids) {
                     const fSnap = await db.collection('line_bots').doc(bUid).collection('filtered_coupons')
                         .where('code', '==', code).get();
                     for (const docItem of fSnap.docs) {
-                        await docItem.ref.update({
-                            status: 'USED',
-                            usedBy,
-                            usedAt: now
-                        });
-                        updatedCount++;
+                        const d = docItem.data();
+                        if (d.status === 'USED') {
+                            wasAlreadyUsed = true;
+                            if (d.usedBy && !previousUser) previousUser = d.usedBy;
+                        } else {
+                            await docItem.ref.update({
+                                status: 'USED',
+                                usedBy,
+                                usedAt: now
+                            });
+                            updatedCount++;
+                        }
                     }
 
                     const cSnap = await db.collection('line_bots').doc(bUid).collection('coupons')
                         .where('code', '==', code).get();
                     for (const docItem of cSnap.docs) {
-                        await docItem.ref.update({
-                            status: 'USED',
-                            usedBy,
-                            usedAt: now
-                        });
-                        updatedCount++;
+                        const d = docItem.data();
+                        if (d.status === 'USED') {
+                            wasAlreadyUsed = true;
+                            if (d.usedBy && !previousUser) previousUser = d.usedBy;
+                        } else {
+                            await docItem.ref.update({
+                                status: 'USED',
+                                usedBy,
+                                usedAt: now
+                            });
+                            updatedCount++;
+                        }
                     }
                 }
 
-                res.status(200).json({ success: true, updatedCount });
+                const isDuplicate = wasAlreadyUsed && updatedCount === 0;
+                res.status(200).json({
+                    success: true,
+                    updatedCount,
+                    alreadyUsed: isDuplicate,
+                    previousUser: previousUser || undefined
+                });
                 return;
             } catch (err: any) {
                 res.status(200).json({ success: false, error: err.message });
