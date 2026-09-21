@@ -29,7 +29,7 @@ const draftFull = () => {
 };
 
 describe('buildReportText — đúng mẫu app gốc', () => {
-    it('đủ 5 nhóm, đúng thứ tự S.Phẩm → Vas → Ư.Tiên → P.Kiện → G.Dụng, nhãn tắt, ghi chú cách 1 dòng trống', () => {
+    it('đủ 5 nhóm, đúng thứ tự S.Phẩm → Ư.Tiên → P.Kiện → G.Dụng → Vas (chốt 2026-09-21), nhãn tắt, ghi chú cách 1 dòng trống', () => {
         expect(buildReportText(draftFull(), [])).toBe(
             [
                 '📊 BÁO CÁO KHAI THÁC',
@@ -37,10 +37,10 @@ describe('buildReportText — đúng mẫu app gốc', () => {
                 '💰 Doanh thu: 8.5tr',
                 '   - Trả góp: ✓ | Mở Ví: ✓',
                 '📦 S.Phẩm: Tivi: 1 | TL: 2 | Máy sấy: 1',
-                '🛠 Vas: Kaspersky: 1',
                 '⭐ Ư.Tiên: SIM: 1 | ĐH: 1 | BH Khác: 0.5 | BH ĐMX: 1.2',
                 '🎧 P.Kiện: Cam: 1 | T.Nghe: 2',
                 '🏠 G.Dụng: MLN: 1 | N.Chiên: 1 | B.Gas: 1 | DCNB: 3',
+                '🛠 Vas: Kaspersky: 1',
                 '⚔️ Chiến giá: ✓',
                 '',
                 '📝 Khách hẹn giao chiều',

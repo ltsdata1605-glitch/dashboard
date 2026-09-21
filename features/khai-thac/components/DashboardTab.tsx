@@ -109,22 +109,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <RankingTable group="products" items={s.ranking.products} otherCount={s.otherCounts.products} />
-                            <RankingTable group="household" items={s.ranking.household} otherCount={s.otherCounts.household} />
-                            <section className="border border-slate-200 bg-white">
-                                <BandHeader icon={GROUP_META.services.icon} title={GROUP_META.services.label} />
-                                <table className="w-full text-[13px] tabular-nums">
-                                    <tbody className="divide-y divide-slate-100">
-                                        <tr className={`h-[26px] ${s.moViCount > 0 ? '' : 'text-slate-400'}`}><td className="px-2">Mở Ví</td><td className="px-2 text-right font-semibold">{s.moViCount} <span className="text-slate-400 font-normal">đơn</span></td></tr>
-                                        {s.ranking.services.map(i => (
-                                            <tr key={i.key} className={`h-[26px] ${i.count > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{i.label}</td><td className="px-2 text-right font-semibold">{i.count}</td></tr>
-                                        ))}
-                                        {svcRevenueFields.map(f => (
-                                            <tr key={f.id} className="h-[26px]"><td className="px-2 text-slate-600">{f.name}</td><td className="px-2 text-right font-semibold">{fmtTr(s.customRevenue[f.id] ?? 0)} Tr</td></tr>
-                                        ))}
-                                        {s.otherCounts.services > 0 && <tr className="h-[26px]"><td className="px-2">Khác</td><td className="px-2 text-right font-semibold">{s.otherCounts.services}</td></tr>}
-                                    </tbody>
-                                </table>
-                            </section>
                             <section className="border border-slate-200 bg-white">
                                 <BandHeader icon={GROUP_META.insurance.icon} title={GROUP_META.insurance.label} right={<span className="text-[11px] text-slate-500 tabular-nums">Bảo hiểm <b className="text-slate-800">{fmtTr(s.insuranceTr)} Tr</b></span>} />
                                 <table className="w-full text-[13px] tabular-nums">
@@ -152,6 +136,22 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                                             <tr key={f.id} className="h-[26px]"><td className="px-2 text-slate-600">{f.name}</td><td className="px-2 text-right font-semibold">{fmtTr(s.customRevenue[f.id] ?? 0)} Tr</td></tr>
                                         ))}
                                         {s.otherCounts.accessories > 0 && <tr className="h-[26px]"><td className="px-2">Khác</td><td className="px-2 text-right font-semibold">{s.otherCounts.accessories}</td></tr>}
+                                    </tbody>
+                                </table>
+                            </section>
+                            <RankingTable group="household" items={s.ranking.household} otherCount={s.otherCounts.household} />
+                            <section className="border border-slate-200 bg-white">
+                                <BandHeader icon={GROUP_META.services.icon} title={GROUP_META.services.label} />
+                                <table className="w-full text-[13px] tabular-nums">
+                                    <tbody className="divide-y divide-slate-100">
+                                        <tr className={`h-[26px] ${s.moViCount > 0 ? '' : 'text-slate-400'}`}><td className="px-2">Mở Ví</td><td className="px-2 text-right font-semibold">{s.moViCount} <span className="text-slate-400 font-normal">đơn</span></td></tr>
+                                        {s.ranking.services.map(i => (
+                                            <tr key={i.key} className={`h-[26px] ${i.count > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{i.label}</td><td className="px-2 text-right font-semibold">{i.count}</td></tr>
+                                        ))}
+                                        {svcRevenueFields.map(f => (
+                                            <tr key={f.id} className="h-[26px]"><td className="px-2 text-slate-600">{f.name}</td><td className="px-2 text-right font-semibold">{fmtTr(s.customRevenue[f.id] ?? 0)} Tr</td></tr>
+                                        ))}
+                                        {s.otherCounts.services > 0 && <tr className="h-[26px]"><td className="px-2">Khác</td><td className="px-2 text-right font-semibold">{s.otherCounts.services}</td></tr>}
                                     </tbody>
                                 </table>
                             </section>

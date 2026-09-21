@@ -33,20 +33,22 @@ export const BandHeader: React.FC<{ icon?: string; title: React.ReactNode; right
     </div>
 );
 
-/** Ô nhập tiền (Tr) — một dòng: nhãn trái, ô nhập phải, cùng chiều cao dòng đếm. */
-/** Ô nhập tiền (Tr) — cùng bố cục 2 tầng trên điện thoại / 1 tầng từ `sm` như CounterRow. */
+/**
+ * Ô nhập tiền (Tr) — luôn một dòng như CounterRow: nhãn trái, ô nhập phải. Trên điện thoại nhãn
+ * "Bảo hiểm Khác (Tr)" không lọt nửa cột nên ô tiền chiếm TRỌN 2 cột (`col-span-2`), từ `sm` mới về 1 cột.
+ */
 const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange: (v: string) => void; onDelete?: () => void }> = ({ icon, label, value, onChange, onDelete }) => {
     const active = parseFloat(value) > 0;
     return (
-        <div className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 px-2 py-1.5 sm:py-0 sm:h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 sm:flex-1">
-                <span className={`shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
+        <div className={`col-span-2 sm:col-span-1 max-sm:border-r-0! flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                <span className={`hidden sm:inline-flex shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
                 <span className={`min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`} title={label}>{label}</span>
             </div>
-            <div className="flex items-center justify-end gap-1 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 {onDelete && (
                     <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
-                        className="h-6 w-6 mr-auto sm:mr-0 flex items-center justify-center text-slate-300 hover:text-rose-600">
+                        className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600">
                         <Trash2 size={12} />
                     </Button>
                 )}

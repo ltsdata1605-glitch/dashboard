@@ -7,8 +7,11 @@
 
 export type ItemGroup = 'products' | 'household' | 'services' | 'insurance' | 'accessories';
 
-/** Thứ tự hiển thị trên form. Nhóm "Bảo hiểm" (thêm 2026-09-21) nằm ngay dưới Dịch vụ bổ sung. */
-export const ITEM_GROUPS: ItemGroup[] = ['products', 'household', 'services', 'insurance', 'accessories'];
+/**
+ * Thứ tự nhóm dùng CHUNG cho form nhập, văn bản báo cáo, Biểu đồ và cột Nhật ký
+ * (chủ dự án chốt 2026-09-21): Sản phẩm chính → Ưu tiên → Phụ kiện → Gia dụng → Vas.
+ */
+export const ITEM_GROUPS: ItemGroup[] = ['products', 'insurance', 'accessories', 'household', 'services'];
 
 /** Mục tuỳ chỉnh do người dùng thêm vào một nhóm — đếm số lượng hoặc nhập tiền (Tr). */
 export interface CustomField {

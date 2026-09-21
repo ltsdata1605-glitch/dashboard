@@ -78,15 +78,18 @@ export const ALL_AMOUNT_ITEMS: CatalogItem[] = ITEM_GROUPS.flatMap(g => AMOUNT_I
 
 export const GROUP_META: Record<ItemGroup, { label: string; short: string; emoji: string; icon: string; otherPlaceholder: string | null }> = {
     products: { label: 'Sản phẩm chính', short: 'S.Phẩm', emoji: '📦', icon: 'package', otherPlaceholder: 'Sản phẩm chính khác…' },
-    household: { label: 'Điện gia dụng', short: 'G.Dụng', emoji: '🏠', icon: 'fan', otherPlaceholder: 'Gia dụng khác…' },
+    household: { label: 'Gia dụng', short: 'G.Dụng', emoji: '🏠', icon: 'fan', otherPlaceholder: 'Gia dụng khác…' },
     services: { label: 'Vas', short: 'Vas', emoji: '🛠', icon: 'shield-check', otherPlaceholder: 'Vas khác…' },
     // Không có dòng "khác" — "Bảo hiểm Khác" đã là một ô cố định, thêm dòng khác nữa sẽ rối.
     insurance: { label: 'Ưu tiên', short: 'Ư.Tiên', emoji: '⭐', icon: 'star', otherPlaceholder: null },
     accessories: { label: 'Phụ kiện', short: 'P.Kiện', emoji: '🎧', icon: 'headphones', otherPlaceholder: 'Phụ kiện khác…' },
 };
 
-/** Thứ tự nhóm trong văn bản báo cáo — giữ app gốc (S.Phẩm → Vas → P.Kiện → G.Dụng), Ưu tiên chen sau Vas. */
-export const TEXT_GROUP_ORDER: ItemGroup[] = ['products', 'services', 'insurance', 'accessories', 'household'];
+/**
+ * Thứ tự nhóm trong văn bản báo cáo — theo đúng thứ tự form (`ITEM_GROUPS`) từ 2026-09-21. Trước đó
+ * giữ thứ tự app gốc (S.Phẩm → Vas → P.Kiện → G.Dụng); tách hằng riêng để nếu cần đổi lại chỉ sửa đây.
+ */
+export const TEXT_GROUP_ORDER: ItemGroup[] = ITEM_GROUPS;
 
 export function emptyCounts(): Record<ItemGroup, Record<string, number>> {
     return { products: {}, household: {}, services: {}, insurance: {}, accessories: {} };
