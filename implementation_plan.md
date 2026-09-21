@@ -5018,3 +5018,59 @@ HTML thật user gửi (trạng thái CHƯA bật):
 - Trạng thái ĐÃ BẬT chưa có HTML thật (user chỉ gửi trạng thái tắt). Giả định: span có dấu ✓ /
   viền đổi màu; segment đổi nền. Nếu site dùng cách khác mà VẪN giữ nguyên đủ dấu hiệu "tắt" thì
   script có thể click nhầm → user cần kiểm 1 lần trên trang thật.
+
+---
+
+# [TÍNH NĂNG MỚI] "Báo cáo khai thác" — thay link ngoài bằng module nội bộ (2026-09-21)
+
+## Bối cảnh
+Mục "Báo cáo" trong Sidebar/MobileBottomNav đang là `externalUrl` mở
+`https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/` (app AI Studio riêng, 1 file App.tsx
+2.640 dòng, phong cách iOS, lưu IndexedDB, đồng bộ Google Sheet đã bỏ dở). Chủ dự án muốn viết lại
+thành tính năng nội bộ, **phong cách thiết kế Report BI** (chuẩn "Bảng điều khiển ca trực",
+`DESIGN_SYSTEM.md`).
+
+## Tính năng cần có (đối chiếu app gốc `/Users/ltson/Downloads/Bao-Cao-Khai-Thac-main`)
+1. **Nhập báo cáo** (từng đơn hàng): tên NV ("Mã - Tên"), tổng doanh thu (Tr), trả chậm (Tr) → tỉ lệ
+   trả chậm %, Mở Ví, Chiến giá; 4 nhóm đếm số lượng: Sản phẩm chính (Tivi, Tủ lạnh, Máy giặt,
+   Máy lạnh, SMP/Tab, Laptop), Điện gia dụng (MLN, QĐH, Quạt, Nồi cơm, Nồi chiên, Lọc KK), Dịch vụ
+   (Ví Tr, Vieon, SIM, Đồng hồ, BHMR Tr), Phụ kiện (Camera, SDP, Đèn, Loa); mỗi nhóm có "khác" +
+   danh mục tuỳ chỉnh (đếm/tiền); ghi chú. Nút **Báo cáo** = copy văn bản chuẩn Zalo/Line vào
+   clipboard + lưu lịch sử + làm sạch form. Cảnh báo mặt hàng 3 ngày liên tiếp = 0.
+2. **Khách hàng (Leads)**: tên/SĐT/sản phẩm quan tâm/ghi chú; trạng thái chăm sóc 5 mức + chi tiết;
+   nhắc quá 2h chưa liên hệ; gọi/Zalo; tìm kiếm; xuất ảnh.
+3. **Biểu đồ cá nhân**: Hôm nay/Tuần này (+Tháng này); KPI Tổng doanh số, Tỉ lệ trả chậm, Mở Ví,
+   Chiến giá; xếp hạng SP chính/Gia dụng; bảng Dịch vụ & Phụ kiện; xuất ảnh.
+4. **Nhật ký**: lọc ngày/tìm; xem lại văn bản; Sao chép / Sửa lại / Xoá; xoá toàn bộ dữ liệu.
+
+## Quyết định thiết kế
+- **Khu vực mới `features/khai-thac/`**, độc lập theo quy tắc cách ly (thêm vào `FEATURES` của
+  `eslint.config.js`). Chỉ dùng chung `components/shared/ui/*` + `contexts/AuthContext` (như
+  phan-ca/sticker-event/line-bot đã làm) để lấy `employeeName` điền sẵn tên NV.
+- **Lưu trữ: IndexedDB cục bộ** (`YCX_KHAI_THAC_DB`) — giữ đúng như app gốc, KHÔNG chạm Firestore
+  (không cần sửa rules, không tốn hạn mức). Lớp `services/khaiThacDb.ts` tách riêng để sau này
+  muốn đồng bộ Firestore thì thay 1 file. ⚠️ Giả định cần chủ dự án xác nhận: dữ liệu chỉ nằm trên
+  máy/trình duyệt đang dùng (như app cũ).
+- **Văn bản báo cáo giữ NGUYÊN định dạng** app cũ (emoji, thứ tự S.Phẩm → D.Vụ → P.Kiện → G.Dụng,
+  nhãn tắt TL/MG/ML/SMP/LT/ĐH/BH/Cam/SDP/MLN/QĐH/N.Cơm/N.Chiên/LKK) — nhân viên đang gửi mẫu này
+  lên nhóm Zalo/Line, đổi là gây khó chịu thật.
+- **Giao diện theo chuẩn ca trực**: khối vuông góc `border-slate-200`, không đổ bóng; dải tiêu đề
+  nhóm 28px `bg-slate-100` chữ 11px viết hoa Roboto Condensed; dòng đếm 30px desktop / 44px mobile;
+  số `tabular-nums`; vạch 3px mép trái cho trạng thái lead; KPI dùng `<KpiCard>`; bảng
+  thead sticky; modal/confirm dùng `Modal`/`ConfirmDialog`; không `dark:`, không `text-[10px]`,
+  không màu ngoài palette (kể cả indigo vì ratchet đếm file mới từ 0).
+- Desktop: form 2 cột + cột phải dính "Xem trước báo cáo" + nút hành động. Mobile: 1 cột, nút
+  hành động dính đáy.
+- Tab `reports` mount lazy trong `TabContent` (persistentViews) — gỡ `externalUrl` ở Sidebar +
+  MobileBottomNav, thêm `TAB_TITLES['reports']` + icon.
+
+## File
+- `features/khai-thac/{KhaiThacView.tsx, types.ts, catalog.ts}`
+- `features/khai-thac/services/khaiThacDb.ts`
+- `features/khai-thac/utils/{reportText.ts, aggregate.ts, exportImage.ts}`
+- `features/khai-thac/components/{CounterRow, GroupSection, ReportEntryTab, LeadsTab, DashboardTab,
+  HistoryTab, CustomFieldModal}.tsx`
+- `App.tsx`, `components/layout/Sidebar.tsx`, `components/layout/MobileBottomNav.tsx`,
+  `eslint.config.js`
+- Test: `tests/unit/khai-thac.test.ts` (reportText + aggregate thuần), `tests/e2e/khai-thac.spec.ts`
+  (demo mode → tab Báo cáo → nhập → Báo cáo → clipboard + lịch sử + biểu đồ).
