@@ -142,18 +142,24 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                 ? [new Date(specificDate).getDay()]
                 : days;
 
-            const res = await onSave({
+            const payloadToSave: any = {
                 ...(schedule || {}),
                 name: name.trim(),
                 time,
                 repeatType,
-                specificDate: repeatType === 'ONCE' ? specificDate : undefined,
                 daysOfWeek: finalDays,
                 targetType,
                 targetGroupIds,
                 messageTemplate: messageTemplate.trim(),
                 active
-            });
+            };
+            if (repeatType === 'ONCE' && specificDate) {
+                payloadToSave.specificDate = specificDate;
+            } else {
+                delete payloadToSave.specificDate;
+            }
+
+            const res = await onSave(payloadToSave);
             if (res) onClose();
         } finally {
             setIsSubmitting(false);

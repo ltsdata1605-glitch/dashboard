@@ -371,14 +371,21 @@ export const lineBotFirestoreService = {
         const now = new Date().toISOString();
         const id = schedule.id || `sched_${Date.now()}`;
         const docRef = doc(db, ROOT_COLLECTION, userId, 'schedules', id);
-        const payload = {
+        const payload: Record<string, any> = {
             ...schedule,
             id,
             active: schedule.active ?? true,
             updatedAt: now,
             createdAt: schedule.createdAt || now
         };
-        await setDoc(docRef, payload, { merge: true });
+        // Loại bỏ triệt để mọi key có giá trị undefined để tránh lỗi Firestore Unsupported field value: undefined
+        const cleanPayload: Record<string, any> = {};
+        for (const [k, v] of Object.entries(payload)) {
+            if (v !== undefined) {
+                cleanPayload[k] = v;
+            }
+        }
+        await setDoc(docRef, cleanPayload, { merge: true });
         return id;
     },
 
