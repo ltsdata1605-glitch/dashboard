@@ -171,6 +171,15 @@ export function useCouponManager() {
         return count;
     }, [userId, loadCoupons]);
 
+    // Xoá danh sách mã theo đợt nạp
+    const deleteCouponsBatch = useCallback(async (couponIds: string[]) => {
+        if (!userId || !couponIds || couponIds.length === 0) return 0;
+        const res = await lineBotFirestoreService.deleteCouponsBatch(userId, couponIds);
+        toast.success(`Đã xoá thành công đợt nạp (${res.deleted} mã)!`);
+        await loadCoupons();
+        return res.deleted;
+    }, [userId, loadCoupons]);
+
     // Xuất kho ra file Excel
     const exportToExcel = useCallback(() => {
         if (coupons.length === 0) {
@@ -215,6 +224,7 @@ export function useCouponManager() {
         importCoupons,
         revokeCoupon,
         deleteCoupon,
+        deleteCouponsBatch,
         deleteAllCoupons,
         exportToExcel
     };

@@ -42,6 +42,7 @@ interface CouponManagerTabProps {
     onImportCoupons: (items: ParsedImportItem[]) => Promise<{ added: number; skipped: number }>;
     onRevokeCoupon: (id: string, reason?: string) => Promise<void>;
     onDeleteCoupon: (id: string) => Promise<void>;
+    onDeleteCouponsBatch?: (couponIds: string[]) => Promise<number>;
     onDeleteAllCoupons: () => Promise<number>;
     onExportExcel: () => void;
     onRefresh: () => void;
@@ -62,6 +63,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     onImportCoupons,
     onRevokeCoupon,
     onDeleteCoupon,
+    onDeleteCouponsBatch,
     onDeleteAllCoupons,
     onExportExcel,
     onRefresh
@@ -951,6 +953,8 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     onClose={() => setIsImportModalOpen(false)}
                     onImport={onImportCoupons}
                     existingTypes={availableTypes}
+                    coupons={coupons}
+                    onDeleteBatch={onDeleteCouponsBatch}
                 />
             )}
         </div>

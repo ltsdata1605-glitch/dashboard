@@ -165,6 +165,7 @@ export default function LineBotView() {
                             onImportCoupons={couponHook.importCoupons}
                             onRevokeCoupon={couponHook.revokeCoupon}
                             onDeleteCoupon={couponHook.deleteCoupon}
+                            onDeleteCouponsBatch={couponHook.deleteCouponsBatch}
                             onDeleteAllCoupons={couponHook.deleteAllCoupons}
                             onExportExcel={couponHook.exportToExcel}
                             onRefresh={couponHook.loadCoupons}

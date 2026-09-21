@@ -21,6 +21,21 @@ export interface Coupon {
     revokedAt?: string;
     revokeReason?: string;
     expiryDate?: string; // Định dạng "YYYY-MM-DD" (hết hạn khi bước sang 00:00 ngày hôm sau)
+    importBatchId?: string; // Mã định danh đợt nạp
+}
+
+export interface CouponImportBatch {
+    batchId: string;
+    importedAt: string;
+    total: number;
+    unused: number;
+    sent: number;
+    revoked: number;
+    productNames: string[];
+    types: string[];
+    sampleCodes: string[];
+    expiryDate?: string;
+    couponIds: string[];
 }
 
 export interface ParsedImportItem {

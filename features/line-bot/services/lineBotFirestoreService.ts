@@ -97,7 +97,7 @@ export const lineBotFirestoreService = {
     async addCouponsBatch(
         userId: string,
         newCoupons: Array<{ code: string; type: string; productName?: string; syntax?: string; expiryDate?: string }>
-    ): Promise<{ added: number; skipped: number }> {
+    ): Promise<{ added: number; skipped: number; batchId?: string }> {
         if (!userId || !newCoupons || newCoupons.length === 0) {
             return { added: 0, skipped: 0 };
         }
@@ -129,6 +129,7 @@ export const lineBotFirestoreService = {
         }
 
         const now = new Date().toISOString();
+        const importBatchId = 'batch_' + Date.now();
         const batchSize = 450;
 
         for (let i = 0; i < toAdd.length; i += batchSize) {
@@ -146,6 +147,7 @@ export const lineBotFirestoreService = {
                     status: 'UNUSED',
                     createdAt: now,
                     updatedAt: now,
+                    importBatchId,
                     ...(c.expiryDate ? { expiryDate: c.expiryDate } : {})
                 };
                 batch.set(newDoc, couponData);
@@ -156,7 +158,34 @@ export const lineBotFirestoreService = {
 
         await this.logAudit(userId, 'IMPORT_COUPONS', `Đã nạp ${toAdd.length} mã coupon mới (bỏ qua ${skipped} mã trùng)`, 'Quản lý');
 
-        return { added: toAdd.length, skipped };
+        return { added: toAdd.length, skipped, batchId: importBatchId };
+    },
+
+    /**
+     * Xoá toàn bộ các mã coupon theo danh sách ID (dùng khi xoá theo đợt nạp)
+     */
+    async deleteCouponsBatch(userId: string, couponIds: string[]): Promise<{ deleted: number }> {
+        if (!userId || !couponIds || couponIds.length === 0) return { deleted: 0 };
+        try {
+            const batchSize = 450;
+            let deleted = 0;
+            for (let i = 0; i < couponIds.length; i += batchSize) {
+                const chunk = couponIds.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+                for (const id of chunk) {
+                    const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', id);
+                    batch.delete(docRef);
+                    deleted++;
+                }
+                await batch.commit();
+            }
+
+            await this.logAudit(userId, 'DELETE_IMPORT_BATCH', `Đã xoá nhanh ${deleted} mã coupon theo đợt nạp`, 'Quản lý');
+            return { deleted };
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi deleteCouponsBatch:', error);
+            throw error;
+        }
     },
 
     /**
