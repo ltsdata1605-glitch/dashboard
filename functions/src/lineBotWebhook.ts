@@ -158,7 +158,7 @@ function createCouponFlexBubble(params: {
     const cleanCode = String(params.code || '').trim();
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
     const headerColor = isEvent ? '#06C755' : '#0284C7';
-    const headerTitle = `🎁 MÃ PMH ${params.categoryLabel.toUpperCase()}`;
+    const headerTitle = `🎁 LỌC PMH ${params.categoryLabel.toUpperCase()}`;
     const cleanName = (params.displayName || 'Quản lý').replace(/^[@👤\s]+/, '').trim();
     const cardIndexNum = params.cardIndex || 1;
 
@@ -252,7 +252,7 @@ function createCouponFlexBubble(params: {
                     contents: [
                         {
                             type: 'text',
-                            text: `➜ PMH ${params.categoryLabel} (chạm để copy)`,
+                            text: '➜ Chạm để copy',
                             size: 'xxs',
                             color: '#059669',
                             align: 'center'
